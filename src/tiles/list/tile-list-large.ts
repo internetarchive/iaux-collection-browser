@@ -1,11 +1,11 @@
 import { css, html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-@customElement('tile-2')
-export class Tile2 extends LitElement {
+@customElement('tile-list-large')
+export class TileListLarge extends LitElement {
   render() {
     return html`
-      <h1>Tile2</h1>
+      <h1>Large</h1>
       <h2><slot></slot></h2>
     `;
   }
@@ -14,16 +14,17 @@ export class Tile2 extends LitElement {
     return css`
       :host {
         display: block;
+        outline: 1px solid #dfbdfa;
         height: 100%;
-        outline: 1px solid #fad9bd;
       }
 
       ::slotted(*) {
-        color: #fad9bd;
+        color: #dfbdfa;
       }
 
       h1 {
-        color: #fad9bd;
+        color: #dfbdfa;
+        margin-top: 0;
       }
     `;
   }

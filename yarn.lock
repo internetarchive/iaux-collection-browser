@@ -110,12 +110,20 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@internetarchive/infinite-scroller@0.0.1-alpha.1":
-  version "0.0.1-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.1.tgz#c2ca01490fe5ec766676663aaf7a139bc8b79acf"
-  integrity sha512-fGtPFbbBmVNs50tCrF0h0sYbDvwqMirF/neAUdVJDVuYfc7GFz3jsqRZZOYbnpwCFFKaLQg1NuVGw3BQl8wAkA==
+"@internetarchive/infinite-scroller@0.0.1-alpha.3":
+  version "0.0.1-alpha.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.3.tgz#2e899f38d9eeee1b4c09ca1c4233e9984a02dd57"
+  integrity sha512-McLo7khwz38FrjY+av6epqlVSpN2AtSK/j80rYtoQXfvJWucY0qSd93kHLzahbuGLWBXgVJhh5vrq30MfdGeEg==
   dependencies:
     lit "^2.0.2"
+
+"@lit/localize@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@lit/localize/-/localize-0.11.1.tgz#eda104ee88ee1f2e820729918b04c560cf3ebf90"
+  integrity sha512-8LVAZy38QxPAEaz2iKAaaUWuH9Tv2YiQcAcQIC9Cx+L9MG9fBk6yFFQ0QTtZwDE4A8pL4A2w99jRHl3VKUtCaA==
+  dependencies:
+    "@lit/reactive-element" "^1.0.0"
+    lit "^2.0.0"
 
 "@lit/reactive-element@^1.0.0":
   version "1.0.2"

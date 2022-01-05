@@ -1,11 +1,11 @@
 import { css, html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-@customElement('tile-1')
-export class Tile1 extends LitElement {
+@customElement('tile-list-small')
+export class TileListSmall extends LitElement {
   render() {
     return html`
-      <h1>Tile1</h1>
+      <h1>Small</h1>
       <h2><slot></slot></h2>
     `;
   }
@@ -24,6 +24,7 @@ export class Tile1 extends LitElement {
 
       h1 {
         color: #dfbdfa;
+        margin-top: 0;
       }
     `;
   }
