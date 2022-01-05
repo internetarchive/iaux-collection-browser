@@ -1,1 +1,1 @@
-export { YourWebComponent } from './src/your-webcomponent';
+export { CollectionBrowser } from './src/collection-browser';
