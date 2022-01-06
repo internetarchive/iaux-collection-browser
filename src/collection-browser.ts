@@ -3,10 +3,8 @@ import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import '@internetarchive/infinite-scroller';
-import { TileModel, MediaType } from './models';
+import type { TileModel, MediaType, CollectionDisplayMode } from './models';
 import './tiles/tile-dispatcher';
-
-export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
 
 @customElement('collection-browser')
 export class CollectionBrowser extends LitElement {
