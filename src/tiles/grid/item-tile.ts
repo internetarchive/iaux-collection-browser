@@ -6,8 +6,6 @@ import { TileModel } from '../../models';
 export class ItemTIle extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
-  @property({ type: String }) baseNavigationUrl?: string;
-
   render() {
     return html`
       <h1>Item</h1>

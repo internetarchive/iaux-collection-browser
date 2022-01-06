@@ -9,8 +9,6 @@ import { TileModel } from '../../models';
 export class CollectionTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
-  @property({ type: String }) baseNavigationUrl?: string;
-
   render() {
     return html`
       <div

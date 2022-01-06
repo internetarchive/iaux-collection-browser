@@ -1,8 +1,11 @@
 import { css, html, LitElement } from 'lit';
-import { customElement } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
+import { TileModel } from '../../models';
 
 @customElement('account-tile')
 export class UserTile extends LitElement {
+  @property({ type: Object }) model?: TileModel;
+
   render() {
     return html` <h1>User</h1> `;
   }
