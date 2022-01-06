@@ -7,7 +7,11 @@ export class TileListCompact extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
   render() {
-    return html` <h1>Compact</h1> `;
+    return html`
+      <h1>Compact</h1>
+      <p>${this.model?.title}</p>
+      <p>${this.model?.identifier}</p>
+    `;
   }
 
   static get styles() {

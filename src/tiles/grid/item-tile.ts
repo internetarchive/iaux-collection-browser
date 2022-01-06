@@ -17,7 +17,7 @@ export class ItemTIle extends LitElement {
   static get styles() {
     return css`
       h1 {
-        color: pink;
+        color: white;
         margin-top: 0;
       }
     `;

@@ -110,12 +110,30 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@internetarchive/infinite-scroller@0.0.1-alpha.3":
-  version "0.0.1-alpha.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.3.tgz#2e899f38d9eeee1b4c09ca1c4233e9984a02dd57"
-  integrity sha512-McLo7khwz38FrjY+av6epqlVSpN2AtSK/j80rYtoQXfvJWucY0qSd93kHLzahbuGLWBXgVJhh5vrq30MfdGeEg==
+"@internetarchive/field-parsers@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.0.tgz#de8b42bb5f7d9fc696086815585a3174dacf0b57"
+  integrity sha512-6ByLemKZvCMJrDglC1Om5bkTT7pB/5Lq0uKkGzb4sO88+lTDy6pqbGGw6VGEe6gAYgyDKiTlNUyUoTzF5brq3Q==
+
+"@internetarchive/infinite-scroller@0.0.1-alpha.4":
+  version "0.0.1-alpha.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.4.tgz#ea23e17119d09131a2f35926edb9b1763521e2ce"
+  integrity sha512-iAj/fqOBvQmbBebC4uasr+aiHJ6Xd0JLUETK3XDY1FEzwlhoswWUGLvCnsvKvmX3qxYtEejzMD0nF5ZmfbShMA==
   dependencies:
     lit "^2.0.2"
+
+"@internetarchive/result-type@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/result-type/-/result-type-0.0.1.tgz#a1bda4428dc557cc644a67783f1b8d5944ae4d54"
+  integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
+
+"@internetarchive/search-service@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.2.0.tgz#53bf818f03925f876f73dee6f14cace1dadc8db2"
+  integrity sha512-1KRM68hbDC6r3gNflkbqZhdmDwgsvJDr4JKPD+L7xTsp+edIJF4km+na6/36g5iPTVNc0ls9YKUwE6677MBkbA==
+  dependencies:
+    "@internetarchive/field-parsers" "^0.1.0"
+    "@internetarchive/result-type" "^0.0.1"
 
 "@lit/localize@^0.11.1":
   version "0.11.1"

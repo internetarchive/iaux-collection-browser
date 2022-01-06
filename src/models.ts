@@ -14,6 +14,7 @@ export interface TileModel {
   itemCount: number;
   favCount: number;
   commentCount: number;
+  description?: string;
   collectionIdentifier?: string;
   collectionName?: string;
 }

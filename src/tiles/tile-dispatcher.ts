@@ -41,12 +41,10 @@ export class TileDispatcher extends LitElement {
         switch (model.mediatype) {
           case 'collection':
             return html`<collection-tile .model=${model}></collection-tile>`;
-          case 'item':
-            return html`<item-tile .model=${model}></item-tile>`;
           case 'account':
             return html`<account-tile .model=${model}></account-tile>`;
           default:
-            return nothing;
+            return html`<item-tile .model=${model}></item-tile>`;
         }
       case 'list-compact':
         return html`<tile-list-compact .model=${model}></tile-list-compact>`;

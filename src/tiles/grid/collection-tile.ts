@@ -13,8 +13,11 @@ export class CollectionTile extends LitElement {
     return html`
       <div
         id="container"
-        @hover=${() => {
-          console.debug('hovering');
+        @mouseover=${() => {
+          console.debug('mouseover');
+        }}
+        @focus=${() => {
+          console.debug('focus');
         }}
       >
         <div id="collection-image-title">

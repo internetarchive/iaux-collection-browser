@@ -1,16 +1,29 @@
 /* eslint-disable import/no-duplicates */
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { InfiniteScroller } from '@internetarchive/infinite-scroller';
-import '@internetarchive/infinite-scroller';
+import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
+import {
+  SearchParams,
+  SearchServiceInterface,
+} from '@internetarchive/search-service';
+import {
+  SortDirection,
+  SortParam,
+} from '@internetarchive/search-service/dist/src/search-params';
 import type { TileModel, MediaType, CollectionDisplayMode } from './models';
+import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
 
 @customElement('collection-browser')
 export class CollectionBrowser extends LitElement {
   @property({ type: String }) baseNavigationUrl?: string;
 
-  @query('infinite-scroller') infiniteScroller!: InfiniteScroller;
+  @property({ type: Object }) searchService?: SearchServiceInterface;
+
+  @property({ type: String }) baseQuery?: string;
+
+  @query('infinite-scroller')
+  private infiniteScroller!: InfiniteScroller;
 
   @state() private displayMode: CollectionDisplayMode = 'grid';
 
@@ -68,9 +81,65 @@ export class CollectionBrowser extends LitElement {
     if (changed.has('tileModels')) {
       this.infiniteScroller.itemCount = this.tileModels.length;
     }
+    if (changed.has('baseQuery')) {
+      this.resetSearch();
+    }
+  }
+
+  private resetSearch() {
+    this.tileModels = [];
+    this.pageCount = this.startPageNumber;
+    this.updateQuery();
+    this.infiniteScroller.reload();
+  }
+
+  // it's 1-indexed so making this a constant so we don't have to remember that
+  private readonly startPageNumber = 1;
+
+  private pageCount = this.startPageNumber;
+
+  async updateQuery() {
+    const dateSort = new SortParam('date', SortDirection.Desc);
+    const params = new SearchParams({
+      query: this.baseQuery ?? '',
+      fields: [
+        'identifier',
+        'title',
+        'mediatype',
+        'downloads',
+        'num_favorites',
+        'num_reviews',
+        'item_count',
+        'description',
+      ],
+      page: this.pageCount,
+      rows: 50,
+      sort: [dateSort],
+    });
+    this.pageCount += 1;
+    const results = await this.searchService?.search(params);
+    const tiles = [...this.tileModels];
+    results?.success?.response.docs.forEach(doc => {
+      if (!doc.identifier) return;
+      tiles.push({
+        identifier: doc.identifier,
+        title: doc.title?.value ?? '',
+        mediatype: doc.mediatype?.value as MediaType,
+        viewCount: doc.downloads?.value ?? 0,
+        favCount: doc.num_favorites?.value ?? 0,
+        commentCount: doc.num_reviews?.value ?? 0,
+        itemCount: doc.item_count?.value ?? 0,
+        description: doc.description?.value,
+      });
+    });
+    this.tileModels = tiles;
+
+    console.debug('results', results);
+    console.debug('tiles', tiles);
   }
 
   cellForIndex(index: number) {
+    console.debug('cellForIndex', index);
     const model = this.tileModels[index];
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
@@ -81,36 +150,7 @@ export class CollectionBrowser extends LitElement {
   }
 
   private scrollThresholdReached() {
-    this.addMoreTiles();
-  }
-
-  /**
-   * Generate some random data
-   */
-  private addMoreTiles() {
-    // we're making a copy of the tiles array
-    // so when we set it again at the end, it's setting it to a new array
-    // otherwise, Lit doesn't recognize the change since it's a refrefence
-    // to the same array
-    const tiles = [...this.tileModels];
-
-    for (let i = 0; i < 50; i += 1) {
-      // get a random mediatype
-      const mediaType = ['collection', 'item', 'account'][
-        Math.floor(Math.random() * 3)
-      ];
-      tiles.push({
-        identifier: `${mediaType}-${i}`,
-        title: `${mediaType} ${i}`,
-        mediatype: mediaType as MediaType,
-        viewCount: Math.floor(Math.random() * 100),
-        favCount: Math.floor(Math.random() * 100),
-        commentCount: Math.floor(Math.random() * 100),
-        itemCount: Math.floor(Math.random() * 100),
-      });
-    }
-    console.debug('tiles', tiles);
-    this.tileModels = tiles;
+    this.updateQuery();
   }
 
   static styles = css`
@@ -119,9 +159,8 @@ export class CollectionBrowser extends LitElement {
     }
 
     infinite-scroller {
-      outline: 1px solid orange;
       display: block;
-      --infiniteScrollerCellOutline: 1px solid purple;
+      --infiniteScrollerCellOutline: 1px solid #666;
     }
 
     infinite-scroller.list-compact {
@@ -131,7 +170,7 @@ export class CollectionBrowser extends LitElement {
 
     infinite-scroller.list-detail {
       --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 16rem;
+      --infiniteScrollerCellMinHeight: 10rem;
     }
 
     infinite-scroller.grid {
