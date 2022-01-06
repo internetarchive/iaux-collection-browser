@@ -18,12 +18,6 @@ export class ItemTIle extends LitElement {
 
   static get styles() {
     return css`
-      :host {
-        display: block;
-        outline: 1px solid pink;
-        height: 100%;
-      }
-
       h1 {
         color: pink;
         margin-top: 0;

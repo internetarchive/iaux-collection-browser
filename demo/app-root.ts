@@ -5,7 +5,10 @@ import '../src/collection-browser';
 @customElement('app-root')
 export class AppRoot extends LitElement {
   render() {
-    return html` <collection-browser> </collection-browser> `;
+    return html`
+      <collection-browser .baseNavigationUrl=${'https://archive.org'}>
+      </collection-browser>
+    `;
   }
 
   static styles = css`

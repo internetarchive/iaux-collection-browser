@@ -1,28 +1,26 @@
 /* eslint-disable import/no-duplicates */
-import { html, css, LitElement, nothing, PropertyValues } from 'lit';
-import { customElement, query, state } from 'lit/decorators.js';
+import { html, css, LitElement, PropertyValues } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import '@internetarchive/infinite-scroller';
-import './tiles/grid/collection-tile';
-import './tiles/grid/item-tile';
-import './tiles/grid/user-tile';
-import './tiles/list/tile-list-large';
-import './tiles/list/tile-list-small';
 import { TileModel, MediaType } from './models';
+import './tiles/tile-dispatcher';
 
-type DisplayMode = 'list' | 'grid';
+export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
 
 @customElement('collection-browser')
 export class CollectionBrowser extends LitElement {
+  @property({ type: String }) baseNavigationUrl?: string;
+
   @query('infinite-scroller') infiniteScroller!: InfiniteScroller;
 
-  @state() private displayMode: DisplayMode = 'grid';
+  @state() private displayMode: CollectionDisplayMode = 'grid';
+
+  @state() private showDeleteButtons = false;
 
   @state() private tileModels: TileModel[] = [];
 
   render() {
-    console.debug('render', this.tileModels.length);
-
     return html`
       <h1>Collection Browser</h1>
 
@@ -35,10 +33,25 @@ export class CollectionBrowser extends LitElement {
       </button>
       <button
         @click=${() => {
-          this.displayMode = 'list';
+          this.displayMode = 'list-compact';
         }}
       >
-        List
+        List Compact
+      </button>
+      <button
+        @click=${() => {
+          this.displayMode = 'list-detail';
+        }}
+      >
+        List Detail
+      </button>
+      <button
+        @click=${() => {
+          this.showDeleteButtons = !this.showDeleteButtons;
+          this.infiniteScroller.reload();
+        }}
+      >
+        Toggle Delete Mode
       </button>
 
       <infinite-scroller
@@ -48,10 +61,6 @@ export class CollectionBrowser extends LitElement {
       >
       </infinite-scroller>
     `;
-  }
-
-  firstUpdated(): void {
-    this.addMoreTiles();
   }
 
   updated(changed: PropertyValues) {
@@ -65,23 +74,12 @@ export class CollectionBrowser extends LitElement {
 
   cellForIndex(index: number) {
     const model = this.tileModels[index];
-    switch (this.displayMode) {
-      case 'grid':
-        switch (model.mediatype) {
-          case 'collection':
-            return html`<collection-tile .model=${model}></collection-tile>`;
-          case 'item':
-            return html`<item-tile .model=${model}></item-tile>`;
-          case 'account':
-            return html`<user-tile .model=${model}></user-tile>`;
-          default:
-            return nothing;
-        }
-      case 'list':
-        return html`<tile-list-large><p>${index}</p></tile-list-large>`;
-      default:
-        return nothing;
-    }
+    return html` <tile-dispatcher
+      .baseNavigationUrl=${this.baseNavigationUrl}
+      .model=${model}
+      .displayMode=${this.displayMode}
+      ?showDeleteButton=${this.showDeleteButtons}
+    ></tile-dispatcher>`;
   }
 
   private scrollThresholdReached() {
@@ -128,9 +126,14 @@ export class CollectionBrowser extends LitElement {
       --infiniteScrollerCellOutline: 1px solid purple;
     }
 
-    infinite-scroller.list {
+    infinite-scroller.list-compact {
       --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 4rem;
+      --infiniteScrollerCellMinHeight: 2rem;
+    }
+
+    infinite-scroller.list-detail {
+      --infiniteScrollerCellMinWidth: 100%;
+      --infiniteScrollerCellMinHeight: 16rem;
     }
 
     infinite-scroller.grid {

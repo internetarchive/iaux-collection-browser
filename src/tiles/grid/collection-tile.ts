@@ -1,7 +1,6 @@
 import { localized, msg } from '@lit/localize';
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 import { collectionIcon } from '../../assets/img/icons/collection';
 import { TileModel } from '../../models';
 
@@ -14,9 +13,11 @@ export class CollectionTile extends LitElement {
 
   render() {
     return html`
-      <a
-        href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-        title=${ifDefined(this.model?.title)}
+      <div
+        id="container"
+        @hover=${() => {
+          console.debug('hovering');
+        }}
       >
         <div id="collection-image-title">
           <div
@@ -33,7 +34,7 @@ export class CollectionTile extends LitElement {
             <div id="items-text">${msg('ITEMS')}</div>
           </div>
         </div>
-      </a>
+      </div>
     `;
   }
 
@@ -41,18 +42,6 @@ export class CollectionTile extends LitElement {
     const cornerRadiusCss = css`var(--collectionTileCornerRadius, 4px)`;
 
     return css`
-      :host {
-        display: block;
-        height: 100%;
-        outline: 1px solid red;
-      }
-
-      a {
-        display: block;
-        color: #fff;
-        text-decoration: none;
-      }
-
       #collection-image {
         width: 9rem;
         height: 9rem;
@@ -83,11 +72,11 @@ export class CollectionTile extends LitElement {
         height: 4rem;
       }
 
-      a:hover #collection-title {
+      #container:hover #collection-title {
         text-decoration: underline;
       }
 
-      a:hover #collection-image-title {
+      #container:hover #collection-image-title {
         background-color: #8eb8ea;
       }
 
@@ -108,7 +97,7 @@ export class CollectionTile extends LitElement {
         height: 3rem;
       }
 
-      a:hover #item-count-container {
+      #container:hover #item-count-container {
         background-color: #4a90e2;
       }
 
@@ -117,8 +106,6 @@ export class CollectionTile extends LitElement {
       }
 
       #item-count-image {
-        filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(6deg)
-          brightness(102%) contrast(101%);
         width: 3rem;
         height: 3rem;
         margin-right: 1rem;
