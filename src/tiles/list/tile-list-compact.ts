@@ -8,16 +8,15 @@ export class TileListCompact extends LitElement {
 
   render() {
     return html`
-      <h1>Compact</h1>
-      <p>${this.model?.title}</p>
-      <p>${this.model?.identifier}</p>
+      <h1>${this.model?.title}</h1>
+      <h2>${this.model?.date?.toDateString()}</h2>
     `;
   }
 
   static get styles() {
     return css`
       h1 {
-        color: #dfbdfa;
+        color: white;
         margin-top: 0;
       }
     `;

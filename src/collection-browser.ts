@@ -111,6 +111,7 @@ export class CollectionBrowser extends LitElement {
         'num_reviews',
         'item_count',
         'description',
+        'date',
       ],
       page: this.pageCount,
       rows: 50,
@@ -130,6 +131,7 @@ export class CollectionBrowser extends LitElement {
         commentCount: doc.num_reviews?.value ?? 0,
         itemCount: doc.item_count?.value ?? 0,
         description: doc.description?.value,
+        date: doc.date?.value,
       });
     });
     this.tileModels = tiles;

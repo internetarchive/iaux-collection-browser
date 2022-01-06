@@ -9,6 +9,7 @@ export type MediaType =
 export interface TileModel {
   identifier: string;
   title: string;
+  date?: Date;
   mediatype: MediaType;
   viewCount: number;
   itemCount: number;
