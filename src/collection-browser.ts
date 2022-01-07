@@ -26,36 +26,59 @@ export class CollectionBrowser extends LitElement {
 
   @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
 
+  @property({ type: Object }) sortParam: SortParam = new SortParam(
+    'date',
+    'desc'
+  );
+
+  @state() private tileModels: TileModel[] = [];
+
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
-  @state() private tileModels: TileModel[] = [];
+  @query('#sort-field') sortField!: HTMLInputElement;
+
+  @query('#sort-direction') sortDirectionField!: HTMLSelectElement;
 
   render() {
     return html`
       <h1>Collection Browser</h1>
 
-      <button
-        @click=${() => {
-          this.displayMode = 'grid';
-        }}
-      >
-        Grid
-      </button>
-      <button
-        @click=${() => {
-          this.displayMode = 'list-compact';
-        }}
-      >
-        List Compact
-      </button>
-      <button
-        @click=${() => {
-          this.displayMode = 'list-detail';
-        }}
-      >
-        List Detail
-      </button>
+      <div id="sort-filter">
+        <div>
+          <button
+            @click=${() => {
+              this.displayMode = 'grid';
+            }}
+          >
+            Grid
+          </button>
+          <button
+            @click=${() => {
+              this.displayMode = 'list-compact';
+            }}
+          >
+            List Compact
+          </button>
+          <button
+            @click=${() => {
+              this.displayMode = 'list-detail';
+            }}
+          >
+            List Detail
+          </button>
+        </div>
+        <div>
+          <form @submit=${this.sortPressed}>
+            <input type="text" id="sort-field" value="date" />
+            <select id="sort-direction">
+              <option value="desc" default>Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+            <input type="submit" value="Change Sort" />
+          </form>
+        </div>
+      </div>
       <infinite-scroller
         class="${this.displayMode}"
         .cellProvider=${this}
@@ -80,6 +103,14 @@ export class CollectionBrowser extends LitElement {
     }
   }
 
+  private sortPressed(e: Event) {
+    e.preventDefault();
+    const sortField = this.sortField.value;
+    const sortDirection = this.sortDirectionField.value;
+    this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
+    this.resetSearch();
+  }
+
   private resetSearch() {
     this.tileModels = [];
     this.pageCount = this.startPageNumber;
@@ -93,7 +124,6 @@ export class CollectionBrowser extends LitElement {
   private pageCount = this.startPageNumber;
 
   async updateQuery() {
-    const dateSort = new SortParam('date', SortDirection.Desc);
     const params = new SearchParams({
       query: this.baseQuery ?? '',
       fields: [
@@ -109,7 +139,7 @@ export class CollectionBrowser extends LitElement {
       ],
       page: this.pageCount,
       rows: 50,
-      sort: [dateSort],
+      sort: [this.sortParam],
     });
     this.pageCount += 1;
     const results = await this.searchService?.search(params);
@@ -129,13 +159,9 @@ export class CollectionBrowser extends LitElement {
       });
     });
     this.tileModels = tiles;
-
-    console.debug('results', results);
-    console.debug('tiles', tiles);
   }
 
   cellForIndex(index: number) {
-    console.debug('cellForIndex', index);
     const model = this.tileModels[index];
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
