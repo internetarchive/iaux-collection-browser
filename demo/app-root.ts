@@ -25,6 +25,15 @@ export class AppRoot extends LitElement {
           <input type="text" id="base-query-field" value="collection:etree" />
           <input type="submit" value="Search" />
         </form>
+
+        <button
+          @click=${() => {
+            this.collectionBrowser.showDeleteButtons =
+              !this.collectionBrowser.showDeleteButtons;
+          }}
+        >
+          Toggle Delete Mode
+        </button>
       </div>
 
       <collection-browser

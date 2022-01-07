@@ -22,12 +22,12 @@ export class CollectionBrowser extends LitElement {
 
   @property({ type: String }) baseQuery?: string;
 
+  @property({ type: Boolean }) showDeleteButtons = false;
+
+  @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
+
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
-
-  @state() private displayMode: CollectionDisplayMode = 'grid';
-
-  @state() private showDeleteButtons = false;
 
   @state() private tileModels: TileModel[] = [];
 
@@ -56,15 +56,6 @@ export class CollectionBrowser extends LitElement {
       >
         List Detail
       </button>
-      <button
-        @click=${() => {
-          this.showDeleteButtons = !this.showDeleteButtons;
-          this.infiniteScroller.reload();
-        }}
-      >
-        Toggle Delete Mode
-      </button>
-
       <infinite-scroller
         class="${this.displayMode}"
         .cellProvider=${this}
@@ -83,6 +74,9 @@ export class CollectionBrowser extends LitElement {
     }
     if (changed.has('baseQuery')) {
       this.resetSearch();
+    }
+    if (changed.has('showDeleteButtons')) {
+      this.infiniteScroller.reload();
     }
   }
 
