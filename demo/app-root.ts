@@ -49,5 +49,14 @@ export class AppRoot extends LitElement {
     :host {
       display: block;
     }
+
+    input,
+    button {
+      font-size: 1.6rem;
+    }
+
+    #base-query-field {
+      width: 300px;
+    }
   `;
 }
