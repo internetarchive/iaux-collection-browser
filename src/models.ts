@@ -1,10 +1,4 @@
-export type MediaType =
-  | 'collection'
-  | 'item'
-  | 'account'
-  | 'audio'
-  | 'video'
-  | 'image';
+import type { MediaType } from '@internetarchive/field-parsers';
 
 export interface TileModel {
   identifier: string;

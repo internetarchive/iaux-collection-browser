@@ -10,7 +10,7 @@ import {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service/dist/src/search-params';
-import type { TileModel, MediaType, CollectionDisplayMode } from './models';
+import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
 
@@ -125,7 +125,7 @@ export class CollectionBrowser extends LitElement {
       tiles.push({
         identifier: doc.identifier,
         title: doc.title?.value ?? '',
-        mediatype: doc.mediatype?.value as MediaType,
+        mediatype: doc.mediatype?.value ?? 'data',
         viewCount: doc.downloads?.value ?? 0,
         favCount: doc.num_favorites?.value ?? 0,
         commentCount: doc.num_reviews?.value ?? 0,

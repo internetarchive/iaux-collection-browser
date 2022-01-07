@@ -110,10 +110,10 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@internetarchive/field-parsers@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.0.tgz#de8b42bb5f7d9fc696086815585a3174dacf0b57"
-  integrity sha512-6ByLemKZvCMJrDglC1Om5bkTT7pB/5Lq0uKkGzb4sO88+lTDy6pqbGGw6VGEe6gAYgyDKiTlNUyUoTzF5brq3Q==
+"@internetarchive/field-parsers@0.1.1-alpha.1", "@internetarchive/field-parsers@^0.1.1-alpha.1":
+  version "0.1.1-alpha.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.1-alpha.1.tgz#ce1239feb0cbc5acae32b93745032ed7e4086968"
+  integrity sha512-FBuOkxiSKk20Cn5bbyUkTPO1Uk+/XgoCZwwcdFDQNQEZnT7bTiJapfggxUVvRwQvF9IWMdzXvWUvtmgzKJKFRA==
 
 "@internetarchive/infinite-scroller@0.0.1-alpha.4":
   version "0.0.1-alpha.4"
@@ -127,12 +127,12 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/result-type/-/result-type-0.0.1.tgz#a1bda4428dc557cc644a67783f1b8d5944ae4d54"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.2.0.tgz#53bf818f03925f876f73dee6f14cace1dadc8db2"
-  integrity sha512-1KRM68hbDC6r3gNflkbqZhdmDwgsvJDr4JKPD+L7xTsp+edIJF4km+na6/36g5iPTVNc0ls9YKUwE6677MBkbA==
+"@internetarchive/search-service@0.2.1-alpha.1":
+  version "0.2.1-alpha.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.2.1-alpha.1.tgz#3f33c5b8609abe6b6c43dafacc3ce90cf2167a98"
+  integrity sha512-izpaqmUDIhdSwXtMD22HoYEeeOeY9hddumDirF74AdrmL6zaWg873AnBcvm/vs0m+5fC0jgc6EEZeUjV6+1l7w==
   dependencies:
-    "@internetarchive/field-parsers" "^0.1.0"
+    "@internetarchive/field-parsers" "^0.1.1-alpha.1"
     "@internetarchive/result-type" "^0.0.1"
 
 "@lit/localize@^0.11.1":
