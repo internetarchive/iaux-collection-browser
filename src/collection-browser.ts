@@ -13,6 +13,7 @@ import {
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
+import './sort-filter-bar/sort-filter-bar';
 
 @customElement('collection-browser')
 export class CollectionBrowser extends LitElement {
@@ -36,49 +37,15 @@ export class CollectionBrowser extends LitElement {
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
-  @query('#sort-field') sortField!: HTMLInputElement;
-
-  @query('#sort-direction') sortDirectionField!: HTMLSelectElement;
-
   render() {
     return html`
       <h1>Collection Browser</h1>
 
-      <div id="sort-filter">
-        <div>
-          <button
-            @click=${() => {
-              this.displayMode = 'grid';
-            }}
-          >
-            Grid
-          </button>
-          <button
-            @click=${() => {
-              this.displayMode = 'list-compact';
-            }}
-          >
-            List Compact
-          </button>
-          <button
-            @click=${() => {
-              this.displayMode = 'list-detail';
-            }}
-          >
-            List Detail
-          </button>
-        </div>
-        <div>
-          <form @submit=${this.sortPressed}>
-            <input type="text" id="sort-field" value="date" />
-            <select id="sort-direction">
-              <option value="desc" default>Descending</option>
-              <option value="asc">Ascending</option>
-            </select>
-            <input type="submit" value="Change Sort" />
-          </form>
-        </div>
-      </div>
+      <sort-filter-bar
+        @sortDirectionChanged=${this.sortDirectionChanged}
+        @displayModeChanged=${this.displayModeChanged}
+      ></sort-filter-bar>
+
       <infinite-scroller
         class="${this.displayMode}"
         .cellProvider=${this}
@@ -103,12 +70,19 @@ export class CollectionBrowser extends LitElement {
     }
   }
 
-  private sortPressed(e: Event) {
-    e.preventDefault();
-    const sortField = this.sortField.value;
-    const sortDirection = this.sortDirectionField.value;
+  private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
+    console.debug('sortDirectionChanged', e.detail.direction);
+    const sortField = this.sortParam.field;
+    const sortDirection = e.detail.direction;
     this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
     this.resetSearch();
+  }
+
+  private displayModeChanged(
+    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
+  ) {
+    console.debug('displayModeChanged', e.detail.displayMode);
+    this.displayMode = e.detail.displayMode;
   }
 
   private resetSearch() {
