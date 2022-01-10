@@ -1,7 +1,10 @@
 /* eslint-disable import/no-duplicates */
-import { html, css, LitElement, PropertyValues } from 'lit';
+import { html, css, LitElement, PropertyValues, TemplateResult } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
+import type {
+  InfiniteScroller,
+  InfiniteScrollerCellProviderInterface,
+} from '@internetarchive/infinite-scroller';
 import {
   SearchParams,
   SearchServiceInterface,
@@ -16,7 +19,12 @@ import './tiles/tile-dispatcher';
 import './sort-filter-bar/sort-filter-bar';
 
 @customElement('collection-browser')
-export class CollectionBrowser extends LitElement {
+export class CollectionBrowser
+  extends LitElement
+  implements InfiniteScrollerCellProviderInterface
+{
+  @property({ type: Number }) initialPageNumber: number = 1;
+
   @property({ type: String }) baseNavigationUrl?: string;
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
@@ -32,7 +40,39 @@ export class CollectionBrowser extends LitElement {
     'desc'
   );
 
-  @state() private tileModels: TileModel[] = [];
+  @property({ type: Number }) pageSize = 50;
+
+  // @property({ type: Number }) pageNumber = 1;
+
+  @state() private currentPageNumber = this.initialPageNumber;
+
+  private tileModelAtCellIndex(index: number): TileModel | undefined {
+    const pageNumber = Math.floor(index / this.pageSize) + 1;
+    const itemIndex = index % this.pageSize;
+    const model = this.dataSource[pageNumber]?.[itemIndex];
+    if (!model) {
+      // if we encounter a model we don't have yet, fetch the page and just
+      // return undefined.. the datasource will be updated once the
+      // page is loaded and the cell will be rendered
+      this.fetchPage(pageNumber);
+    }
+    return model;
+  }
+
+  private get tileModelCount() {
+    const tileCount = this.currentPageNumber * this.pageSize;
+    console.debug('tileModelCount', this.currentPageNumber, tileCount);
+    return tileCount;
+  }
+
+  /**
+   * The results per page so we can paginate.
+   *
+   * This allows us to start in the middle of the search results and
+   * fetch data before or after the current page. If we don't have a key
+   * for the previous/next page, we'll fetch the next/previous page to populate it
+   */
+  @state() private dataSource: Record<number, TileModel[]> = {};
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
@@ -59,8 +99,9 @@ export class CollectionBrowser extends LitElement {
     if (changed.has('displayMode')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('tileModels')) {
-      this.infiniteScroller.itemCount = this.tileModels.length;
+    if (changed.has('dataSource')) {
+      this.infiniteScroller.itemCount = this.tileModelCount;
+      this.infiniteScroller.reload();
     }
     if (changed.has('baseQuery')) {
       this.resetSearch();
@@ -81,23 +122,25 @@ export class CollectionBrowser extends LitElement {
   private displayModeChanged(
     e: CustomEvent<{ displayMode: CollectionDisplayMode }>
   ) {
-    console.debug('displayModeChanged', e.detail.displayMode);
     this.displayMode = e.detail.displayMode;
   }
 
-  private resetSearch() {
-    this.tileModels = [];
-    this.pageCount = this.startPageNumber;
-    this.updateQuery();
-    this.infiniteScroller.reload();
+  private async resetSearch() {
+    this.dataSource = {};
+    this.currentPageNumber = this.initialPageNumber;
+    await this.fetchPage(this.currentPageNumber);
+    const cellIndexToScrollTo = this.pageSize * (this.currentPageNumber - 1);
+    this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
   }
 
-  // it's 1-indexed so making this a constant so we don't have to remember that
-  private readonly startPageNumber = 1;
+  private pageFetchesInProgress: Set<number> = new Set<number>();
 
-  private pageCount = this.startPageNumber;
+  async fetchPage(pageNumber: number) {
+    // if we already have data, don't fetch again
+    if (this.dataSource[pageNumber]) return;
+    // if a fetch is already in progress for this page, don't fetch again
+    if (this.pageFetchesInProgress.has(pageNumber)) return;
 
-  async updateQuery() {
     const params = new SearchParams({
       query: this.baseQuery ?? '',
       fields: [
@@ -111,13 +154,17 @@ export class CollectionBrowser extends LitElement {
         'description',
         'date',
       ],
-      page: this.pageCount,
-      rows: 50,
+      page: pageNumber,
+      rows: this.pageSize,
       sort: [this.sortParam],
     });
-    this.pageCount += 1;
+    this.pageFetchesInProgress.add(pageNumber);
     const results = await this.searchService?.search(params);
-    const tiles = [...this.tileModels];
+    // copy our existing datasource so when we set it below, it gets set
+    // instead of modifying the existing dataSource since object changes
+    // don't trigger a re-render
+    const datasource = { ...this.dataSource };
+    const tiles: TileModel[] = [];
     results?.success?.response.docs.forEach(doc => {
       if (!doc.identifier) return;
       tiles.push({
@@ -132,11 +179,15 @@ export class CollectionBrowser extends LitElement {
         date: doc.date?.value,
       });
     });
-    this.tileModels = tiles;
+    datasource[pageNumber] = tiles;
+    this.dataSource = datasource;
+    this.pageFetchesInProgress.delete(pageNumber);
   }
 
-  cellForIndex(index: number) {
-    const model = this.tileModels[index];
+  cellForIndex(index: number): TemplateResult | undefined {
+    const model = this.tileModelAtCellIndex(index);
+    if (!model) return undefined;
+
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
       .model=${model}
@@ -146,7 +197,9 @@ export class CollectionBrowser extends LitElement {
   }
 
   private scrollThresholdReached() {
-    this.updateQuery();
+    this.currentPageNumber += 1;
+    console.debug('scrollThresholdReached', this.currentPageNumber);
+    this.fetchPage(this.currentPageNumber);
   }
 
   static styles = css`
