@@ -16,6 +16,7 @@ import {
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
+import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 
 @customElement('collection-browser')
@@ -109,6 +110,9 @@ export class CollectionBrowser
     if (changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
+    if (changed.has('initialPageNumber')) {
+      this.resetSearch();
+    }
   }
 
   private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
@@ -128,14 +132,24 @@ export class CollectionBrowser
   private async resetSearch() {
     this.dataSource = {};
     this.currentPageNumber = this.initialPageNumber;
-    await this.fetchPage(this.currentPageNumber);
     const cellIndexToScrollTo = this.pageSize * (this.currentPageNumber - 1);
-    this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+    // without this setTimeout, Safari just pauses until the `fetchPage` is complete
+    // then scrolls to the cell
+    setTimeout(() => {
+      this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+    }, 0);
+    await this.fetchPage(this.currentPageNumber);
   }
 
   private pageFetchesInProgress: Set<number> = new Set<number>();
 
   async fetchPage(pageNumber: number) {
+    console.debug(
+      'fetchPage',
+      pageNumber,
+      this.pageFetchesInProgress.has(pageNumber),
+      this.dataSource[pageNumber]
+    );
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
     // if a fetch is already in progress for this page, don't fetch again
@@ -186,7 +200,7 @@ export class CollectionBrowser
 
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
-    if (!model) return undefined;
+    if (!model) return html` <loading-tile></loading-tile> `;
 
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}

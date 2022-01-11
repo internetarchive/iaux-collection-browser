@@ -10,11 +10,15 @@ export class AppRoot extends LitElement {
 
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
+  @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
+
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
 
   private searchPressed(e: Event) {
     e.preventDefault();
     const baseQuery = this.baseQueryField.value;
+    this.collectionBrowser.initialPageNumber =
+      this.pageNumberInput.valueAsNumber;
     this.collectionBrowser.baseQuery = baseQuery;
   }
 
@@ -22,7 +26,9 @@ export class AppRoot extends LitElement {
     return html`
       <div id="dev-tools">
         <form @submit=${this.searchPressed}>
+          Query:
           <input type="text" id="base-query-field" value="collection:etree" />
+          Page: <input type="number" value="1" id="page-number-input" />
           <input type="submit" value="Search" />
         </form>
 
