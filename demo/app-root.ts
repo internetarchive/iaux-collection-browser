@@ -22,6 +22,20 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.baseQuery = baseQuery;
   }
 
+  firstUpdated(): void {
+    const url = new URL(window.location.href);
+    const pageNumber = url.searchParams.get('page');
+    const searchQuery = url.searchParams.get('query');
+    if (pageNumber) {
+      this.pageNumberInput.value = pageNumber;
+      this.collectionBrowser.initialPageNumber = parseInt(pageNumber, 10);
+    }
+    if (searchQuery) {
+      this.baseQueryField.value = searchQuery;
+      this.collectionBrowser.baseQuery = searchQuery;
+    }
+  }
+
   render() {
     return html`
       <div id="dev-tools">
