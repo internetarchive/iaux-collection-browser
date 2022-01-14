@@ -10,10 +10,7 @@ import {
   SearchParams,
   SearchServiceInterface,
 } from '@internetarchive/search-service';
-import {
-  SortDirection,
-  SortParam,
-} from '@internetarchive/search-service/dist/src/search-params';
+import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
@@ -99,11 +96,6 @@ export class CollectionBrowser
     return html`
       <h1>Collection Browser</h1>
 
-      <sort-filter-bar
-        @sortDirectionChanged=${this.sortDirectionChanged}
-        @displayModeChanged=${this.displayModeChanged}
-      ></sort-filter-bar>
-
       <infinite-scroller
         class="${this.displayMode}"
         .cellProvider=${this}
@@ -116,13 +108,10 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    if (changed.has('displayMode')) {
+    if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('showDeleteButtons')) {
-      this.infiniteScroller.reload();
-    }
-    if (changed.has('baseQuery')) {
+    if (changed.has('baseQuery') || changed.has('sortParam')) {
       this.handleQueryChange();
     }
     if (changed.has('pagesToRender')) {
@@ -139,19 +128,6 @@ export class CollectionBrowser
       '--collectionBrowserCellWidth',
       `${e.detail.width}px`
     );
-  }
-
-  private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
-    const sortField = this.sortParam.field;
-    const sortDirection = e.detail.direction;
-    this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
-    this.handleQueryChange();
-  }
-
-  private displayModeChanged(
-    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
-  ) {
-    this.displayMode = e.detail.displayMode;
   }
 
   private async handleQueryChange() {

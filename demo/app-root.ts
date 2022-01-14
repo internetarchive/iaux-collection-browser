@@ -1,8 +1,13 @@
 import { SearchService } from '@internetarchive/search-service';
 import { html, css, LitElement } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
+import {
+  SortDirection,
+  SortParam,
+} from '@internetarchive/search-service/dist/src/search-params';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
+import { CollectionDisplayMode } from '../src/models';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -56,6 +61,11 @@ export class AppRoot extends LitElement {
         >
           Toggle Delete Mode
         </button>
+
+        <sort-filter-bar
+          @sortDirectionChanged=${this.sortDirectionChanged}
+          @displayModeChanged=${this.displayModeChanged}
+        ></sort-filter-bar>
       </div>
 
       <collection-browser
@@ -67,6 +77,21 @@ export class AppRoot extends LitElement {
     `;
   }
 
+  private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
+    const sortField = this.collectionBrowser.sortParam.field;
+    const sortDirection = e.detail.direction;
+    this.collectionBrowser.sortParam = new SortParam(
+      sortField,
+      sortDirection as SortDirection
+    );
+  }
+
+  private displayModeChanged(
+    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
+  ) {
+    this.collectionBrowser.displayMode = e.detail.displayMode;
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -75,6 +100,10 @@ export class AppRoot extends LitElement {
     input,
     button {
       font-size: 1.6rem;
+    }
+
+    collection-browser {
+      margin-top: 15rem;
     }
 
     #base-query-field {
