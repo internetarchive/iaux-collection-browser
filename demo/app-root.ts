@@ -19,7 +19,9 @@ export class AppRoot extends LitElement {
     const baseQuery = this.baseQueryField.value;
     this.collectionBrowser.initialPageNumber =
       this.pageNumberInput.valueAsNumber;
-    this.collectionBrowser.baseQuery = baseQuery;
+    if (baseQuery !== this.collectionBrowser.baseQuery) {
+      this.collectionBrowser.baseQuery = baseQuery;
+    }
   }
 
   firstUpdated(): void {
@@ -77,6 +79,15 @@ export class AppRoot extends LitElement {
 
     #base-query-field {
       width: 300px;
+    }
+
+    #dev-tools {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      background-color: rgba(0, 0, 0, 0.9);
+      padding: 0.5rem 1rem;
     }
   `;
 }

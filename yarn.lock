@@ -115,10 +115,10 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.1-alpha.1.tgz#ce1239feb0cbc5acae32b93745032ed7e4086968"
   integrity sha512-FBuOkxiSKk20Cn5bbyUkTPO1Uk+/XgoCZwwcdFDQNQEZnT7bTiJapfggxUVvRwQvF9IWMdzXvWUvtmgzKJKFRA==
 
-"@internetarchive/infinite-scroller@0.0.1-alpha.6":
-  version "0.0.1-alpha.6"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.6.tgz#3f6933184be1990e250f765fba919679ada995ac"
-  integrity sha512-sPw0vGNh3ZaPaKT36FHCnaAhOawSHF+4br0aXpHdP4XTrdDzWxK5ig2luU8avWMbfcsdObtEOBwZmolNc8SFDQ==
+"@internetarchive/infinite-scroller@0.0.1-alpha.11":
+  version "0.0.1-alpha.11"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.11.tgz#019fa506ab7993b4497a06f6b331b25f35bdda0c"
+  integrity sha512-un8yYQKKiJ3APW5TCiAGNsYuXqIBRRnE0i738AW9jUZwHrGtr1D/gRgLnxZhaCBb8a4c0LeTvaoaLgWMtIuP8g==
   dependencies:
     lit "^2.0.2"
 

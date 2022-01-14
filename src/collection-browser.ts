@@ -6,6 +6,7 @@ import type {
   InfiniteScrollerCellProviderInterface,
 } from '@internetarchive/infinite-scroller';
 import {
+  Metadata,
   SearchParams,
   SearchServiceInterface,
 } from '@internetarchive/search-service';
@@ -24,7 +25,7 @@ export class CollectionBrowser
   extends LitElement
   implements InfiniteScrollerCellProviderInterface
 {
-  @property({ type: Number }) initialPageNumber: number = 1;
+  @property({ type: Number }) initialPageNumber = 1;
 
   @property({ type: String }) baseNavigationUrl?: string;
 
@@ -43,26 +44,42 @@ export class CollectionBrowser
 
   @property({ type: Number }) pageSize = 50;
 
-  // @property({ type: Number }) pageNumber = 1;
+  /**
+   * This the the number of pages that we want to show.
+   *
+   * The data isn't necessarily loaded for all of the pages, but this lets us
+   * know how many cells we should render.
+   */
+  @state() private pagesToRender = this.initialPageNumber;
 
-  @state() private currentPageNumber = this.initialPageNumber;
+  /**
+   * When we're animated scrolling to the page, we don't want to fetch
+   * all of the pages as it scrolls so this lets us know if we're scrolling
+   */
+  private isScrollingToCell = false;
+
+  private placeholderCellTemplate = html`<loading-tile></loading-tile>`;
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
     const pageNumber = Math.floor(index / this.pageSize) + 1;
     const itemIndex = index % this.pageSize;
     const model = this.dataSource[pageNumber]?.[itemIndex];
-    if (!model) {
-      // if we encounter a model we don't have yet, fetch the page and just
-      // return undefined.. the datasource will be updated once the
-      // page is loaded and the cell will be rendered
+    /**
+     * If we encounter a model we don't have yet and we're not in the middle of an
+     * automated scroll, fetch the page and just return undefined.
+     * The datasource will be updated once the page is loaded and the cell will be rendered.
+     *
+     * We disable it during the automated scroll since we may fetch pages for cells the
+     * user may never see.
+     */
+    if (!model && !this.isScrollingToCell) {
       this.fetchPage(pageNumber);
     }
     return model;
   }
 
   private get tileModelCount() {
-    const tileCount = this.currentPageNumber * this.pageSize;
-    console.debug('tileModelCount', this.currentPageNumber, tileCount);
+    const tileCount = this.pagesToRender * this.pageSize;
     return tileCount;
   }
 
@@ -73,7 +90,7 @@ export class CollectionBrowser
    * fetch data before or after the current page. If we don't have a key
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
-  @state() private dataSource: Record<number, TileModel[]> = {};
+  private dataSource: Record<number, TileModel[]> = {};
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
@@ -90,7 +107,9 @@ export class CollectionBrowser
       <infinite-scroller
         class="${this.displayMode}"
         .cellProvider=${this}
+        .placeholderCellTemplate=${this.placeholderCellTemplate}
         @scrollThresholdReached=${this.scrollThresholdReached}
+        @cellWidthChanged=${this.cellWidthChanged}
       >
       </infinite-scroller>
     `;
@@ -100,27 +119,33 @@ export class CollectionBrowser
     if (changed.has('displayMode')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('dataSource')) {
-      this.infiniteScroller.itemCount = this.tileModelCount;
-      this.infiniteScroller.reload();
-    }
-    if (changed.has('baseQuery')) {
-      this.resetSearch();
-    }
     if (changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
+    if (changed.has('baseQuery')) {
+      this.handleQueryChange();
+    }
+    if (changed.has('pagesToRender')) {
+      this.infiniteScroller.itemCount = this.tileModelCount;
+    }
     if (changed.has('initialPageNumber')) {
-      this.resetSearch();
+      this.pagesToRender = this.initialPageNumber;
+      this.scrollToPage(this.initialPageNumber);
     }
   }
 
+  private cellWidthChanged(e: CustomEvent<{ width: number }>) {
+    (this.shadowRoot?.host as HTMLElement).style.setProperty(
+      '--collectionBrowserCellWidth',
+      `${e.detail.width}px`
+    );
+  }
+
   private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
-    console.debug('sortDirectionChanged', e.detail.direction);
     const sortField = this.sortParam.field;
     const sortDirection = e.detail.direction;
     this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
-    this.resetSearch();
+    this.handleQueryChange();
   }
 
   private displayModeChanged(
@@ -129,27 +154,34 @@ export class CollectionBrowser
     this.displayMode = e.detail.displayMode;
   }
 
-  private async resetSearch() {
+  private async handleQueryChange() {
     this.dataSource = {};
-    this.currentPageNumber = this.initialPageNumber;
-    const cellIndexToScrollTo = this.pageSize * (this.currentPageNumber - 1);
+    this.pagesToRender = this.initialPageNumber;
+    this.scrollToPage(this.initialPageNumber);
+    await this.fetchPage(this.initialPageNumber);
+  }
+
+  private scrollToPage(pageNumber: number) {
+    const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
     // without this setTimeout, Safari just pauses until the `fetchPage` is complete
     // then scrolls to the cell
     setTimeout(() => {
+      this.isScrollingToCell = true;
       this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+      // This timeout is to give the scroll animation time to finish
+      // then updating the infinite scroller once we're done scrolling
+      // There's no scroll animation completion callback so we're
+      // giving it 0.5s to finish.
+      setTimeout(() => {
+        this.isScrollingToCell = false;
+        this.infiniteScroller.reload();
+      }, 500);
     }, 0);
-    await this.fetchPage(this.currentPageNumber);
   }
 
   private pageFetchesInProgress: Set<number> = new Set<number>();
 
   async fetchPage(pageNumber: number) {
-    console.debug(
-      'fetchPage',
-      pageNumber,
-      this.pageFetchesInProgress.has(pageNumber),
-      this.dataSource[pageNumber]
-    );
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
     // if a fetch is already in progress for this page, don't fetch again
@@ -174,12 +206,36 @@ export class CollectionBrowser
     });
     this.pageFetchesInProgress.add(pageNumber);
     const results = await this.searchService?.search(params);
+    const docs = results?.success?.response.docs;
+    if (docs && docs.length > 0) {
+      this.updateDataSource(pageNumber, docs);
+    }
+    this.pageFetchesInProgress.delete(pageNumber);
+  }
+
+  /**
+   * This is useful for determining whether we need to reload the scroller.
+   *
+   * When the fetch completes, we need to reload the scroller if the cells for that
+   * page are visible, but if the page is not currenlty visible, we don't need to reload
+   */
+  private get currentVisiblePageNumbers(): number[] {
+    const visibleCells = this.infiniteScroller.getVisibleCellIndices();
+    const visiblePages = new Set<number>();
+    visibleCells.forEach(cellIndex => {
+      const visiblePage = Math.floor(cellIndex / this.pageSize) + 1;
+      visiblePages.add(visiblePage);
+    });
+    return Array.from(visiblePages);
+  }
+
+  private updateDataSource(pageNumber: number, docs: Metadata[]) {
     // copy our existing datasource so when we set it below, it gets set
     // instead of modifying the existing dataSource since object changes
     // don't trigger a re-render
     const datasource = { ...this.dataSource };
     const tiles: TileModel[] = [];
-    results?.success?.response.docs.forEach(doc => {
+    docs?.forEach(doc => {
       if (!doc.identifier) return;
       tiles.push({
         identifier: doc.identifier,
@@ -195,12 +251,16 @@ export class CollectionBrowser
     });
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
-    this.pageFetchesInProgress.delete(pageNumber);
+    const visiblePages = this.currentVisiblePageNumbers;
+    const needsReload = visiblePages.includes(pageNumber);
+    if (needsReload) {
+      this.infiniteScroller.reload();
+    }
   }
 
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
-    if (!model) return html` <loading-tile></loading-tile> `;
+    if (!model) return undefined;
 
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
@@ -210,10 +270,13 @@ export class CollectionBrowser
     ></tile-dispatcher>`;
   }
 
+  /**
+   * When the user scrolls near to the bottom of the page, fetch the next page
+   * increase the number of pages to render and start fetching data for the new page
+   */
   private scrollThresholdReached() {
-    this.currentPageNumber += 1;
-    console.debug('scrollThresholdReached', this.currentPageNumber);
-    this.fetchPage(this.currentPageNumber);
+    this.pagesToRender += 1;
+    this.fetchPage(this.pagesToRender);
   }
 
   static styles = css`
