@@ -19,7 +19,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@internetarchive/field-parsers": "0.1.1-alpha.1",
-    "@internetarchive/infinite-scroller": "0.0.1-alpha.4",
+    "@internetarchive/infinite-scroller": "0.0.1-alpha.11",
     "@internetarchive/search-service": "0.2.1-alpha.2",
     "@lit/localize": "^0.11.1",
     "lit": "^2.0.2"
