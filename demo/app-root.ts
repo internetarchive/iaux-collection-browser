@@ -72,9 +72,25 @@ export class AppRoot extends LitElement {
         .baseNavigationUrl=${'https://archive.org'}
         .searchService=${this.searchService}
         .baseQuery=${'collection:etree'}
+        @visiblePageChanged=${this.visiblePageChanged}
       >
       </collection-browser>
     `;
+  }
+
+  private currentPage = 1;
+
+  private visiblePageChanged(e: CustomEvent<{ pageNumber: number }>) {
+    const { pageNumber } = e.detail;
+    if (pageNumber === this.currentPage) return;
+    this.currentPage = pageNumber;
+    const url = new URL(window.location.href);
+    if (pageNumber > 1) {
+      url.searchParams.set('page', pageNumber.toString());
+    } else {
+      url.searchParams.delete('page');
+    }
+    window.history.pushState({ page: pageNumber }, '', url.toString());
   }
 
   private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {

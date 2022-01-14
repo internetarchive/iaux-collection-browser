@@ -102,6 +102,7 @@ export class CollectionBrowser
         .placeholderCellTemplate=${this.placeholderCellTemplate}
         @scrollThresholdReached=${this.scrollThresholdReached}
         @cellWidthChanged=${this.cellWidthChanged}
+        @visibleCellsChanged=${this.visibleCellsChanged}
       >
       </infinite-scroller>
     `;
@@ -121,6 +122,24 @@ export class CollectionBrowser
       this.pagesToRender = this.initialPageNumber;
       this.scrollToPage(this.initialPageNumber);
     }
+  }
+
+  private visibleCellsChanged(
+    e: CustomEvent<{ visibleCellIndices: number[] }>
+  ) {
+    if (this.isScrollingToCell) return;
+    const { visibleCellIndices } = e.detail;
+    if (visibleCellIndices.length === 0) return;
+    const lastVisibleCellIndex =
+      visibleCellIndices[visibleCellIndices.length - 1];
+    const lastVisibleCellPage =
+      Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
+    const event = new CustomEvent('visiblePageChanged', {
+      detail: {
+        pageNumber: lastVisibleCellPage,
+      },
+    });
+    this.dispatchEvent(event);
   }
 
   private cellWidthChanged(e: CustomEvent<{ width: number }>) {
