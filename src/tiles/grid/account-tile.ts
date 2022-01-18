@@ -28,7 +28,11 @@ export class UserTile extends LitElement {
       h1 {
         color: black;
         font-size: 16px;
-        margin-top: 0;
+        margin: 0;
+      }
+
+      h2 {
+        margin: 0;
       }
 
       .outter-holder {
@@ -43,30 +47,32 @@ export class UserTile extends LitElement {
 
       .title-holder {
         background-color: pink;
+        margin-bottom: 5px;
       }
 
       .avatar-holder {
         background-color: gray;
+        margin-bottom: 5px;
       }
 
       .avatar {
         background-color: white;
         border-radius: 50%;
-        height: 10vh;
-        width: 10vw;
+        height: 65px;
+        width: 65px;
         display: inline-block;
         margin: 5px;
       }
 
       .credit-holder {
         background-color: greenyellow;
-        height: 30px;
+        height: 50px;
         margin-bottom: 5px;
       }
 
       .status-holder {
         background-color: rebeccapurple;
-        height: 30px;
+        height: 50px;
         margin-bottom: 5px;
       }
     `;
