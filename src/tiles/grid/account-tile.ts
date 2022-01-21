@@ -9,16 +9,23 @@ export class UserTile extends LitElement {
   render() {
     return html`
       <div class="outter-holder">
-        <div class="title-holder">
-          <h1>User Profile</h1>
+        <div class="inner-holder">
+          <div class="title-holder">
+            <h1>Beez Kneez</h1>
+          </div>
+          <div class="avatar-holder">
+            <div class="avatar"></div>
+          </div>
+          <div class="credit-holder">
+            <h3>Archivist Since</h3>
+            <div class="year-holder">
+              <h3>2001</h3>
+            </div>
+          </div>
+          <div class="status-holder">
+            <h1>stats</h1>
+          </div>
         </div>
-        <div class="avatar-holder">
-          <div class="avatar"></div>
-        </div>
-        <div class="credit-holder">
-          <h2>${this.model?.title}</h2>
-        </div>
-        <div class="status-holder"></div>
       </div>
     `;
   }
@@ -35,45 +42,64 @@ export class UserTile extends LitElement {
         margin: 0;
       }
 
+      h3 {
+        font-size: 14px;
+        font-weight: bold;
+        color: #2c2c2c;
+        margin: 0px;
+      }
+
       .outter-holder {
         background-color: #fcf5e6;
         border: 1px #2c2c2c;
         border-radius: 4px;
         box-shadow: 1 1 2 0;
-        height: auto;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        padding: 5px;
+        width: var(--collectionBrowserCellWidth, 180px);
+      }
+
+      .inner-holder {
+        width: calc(var(--collectionBrowserCellWidth) - 10px);
+        height: 96%;
+        display: inline-block;
+        outline: 2px dashed blue;
       }
 
       .title-holder {
-        background-color: pink;
+        height: 40px;
         margin-bottom: 5px;
       }
 
       .avatar-holder {
-        background-color: gray;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .avatar {
-        background-color: white;
+        background-color: #dad8d8;
         border-radius: 50%;
-        height: 65px;
-        width: 65px;
-        display: inline-block;
-        margin: 5px;
+        width: calc(var(--collectionBrowserCellWidth) - 2rem);
+        height: calc(var(--collectionBrowserCellWidth) - 2rem);
+        box-shadow: 1px 1px 2px #888888;
       }
 
       .credit-holder {
-        background-color: greenyellow;
-        height: 50px;
         margin-bottom: 5px;
+        height: 40px;
+      }
+
+      .year-holder {
+        margin: 0px;
       }
 
       .status-holder {
-        background-color: rebeccapurple;
-        height: 50px;
-        margin-bottom: 5px;
+        height: 20px;
       }
     `;
   }
