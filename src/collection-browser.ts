@@ -71,13 +71,13 @@ export class CollectionBrowser
 
   private placeholderCellTemplate = html`<loading-tile></loading-tile>`;
 
-  private tileModelAtCellIndex(): TileModel | undefined {
+  private tileModelAtCellIndex(index: number): TileModel | undefined {
     return {
       identifier: 'banaz',
       title: 'test',
       date: new Date(),
       mediatype: 'account',
-      viewCount: 2,
+      viewCount: index,
       itemCount: 4,
       favCount: 6,
       commentCount: 8,
