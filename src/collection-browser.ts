@@ -296,7 +296,9 @@ export class CollectionBrowser
 
     infinite-scroller.grid {
       --infiniteScrollerCellMinWidth: 16rem;
-      --infiniteScrollerCellMinHeight: 22.5rem;
+      --infiniteScrollerCellMaxWidth: 1fr;
+      --infiniteScrollerCellMinHeight: 22rem;
+      --infiniteScrollerCellMaxHeight: 22rem;
     }
   `;
 }
