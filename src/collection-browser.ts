@@ -286,12 +286,14 @@ export class CollectionBrowser
 
     infinite-scroller.list-compact {
       --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 2rem;
+      --infiniteScrollerCellMinHeight: 6rem;
+      --infiniteScrollerCellMaxHeight: 6rem;
     }
 
     infinite-scroller.list-detail {
       --infiniteScrollerCellMinWidth: 100%;
       --infiniteScrollerCellMinHeight: 10rem;
+      --infiniteScrollerCellMaxHeight: 10rem;
     }
 
     infinite-scroller.grid {
