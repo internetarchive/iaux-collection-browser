@@ -22,8 +22,6 @@ export class CollectionBrowser
   extends LitElement
   implements InfiniteScrollerCellProviderInterface
 {
-  @property({ type: Number }) initialPageNumber = 1;
-
   @property({ type: String }) baseNavigationUrl?: string;
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
@@ -40,6 +38,13 @@ export class CollectionBrowser
   );
 
   @property({ type: Number }) pageSize = 50;
+
+  /**
+   * The page that the consumer wants to load.
+   *
+   * This lets us maintain scroll position if we change queries.
+   */
+  private initialPageNumber = 1;
 
   /**
    * This the the number of pages that we want to show.
@@ -92,6 +97,14 @@ export class CollectionBrowser
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
+  setInitialPageNumber(pageNumber: number, scroll: boolean) {
+    this.initialPageNumber = pageNumber;
+    this.pagesToRender = pageNumber;
+    if (scroll) {
+      this.scrollToPage(pageNumber);
+    }
+  }
+
   render() {
     return html`
       <h1>Collection Browser</h1>
@@ -112,15 +125,14 @@ export class CollectionBrowser
     if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('baseQuery') || changed.has('sortParam')) {
+    if (changed.has('baseQuery')) {
+      this.handleQueryChange();
+    }
+    if (changed.has('sortParam')) {
       this.handleQueryChange();
     }
     if (changed.has('pagesToRender')) {
       this.infiniteScroller.itemCount = this.tileModelCount;
-    }
-    if (changed.has('initialPageNumber')) {
-      this.pagesToRender = this.initialPageNumber;
-      this.scrollToPage(this.initialPageNumber);
     }
   }
 
@@ -149,10 +161,17 @@ export class CollectionBrowser
     );
   }
 
+  // we only want to scroll on the very first query change
+  // so this keeps track of whether we've already set the initial query
+  private initialQueryChangeHappened = false;
+
   private async handleQueryChange() {
     this.dataSource = {};
     this.pagesToRender = this.initialPageNumber;
-    this.scrollToPage(this.initialPageNumber);
+    if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
+      this.scrollToPage(this.initialPageNumber);
+    }
+    this.initialQueryChangeHappened = true;
     await this.fetchPage(this.initialPageNumber);
   }
 

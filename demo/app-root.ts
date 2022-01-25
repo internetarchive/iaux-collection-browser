@@ -32,6 +32,7 @@ export class AppRoot extends LitElement {
     e.preventDefault();
     this.searchQuery = this.baseQueryField.value;
     this.currentPage = this.pageNumberInput.valueAsNumber;
+    this.collectionBrowser.setInitialPageNumber(this.currentPage, true);
   }
 
   protected firstUpdated(): void {
@@ -39,30 +40,16 @@ export class AppRoot extends LitElement {
   }
 
   protected updated(changed: PropertyValues): void {
-    if (changed.has('currentPage')) {
-      console.debug(
-        'currentPage changed',
-        this.currentPage,
-        changed.get('currentPage')
-      );
-      this.currentPageUpdated();
+    if (changed.has('currentPage') && this.currentPage) {
+      this.pageNumberInput.value = this.currentPage.toString();
+      this.updateUrl();
     }
 
     if (changed.has('searchQuery')) {
-      console.debug(
-        'searchQuery changed',
-        this.searchQuery,
-        changed.get('searchQuery')
-      );
       this.queryUpdated();
     }
 
     if (changed.has('sortParam')) {
-      console.debug(
-        'sortParam changed',
-        this.sortParam,
-        changed.get('sortParam')
-      );
       this.sortParamUpdated();
     }
   }
@@ -75,6 +62,7 @@ export class AppRoot extends LitElement {
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
       this.currentPage = parsed;
+      this.collectionBrowser.setInitialPageNumber(parsed, true);
     } else {
       this.currentPage = 1;
     }
@@ -85,7 +73,6 @@ export class AppRoot extends LitElement {
     }
     if (sortQuery) {
       const [field, direction] = sortQuery.split(' ');
-      console.debug('sort query', field, direction);
       this.sortParam = new SortParam(field, direction as SortDirection);
     } else {
       this.sortParam = new SortParam('date', 'desc');
@@ -94,13 +81,6 @@ export class AppRoot extends LitElement {
 
   private queryUpdated() {
     this.collectionBrowser.baseQuery = this.searchQuery;
-    this.updateUrl();
-  }
-
-  private currentPageUpdated() {
-    if (!this.currentPage) return;
-    this.pageNumberInput.value = this.currentPage.toString();
-    this.collectionBrowser.initialPageNumber = this.currentPage;
     this.updateUrl();
   }
 
@@ -183,7 +163,6 @@ export class AppRoot extends LitElement {
   private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
     const sortField = this.collectionBrowser.sortParam.field;
     const sortDirection = e.detail.direction;
-    console.debug('sortDirectionChanged', sortField, sortDirection);
     this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
   }
 
