@@ -72,21 +72,7 @@ export class CollectionBrowser
   private placeholderCellTemplate = html`<loading-tile></loading-tile>`;
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
-    return {
-      identifier: 'banaz',
-      title: 'test',
-      date: new Date(),
-      mediatype: 'account',
-      viewCount: index,
-      itemCount: 4,
-      favCount: 6,
-      commentCount: 8,
-      description: 'test subject',
-      collectionIdentifier: 'personal',
-      collectionName: 'favorites',
-    };
-
-    /* const pageNumber = Math.floor(index / this.pageSize) + 1;
+    const pageNumber = Math.floor(index / this.pageSize) + 1;
     const itemIndex = index % this.pageSize;
     const model = this.dataSource[pageNumber]?.[itemIndex];
     /**
@@ -96,11 +82,11 @@ export class CollectionBrowser
      *
      * We disable it during the automated scroll since we may fetch pages for cells the
      * user may never see.
-     
+     */
     if (!model && !this.isScrollingToCell) {
       this.fetchPage(pageNumber);
     }
-    return model; */
+    return model;
   }
 
   // this is the total number of tiles we expect if

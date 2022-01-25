@@ -67,7 +67,8 @@ export class UserTile extends LitElement {
       .inner-holder {
         width: calc(var(--collectionBrowserCellWidth) - 10px);
         height: 96%;
-        display: inline-block;
+        display: flex;
+        flex-direction: column;
         outline: 2px dashed blue;
       }
 
@@ -81,13 +82,14 @@ export class UserTile extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
+        max-height: 160px;
       }
 
       .avatar {
         background-color: #dad8d8;
         border-radius: 50%;
-        width: calc(var(--collectionBrowserCellWidth) - 2rem);
-        height: calc(var(--collectionBrowserCellWidth) - 2rem);
+        width: 160px;
+        height: 160px;
         box-shadow: 1px 1px 2px #888888;
       }
 
@@ -101,7 +103,7 @@ export class UserTile extends LitElement {
       }
 
       .status-holder {
-        height: 20px;
+        height: 25px;
       }
     `;
   }
