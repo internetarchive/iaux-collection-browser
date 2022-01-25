@@ -167,6 +167,7 @@ export class CollectionBrowser
 
   private async handleQueryChange() {
     this.dataSource = {};
+    this.pageFetchesInProgress.clear();
     this.pagesToRender = this.initialPageNumber;
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
