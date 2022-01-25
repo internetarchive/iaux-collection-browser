@@ -17,7 +17,9 @@ export class UserTile extends LitElement {
             <div class="avatar"></div>
           </div>
           <div class="credit-holder">
-            <h3>Archivist Since</h3>
+            <div class="archivist-since">
+              <h3>Archivist Since</h3>
+            </div>
             <div class="year-holder">
               <h3>2001</h3>
             </div>
