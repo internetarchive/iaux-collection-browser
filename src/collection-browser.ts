@@ -305,21 +305,20 @@ export class CollectionBrowser
 
     infinite-scroller.list-compact {
       --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 6rem;
-      --infiniteScrollerCellMaxHeight: 6rem;
+      --infiniteScrollerCellMinHeight: 5rem;
+      --infiniteScrollerCellMaxHeight: 5rem;
     }
 
     infinite-scroller.list-detail {
       --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 10rem;
-      --infiniteScrollerCellMaxHeight: 10rem;
+      --infiniteScrollerCellMinHeight: 5rem;
     }
 
     infinite-scroller.grid {
-      --infiniteScrollerCellMinWidth: 16rem;
+      --infiniteScrollerCellMinWidth: 18rem;
       --infiniteScrollerCellMaxWidth: 1fr;
-      --infiniteScrollerCellMinHeight: 22rem;
-      --infiniteScrollerCellMaxHeight: 22rem;
+      --infiniteScrollerCellMinHeight: 29rem;
+      --infiniteScrollerCellMaxHeight: 29rem;
     }
   `;
 }
