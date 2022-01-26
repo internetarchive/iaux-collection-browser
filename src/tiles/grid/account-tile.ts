@@ -21,11 +21,22 @@ export class UserTile extends LitElement {
               <h3>Archivist Since</h3>
             </div>
             <div class="year-holder">
-              <h3>2001</h3>
+              <h3>${this.model?.date?.toDateString}</h3>
             </div>
           </div>
           <div class="status-holder">
-            <h1>stats</h1>
+            <div class="patron">
+              <h3>hi</h3>
+            </div>
+            <div class="uploads">
+              <h3>${this.model?.itemCount}</h3>
+            </div>
+            <div class="favorites">
+              <h3>${this.model?.favCount}</h3>
+            </div>
+            <div class="reviews">
+              <h3>${this.model?.commentCount}</h3>
+            </div>
           </div>
         </div>
       </div>
@@ -104,6 +115,28 @@ export class UserTile extends LitElement {
 
       .status-holder {
         height: 25px;
+        display: flex;
+        justify-content: space-evenly;
+      }
+
+      .patron {
+        height: 25px;
+        width: 30px;
+      }
+
+      .uploads {
+        height: 25px;
+        width: 30px;
+      }
+
+      .favorites {
+        height: 25px;
+        width: 30px;
+      }
+
+      .reviews {
+        height: 25px;
+        width: 30px;
       }
     `;
   }
