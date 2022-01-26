@@ -3,6 +3,7 @@ import type { MediaType } from '@internetarchive/field-parsers';
 export interface TileModel {
   identifier: string;
   title: string;
+  addeddate?: Date;
   date?: Date;
   mediatype: MediaType;
   viewCount: number;
