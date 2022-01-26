@@ -94,10 +94,6 @@ export class SortFilterBar extends LitElement {
   }
 
   static styles = css`
-    :host {
-      color: white;
-    }
-
     #sort-bar {
       display: flex;
       justify-content: space-between;

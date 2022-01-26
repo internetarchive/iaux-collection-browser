@@ -195,8 +195,10 @@ export class AppRoot extends LitElement {
       top: 0;
       left: 0;
       z-index: 10;
-      background-color: rgba(0, 0, 0, 0.9);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;
+      border: 1px solid black;
     }
   `;
 }
