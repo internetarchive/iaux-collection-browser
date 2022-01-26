@@ -11,7 +11,7 @@ export class UserTile extends LitElement {
       <div class="outter-holder">
         <div class="inner-holder">
           <div class="title-holder">
-            <h1>Beez Kneez</h1>
+            <h1>${this.model?.identifier}</h1>
           </div>
           <div class="avatar-holder">
             <div class="avatar"></div>
@@ -21,7 +21,7 @@ export class UserTile extends LitElement {
               <h3>Archivist Since</h3>
             </div>
             <div class="year-holder">
-              <h3>${this.model?.date?.toDateString}</h3>
+              <h3>${this.model?.addeddate?.getFullYear()}</h3>
             </div>
           </div>
           <div class="status-holder">
@@ -80,7 +80,6 @@ export class UserTile extends LitElement {
         height: 96%;
         display: flex;
         flex-direction: column;
-        outline: 2px dashed blue;
       }
 
       .title-holder {
