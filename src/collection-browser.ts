@@ -32,17 +32,12 @@ export class CollectionBrowser
 
   @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
 
-  @property({ type: Object }) sortParam: SortParam = new SortParam(
-    'date',
-    'desc'
-  );
+  @property({ type: Object }) sortParam?: SortParam;
 
   @property({ type: Number }) pageSize = 50;
 
   /**
    * The page that the consumer wants to load.
-   *
-   * This lets us maintain scroll position if we change queries.
    */
   private initialPageNumber = 1;
 
@@ -59,6 +54,11 @@ export class CollectionBrowser
    * all of the pages as it scrolls so this lets us know if we're scrolling
    */
   private isScrollingToCell = false;
+
+  /**
+   * When we've reached the end of the data, stop trying to fetch more
+   */
+  private endOfDataReached = false;
 
   private placeholderCellTemplate = html`<loading-tile></loading-tile>`;
 
@@ -80,9 +80,21 @@ export class CollectionBrowser
     return model;
   }
 
-  private get tileModelCount() {
-    const tileCount = this.pagesToRender * this.pageSize;
-    return tileCount;
+  // this is the total number of tiles we expect if
+  // the data returned is a full page worth
+  // this is useful for putting in placeholders for the expected number of tiles
+  private get estimatedTileCount(): number {
+    return this.pagesToRender * this.pageSize;
+  }
+
+  // this is the actual number of tiles in the datasource,
+  // which is useful for removing excess placeholder tiles
+  // once we reached the end of the data
+  private get actualTileCount(): number {
+    return Object.keys(this.dataSource).reduce(
+      (acc, page) => acc + this.dataSource[page].length,
+      0
+    );
   }
 
   /**
@@ -92,17 +104,20 @@ export class CollectionBrowser
    * fetch data before or after the current page. If we don't have a key
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
-  private dataSource: Record<number, TileModel[]> = {};
+  private dataSource: Record<string, TileModel[]> = {};
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
-  setInitialPageNumber(pageNumber: number, scroll: boolean) {
+  /**
+   *
+   * @param pageNumber
+   * @param scroll
+   */
+  goToPage(pageNumber: number) {
     this.initialPageNumber = pageNumber;
     this.pagesToRender = pageNumber;
-    if (scroll) {
-      this.scrollToPage(pageNumber);
-    }
+    this.scrollToPage(pageNumber);
   }
 
   render() {
@@ -125,17 +140,23 @@ export class CollectionBrowser
     if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('baseQuery')) {
-      this.handleQueryChange();
-    }
-    if (changed.has('sortParam')) {
+    if (changed.has('baseQuery') || changed.has('sortParam')) {
       this.handleQueryChange();
     }
     if (changed.has('pagesToRender')) {
-      this.infiniteScroller.itemCount = this.tileModelCount;
+      if (!this.endOfDataReached) {
+        this.infiniteScroller.itemCount = this.estimatedTileCount;
+      }
     }
   }
 
+  /**
+   * When the visible cells change from the infinite scroller, we want to emit
+   * which page is currently visible so the consumer can update its UI or the URL
+   *
+   * @param e
+   * @returns
+   */
   private visibleCellsChanged(
     e: CustomEvent<{ visibleCellIndices: number[] }>
   ) {
@@ -165,9 +186,17 @@ export class CollectionBrowser
   // so this keeps track of whether we've already set the initial query
   private initialQueryChangeHappened = false;
 
+  // this lets us store the query key so we know if it's actually changed or not
+  private previousQueryKey?: string;
+
   private async handleQueryChange() {
+    // only reset if the query has actually changed
+    if (this.pageFetchQueryKey === this.previousQueryKey) return;
+    this.previousQueryKey = this.pageFetchQueryKey;
+
     this.dataSource = {};
-    this.pageFetchesInProgress.clear();
+    this.pageFetchesInProgress = {};
+    this.endOfDataReached = false;
     this.pagesToRender = this.initialPageNumber;
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
@@ -194,14 +223,34 @@ export class CollectionBrowser
     }, 0);
   }
 
-  private pageFetchesInProgress: Set<number> = new Set<number>();
+  /**
+   * The query key is a string that uniquely identifies the current query
+   *
+   * This lets us keep track of queries so we don't persist data that's
+   * no longer relevant.
+   */
+  private get pageFetchQueryKey() {
+    return `${this.baseQuery}-${this.sortParam?.asString}`;
+  }
+
+  // this maps the query to the pages being fetched for that query
+  private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
-    // if a fetch is already in progress for this page, don't fetch again
-    if (this.pageFetchesInProgress.has(pageNumber)) return;
 
+    if (this.endOfDataReached) return;
+
+    // if a fetch is already in progress for this query and page, don't fetch again
+    const { pageFetchQueryKey } = this;
+    const pageFetches =
+      this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
+    if (pageFetches.has(pageNumber)) return;
+    pageFetches.add(pageNumber);
+    this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
+
+    const sortParams = this.sortParam ? [this.sortParam] : [];
     const params = new SearchParams({
       query: this.baseQuery ?? '',
       fields: [
@@ -218,15 +267,32 @@ export class CollectionBrowser
       ],
       page: pageNumber,
       rows: this.pageSize,
-      sort: [this.sortParam],
+      sort: sortParams,
     });
-    this.pageFetchesInProgress.add(pageNumber);
     const results = await this.searchService?.search(params);
-    const docs = results?.success?.response.docs;
+    const success = results?.success;
+
+    if (!success) return;
+
+    // this is checking to see if the query has changed since the data was fetched
+    // if so, we just want to discard the data since there should be a new query
+    // right behind it
+    const searchQuery = success.responseHeader.params.qin;
+    const searchSort = success.responseHeader.params.sort;
+    const queryChangedSinceFetch =
+      searchQuery !== this.baseQuery || searchSort !== this.sortParam?.asString;
+    if (queryChangedSinceFetch) return;
+
+    const { docs } = success.response;
     if (docs && docs.length > 0) {
       this.updateDataSource(pageNumber, docs);
     }
-    this.pageFetchesInProgress.delete(pageNumber);
+    if (docs.length < this.pageSize) {
+      this.endOfDataReached = true;
+      // this updates the infinite scroller to show the actual size
+      this.infiniteScroller.itemCount = this.actualTileCount;
+    }
+    this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
   }
 
   /**
@@ -245,6 +311,12 @@ export class CollectionBrowser
     return Array.from(visiblePages);
   }
 
+  /**
+   * Update the datasource from the fetch response
+   *
+   * @param pageNumber
+   * @param docs
+   */
   private updateDataSource(pageNumber: number, docs: Metadata[]) {
     // copy our existing datasource so when we set it below, it gets set
     // instead of modifying the existing dataSource since object changes

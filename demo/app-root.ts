@@ -31,8 +31,14 @@ export class AppRoot extends LitElement {
   private searchPressed(e: Event) {
     e.preventDefault();
     this.searchQuery = this.baseQueryField.value;
+    this.currentPage = 1;
+    this.collectionBrowser.goToPage(this.currentPage ?? 1);
+  }
+
+  private changePagePressed(e: Event) {
+    e.preventDefault();
     this.currentPage = this.pageNumberInput.valueAsNumber;
-    this.collectionBrowser.setInitialPageNumber(this.currentPage, true);
+    this.collectionBrowser.goToPage(this.currentPage);
   }
 
   protected firstUpdated(): void {
@@ -62,7 +68,7 @@ export class AppRoot extends LitElement {
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
       this.currentPage = parsed;
-      this.collectionBrowser.setInitialPageNumber(parsed, true);
+      this.collectionBrowser.goToPage(parsed);
     } else {
       this.currentPage = 1;
     }
@@ -125,8 +131,12 @@ export class AppRoot extends LitElement {
         <form @submit=${this.searchPressed}>
           Query:
           <input type="text" id="base-query-field" .value=${this.searchQuery} />
-          Page: <input type="number" value="1" id="page-number-input" />
           <input type="submit" value="Search" />
+        </form>
+
+        <form @submit=${this.changePagePressed}>
+          Page: <input type="number" value="1" id="page-number-input" />
+          <input type="submit" value="Go" />
         </form>
 
         <button
@@ -147,7 +157,6 @@ export class AppRoot extends LitElement {
       <collection-browser
         .baseNavigationUrl=${'https://archive.org'}
         .searchService=${this.searchService}
-        .baseQuery=${'collection:etree'}
         @visiblePageChanged=${this.visiblePageChanged}
       >
       </collection-browser>
@@ -161,9 +170,11 @@ export class AppRoot extends LitElement {
   }
 
   private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
-    const sortField = this.collectionBrowser.sortParam.field;
+    const sortField = this.collectionBrowser.sortParam?.field ?? 'date';
     const sortDirection = e.detail.direction;
     this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
+    this.currentPage = 1;
+    this.collectionBrowser.goToPage(this.currentPage);
   }
 
   private displayModeChanged(
