@@ -2,6 +2,11 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { TileModel } from '../../models';
 
+import accountIcon from './icons/account';
+import favoriteFilledIcon from './icons/favorite-filled';
+import reviewsIcon from './icons/reviews';
+import uploadIcon from './icons/upload';
+
 @customElement('account-tile')
 export class UserTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
@@ -14,7 +19,11 @@ export class UserTile extends LitElement {
             <h1>${this.model?.identifier}</h1>
           </div>
           <div class="avatar-holder">
-            <div class="avatar"></div>
+            <div
+              class="avatar"
+              style="background: url('https://archive.org/services/img/${this
+                .model?.identifier}'); background-position: center;"
+            ></div>
           </div>
           <div class="credit-holder">
             <div class="archivist-since">
@@ -25,16 +34,17 @@ export class UserTile extends LitElement {
             </div>
           </div>
           <div class="status-holder">
-            <div class="patron">
-              <h3>hi</h3>
-            </div>
-            <div class="uploads">
+            <div class="patron">${accountIcon}</div>
+            <div class="stat-icons">
+              ${uploadIcon}
               <h3>${this.model?.itemCount}</h3>
             </div>
-            <div class="favorites">
+            <div class="stat-icons">
+              ${favoriteFilledIcon}
               <h3>${this.model?.favCount}</h3>
             </div>
-            <div class="reviews">
+            <div class="stat-icons">
+              ${reviewsIcon}
               <h3>${this.model?.commentCount}</h3>
             </div>
           </div>
@@ -96,7 +106,7 @@ export class UserTile extends LitElement {
       }
 
       .avatar {
-        background-color: #dad8d8;
+        background-position: center;
         border-radius: 50%;
         width: 160px;
         height: 160px;
@@ -120,22 +130,12 @@ export class UserTile extends LitElement {
 
       .patron {
         height: 25px;
-        width: 30px;
+        width: 25px;
       }
 
-      .uploads {
-        height: 25px;
-        width: 30px;
-      }
-
-      .favorites {
-        height: 25px;
-        width: 30px;
-      }
-
-      .reviews {
-        height: 25px;
-        width: 30px;
+      .stats-icon {
+        height: 10px;
+        width: 10px;
       }
     `;
   }
