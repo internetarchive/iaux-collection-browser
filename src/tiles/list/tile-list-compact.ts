@@ -16,7 +16,6 @@ export class TileListCompact extends LitElement {
   static get styles() {
     return css`
       h1 {
-        color: white;
         margin-top: 0;
       }
     `;
