@@ -375,7 +375,6 @@ export class CollectionBrowser
 
     infinite-scroller {
       display: block;
-      --infiniteScrollerCellOutline: 1px solid #666;
     }
 
     infinite-scroller.list-compact {
