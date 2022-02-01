@@ -11,28 +11,22 @@ export class CollectionTile extends LitElement {
 
   render() {
     return html`
-      <div
-        id="container"
-        @mouseover=${() => {
-          console.debug('mouseover');
-        }}
-        @focus=${() => {
-          console.debug('focus');
-        }}
-      >
+      <div id="container">
         <div id="collection-image-title">
-          <div
-            id="collection-image"
-            style="background-image:url('https://archive.org/services/img/${this
-              .model?.identifier}')"
-          ></div>
           <div id="collection-title">${this.model?.title}</div>
+          <div id="collection-image-container">
+            <div
+              id="collection-image"
+              style="background-image:url('https://archive.org/services/img/${this
+                .model?.identifier}')"
+            ></div>
+          </div>
         </div>
         <div id="item-count-container">
           <div id="item-count-image-container">${collectionIcon}</div>
           <div id="item-count-stacked-text">
             <div id="item-count">${this.model?.itemCount.toLocaleString()}</div>
-            <div id="items-text">${msg('ITEMS')}</div>
+            <div id="items-text">${msg('items')}</div>
           </div>
         </div>
       </div>
@@ -43,27 +37,40 @@ export class CollectionTile extends LitElement {
     const cornerRadiusCss = css`var(--collectionTileCornerRadius, 4px)`;
 
     return css`
+      #collection-image-container {
+        display: flex;
+        justify-content: center;
+        flex: 1;
+      }
+
       #collection-image {
-        width: 9rem;
-        height: 9rem;
-        border-radius: 4.5rem;
+        width: 16rem;
+        height: 16rem;
+        border-radius: 0.8rem;
         overflow: hidden;
-        margin-bottom: 1.5rem;
+        box-shadow: 1px 1px 2px 0px;
+        object-fit: cover;
         background-position: center;
         background-size: cover;
       }
 
       #collection-image-title {
         background-color: #666;
-        padding: 1.5rem;
+        border: 1px solid #2c2c2c;
+        padding: 0.5rem;
         border-top-left-radius: ${cornerRadiusCss};
         border-top-right-radius: ${cornerRadiusCss};
+        display: flex;
+        flex-direction: column;
+        flex: 1;
       }
 
       #collection-title {
-        font-weight: 200;
-        font-size: 1.8rem;
-        letter-spacing: 1px;
+        font-weight: bold;
+        color: #fff;
+        font-size: 1.6rem;
+        text-align: center;
+        margin-bottom: 0.5rem;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
@@ -73,20 +80,32 @@ export class CollectionTile extends LitElement {
         height: 4rem;
       }
 
+      #container {
+        box-shadow: 1px 1px 2px 0px;
+        border-radius: ${cornerRadiusCss};
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
       #container:hover #collection-title {
         text-decoration: underline;
       }
 
       #container:hover #collection-image-title {
-        background-color: #8eb8ea;
+        background-color: #757575;
       }
 
       #item-count-container {
         background-color: #444;
+        border-bottom: 1px solid #2c2c2c;
+        border-left: 1px solid #2c2c2c;
+        border-right: 1px solid #2c2c2c;
         border-bottom-left-radius: ${cornerRadiusCss};
         border-bottom-right-radius: ${cornerRadiusCss};
         display: flex;
-        padding: 1rem;
+        padding: 0rem 0.5rem;
+        height: 5.5rem;
         align-items: center;
       }
 
@@ -94,16 +113,23 @@ export class CollectionTile extends LitElement {
         margin-right: 0.5rem;
       }
 
+      #item-count-stacked-text {
+        display: flex;
+        align-items: baseline;
+        color: #fff;
+      }
       #item-count-image-container svg {
-        height: 3rem;
+        height: 2.5rem;
+        align-items: baseline;
       }
 
       #container:hover #item-count-container {
-        background-color: #4a90e2;
+        background-color: #575757;
       }
 
       #item-count {
         font-size: 1.4rem;
+        font-weight: bold;
       }
 
       #item-count-image {
@@ -113,7 +139,9 @@ export class CollectionTile extends LitElement {
       }
 
       #items-text {
-        font-size: 1rem;
+        font-size: 1.4rem;
+        font-weight: bold;
+        margin-left: 0.5rem;
       }
     `;
   }
