@@ -13,7 +13,7 @@ export class UserTile extends LitElement {
 
   render() {
     return html`
-      <div class="outter-holder">
+      <div class="outer-holder">
         <div class="inner-holder">
           <div class="title-holder">
             <h1>${this.model?.identifier}</h1>
@@ -21,8 +21,8 @@ export class UserTile extends LitElement {
           <div class="avatar-holder">
             <div
               class="avatar"
-              style="background: url('https://archive.org/services/img/${this
-                .model?.identifier}'); background-position: center;"
+              style="background-image: url('https://archive.org/services/img/${this
+                .model?.identifier}')"
             ></div>
           </div>
           <div class="credit-holder">
@@ -34,16 +34,16 @@ export class UserTile extends LitElement {
             </div>
           </div>
           <div class="status-holder">
-            <div class="patron">${accountIcon}</div>
-            <div class="stat-icons">
+            <div class="patron-icon">${accountIcon}</div>
+            <div class="stat-icon">
               ${uploadIcon}
               <h3>${this.model?.itemCount}</h3>
             </div>
-            <div class="stat-icons">
+            <div class="stat-icon">
               ${favoriteFilledIcon}
               <h3>${this.model?.favCount}</h3>
             </div>
-            <div class="stat-icons">
+            <div class="stat-icon">
               ${reviewsIcon}
               <h3>${this.model?.commentCount}</h3>
             </div>
@@ -61,10 +61,6 @@ export class UserTile extends LitElement {
         margin: 0;
       }
 
-      h2 {
-        margin: 0;
-      }
-
       h3 {
         font-size: 14px;
         font-weight: bold;
@@ -72,17 +68,17 @@ export class UserTile extends LitElement {
         margin: 0px;
       }
 
-      .outter-holder {
+      .outer-holder {
         background-color: #fcf5e6;
         border: 1px #2c2c2c;
         border-radius: 4px;
-        box-shadow: 1 1 2 0;
+        box-shadow: 1px 1px 2px 0px;
         height: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
         text-align: center;
-        width: var(--collectionBrowserCellWidth, 180px);
+        width: 100%;
       }
 
       .inner-holder {
@@ -102,11 +98,10 @@ export class UserTile extends LitElement {
         display: flex;
         align-items: center;
         justify-content: center;
-        max-height: 160px;
       }
 
       .avatar {
-        background-position: center;
+        background-position: 50% 50%;
         border-radius: 50%;
         width: 160px;
         height: 160px;
@@ -128,12 +123,12 @@ export class UserTile extends LitElement {
         justify-content: space-evenly;
       }
 
-      .patron {
+      .patron-icon {
         height: 25px;
         width: 25px;
       }
 
-      .stats-icon {
+      .stat-icon {
         height: 10px;
         width: 10px;
       }
