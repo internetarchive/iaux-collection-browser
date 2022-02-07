@@ -115,10 +115,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1-alpha.1.tgz"
   integrity sha512-FBuOkxiSKk20Cn5bbyUkTPO1Uk+/XgoCZwwcdFDQNQEZnT7bTiJapfggxUVvRwQvF9IWMdzXvWUvtmgzKJKFRA==
 
-"@internetarchive/infinite-scroller@^0.0.1-alpha.13":
-  version "0.0.1-alpha.13"
-  resolved "https://registry.npmjs.org/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.13.tgz"
-  integrity sha512-pTs64xudFpvAUtsFB6DnTY3szBZuCB2tqP+StOTYMo1LCPKOePXVBtWs74Fe9IymHgyPFQt4qA+I4SkhxRX9zA==
+"@internetarchive/infinite-scroller@0.0.1-alpha.14":
+  version "0.0.1-alpha.14"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.14.tgz#224dfb43e2bde3f68ea3aae123cbd0c485bb2d94"
+  integrity sha512-+I3oWRyP6/Z5gpwh0POAHrcTiUGAUCBuE4UU6826TUF8/+7JBR9hF2WNpQnW/H/jYz6cUx9fZrPxVGuSZAAO7Q==
   dependencies:
     lit "^2.0.2"
 
