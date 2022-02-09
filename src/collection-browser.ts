@@ -264,6 +264,7 @@ export class CollectionBrowser
         'description',
         'date',
         'addeddate',
+        'creator',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -336,6 +337,7 @@ export class CollectionBrowser
         description: doc.description?.value,
         date: doc.date?.value,
         addeddate: doc.addeddate?.value,
+        creator: doc.creator?.value,
       });
     });
     datasource[pageNumber] = tiles;
