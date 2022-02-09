@@ -335,7 +335,7 @@ export class CollectionBrowser
         itemCount: doc.item_count?.value ?? 0,
         description: doc.description?.value,
         date: doc.date?.value,
-        addeddate: doc.addeddate?.value,
+        dateAdded: doc.addeddate?.value,
       });
     });
     datasource[pageNumber] = tiles;
