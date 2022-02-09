@@ -10,12 +10,17 @@ import {
   SearchParams,
   SearchServiceInterface,
 } from '@internetarchive/search-service';
-import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
+import {
+  AggregateSearchParams,
+  SortParam,
+} from '@internetarchive/search-service/dist/src/search-params';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
 import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
+import './collection-facets';
+import { CollectionFacets } from './collection-facets';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -35,6 +40,8 @@ export class CollectionBrowser
   @property({ type: Object }) sortParam?: SortParam;
 
   @property({ type: Number }) pageSize = 50;
+
+  @query('collection-facets') collectionFacets!: CollectionFacets;
 
   /**
    * The page that the consumer wants to load.
@@ -124,15 +131,22 @@ export class CollectionBrowser
     return html`
       <h1>Collection Browser</h1>
 
-      <infinite-scroller
-        class="${this.displayMode}"
-        .cellProvider=${this}
-        .placeholderCellTemplate=${this.placeholderCellTemplate}
-        @scrollThresholdReached=${this.scrollThresholdReached}
-        @cellWidthChanged=${this.cellWidthChanged}
-        @visibleCellsChanged=${this.visibleCellsChanged}
-      >
-      </infinite-scroller>
+      <div id="content-container">
+        <div id="facets-container">
+          <collection-facets></collection-facets>
+        </div>
+        <div id="infinite-scroller-container">
+          <infinite-scroller
+            class="${this.displayMode}"
+            .cellProvider=${this}
+            .placeholderCellTemplate=${this.placeholderCellTemplate}
+            @scrollThresholdReached=${this.scrollThresholdReached}
+            @cellWidthChanged=${this.cellWidthChanged}
+            @visibleCellsChanged=${this.visibleCellsChanged}
+          >
+          </infinite-scroller>
+        </div>
+      </div>
     `;
   }
 
@@ -202,7 +216,75 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
-    await this.fetchPage(this.initialPageNumber);
+
+    await Promise.all([
+      this.fetchPage(this.initialPageNumber),
+      this.fetchFacets(),
+    ]);
+  }
+
+  // 'subjectSorter',
+  // 'mediatypeSorter',
+  // 'languageSorter',
+  // 'creatorSorter',
+  // 'collection' => Facet::MAX_SHOW_COLLECTION,
+  // 'year' => Facet::MAX_SHOW_YEAR,
+
+  // const MAX_SHOW = 6;
+  // const MAX_SHOW_COLLECTION = 12;
+  // const MAX_SHOW_TXT = 50; // "search inside" API has *actual* lower number; we wanna pass thru facets ;-)
+  // const MAX_SHOW_YEAR = 50; // "year" facet (up to 50 entries)
+
+  // // MORF == MORe Facets 8-)
+  // const MORF_MAX_FACETS = 5000;
+  // const MORF_MAX_FACETS_NO_JS = 1000;
+
+  // const KEY_YEAR = 'year';
+
+  // // YEAR histogram
+  // const YEAR_HISTOGRAM_BIN_COUNT_TARGET = 50;
+
+  private async fetchFacets() {
+    const aggregations = new AggregateSearchParams([
+      {
+        field: 'subjectSorter',
+        size: 6,
+      },
+      {
+        field: 'mediatypeSorter',
+        size: 6,
+      },
+      {
+        field: 'languageSorter',
+        size: 6,
+      },
+      {
+        field: 'creatorSorter',
+        size: 6,
+      },
+      {
+        field: 'collection',
+        size: 12,
+      },
+      {
+        field: 'year',
+        size: 50,
+      },
+    ]);
+
+    const params = new SearchParams({
+      query: this.baseQuery ?? '',
+      fields: ['identifier'],
+      aggregations,
+      rows: 0,
+    });
+    const results = await this.searchService?.search(params);
+    // const success = results?.success;
+
+    console.debug('fetchFacets', results?.success);
+
+    this.collectionFacets.aggregations =
+      results?.success?.response.aggregations;
   }
 
   private scrollToPage(pageNumber: number) {
@@ -371,6 +453,14 @@ export class CollectionBrowser
   static styles = css`
     :host {
       display: block;
+    }
+
+    #content-container {
+      display: flex;
+    }
+
+    #infinite-scroller-container {
+      flex: 1;
     }
 
     infinite-scroller {
