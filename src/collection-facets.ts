@@ -24,18 +24,36 @@ export class CollectionFacets extends LitElement {
     const title = this.getTitleFromKey(key);
     return html`
       <h2>${title}</h2>
-      ${buckets.map(
+      ${buckets.slice(0, 5).map(
         bucket => html`
           <label class="facet-row">
             <div class="facet-checkbox">
-              <input type="checkbox" name="${title}" .value=${bucket.key} />
+              <input
+                type="checkbox"
+                .name=${title}
+                .value=${bucket.key}
+                @click=${this.facetToggled}
+              />
             </div>
             <div class="facet-title">${bucket.key}</div>
-            <div clcass="facet-count">${bucket.doc_count}</div>
+            <div class="facet-count">${bucket.doc_count}</div>
           </label>
         `
       )}
     `;
+  }
+
+  private facetToggled(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const { name, value, checked } = target;
+    const eventName = checked ? 'facetChecked' : 'facetUnchecked';
+    const event = new CustomEvent<{ name: string; value: string }>(eventName, {
+      detail: {
+        name,
+        value,
+      },
+    });
+    this.dispatchEvent(event);
   }
 
   /**
@@ -62,6 +80,10 @@ export class CollectionFacets extends LitElement {
 
       .facet-title {
         flex: 1;
+      }
+
+      .facet-count {
+        margin-left: 0.5rem;
       }
     `;
   }

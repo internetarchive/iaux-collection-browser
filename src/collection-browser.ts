@@ -133,7 +133,10 @@ export class CollectionBrowser
 
       <div id="content-container">
         <div id="facets-container">
-          <collection-facets></collection-facets>
+          <collection-facets
+            @facetChecked=${this.facetChecked}
+            @facetUnchecked=${this.facetUnchecked}
+          ></collection-facets>
         </div>
         <div id="infinite-scroller-container">
           <infinite-scroller
@@ -154,8 +157,15 @@ export class CollectionBrowser
     if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('baseQuery') || changed.has('sortParam')) {
+    if (
+      changed.has('baseQuery') ||
+      changed.has('sortParam') ||
+      changed.has('selectedFacets')
+    ) {
       this.handleQueryChange();
+    }
+    if (changed.has('selectedFacets')) {
+      console.debug('selected facets changed');
     }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
@@ -223,6 +233,79 @@ export class CollectionBrowser
     ]);
   }
 
+  // @state() private selectedFacets = new Map<string, Set<string>>();
+  @state() private selectedFacets: Record<string, string[]> = {};
+
+  private get fullQuery(): string | undefined {
+    if (!this.baseQuery) return undefined;
+    let fullQuery = this.baseQuery;
+    const { facetQuery } = this;
+    if (facetQuery !== '') {
+      fullQuery += ` AND ${facetQuery}`;
+    }
+    return fullQuery;
+  }
+
+  private get facetQuery(): string {
+    const facetQuery = [];
+    for (const [facetName, selectedValues] of Object.entries(
+      this.selectedFacets
+    )) {
+      const values: string[] = [];
+      console.debug('selected values', values);
+      for (const value of selectedValues) {
+        values.push(`${facetName}:${value}`);
+      }
+      const valueQuery = values.join(' OR ');
+      console.debug('valueQuery', valueQuery);
+      facetQuery.push(valueQuery);
+    }
+    return facetQuery.join(' AND ');
+  }
+
+  facetChecked(e: CustomEvent<{ name: string; value: string }>) {
+    // this.baseQuery = this.baseQuery.addFilter(e.detail.name, e.detail.value);
+    // const currentQuery = this.baseQuery ?? '';
+
+    const { selectedFacets } = this;
+    const facetClone = { ...selectedFacets };
+    const currentFacetValues = facetClone[e.detail.name];
+    if (currentFacetValues) {
+      currentFacetValues.push(e.detail.value);
+      facetClone[e.detail.name] = currentFacetValues;
+    } else {
+      facetClone[e.detail.name] = [e.detail.value];
+    }
+    this.selectedFacets = facetClone;
+    // const updatedQuery = `${currentQuery} AND ${e.detail.name}:${e.detail.value}`;
+    // this.baseQuery = updatedQuery;
+    // this.
+    console.debug('selected, facetquery', this.selectedFacets, this.facetQuery);
+    // this.requestUpdate();
+  }
+
+  facetUnchecked(e: CustomEvent<{ name: string; value: string }>) {
+    const { selectedFacets } = this;
+    const facetClone = { ...selectedFacets };
+    let currentFacetValues = selectedFacets[e.detail.name];
+    if (currentFacetValues) {
+      currentFacetValues = currentFacetValues.filter(
+        el => el !== e.detail.value
+      );
+      facetClone[e.detail.name] = currentFacetValues;
+      if (currentFacetValues.length === 0) {
+        delete facetClone[e.detail.name];
+      }
+    }
+    this.selectedFacets = facetClone;
+    console.debug(
+      'unselected, facetquery',
+      this.selectedFacets,
+      this.facetQuery
+    );
+    // this.requestUpdate();
+  }
+
   // 'subjectSorter',
   // 'mediatypeSorter',
   // 'languageSorter',
@@ -245,6 +328,8 @@ export class CollectionBrowser
   // const YEAR_HISTOGRAM_BIN_COUNT_TARGET = 50;
 
   private async fetchFacets() {
+    if (!this.fullQuery) return;
+
     const aggregations = new AggregateSearchParams([
       {
         field: 'subjectSorter',
@@ -273,7 +358,7 @@ export class CollectionBrowser
     ]);
 
     const params = new SearchParams({
-      query: this.baseQuery ?? '',
+      query: this.fullQuery,
       fields: ['identifier'],
       aggregations,
       rows: 0,
@@ -312,13 +397,15 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.baseQuery}-${this.sortParam?.asString}`;
+    return `${this.fullQuery}-${this.sortParam?.asString}`;
   }
 
   // this maps the query to the pages being fetched for that query
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
+    if (!this.fullQuery) return;
+
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
 
@@ -334,7 +421,7 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params = new SearchParams({
-      query: this.baseQuery ?? '',
+      query: this.fullQuery,
       fields: [
         'identifier',
         'title',
@@ -362,7 +449,7 @@ export class CollectionBrowser
     const searchQuery = success.responseHeader.params.qin;
     const searchSort = success.responseHeader.params.sort;
     const queryChangedSinceFetch =
-      searchQuery !== this.baseQuery || searchSort !== this.sortParam?.asString;
+      searchQuery !== this.fullQuery || searchSort !== this.sortParam?.asString;
     if (queryChangedSinceFetch) return;
 
     const { docs } = success.response;
