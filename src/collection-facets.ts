@@ -1,6 +1,7 @@
 import { Aggregation } from '@internetarchive/search-service';
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -22,9 +23,12 @@ export class CollectionFacets extends LitElement {
   getFacetTemplate(key: string, aggregation: Aggregation) {
     const buckets = aggregation?.buckets ?? [];
     const title = this.getTitleFromKey(key);
+    const visibleBuckets = buckets.slice(0, 5);
     return html`
       <h2>${title}</h2>
-      ${buckets.slice(0, 5).map(
+      ${repeat(
+        visibleBuckets,
+        bucket => `${title}:${bucket.key}`,
         bucket => html`
           <label class="facet-row">
             <div class="facet-checkbox">

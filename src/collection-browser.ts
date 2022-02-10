@@ -131,6 +131,14 @@ export class CollectionBrowser
     return html`
       <h1>Collection Browser</h1>
 
+      <div id="query">
+        <ul>
+          <li>Base Query: ${this.baseQuery}</li>
+          <li>Facet Query: ${this.facetQuery}</li>
+          <li>Full Query: ${this.fullQuery}</li>
+        </ul>
+      </div>
+
       <div id="content-container">
         <div id="facets-container">
           <collection-facets
@@ -233,34 +241,31 @@ export class CollectionBrowser
     ]);
   }
 
-  // @state() private selectedFacets = new Map<string, Set<string>>();
   @state() private selectedFacets: Record<string, string[]> = {};
 
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
     let fullQuery = this.baseQuery;
     const { facetQuery } = this;
-    if (facetQuery !== '') {
+    if (facetQuery) {
       fullQuery += ` AND ${facetQuery}`;
     }
     return fullQuery;
   }
 
-  private get facetQuery(): string {
+  private get facetQuery(): string | undefined {
     const facetQuery = [];
     for (const [facetName, selectedValues] of Object.entries(
       this.selectedFacets
     )) {
       const values: string[] = [];
-      console.debug('selected values', values);
       for (const value of selectedValues) {
-        values.push(`${facetName}:${value}`);
+        values.push(`${facetName}:"${value}"`);
       }
       const valueQuery = values.join(' OR ');
-      console.debug('valueQuery', valueQuery);
-      facetQuery.push(valueQuery);
+      facetQuery.push(`(${valueQuery})`);
     }
-    return facetQuery.join(' AND ');
+    return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
   }
 
   facetChecked(e: CustomEvent<{ name: string; value: string }>) {
@@ -361,7 +366,7 @@ export class CollectionBrowser
       query: this.fullQuery,
       fields: ['identifier'],
       aggregations,
-      rows: 0,
+      rows: 1,
     });
     const results = await this.searchService?.search(params);
     // const success = results?.success;
