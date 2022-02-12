@@ -30,7 +30,7 @@ export class UserTile extends LitElement {
               <h3>Archivist Since</h3>
             </div>
             <div id="year-holder">
-              <h3>${this.model?.addeddate?.getFullYear()}</h3>
+              <h3>${this.model?.dateAdded?.getFullYear()}</h3>
             </div>
           </div>
           <div id="status-holder">
