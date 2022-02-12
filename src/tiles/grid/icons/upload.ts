@@ -7,5 +7,6 @@ export default html`
       fill="#333"
       fill-rule="evenodd"
     />
+    <title>Icon of an arrow pointing upwards</title>
   </svg>
 `;

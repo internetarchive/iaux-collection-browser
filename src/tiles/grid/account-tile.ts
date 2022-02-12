@@ -15,35 +15,35 @@ export class UserTile extends LitElement {
     return html`
       <div class="outer-holder">
         <div class="inner-holder">
-          <div class="title-holder">
+          <div id="title-holder">
             <h1>${this.model?.identifier}</h1>
           </div>
-          <div class="avatar-holder">
+          <div id="avatar-holder">
             <div
-              class="avatar"
+              id="avatar"
               style="background-image: url('https://archive.org/services/img/${this
                 .model?.identifier}')"
             ></div>
           </div>
-          <div class="credit-holder">
-            <div class="archivist-since">
+          <div id="year-holder">
+            <div id="archivist-since">
               <h3>Archivist Since</h3>
             </div>
-            <div class="year-holder">
+            <div id="year-holder">
               <h3>${this.model?.addeddate?.getFullYear()}</h3>
             </div>
           </div>
-          <div class="status-holder">
-            <div class="patron-icon">${accountIcon}</div>
-            <div class="stat-icon">
+          <div id="status-holder">
+            <div id="patron-icon">${accountIcon}</div>
+            <div id="stat-icon">
               ${uploadIcon}
               <h3>${this.model?.itemCount}</h3>
             </div>
-            <div class="stat-icon">
+            <div id="stat-icon">
               ${favoriteFilledIcon}
               <h3>${this.model?.favCount}</h3>
             </div>
-            <div class="stat-icon">
+            <div id="stat-icon">
               ${reviewsIcon}
               <h3>${this.model?.commentCount}</h3>
             </div>
@@ -88,19 +88,19 @@ export class UserTile extends LitElement {
         flex-direction: column;
       }
 
-      .title-holder {
+      #title-holder {
         height: 40px;
         margin-bottom: 5px;
       }
 
-      .avatar-holder {
+      #avatar-holder {
         margin-bottom: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
       }
 
-      .avatar {
+      #avatar {
         background-position: 50% 50%;
         border-radius: 50%;
         width: 160px;
@@ -108,27 +108,27 @@ export class UserTile extends LitElement {
         box-shadow: 1px 1px 2px #888888;
       }
 
-      .credit-holder {
+      #year-holder {
         margin-bottom: 5px;
         height: 40px;
       }
 
-      .year-holder {
+      #year-holder {
         margin: 0px;
       }
 
-      .status-holder {
+      #status-holder {
         height: 25px;
         display: flex;
         justify-content: space-evenly;
       }
 
-      .patron-icon {
+      #patron-icon {
         height: 25px;
         width: 25px;
       }
 
-      .stat-icon {
+      #stat-icon {
         height: 10px;
         width: 10px;
       }
