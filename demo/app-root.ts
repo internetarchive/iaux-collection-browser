@@ -152,6 +152,27 @@ export class AppRoot extends LitElement {
           @sortDirectionChanged=${this.sortDirectionChanged}
           @displayModeChanged=${this.displayModeChanged}
         ></sort-filter-bar>
+
+        <div>
+          Cell width:
+          <input
+            type="range"
+            min="10"
+            max="100"
+            value="18"
+            step="0.1"
+            @input=${this.widthChanged}
+          />
+          Cell height:
+          <input
+            type="range"
+            min="10"
+            max="100"
+            value="29"
+            step="0.1"
+            @input=${this.heightChanged}
+          />
+        </div>
       </div>
 
       <collection-browser
@@ -161,6 +182,26 @@ export class AppRoot extends LitElement {
       >
       </collection-browser>
     `;
+  }
+
+  private widthChanged(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.collectionBrowser.style.setProperty(
+      '--collectionBrowserCellMinWidth',
+      `${input.value}rem`
+    );
+  }
+
+  private heightChanged(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.collectionBrowser.style.setProperty(
+      '--collectionBrowserCellMinHeight',
+      `${input.value}rem`
+    );
+    this.collectionBrowser.style.setProperty(
+      '--collectionBrowserCellMaxHeight',
+      `${input.value}rem`
+    );
   }
 
   private visiblePageChanged(e: CustomEvent<{ pageNumber: number }>) {

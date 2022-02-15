@@ -560,21 +560,45 @@ export class CollectionBrowser
     }
 
     infinite-scroller.list-compact {
-      --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 5rem;
-      --infiniteScrollerCellMaxHeight: 5rem;
+      --infiniteScrollerCellMinWidth: var(
+        --collectionBrowserCellMinWidth,
+        100%
+      );
+      --infiniteScrollerCellMinHeight: var(
+        --collectionBrowserCellMinHeight,
+        5rem
+      );
+      --infiniteScrollerCellMaxHeight: var(
+        --collectionBrowserCellMaxHeight,
+        5rem
+      );
     }
 
     infinite-scroller.list-detail {
-      --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 5rem;
+      --infiniteScrollerCellMinWidth: var(
+        --collectionBrowserCellMinWidth,
+        100%
+      );
+      --infiniteScrollerCellMinHeight: var(
+        --collectionBrowserCellMinHeight,
+        5rem
+      );
     }
 
     infinite-scroller.grid {
-      --infiniteScrollerCellMinWidth: 18rem;
-      --infiniteScrollerCellMaxWidth: 1fr;
-      --infiniteScrollerCellMinHeight: 29rem;
-      --infiniteScrollerCellMaxHeight: 29rem;
+      --infiniteScrollerCellMinWidth: var(
+        --collectionBrowserCellMinWidth,
+        18rem
+      );
+      --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
+      --infiniteScrollerCellMinHeight: var(
+        --collectionBrowserCellMinHeight,
+        29rem
+      );
+      --infiniteScrollerCellMaxHeight: var(
+        --collectionBrowserCellMaxHeight,
+        29rem
+      );
     }
   `;
 }
