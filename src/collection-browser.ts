@@ -10,12 +10,17 @@ import {
   SearchParams,
   SearchServiceInterface,
 } from '@internetarchive/search-service';
-import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
+import {
+  AggregateSearchParams,
+  SortParam,
+} from '@internetarchive/search-service/dist/src/search-params';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
 import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
+import './collection-facets';
+import { CollectionFacets } from './collection-facets';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -35,6 +40,8 @@ export class CollectionBrowser
   @property({ type: Object }) sortParam?: SortParam;
 
   @property({ type: Number }) pageSize = 50;
+
+  @query('collection-facets') collectionFacets!: CollectionFacets;
 
   /**
    * The page that the consumer wants to load.
@@ -124,15 +131,33 @@ export class CollectionBrowser
     return html`
       <h1>Collection Browser</h1>
 
-      <infinite-scroller
-        class="${this.displayMode}"
-        .cellProvider=${this}
-        .placeholderCellTemplate=${this.placeholderCellTemplate}
-        @scrollThresholdReached=${this.scrollThresholdReached}
-        @cellWidthChanged=${this.cellWidthChanged}
-        @visibleCellsChanged=${this.visibleCellsChanged}
-      >
-      </infinite-scroller>
+      <div id="query">
+        <ul>
+          <li>Base Query: ${this.baseQuery}</li>
+          <li>Facet Query: ${this.facetQuery}</li>
+          <li>Full Query: ${this.fullQuery}</li>
+        </ul>
+      </div>
+
+      <div id="content-container">
+        <div id="facets-container">
+          <collection-facets
+            @facetChecked=${this.facetChecked}
+            @facetUnchecked=${this.facetUnchecked}
+          ></collection-facets>
+        </div>
+        <div id="infinite-scroller-container">
+          <infinite-scroller
+            class="${this.displayMode}"
+            .cellProvider=${this}
+            .placeholderCellTemplate=${this.placeholderCellTemplate}
+            @scrollThresholdReached=${this.scrollThresholdReached}
+            @cellWidthChanged=${this.cellWidthChanged}
+            @visibleCellsChanged=${this.visibleCellsChanged}
+          >
+          </infinite-scroller>
+        </div>
+      </div>
     `;
   }
 
@@ -140,8 +165,15 @@ export class CollectionBrowser
     if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('baseQuery') || changed.has('sortParam')) {
+    if (
+      changed.has('baseQuery') ||
+      changed.has('sortParam') ||
+      changed.has('selectedFacets')
+    ) {
       this.handleQueryChange();
+    }
+    if (changed.has('selectedFacets')) {
+      console.debug('selected facets changed');
     }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
@@ -202,7 +234,147 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
-    await this.fetchPage(this.initialPageNumber);
+
+    await Promise.all([
+      this.fetchPage(this.initialPageNumber),
+      this.fetchFacets(),
+    ]);
+  }
+
+  @state() private selectedFacets: Record<string, string[]> = {};
+
+  private get fullQuery(): string | undefined {
+    if (!this.baseQuery) return undefined;
+    let fullQuery = this.baseQuery;
+    const { facetQuery } = this;
+    if (facetQuery) {
+      fullQuery += ` AND ${facetQuery}`;
+    }
+    return fullQuery;
+  }
+
+  private get facetQuery(): string | undefined {
+    const facetQuery = [];
+    for (const [facetName, selectedValues] of Object.entries(
+      this.selectedFacets
+    )) {
+      const values: string[] = [];
+      for (const value of selectedValues) {
+        values.push(`${facetName}:"${value}"`);
+      }
+      const valueQuery = values.join(' OR ');
+      facetQuery.push(`(${valueQuery})`);
+    }
+    return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
+  }
+
+  facetChecked(e: CustomEvent<{ name: string; value: string }>) {
+    // this.baseQuery = this.baseQuery.addFilter(e.detail.name, e.detail.value);
+    // const currentQuery = this.baseQuery ?? '';
+
+    const { selectedFacets } = this;
+    const facetClone = { ...selectedFacets };
+    const currentFacetValues = facetClone[e.detail.name];
+    if (currentFacetValues) {
+      currentFacetValues.push(e.detail.value);
+      facetClone[e.detail.name] = currentFacetValues;
+    } else {
+      facetClone[e.detail.name] = [e.detail.value];
+    }
+    this.selectedFacets = facetClone;
+    // const updatedQuery = `${currentQuery} AND ${e.detail.name}:${e.detail.value}`;
+    // this.baseQuery = updatedQuery;
+    // this.
+    console.debug('selected, facetquery', this.selectedFacets, this.facetQuery);
+    // this.requestUpdate();
+  }
+
+  facetUnchecked(e: CustomEvent<{ name: string; value: string }>) {
+    const { selectedFacets } = this;
+    const facetClone = { ...selectedFacets };
+    let currentFacetValues = selectedFacets[e.detail.name];
+    if (currentFacetValues) {
+      currentFacetValues = currentFacetValues.filter(
+        el => el !== e.detail.value
+      );
+      facetClone[e.detail.name] = currentFacetValues;
+      if (currentFacetValues.length === 0) {
+        delete facetClone[e.detail.name];
+      }
+    }
+    this.selectedFacets = facetClone;
+    console.debug(
+      'unselected, facetquery',
+      this.selectedFacets,
+      this.facetQuery
+    );
+    // this.requestUpdate();
+  }
+
+  // 'subjectSorter',
+  // 'mediatypeSorter',
+  // 'languageSorter',
+  // 'creatorSorter',
+  // 'collection' => Facet::MAX_SHOW_COLLECTION,
+  // 'year' => Facet::MAX_SHOW_YEAR,
+
+  // const MAX_SHOW = 6;
+  // const MAX_SHOW_COLLECTION = 12;
+  // const MAX_SHOW_TXT = 50; // "search inside" API has *actual* lower number; we wanna pass thru facets ;-)
+  // const MAX_SHOW_YEAR = 50; // "year" facet (up to 50 entries)
+
+  // // MORF == MORe Facets 8-)
+  // const MORF_MAX_FACETS = 5000;
+  // const MORF_MAX_FACETS_NO_JS = 1000;
+
+  // const KEY_YEAR = 'year';
+
+  // // YEAR histogram
+  // const YEAR_HISTOGRAM_BIN_COUNT_TARGET = 50;
+
+  private async fetchFacets() {
+    if (!this.fullQuery) return;
+
+    const aggregations = new AggregateSearchParams([
+      {
+        field: 'subjectSorter',
+        size: 6,
+      },
+      {
+        field: 'mediatypeSorter',
+        size: 6,
+      },
+      {
+        field: 'languageSorter',
+        size: 6,
+      },
+      {
+        field: 'creatorSorter',
+        size: 6,
+      },
+      {
+        field: 'collection',
+        size: 12,
+      },
+      {
+        field: 'year',
+        size: 50,
+      },
+    ]);
+
+    const params = new SearchParams({
+      query: this.fullQuery,
+      fields: ['identifier'],
+      aggregations,
+      rows: 1,
+    });
+    const results = await this.searchService?.search(params);
+    // const success = results?.success;
+
+    console.debug('fetchFacets', results?.success);
+
+    this.collectionFacets.aggregations =
+      results?.success?.response.aggregations;
   }
 
   private scrollToPage(pageNumber: number) {
@@ -230,13 +402,15 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.baseQuery}-${this.sortParam?.asString}`;
+    return `${this.fullQuery}-${this.sortParam?.asString}`;
   }
 
   // this maps the query to the pages being fetched for that query
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
+    if (!this.fullQuery) return;
+
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
 
@@ -252,7 +426,7 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params = new SearchParams({
-      query: this.baseQuery ?? '',
+      query: this.fullQuery,
       fields: [
         'identifier',
         'title',
@@ -281,7 +455,7 @@ export class CollectionBrowser
     const searchQuery = success.responseHeader.params.qin;
     const searchSort = success.responseHeader.params.sort;
     const queryChangedSinceFetch =
-      searchQuery !== this.baseQuery || searchSort !== this.sortParam?.asString;
+      searchQuery !== this.fullQuery || searchSort !== this.sortParam?.asString;
     if (queryChangedSinceFetch) return;
 
     const { docs } = success.response;
@@ -336,7 +510,7 @@ export class CollectionBrowser
         itemCount: doc.item_count?.value ?? 0,
         description: doc.description?.value,
         date: doc.date?.value,
-        addeddate: doc.addeddate?.value,
+        dateAdded: doc.addeddate?.value,
         creator: doc.creator?.value,
       });
     });
@@ -375,26 +549,58 @@ export class CollectionBrowser
       display: block;
     }
 
+    #content-container {
+      display: flex;
+    }
+
+    #infinite-scroller-container {
+      flex: 1;
+    }
+
     infinite-scroller {
       display: block;
     }
 
     infinite-scroller.list-compact {
-      --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 5rem;
-      --infiniteScrollerCellMaxHeight: 5rem;
+      --infiniteScrollerCellMinWidth: var(
+        --collectionBrowserCellMinWidth,
+        100%
+      );
+      --infiniteScrollerCellMinHeight: var(
+        --collectionBrowserCellMinHeight,
+        5rem
+      );
+      --infiniteScrollerCellMaxHeight: var(
+        --collectionBrowserCellMaxHeight,
+        5rem
+      );
     }
 
     infinite-scroller.list-detail {
-      --infiniteScrollerCellMinWidth: 100%;
-      --infiniteScrollerCellMinHeight: 5rem;
+      --infiniteScrollerCellMinWidth: var(
+        --collectionBrowserCellMinWidth,
+        100%
+      );
+      --infiniteScrollerCellMinHeight: var(
+        --collectionBrowserCellMinHeight,
+        5rem
+      );
     }
 
     infinite-scroller.grid {
-      --infiniteScrollerCellMinWidth: 18rem;
-      --infiniteScrollerCellMaxWidth: 1fr;
-      --infiniteScrollerCellMinHeight: 29rem;
-      --infiniteScrollerCellMaxHeight: 29rem;
+      --infiniteScrollerCellMinWidth: var(
+        --collectionBrowserCellMinWidth,
+        18rem
+      );
+      --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
+      --infiniteScrollerCellMinHeight: var(
+        --collectionBrowserCellMinHeight,
+        29rem
+      );
+      --infiniteScrollerCellMaxHeight: var(
+        --collectionBrowserCellMaxHeight,
+        29rem
+      );
     }
   `;
 }
