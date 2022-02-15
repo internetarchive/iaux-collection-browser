@@ -8,13 +8,30 @@ export class TileListCompact extends LitElement {
 
   render() {
     return html`
-      <h1>${this.model?.title}</h1>
-      <h2>${this.model?.datePublished?.toDateString()}</h2>
+      <div id="list-compact">
+        <div id="views">${this.model?.viewCount}</div>
+        <div id="title">${this.model?.title}</div>
+        <div id="date-published">${this.model?.datePublished?.toDateString()}</div>
+        <div id="creator">${this.model?.creator}</div>
+        <div id="icon">${this.model?.mediatype}</div>
+      </div>
     `;
   }
 
+
   static get styles() {
     return css`
+      #list-compact {
+        display: table-row;
+        border-spacing: 5px 10px;
+        border-top: 1px solid #ddd;
+        text-align: left;
+        overflow-x: hidden;
+      }
+      #list-compact div {
+        display: table-cell;
+      }
+
       h1 {
         margin-top: 0;
       }
