@@ -61,13 +61,11 @@ export class AlphaBar extends LitElement {
       justify-content: space-between;
     }
 
-    li {
-      padding: 0.5rem;
-    }
-
     a {
       color: #333;
       text-decoration: none;
+      padding: 0.5rem 0.7rem;
+      display: block;
     }
 
     .selected {
