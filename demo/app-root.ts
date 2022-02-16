@@ -157,36 +157,40 @@ export class AppRoot extends LitElement {
           @displayModeChanged=${this.displayModeChanged}
         ></sort-filter-bar>
 
-        <div>
+        <div id="cell-controls">
           <div>
-            Cell width:
+            <label for="cell-width-slider">Minimum cell width:</label>
             <input
               type="range"
               min="10"
               max="100"
               value="18"
               step="0.1"
+              id="cell-width-slider"
               @input=${this.widthChanged}
             />
             <span>${this.cellWidth}rem</span>
           </div>
           <div>
-            Cell height:
+            <label for="cell-height-slider">Cell height:</label>
             <input
               type="range"
               min="10"
               max="100"
               value="29"
               step="0.1"
+              id="cell-height-slider"
               @input=${this.heightChanged}
             />
             <span>${this.cellHeight}rem</span>
           </div>
           <div>
-            <label
-              >Show outlines:
-              <input type="checkbox" @click=${this.outlineChanged}
-            /></label>
+            <label for="show-outline-check">Show outlines:</label>
+            <input
+              type="checkbox"
+              id="show-outline-check"
+              @click=${this.outlineChanged}
+            />
           </div>
         </div>
       </div>
@@ -283,6 +287,11 @@ export class AppRoot extends LitElement {
       backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;
       border: 1px solid black;
+    }
+
+    #cell-controls label {
+      display: inline-block;
+      width: 10rem;
     }
   `;
 }
