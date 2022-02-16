@@ -15,15 +15,17 @@ export class UserTile extends LitElement {
     return html`
       <div class="outer-holder">
         <div class="inner-holder">
-          <div id="title-holder">
-            <h1>${this.model?.identifier}</h1>
-          </div>
-          <div id="avatar-holder">
-            <div
-              id="avatar"
-              style="background-image: url('https://archive.org/services/img/${this
-                .model?.identifier}')"
-            ></div>
+          <div id="header-holder">
+            <div id="title-holder">
+              <h1>${this.model?.identifier}</h1>
+            </div>
+            <div id="avatar-holder">
+              <div
+                id="avatar"
+                style="background-image: url('https://archive.org/services/img/${this
+                  .model?.identifier}')"
+              ></div>
+            </div>
           </div>
           <div id="year-holder">
             <div id="archivist-since">
@@ -86,6 +88,10 @@ export class UserTile extends LitElement {
         height: 96%;
         display: flex;
         flex-direction: column;
+      }
+
+      #header-holder {
+        flex: 1 1 0%;
       }
 
       #title-holder {
