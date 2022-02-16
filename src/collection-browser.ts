@@ -39,6 +39,8 @@ export class CollectionBrowser
 
   @property({ type: Object }) sortParam?: SortParam;
 
+  @property({ type: String }) additionalQueryClause?: string;
+
   @property({ type: Number }) pageSize = 50;
 
   @query('collection-facets') collectionFacets!: CollectionFacets;
@@ -135,6 +137,8 @@ export class CollectionBrowser
         <ul>
           <li>Base Query: ${this.baseQuery}</li>
           <li>Facet Query: ${this.facetQuery}</li>
+          <li>Additional Query: ${this.additionalQueryClause}</li>
+          <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
           <li>Full Query: ${this.fullQuery}</li>
         </ul>
       </div>
@@ -167,6 +171,7 @@ export class CollectionBrowser
     }
     if (
       changed.has('baseQuery') ||
+      changed.has('additionalQueryClause') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets')
     ) {
@@ -246,9 +251,12 @@ export class CollectionBrowser
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
     let fullQuery = this.baseQuery;
-    const { facetQuery } = this;
+    const { facetQuery, additionalQueryClause } = this;
     if (facetQuery) {
       fullQuery += ` AND ${facetQuery}`;
+    }
+    if (additionalQueryClause) {
+      fullQuery += ` AND ${additionalQueryClause}`;
     }
     return fullQuery;
   }

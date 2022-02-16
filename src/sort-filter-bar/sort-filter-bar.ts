@@ -11,7 +11,7 @@ export class SortFilterBar extends LitElement {
 
   render() {
     return html`
-      <alpha-bar></alpha-bar>
+      <alpha-bar @letterChanged=${this.letterChanged}></alpha-bar>
 
       <div id="sort-bar">
         <div id="sort-selector">
@@ -55,6 +55,15 @@ export class SortFilterBar extends LitElement {
     if (changed.has('sortDirection')) {
       this.sortChanged();
     }
+  }
+
+  private letterChanged(
+    e: CustomEvent<{ selectedLetter: string | undefined }>
+  ) {
+    const event = new CustomEvent('letterChanged', {
+      detail: { selectedLetter: e.detail.selectedLetter },
+    });
+    this.dispatchEvent(event);
   }
 
   private sortDescSelected() {

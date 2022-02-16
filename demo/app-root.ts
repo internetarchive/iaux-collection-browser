@@ -155,6 +155,7 @@ export class AppRoot extends LitElement {
         <sort-filter-bar
           @sortDirectionChanged=${this.sortDirectionChanged}
           @displayModeChanged=${this.displayModeChanged}
+          @letterChanged=${this.letterChanged}
         ></sort-filter-bar>
 
         <div id="cell-controls">
@@ -258,6 +259,15 @@ export class AppRoot extends LitElement {
     e: CustomEvent<{ displayMode: CollectionDisplayMode }>
   ) {
     this.collectionBrowser.displayMode = e.detail.displayMode;
+  }
+
+  private letterChanged(e: CustomEvent<{ selectedLetter: string }>) {
+    const letter = e.detail.selectedLetter;
+    if (letter) {
+      this.collectionBrowser.additionalQueryClause = `firstTitle:${letter}`;
+    } else {
+      this.collectionBrowser.additionalQueryClause = undefined;
+    }
   }
 
   static styles = css`
