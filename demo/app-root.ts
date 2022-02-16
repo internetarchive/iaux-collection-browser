@@ -20,6 +20,10 @@ export class AppRoot extends LitElement {
 
   @state() private sortParam?: SortParam;
 
+  @state() private cellWidth: number = 18;
+
+  @state() private cellHeight: number = 29;
+
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
@@ -154,24 +158,36 @@ export class AppRoot extends LitElement {
         ></sort-filter-bar>
 
         <div>
-          Cell width:
-          <input
-            type="range"
-            min="10"
-            max="100"
-            value="18"
-            step="0.1"
-            @input=${this.widthChanged}
-          />
-          Cell height:
-          <input
-            type="range"
-            min="10"
-            max="100"
-            value="29"
-            step="0.1"
-            @input=${this.heightChanged}
-          />
+          <div>
+            Cell width:
+            <input
+              type="range"
+              min="10"
+              max="100"
+              value="18"
+              step="0.1"
+              @input=${this.widthChanged}
+            />
+            <span>${this.cellWidth}rem</span>
+          </div>
+          <div>
+            Cell height:
+            <input
+              type="range"
+              min="10"
+              max="100"
+              value="29"
+              step="0.1"
+              @input=${this.heightChanged}
+            />
+            <span>${this.cellHeight}rem</span>
+          </div>
+          <div>
+            <label
+              >Show outlines:
+              <input type="checkbox" @click=${this.outlineChanged}
+            /></label>
+          </div>
         </div>
       </div>
 
@@ -184,8 +200,23 @@ export class AppRoot extends LitElement {
     `;
   }
 
+  private outlineChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.checked) {
+      this.collectionBrowser.style.setProperty(
+        '--infiniteScrollerCellOutline',
+        '1px solid #33D1FF'
+      );
+    } else {
+      this.collectionBrowser.style.removeProperty(
+        '--infiniteScrollerCellOutline'
+      );
+    }
+  }
+
   private widthChanged(e: Event) {
     const input = e.target as HTMLInputElement;
+    this.cellWidth = parseFloat(input.value);
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserCellMinWidth',
       `${input.value}rem`
@@ -194,6 +225,7 @@ export class AppRoot extends LitElement {
 
   private heightChanged(e: Event) {
     const input = e.target as HTMLInputElement;
+    this.cellHeight = parseFloat(input.value);
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserCellMinHeight',
       `${input.value}rem`
@@ -235,7 +267,7 @@ export class AppRoot extends LitElement {
     }
 
     collection-browser {
-      margin-top: 15rem;
+      margin-top: 22rem;
     }
 
     #base-query-field {
