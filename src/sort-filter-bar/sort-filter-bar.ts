@@ -1,5 +1,5 @@
 import { LitElement, html, css, nothing, PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { CollectionDisplayMode } from '../models';
 import './alpha-bar';
 
@@ -9,10 +9,12 @@ export class SortFilterBar extends LitElement {
 
   @property({ type: String }) sortDirection: 'asc' | 'desc' = 'desc';
 
+  @state() titleSelectorVisible: boolean = false;
+
+  @state() creatorSelectorVisible: boolean = false;
+
   render() {
     return html`
-      <alpha-bar @letterChanged=${this.letterChanged}></alpha-bar>
-
       <div id="sort-bar">
         <div id="sort-selector">
           <ul>
@@ -21,11 +23,28 @@ export class SortFilterBar extends LitElement {
               <button @click=${this.sortAscSelected}>Asc</button>Sort By
             </li>
             <li>Views</li>
-            <li>Title</li>
+            <li>
+              <button
+                @click=${() => {
+                  this.titleSelectorVisible = !this.titleSelectorVisible;
+                }}
+              >
+                Title
+              </button>
+            </li>
             <li>Date Archived</li>
-            <li>Creator</li>
+            <li>
+              <button
+                @click=${() => {
+                  this.creatorSelectorVisible = !this.creatorSelectorVisible;
+                }}
+              >
+                Creator
+              </button>
+            </li>
           </ul>
         </div>
+
         <div id="display-style">
           <ul>
             ${this.displayMode !== 'grid'
@@ -44,6 +63,9 @@ export class SortFilterBar extends LitElement {
           </ul>
         </div>
       </div>
+
+      ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
+      ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
     `;
   }
 
@@ -57,10 +79,33 @@ export class SortFilterBar extends LitElement {
     }
   }
 
-  private letterChanged(
+  private get titleSelectorBar() {
+    return html` <alpha-bar
+      headline="Title Starts With"
+      @letterChanged=${this.titleLetterChanged}
+    ></alpha-bar>`;
+  }
+
+  private get creatorSelectorBar() {
+    return html` <alpha-bar
+      headline="Creator Starts With"
+      @letterChanged=${this.creatorLetterChanged}
+    ></alpha-bar>`;
+  }
+
+  private titleLetterChanged(
     e: CustomEvent<{ selectedLetter: string | undefined }>
   ) {
-    const event = new CustomEvent('letterChanged', {
+    const event = new CustomEvent('titleLetterChanged', {
+      detail: { selectedLetter: e.detail.selectedLetter },
+    });
+    this.dispatchEvent(event);
+  }
+
+  private creatorLetterChanged(
+    e: CustomEvent<{ selectedLetter: string | undefined }>
+  ) {
+    const event = new CustomEvent('creatorLetterChanged', {
       detail: { selectedLetter: e.detail.selectedLetter },
     });
     this.dispatchEvent(event);

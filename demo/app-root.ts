@@ -155,7 +155,8 @@ export class AppRoot extends LitElement {
         <sort-filter-bar
           @sortDirectionChanged=${this.sortDirectionChanged}
           @displayModeChanged=${this.displayModeChanged}
-          @letterChanged=${this.letterChanged}
+          @titleLetterChanged=${this.titleLetterChanged}
+          @creatorLetterChanged=${this.creatorLetterChanged}
         ></sort-filter-bar>
 
         <div id="cell-controls">
@@ -199,6 +200,7 @@ export class AppRoot extends LitElement {
       <collection-browser
         .baseNavigationUrl=${'https://archive.org'}
         .searchService=${this.searchService}
+        .additionalQueryClause=${this.sortFilterQueries}
         @visiblePageChanged=${this.visiblePageChanged}
       >
       </collection-browser>
@@ -261,12 +263,30 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.displayMode = e.detail.displayMode;
   }
 
-  private letterChanged(e: CustomEvent<{ selectedLetter: string }>) {
+  @state() titleQuery?: string;
+
+  @state() creatorQuery?: string;
+
+  private get sortFilterQueries(): string {
+    const queries = [this.titleQuery, this.creatorQuery];
+    return queries.filter(q => q).join(' AND ');
+  }
+
+  private titleLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
     const letter = e.detail.selectedLetter;
     if (letter) {
-      this.collectionBrowser.additionalQueryClause = `firstTitle:${letter}`;
+      this.titleQuery = `firstTitle:${letter}`;
     } else {
-      this.collectionBrowser.additionalQueryClause = undefined;
+      this.titleQuery = undefined;
+    }
+  }
+
+  private creatorLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
+    const letter = e.detail.selectedLetter;
+    if (letter) {
+      this.titleQuery = `firstCreator:${letter}`;
+    } else {
+      this.titleQuery = undefined;
     }
   }
 
@@ -281,7 +301,7 @@ export class AppRoot extends LitElement {
     }
 
     collection-browser {
-      margin-top: 22rem;
+      margin-top: 30rem;
     }
 
     #base-query-field {
