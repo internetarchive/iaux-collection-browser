@@ -1,5 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import { html, css, LitElement, PropertyValues, TemplateResult } from 'lit';
+import {
+  html,
+  css,
+  LitElement,
+  PropertyValues,
+  TemplateResult,
+  nothing,
+} from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import type {
   InfiniteScroller,
@@ -21,6 +28,7 @@ import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import { CollectionFacets } from './collection-facets';
+import './circular-activity-indicator';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -57,6 +65,10 @@ export class CollectionBrowser
    * know how many cells we should render.
    */
   @state() private pagesToRender = this.initialPageNumber;
+
+  @state() private searchResultsLoading = false;
+
+  @state() private facetsLoading = false;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -145,12 +157,14 @@ export class CollectionBrowser
 
       <div id="content-container">
         <div id="facets-container">
+          ${this.facetsLoading ? this.loadingTemplate : nothing}
           <collection-facets
             @facetChecked=${this.facetChecked}
             @facetUnchecked=${this.facetUnchecked}
           ></collection-facets>
         </div>
         <div id="infinite-scroller-container">
+          ${this.searchResultsLoading ? this.loadingTemplate : nothing}
           <infinite-scroller
             class="${this.displayMode}"
             .cellProvider=${this}
@@ -161,6 +175,14 @@ export class CollectionBrowser
           >
           </infinite-scroller>
         </div>
+      </div>
+    `;
+  }
+
+  private get loadingTemplate() {
+    return html`
+      <div class="loading-cover">
+        <circular-activity-indicator></circular-activity-indicator>
       </div>
     `;
   }
@@ -176,9 +198,6 @@ export class CollectionBrowser
       changed.has('selectedFacets')
     ) {
       this.handleQueryChange();
-    }
-    if (changed.has('selectedFacets')) {
-      console.debug('selected facets changed');
     }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
@@ -227,6 +246,11 @@ export class CollectionBrowser
   private previousQueryKey?: string;
 
   private async handleQueryChange() {
+    console.debug(
+      'query changed',
+      this.previousQueryKey,
+      this.pageFetchQueryKey
+    );
     // only reset if the query has actually changed
     if (this.pageFetchQueryKey === this.previousQueryKey) return;
     this.previousQueryKey = this.pageFetchQueryKey;
@@ -240,13 +264,16 @@ export class CollectionBrowser
     }
     this.initialQueryChangeHappened = true;
 
-    await Promise.all([
-      this.fetchPage(this.initialPageNumber),
-      this.fetchFacets(),
-    ]);
+    await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
   }
 
   @state() private selectedFacets: Record<string, string[]> = {};
+
+  private async doInitialPageFetch() {
+    this.searchResultsLoading = true;
+    await this.fetchPage(this.initialPageNumber);
+    this.searchResultsLoading = false;
+  }
 
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
@@ -290,11 +317,6 @@ export class CollectionBrowser
       facetClone[e.detail.name] = [e.detail.value];
     }
     this.selectedFacets = facetClone;
-    // const updatedQuery = `${currentQuery} AND ${e.detail.name}:${e.detail.value}`;
-    // this.baseQuery = updatedQuery;
-    // this.
-    console.debug('selected, facetquery', this.selectedFacets, this.facetQuery);
-    // this.requestUpdate();
   }
 
   facetUnchecked(e: CustomEvent<{ name: string; value: string }>) {
@@ -311,12 +333,6 @@ export class CollectionBrowser
       }
     }
     this.selectedFacets = facetClone;
-    console.debug(
-      'unselected, facetquery',
-      this.selectedFacets,
-      this.facetQuery
-    );
-    // this.requestUpdate();
   }
 
   // 'subjectSorter',
@@ -376,10 +392,9 @@ export class CollectionBrowser
       aggregations,
       rows: 1,
     });
+    this.facetsLoading = true;
     const results = await this.searchService?.search(params);
-    // const success = results?.success;
-
-    console.debug('fetchFacets', results?.success);
+    this.facetsLoading = false;
 
     this.collectionFacets.aggregations =
       results?.success?.response.aggregations;
@@ -476,6 +491,7 @@ export class CollectionBrowser
       this.infiniteScroller.itemCount = this.actualTileCount;
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
+    this.searchResultsLoading = false;
   }
 
   /**
@@ -563,6 +579,29 @@ export class CollectionBrowser
 
     #infinite-scroller-container {
       flex: 1;
+      position: relative;
+    }
+
+    #facets-container {
+      position: relative;
+    }
+
+    .loading-cover {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.5);
+      display: flex;
+      justify-content: center;
+      z-index: 1;
+      padding-top: 50px;
+    }
+
+    circular-activity-indicator {
+      width: 30px;
+      height: 30px;
     }
 
     infinite-scroller {
