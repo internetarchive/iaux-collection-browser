@@ -284,9 +284,9 @@ export class AppRoot extends LitElement {
   private creatorLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
     const letter = e.detail.selectedLetter;
     if (letter) {
-      this.titleQuery = `firstCreator:${letter}`;
+      this.creatorQuery = `firstCreator:${letter}`;
     } else {
-      this.titleQuery = undefined;
+      this.creatorQuery = undefined;
     }
   }
 
