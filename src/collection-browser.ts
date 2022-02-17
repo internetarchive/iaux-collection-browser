@@ -246,11 +246,6 @@ export class CollectionBrowser
   private previousQueryKey?: string;
 
   private async handleQueryChange() {
-    console.debug(
-      'query changed',
-      this.previousQueryKey,
-      this.pageFetchQueryKey
-    );
     // only reset if the query has actually changed
     if (this.pageFetchQueryKey === this.previousQueryKey) return;
     this.previousQueryKey = this.pageFetchQueryKey;
@@ -304,9 +299,6 @@ export class CollectionBrowser
   }
 
   facetChecked(e: CustomEvent<{ name: string; value: string }>) {
-    // this.baseQuery = this.baseQuery.addFilter(e.detail.name, e.detail.value);
-    // const currentQuery = this.baseQuery ?? '';
-
     const { selectedFacets } = this;
     const facetClone = { ...selectedFacets };
     const currentFacetValues = facetClone[e.detail.name];
@@ -583,6 +575,7 @@ export class CollectionBrowser
     }
 
     #facets-container {
+      width: 15rem;
       position: relative;
     }
 
@@ -592,7 +585,7 @@ export class CollectionBrowser
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(255, 255, 255, 0.5);
+      background-color: rgba(255, 255, 255, 0.75);
       display: flex;
       justify-content: center;
       z-index: 1;
