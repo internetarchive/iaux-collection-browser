@@ -157,6 +157,9 @@ export class AppRoot extends LitElement {
           @displayModeChanged=${this.displayModeChanged}
           @titleLetterChanged=${this.titleLetterChanged}
           @creatorLetterChanged=${this.creatorLetterChanged}
+          @titleSelectorVisibilityChanged=${this.titleSelectorVisibilityChanged}
+          @creatorSelectorVisibilityChanged=${this
+            .creatorSelectorVisibilityChanged}
         ></sort-filter-bar>
 
         <div id="cell-controls">
@@ -218,6 +221,21 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.style.removeProperty(
         '--infiniteScrollerCellOutline'
       );
+    }
+  }
+
+  private titleSelectorVisibilityChanged(e: CustomEvent<{ visible: boolean }>) {
+    console.debug('titleSelectorVisibleChanged', e.detail);
+    if (e.detail.visible) {
+      this.sortParam = new SortParam('titleSorter', 'asc');
+    }
+  }
+
+  private creatorSelectorVisibilityChanged(
+    e: CustomEvent<{ visible: boolean }>
+  ) {
+    if (e.detail.visible) {
+      this.sortParam = new SortParam('creatorSorter', 'asc');
     }
   }
 

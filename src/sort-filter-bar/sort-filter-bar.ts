@@ -77,6 +77,28 @@ export class SortFilterBar extends LitElement {
     if (changed.has('sortDirection')) {
       this.sortChanged();
     }
+
+    if (changed.has('titleSelectorVisible')) {
+      this.titleSelectorVisibleChanged();
+    }
+
+    if (changed.has('creatorSelectorVisible')) {
+      this.creatorSelectorVisibleChanged();
+    }
+  }
+
+  private titleSelectorVisibleChanged() {
+    const event = new CustomEvent('titleSelectorVisibilityChanged', {
+      detail: { visible: this.titleSelectorVisible },
+    });
+    this.dispatchEvent(event);
+  }
+
+  private creatorSelectorVisibleChanged() {
+    const event = new CustomEvent('creatorSelectorVisibilityChanged', {
+      detail: { visible: this.creatorSelectorVisible },
+    });
+    this.dispatchEvent(event);
   }
 
   private get titleSelectorBar() {
