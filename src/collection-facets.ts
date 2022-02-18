@@ -140,12 +140,16 @@ export class CollectionFacets extends LitElement {
    */
   private get selectedFacetGroups(): FacetGroup[] {
     const selectedFacetGroups: FacetGroup[] = [];
-    Object.entries(this.selectedFacets).forEach(([key, values]) => {
+    Object.entries(this.selectedFacets).forEach(([key, buckets]) => {
       const title = facetTitles[key as FacetOption];
       const group = {
         title,
         key,
-        buckets: values.map(v => ({ key: v, count: 0, selected: true })),
+        buckets: buckets.map(bucket => ({
+          key: bucket,
+          count: 0,
+          selected: true,
+        })),
       };
       selectedFacetGroups.push(group);
     });
@@ -157,10 +161,10 @@ export class CollectionFacets extends LitElement {
    */
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
-    Object.entries(this.aggregations ?? []).forEach(([key, values]) => {
+    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       const option = this.getFacetOptionFromKey(key);
       const title = facetTitles[option];
-      const buckets: FacetBucket[] = values.buckets.map(bucket => ({
+      const facetBuckets: FacetBucket[] = buckets.buckets.map(bucket => ({
         key: `${bucket.key}`,
         count: bucket.doc_count,
         selected: false,
@@ -168,7 +172,7 @@ export class CollectionFacets extends LitElement {
       const group: FacetGroup = {
         title,
         key: option,
-        buckets,
+        buckets: facetBuckets,
       };
       facetGroups.push(group);
     });
