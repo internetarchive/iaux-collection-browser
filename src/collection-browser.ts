@@ -159,8 +159,7 @@ export class CollectionBrowser
         <div id="facets-container">
           ${this.facetsLoading ? this.loadingTemplate : nothing}
           <collection-facets
-            @facetChecked=${this.facetChecked}
-            @facetUnchecked=${this.facetUnchecked}
+            @facetsChanged=${this.facetsChanged}
           ></collection-facets>
         </div>
         <div id="infinite-scroller-container">
@@ -298,33 +297,8 @@ export class CollectionBrowser
     return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
   }
 
-  facetChecked(e: CustomEvent<{ name: string; value: string }>) {
-    const { selectedFacets } = this;
-    const facetClone = { ...selectedFacets };
-    const currentFacetValues = facetClone[e.detail.name];
-    if (currentFacetValues) {
-      currentFacetValues.push(e.detail.value);
-      facetClone[e.detail.name] = currentFacetValues;
-    } else {
-      facetClone[e.detail.name] = [e.detail.value];
-    }
-    this.selectedFacets = facetClone;
-  }
-
-  facetUnchecked(e: CustomEvent<{ name: string; value: string }>) {
-    const { selectedFacets } = this;
-    const facetClone = { ...selectedFacets };
-    let currentFacetValues = selectedFacets[e.detail.name];
-    if (currentFacetValues) {
-      currentFacetValues = currentFacetValues.filter(
-        el => el !== e.detail.value
-      );
-      facetClone[e.detail.name] = currentFacetValues;
-      if (currentFacetValues.length === 0) {
-        delete facetClone[e.detail.name];
-      }
-    }
-    this.selectedFacets = facetClone;
+  facetsChanged(e: CustomEvent<Record<string, string[]>>) {
+    this.selectedFacets = e.detail;
   }
 
   // 'subjectSorter',

@@ -1,61 +1,252 @@
-import { Aggregation } from '@internetarchive/search-service';
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
+import { Aggregation } from '@internetarchive/search-service';
+
+export type FacetOption =
+  | 'subject'
+  | 'mediatype'
+  | 'language'
+  | 'creator'
+  | 'collection'
+  | 'year';
+
+const facetDisplayOrder: FacetOption[] = [
+  'mediatype',
+  'year',
+  'subject',
+  'collection',
+  'creator',
+  'language',
+];
+
+const aggregationToFacetOption: Record<string, FacetOption> = {
+  subjectSorter: 'subject',
+  mediatypeSorter: 'mediatype',
+  languageSorter: 'language',
+  creatorSorter: 'creator',
+  collection: 'collection',
+  year: 'year',
+};
+
+const facetTitles: Record<FacetOption, string> = {
+  subject: 'Subject',
+  mediatype: 'Media Type',
+  language: 'Language',
+  creator: 'Creator',
+  collection: 'Collection',
+  year: 'Year',
+};
+
+interface FacetBucket {
+  // for some facets, we augment the key with a display value
+  displayText?: string;
+  key: string;
+  count: number;
+}
+
+interface FacetGroup {
+  title: string;
+  key: string;
+  buckets: FacetBucket[];
+}
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
-  @property({ type: Object })
-  aggregations?: Record<string, Aggregation>;
+  @property({ type: Object }) aggregations?: Record<string, Aggregation>;
+
+  @property({ type: Object }) selectedFacets: Record<string, string[]> = {};
+
+  private get hydratedSelectedFacets(): Record<string, string[]> {
+    const { selectedFacets } = this;
+    const hydratedSelectedFacets: Record<string, string[]> = {};
+    Object.entries(selectedFacets).forEach(([key]) => {
+      const values = hydratedSelectedFacets[key];
+      const title = facetTitles[key as FacetOption];
+      hydratedSelectedFacets[title] = values || [];
+      delete hydratedSelectedFacets[key];
+    });
+    return hydratedSelectedFacets;
+  }
 
   render() {
     return html`
       <h1>Facets</h1>
 
-      ${Object.keys(this.aggregations ?? {}).map(key => {
-        const aggregation = this.aggregations?.[key];
-        if (!aggregation) return nothing;
-        return this.getFacetTemplate(key, aggregation);
-      })}
+      ${this.mergedFacets.map(facetGroup => this.getFacetTemplate(facetGroup))}
     `;
   }
 
-  getFacetTemplate(key: string, aggregation: Aggregation) {
-    const buckets = aggregation?.buckets ?? [];
-    const title = this.getTitleFromKey(key);
-    const visibleBuckets = buckets.slice(0, 5);
+  private get mergedFacets(): FacetGroup[] {
+    const facetGroups: FacetGroup[] = [];
+
+    facetDisplayOrder.forEach(facetKey => {
+      const selectedFacetGroup = this.selectedFacetGroups.find(
+        group => group.key === facetKey
+      );
+      const aggregateFacetGroup = this.aggregationFacetGroups.find(
+        group => group.key === facetKey
+      );
+
+      // if the user selected a facet, but it's not in the aggregation, we add it as-is
+      if (selectedFacetGroup && !aggregateFacetGroup) {
+        facetGroups.push(selectedFacetGroup);
+        return;
+      }
+
+      // if we don't have an aggregate facet group, don't add this to the list
+      if (!aggregateFacetGroup) return;
+
+      // start with either the selected group if we have one, or the aggregate group
+      const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
+
+      // attach the counts to the selected buckets
+      const bucketsWithCount =
+        selectedFacetGroup?.buckets.map(bucket => {
+          const selectedBucket = aggregateFacetGroup.buckets.find(
+            b => b.key === bucket.key
+          );
+          if (selectedBucket) {
+            return {
+              ...bucket,
+              count: selectedBucket.count,
+            };
+          }
+          return bucket;
+        }) ?? [];
+
+      // append any additional buckets that were not selected
+      aggregateFacetGroup.buckets.forEach(bucket => {
+        const existingBucket = bucketsWithCount.find(b => b.key === bucket.key);
+        if (existingBucket) return;
+        bucketsWithCount.push(bucket);
+      });
+      facetGroup.buckets = bucketsWithCount;
+      facetGroups.push(facetGroup);
+    });
+
+    return facetGroups;
+  }
+
+  /**
+   * Converts the raw `selectedFacets` to `FacetGroups`, which are easier to use
+   */
+  private get selectedFacetGroups(): FacetGroup[] {
+    const selectedFacetGroups: FacetGroup[] = [];
+    Object.entries(this.selectedFacets).forEach(([key, values]) => {
+      const title = facetTitles[key as FacetOption];
+      const group = {
+        title,
+        key,
+        buckets: values.map(v => ({ key: v, count: 0 })),
+      };
+      selectedFacetGroups.push(group);
+    });
+    return selectedFacetGroups;
+  }
+
+  /**
+   * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
+   */
+  private get aggregationFacetGroups(): FacetGroup[] {
+    const facetGroups: FacetGroup[] = [];
+    Object.entries(this.aggregations ?? []).forEach(([key, values]) => {
+      const option = this.getFacetOptionFromKey(key);
+      const title = facetTitles[option];
+      const buckets: FacetBucket[] = values.buckets.map(bucket => ({
+        key: `${bucket.key}`,
+        count: bucket.doc_count,
+      }));
+      const group: FacetGroup = {
+        title,
+        key: option,
+        buckets,
+      };
+      facetGroups.push(group);
+    });
+    return facetGroups;
+  }
+
+  private getFacetTemplate(facetGroup: FacetGroup) {
+    console.debug('facetGroup', facetGroup);
     return html`
-      <h2>${title}</h2>
+      <h2>${facetGroup.title}</h2>
       ${repeat(
-        visibleBuckets,
-        bucket => `${title}:${bucket.key}`,
-        bucket => html`
-          <label class="facet-row">
-            <div class="facet-checkbox">
-              <input
-                type="checkbox"
-                .name=${title}
-                .value=${bucket.key}
-                @click=${this.facetToggled}
-              />
-            </div>
-            <div class="facet-title">${bucket.key}</div>
-            <div class="facet-count">${bucket.doc_count}</div>
-          </label>
-        `
+        facetGroup.buckets,
+        bucket => `${facetGroup.title}:${bucket.key}`,
+        bucket => {
+          const isChecked = this.isFacetChecked(facetGroup.title, bucket.key);
+          console.debug('isChecked', isChecked, facetGroup.title, bucket.key);
+          return html`
+            <label class="facet-row">
+              <div class="facet-checkbox">
+                <input
+                  type="checkbox"
+                  .name=${facetGroup.key}
+                  .value=${bucket.key}
+                  @click=${this.facetToggled}
+                />
+              </div>
+              <div class="facet-title">${bucket.key}</div>
+              <div class="facet-count">${bucket.count}</div>
+            </label>
+          `;
+        }
       )}
     `;
   }
 
+  private isFacetChecked(facetKey: string, facetValue: string): boolean {
+    const selectedFacets = this.hydratedSelectedFacets[facetKey];
+    const checked = selectedFacets?.includes(facetValue);
+    console.debug(
+      'isFacetChecked',
+      facetKey,
+      facetValue,
+      checked,
+      selectedFacets
+    );
+    return checked;
+  }
+
+  private facetChecked(name: string, value: string) {
+    const { selectedFacets } = this;
+    const facetClone = { ...selectedFacets };
+    const currentFacetValues = facetClone[name];
+    if (currentFacetValues) {
+      currentFacetValues.push(value);
+      facetClone[name] = currentFacetValues;
+    } else {
+      facetClone[name] = [value];
+    }
+    this.selectedFacets = facetClone;
+  }
+
+  private facetUnchecked(name: string, value: string) {
+    const { selectedFacets } = this;
+    const facetClone = { ...selectedFacets };
+    let currentFacetValues = selectedFacets[name];
+    if (currentFacetValues) {
+      currentFacetValues = currentFacetValues.filter(el => el !== value);
+      facetClone[name] = currentFacetValues;
+      if (currentFacetValues.length === 0) {
+        delete facetClone[name];
+      }
+    }
+    this.selectedFacets = facetClone;
+  }
+
   private facetToggled(e: Event) {
     const target = e.target as HTMLInputElement;
-    const { name, value, checked } = target;
-    const eventName = checked ? 'facetChecked' : 'facetUnchecked';
-    const event = new CustomEvent<{ name: string; value: string }>(eventName, {
-      detail: {
-        name,
-        value,
-      },
+    const { checked, name, value } = target;
+    if (checked) {
+      this.facetChecked(name, value);
+    } else {
+      this.facetUnchecked(name, value);
+    }
+
+    const event = new CustomEvent<Record<string, string[]>>('facetsChanged', {
+      detail: this.selectedFacets,
     });
     this.dispatchEvent(event);
   }
@@ -74,6 +265,18 @@ export class CollectionFacets extends LitElement {
     const fieldName = fieldNamePart.split(':')[1];
     const sorterRemoved = fieldName.replace('Sorter', '');
     return sorterRemoved;
+  }
+
+  private getFacetOptionFromKey(key: string): FacetOption {
+    const parts = key.split('__');
+    const fieldNamePart = parts[2];
+    const fieldName = fieldNamePart.split(':')[1];
+    const facetMatch = Object.entries(aggregationToFacetOption).find(([key2]) =>
+      fieldName.includes(key2)
+    );
+    const option = facetMatch?.[1];
+    if (!option) throw new Error(`Could not find facet option for key: ${key}`);
+    return option;
   }
 
   static get styles() {
