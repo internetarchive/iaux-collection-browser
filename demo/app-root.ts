@@ -161,14 +161,10 @@ export class AppRoot extends LitElement {
         </button>
 
         <sort-filter-bar
-          @sortDirectionChanged=${this.sortDirectionChanged}
+          @sortChanged=${this.sortChanged}
           @displayModeChanged=${this.displayModeChanged}
           @titleLetterChanged=${this.titleLetterChanged}
           @creatorLetterChanged=${this.creatorLetterChanged}
-          @titleSelectorVisibilityChanged=${this.titleSelectorVisibilityChanged}
-          @creatorSelectorVisibilityChanged=${this
-            .creatorSelectorVisibilityChanged}
-          @sortByViewsPressed=${this.sortByViewsPressed}
         ></sort-filter-bar>
 
         <div id="cell-controls">
@@ -328,10 +324,8 @@ export class AppRoot extends LitElement {
     this.currentPage = pageNumber;
   }
 
-  private sortDirectionChanged(e: CustomEvent<{ direction: 'asc' | 'desc' }>) {
-    const sortField = this.collectionBrowser.sortParam?.field ?? 'date';
-    const sortDirection = e.detail.direction;
-    this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
+  private sortChanged(e: CustomEvent<{ sort: SortParam }>) {
+    this.sortParam = e.detail.sort;
     if ((this.currentPage ?? 1) > 1) {
       this.collectionBrowser.goToPage(1);
     }

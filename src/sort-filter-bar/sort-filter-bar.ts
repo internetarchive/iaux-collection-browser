@@ -1,3 +1,4 @@
+import { SortParam } from '@internetarchive/search-service';
 import { LitElement, html, css, nothing, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { CollectionDisplayMode } from '../models';
@@ -9,9 +10,13 @@ export class SortFilterBar extends LitElement {
 
   @property({ type: String }) sortDirection: 'asc' | 'desc' = 'desc';
 
+  @property({ type: String }) sortField = 'week';
+
   @state() titleSelectorVisible: boolean = false;
 
   @state() creatorSelectorVisible: boolean = false;
+
+  @state() dateSortSelectorVisible = false;
 
   render() {
     return html`
@@ -19,26 +24,54 @@ export class SortFilterBar extends LitElement {
         <div id="sort-selector">
           <ul>
             <li>
-              <button @click=${this.sortDescSelected}>Desc</button>
-              <button @click=${this.sortAscSelected}>Asc</button>Sort By
+              <button
+                @click=${() => {
+                  this.sortDirection = 'desc';
+                }}
+              >
+                Desc
+              </button>
+              <button
+                @click=${() => {
+                  this.sortDirection = 'asc';
+                }}
+              >
+                Asc</button
+              >Sort By
             </li>
             <li>
-              <button @click=${this.sortByViewsSelected}>Views</button>
+              <button
+                @click=${() => {
+                  this.sortField = 'week';
+                }}
+              >
+                Views
+              </button>
             </li>
             <li>
               <button
                 @click=${() => {
                   this.titleSelectorVisible = !this.titleSelectorVisible;
+                  this.sortField = 'titleSorter';
                 }}
               >
                 Title
               </button>
             </li>
-            <li>Date Archived</li>
+            <li>
+              <button
+                @click=${() => {
+                  this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
+                }}
+              >
+                Date Archived
+              </button>
+            </li>
             <li>
               <button
                 @click=${() => {
                   this.creatorSelectorVisible = !this.creatorSelectorVisible;
+                  this.sortField = 'creatorSorter';
                 }}
               >
                 Creator
@@ -66,6 +99,7 @@ export class SortFilterBar extends LitElement {
         </div>
       </div>
 
+      ${this.dateSortSelectorVisible ? this.dateSortSelector : nothing}
       ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
       ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
     `;
@@ -76,31 +110,54 @@ export class SortFilterBar extends LitElement {
       this.displayModeChanged();
     }
 
-    if (changed.has('sortDirection')) {
+    if (changed.has('sortDirection') || changed.has('sortField')) {
       this.sortChanged();
     }
-
-    if (changed.has('titleSelectorVisible')) {
-      this.titleSelectorVisibleChanged();
-    }
-
-    if (changed.has('creatorSelectorVisible')) {
-      this.creatorSelectorVisibleChanged();
-    }
   }
 
-  private titleSelectorVisibleChanged() {
-    const event = new CustomEvent('titleSelectorVisibilityChanged', {
-      detail: { visible: this.titleSelectorVisible },
-    });
-    this.dispatchEvent(event);
-  }
-
-  private creatorSelectorVisibleChanged() {
-    const event = new CustomEvent('creatorSelectorVisibilityChanged', {
-      detail: { visible: this.creatorSelectorVisible },
-    });
-    this.dispatchEvent(event);
+  private get dateSortSelector() {
+    return html`
+      <div id="date-sort-selector">
+        <ul>
+          <li>
+            <button
+              @click=${() => {
+                this.sortField = 'publicdate';
+              }}
+            >
+              Date Archived
+            </button>
+          </li>
+          <li>
+            <button
+              @click=${() => {
+                this.sortField = 'date';
+              }}
+            >
+              Date Published
+            </button>
+          </li>
+          <li>
+            <button
+              @click=${() => {
+                this.sortField = 'reviewdate';
+              }}
+            >
+              Date Reviewed
+            </button>
+          </li>
+          <li>
+            <button
+              @click=${() => {
+                this.sortField = 'addeddate';
+              }}
+            >
+              Date Added
+            </button>
+          </li>
+        </ul>
+      </div>
+    `;
   }
 
   private get titleSelectorBar() {
@@ -135,18 +192,6 @@ export class SortFilterBar extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private sortDescSelected() {
-    this.sortDirection = 'desc';
-  }
-
-  private sortAscSelected() {
-    this.sortDirection = 'asc';
-  }
-
-  private sortByViewsSelected() {
-    this.dispatchEvent(new Event('sortByViewsPressed'));
-  }
-
   private gridSelected() {
     this.displayMode = 'grid';
   }
@@ -169,8 +214,9 @@ export class SortFilterBar extends LitElement {
   }
 
   private sortChanged() {
-    const event = new CustomEvent('sortDirectionChanged', {
-      detail: { direction: this.sortDirection },
+    const sort = new SortParam(this.sortField, this.sortDirection);
+    const event = new CustomEvent('sortChanged', {
+      detail: { sort },
     });
     this.dispatchEvent(event);
   }
