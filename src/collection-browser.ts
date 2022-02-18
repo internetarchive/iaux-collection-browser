@@ -573,6 +573,8 @@ export class CollectionBrowser
 
     infinite-scroller {
       display: block;
+      --infiniteScrollerRowGap: var(--collectionBrowserRowGap, 1.7rem);
+      --infiniteScrollerColGap: var(--collectionBrowserColGap, 1.7rem);
     }
 
     infinite-scroller.list-compact {

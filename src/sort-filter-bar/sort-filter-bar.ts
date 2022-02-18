@@ -22,7 +22,9 @@ export class SortFilterBar extends LitElement {
               <button @click=${this.sortDescSelected}>Desc</button>
               <button @click=${this.sortAscSelected}>Asc</button>Sort By
             </li>
-            <li>Views</li>
+            <li>
+              <button @click=${this.sortByViewsSelected}>Views</button>
+            </li>
             <li>
               <button
                 @click=${() => {
@@ -139,6 +141,10 @@ export class SortFilterBar extends LitElement {
 
   private sortAscSelected() {
     this.sortDirection = 'asc';
+  }
+
+  private sortByViewsSelected() {
+    this.dispatchEvent(new Event('sortByViewsPressed'));
   }
 
   private gridSelected() {

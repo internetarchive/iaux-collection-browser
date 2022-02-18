@@ -24,6 +24,10 @@ export class AppRoot extends LitElement {
 
   @state() private cellHeight: number = 29;
 
+  @state() private rowGap: number = 1.7;
+
+  @state() private colGap: number = 1.7;
+
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
@@ -164,42 +168,73 @@ export class AppRoot extends LitElement {
           @titleSelectorVisibilityChanged=${this.titleSelectorVisibilityChanged}
           @creatorSelectorVisibilityChanged=${this
             .creatorSelectorVisibilityChanged}
+          @sortByViewsPressed=${this.sortByViewsPressed}
         ></sort-filter-bar>
 
         <div id="cell-controls">
-          <div>
-            <label for="cell-width-slider">Minimum cell width:</label>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              value="18"
-              step="0.1"
-              id="cell-width-slider"
-              @input=${this.widthChanged}
-            />
-            <span>${this.cellWidth}rem</span>
+          <div id="cell-size-control">
+            <div>
+              <label for="cell-width-slider">Minimum cell width:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="18"
+                step="0.1"
+                id="cell-width-slider"
+                @input=${this.widthChanged}
+              />
+              <span>${this.cellWidth}rem</span>
+            </div>
+            <div>
+              <label for="cell-height-slider">Cell height:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="29"
+                step="0.1"
+                id="cell-height-slider"
+                @input=${this.heightChanged}
+              />
+              <span>${this.cellHeight}rem</span>
+            </div>
+            <div>
+              <label for="show-outline-check">Show outlines:</label>
+              <input
+                type="checkbox"
+                id="show-outline-check"
+                @click=${this.outlineChanged}
+              />
+            </div>
           </div>
-          <div>
-            <label for="cell-height-slider">Cell height:</label>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              value="29"
-              step="0.1"
-              id="cell-height-slider"
-              @input=${this.heightChanged}
-            />
-            <span>${this.cellHeight}rem</span>
-          </div>
-          <div>
-            <label for="show-outline-check">Show outlines:</label>
-            <input
-              type="checkbox"
-              id="show-outline-check"
-              @click=${this.outlineChanged}
-            />
+          <div id="cell-gap-control">
+            <div>
+              <label for="cell-row-gap-slider">Row gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-row-gap-slider"
+                @input=${this.rowGapChanged}
+              />
+              <span>${this.rowGap}rem</span>
+            </div>
+            <div>
+              <label for="cell-col-gap-slider">Col gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-col-gap-slider"
+                @input=${this.colGapChanged}
+              />
+              <span>${this.colGap}rem</span>
+            </div>
           </div>
         </div>
       </div>
@@ -235,12 +270,34 @@ export class AppRoot extends LitElement {
     }
   }
 
+  private sortByViewsPressed() {
+    this.sortParam = new SortParam('week', 'desc');
+  }
+
   private creatorSelectorVisibilityChanged(
     e: CustomEvent<{ visible: boolean }>
   ) {
     if (e.detail.visible) {
       this.sortParam = new SortParam('creatorSorter', 'asc');
     }
+  }
+
+  private rowGapChanged(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.rowGap = parseFloat(input.value);
+    this.collectionBrowser.style.setProperty(
+      '--collectionBrowserRowGap',
+      `${input.value}rem`
+    );
+  }
+
+  private colGapChanged(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.colGap = parseFloat(input.value);
+    this.collectionBrowser.style.setProperty(
+      '--collectionBrowserColGap',
+      `${input.value}rem`
+    );
   }
 
   private widthChanged(e: Event) {
@@ -343,9 +400,17 @@ export class AppRoot extends LitElement {
       border: 1px solid black;
     }
 
+    #cell-controls {
+      display: flex;
+    }
+
     #cell-controls label {
       display: inline-block;
       width: 10rem;
+    }
+
+    #cell-gap-control {
+      margin-left: 1rem;
     }
   `;
 }
