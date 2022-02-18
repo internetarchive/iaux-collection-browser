@@ -43,6 +43,7 @@ interface FacetBucket {
   displayText?: string;
   key: string;
   count: number;
+  selected: boolean;
 }
 
 interface FacetGroup {
@@ -77,6 +78,9 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
+  /**
+   * Combines the selected facets with the aggregations to create a single list of facets
+   */
   private get mergedFacets(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
 
@@ -141,7 +145,7 @@ export class CollectionFacets extends LitElement {
       const group = {
         title,
         key,
-        buckets: values.map(v => ({ key: v, count: 0 })),
+        buckets: values.map(v => ({ key: v, count: 0, selected: true })),
       };
       selectedFacetGroups.push(group);
     });
@@ -159,6 +163,7 @@ export class CollectionFacets extends LitElement {
       const buckets: FacetBucket[] = values.buckets.map(bucket => ({
         key: `${bucket.key}`,
         count: bucket.doc_count,
+        selected: false,
       }));
       const group: FacetGroup = {
         title,
@@ -175,7 +180,7 @@ export class CollectionFacets extends LitElement {
       <h2>${facetGroup.title}</h2>
       ${repeat(
         facetGroup.buckets,
-        bucket => `${facetGroup.title}:${bucket.key}`,
+        bucket => `${facetGroup.key}:${bucket.key}`,
         bucket => html`
           <label class="facet-row">
             <div class="facet-checkbox">
@@ -184,6 +189,7 @@ export class CollectionFacets extends LitElement {
                 .name=${facetGroup.key}
                 .value=${bucket.key}
                 @click=${this.facetToggled}
+                ?checked=${bucket.selected}
               />
             </div>
             <div class="facet-title">${bucket.key}</div>
