@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation } from '@internetarchive/search-service';
 
-export type FacetOption =
+type FacetOption =
   | 'subject'
   | 'mediatype'
   | 'language'
@@ -121,7 +121,10 @@ export class CollectionFacets extends LitElement {
         if (existingBucket) return;
         bucketsWithCount.push(bucket);
       });
-      facetGroup.buckets = bucketsWithCount;
+      facetGroup.buckets = bucketsWithCount.splice(0, 5);
+
+      if (facetGroup.buckets.length === 0) return;
+
       facetGroups.push(facetGroup);
     });
 
@@ -168,45 +171,27 @@ export class CollectionFacets extends LitElement {
   }
 
   private getFacetTemplate(facetGroup: FacetGroup) {
-    console.debug('facetGroup', facetGroup);
     return html`
       <h2>${facetGroup.title}</h2>
       ${repeat(
         facetGroup.buckets,
         bucket => `${facetGroup.title}:${bucket.key}`,
-        bucket => {
-          const isChecked = this.isFacetChecked(facetGroup.title, bucket.key);
-          console.debug('isChecked', isChecked, facetGroup.title, bucket.key);
-          return html`
-            <label class="facet-row">
-              <div class="facet-checkbox">
-                <input
-                  type="checkbox"
-                  .name=${facetGroup.key}
-                  .value=${bucket.key}
-                  @click=${this.facetToggled}
-                />
-              </div>
-              <div class="facet-title">${bucket.key}</div>
-              <div class="facet-count">${bucket.count}</div>
-            </label>
-          `;
-        }
+        bucket => html`
+          <label class="facet-row">
+            <div class="facet-checkbox">
+              <input
+                type="checkbox"
+                .name=${facetGroup.key}
+                .value=${bucket.key}
+                @click=${this.facetToggled}
+              />
+            </div>
+            <div class="facet-title">${bucket.key}</div>
+            <div class="facet-count">${bucket.count}</div>
+          </label>
+        `
       )}
     `;
-  }
-
-  private isFacetChecked(facetKey: string, facetValue: string): boolean {
-    const selectedFacets = this.hydratedSelectedFacets[facetKey];
-    const checked = selectedFacets?.includes(facetValue);
-    console.debug(
-      'isFacetChecked',
-      facetKey,
-      facetValue,
-      checked,
-      selectedFacets
-    );
-    return checked;
   }
 
   private facetChecked(name: string, value: string) {
@@ -259,14 +244,6 @@ export class CollectionFacets extends LitElement {
    * @param key
    * @returns
    */
-  private getTitleFromKey(key: string): string {
-    const parts = key.split('__');
-    const fieldNamePart = parts[2];
-    const fieldName = fieldNamePart.split(':')[1];
-    const sorterRemoved = fieldName.replace('Sorter', '');
-    return sorterRemoved;
-  }
-
   private getFacetOptionFromKey(key: string): FacetOption {
     const parts = key.split('__');
     const fieldNamePart = parts[2];
