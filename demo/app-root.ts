@@ -35,8 +35,10 @@ export class AppRoot extends LitElement {
   private searchPressed(e: Event) {
     e.preventDefault();
     this.searchQuery = this.baseQueryField.value;
+    if ((this.currentPage ?? 1) > 1) {
+      this.collectionBrowser.goToPage(this.currentPage ?? 1);
+    }
     this.currentPage = 1;
-    this.collectionBrowser.goToPage(this.currentPage ?? 1);
   }
 
   private changePagePressed(e: Event) {
@@ -72,7 +74,9 @@ export class AppRoot extends LitElement {
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
       this.currentPage = parsed;
-      this.collectionBrowser.goToPage(parsed);
+      if (parsed > 1) {
+        this.collectionBrowser.goToPage(parsed);
+      }
     } else {
       this.currentPage = 1;
     }
@@ -271,8 +275,10 @@ export class AppRoot extends LitElement {
     const sortField = this.collectionBrowser.sortParam?.field ?? 'date';
     const sortDirection = e.detail.direction;
     this.sortParam = new SortParam(sortField, sortDirection as SortDirection);
+    if ((this.currentPage ?? 1) > 1) {
+      this.collectionBrowser.goToPage(1);
+    }
     this.currentPage = 1;
-    this.collectionBrowser.goToPage(this.currentPage);
   }
 
   private displayModeChanged(
