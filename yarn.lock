@@ -110,14 +110,19 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@internetarchive/field-parsers@0.1.1-alpha.1", "@internetarchive/field-parsers@^0.1.1-alpha.1":
+"@internetarchive/field-parsers@0.1.1-alpha.1":
   version "0.1.1-alpha.1"
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1-alpha.1.tgz"
   integrity sha512-FBuOkxiSKk20Cn5bbyUkTPO1Uk+/XgoCZwwcdFDQNQEZnT7bTiJapfggxUVvRwQvF9IWMdzXvWUvtmgzKJKFRA==
 
+"@internetarchive/field-parsers@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1.tgz"
+  integrity sha512-yPkH/m1a15V0tnewQutK3RQJgSwe9RoMdTuzgUxGgZtDXX8Tw+MFcvTpvZQjEo3ZgyL9sNLr2Lv+KiSAsZ9OOg==
+
 "@internetarchive/infinite-scroller@0.0.1-alpha.15":
   version "0.0.1-alpha.15"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.15.tgz#0f77c0db73029793324ab478a8ca3e80518fb228"
+  resolved "https://registry.npmjs.org/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.15.tgz"
   integrity sha512-AIfECMuRbQq/0//6QfjfcXh+HY8xcZy3DYy1GAqjHoAqvSkUbiRpsHVl7uGioDOzIzmcNWLrcbCih07YZrN6Fg==
   dependencies:
     lit "^2.0.2"
@@ -127,13 +132,15 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@0.2.1-alpha.2":
-  version "0.2.1-alpha.2"
-  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-0.2.1-alpha.2.tgz"
-  integrity sha512-Eys5iUC06ulDe8qhE8h19wA6itaPfhLR1dzacHeMujwaioASNzmaUezCm2+TAcRNCD2UeyRpHGx50l5zyCVd8Q==
+"@internetarchive/search-service@^0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.2.4.tgz#308b34d1240ce2c6220954d62181e4065b2a0575"
+  integrity sha512-6EerSMSg/R55Doakr7xPbec799RSuH6ds0OhA9j1yBoqJJpL3avwZ2BiYfIUFFSYU1e14/KmmhCSXRKNuEIl3g==
   dependencies:
-    "@internetarchive/field-parsers" "^0.1.1-alpha.1"
+    "@internetarchive/field-parsers" "^0.1.1"
     "@internetarchive/result-type" "^0.0.1"
+    decorator-cache-getter "^1.0.0"
+    typescript-memoize "^1.1.0"
 
 "@lit/localize@^0.11.1":
   version "0.11.1"
@@ -1342,6 +1349,11 @@ decomment@^0.9.3:
   integrity sha512-h0TZ8t6Dp49duwyDHo3iw67mnh9/UpFiSSiOb5gDK1sqoXzrfX/SQxIUQd2R2QEiSnqib0KF2fnKnGfAhAs6lg==
   dependencies:
     esprima "4.0.1"
+
+decorator-cache-getter@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/decorator-cache-getter/-/decorator-cache-getter-1.0.0.tgz"
+  integrity sha512-yB49c5qi0govRjpe18vutEkkKzosIt2XggYSs1Qyev1TJYTh2WmLgDp0dV6VJ/6yNBRlKG+qMG80Vy4Bg0mLJw==
 
 deep-equal@~1.0.1:
   version "1.0.1"
@@ -4034,6 +4046,11 @@ type-is@^1.6.16:
   dependencies:
     media-typer "0.3.0"
     mime-types "~2.1.24"
+
+typescript-memoize@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/typescript-memoize/-/typescript-memoize-1.1.0.tgz"
+  integrity sha512-LQPKVXK8QrBBkL/zclE6YgSWn0I8ew5m0Lf+XL00IwMhlotqRLlzHV+BRrljVQIc+NohUAuQP7mg4HQwrx5Xbg==
 
 typescript@^3.9.5, typescript@^3.9.7:
   version "3.9.10"
