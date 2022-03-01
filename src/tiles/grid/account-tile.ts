@@ -37,15 +37,15 @@ export class UserTile extends LitElement {
           </div>
           <div id="status-holder">
             <div id="patron-icon">${accountIcon}</div>
-            <div id="stat-icon">
+            <div class="stat-icon">
               ${uploadIcon}
               <h3>${this.model?.itemCount}</h3>
             </div>
-            <div id="stat-icon">
+            <div class="stat-icon">
               ${favoriteFilledIcon}
               <h3>${this.model?.favCount}</h3>
             </div>
-            <div id="stat-icon">
+            <div class="stat-icon">
               ${reviewsIcon}
               <h3>${this.model?.commentCount}</h3>
             </div>
@@ -77,21 +77,19 @@ export class UserTile extends LitElement {
         box-shadow: 1px 1px 2px 0px;
         height: 100%;
         display: flex;
-        align-items: center;
-        justify-content: center;
         text-align: center;
         width: 100%;
       }
 
       .inner-holder {
-        width: calc(var(--collectionBrowserCellWidth) - 10px);
-        height: 96%;
+        padding: 5px;
+        width: 100%;
         display: flex;
         flex-direction: column;
       }
 
       #header-holder {
-        flex: 1 1 0%;
+        flex: 1;
       }
 
       #title-holder {
@@ -134,7 +132,7 @@ export class UserTile extends LitElement {
         width: 25px;
       }
 
-      #stat-icon {
+      .stat-icon {
         height: 10px;
         width: 10px;
       }
