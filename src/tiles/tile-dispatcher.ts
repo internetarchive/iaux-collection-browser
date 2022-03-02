@@ -86,7 +86,8 @@ export class TileDispatcher
   }
 
   private get tile() {
-    const { model } = this;
+    const { model, baseNavigationUrl } = this;
+
     if (!model) return nothing;
 
     switch (this.displayMode) {
@@ -117,12 +118,14 @@ export class TileDispatcher
           .model=${model}
           .currentWidth=${this.currentWidth}
           .currentHeight=${this.currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
         ></tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list-detail
           .model=${model}
           .currentWidth=${this.currentWidth}
           .currentHeight=${this.currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
         ></tile-list-detail>`;
       default:
         return nothing;
