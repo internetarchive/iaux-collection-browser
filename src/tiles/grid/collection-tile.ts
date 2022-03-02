@@ -1,7 +1,7 @@
 import { localized, msg } from '@lit/localize';
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { collectionIcon } from '../../assets/img/icons/collection';
+import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { TileModel } from '../../models';
 
 @localized()
@@ -52,6 +52,10 @@ export class CollectionTile extends LitElement {
         object-fit: cover;
         background-position: center;
         background-size: cover;
+      }
+
+      #item-count-image-container svg {
+        filter: invert(100%);
       }
 
       #collection-image-title {
