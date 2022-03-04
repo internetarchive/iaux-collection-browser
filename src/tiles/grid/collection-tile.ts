@@ -92,7 +92,12 @@ export class CollectionTile extends LitElement {
         flex-direction: column;
       }
 
-      #container:hover > #collection-title {
+      #container:hover > #collection-image-title > #collection-title {
+        text-decoration: underline;
+      }
+
+      /* this is a workaround for Safari 15 where the hover effects are not working */
+      #collection-image-title:hover > #collection-title {
         text-decoration: underline;
       }
 
