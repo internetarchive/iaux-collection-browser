@@ -427,6 +427,8 @@ export class CollectionBrowser
         'description',
         'date',
         'addeddate',
+        'publicdate',
+        'reviewdate',
         'creator',
       ],
       page: pageNumber,
@@ -499,8 +501,10 @@ export class CollectionBrowser
         commentCount: doc.num_reviews?.value ?? 0,
         itemCount: doc.item_count?.value ?? 0,
         description: doc.description?.value,
-        date: doc.date?.value,
         dateAdded: doc.addeddate?.value,
+        dateArchived: doc.publicdate?.value,
+        dateReviewed: doc.reviewdate?.value,
+        datePublished: doc.date?.value,
         creator: doc.creator?.value,
       });
     });

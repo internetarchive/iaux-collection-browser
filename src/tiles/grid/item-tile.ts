@@ -9,7 +9,7 @@ export class ItemTIle extends LitElement {
   render() {
     return html`
       <h1>${this.model?.title}</h1>
-      <h2>${this.model?.date?.toDateString()}</h2>
+      <h2>${this.model?.datePublished?.toDateString()}</h2>
       <p>${this.model?.description?.substring(0, 100)}...</p>
     `;
   }
