@@ -92,11 +92,11 @@ export class CollectionTile extends LitElement {
         flex-direction: column;
       }
 
-      #container:hover #collection-title {
+      #container:hover > #collection-title {
         text-decoration: underline;
       }
 
-      #container:hover #collection-image-title {
+      #container:hover > #collection-image-title {
         background-color: #757575;
       }
 
@@ -127,7 +127,7 @@ export class CollectionTile extends LitElement {
         align-items: baseline;
       }
 
-      #container:hover #item-count-container {
+      #container:hover > #item-count-container {
         background-color: #575757;
       }
 
