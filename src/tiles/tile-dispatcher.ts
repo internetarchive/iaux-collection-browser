@@ -57,18 +57,18 @@ export class TileDispatcher
   }
 
   disconnectedCallback(): void {
-    this.stopResizeObservation();
+    this.stopResizeObservation(this.resizeObserver);
   }
 
-  private stopResizeObservation() {
-    this.resizeObserver?.removeObserver({
+  private stopResizeObservation(observer?: SharedResizeObserverInterface) {
+    observer?.removeObserver({
       handler: this,
       target: this.container,
     });
   }
 
   private startResizeObservation() {
-    this.stopResizeObservation();
+    this.stopResizeObservation(this.resizeObserver);
     this.resizeObserver?.addObserver({
       handler: this,
       target: this.container,
@@ -77,6 +77,10 @@ export class TileDispatcher
 
   updated(props: PropertyValues) {
     if (props.has('resizeObserver')) {
+      const previousObserver = props.get(
+        'resizeObserver'
+      ) as SharedResizeObserverInterface;
+      this.stopResizeObservation(previousObserver);
       this.startResizeObservation();
     }
   }
