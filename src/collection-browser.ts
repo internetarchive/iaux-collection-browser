@@ -21,6 +21,7 @@ import {
   AggregateSearchParams,
   SortParam,
 } from '@internetarchive/search-service/dist/src/search-params';
+import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
@@ -50,6 +51,8 @@ export class CollectionBrowser
   @property({ type: String }) additionalQueryClause?: string;
 
   @property({ type: Number }) pageSize = 50;
+
+  @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @query('collection-facets') collectionFacets!: CollectionFacets;
 
@@ -231,9 +234,10 @@ export class CollectionBrowser
   }
 
   private cellWidthChanged(e: CustomEvent<{ width: number }>) {
+    const { width } = e.detail;
     (this.shadowRoot?.host as HTMLElement).style.setProperty(
       '--collectionBrowserCellWidth',
-      `${e.detail.width}px`
+      `${width}px`
     );
   }
 
@@ -525,6 +529,7 @@ export class CollectionBrowser
       .baseNavigationUrl=${this.baseNavigationUrl}
       .model=${model}
       .displayMode=${this.displayMode}
+      .resizeObserver=${this.resizeObserver}
       ?showDeleteButton=${this.showDeleteButtons}
     ></tile-dispatcher>`;
   }

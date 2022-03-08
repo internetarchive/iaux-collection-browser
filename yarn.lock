@@ -142,6 +142,11 @@
     decorator-cache-getter "^1.0.0"
     typescript-memoize "^1.1.0"
 
+"@internetarchive/shared-resize-observer@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/shared-resize-observer/-/shared-resize-observer-0.2.0.tgz#afe51f7dc9507ac6cf7be8966a49e2a4c6c25ff3"
+  integrity sha512-E5Jh6rX03usPkihB/lnGpoL3qedE84NLRHxuAEGrlwC0zyQ7xTr6NNQWwKBDzG1OBcCrUJXIWaQuJdjqo+og1Q==
+
 "@lit/localize@^0.11.1":
   version "0.11.1"
   resolved "https://registry.npmjs.org/@lit/localize/-/localize-0.11.1.tgz"

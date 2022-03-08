@@ -5,6 +5,7 @@ import {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service/dist/src/search-params';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { CollectionDisplayMode } from '../src/models';
@@ -13,6 +14,8 @@ import { SortFilterBar } from '../src/sort-filter-bar/sort-filter-bar';
 @customElement('app-root')
 export class AppRoot extends LitElement {
   private searchService = SearchService.default;
+
+  private resizeObserver = new SharedResizeObserver();
 
   @state() private currentPage?: number;
 
@@ -239,6 +242,7 @@ export class AppRoot extends LitElement {
         .baseNavigationUrl=${'https://archive.org'}
         .searchService=${this.searchService}
         .additionalQueryClause=${this.sortFilterQueries}
+        .resizeObserver=${this.resizeObserver}
         @visiblePageChanged=${this.visiblePageChanged}
       >
       </collection-browser>
