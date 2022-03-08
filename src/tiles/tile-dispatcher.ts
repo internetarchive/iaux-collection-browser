@@ -132,6 +132,10 @@ export class TileDispatcher
         height: 100%;
       }
 
+      #container {
+        height: 100%;
+      }
+
       #delete-button {
         float: right;
       }
