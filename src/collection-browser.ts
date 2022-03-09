@@ -180,7 +180,6 @@ export class CollectionBrowser
             .cellProvider=${this}
             .placeholderCellTemplate=${this.placeholderCellTemplate}
             @scrollThresholdReached=${this.scrollThresholdReached}
-            @cellWidthChanged=${this.cellWidthChanged}
             @visibleCellsChanged=${this.visibleCellsChanged}
           >
           </infinite-scroller>
@@ -268,14 +267,6 @@ export class CollectionBrowser
       },
     });
     this.dispatchEvent(event);
-  }
-
-  private cellWidthChanged(e: CustomEvent<{ width: number }>) {
-    const { width } = e.detail;
-    (this.shadowRoot?.host as HTMLElement).style.setProperty(
-      '--collectionBrowserCellWidth',
-      `${width}px`
-    );
   }
 
   // we only want to scroll on the very first query change
