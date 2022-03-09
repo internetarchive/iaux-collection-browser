@@ -2,7 +2,15 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { TileModel } from '../../models';
+import { formatCount } from '../../utils/format-count';
 // import { collectionIcon } from '../../assets/img/icons/collection';
+
+/*
+at 750 creator, title trimmed
+at 530
+
+css elipsis property
+*/
 
 @customElement('tile-list-compact')
 export class TileListCompact extends LitElement {
@@ -10,11 +18,13 @@ export class TileListCompact extends LitElement {
 
   @property({ type: String }) baseNavigationUrl?: string;
 
+  @property({ type: Number }) currentWidth?: number;
+
   render() {
     // Todo: Manage different date types
     return html`
-      <div id="list-compact">
-        <div id="views">${this.model?.viewCount}</div>
+      <div id="list-compact" class="${this.classSize}">
+        <div id="views">${formatCount(this.model?.viewCount ?? 0)}</div>
         <div id="title">
           <a
             href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
@@ -23,26 +33,48 @@ export class TileListCompact extends LitElement {
             ${this.model?.title}
           </a>
         </div>
-        <div id="date-published">${this.model?.datePublished?.toDateString()}</div>
+        <div id="date-published">
+          ${this.dateFormat(this.model?.datePublished)}
+        </div>
         <div id="creator">${this.model?.creator}</div>
         <div id="icon">icon</div>
       </div>
     `;
   }
 
+  private get classSize(): string {
+    return (this.currentWidth ?? 531) < 530 ? 'mobile' : 'desktop';
+  }
+
+  private dateFormat(date: Date | undefined): string {
+    if (!date) return '';
+    const options: any = {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    };
+    const dateFormatter = new Intl.DateTimeFormat('en-US', options);
+    return dateFormatter.format(date);
+  }
 
   static get styles() {
     return css`
+      :host(.mobile) {
+        font-size: 9px;
+      }
+      :host(.desktop) {
+        font-size: 14px;
+      }
       #list-compact {
         display: grid;
-        grid-template-columns: 80px auto 115px 278px 22px;
+        grid-template-columns: 80px 3fr 115px 2fr 22px;
         column-gap: 10px;
 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        font-size: 14px;
         line-height: 1.42857143;
         color: #333;
-        background-color: #fff;
+        /* background-color: #fff;
+        */
       }
 
       h1 {
