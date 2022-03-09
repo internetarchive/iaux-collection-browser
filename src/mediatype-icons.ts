@@ -12,10 +12,10 @@ import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
 
 @customElement('mediatype-icon')
-export class MediaTypeIcons extends LitElement {
+export class MediaTypeIcon extends LitElement {
   @property({ type: String }) mediatype = '';
 
-  @property() mediaTypeIcons: { [key: string]: any } = {
+  private readonly mediaTypeIcons: { [key: string]: any } = {
     audio: audioIcon,
     data: etreeIcon,
     etree: etreeIcon,
