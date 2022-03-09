@@ -218,11 +218,6 @@ export class CollectionBrowser
   private get histogramTemplate() {
     const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
       this;
-    console.debug(
-      'histogramTemplate',
-      currentYearsHistogramAggregation,
-      fullYearsHistogramAggregation
-    );
     return html`
       <histogram-date-range
         mindate=${fullYearsHistogramAggregation?.first_bucket_key}
