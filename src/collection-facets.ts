@@ -162,6 +162,7 @@ export class CollectionFacets extends LitElement {
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
+      if (key === 'year_histogram') return;
       const option = this.getFacetOptionFromKey(key);
       const title = facetTitles[option];
       const facetBuckets: FacetBucket[] = buckets.buckets.map(bucket => ({

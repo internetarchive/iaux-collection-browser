@@ -13,6 +13,7 @@ import type {
   InfiniteScrollerCellProviderInterface,
 } from '@internetarchive/infinite-scroller';
 import {
+  Aggregation,
   Metadata,
   SearchParams,
   SearchServiceInterface,
@@ -50,6 +51,8 @@ export class CollectionBrowser
 
   @property({ type: String }) additionalQueryClause?: string;
 
+  @property({ type: String }) dateRangeQueryClause?: string;
+
   @property({ type: Number }) pageSize = 50;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
@@ -72,6 +75,8 @@ export class CollectionBrowser
   @state() private searchResultsLoading = false;
 
   @state() private facetsLoading = false;
+
+  @state() private aggregations?: Record<string, Aggregation>;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -160,9 +165,11 @@ export class CollectionBrowser
 
       <div id="content-container">
         <div id="facets-container">
+          ${this.histogramTemplate}
           ${this.facetsLoading ? this.loadingTemplate : nothing}
           <collection-facets
             @facetsChanged=${this.facetsChanged}
+            .aggregations=${this.aggregations}
           ></collection-facets>
         </div>
         <div id="infinite-scroller-container">
@@ -189,6 +196,34 @@ export class CollectionBrowser
     `;
   }
 
+  private get yearHistogramAggregation(): Aggregation | undefined {
+    return this.aggregations?.year_histogram;
+  }
+
+  private get histogramTemplate() {
+    const { yearHistogramAggregation } = this;
+    return html`
+      <histogram-date-range
+        mindate=${yearHistogramAggregation?.first_bucket_key}
+        maxdate=${yearHistogramAggregation?.last_bucket_key}
+        updatedelay="1000"
+        .width=${150}
+        .bins=${yearHistogramAggregation?.buckets}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+      ></histogram-date-range>
+    `;
+  }
+
+  private histogramDateRangeUpdated(
+    e: CustomEvent<{
+      minDate: string;
+      maxDate: string;
+    }>
+  ) {
+    const { minDate, maxDate } = e.detail;
+    this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
+  }
+
   updated(changed: PropertyValues) {
     if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
       this.infiniteScroller.reload();
@@ -196,6 +231,7 @@ export class CollectionBrowser
     if (
       changed.has('baseQuery') ||
       changed.has('additionalQueryClause') ||
+      changed.has('dateRangeQueryClause') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets')
     ) {
@@ -276,12 +312,15 @@ export class CollectionBrowser
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
     let fullQuery = this.baseQuery;
-    const { facetQuery, additionalQueryClause } = this;
+    const { facetQuery, additionalQueryClause, dateRangeQueryClause } = this;
     if (facetQuery) {
       fullQuery += ` AND ${facetQuery}`;
     }
     if (additionalQueryClause) {
       fullQuery += ` AND ${additionalQueryClause}`;
+    }
+    if (dateRangeQueryClause) {
+      fullQuery += ` AND ${dateRangeQueryClause}`;
     }
     return fullQuery;
   }
@@ -329,32 +368,16 @@ export class CollectionBrowser
   private async fetchFacets() {
     if (!this.fullQuery) return;
 
-    const aggregations = new AggregateSearchParams([
-      {
-        field: 'subjectSorter',
-        size: 6,
-      },
-      {
-        field: 'mediatypeSorter',
-        size: 6,
-      },
-      {
-        field: 'languageSorter',
-        size: 6,
-      },
-      {
-        field: 'creatorSorter',
-        size: 6,
-      },
-      {
-        field: 'collection',
-        size: 12,
-      },
-      {
-        field: 'year',
-        size: 50,
-      },
-    ]);
+    const aggregations = new AggregateSearchParams({
+      simpleParams: [
+        'subjectSorter',
+        'mediatypeSorter',
+        'languageSorter',
+        'creatorSorter',
+        'collection',
+        'year',
+      ],
+    });
 
     const params = new SearchParams({
       query: this.fullQuery,
@@ -366,8 +389,7 @@ export class CollectionBrowser
     const results = await this.searchService?.search(params);
     this.facetsLoading = false;
 
-    this.collectionFacets.aggregations =
-      results?.success?.response.aggregations;
+    this.aggregations = results?.success?.response.aggregations;
   }
 
   private scrollToPage(pageNumber: number) {

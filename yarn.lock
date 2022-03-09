@@ -120,6 +120,22 @@
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1.tgz"
   integrity sha512-yPkH/m1a15V0tnewQutK3RQJgSwe9RoMdTuzgUxGgZtDXX8Tw+MFcvTpvZQjEo3ZgyL9sNLr2Lv+KiSAsZ9OOg==
 
+"@internetarchive/histogram-date-range@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.5.tgz#874c6f5e61e4879aa830e70d40593f3e1a9b302c"
+  integrity sha512-oW14fO3o3XVInbrU/irSEnQBoJb7wHfWHodAatBoc+WAtFNwEHn1AkY/6K5JF9LMdzAwq3Uh9san1VnYJ5jLrQ==
+  dependencies:
+    "@internetarchive/ia-activity-indicator" "^0.0.2"
+    dayjs "^1.10.7"
+    lit "^2.1.1"
+
+"@internetarchive/ia-activity-indicator@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-activity-indicator/-/ia-activity-indicator-0.0.2.tgz#6e02670d52a9f1b673f322252b6e649453ea2ef0"
+  integrity sha512-PHSTn8LJyozrVcMj6eMQKqBJD+029YhxffbW+oLKGAfmS5tAkpl2LfHlFcLCozT5e9e+KECCq2m2UeUyPYPjcw==
+  dependencies:
+    lit "^2.0.2"
+
 "@internetarchive/infinite-scroller@0.0.1-alpha.16":
   version "0.0.1-alpha.16"
   resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.16.tgz#c776a462af7a53747f7b8770db520a920e851759"
@@ -132,10 +148,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^0.2.6":
-  version "0.2.6"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.2.6.tgz#164b33911acde246429f89f03a4628d67509c830"
-  integrity sha512-mNLPbyk0+FF02Adq3oVSK2nCyWwY82TaBK5f6+KzP4PPg86WgRDxVC8MJvPKCuKsxfw7uB0OUJtRgE2kBdAvJA==
+"@internetarchive/search-service@0.3.0-alpha.1":
+  version "0.3.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.3.0-alpha.1.tgz#99d512b8606a00e5af8721ca0e9f085bfdc7ff9b"
+  integrity sha512-NPDOBfzF+AsI+w7k1C5GjynNb93lDuuflHbj0ANo4XP9BsTTxhQvdnkfdZxsMAT8Opv2pxwbTPuM+PDh3pI6TA==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.1"
     "@internetarchive/result-type" "^0.0.1"
@@ -159,6 +175,11 @@
   version "1.0.2"
   resolved "https://registry.npmjs.org/@lit/reactive-element/-/reactive-element-1.0.2.tgz"
   integrity sha512-oz3d3MKjQ2tXynQgyaQaMpGTDNyNDeBdo6dXf1AbjTwhA1IRINHmA7kSaVYv9ttKweNkEoNqp9DqteDdgWzPEg==
+
+"@lit/reactive-element@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@lit/reactive-element/-/reactive-element-1.3.0.tgz#c85c5a5fea41d7230e52fb9017307f473ab947ea"
+  integrity sha512-0TKSIuJHXNLM0k98fi0AdMIdUoHIYlDHTP+0Vruc2SOs4T6vU1FinXgSvYd8mSrkt+8R+qdRAXvjpqrMXMyBgw==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
@@ -1321,6 +1342,11 @@ date-fns@^2.16.1:
   version "2.25.0"
   resolved "https://registry.npmjs.org/date-fns/-/date-fns-2.25.0.tgz"
   integrity sha512-ovYRFnTrbGPD4nqaEqescPEv1mNwvt+UTqI3Ay9SzNtey9NZnYu6E2qCcBBgJ6/2VF1zGGygpyTDITqpQQ5e+w==
+
+dayjs@^1.10.7:
+  version "1.10.8"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.10.8.tgz#267df4bc6276fcb33c04a6735287e3f429abec41"
+  integrity sha512-wbNwDfBHHur9UOzNUjeKUOJ0fCb0a52Wx0xInmQ7Y8FstyajiV1NmK1e00cxsr9YrE9r7yAChE0VvpuY5Rnlow==
 
 debounce@^1.2.0:
   version "1.2.1"
@@ -2859,10 +2885,25 @@ lit-element@^3.0.0:
     "@lit/reactive-element" "^1.0.0"
     lit-html "^2.0.0"
 
+lit-element@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/lit-element/-/lit-element-3.2.0.tgz#9c981c55dfd9a8f124dc863edb62cc529d434db7"
+  integrity sha512-HbE7yt2SnUtg5DCrWt028oaU4D5F4k/1cntAFHTkzY8ZIa8N0Wmu92PxSxucsQSOXlODFrICkQ5x/tEshKi13g==
+  dependencies:
+    "@lit/reactive-element" "^1.3.0"
+    lit-html "^2.2.0"
+
 lit-html@^2.0.0:
   version "2.0.2"
   resolved "https://registry.npmjs.org/lit-html/-/lit-html-2.0.2.tgz"
   integrity sha512-dON7Zg8btb14/fWohQLQBdSgkoiQA4mIUy87evmyJHtxRq7zS6LlC32bT5EPWiof5PUQaDpF45v2OlrxHA5Clg==
+  dependencies:
+    "@types/trusted-types" "^2.0.2"
+
+lit-html@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-2.2.0.tgz#99345d944611e34543cd9f153d8cc3163b8bbab8"
+  integrity sha512-dJnevgV8VkCuOXLWrjQopDE8nSy8CzipZ/ATfYQv7z7Dct4abblcKecf50gkIScuwCTzKvRLgvTgV0zzagW4gA==
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
@@ -2874,6 +2915,15 @@ lit@^2.0.0, lit@^2.0.2:
     "@lit/reactive-element" "^1.0.0"
     lit-element "^3.0.0"
     lit-html "^2.0.0"
+
+lit@^2.1.1:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/lit/-/lit-2.2.0.tgz#1b83a2c1e4c5ecf3be785292b1a13e193597f610"
+  integrity sha512-FDyxUuczo6cJJY/2Bkgfh1872U4ikUvmK1Cb6+lYC1CW+QOo8CaWXCpvPKFzYsz0ojUxoruBLVrECc7VI2f1dQ==
+  dependencies:
+    "@lit/reactive-element" "^1.3.0"
+    lit-element "^3.2.0"
+    lit-html "^2.2.0"
 
 locate-path@^2.0.0:
   version "2.0.0"

@@ -19,8 +19,9 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@internetarchive/field-parsers": "0.1.1-alpha.1",
+    "@internetarchive/histogram-date-range": "^0.1.5",
     "@internetarchive/infinite-scroller": "0.0.1-alpha.16",
-    "@internetarchive/search-service": "^0.2.6",
+    "@internetarchive/search-service": "0.3.0-alpha.1",
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.11.1",
     "lit": "^2.0.2"
