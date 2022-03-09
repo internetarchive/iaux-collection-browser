@@ -3,7 +3,7 @@
  * Override browser timezone to always display same date as in data
  */
 export type DateFormat =
-  | 'short' // 12/20
+  | 'short' // Dec 2020
   | 'long'; // Dec 20, 2020
 
 export function formatDate(
