@@ -11,29 +11,25 @@ import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
 
-@customElement('mediatype-icons')
+@customElement('mediatype-icon')
 export class MediaTypeIcons extends LitElement {
   @property({ type: String }) mediatype = '';
 
-  get mediaTypeIcon() {
-    const mediaTypeIcons: { [key: string]: any } = {
-      audio: audioIcon,
-      data: etreeIcon,
-      etree: etreeIcon,
-      film: filmIcon,
-      image: imagesIcon,
-      movies: filmIcon,
-      software: softwareIcon,
-      texts: textsIcon,
-      tv: tvIcon,
-      video: videoIcon,
-      web: webIcon,
-    };
-
-    return html`${mediaTypeIcons[this.mediatype]}`;
-  }
+  @property() mediaTypeIcons: { [key: string]: any } = {
+    audio: audioIcon,
+    data: etreeIcon,
+    etree: etreeIcon,
+    film: filmIcon,
+    image: imagesIcon,
+    movies: filmIcon,
+    software: softwareIcon,
+    texts: textsIcon,
+    tv: tvIcon,
+    video: videoIcon,
+    web: webIcon,
+  };
 
   render() {
-    return html`${this.mediaTypeIcon}`;
+    return html`${this.mediaTypeIcons[this.mediatype]}`;
   }
 }
