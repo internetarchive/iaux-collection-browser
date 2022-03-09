@@ -2,7 +2,9 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { TileModel } from '../../models';
-import { formatCount } from '../../utils/format-count';
+import { formatCount, NumberFormat } from '../../utils/format-count';
+import { formatDate, DateFormat } from '../../utils/format-date';
+
 // import { collectionIcon } from '../../assets/img/icons/collection';
 
 /*
@@ -24,7 +26,9 @@ export class TileListCompact extends LitElement {
     // Todo: Manage different date types
     return html`
       <div id="list-compact" class="${this.classSize}">
-        <div id="views">${formatCount(this.model?.viewCount ?? 0)}</div>
+        <div id="views">
+          ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
+        </div>
         <div id="title">
           <a
             href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
@@ -34,7 +38,7 @@ export class TileListCompact extends LitElement {
           </a>
         </div>
         <div id="date-published">
-          ${this.dateFormat(this.model?.datePublished)}
+          ${formatDate(this.model?.datePublished, this.formatSize)}
         </div>
         <div id="creator">${this.model?.creator}</div>
         <div id="icon">icon</div>
@@ -46,23 +50,16 @@ export class TileListCompact extends LitElement {
     return (this.currentWidth ?? 531) < 530 ? 'mobile' : 'desktop';
   }
 
-  private dateFormat(date: Date | undefined): string {
-    if (!date) return '';
-    const options: any = {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    };
-    const dateFormatter = new Intl.DateTimeFormat('en-US', options);
-    return dateFormatter.format(date);
+  private get formatSize(): DateFormat | NumberFormat {
+    return (this.currentWidth ?? 511) < 530 ? 'short' : 'long';
   }
 
   static get styles() {
     return css`
-      :host(.mobile) {
+      :host(.mobile) div {
         font-size: 9px;
       }
-      :host(.desktop) {
+      :host(.desktop) div {
         font-size: 14px;
       }
       #list-compact {
