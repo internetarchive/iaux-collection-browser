@@ -75,9 +75,15 @@ export class CollectionBrowser
 
   @state() private searchResultsLoading = false;
 
+  @state() private selectedFacets: Record<string, string[]> = {};
+
   @state() private facetsLoading = false;
 
+  @state() private histogramLoading = false;
+
   @state() private aggregations?: Record<string, Aggregation>;
+
+  @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -115,6 +121,13 @@ export class CollectionBrowser
   // this is useful for putting in placeholders for the expected number of tiles
   private get estimatedTileCount(): number {
     return this.pagesToRender * this.pageSize;
+  }
+
+  private get histogramDataLoaded(): boolean {
+    return (
+      this.currentYearsHistogramAggregation !== undefined &&
+      this.fullYearsHistogramAggregation !== undefined
+    );
   }
 
   // this is the actual number of tiles in the datasource,
@@ -165,15 +178,17 @@ export class CollectionBrowser
       </div>
 
       <div id="content-container">
-        <div id="facets-container">
-          ${this.histogramTemplate}
-          ${this.facetsLoading ? this.loadingTemplate : nothing}
-          <collection-facets
-            @facetsChanged=${this.facetsChanged}
-            .aggregations=${this.aggregations}
-          ></collection-facets>
+        <div id="left-column">
+          <div id="histogram-container">${this.histogramTemplate}</div>
+          <div id="facets-container">
+            ${this.facetsLoading ? this.loadingTemplate : nothing}
+            <collection-facets
+              @facetsChanged=${this.facetsChanged}
+              .aggregations=${this.aggregations}
+            ></collection-facets>
+          </div>
         </div>
-        <div id="infinite-scroller-container">
+        <div id="right-column">
           ${this.searchResultsLoading ? this.loadingTemplate : nothing}
           <infinite-scroller
             class="${this.displayMode}"
@@ -196,19 +211,28 @@ export class CollectionBrowser
     `;
   }
 
-  private get yearHistogramAggregation(): Aggregation | undefined {
+  private get currentYearsHistogramAggregation(): Aggregation | undefined {
     return this.aggregations?.year_histogram;
   }
 
   private get histogramTemplate() {
-    const { yearHistogramAggregation } = this;
+    const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
+      this;
+    console.debug(
+      'histogramTemplate',
+      currentYearsHistogramAggregation,
+      fullYearsHistogramAggregation
+    );
     return html`
       <histogram-date-range
-        mindate=${yearHistogramAggregation?.first_bucket_key}
-        maxdate=${yearHistogramAggregation?.last_bucket_key}
+        mindate=${fullYearsHistogramAggregation?.first_bucket_key}
+        maxdate=${fullYearsHistogramAggregation?.last_bucket_key}
+        minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
+        maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
         updatedelay="1000"
+        ?loading=${this.histogramLoading}
         .width=${150}
-        .bins=${yearHistogramAggregation?.buckets}
+        .bins=${fullYearsHistogramAggregation?.buckets}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       ></histogram-date-range>
     `;
@@ -290,10 +314,12 @@ export class CollectionBrowser
     }
     this.initialQueryChangeHappened = true;
 
-    await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
+    await Promise.all([
+      this.doInitialPageFetch(),
+      this.fetchFacets(),
+      this.fetchYearHistogram(),
+    ]);
   }
-
-  @state() private selectedFacets: Record<string, string[]> = {};
 
   private async doInitialPageFetch() {
     this.searchResultsLoading = true;
@@ -302,17 +328,23 @@ export class CollectionBrowser
   }
 
   private get fullQuery(): string | undefined {
+    let { fullQueryWithoutDate } = this;
+    const { dateRangeQueryClause } = this;
+    if (dateRangeQueryClause) {
+      fullQueryWithoutDate += ` AND ${dateRangeQueryClause}`;
+    }
+    return fullQueryWithoutDate;
+  }
+
+  private get fullQueryWithoutDate(): string | undefined {
     if (!this.baseQuery) return undefined;
     let fullQuery = this.baseQuery;
-    const { facetQuery, additionalQueryClause, dateRangeQueryClause } = this;
+    const { facetQuery, additionalQueryClause } = this;
     if (facetQuery) {
       fullQuery += ` AND ${facetQuery}`;
     }
     if (additionalQueryClause) {
       fullQuery += ` AND ${additionalQueryClause}`;
-    }
-    if (dateRangeQueryClause) {
-      fullQuery += ` AND ${dateRangeQueryClause}`;
     }
     return fullQuery;
   }
@@ -336,38 +368,35 @@ export class CollectionBrowser
     this.selectedFacets = e.detail;
   }
 
-  // 'subjectSorter',
-  // 'mediatypeSorter',
-  // 'languageSorter',
-  // 'creatorSorter',
-  // 'collection' => Facet::MAX_SHOW_COLLECTION,
-  // 'year' => Facet::MAX_SHOW_YEAR,
-
-  // const MAX_SHOW = 6;
-  // const MAX_SHOW_COLLECTION = 12;
-  // const MAX_SHOW_TXT = 50; // "search inside" API has *actual* lower number; we wanna pass thru facets ;-)
-  // const MAX_SHOW_YEAR = 50; // "year" facet (up to 50 entries)
-
-  // // MORF == MORe Facets 8-)
-  // const MORF_MAX_FACETS = 5000;
-  // const MORF_MAX_FACETS_NO_JS = 1000;
-
-  // const KEY_YEAR = 'year';
-
-  // // YEAR histogram
-  // const YEAR_HISTOGRAM_BIN_COUNT_TARGET = 50;
-
   private async fetchFacets() {
     if (!this.fullQuery) return;
 
     const aggregations = new AggregateSearchParams({
-      simpleParams: [
-        'subjectSorter',
-        'mediatypeSorter',
-        'languageSorter',
-        'creatorSorter',
-        'collection',
-        'year',
+      advancedParams: [
+        {
+          field: 'subjectSorter',
+          size: 6,
+        },
+        {
+          field: 'mediatypeSorter',
+          size: 6,
+        },
+        {
+          field: 'languageSorter',
+          size: 6,
+        },
+        {
+          field: 'creatorSorter',
+          size: 6,
+        },
+        {
+          field: 'collection',
+          size: 12,
+        },
+        {
+          field: 'year',
+          size: 50,
+        },
       ],
     });
 
@@ -382,6 +411,37 @@ export class CollectionBrowser
     this.facetsLoading = false;
 
     this.aggregations = results?.success?.response.aggregations;
+  }
+
+  /**
+   * This method is similar to fetching the facets above,
+   * but only fetching the year histogram. There is a subtle difference
+   * in how you have to fetch the year histogram where you can't use the
+   * advanced JSON syntax like the other aggregations. It's a special
+   * case that @ximm put it place.
+   *
+   * @returns {Promise<void>}
+   */
+  private async fetchYearHistogram() {
+    if (!this.fullQueryWithoutDate) return;
+
+    const aggregations = new AggregateSearchParams({
+      simpleParams: ['year'],
+    });
+
+    const params = new SearchParams({
+      query: this.fullQueryWithoutDate,
+      fields: ['identifier'],
+      aggregations,
+      rows: 1,
+    });
+
+    this.histogramLoading = true;
+    const results = await this.searchService?.search(params);
+    this.histogramLoading = false;
+
+    this.fullYearsHistogramAggregation =
+      results?.success?.response?.aggregations?.year_histogram;
   }
 
   private scrollToPage(pageNumber: number) {
@@ -566,13 +626,16 @@ export class CollectionBrowser
       display: flex;
     }
 
-    #infinite-scroller-container {
+    #right-column {
       flex: 1;
       position: relative;
     }
 
-    #facets-container {
+    #left-column {
       width: 15rem;
+    }
+
+    #facets-container {
       position: relative;
     }
 
