@@ -25,6 +25,7 @@ import {
 import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
+import '@internetarchive/histogram-date-range';
 import './tiles/tile-dispatcher';
 import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
