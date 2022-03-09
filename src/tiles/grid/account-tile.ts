@@ -2,10 +2,10 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { TileModel } from '../../models';
 
-import accountIcon from '../../assets/img/icons/mediatype/account';
-import favoriteFilledIcon from './icons/favorite-filled';
-import reviewsIcon from './icons/reviews';
-import uploadIcon from './icons/upload';
+import { accountIcon } from '../../assets/img/icons/mediatype/account';
+import { favoriteFilledIcon } from './icons/favorite-filled';
+import { reviewsIcon } from './icons/reviews';
+import { uploadIcon } from './icons/upload';
 
 @customElement('account-tile')
 export class UserTile extends LitElement {
