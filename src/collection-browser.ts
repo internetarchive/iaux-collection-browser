@@ -79,7 +79,7 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
-  @state() private histogramLoading = false;
+  @state() private fullYearAggregationLoading = false;
 
   @state() private aggregations?: Record<string, Aggregation>;
 
@@ -121,13 +121,6 @@ export class CollectionBrowser
   // this is useful for putting in placeholders for the expected number of tiles
   private get estimatedTileCount(): number {
     return this.pagesToRender * this.pageSize;
-  }
-
-  private get histogramDataLoaded(): boolean {
-    return (
-      this.currentYearsHistogramAggregation !== undefined &&
-      this.fullYearsHistogramAggregation !== undefined
-    );
   }
 
   // this is the actual number of tiles in the datasource,
@@ -172,6 +165,7 @@ export class CollectionBrowser
           <li>Base Query: ${this.baseQuery}</li>
           <li>Facet Query: ${this.facetQuery}</li>
           <li>Additional Query: ${this.additionalQueryClause}</li>
+          <li>Date Range Query: ${this.dateRangeQueryClause}</li>
           <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
           <li>Full Query: ${this.fullQuery}</li>
         </ul>
@@ -215,17 +209,22 @@ export class CollectionBrowser
     return this.aggregations?.year_histogram;
   }
 
+  private get histogramDataLoading(): boolean {
+    return this.facetsLoading || this.fullYearAggregationLoading;
+  }
+
   private get histogramTemplate() {
     const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
       this;
     return html`
       <histogram-date-range
-        mindate=${fullYearsHistogramAggregation?.first_bucket_key}
-        maxdate=${fullYearsHistogramAggregation?.last_bucket_key}
-        minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
-        maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
-        updatedelay="1000"
-        ?loading=${this.histogramLoading}
+        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
+        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
+        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
+        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
+        .updateDelay=${100}
+        missingDataMessage="..."
+        ?loading=${this.histogramDataLoading}
         .width=${150}
         .bins=${fullYearsHistogramAggregation?.buckets}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
@@ -312,7 +311,7 @@ export class CollectionBrowser
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
-      this.fetchYearHistogram(),
+      this.fetchFullYearHistogram(),
     ]);
   }
 
@@ -409,16 +408,39 @@ export class CollectionBrowser
   }
 
   /**
+   * If we haven't changed the query, we don't need to fetch the full year histogram
+   *
+   * @private
+   * @type {string}
+   * @memberof CollectionBrowser
+   */
+  private previousFullQueryNoDate?: string;
+
+  /**
+   * The query key is a string that uniquely identifies the current query
+   * without the date range.
+   *
+   * If this doesn't change, we don't need to re-fetch the histogram date range
+   */
+  private get fullQueryNoDateKey() {
+    return `${this.fullQueryWithoutDate}-${this.sortParam?.asString}`;
+  }
+
+  /**
    * This method is similar to fetching the facets above,
    * but only fetching the year histogram. There is a subtle difference
    * in how you have to fetch the year histogram where you can't use the
    * advanced JSON syntax like the other aggregations. It's a special
    * case that @ximm put it place.
-   *
-   * @returns {Promise<void>}
    */
-  private async fetchYearHistogram() {
-    if (!this.fullQueryWithoutDate) return;
+  private async fetchFullYearHistogram(): Promise<void> {
+    const { fullQueryNoDateKey } = this;
+    if (
+      !this.fullQueryWithoutDate ||
+      fullQueryNoDateKey === this.previousFullQueryNoDate
+    )
+      return;
+    this.previousFullQueryNoDate = fullQueryNoDateKey;
 
     const aggregations = new AggregateSearchParams({
       simpleParams: ['year'],
@@ -431,9 +453,9 @@ export class CollectionBrowser
       rows: 1,
     });
 
-    this.histogramLoading = true;
+    this.fullYearAggregationLoading = true;
     const results = await this.searchService?.search(params);
-    this.histogramLoading = false;
+    this.fullYearAggregationLoading = false;
 
     this.fullYearsHistogramAggregation =
       results?.success?.response?.aggregations?.year_histogram;

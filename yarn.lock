@@ -120,10 +120,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1.tgz"
   integrity sha512-yPkH/m1a15V0tnewQutK3RQJgSwe9RoMdTuzgUxGgZtDXX8Tw+MFcvTpvZQjEo3ZgyL9sNLr2Lv+KiSAsZ9OOg==
 
-"@internetarchive/histogram-date-range@^0.1.5":
-  version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.5.tgz#874c6f5e61e4879aa830e70d40593f3e1a9b302c"
-  integrity sha512-oW14fO3o3XVInbrU/irSEnQBoJb7wHfWHodAatBoc+WAtFNwEHn1AkY/6K5JF9LMdzAwq3Uh9san1VnYJ5jLrQ==
+"@internetarchive/histogram-date-range@^0.1.6":
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.6.tgz#baccb9c5126cc2872d9b6433282456301fa71217"
+  integrity sha512-762h1ouU/vaeNzLBiQW4Ow5hTlPppo9DspmAFLrzWuIs6o/vnRtk0ln/jgZZMdl+IJoCDF6LNCCB2M8rgqeR0Q==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.2"
     dayjs "^1.10.7"
@@ -163,10 +163,10 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/shared-resize-observer/-/shared-resize-observer-0.2.0.tgz#afe51f7dc9507ac6cf7be8966a49e2a4c6c25ff3"
   integrity sha512-E5Jh6rX03usPkihB/lnGpoL3qedE84NLRHxuAEGrlwC0zyQ7xTr6NNQWwKBDzG1OBcCrUJXIWaQuJdjqo+og1Q==
 
-"@lit/localize@^0.11.1":
-  version "0.11.1"
-  resolved "https://registry.npmjs.org/@lit/localize/-/localize-0.11.1.tgz"
-  integrity sha512-8LVAZy38QxPAEaz2iKAaaUWuH9Tv2YiQcAcQIC9Cx+L9MG9fBk6yFFQ0QTtZwDE4A8pL4A2w99jRHl3VKUtCaA==
+"@lit/localize@^0.11.2":
+  version "0.11.2"
+  resolved "https://registry.yarnpkg.com/@lit/localize/-/localize-0.11.2.tgz#ee21ecc590fa73a9eb2037531512219ff1368f7b"
+  integrity sha512-V2Omf7ISwkmn/6E3pwN4LBCpnlw23VZD/RycSCZ2EOZx2qxTWxhouz6TX3WLsWfMRMcdmkZQG2O/eJdZJvPabw==
   dependencies:
     "@lit/reactive-element" "^1.0.0"
     lit "^2.0.0"
