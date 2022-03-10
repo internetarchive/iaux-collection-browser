@@ -22,6 +22,8 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Number }) currentWidth?: number;
 
+  @property({ type: Number }) currentHeight?: number;
+
   render() {
     // Todo: Manage different date types
     return html`
@@ -51,17 +53,18 @@ export class TileListCompact extends LitElement {
   }
 
   private get formatSize(): DateFormat | NumberFormat {
-    return (this.currentWidth ?? 511) < 530 ? 'short' : 'long';
+    return (this.currentWidth ?? 531) < 530 ? 'short' : 'long';
   }
 
   static get styles() {
     return css`
-      :host(.mobile) div {
+      .mobile div {
         font-size: 9px;
       }
-      :host(.desktop) div {
+      .desktop div {
         font-size: 14px;
       }
+
       #list-compact {
         display: grid;
         grid-template-columns: 80px 3fr 115px 2fr 22px;
@@ -70,8 +73,6 @@ export class TileListCompact extends LitElement {
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         line-height: 1.42857143;
         color: #333;
-        /* background-color: #fff;
-        */
       }
 
       h1 {
