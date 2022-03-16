@@ -1,14 +1,19 @@
+/*
+ * Replaces Petabox www/common/Util::number_format()
+ * For positive numbers only.
+ */
 import { msg, str } from '@lit/localize';
 
-export type NumberFormat = 'short' | 'long';
-type LabelFormat = 'short' | 'long';
+export type NumberFormat =
+  | 'short' // 1.2 [K | thousand]
+  | 'long'; // 1,200 [No label for numbers < 1,000,000]
+export type LabelFormat =
+  | 'short' // [1.2]K
+  | 'long'; // [1.2] thousand
 type Divisor = 1_000_000_000 | 1_000_000 | 1_000 | 1;
 
 /**
  * Return the magnitude of a number.
- * @param {number} number
- * @param {NumberFormat} numberFormat
- * @returns {Divisor}
  */
 function magnitude(number: number, numberFormat: NumberFormat): Divisor {
   let divisor: Divisor = 1;
@@ -23,10 +28,8 @@ function magnitude(number: number, numberFormat: NumberFormat): Divisor {
 }
 
 /**
- * Round a number to the nearest magnitude.
- * @param {number} number
- * @param {Divisor} divisor
- * @returns {number}
+ * Round a number given passed magnitude.
+ * Significant digits of value less than 10 get a decimal.
  */
 function round(number: number = 0, divisor: Divisor): number {
   const result = number / divisor;
@@ -42,10 +45,6 @@ function round(number: number = 0, divisor: Divisor): number {
 
 /**
  * Return a label for a number and format.
- * @param {number} rounded
- * @param {Divisor} divisor
- * @param {LabelFormat} format
- * @returns {string}
  */
 function labelize(
   rounded: number,
@@ -76,18 +75,20 @@ function labelize(
 }
 
 /**
- * Format a media count number into short icon or longer text string.
- * @param {number} number
- * @param {NumberFormat} numberFormat
- * @param {LabelFormat} labelFormat
- * @returns {string}
+ * Format a "count" number into short "icon" or longer text string.
+ * For positive numbers only.
  */
 export function formatCount(
-  number: number,
+  count: number | undefined,
   numberFormat: NumberFormat = 'long',
   labelFormat: LabelFormat = 'short',
   locale: string = 'en-US'
 ): string {
+  // Return blank if undefined
+  const number = count ?? -1;
+  if (number < 0) {
+    return '';
+  }
   const divisor = magnitude(number, numberFormat);
   const rounded = round(number, divisor);
   return labelize(rounded, divisor, labelFormat, locale);
