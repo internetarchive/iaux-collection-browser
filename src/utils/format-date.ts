@@ -1,22 +1,36 @@
-export type DateFormat = 'short' | 'long';
+/*
+ * Display date
+ * Override browser timezone to always display same date as in data
+ */
+export type DateFormat =
+  | 'short' // 12/20
+  | 'long'; // Dec 20, 2020
 
 export function formatDate(
   date: Date | undefined,
   format: DateFormat = 'short',
   locale: string = 'en-US'
 ): string {
+  // Return blank if undefined
   if (!date) return '';
+
   const options: any = {
-    short: {
-      month: '2-digit',
-      year: '2-digit',
-    },
-    long: {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-    },
+    timeZone: 'UTC', // Override browser timezone
   };
-  const dateFormatter = new Intl.DateTimeFormat(locale, options[format]);
+  switch (format) {
+    case 'short':
+      options.month = '2-digit';
+      options.year = '2-digit';
+      break;
+    case 'long':
+      options.year = 'numeric';
+      options.month = 'short';
+      options.day = '2-digit';
+      break;
+    default:
+      break;
+  }
+
+  const dateFormatter = new Intl.DateTimeFormat(locale, options);
   return dateFormatter.format(date);
 }
