@@ -14,7 +14,7 @@ export function formatDate(
   // Return blank if undefined
   if (!date) return '';
 
-  const options: any = {
+  const options: Intl.DateTimeFormatOptions = {
     timeZone: 'UTC', // Override browser timezone
   };
   switch (format) {
