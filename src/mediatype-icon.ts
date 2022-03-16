@@ -45,7 +45,7 @@ export class MediatypeIcon extends LitElement {
 
   render() {
     return html`
-      <div class="stat-icon">
+      <div>
         ${this.mediatypeIcons[this.mediatype]}
         <p class="status-text">${this.mediatypeText[this.mediatype]}</p>
       </div>
