@@ -6,6 +6,7 @@ import {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
 import type { CollectionDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
@@ -34,6 +35,8 @@ export class TileDispatcher
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
+  
+  @property({ type: Object }) sortParam?: SortParam;
 
   @query('#container') private container!: HTMLDivElement;
 
@@ -88,7 +91,8 @@ export class TileDispatcher
   }
 
   private get tile() {
-    const { model, baseNavigationUrl } = this;
+    const { model, baseNavigationUrl, currentWidth, currentHeight, sortParam } =
+      this;
 
     if (!model) return nothing;
 
@@ -98,15 +102,15 @@ export class TileDispatcher
           case 'collection':
             return html`<collection-tile
               .model=${model}
-              .currentWidth=${this.currentWidth}
-              .currentHeight=${this.currentHeight}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
             >
             </collection-tile>`;
           case 'account':
             return html`<account-tile
               .model=${model}
-              .currentWidth=${this.currentWidth}
-              .currentHeight=${this.currentHeight}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
             ></account-tile>`;
           default:
             return html`<item-tile
@@ -120,16 +124,18 @@ export class TileDispatcher
       case 'list-compact':
         return html`<tile-list-compact
           .model=${model}
-          .currentWidth=${this.currentWidth}
-          .currentHeight=${this.currentHeight}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam}
         ></tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list-detail
           .model=${model}
-          .currentWidth=${this.currentWidth}
-          .currentHeight=${this.currentHeight}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam}
         ></tile-list-detail>`;
       default:
         return nothing;

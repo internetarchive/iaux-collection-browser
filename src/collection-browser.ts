@@ -906,6 +906,7 @@ export class CollectionBrowser
       .displayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}
       .collectionNameCache=${this.collectionNameCache}
+      .sortParam=${this.sortParam}
       ?showDeleteButton=${this.showDeleteButtons}
     ></tile-dispatcher>`;
   }
