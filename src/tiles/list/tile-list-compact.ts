@@ -1,11 +1,11 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
-
-// import { collectionIcon } from '../../assets/img/icons/collection';
+import '../../mediatype-icon';
 
 /*
 at 750 creator, title trimmed
@@ -24,6 +24,8 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Number }) currentHeight?: number;
 
+  @property({ type: Object }) sortParam?: SortParam;
+
   render() {
     // Todo: Manage different date types
     return html`
@@ -39,13 +41,35 @@ export class TileListCompact extends LitElement {
             ${this.model?.title}
           </a>
         </div>
-        <div id="date-published">
-          ${formatDate(this.model?.datePublished, this.formatSize)}
-        </div>
+        <div id="date-published">${formatDate(this.date, this.formatSize)}</div>
         <div id="creator">${this.model?.creator}</div>
-        <div id="icon">icon</div>
+        <div id="icon">
+          <mediatype-icon
+            mediatype="${ifDefined(this.model?.mediatype)}"
+            icontype="list"
+          >
+          </mediatype-icon>
+        </div>
       </div>
     `;
+  }
+
+  /*
+   * TODO: fix field names to match model in src/collection-browser.ts
+   * private get dateSortSelector()
+   * @see src/models.ts
+   */
+  private get date(): Date | undefined {
+    switch (this.sortParam?.field) {
+      case 'date':
+        return this.model?.datePublished;
+      case 'reviewdate':
+        return this.model?.dateReviewed;
+      case 'addeddate':
+        return this.model?.dateAdded;
+      default:
+        return this.model?.dateArchived; // publicdate
+    }
   }
 
   private get classSize(): string {
@@ -67,7 +91,7 @@ export class TileListCompact extends LitElement {
 
       #list-compact {
         display: grid;
-        grid-template-columns: 80px 3fr 115px 2fr 22px;
+        grid-template-columns: 80px 3fr 115px 2fr 23.5px;
         column-gap: 10px;
 
         font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
