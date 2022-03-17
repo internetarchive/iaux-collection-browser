@@ -624,6 +624,7 @@ export class CollectionBrowser
       .model=${model}
       .displayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}
+      .sortParam=${this.sortParam}
       ?showDeleteButton=${this.showDeleteButtons}
     ></tile-dispatcher>`;
   }
