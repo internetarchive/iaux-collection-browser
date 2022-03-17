@@ -11,6 +11,7 @@ import { textsIcon } from './assets/img/icons/mediatype/texts';
 import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
+import { collectionIcon } from './assets/img/icons/mediatype/collection';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
@@ -18,9 +19,12 @@ export class MediatypeIcon extends LitElement {
 
   @property({ type: Boolean }) showText = false;
 
+  @property({ type: String }) icontype = 'tile';
+
   private readonly mediatypeIcons: { [key: string]: any } = {
     account: accountIcon,
     audio: audioIcon,
+    collection: collectionIcon,
     data: etreeIcon,
     etree: etreeIcon,
     film: filmIcon,
@@ -36,6 +40,7 @@ export class MediatypeIcon extends LitElement {
   private readonly mediatypeText: { [key: string]: any } = {
     account: 'Account',
     audio: 'Audio',
+    collection: 'Collection',
     data: 'Data',
     etree: 'E-tree',
     film: 'Film',
