@@ -5,7 +5,7 @@ import {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
-import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
+import { SortParam } from '@internetarchive/search-service';
 import type { CollectionDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
