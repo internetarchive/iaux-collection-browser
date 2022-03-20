@@ -1,7 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { SortParam } from '@internetarchive/search-service/dist/src/search-params';
+import { SortParam } from '@internetarchive/search-service';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
@@ -44,10 +44,7 @@ export class TileListCompact extends LitElement {
         <div id="date-published">${formatDate(this.date, this.formatSize)}</div>
         <div id="creator">${this.model?.creator}</div>
         <div id="icon">
-          <mediatype-icon
-            mediatype="${ifDefined(this.model?.mediatype)}"
-            icontype="list"
-          >
+          <mediatype-icon mediatype="${ifDefined(this.model?.mediatype)}">
           </mediatype-icon>
         </div>
       </div>
@@ -93,10 +90,7 @@ export class TileListCompact extends LitElement {
         display: grid;
         grid-template-columns: 80px 3fr 115px 2fr 23.5px;
         column-gap: 10px;
-
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
         line-height: 1.42857143;
-        color: #333;
       }
 
       h1 {
