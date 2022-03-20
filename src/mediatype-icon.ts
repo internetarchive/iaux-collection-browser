@@ -19,7 +19,7 @@ export class MediatypeIcon extends LitElement {
 
   @property({ type: Boolean }) showText = false;
 
-  @property({ type: String }) icontype = 'tile';
+  @property({ type: Boolean }) includeMediatypeText = false;
 
   private readonly mediatypeIcons: { [key: string]: any } = {
     account: accountIcon,
