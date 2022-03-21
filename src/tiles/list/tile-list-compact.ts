@@ -10,8 +10,6 @@ import '../../mediatype-icon';
 /*
 at 750 creator, title trimmed
 at 530
-
-css elipsis property
 */
 
 @customElement('tile-list-compact')
@@ -44,8 +42,7 @@ export class TileListCompact extends LitElement {
         <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="creator">${this.model?.creator}</div>
         <div id="icon">
-          <mediatype-icon mediatype="${ifDefined(this.model?.mediatype)}">
-          </mediatype-icon>
+          <mediatype-icon .mediatype=${this.model?.mediatype}></mediatype-icon>
         </div>
       </div>
     `;
