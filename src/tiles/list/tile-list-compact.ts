@@ -41,7 +41,7 @@ export class TileListCompact extends LitElement {
             ${this.model?.title}
           </a>
         </div>
-        <div id="date-published">${formatDate(this.date, this.formatSize)}</div>
+        <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="creator">${this.model?.creator}</div>
         <div id="icon">
           <mediatype-icon mediatype="${ifDefined(this.model?.mediatype)}">
@@ -88,13 +88,41 @@ export class TileListCompact extends LitElement {
 
       #list-compact {
         display: grid;
-        grid-template-columns: 80px 3fr 115px 2fr 23.5px;
+        grid-template-columns: 60px 3fr 90px 2fr 29.5px;
         column-gap: 10px;
         line-height: 1.42857143;
+        border-top: 1px solid #ddd !important;
+        padding-top: 5px;
+        align-items: center;
       }
 
       h1 {
         margin-top: 0;
+      }
+
+      a {
+        color: #4b64ff;
+        text-decoration: none;
+      }
+
+      a:hover,
+      a:focus {
+        text-decoration: underline;
+      }
+
+      #title,
+      #creator {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      #views {
+        text-align: right;
+        color: #767676;
+      }
+      #icon {
+        padding-right: 6px;
       }
     `;
   }

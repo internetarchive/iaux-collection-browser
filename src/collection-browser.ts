@@ -1055,11 +1055,11 @@ export class CollectionBrowser
       );
       --infiniteScrollerCellMinHeight: var(
         --collectionBrowserCellMinHeight,
-        5rem
+        2rem
       );
       --infiniteScrollerCellMaxHeight: var(
         --collectionBrowserCellMaxHeight,
-        5rem
+        2rem
       );
     }
 
