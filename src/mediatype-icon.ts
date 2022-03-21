@@ -13,7 +13,11 @@ import { webIcon } from './assets/img/icons/mediatype/web';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
-  @property({ type: String }) mediatype = '';
+  @property({ type: String }) mediatype: string | undefined;
+
+  @property({ type: Boolean }) showText = false;
+
+  // @property({ type: Boolean }) isColored = false;
 
   private readonly mediatypeIcons: { [key: string]: any } = {
     audio: audioIcon,
@@ -44,8 +48,11 @@ export class MediatypeIcon extends LitElement {
   };
 
   render() {
+    if (!this.mediatype) {
+      return html``;
+    }
     return html`
-      <div>
+      <div id="icon" class="${this.showText ? 'show-text' : 'hide-text'}">
         ${this.mediatypeIcons[this.mediatype]}
         <p class="status-text">${this.mediatypeText[this.mediatype]}</p>
       </div>
@@ -62,7 +69,11 @@ export class MediatypeIcon extends LitElement {
         text-align: center;
       }
 
-      svg {
+      #icon.hide-text p {
+        display: none;
+      }
+
+      #icon.show-text svg {
         height: 10px;
         width: 10px;
       }
