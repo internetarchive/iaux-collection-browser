@@ -17,8 +17,6 @@ export class MediatypeIcon extends LitElement {
 
   @property({ type: Boolean }) showText = false;
 
-  // @property({ type: Boolean }) isColored = false;
-
   private readonly mediatypeIcons: { [key: string]: any } = {
     audio: audioIcon,
     data: etreeIcon,
