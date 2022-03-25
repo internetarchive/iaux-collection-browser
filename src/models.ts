@@ -17,6 +17,8 @@ export interface TileModel {
   collectionIdentifier?: string;
   collectionName?: string;
   creator?: string;
+  subject?: string;
+  source?: string;
 }
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';

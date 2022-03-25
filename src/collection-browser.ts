@@ -526,6 +526,8 @@ export class CollectionBrowser
         'publicdate',
         'reviewdate',
         'creator',
+        'subject', // topic
+        'source'
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -590,7 +592,7 @@ export class CollectionBrowser
       if (!doc.identifier) return;
       tiles.push({
         identifier: doc.identifier,
-        title: doc.title?.value ?? '',
+        title: this.etreeTitle(doc.title?.value, doc.mediatype?.value),
         mediatype: doc.mediatype?.value ?? 'data',
         viewCount: doc.downloads?.value ?? 0,
         favCount: doc.num_favorites?.value ?? 0,
@@ -603,8 +605,9 @@ export class CollectionBrowser
         datePublished: doc.date?.value,
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
-      });
-      console.debug('avg_rating', doc.avg_rating?.value);
+        subject: doc.subject?.value,
+        source: doc.source?.value
+      });      
     });
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
@@ -613,6 +616,28 @@ export class CollectionBrowser
     if (needsReload) {
       this.infiniteScroller.reload();
     }
+  }
+
+  /*
+   * Convert etree titles
+   * "[Creator] Live at [Place] on [Date]" => "[Date]: [Place]"
+   *
+   * Todo: Check collection(s) for etree, need to get as array.
+   * Current search-service only returns first collection as string.
+   */
+  private etreeTitle(
+    title: string | undefined,
+    mediatype: string | undefined
+  ): string {
+    if (mediatype === 'etree') {
+      // || collections.includes('etree')) {
+      const regex = /^(.*) Live at (.*) on (\d\d\d\d-\d\d-\d\d)$/;
+      const newTitle = title?.replace(regex, '$3: $2');
+      if (newTitle) {
+        return `${newTitle}`;
+      }
+    }
+    return title ?? '';
   }
 
   cellForIndex(index: number): TemplateResult | undefined {
