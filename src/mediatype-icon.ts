@@ -16,15 +16,8 @@ import { collectionIcon } from './assets/img/icons/mediatype/collection';
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
   @property({ type: String }) mediatype: string | undefined;
-<<<<<<< HEAD
 
   @property({ type: Boolean }) showText = false;
-=======
->>>>>>> f208f9f (Add showText property)
-
-  @property({ type: Boolean }) showText = false;
-
-  // @property({ type: Boolean }) isColored = false;
 
   private readonly mediatypeIcons: { [key: string]: any } = {
     account: accountIcon,
