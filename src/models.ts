@@ -19,6 +19,7 @@ export interface TileModel {
   subjects: string[];
   title: string;
   viewCount: number;
+  source?: string;
 }
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';

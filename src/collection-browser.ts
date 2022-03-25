@@ -795,8 +795,9 @@ export class CollectionBrowser
         'num_reviews',
         'publicdate',
         'reviewdate',
-        'subject',
         'title',
+        'subject', // topic
+        'source'
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -882,6 +883,7 @@ export class CollectionBrowser
         identifier: doc.identifier,
         itemCount: doc.item_count?.value ?? 0,
         mediatype: doc.mediatype?.value ?? 'data',
+        source: doc.source?.value,
         subjects: doc.subject?.values ?? [],
         title: doc.title?.value ?? '',
         viewCount: doc.downloads?.value ?? 0,
@@ -894,6 +896,28 @@ export class CollectionBrowser
     if (needsReload) {
       this.infiniteScroller.reload();
     }
+  }
+
+  /*
+   * Convert etree titles
+   * "[Creator] Live at [Place] on [Date]" => "[Date]: [Place]"
+   *
+   * Todo: Check collection(s) for etree, need to get as array.
+   * Current search-service only returns first collection as string.
+   */
+  private etreeTitle(
+    title: string | undefined,
+    mediatype: string | undefined
+  ): string {
+    if (mediatype === 'etree') {
+      // || collections.includes('etree')) {
+      const regex = /^(.*) Live at (.*) on (\d\d\d\d-\d\d-\d\d)$/;
+      const newTitle = title?.replace(regex, '$3: $2');
+      if (newTitle) {
+        return `${newTitle}`;
+      }
+    }
+    return title ?? '';
   }
 
   cellForIndex(index: number): TemplateResult | undefined {
