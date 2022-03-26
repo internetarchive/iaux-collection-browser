@@ -526,6 +526,7 @@ export class CollectionBrowser
         'publicdate',
         'reviewdate',
         'creator',
+        'collection',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -603,6 +604,7 @@ export class CollectionBrowser
         datePublished: doc.date?.value,
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
+        collection: doc.collection?.values ?? [],
       });
       console.debug('avg_rating', doc.avg_rating?.value);
     });
