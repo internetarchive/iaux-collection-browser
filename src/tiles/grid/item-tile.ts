@@ -160,13 +160,12 @@ export class ItemTile extends LitElement {
         z-index: 1;
       }
 
-      /** TO FIX **/
       .tile-action {
         border: 2px solid currentColor;
         border-radius: 1px;
         padding: 5px;
         font-weight: 500;
-        width: 14.5rem;
+        width: auto;
         position: absolute;
         z-index: 2;
         display: flex;
