@@ -27,13 +27,15 @@
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.11.2",
     "lit": "^2.2.2",
-    "typescript-cookie": "^1.0.3"
+    "typescript-cookie": "^1.0.3",
+    "dompurify": "^2.3.6"
   },
   "devDependencies": {
     "@internetarchive/local-cache": "^0.2.1",
     "@internetarchive/result-type": "^0.0.1",
     "@open-wc/eslint-config": "^7.0.0",
     "@open-wc/testing": "^3.0.3",
+    "@types/dompurify": "^2.3.3",
     "@typescript-eslint/eslint-plugin": "^5.3.1",
     "@typescript-eslint/parser": "^5.3.1",
     "@web/dev-server": "^0.1.28",
