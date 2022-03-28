@@ -516,6 +516,7 @@ export class CollectionBrowser
         'title',
         'mediatype',
         'downloads',
+        'avg_rating',
         'num_favorites',
         'num_reviews',
         'item_count',
@@ -601,7 +602,9 @@ export class CollectionBrowser
         dateReviewed: doc.reviewdate?.value,
         datePublished: doc.date?.value,
         creator: doc.creator?.value,
+        averageRating: doc.avg_rating?.value,
       });
+      console.debug('avg_rating', doc.avg_rating?.value);
     });
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;

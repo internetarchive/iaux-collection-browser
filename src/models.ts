@@ -3,6 +3,7 @@ import type { MediaType } from '@internetarchive/field-parsers';
 export interface TileModel {
   identifier: string;
   title: string;
+  averageRating?: number;
   dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
   dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
   dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
