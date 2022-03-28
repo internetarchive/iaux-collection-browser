@@ -708,6 +708,7 @@ export class CollectionBrowser
         'reviewdate',
         'creator',
         'collections_raw',
+        'source',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -774,7 +775,11 @@ export class CollectionBrowser
       if (!doc.identifier) return;
       tiles.push({
         identifier: doc.identifier,
-        title: this.etreeTitle(doc.title?.value, doc.mediatype?.value),
+        title: this.etreeTitle(
+          doc.title?.value,
+          doc.mediatype?.value,
+          doc.collection?.values
+        ),
         mediatype: doc.mediatype?.value ?? 'data',
         viewCount: doc.downloads?.value ?? 0,
         favCount: doc.num_favorites?.value ?? 0,
@@ -788,6 +793,8 @@ export class CollectionBrowser
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
         collections: doc.collections_raw?.values ?? [],
+        subject: doc.subject?.value,
+        source: doc.source?.value,
       });
     });
     datasource[pageNumber] = tiles;
@@ -808,10 +815,10 @@ export class CollectionBrowser
    */
   private etreeTitle(
     title: string | undefined,
-    mediatype: string | undefined
+    mediatype: string | undefined,
+    collections: string[] | undefined
   ): string {
-    if (mediatype === 'etree') {
-      // || collections.includes('etree')) {
+    if (mediatype === 'etree' || collections?.includes('etree')) {
       const regex = /^(.*) Live at (.*) on (\d\d\d\d-\d\d-\d\d)$/;
       const newTitle = title?.replace(regex, '$3: $2');
       if (newTitle) {

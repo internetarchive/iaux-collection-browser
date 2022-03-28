@@ -2,20 +2,10 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
-// import * as HtmlSanitizer from '@jitbit/htmlsanitizer';
-// import sanitizeHtml from 'sanitize-html';
-// - error
-// import DOMPurify from 'dompurify';
-// - no types
 import { CollectionDisplayMode, TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import '../../mediatype-icon';
-
-/*
-at 750 creator, title trimmed
-at 530
-*/
 
 @customElement('tile-list')
 export class TileList extends LitElement {
@@ -32,17 +22,15 @@ export class TileList extends LitElement {
   @property({ type: String }) displayMode: CollectionDisplayMode =
     'list-compact';
 
-  // private HtmlSanitizer = HtmlSanitizer();
-
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
         <div id="views">
           ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
         </div>
-        <div id="title">${this.model?.title}</div>
+        <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
         <div id="date">${formatDate(this.date, this.formatSize)}</div>
-        <div id="creator">${this.model?.creator}</div>
+        <div id="creator">${DOMPurify.sanitize(this.model?.creator ?? '')}</div>
         <div id="icon">
           <mediatype-icon .mediatype=${this.model?.mediatype}></mediatype-icon>
         </div>
@@ -55,12 +43,15 @@ export class TileList extends LitElement {
     const descriptionHtml = this.description();
     const topicHtml = this.topic();
     const sourceHtml = this.source();
+    const reviewsHtml = this.reviews();
 
     if (descriptionHtml || topicHtml || sourceHtml) {
       return html`
         <div id="list-detail" class="${this.classSize}">
           <div></div>
-          <div id="details">${descriptionHtml} ${topicHtml} ${sourceHtml}</div>
+          <div id="details">
+            ${descriptionHtml} ${topicHtml} ${sourceHtml} ${reviewsHtml}
+          </div>
           <div></div>
         </div>
       `;
@@ -71,21 +62,34 @@ export class TileList extends LitElement {
   private description() {
     if (this.model?.description) {
       const description = DOMPurify.sanitize(`${this.model?.description}`);
-      return html` <div id="description">${description}</div> `;
+      return html`<div id="description">${description}</div>`;
     }
     return html``;
   }
 
   private topic() {
     if (this.model?.subject) {
-      return html` <div id="topic">Topic: ${this.model?.subject}</div> `;
+      return html`<div id="topic">
+        Topic: ${DOMPurify.sanitize(this.model?.subject)}
+      </div>`;
     }
     return html``;
   }
 
   private source() {
     if (this.model?.source) {
-      return html` <div id="source">Source: ${this.model?.source}</div> `;
+      return html`<div id="source">
+        Source: ${DOMPurify.sanitize(this.model?.source)}
+      </div>`;
+    }
+    return html``;
+  }
+
+  private reviews() {
+    if (this.model?.averageRating) {
+      return html`<div id="reviews">
+        Reviews: ${this.model?.averageRating}
+      </div>`;
     }
     return html``;
   }
@@ -161,13 +165,15 @@ export class TileList extends LitElement {
 
       .desktop #description,
       .desktop #topic,
-      .desktop #source {
+      .desktop #source,
+      .desktop #reviews {
         font-size: 12px;
       }
 
       .mobile #description,
       .mobile #topic,
-      .mobile #source {
+      .mobile #source,
+      .mobile #reviews {
         font-size: 11px;
       }
 

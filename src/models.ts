@@ -16,6 +16,7 @@ export interface TileModel {
   description?: string;
   collectionIdentifier?: string;
   collectionName?: string;
+  collections?: string[];
   creator?: string;
   subject?: string;
   source?: string;
