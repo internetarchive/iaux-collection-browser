@@ -527,7 +527,8 @@ export class CollectionBrowser
         'reviewdate',
         'creator',
         'subject', // topic
-        'source'
+        'source',
+        'collection',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -606,8 +607,9 @@ export class CollectionBrowser
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
         subject: doc.subject?.value,
-        source: doc.source?.value
-      });      
+        source: doc.source?.value,
+        collection: doc.collection?.values ?? [],
+      });
     });
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
