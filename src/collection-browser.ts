@@ -301,7 +301,8 @@ export class CollectionBrowser
 
   private async handleQueryChange() {
     // only reset if the query has actually changed
-    if (this.pageFetchQueryKey === this.previousQueryKey) return;
+    if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
+      return;
     this.previousQueryKey = this.pageFetchQueryKey;
 
     this.dataSource = {};
