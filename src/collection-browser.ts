@@ -243,7 +243,11 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    if (changed.has('displayMode') || changed.has('showDeleteButtons')) {
+    if (
+      changed.has('displayMode') ||
+      changed.has('showDeleteButtons') ||
+      changed.has('baseNavigationUrl')
+    ) {
       this.infiniteScroller.reload();
     }
     if (
@@ -251,7 +255,8 @@ export class CollectionBrowser
       changed.has('additionalQueryClause') ||
       changed.has('dateRangeQueryClause') ||
       changed.has('sortParam') ||
-      changed.has('selectedFacets')
+      changed.has('selectedFacets') ||
+      changed.has('searchService')
     ) {
       this.handleQueryChange();
     }
