@@ -534,7 +534,7 @@ export class CollectionBrowser
         'creator',
         'subject', // topic
         'source',
-        'collection',
+        'collections_raw',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -614,7 +614,7 @@ export class CollectionBrowser
         averageRating: doc.avg_rating?.value,
         subject: doc.subject?.value,
         source: doc.source?.value,
-        collection: doc.collection?.values ?? [],
+        collections: doc.collections_raw?.values ?? [],
       });
     });
     datasource[pageNumber] = tiles;
