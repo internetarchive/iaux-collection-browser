@@ -13,9 +13,11 @@ import viewsIcon from './icons/views';
 export class ItemTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
+  @property({ type: String }) baseNavigationUrl?: string;
+
   get renderItemImageView() {
-    const imgSrcUrl = `https://archive.org/services/img/${this.model?.identifier}`;
-    const containsDeemphasize = this.model?.collection.includes('deemphasize');
+    const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
+    const containsDeemphasize = this.model?.collections.includes('deemphasize');
     return !containsDeemphasize
       ? html`<div
           id="item-image"
@@ -31,11 +33,16 @@ export class ItemTile extends LitElement {
   }
 
   render() {
+    const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.collections[0]}`;
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
 
     return html`
       <div id="container">
+        <div id="stealth-popup">
+          <div id="collection-image" style="background-image:url(${imgSrcUrl})"></div>
+          <p id="collection-name">${this.model?.collections[0]}</p>
+        </div>
         <div id="title-image-container">
           <p id="item-title" title=${itemTitle}>
             ${this.model?.title}
@@ -197,7 +204,6 @@ export class ItemTile extends LitElement {
         background-color: #fcfcfc;
       }
 
-      /**  creator **/
       .item-creator {
         color: #000000;
         display: -webkit-box;
@@ -248,6 +254,54 @@ export class ItemTile extends LitElement {
 
       .col {
         width: 25%;
+      }
+
+      #container:hover #stealth-popup {
+        margin-top: -30px;
+        visiblity: visible;
+        opacity: 1;
+      }
+
+      #stealth-popup {
+        transition: margin-top 0.3s ease, opacity 0.3s ease;
+        position: absolute;
+        visiblity: hidden;
+        z-index: 1;
+        opacity: 0;
+        color: black;
+        margin-top: -15px;
+        margin-left: -15px;
+        text-align: left;
+        display: flex;
+        align-items: center;
+      }
+
+      #collection-image {
+        transition: opacity 0.3s ease;
+        width: 4.5rem;
+        height: 4.5rem;
+        border-radius: 22px;
+        box-shadow: 0px 0px 10px #ccc;
+        background-color: white;
+        border: 2px solid #ddd;
+        overflow: hidden;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+      }
+
+      #collection-name {
+        width: 160px;
+        line-height: 1;
+        max-height: 25px;
+        font-size: 12px;
+        font-weight: bold;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        bottom: 20px;
+        padding: 1rem;
       }
     `;
   }

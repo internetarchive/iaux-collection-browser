@@ -110,8 +110,9 @@ export class TileDispatcher
           default:
             return html`<item-tile
               .model=${model}
-              .currentWidth=${currentWidth}
-              .currentHeight=${currentHeight}
+              .baseNavigationUrl=${this.baseNavigationUrl}
+              .currentWidth=${this.currentWidth}
+              .currentHeight=${this.currentHeight}
             ></item-tile>`;
         }
       case 'list-compact':
