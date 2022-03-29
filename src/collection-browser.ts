@@ -604,7 +604,6 @@ export class CollectionBrowser
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
       });
-      console.debug('avg_rating', doc.avg_rating?.value);
     });
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
