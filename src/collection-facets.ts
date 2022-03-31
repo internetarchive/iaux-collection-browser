@@ -2,6 +2,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation } from '@internetarchive/search-service';
+import '@internetarchive/histogram-date-range';
 
 type FacetOption =
   | 'subject'
@@ -56,9 +57,13 @@ interface FacetGroup {
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
+  @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
+
   @property({ type: Object }) selectedFacets: Record<string, string[]> = {};
 
-  @property({ type: Boolean }) isLoading = false;
+  @property({ type: Boolean }) facetsLoading = false;
+
+  @property({ type: Boolean }) fullYearAggregationLoading = false;
 
   private get hydratedSelectedFacets(): Record<string, string[]> {
     const { selectedFacets } = this;
@@ -74,12 +79,58 @@ export class CollectionFacets extends LitElement {
 
   render() {
     return html`
-      <div id="container" class="${this.isLoading ? 'loading' : ''}">
-        ${this.mergedFacets.map(facetGroup =>
-          this.getFacetTemplate(facetGroup)
+      <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
+        <div class="facet-group">
+          <h1>Year Published</h1>
+          ${this.histogramTemplate}
+        </div>
+
+        ${this.mergedFacets.map(
+          facetGroup =>
+            html`
+              <div class="facet-group">
+                <h1>${facetGroup.title}</h1>
+                ${this.getFacetTemplate(facetGroup)}
+              </div>
+            `
         )}
       </div>
     `;
+  }
+
+  private get currentYearsHistogramAggregation(): Aggregation | undefined {
+    return this.aggregations?.year_histogram;
+  }
+
+  private get histogramTemplate() {
+    const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
+      this;
+    return html`
+      <histogram-date-range
+        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
+        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
+        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
+        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
+        .updateDelay=${100}
+        missingDataMessage="..."
+        .width=${150}
+        .bins=${fullYearsHistogramAggregation?.buckets}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+      ></histogram-date-range>
+    `;
+  }
+
+  private histogramDateRangeUpdated(
+    e: CustomEvent<{
+      minDate: string;
+      maxDate: string;
+    }>
+  ) {
+    const { minDate, maxDate } = e.detail;
+    const event = new CustomEvent('histogramDateRangeUpdated', {
+      detail: { minDate, maxDate },
+    });
+    this.dispatchEvent(event);
   }
 
   /**
@@ -186,33 +237,29 @@ export class CollectionFacets extends LitElement {
 
   private getFacetTemplate(facetGroup: FacetGroup) {
     return html`
-      <div class="facet-group">
-        <h1>${facetGroup.title}</h1>
-
-        <ul>
-          ${repeat(
-            facetGroup.buckets,
-            bucket => `${facetGroup.key}:${bucket.key}`,
-            bucket => html`
-              <li>
-                <label class="facet-row">
-                  <div class="facet-checkbox">
-                    <input
-                      type="checkbox"
-                      .name=${facetGroup.key}
-                      .value=${bucket.key}
-                      @click=${this.facetToggled}
-                      ?checked=${bucket.selected}
-                    />
-                  </div>
-                  <div class="facet-title">${bucket.key}</div>
-                  <div class="facet-count">${bucket.count}</div>
-                </label>
-              </li>
-            `
-          )}
-        </ul>
-      </div>
+      <ul class="facet-list">
+        ${repeat(
+          facetGroup.buckets,
+          bucket => `${facetGroup.key}:${bucket.key}`,
+          bucket => html`
+            <li>
+              <label class="facet-row">
+                <div class="facet-checkbox">
+                  <input
+                    type="checkbox"
+                    .name=${facetGroup.key}
+                    .value=${bucket.key}
+                    @click=${this.facetToggled}
+                    ?checked=${bucket.selected}
+                  />
+                </div>
+                <div class="facet-title">${bucket.key}</div>
+                <div class="facet-count">${bucket.count}</div>
+              </label>
+            </li>
+          `
+        )}
+      </ul>
     `;
   }
 
@@ -292,13 +339,13 @@ export class CollectionFacets extends LitElement {
         margin: 24px 0 14px 0;
       }
 
-      .facet-group ul {
+      ul.facet-list {
         list-style: none;
         margin: 0;
         padding: 0;
       }
 
-      .facet-group li {
+      ul.facet-list li {
         margin-bottom: 0.2rem;
       }
 
