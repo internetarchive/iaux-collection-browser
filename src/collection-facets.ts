@@ -72,8 +72,6 @@ export class CollectionFacets extends LitElement {
 
   render() {
     return html`
-      <h1>Facets</h1>
-
       ${this.mergedFacets.map(facetGroup => this.getFacetTemplate(facetGroup))}
     `;
   }
@@ -182,26 +180,33 @@ export class CollectionFacets extends LitElement {
 
   private getFacetTemplate(facetGroup: FacetGroup) {
     return html`
-      <h2>${facetGroup.title}</h2>
-      ${repeat(
-        facetGroup.buckets,
-        bucket => `${facetGroup.key}:${bucket.key}`,
-        bucket => html`
-          <label class="facet-row">
-            <div class="facet-checkbox">
-              <input
-                type="checkbox"
-                .name=${facetGroup.key}
-                .value=${bucket.key}
-                @click=${this.facetToggled}
-                ?checked=${bucket.selected}
-              />
-            </div>
-            <div class="facet-title">${bucket.key}</div>
-            <div class="facet-count">${bucket.count}</div>
-          </label>
-        `
-      )}
+      <div class="facet-group">
+        <h1>${facetGroup.title}</h1>
+
+        <ul>
+          ${repeat(
+            facetGroup.buckets,
+            bucket => `${facetGroup.key}:${bucket.key}`,
+            bucket => html`
+              <li>
+                <label class="facet-row">
+                  <div class="facet-checkbox">
+                    <input
+                      type="checkbox"
+                      .name=${facetGroup.key}
+                      .value=${bucket.key}
+                      @click=${this.facetToggled}
+                      ?checked=${bucket.selected}
+                    />
+                  </div>
+                  <div class="facet-title">${bucket.key}</div>
+                  <div class="facet-count">${bucket.count}</div>
+                </label>
+              </li>
+            `
+          )}
+        </ul>
+      </div>
     `;
   }
 
@@ -269,8 +274,33 @@ export class CollectionFacets extends LitElement {
 
   static get styles() {
     return css`
+      h1 {
+        font-size: 1.4rem;
+        font-weight: 200;
+        border-bottom: 1px solid rgb(232, 232, 232);
+        padding-bottom: 3px;
+        margin: 24px 0 14px 0;
+      }
+
+      .facet-group ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .facet-group li {
+        margin-bottom: 0.2rem;
+      }
+
+      .facet-checkbox {
+        margin-right: 0.5rem;
+      }
+
       .facet-row {
         display: flex;
+        align-items: center;
+        font-weight: 500;
+        font-size: 1.2rem;
       }
 
       .facet-title {
