@@ -25,7 +25,6 @@ import {
 import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
-import '@internetarchive/histogram-date-range';
 import './tiles/tile-dispatcher';
 import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -170,16 +169,16 @@ export class CollectionBrowser
             >
             <span id="big-results-label">Results</span>
           </div>
-          <div id="histogram-container">
-            <h1>Year Published</h1>
-            ${this.histogramTemplate}
-          </div>
           <div id="facets-container">
             ${this.facetsLoading ? this.loadingTemplate : nothing}
             <collection-facets
               @facetsChanged=${this.facetsChanged}
+              @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
               .aggregations=${this.aggregations}
-              ?isLoading=${this.facetsLoading}
+              .fullYearsHistogramAggregation=${this
+                .fullYearsHistogramAggregation}
+              ?facetsLoading=${this.facetDataLoading}
+              ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
             ></collection-facets>
           </div>
         </div>
@@ -196,6 +195,10 @@ export class CollectionBrowser
         </div>
       </div>
     `;
+  }
+
+  private get facetDataLoading(): boolean {
+    return this.facetsLoading || this.fullYearAggregationLoading;
   }
 
   private get loadingTemplate() {
@@ -218,33 +221,6 @@ export class CollectionBrowser
           <li>Full Query: ${this.fullQuery}</li>
         </ul>
       </div>
-    `;
-  }
-
-  private get currentYearsHistogramAggregation(): Aggregation | undefined {
-    return this.aggregations?.year_histogram;
-  }
-
-  private get histogramDataLoading(): boolean {
-    return this.facetsLoading || this.fullYearAggregationLoading;
-  }
-
-  private get histogramTemplate() {
-    const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
-      this;
-    return html`
-      <histogram-date-range
-        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
-        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
-        .updateDelay=${100}
-        missingDataMessage="..."
-        ?loading=${this.histogramDataLoading}
-        .width=${150}
-        .bins=${fullYearsHistogramAggregation?.buckets}
-        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-      ></histogram-date-range>
     `;
   }
 
