@@ -685,14 +685,6 @@ export class CollectionBrowser
       padding-right: 12px;
     }
 
-    #histogram-container h1 {
-      font-size: 1.4rem;
-      font-weight: 200;
-      border-bottom: 1px solid rgb(232, 232, 232);
-      padding-bottom: 3px;
-      margin: 24px 0 14px 0;
-    }
-
     #facets-container {
       position: relative;
     }
