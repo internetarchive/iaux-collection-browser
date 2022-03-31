@@ -648,10 +648,12 @@ export class CollectionBrowser
     #right-column {
       flex: 1;
       position: relative;
+      border-left: 1px solid rgb(232, 232, 232);
     }
 
     #left-column {
-      width: 15rem;
+      width: 18rem;
+      padding-right: 12px;
     }
 
     #histogram-container h1 {

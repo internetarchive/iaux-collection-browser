@@ -113,7 +113,7 @@ export class CollectionFacets extends LitElement {
         .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
         .updateDelay=${100}
         missingDataMessage="..."
-        .width=${150}
+        .width=${180}
         .bins=${fullYearsHistogramAggregation?.buckets}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       ></histogram-date-range>
