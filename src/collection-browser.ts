@@ -85,6 +85,8 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
+  @state() private totalResults?: number;
+
   /**
    * When we're animated scrolling to the page, we don't want to fetch
    * all of the pages as it scrolls so this lets us know if we're scrolling
@@ -158,21 +160,16 @@ export class CollectionBrowser
 
   render() {
     return html`
-      <h1>Collection Browser</h1>
-
-      <div id="query">
-        <ul>
-          <li>Base Query: ${this.baseQuery}</li>
-          <li>Facet Query: ${this.facetQuery}</li>
-          <li>Additional Query: ${this.additionalQueryClause}</li>
-          <li>Date Range Query: ${this.dateRangeQueryClause}</li>
-          <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
-          <li>Full Query: ${this.fullQuery}</li>
-        </ul>
-      </div>
-
       <div id="content-container">
         <div id="left-column">
+          <div id="results-total">
+            <span id="big-results-count"
+              >${this.totalResults
+                ? this.totalResults.toLocaleString()
+                : '-'}</span
+            >
+            <span id="big-results-label">Results</span>
+          </div>
           <div id="histogram-container">${this.histogramTemplate}</div>
           <div id="facets-container">
             ${this.facetsLoading ? this.loadingTemplate : nothing}
@@ -201,6 +198,21 @@ export class CollectionBrowser
     return html`
       <div class="loading-cover">
         <circular-activity-indicator></circular-activity-indicator>
+      </div>
+    `;
+  }
+
+  private get queryDebuggingTemplate() {
+    return html`
+      <div>
+        <ul>
+          <li>Base Query: ${this.baseQuery}</li>
+          <li>Facet Query: ${this.facetQuery}</li>
+          <li>Additional Query: ${this.additionalQueryClause}</li>
+          <li>Date Range Query: ${this.dateRangeQueryClause}</li>
+          <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
+          <li>Full Query: ${this.fullQuery}</li>
+        </ul>
       </div>
     `;
   }
@@ -545,6 +557,8 @@ export class CollectionBrowser
 
     if (!success) return;
 
+    this.totalResults = success.response.numFound;
+
     // this is checking to see if the query has changed since the data was fetched
     // if so, we just want to discard the data since there should be a new query
     // right behind it
@@ -691,6 +705,24 @@ export class CollectionBrowser
 
     #facets-container {
       position: relative;
+    }
+
+    #results-total {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5rem;
+    }
+
+    #big-results-count {
+      font-size: 2.4rem;
+      font-weight: 500;
+      margin-right: 5px;
+    }
+
+    #big-results-label {
+      font-size: 1rem;
+      font-weight: 200;
+      text-transform: uppercase;
     }
 
     .loading-cover {
