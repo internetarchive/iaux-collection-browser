@@ -58,6 +58,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) selectedFacets: Record<string, string[]> = {};
 
+  @property({ type: Boolean }) isLoading = false;
+
   private get hydratedSelectedFacets(): Record<string, string[]> {
     const { selectedFacets } = this;
     const hydratedSelectedFacets: Record<string, string[]> = {};
@@ -72,7 +74,11 @@ export class CollectionFacets extends LitElement {
 
   render() {
     return html`
-      ${this.mergedFacets.map(facetGroup => this.getFacetTemplate(facetGroup))}
+      <div id="container" class="${this.isLoading ? 'loading' : ''}">
+        ${this.mergedFacets.map(facetGroup =>
+          this.getFacetTemplate(facetGroup)
+        )}
+      </div>
     `;
   }
 
@@ -274,6 +280,10 @@ export class CollectionFacets extends LitElement {
 
   static get styles() {
     return css`
+      #container.loading {
+        opacity: 0.5;
+      }
+
       h1 {
         font-size: 1.4rem;
         font-weight: 200;
