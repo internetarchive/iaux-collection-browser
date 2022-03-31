@@ -110,6 +110,16 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
+"@internetarchive/feature-feedback@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/feature-feedback/-/feature-feedback-0.1.2.tgz#1dddbabd828b4827bac6bbe5b001ee8498eb0c2a"
+  integrity sha512-dEi5n+fCEsZz/oxON2dFGwZkWZbLtRDTtUWTL+Zage6f32HLWPZMpMp6dxLPse3R1vYIrwwnpLt6e9UvNAlwZw==
+  dependencies:
+    "@internetarchive/recaptcha-manager" "^0.1.1"
+    "@internetarchive/result-type" "^0.0.1"
+    "@internetarchive/shared-resize-observer" "^0.2.0"
+    lit "^2.0.2"
+
 "@internetarchive/field-parsers@0.1.1-alpha.1":
   version "0.1.1-alpha.1"
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1-alpha.1.tgz"
@@ -142,6 +152,21 @@
   integrity sha512-iW9cuUC4U7k/11u6cdi32SCCBzgqEtFdfQ2YiQBnf/Ky75j42LVk26mjZfvjzQ1NnV5XAn/099PkgLSPVa1aBA==
   dependencies:
     lit "^2.0.2"
+
+"@internetarchive/lazy-loader-service@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/lazy-loader-service/-/lazy-loader-service-0.2.0.tgz#628709cbc6a9f398c5305e086e7be1d17484bbd7"
+  integrity sha512-SI/ADWnIhdtuAbxkeOItb0xOqco+ueVtwEAdEb0D60sFngUCUpBr/EXeIeh+ykXveO9pmd5J0ZVpgEfKdbhE+g==
+  dependencies:
+    nanoevents "^6.0.2"
+
+"@internetarchive/recaptcha-manager@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/recaptcha-manager/-/recaptcha-manager-0.1.1.tgz#201a6fbf64f9b9e0878767ef93a031df16cd3d98"
+  integrity sha512-+ENMfFm/yqAr6wXji7SZEwEywwvfLazU7KnWkCcHpQU0uwbb//OJ5Lag2tv2QtU7fsrgirFBcOth833HaNcynw==
+  dependencies:
+    "@internetarchive/lazy-loader-service" "^0.2.0"
+    "@types/grecaptcha" "^2"
 
 "@internetarchive/result-type@^0.0.1":
   version "0.0.1"
@@ -429,6 +454,11 @@
     "@types/express-serve-static-core" "^4.17.18"
     "@types/qs" "*"
     "@types/serve-static" "*"
+
+"@types/grecaptcha@^2":
+  version "2.0.36"
+  resolved "https://registry.yarnpkg.com/@types/grecaptcha/-/grecaptcha-2.0.36.tgz#c5eaf271ac8a170f073f85aa2e28f2ca3b61df40"
+  integrity sha512-SfzcAJPls94/Lz1FznWe6Vm9NLkakhGmk3EO7g2QdkDDR2OU4FH63YILnDpGIU6l7gPnsf5WQ81Kr05JOYAlZw==
 
 "@types/http-assert@*":
   version "1.5.3"
@@ -3132,6 +3162,11 @@ nanocolors@^0.2.1:
   version "0.2.13"
   resolved "https://registry.npmjs.org/nanocolors/-/nanocolors-0.2.13.tgz"
   integrity sha512-0n3mSAQLPpGLV9ORXT5+C/D4mwew7Ebws69Hx4E2sgz2ZA5+32Q80B9tL8PbL7XHnRDiAxH/pnrUJ9a4fkTNTA==
+
+nanoevents@^6.0.2:
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/nanoevents/-/nanoevents-6.0.2.tgz#3824031c7beab754b04ae5a17936c0fc7b6a183c"
+  integrity sha512-FRS2otuFcPPYDPYViNWQ42+1iZqbXydinkRHTHFxrF4a1CpBfmydR9zkI44WSXAXCyPrkcGtPk5CnpW6Y3lFKQ==
 
 nanoid@^3.1.25, nanoid@^3.1.30:
   version "3.1.30"

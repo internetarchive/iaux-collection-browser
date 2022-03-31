@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
+import '@internetarchive/feature-feedback';
 
 type FacetOption =
   | 'subject'
@@ -81,7 +82,7 @@ export class CollectionFacets extends LitElement {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
         <div class="facet-group">
-          <h1>Year Published</h1>
+          <h1>Year Published <feature-feedback></feature-feedback></h1>
           ${this.histogramTemplate}
         </div>
 
