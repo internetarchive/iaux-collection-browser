@@ -170,12 +170,16 @@ export class CollectionBrowser
             >
             <span id="big-results-label">Results</span>
           </div>
-          <div id="histogram-container">${this.histogramTemplate}</div>
+          <div id="histogram-container">
+            <h1>Year Published</h1>
+            ${this.histogramTemplate}
+          </div>
           <div id="facets-container">
             ${this.facetsLoading ? this.loadingTemplate : nothing}
             <collection-facets
               @facetsChanged=${this.facetsChanged}
               .aggregations=${this.aggregations}
+              ?isLoading=${this.facetsLoading}
             ></collection-facets>
           </div>
         </div>
@@ -703,6 +707,14 @@ export class CollectionBrowser
       width: 15rem;
     }
 
+    #histogram-container h1 {
+      font-size: 1.4rem;
+      font-weight: 200;
+      border-bottom: 1px solid rgb(232, 232, 232);
+      padding-bottom: 3px;
+      margin: 24px 0 14px 0;
+    }
+
     #facets-container {
       position: relative;
     }
@@ -731,7 +743,6 @@ export class CollectionBrowser
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(255, 255, 255, 0.75);
       display: flex;
       justify-content: center;
       z-index: 1;
