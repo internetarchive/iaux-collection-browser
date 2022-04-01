@@ -8,8 +8,6 @@ import {
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
-import { CollectionDisplayMode } from '../src/models';
-import { SortFilterBar } from '../src/sort-filter-bar/sort-filter-bar';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -36,8 +34,6 @@ export class AppRoot extends LitElement {
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
-
-  @query('sort-filter-bar') private sortFilterBar!: SortFilterBar;
 
   private searchPressed(e: Event) {
     e.preventDefault();
@@ -108,7 +104,7 @@ export class AppRoot extends LitElement {
   private sortParamUpdated() {
     if (!this.sortParam) return;
     this.collectionBrowser.sortParam = this.sortParam;
-    this.sortFilterBar.sortDirection = this.sortParam.direction;
+    // this.sortFilterBar.sortDirection = this.sortParam.direction;
     this.updateUrl();
   }
 
@@ -162,13 +158,6 @@ export class AppRoot extends LitElement {
         >
           Toggle Delete Mode
         </button>
-
-        <sort-filter-bar
-          @sortChanged=${this.sortChanged}
-          @displayModeChanged=${this.displayModeChanged}
-          @titleLetterChanged=${this.titleLetterChanged}
-          @creatorLetterChanged=${this.creatorLetterChanged}
-        ></sort-filter-bar>
 
         <div id="cell-controls">
           <div id="cell-size-control">
@@ -241,7 +230,6 @@ export class AppRoot extends LitElement {
       <collection-browser
         .baseNavigationUrl=${'https://archive.org'}
         .searchService=${this.searchService}
-        .additionalQueryClause=${this.sortFilterQueries}
         .resizeObserver=${this.resizeObserver}
         @visiblePageChanged=${this.visiblePageChanged}
       >
@@ -260,25 +248,6 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.style.removeProperty(
         '--infiniteScrollerCellOutline'
       );
-    }
-  }
-
-  private titleSelectorVisibilityChanged(e: CustomEvent<{ visible: boolean }>) {
-    console.debug('titleSelectorVisibleChanged', e.detail);
-    if (e.detail.visible) {
-      this.sortParam = new SortParam('titleSorter', 'asc');
-    }
-  }
-
-  private sortByViewsPressed() {
-    this.sortParam = new SortParam('week', 'desc');
-  }
-
-  private creatorSelectorVisibilityChanged(
-    e: CustomEvent<{ visible: boolean }>
-  ) {
-    if (e.detail.visible) {
-      this.sortParam = new SortParam('creatorSorter', 'asc');
     }
   }
 
@@ -326,47 +295,6 @@ export class AppRoot extends LitElement {
     const { pageNumber } = e.detail;
     if (pageNumber === this.currentPage) return;
     this.currentPage = pageNumber;
-  }
-
-  private sortChanged(e: CustomEvent<{ sort: SortParam }>) {
-    this.sortParam = e.detail.sort;
-    if ((this.currentPage ?? 1) > 1) {
-      this.collectionBrowser.goToPage(1);
-    }
-    this.currentPage = 1;
-  }
-
-  private displayModeChanged(
-    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
-  ) {
-    this.collectionBrowser.displayMode = e.detail.displayMode;
-  }
-
-  @state() titleQuery?: string;
-
-  @state() creatorQuery?: string;
-
-  private get sortFilterQueries(): string {
-    const queries = [this.titleQuery, this.creatorQuery];
-    return queries.filter(q => q).join(' AND ');
-  }
-
-  private titleLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
-    const letter = e.detail.selectedLetter;
-    if (letter) {
-      this.titleQuery = `firstTitle:${letter}`;
-    } else {
-      this.titleQuery = undefined;
-    }
-  }
-
-  private creatorLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
-    const letter = e.detail.selectedLetter;
-    if (letter) {
-      this.creatorQuery = `firstCreator:${letter}`;
-    } else {
-      this.creatorQuery = undefined;
-    }
   }
 
   static styles = css`

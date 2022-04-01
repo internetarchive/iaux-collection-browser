@@ -29,53 +29,57 @@ export class SortFilterBar extends LitElement {
                   this.sortDirection = 'desc';
                 }}
               >
-                Desc
+                ▼
               </button>
               <button
                 @click=${() => {
                   this.sortDirection = 'asc';
                 }}
               >
-                Asc</button
+                ▲</button
               >Sort By
             </li>
             <li>
-              <button
+              <a
+                href="#"
                 @click=${() => {
                   this.sortField = 'week';
                 }}
               >
                 Views
-              </button>
+              </a>
             </li>
             <li>
-              <button
+              <a
+                href="#"
                 @click=${() => {
                   this.titleSelectorVisible = !this.titleSelectorVisible;
                   this.sortField = 'titleSorter';
                 }}
               >
                 Title
-              </button>
+              </a>
             </li>
             <li>
-              <button
+              <a
+                href="#"
                 @click=${() => {
                   this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
                 }}
               >
                 Date Archived
-              </button>
+              </a>
             </li>
             <li>
-              <button
+              <a
+                href="#"
                 @click=${() => {
                   this.creatorSelectorVisible = !this.creatorSelectorVisible;
                   this.sortField = 'creatorSorter';
                 }}
               >
                 Creator
-              </button>
+              </a>
             </li>
           </ul>
         </div>
