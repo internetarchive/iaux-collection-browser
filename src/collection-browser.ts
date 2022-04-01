@@ -31,6 +31,8 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import { CollectionFacets } from './collection-facets';
 import './circular-activity-indicator';
+import './sort-filter-bar/sort-filter-bar';
+import { SortFilterBar } from './sort-filter-bar/sort-filter-bar';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -49,15 +51,15 @@ export class CollectionBrowser
 
   @property({ type: Object }) sortParam?: SortParam;
 
-  @property({ type: String }) additionalQueryClause?: string;
-
   @property({ type: String }) dateRangeQueryClause?: string;
 
   @property({ type: Number }) pageSize = 50;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
-  @query('collection-facets') collectionFacets!: CollectionFacets;
+  @query('collection-facets') private collectionFacets!: CollectionFacets;
+
+  @query('sort-filter-bar') private sortFilterBar!: SortFilterBar;
 
   /**
    * The page that the consumer wants to load.
@@ -85,6 +87,12 @@ export class CollectionBrowser
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
   @state() private totalResults?: number;
+
+  @state() private titleQuery?: string;
+
+  @state() private creatorQuery?: string;
+
+  @state() private currentPage?: number;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -115,6 +123,11 @@ export class CollectionBrowser
       this.fetchPage(pageNumber);
     }
     return model;
+  }
+
+  private get sortFilterQueries(): string {
+    const queries = [this.titleQuery, this.creatorQuery];
+    return queries.filter(q => q).join(' AND ');
   }
 
   // this is the total number of tiles we expect if
@@ -184,6 +197,13 @@ export class CollectionBrowser
         </div>
         <div id="right-column">
           ${this.searchResultsLoading ? this.loadingTemplate : nothing}
+          <sort-filter-bar
+            @sortChanged=${this.sortChanged}
+            @displayModeChanged=${this.displayModeChanged}
+            @titleLetterChanged=${this.titleLetterChanged}
+            @creatorLetterChanged=${this.creatorLetterChanged}
+          ></sort-filter-bar>
+
           <infinite-scroller
             class="${this.displayMode}"
             .cellProvider=${this}
@@ -195,6 +215,38 @@ export class CollectionBrowser
         </div>
       </div>
     `;
+  }
+
+  private sortChanged(e: CustomEvent<{ sort: SortParam }>) {
+    this.sortParam = e.detail.sort;
+    if ((this.currentPage ?? 1) > 1) {
+      this.goToPage(1);
+    }
+    this.currentPage = 1;
+  }
+
+  private displayModeChanged(
+    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
+  ) {
+    this.displayMode = e.detail.displayMode;
+  }
+
+  private titleLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
+    const letter = e.detail.selectedLetter;
+    if (letter) {
+      this.titleQuery = `firstTitle:${letter}`;
+    } else {
+      this.titleQuery = undefined;
+    }
+  }
+
+  private creatorLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
+    const letter = e.detail.selectedLetter;
+    if (letter) {
+      this.creatorQuery = `firstCreator:${letter}`;
+    } else {
+      this.creatorQuery = undefined;
+    }
   }
 
   private get facetDataLoading(): boolean {
@@ -215,7 +267,7 @@ export class CollectionBrowser
         <ul>
           <li>Base Query: ${this.baseQuery}</li>
           <li>Facet Query: ${this.facetQuery}</li>
-          <li>Additional Query: ${this.additionalQueryClause}</li>
+          <li>Sort Filter Query: ${this.sortFilterQueries}</li>
           <li>Date Range Query: ${this.dateRangeQueryClause}</li>
           <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
           <li>Full Query: ${this.fullQuery}</li>
@@ -244,7 +296,8 @@ export class CollectionBrowser
     }
     if (
       changed.has('baseQuery') ||
-      changed.has('additionalQueryClause') ||
+      changed.has('titleQuery') ||
+      changed.has('creatorQuery') ||
       changed.has('dateRangeQueryClause') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
@@ -331,12 +384,12 @@ export class CollectionBrowser
   private get fullQueryWithoutDate(): string | undefined {
     if (!this.baseQuery) return undefined;
     let fullQuery = this.baseQuery;
-    const { facetQuery, additionalQueryClause } = this;
+    const { facetQuery, sortFilterQueries } = this;
     if (facetQuery) {
       fullQuery += ` AND ${facetQuery}`;
     }
-    if (additionalQueryClause) {
-      fullQuery += ` AND ${additionalQueryClause}`;
+    if (sortFilterQueries) {
+      fullQuery += ` AND ${sortFilterQueries}`;
     }
     return fullQuery;
   }
