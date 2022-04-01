@@ -20,92 +20,106 @@ export class SortFilterBar extends LitElement {
 
   render() {
     return html`
-      <div id="sort-bar">
-        <div id="sort-selector">
-          <ul>
-            <li>
-              <button
-                @click=${() => {
-                  this.sortDirection = 'desc';
-                }}
-              >
-                ▼
-              </button>
-              <button
-                @click=${() => {
-                  this.sortDirection = 'asc';
-                }}
-              >
-                ▲</button
-              >Sort By
-            </li>
-            <li>
-              <a
-                href="#"
-                @click=${() => {
-                  this.sortField = 'week';
-                }}
-              >
-                Views
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                @click=${() => {
-                  this.titleSelectorVisible = !this.titleSelectorVisible;
-                  this.sortField = 'titleSorter';
-                }}
-              >
-                Title
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                @click=${() => {
-                  this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
-                }}
-              >
-                Date Archived
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                @click=${() => {
-                  this.creatorSelectorVisible = !this.creatorSelectorVisible;
-                  this.sortField = 'creatorSorter';
-                }}
-              >
-                Creator
-              </a>
-            </li>
-          </ul>
+      <div id="container">
+        <div id="sort-bar">
+          <div id="sort-selector">
+            <ul>
+              <li>
+                <div id="sort-direction-container">
+                  <button
+                    class="sort-button"
+                    @click=${() => {
+                      this.sortDirection = 'asc';
+                    }}
+                  >
+                    ▲
+                  </button>
+                  <button
+                    class="sort-button"
+                    @click=${() => {
+                      this.sortDirection = 'desc';
+                    }}
+                  >
+                    ▼
+                  </button>
+                </div>
+              </li>
+              <li>Sort By</li>
+              <li>
+                <a
+                  href="#"
+                  @click=${() => {
+                    this.sortField = 'week';
+                  }}
+                >
+                  Views
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  @click=${() => {
+                    this.titleSelectorVisible = !this.titleSelectorVisible;
+                    this.sortField = 'titleSorter';
+                  }}
+                >
+                  Title
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  @click=${() => {
+                    this.dateSortSelectorVisible =
+                      !this.dateSortSelectorVisible;
+                  }}
+                >
+                  Date Archived
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#"
+                  @click=${() => {
+                    this.creatorSelectorVisible = !this.creatorSelectorVisible;
+                    this.sortField = 'creatorSorter';
+                  }}
+                >
+                  Creator
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div id="display-style">
+            <ul>
+              ${this.displayMode !== 'grid'
+                ? html`<li>
+                    <input type="checkbox" @click=${this.detailSelected} />
+                    Details
+                  </li>`
+                : nothing}
+
+              <li>
+                <button id="grid-button" @click=${this.gridSelected}>
+                  Grid
+                </button>
+              </li>
+              <li>
+                <button id="list-button" @click=${this.listSelected}>
+                  List
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div id="display-style">
-          <ul>
-            ${this.displayMode !== 'grid'
-              ? html`<li>
-                  <input type="checkbox" @click=${this.detailSelected} />
-                  Details
-                </li>`
-              : nothing}
+        ${this.dateSortSelectorVisible ? this.dateSortSelector : nothing}
+        ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
+        ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
 
-            <li>
-              <button id="grid-button" @click=${this.gridSelected}>Grid</button>
-            </li>
-            <li>
-              <button id="list-button" @click=${this.listSelected}>List</button>
-            </li>
-          </ul>
-        </div>
+        <div id="bottom-shadow"></div>
       </div>
-
-      ${this.dateSortSelectorVisible ? this.dateSortSelector : nothing}
-      ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
-      ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
     `;
   }
 
@@ -226,9 +240,23 @@ export class SortFilterBar extends LitElement {
   }
 
   static styles = css`
+    #container {
+      margin: 0 1rem 2.5rem 1rem;
+    }
+
     #sort-bar {
       display: flex;
       justify-content: space-between;
+      border: 1px solid rgb(232, 232, 232);
+      align-items: center;
+      padding: 0.1rem 0.5rem;
+    }
+
+    #bottom-shadow {
+      height: 1px;
+      width: 100%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+      background-color: #bbb;
     }
 
     ul {
@@ -241,6 +269,33 @@ export class SortFilterBar extends LitElement {
 
     li {
       padding: 0.5rem 0 0.5rem 0;
+    }
+
+    .sort-button {
+      background: none;
+      color: inherit;
+      border: none;
+      padding: 0;
+      font: inherit;
+      cursor: pointer;
+      outline: inherit;
+    }
+
+    #sort-direction-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #sort-selector li {
+      display: flex;
+      align-items: center;
+    }
+
+    #sort-selector li a {
+      text-decoration: none;
+      text-transform: uppercase;
+      font-size: 1.4rem;
+      color: #333;
     }
 
     #sort-selector li::after {
