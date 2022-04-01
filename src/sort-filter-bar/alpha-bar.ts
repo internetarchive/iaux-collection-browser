@@ -24,7 +24,13 @@ export class AlphaBar extends LitElement {
                     ? 'selected'
                     : nothing}
                 >
-                  <a href="#" @click=${() => this.letterClicked(letter)}>
+                  <a
+                    href="#"
+                    @click=${(e: Event) => {
+                      e.preventDefault();
+                      this.letterClicked(letter);
+                    }}
+                  >
                     ${letter}
                   </a>
                 </li>
