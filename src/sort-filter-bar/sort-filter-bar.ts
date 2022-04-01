@@ -48,7 +48,8 @@ export class SortFilterBar extends LitElement {
               <li>
                 <a
                   href="#"
-                  @click=${() => {
+                  @click=${(e: Event) => {
+                    e.preventDefault();
                     this.sortField = 'week';
                   }}
                 >
@@ -58,7 +59,8 @@ export class SortFilterBar extends LitElement {
               <li>
                 <a
                   href="#"
-                  @click=${() => {
+                  @click=${(e: Event) => {
+                    e.preventDefault();
                     this.titleSelectorVisible = !this.titleSelectorVisible;
                     this.sortField = 'titleSorter';
                   }}
@@ -69,7 +71,8 @@ export class SortFilterBar extends LitElement {
               <li>
                 <a
                   href="#"
-                  @click=${() => {
+                  @click=${(e: Event) => {
+                    e.preventDefault();
                     this.dateSortSelectorVisible =
                       !this.dateSortSelectorVisible;
                   }}
@@ -80,7 +83,8 @@ export class SortFilterBar extends LitElement {
               <li>
                 <a
                   href="#"
-                  @click=${() => {
+                  @click=${(e: Event) => {
+                    e.preventDefault();
                     this.creatorSelectorVisible = !this.creatorSelectorVisible;
                     this.sortField = 'creatorSorter';
                   }}
