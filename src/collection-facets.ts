@@ -1,7 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Aggregation } from '@internetarchive/search-service';
+import { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 
@@ -108,14 +108,14 @@ export class CollectionFacets extends LitElement {
       this;
     return html`
       <histogram-date-range
-        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
-        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
+        .minDate=${`${fullYearsHistogramAggregation?.first_bucket_key}`}
+        .maxDate=${`${fullYearsHistogramAggregation?.last_bucket_key}`}
+        .minSelectedDate=${`${currentYearsHistogramAggregation?.first_bucket_key}`}
+        .maxSelectedDate=${`${currentYearsHistogramAggregation?.last_bucket_key}`}
         .updateDelay=${100}
         missingDataMessage="..."
         .width=${180}
-        .bins=${fullYearsHistogramAggregation?.buckets}
+        .bins=${fullYearsHistogramAggregation?.buckets as number[]}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       ></histogram-date-range>
     `;
@@ -221,7 +221,8 @@ export class CollectionFacets extends LitElement {
       if (key === 'year_histogram') return;
       const option = this.getFacetOptionFromKey(key);
       const title = facetTitles[option];
-      const facetBuckets: FacetBucket[] = buckets.buckets.map(bucket => ({
+      const castedBuckets = buckets.buckets as Bucket[];
+      const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => ({
         key: `${bucket.key}`,
         count: bucket.doc_count,
         selected: false,
