@@ -3,8 +3,6 @@ import { customElement, property } from 'lit/decorators.js';
 
 @customElement('alpha-bar')
 export class AlphaBar extends LitElement {
-  @property({ type: String }) headline?: string;
-
   @property({ type: String }) selectedLetter?: string;
 
   private get selectedUppercaseLetter(): string | undefined {
@@ -13,7 +11,6 @@ export class AlphaBar extends LitElement {
 
   render() {
     return html`
-      <h1>${this.headline}</h1>
       <div id="container">
         <ul>
           ${this.alphabet.map(

@@ -3,12 +3,18 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { CollectionDisplayMode } from '../models';
 import './alpha-bar';
 
+import { sortIcon } from './img/sort-triangle';
+import { gridIcon } from './img/grid';
+import { listIcon } from './img/list';
+
 enum SortFieldName {
   publicdate = 'Date Archived',
   date = 'Date Published',
   reviewdate = 'Date Reviewed',
   addeddate = 'Date Added',
 }
+
+type SortField = 'relevance' | 'views' | 'title' | 'date' | 'creator';
 
 @customElement('sort-filter-bar')
 export class SortFilterBar extends LitElement {
@@ -18,7 +24,7 @@ export class SortFilterBar extends LitElement {
 
   @property({ type: String }) sortField: string | null = null;
 
-  @state() dateSortField: SortFieldName = SortFieldName.publicdate;
+  @property({ type: String }) selectedSort: SortField = 'relevance';
 
   @state() titleSelectorVisible: boolean = false;
 
@@ -29,26 +35,31 @@ export class SortFilterBar extends LitElement {
   render() {
     return html`
       <div id="container">
+        ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
+        ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
+
         <div id="sort-bar">
           <div id="sort-selector">
             <ul>
               <li>
                 <div id="sort-direction-container">
                   <button
+                    id="sort-ascending-btn"
                     class="sort-button"
                     @click=${() => {
                       this.sortDirection = 'asc';
                     }}
                   >
-                    ▲
+                    ${sortIcon}
                   </button>
                   <button
+                    id="sort-descending-btn"
                     class="sort-button"
                     @click=${() => {
                       this.sortDirection = 'desc';
                     }}
                   >
-                    ▼
+                    ${sortIcon}
                   </button>
                 </div>
               </li>
@@ -59,7 +70,9 @@ export class SortFilterBar extends LitElement {
                   @click=${(e: Event) => {
                     e.preventDefault();
                     this.sortField = null;
+                    this.selectedSort = 'relevance';
                   }}
+                  class=${this.selectedSort === 'relevance' ? 'selected' : ''}
                 >
                   Relevance
                 </a>
@@ -70,7 +83,9 @@ export class SortFilterBar extends LitElement {
                   @click=${(e: Event) => {
                     e.preventDefault();
                     this.sortField = 'week';
+                    this.selectedSort = 'views';
                   }}
+                  class=${this.selectedSort === 'views' ? 'selected' : ''}
                 >
                   Views
                 </a>
@@ -82,7 +97,9 @@ export class SortFilterBar extends LitElement {
                     e.preventDefault();
                     this.titleSelectorVisible = !this.titleSelectorVisible;
                     this.sortField = 'titleSorter';
+                    this.selectedSort = 'title';
                   }}
+                  class=${this.selectedSort === 'title' ? 'selected' : ''}
                 >
                   Title
                 </a>
@@ -94,7 +111,9 @@ export class SortFilterBar extends LitElement {
                     e.preventDefault();
                     this.dateSortSelectorVisible =
                       !this.dateSortSelectorVisible;
+                    this.selectedSort = 'date';
                   }}
+                  class=${this.selectedSort === 'date' ? 'selected' : ''}
                 >
                   ${this.dateSortField}
                 </a>
@@ -106,7 +125,9 @@ export class SortFilterBar extends LitElement {
                     e.preventDefault();
                     this.creatorSelectorVisible = !this.creatorSelectorVisible;
                     this.sortField = 'creatorSorter';
+                    this.selectedSort = 'creator';
                   }}
+                  class=${this.selectedSort === 'creator' ? 'selected' : ''}
                 >
                   Creator
                 </a>
@@ -118,19 +139,29 @@ export class SortFilterBar extends LitElement {
             <ul>
               ${this.displayMode !== 'grid'
                 ? html`<li>
-                    <input type="checkbox" @click=${this.detailSelected} />
-                    Details
+                    <label id="show-details">
+                      <input type="checkbox" @click=${this.detailSelected} />
+                      Show Details
+                    </label>
                   </li>`
                 : nothing}
 
               <li>
-                <button id="grid-button" @click=${this.gridSelected}>
-                  Grid
+                <button
+                  id="grid-button"
+                  @click=${this.gridSelected}
+                  class=${this.displayMode === 'grid' ? 'active' : ''}
+                >
+                  ${gridIcon}
                 </button>
               </li>
               <li>
-                <button id="list-button" @click=${this.listSelected}>
-                  List
+                <button
+                  id="list-button"
+                  @click=${this.listSelected}
+                  class=${this.displayMode !== 'grid' ? 'active' : ''}
+                >
+                  ${listIcon}
                 </button>
               </li>
             </ul>
@@ -138,8 +169,6 @@ export class SortFilterBar extends LitElement {
         </div>
 
         ${this.dateSortSelectorVisible ? this.dateSortSelector : nothing}
-        ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
-        ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
 
         <div id="bottom-shadow"></div>
       </div>
@@ -164,6 +193,7 @@ export class SortFilterBar extends LitElement {
             <button
               @click=${() => {
                 this.sortField = 'publicdate';
+                this.dateSortSelectorVisible = false;
               }}
             >
               Date Archived
@@ -173,6 +203,7 @@ export class SortFilterBar extends LitElement {
             <button
               @click=${() => {
                 this.sortField = 'date';
+                this.dateSortSelectorVisible = false;
               }}
             >
               Date Published
@@ -182,6 +213,7 @@ export class SortFilterBar extends LitElement {
             <button
               @click=${() => {
                 this.sortField = 'reviewdate';
+                this.dateSortSelectorVisible = false;
               }}
             >
               Date Reviewed
@@ -191,6 +223,7 @@ export class SortFilterBar extends LitElement {
             <button
               @click=${() => {
                 this.sortField = 'addeddate';
+                this.dateSortSelectorVisible = false;
               }}
             >
               Date Added
@@ -201,16 +234,21 @@ export class SortFilterBar extends LitElement {
     `;
   }
 
+  private get dateSortField(): string {
+    return (
+      SortFieldName[this.sortField as keyof typeof SortFieldName] ??
+      'Date Archived'
+    );
+  }
+
   private get titleSelectorBar() {
     return html` <alpha-bar
-      headline="Title Starts With"
       @letterChanged=${this.titleLetterChanged}
     ></alpha-bar>`;
   }
 
   private get creatorSelectorBar() {
     return html` <alpha-bar
-      headline="Creator Starts With"
       @letterChanged=${this.creatorLetterChanged}
     ></alpha-bar>`;
   }
@@ -274,7 +312,7 @@ export class SortFilterBar extends LitElement {
       justify-content: space-between;
       border: 1px solid rgb(232, 232, 232);
       align-items: center;
-      padding: 0.1rem 0.5rem;
+      padding: 0.5rem 1.5rem;
     }
 
     #sort-by-text {
@@ -297,7 +335,7 @@ export class SortFilterBar extends LitElement {
     }
 
     li {
-      padding: 0.5rem 0 0.5rem 0;
+      padding: 0;
     }
 
     .sort-button {
@@ -305,9 +343,19 @@ export class SortFilterBar extends LitElement {
       color: inherit;
       border: none;
       padding: 0;
-      font: inherit;
       cursor: pointer;
       outline: inherit;
+      width: 12px;
+      height: 12px;
+    }
+
+    #show-details {
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    #sort-descending-btn {
+      transform: rotate(180deg);
     }
 
     #sort-direction-container {
@@ -327,6 +375,10 @@ export class SortFilterBar extends LitElement {
       color: #333;
     }
 
+    #sort-selector li a.selected {
+      font-weight: bold;
+    }
+
     #sort-selector li::after {
       content: '•';
       padding-left: 1rem;
@@ -339,6 +391,25 @@ export class SortFilterBar extends LitElement {
 
     #sort-selector li:last-child::after {
       content: '';
+    }
+
+    #display-style button {
+      background: none;
+      color: inherit;
+      border: none;
+      appearance: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      opacity: 0.5;
+    }
+
+    #display-style button.active {
+      opacity: 1;
+    }
+
+    #display-style button svg {
+      width: 24px;
+      height: 24px;
     }
   `;
 }
