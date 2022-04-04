@@ -141,7 +141,11 @@ export class AppRoot extends LitElement {
       <div id="dev-tools">
         <form @submit=${this.searchPressed}>
           Query:
-          <input type="text" id="base-query-field" .value=${this.searchQuery} />
+          <input
+            type="text"
+            id="base-query-field"
+            .value=${this.searchQuery ?? ''}
+          />
           <input type="submit" value="Search" />
         </form>
 

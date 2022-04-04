@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing } from 'lit';
+import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 @customElement('alpha-bar')
@@ -22,7 +22,7 @@ export class AlphaBar extends LitElement {
                 <li
                   class=${letter === this.selectedUppercaseLetter
                     ? 'selected'
-                    : nothing}
+                    : ''}
                 >
                   <a
                     href="#"
