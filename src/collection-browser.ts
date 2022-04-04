@@ -49,7 +49,7 @@ export class CollectionBrowser
 
   @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
 
-  @property({ type: Object }) sortParam?: SortParam;
+  @property({ type: Object }) sortParam: SortParam | null = null;
 
   @property({ type: String }) dateRangeQueryClause?: string;
 
@@ -173,7 +173,7 @@ export class CollectionBrowser
   render() {
     return html`
       <div id="content-container">
-        <div id="left-column">
+        <div id="left-column" class="column">
           <div id="results-total">
             <span id="big-results-count"
               >${this.totalResults
@@ -195,7 +195,7 @@ export class CollectionBrowser
             ></collection-facets>
           </div>
         </div>
-        <div id="right-column">
+        <div id="right-column" class="column">
           ${this.searchResultsLoading ? this.loadingTemplate : nothing}
           <sort-filter-bar
             @sortChanged=${this.sortChanged}
@@ -217,8 +217,20 @@ export class CollectionBrowser
     `;
   }
 
-  private sortChanged(e: CustomEvent<{ sort: SortParam }>) {
-    this.sortParam = e.detail.sort;
+  private sortChanged(
+    e: CustomEvent<{
+      sortField: string | null;
+      sortDirection: 'asc' | 'desc' | null;
+    }>
+  ) {
+    const { sortField, sortDirection } = e.detail;
+    console.debug('sortChanged', sortField, sortDirection);
+    if (sortField && sortDirection) {
+      this.sortParam = new SortParam(sortField, sortDirection);
+    } else {
+      this.sortParam = null;
+    }
+
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
     }
@@ -560,6 +572,7 @@ export class CollectionBrowser
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
+    console.debug('sortParam', sortParams);
     const params = new SearchParams({
       query: this.fullQuery,
       fields: [
@@ -736,6 +749,10 @@ export class CollectionBrowser
     #left-column {
       width: 18rem;
       padding-right: 12px;
+    }
+
+    .column {
+      padding-top: 2rem;
     }
 
     #facets-container {
