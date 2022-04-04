@@ -8,6 +8,10 @@ import {
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
+import {
+  IconProvider,
+  CollectionBrowserIcon,
+} from './icon-provider/icon-provider';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -28,6 +32,10 @@ export class AppRoot extends LitElement {
   @state() private rowGap: number = 1.7;
 
   @state() private colGap: number = 1.7;
+
+  iconProvider = new IconProvider<CollectionBrowserIcon>(
+    'https://archive.org/icons'
+  );
 
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
@@ -232,6 +240,7 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
+          .iconProvider=${this.iconProvider}
           @visiblePageChanged=${this.visiblePageChanged}
         >
         </collection-browser>

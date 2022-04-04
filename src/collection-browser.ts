@@ -33,6 +33,10 @@ import { CollectionFacets } from './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
 import { SortFilterBar } from './sort-filter-bar/sort-filter-bar';
+import {
+  IconProviderInterface,
+  CollectionBrowserIcon,
+} from '../demo/icon-provider/icon-provider';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -44,6 +48,9 @@ export class CollectionBrowser
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: String }) baseQuery?: string;
+
+  @property({ type: Object })
+  iconProvider?: IconProviderInterface<CollectionBrowserIcon>;
 
   @property({ type: Boolean }) showDeleteButtons = false;
 
@@ -224,7 +231,6 @@ export class CollectionBrowser
     }>
   ) {
     const { sortField, sortDirection } = e.detail;
-    console.debug('sortChanged', sortField, sortDirection);
     if (sortField && sortDirection) {
       this.sortParam = new SortParam(sortField, sortDirection);
     } else {
@@ -572,7 +578,6 @@ export class CollectionBrowser
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
-    console.debug('sortParam', sortParams);
     const params = new SearchParams({
       query: this.fullQuery,
       fields: [
