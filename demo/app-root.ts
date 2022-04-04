@@ -227,13 +227,15 @@ export class AppRoot extends LitElement {
         </div>
       </div>
 
-      <collection-browser
-        .baseNavigationUrl=${'https://archive.org'}
-        .searchService=${this.searchService}
-        .resizeObserver=${this.resizeObserver}
-        @visiblePageChanged=${this.visiblePageChanged}
-      >
-      </collection-browser>
+      <div id="collection-browser-container">
+        <collection-browser
+          .baseNavigationUrl=${'https://archive.org'}
+          .searchService=${this.searchService}
+          .resizeObserver=${this.resizeObserver}
+          @visiblePageChanged=${this.visiblePageChanged}
+        >
+        </collection-browser>
+      </div>
     `;
   }
 
@@ -305,6 +307,10 @@ export class AppRoot extends LitElement {
     input,
     button {
       font-size: 1.6rem;
+    }
+
+    #collection-browser-container {
+      padding: 0 2rem;
     }
 
     collection-browser {

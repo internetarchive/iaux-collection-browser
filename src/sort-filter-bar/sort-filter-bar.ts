@@ -1,16 +1,24 @@
-import { SortParam } from '@internetarchive/search-service';
 import { LitElement, html, css, nothing, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { CollectionDisplayMode } from '../models';
 import './alpha-bar';
 
+enum SortFieldName {
+  publicdate = 'Date Archived',
+  date = 'Date Published',
+  reviewdate = 'Date Reviewed',
+  addeddate = 'Date Added',
+}
+
 @customElement('sort-filter-bar')
 export class SortFilterBar extends LitElement {
   @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
 
-  @property({ type: String }) sortDirection: 'asc' | 'desc' = 'desc';
+  @property({ type: String }) sortDirection: 'asc' | 'desc' = 'asc';
 
-  @property({ type: String }) sortField = 'week';
+  @property({ type: String }) sortField: string | null = null;
+
+  @state() dateSortField: SortFieldName = SortFieldName.publicdate;
 
   @state() titleSelectorVisible: boolean = false;
 
@@ -44,7 +52,18 @@ export class SortFilterBar extends LitElement {
                   </button>
                 </div>
               </li>
-              <li>Sort By</li>
+              <li id="sort-by-text">Sort By</li>
+              <li>
+                <a
+                  href="#"
+                  @click=${(e: Event) => {
+                    e.preventDefault();
+                    this.sortField = null;
+                  }}
+                >
+                  Relevance
+                </a>
+              </li>
               <li>
                 <a
                   href="#"
@@ -77,7 +96,7 @@ export class SortFilterBar extends LitElement {
                       !this.dateSortSelectorVisible;
                   }}
                 >
-                  Date Archived
+                  ${this.dateSortField}
                 </a>
               </li>
               <li>
@@ -236,9 +255,11 @@ export class SortFilterBar extends LitElement {
   }
 
   private sortChanged() {
-    const sort = new SortParam(this.sortField, this.sortDirection);
     const event = new CustomEvent('sortChanged', {
-      detail: { sort },
+      detail: {
+        sortField: this.sortField,
+        sortDirection: this.sortDirection,
+      },
     });
     this.dispatchEvent(event);
   }
@@ -254,6 +275,10 @@ export class SortFilterBar extends LitElement {
       border: 1px solid rgb(232, 232, 232);
       align-items: center;
       padding: 0.1rem 0.5rem;
+    }
+
+    #sort-by-text {
+      text-transform: uppercase;
     }
 
     #bottom-shadow {

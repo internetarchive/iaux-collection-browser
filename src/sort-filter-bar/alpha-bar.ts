@@ -64,6 +64,7 @@ export class AlphaBar extends LitElement {
     #container {
       background-color: #ddd;
       color: #333;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
     }
 
     ul {
