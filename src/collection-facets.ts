@@ -4,6 +4,8 @@ import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
+import eyeIcon from './assets/img/icons/eye';
+import eyeClosedIcon from './assets/img/icons/eye-closed';
 
 type FacetOption =
   | 'subject'
@@ -46,6 +48,7 @@ interface FacetBucket {
   key: string;
   count: number;
   selected: boolean;
+  hidden: boolean;
 }
 
 interface FacetGroup {
@@ -61,6 +64,8 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
 
   @property({ type: Object }) selectedFacets: Record<string, string[]> = {};
+
+  @property({ type: Object }) hiddenFacets: Record<string, string[]> = {};
 
   @property({ type: Boolean }) facetsLoading = false;
 
@@ -108,10 +113,10 @@ export class CollectionFacets extends LitElement {
       this;
     return html`
       <histogram-date-range
-        .minDate=${`${fullYearsHistogramAggregation?.first_bucket_key}`}
-        .maxDate=${`${fullYearsHistogramAggregation?.last_bucket_key}`}
-        .minSelectedDate=${`${currentYearsHistogramAggregation?.first_bucket_key}`}
-        .maxSelectedDate=${`${currentYearsHistogramAggregation?.last_bucket_key}`}
+        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
+        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
+        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
+        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
         .updateDelay=${100}
         missingDataMessage="..."
         .width=${180}
@@ -135,13 +140,16 @@ export class CollectionFacets extends LitElement {
   }
 
   /**
-   * Combines the selected facets with the aggregations to create a single list of facets
+   * Combines the selected and hidden facets with the aggregations to create a single list of facets
    */
   private get mergedFacets(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
 
     facetDisplayOrder.forEach(facetKey => {
       const selectedFacetGroup = this.selectedFacetGroups.find(
+        group => group.key === facetKey
+      );
+      const hiddenFacetGroup = this.hiddenFacetGroups.find(
         group => group.key === facetKey
       );
       const aggregateFacetGroup = this.aggregationFacetGroups.find(
@@ -154,11 +162,17 @@ export class CollectionFacets extends LitElement {
         return;
       }
 
+      if (hiddenFacetGroup && !aggregateFacetGroup) {
+        facetGroups.push(hiddenFacetGroup);
+        return;
+      }
+
       // if we don't have an aggregate facet group, don't add this to the list
       if (!aggregateFacetGroup) return;
 
       // start with either the selected group if we have one, or the aggregate group
-      const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
+      const facetGroup =
+        selectedFacetGroup ?? hiddenFacetGroup ?? aggregateFacetGroup;
 
       // attach the counts to the selected buckets
       const bucketsWithCount =
@@ -173,7 +187,20 @@ export class CollectionFacets extends LitElement {
             };
           }
           return bucket;
-        }) ?? [];
+        }) ??
+        hiddenFacetGroup?.buckets.map(bucket => {
+          const selectedBucket = aggregateFacetGroup.buckets.find(
+            b => b.key === bucket.key
+          );
+          if (selectedBucket) {
+            return {
+              ...bucket,
+              count: selectedBucket.count,
+            };
+          }
+          return bucket;
+        }) ??
+        [];
 
       // append any additional buckets that were not selected
       aggregateFacetGroup.buckets.forEach(bucket => {
@@ -183,7 +210,7 @@ export class CollectionFacets extends LitElement {
       });
       facetGroup.buckets = bucketsWithCount.splice(0, 5);
 
-      if (facetGroup.buckets.length === 0) return;
+      // if (facetGroup.buckets.length === 0) return;
 
       facetGroups.push(facetGroup);
     });
@@ -195,8 +222,19 @@ export class CollectionFacets extends LitElement {
    * Converts the raw `selectedFacets` to `FacetGroups`, which are easier to use
    */
   private get selectedFacetGroups(): FacetGroup[] {
-    const selectedFacetGroups: FacetGroup[] = [];
-    Object.entries(this.selectedFacets).forEach(([key, buckets]) => {
+    return this.getFacetGroups(this.selectedFacets, false);
+  }
+
+  private get hiddenFacetGroups(): FacetGroup[] {
+    return this.getFacetGroups(this.hiddenFacets, true);
+  }
+
+  private getFacetGroups(
+    facets: Record<string, string[]>,
+    hidden: boolean
+  ): FacetGroup[] {
+    const facetGroups: FacetGroup[] = [];
+    Object.entries(facets).forEach(([key, buckets]) => {
       const title = facetTitles[key as FacetOption];
       const group = {
         title,
@@ -204,12 +242,13 @@ export class CollectionFacets extends LitElement {
         buckets: buckets.map(bucket => ({
           key: bucket,
           count: 0,
-          selected: true,
+          selected: !hidden,
+          hidden,
         })),
       };
-      selectedFacetGroups.push(group);
+      facetGroups.push(group);
     });
-    return selectedFacetGroups;
+    return facetGroups;
   }
 
   /**
@@ -226,6 +265,7 @@ export class CollectionFacets extends LitElement {
         key: `${bucket.key}`,
         count: bucket.doc_count,
         selected: false,
+        hidden: false,
       }));
       const group: FacetGroup = {
         title,
@@ -243,23 +283,39 @@ export class CollectionFacets extends LitElement {
         ${repeat(
           facetGroup.buckets,
           bucket => `${facetGroup.key}:${bucket.key}`,
-          bucket => html`
-            <li>
-              <label class="facet-row">
-                <div class="facet-checkbox">
-                  <input
-                    type="checkbox"
-                    .name=${facetGroup.key}
-                    .value=${bucket.key}
-                    @click=${this.facetToggled}
-                    ?checked=${bucket.selected}
-                  />
-                </div>
-                <div class="facet-title">${bucket.key}</div>
-                <div class="facet-count">${bucket.count}</div>
-              </label>
-            </li>
-          `
+          bucket => {
+            const hiddenCheckboxId = `${facetGroup.key}:${bucket.key}-hidden`;
+            return html`
+              <li>
+                <label class="facet-row">
+                  <div class="facet-checkbox">
+                    <input
+                      type="checkbox"
+                      .name=${facetGroup.key}
+                      .value=${bucket.key}
+                      @click=${this.facetToggled}
+                      ?checked=${bucket.selected}
+                      class="select-facet-checkbox"
+                    />
+                    <input
+                      type="checkbox"
+                      id=${hiddenCheckboxId}
+                      .name=${facetGroup.key}
+                      .value=${bucket.key}
+                      @click=${this.hideFacetToggled}
+                      ?checked=${bucket.hidden}
+                      class="hide-facet-checkbox"
+                    />
+                    <label for=${hiddenCheckboxId} class="hide-facet-icon">
+                      ${bucket.hidden ? eyeClosedIcon : eyeIcon}
+                    </label>
+                  </div>
+                  <div class="facet-title">${bucket.key}</div>
+                  <div class="facet-count">${bucket.count}</div>
+                </label>
+              </li>
+            `;
+          }
         )}
       </ul>
     `;
@@ -305,6 +361,51 @@ export class CollectionFacets extends LitElement {
       detail: this.selectedFacets,
     });
     this.dispatchEvent(event);
+  }
+
+  private hideFacetToggled(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const { checked, name, value } = target;
+    if (checked) {
+      this.facetHidden(name, value);
+    } else {
+      this.facetUnhidden(name, value);
+    }
+
+    const event = new CustomEvent<Record<string, string[]>>(
+      'hiddenFacetsChanged',
+      {
+        detail: this.hiddenFacets,
+      }
+    );
+    this.dispatchEvent(event);
+  }
+
+  private facetHidden(name: string, value: string) {
+    const { hiddenFacets } = this;
+    const facetClone = { ...hiddenFacets };
+    const currentFacetValues = facetClone[name];
+    if (currentFacetValues) {
+      currentFacetValues.push(value);
+      facetClone[name] = currentFacetValues;
+    } else {
+      facetClone[name] = [value];
+    }
+    this.hiddenFacets = facetClone;
+  }
+
+  private facetUnhidden(name: string, value: string) {
+    const { hiddenFacets } = this;
+    const facetClone = { ...hiddenFacets };
+    let currentFacetValues = hiddenFacets[name];
+    if (currentFacetValues) {
+      currentFacetValues = currentFacetValues.filter(el => el !== value);
+      facetClone[name] = currentFacetValues;
+      if (currentFacetValues.length === 0) {
+        delete facetClone[name];
+      }
+    }
+    this.hiddenFacets = facetClone;
   }
 
   /**
@@ -353,6 +454,8 @@ export class CollectionFacets extends LitElement {
 
       .facet-checkbox {
         margin-right: 0.5rem;
+        display: flex;
+        align-items: center;
       }
 
       .facet-row {
@@ -368,6 +471,20 @@ export class CollectionFacets extends LitElement {
 
       .facet-count {
         margin-left: 0.5rem;
+      }
+
+      .select-facet-checkbox {
+        margin-right: 5px;
+      }
+
+      .hide-facet-checkbox {
+        display: none;
+      }
+
+      .hide-facet-icon {
+        width: 15px;
+        height: 15px;
+        cursor: pointer;
       }
     `;
   }
