@@ -78,6 +78,8 @@ export class CollectionBrowser
 
   @state() private selectedFacets: Record<string, string[]> = {};
 
+  @state() private hiddenFacets: Record<string, string[]> = {};
+
   @state() private facetsLoading = false;
 
   @state() private fullYearAggregationLoading = false;
@@ -172,6 +174,8 @@ export class CollectionBrowser
 
   render() {
     return html`
+      ${this.queryDebuggingTemplate}
+
       <div id="content-container">
         <div id="left-column" class="column">
           <div id="results-total">
@@ -186,6 +190,7 @@ export class CollectionBrowser
             ${this.facetsLoading ? this.loadingTemplate : nothing}
             <collection-facets
               @facetsChanged=${this.facetsChanged}
+              @hiddenFacetsChanged=${this.hiddenFacetsChanged}
               @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
               .aggregations=${this.aggregations}
               .fullYearsHistogramAggregation=${this
@@ -313,6 +318,7 @@ export class CollectionBrowser
       changed.has('dateRangeQueryClause') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
+      changed.has('hiddenFacets') ||
       changed.has('searchService')
     ) {
       this.handleQueryChange();
@@ -407,13 +413,24 @@ export class CollectionBrowser
   }
 
   private get facetQuery(): string | undefined {
+    const facets = this.getFacetQuery(this.selectedFacets, false);
+    const hiddenFacets = this.getFacetQuery(this.hiddenFacets, true);
+
+    if (facets && hiddenFacets) return [facets, hiddenFacets].join(' AND ');
+    if (facets) return facets;
+    if (hiddenFacets) return hiddenFacets;
+    return undefined;
+  }
+
+  private getFacetQuery(
+    facets: Record<string, string[]>,
+    negative: boolean
+  ): string | undefined {
     const facetQuery = [];
-    for (const [facetName, selectedValues] of Object.entries(
-      this.selectedFacets
-    )) {
+    for (const [facetName, selectedValues] of Object.entries(facets)) {
       const values: string[] = [];
       for (const value of selectedValues) {
-        values.push(`${facetName}:"${value}"`);
+        values.push(`${negative ? '-' : ''}${facetName}:"${value}"`);
       }
       const valueQuery = values.join(' OR ');
       facetQuery.push(`(${valueQuery})`);
@@ -423,6 +440,10 @@ export class CollectionBrowser
 
   facetsChanged(e: CustomEvent<Record<string, string[]>>) {
     this.selectedFacets = e.detail;
+  }
+
+  hiddenFacetsChanged(e: CustomEvent<Record<string, string[]>>) {
+    this.hiddenFacets = e.detail;
   }
 
   private async fetchFacets() {
