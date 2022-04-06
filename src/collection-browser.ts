@@ -422,18 +422,28 @@ export class CollectionBrowser
     return undefined;
   }
 
+  /**
+   * Generates a query string for the given facets
+   *
+   * Example: `mediatype:("collection" OR "audio") AND year:("2000" OR "2001")`
+   *
+   * For negative facets, we prefix the field with `-`, ie:
+   * `-mediatype:("collection" OR "audio")`
+   *
+   * @param facets
+   * @param negative
+   * @returns
+   */
   private getFacetQuery(
     facets: Record<string, string[]>,
     negative: boolean
   ): string | undefined {
     const facetQuery = [];
-    for (const [facetName, selectedValues] of Object.entries(facets)) {
-      const values: string[] = [];
-      for (const value of selectedValues) {
-        values.push(`${negative ? '-' : ''}${facetName}:"${value}"`);
-      }
-      const valueQuery = values.join(' OR ');
-      facetQuery.push(`(${valueQuery})`);
+    for (const [facetName, facetValues] of Object.entries(facets)) {
+      const negation = negative ? '-' : '';
+      const wrappedValues = facetValues.map(value => `"${value}"`);
+      const valueQuery = wrappedValues.join(` OR `);
+      facetQuery.push(`${negation}${facetName}:(${valueQuery})`);
     }
     return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
   }
