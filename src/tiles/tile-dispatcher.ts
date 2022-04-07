@@ -36,18 +36,16 @@ export class TileDispatcher
   render() {
     return html`
       <div id="container">
-        ${
-          this.showDeleteButton
-            ? html`<button id="delete-button">X</button>`
-            : nothing
-        }
+        ${this.showDeleteButton
+          ? html`<button id="delete-button">X</button>`
+          : nothing}
         <a
           href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
           title=${ifDefined(this.model?.title)}
         >
           ${this.tile}
         </a>
-      </container>
+      </div>
     `;
   }
 
