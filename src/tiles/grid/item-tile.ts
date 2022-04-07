@@ -274,6 +274,7 @@ export class ItemTile extends LitElement {
         width: 96%;
         background: #f5f5f7 100%;
         border: 1px #2c2c2c;
+        border-radius: ${cornerRadiusCss};
         box-shadow: 1px 1px 2px 0px;
       }
 
