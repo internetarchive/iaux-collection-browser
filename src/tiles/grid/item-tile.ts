@@ -138,21 +138,19 @@ export class ItemTile extends LitElement {
       #item-image {
         width: 16rem;
         height: 16rem;
-        border-radius: 0.8rem;
         overflow: hidden;
-        box-shadow: 1px 1px 2px 0px;
         object-fit: cover;
-        background-position: center;
-        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center center;
+        background-size: contain;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
       }
 
       #item-image-box {
         width: 16rem;
         height: 16rem;
-        border-radius: 0.8rem;
         overflow: hidden;
-        box-shadow: 1px 1px 2px 0px;
-        border: 1px solid #000000;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
         position: relative;
         display: flex;
       }
