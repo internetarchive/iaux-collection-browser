@@ -33,16 +33,19 @@ export class ItemTile extends LitElement {
   }
 
   render() {
+    const collectionUrl = `${this.baseNavigationUrl}/details/${this.model?.collections[0]}`;
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.collections[0]}`;
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
 
     return html`
       <div id="container">
-        <div id="stealth-popup">
-          <div id="collection-thumbnail" style="background-image:url(${imgSrcUrl})"></div>
-          <div id="collection-title-text">${this.model?.collections[0]}</div>
-        </div>
+        <a href=${collectionUrl}>
+          <div id="stealth-popup">
+            <div id="collection-thumbnail" style="background-image:url(${imgSrcUrl})"></div>
+            <div id="collection-title-text">${this.model?.collections[0]}</div>
+          </div>
+        </a>
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>
             ${this.model?.title}
@@ -303,6 +306,12 @@ export class ItemTile extends LitElement {
         text-overflow: ellipsis;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+      }
+
+      a {
+        color: #333;
+        text-decoration: none;
+        display: block;
       }
     `;
   }
