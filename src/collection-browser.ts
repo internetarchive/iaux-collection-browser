@@ -29,10 +29,8 @@ import './tiles/tile-dispatcher';
 import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
-import { CollectionFacets } from './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
-import { SortFilterBar } from './sort-filter-bar/sort-filter-bar';
 import { SelectedFacets } from './models';
 
 @customElement('collection-browser')
@@ -58,10 +56,6 @@ export class CollectionBrowser
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
-  @query('collection-facets') private collectionFacets!: CollectionFacets;
-
-  @query('sort-filter-bar') private sortFilterBar!: SortFilterBar;
-
   /**
    * The page that the consumer wants to load.
    */
@@ -85,8 +79,6 @@ export class CollectionBrowser
     collection: {},
     year: {},
   };
-
-  // @state() private negativeFacets: Record<string, string[]> = {};
 
   @state() private facetsLoading = false;
 
@@ -236,7 +228,6 @@ export class CollectionBrowser
     }>
   ) {
     const { sortField, sortDirection } = e.detail;
-    console.debug('sortChanged', sortField, sortDirection);
     if (sortField && sortDirection) {
       this.sortParam = new SortParam(sortField, sortDirection);
     } else {
@@ -325,7 +316,6 @@ export class CollectionBrowser
       changed.has('dateRangeQueryClause') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
-      changed.has('negativeFacets') ||
       changed.has('searchService')
     ) {
       this.handleQueryChange();
@@ -419,83 +409,32 @@ export class CollectionBrowser
     return fullQuery;
   }
 
-  // private get facetQuery(): string | undefined {
-  //   const facets = this.getFacetQuery(this.selectedFacets, false);
-  //   const negativeFacets = this.getFacetQuery(this.selectedFacets, true);
-
-  //   if (facets && negativeFacets) return [facets, negativeFacets].join(' AND ');
-  //   if (facets) return facets;
-  //   if (negativeFacets) return negativeFacets;
-  //   return undefined;
-  // }
-
   /**
    * Generates a query string for the given facets
    *
-   * Example: `mediatype:("collection" OR "audio") AND year:("2000" OR "2001")`
-   *
-   * For negative facets, we prefix the field with `-`, ie:
-   * `-mediatype:("collection" OR "audio")`
-   *
-   * @param facets
-   * @param negative
-   * @returns
+   * Example: `mediatype:("collection" OR "audio" OR -"etree") AND year:("2000" OR "2001")`
    */
   private get facetQuery(): string | undefined {
-    // console.debug('getFacetQuery', facets, negative);
-    // return undefined;
     const facetQuery = [];
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets
     )) {
-      if (Object.entries(facetValues).length === 0) break;
-      // const negation = negative ? '-' : '';
+      const facetEntries = Object.entries(facetValues);
+      // eslint-disable-next-line no-continue
+      if (facetEntries.length === 0) continue;
       const facetValuesArray: string[] = [];
-      for (const [key, facetState] of Object.entries(facetValues)) {
+      for (const [key, facetState] of facetEntries) {
         facetValuesArray.push(`${facetState === 'hidden' ? '-' : ''}"${key}"`);
       }
-      // const wrappedValues = facetValues.map(value => `"${value}"`);
       const valueQuery = facetValuesArray.join(` OR `);
       facetQuery.push(`${facetName}:(${valueQuery})`);
     }
     return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
   }
 
-  /**
-   * Generates a query string for the given facets
-   *
-   * Example: `mediatype:("collection" OR "audio") AND year:("2000" OR "2001")`
-   *
-   * For negative facets, we prefix the field with `-`, ie:
-   * `-mediatype:("collection" OR "audio")`
-   *
-   * @param facets
-   * @param negative
-   * @returns
-   */
-  // private getFacetQuery(
-  //   facets: SelectedFacets,
-  //   negative: boolean
-  // ): string | undefined {
-  //   // console.debug('getFacetQuery', facets, negative);
-  //   // return undefined;
-  //   const facetQuery = [];
-  //   for (const [facetName, facetValues] of Object.entries(facets)) {
-  //     const negation = negative ? '-' : '';
-  //     const wrappedValues = facetValues.map(value => `"${value}"`);
-  //     const valueQuery = wrappedValues.join(` OR `);
-  //     facetQuery.push(`${negation}${facetName}:(${valueQuery})`);
-  //   }
-  //   return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
-  // }
-
   facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
   }
-
-  // negativeFacetsChanged(e: CustomEvent<Record<string, string[]>>) {
-  //   this.negativeFacets = e.detail;
-  // }
 
   private async fetchFacets() {
     if (!this.fullQuery) return;
@@ -644,7 +583,6 @@ export class CollectionBrowser
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
-    console.debug('sortParam', sortParams);
     const params = new SearchParams({
       query: this.fullQuery,
       fields: [

@@ -50,12 +50,6 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) fullYearAggregationLoading = false;
 
-  // @property({ type: Object }) selectedFacets: Record<string, string[]> = {};
-
-  // @property({ type: Object }) negativeFacets: Record<string, string[]> = {};
-
-  // @property({})
-
   @state() private selectedFacets: SelectedFacets = {
     subject: {},
     mediatype: {},
@@ -135,7 +129,7 @@ export class CollectionFacets extends LitElement {
   }
 
   /**
-   * Combines the selected and hidden facets with the aggregations to create a single list of facets
+   * Combines the selected facets with the aggregations to create a single list of facets
    */
   private get mergedFacets(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
@@ -144,9 +138,6 @@ export class CollectionFacets extends LitElement {
       const selectedFacetGroup = this.selectedFacetGroups.find(
         group => group.key === facetKey
       );
-      // const negativeFacetGroup = this.negativeFacetGroups.find(
-      //   group => group.key === facetKey
-      // );
       const aggregateFacetGroup = this.aggregationFacetGroups.find(
         group => group.key === facetKey
       );
@@ -156,12 +147,6 @@ export class CollectionFacets extends LitElement {
         facetGroups.push(selectedFacetGroup);
         return;
       }
-
-      // if the user hid a facet, but it's not in the aggregation, we add it as-is
-      // if (negativeFacetGroup && !aggregateFacetGroup) {
-      //   facetGroups.push(negativeFacetGroup);
-      //   return;
-      // }
 
       // if we don't have an aggregate facet group, don't add this to the list
       if (!aggregateFacetGroup) return;
@@ -183,19 +168,6 @@ export class CollectionFacets extends LitElement {
           }
           return bucket;
         }) ?? [];
-      // negativeFacetGroup?.buckets.map(bucket => {
-      //   const selectedBucket = aggregateFacetGroup.buckets.find(
-      //     b => b.key === bucket.key
-      //   );
-      //   if (selectedBucket) {
-      //     return {
-      //       ...bucket,
-      //       count: selectedBucket.count,
-      //     };
-      //   }
-      //   return bucket;
-      // }) ??
-      // [];
 
       // append any additional buckets that were not selected
       aggregateFacetGroup.buckets.forEach(bucket => {
@@ -210,44 +182,6 @@ export class CollectionFacets extends LitElement {
 
     return facetGroups;
   }
-
-  // private get selectedFacetGroups(): FacetGroup[] {
-  //   return this.getFacetGroups(this.selectedFacets, false);
-  // }
-
-  // private get negativeFacetGroups(): FacetGroup[] {
-  //   return this.getFacetGroups(this.negativeFacets, true);
-  // }
-
-  // /**
-  //  * Converts the raw selected or negative facets to a `FacetGroup` array,
-  //  * which is easier to work with
-  //  */
-  // private getFacetGroups(
-  //   facets: Record<string, string[]>,
-  //   negative: boolean
-  // ): FacetGroup[] {
-  //   const facetGroups: FacetGroup[] = [];
-  //   Object.entries(facets).forEach(([key, buckets]) => {
-  //     const title = facetTitles[key as FacetOption];
-  //     const facetBuckets: FacetBucket[] = buckets.map(bucket => ({
-  //       key: bucket,
-  //       count: 0,
-  //       state: negative ? 'hidden' : 'selected',
-  //     }));
-  //     const group = {
-  //       title,
-  //       key,
-  //       buckets: facetBuckets,
-  //     };
-  //     facetGroups.push(group);
-  //   });
-  //   return facetGroups;
-  // }
-
-  // key: string;
-  // value: string;
-  // state: SelectedFacetState;
 
   /**
    * Converts the selected facets to a `FacetGroup` array,
@@ -311,9 +245,6 @@ export class CollectionFacets extends LitElement {
           bucket => `${facetGroup.key}:${bucket.key}`,
           bucket => {
             const negativeCheckboxId = `${facetGroup.key}:${bucket.key}-negative`;
-            if (bucket.key === 'etree') {
-              console.debug('bucket', bucket, bucket.state);
-            }
             return html`
               <li>
                 <label class="facet-row">
@@ -354,60 +285,14 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
-  // private facetChecked(name: string, value: string) {
-  //   const { selectedFacets } = this;
-  //   const facetClone = { ...selectedFacets };
-  //   const currentFacetValues = facetClone[name];
-  //   if (currentFacetValues) {
-  //     currentFacetValues.push(value);
-  //     facetClone[name] = currentFacetValues;
-  //   } else {
-  //     facetClone[name] = [value];
-  //   }
-  //   this.selectedFacets = facetClone;
-  // }
-
-  // private facetUnchecked(name: string, value: string) {
-  //   const { selectedFacets } = this;
-  //   const facetClone = { ...selectedFacets };
-  //   let currentFacetValues = selectedFacets[name];
-  //   if (currentFacetValues) {
-  //     currentFacetValues = currentFacetValues.filter(el => el !== value);
-  //     facetClone[name] = currentFacetValues;
-  //     if (currentFacetValues.length === 0) {
-  //       delete facetClone[name];
-  //     }
-  //   }
-  //   this.selectedFacets = facetClone;
-  // }
-
   private facetClicked(e: Event, bucket: FacetBucket, negative: boolean) {
     const target = e.target as HTMLInputElement;
     const { checked, name, value } = target;
-    console.debug('facet clicked', checked, name, value, negative);
     if (checked) {
       this.facetChecked(name as FacetOption, value, negative);
     } else {
       this.facetUnchecked(name as FacetOption, value);
     }
-  }
-
-  private negativeFacetToggled(e: Event) {
-    const target = e.target as HTMLInputElement;
-    const { checked, name, value } = target;
-    if (checked) {
-      this.facetChecked(name as FacetOption, value, true);
-    } else {
-      this.facetUnchecked(name as FacetOption, value);
-    }
-
-    // const event = new CustomEvent<Record<string, string[]>>(
-    //   'negativeFacetsChanged',
-    //   {
-    //     detail: this.negativeFacets,
-    //   }
-    // );
-    // this.dispatchEvent(event);
   }
 
   private facetChecked(key: FacetOption, value: string, negative: boolean) {
@@ -423,33 +308,6 @@ export class CollectionFacets extends LitElement {
     delete facetClone[key][value];
     this.selectedFacets = facetClone;
   }
-
-  // private facetHidden(name: string, value: string) {
-  //   const { negativeFacets } = this;
-  //   const facetClone = { ...negativeFacets };
-  //   const currentFacetValues = facetClone[name];
-  //   if (currentFacetValues) {
-  //     currentFacetValues.push(value);
-  //     facetClone[name] = currentFacetValues;
-  //   } else {
-  //     facetClone[name] = [value];
-  //   }
-  //   this.negativeFacets = facetClone;
-  // }
-
-  // private facetUnhidden(name: string, value: string) {
-  //   const { negativeFacets } = this;
-  //   const facetClone = { ...negativeFacets };
-  //   let currentFacetValues = negativeFacets[name];
-  //   if (currentFacetValues) {
-  //     currentFacetValues = currentFacetValues.filter(el => el !== value);
-  //     facetClone[name] = currentFacetValues;
-  //     if (currentFacetValues.length === 0) {
-  //       delete facetClone[name];
-  //     }
-  //   }
-  //   this.negativeFacets = facetClone;
-  // }
 
   /**
    * Parse the aggregate key title into the human readable title
@@ -521,7 +379,7 @@ export class CollectionFacets extends LitElement {
       }
 
       .hide-facet-checkbox {
-        /* display: none; */
+        display: none;
       }
 
       .hide-facet-icon {
