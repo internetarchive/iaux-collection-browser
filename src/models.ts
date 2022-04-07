@@ -23,3 +23,35 @@ export interface TileModel {
 }
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
+
+export type FacetOption =
+  | 'subject'
+  | 'mediatype'
+  | 'language'
+  | 'creator'
+  | 'collection'
+  | 'year';
+
+export type SelectedFacetState = 'selected' | 'hidden';
+
+export type FacetState = SelectedFacetState | 'none';
+export interface FacetBucket {
+  // for some facets, we augment the key with a display value
+  displayText?: string;
+  key: string;
+  count: number;
+  state: FacetState;
+}
+
+export interface FacetGroup {
+  title: string;
+  key: FacetOption;
+  buckets: FacetBucket[];
+}
+
+export type FacetValue = string;
+
+export type SelectedFacets = Record<
+  FacetOption,
+  Record<FacetValue, SelectedFacetState>
+>;
