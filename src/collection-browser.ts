@@ -33,6 +33,7 @@ import { CollectionFacets } from './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
 import { SortFilterBar } from './sort-filter-bar/sort-filter-bar';
+import { SelectedFacets } from './models';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -76,9 +77,16 @@ export class CollectionBrowser
 
   @state() private searchResultsLoading = false;
 
-  @state() private selectedFacets: Record<string, string[]> = {};
+  @state() private selectedFacets: SelectedFacets = {
+    subject: {},
+    creator: {},
+    mediatype: {},
+    language: {},
+    collection: {},
+    year: {},
+  };
 
-  @state() private hiddenFacets: Record<string, string[]> = {};
+  // @state() private negativeFacets: Record<string, string[]> = {};
 
   @state() private facetsLoading = false;
 
@@ -190,7 +198,6 @@ export class CollectionBrowser
             ${this.facetsLoading ? this.loadingTemplate : nothing}
             <collection-facets
               @facetsChanged=${this.facetsChanged}
-              @hiddenFacetsChanged=${this.hiddenFacetsChanged}
               @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
               .aggregations=${this.aggregations}
               .fullYearsHistogramAggregation=${this
@@ -318,7 +325,7 @@ export class CollectionBrowser
       changed.has('dateRangeQueryClause') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
-      changed.has('hiddenFacets') ||
+      changed.has('negativeFacets') ||
       changed.has('searchService')
     ) {
       this.handleQueryChange();
@@ -412,14 +419,46 @@ export class CollectionBrowser
     return fullQuery;
   }
 
-  private get facetQuery(): string | undefined {
-    const facets = this.getFacetQuery(this.selectedFacets, false);
-    const hiddenFacets = this.getFacetQuery(this.hiddenFacets, true);
+  // private get facetQuery(): string | undefined {
+  //   const facets = this.getFacetQuery(this.selectedFacets, false);
+  //   const negativeFacets = this.getFacetQuery(this.selectedFacets, true);
 
-    if (facets && hiddenFacets) return [facets, hiddenFacets].join(' AND ');
-    if (facets) return facets;
-    if (hiddenFacets) return hiddenFacets;
-    return undefined;
+  //   if (facets && negativeFacets) return [facets, negativeFacets].join(' AND ');
+  //   if (facets) return facets;
+  //   if (negativeFacets) return negativeFacets;
+  //   return undefined;
+  // }
+
+  /**
+   * Generates a query string for the given facets
+   *
+   * Example: `mediatype:("collection" OR "audio") AND year:("2000" OR "2001")`
+   *
+   * For negative facets, we prefix the field with `-`, ie:
+   * `-mediatype:("collection" OR "audio")`
+   *
+   * @param facets
+   * @param negative
+   * @returns
+   */
+  private get facetQuery(): string | undefined {
+    // console.debug('getFacetQuery', facets, negative);
+    // return undefined;
+    const facetQuery = [];
+    for (const [facetName, facetValues] of Object.entries(
+      this.selectedFacets
+    )) {
+      if (Object.entries(facetValues).length === 0) break;
+      // const negation = negative ? '-' : '';
+      const facetValuesArray: string[] = [];
+      for (const [key, facetState] of Object.entries(facetValues)) {
+        facetValuesArray.push(`${facetState === 'hidden' ? '-' : ''}"${key}"`);
+      }
+      // const wrappedValues = facetValues.map(value => `"${value}"`);
+      const valueQuery = facetValuesArray.join(` OR `);
+      facetQuery.push(`${facetName}:(${valueQuery})`);
+    }
+    return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
   }
 
   /**
@@ -434,27 +473,29 @@ export class CollectionBrowser
    * @param negative
    * @returns
    */
-  private getFacetQuery(
-    facets: Record<string, string[]>,
-    negative: boolean
-  ): string | undefined {
-    const facetQuery = [];
-    for (const [facetName, facetValues] of Object.entries(facets)) {
-      const negation = negative ? '-' : '';
-      const wrappedValues = facetValues.map(value => `"${value}"`);
-      const valueQuery = wrappedValues.join(` OR `);
-      facetQuery.push(`${negation}${facetName}:(${valueQuery})`);
-    }
-    return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
-  }
+  // private getFacetQuery(
+  //   facets: SelectedFacets,
+  //   negative: boolean
+  // ): string | undefined {
+  //   // console.debug('getFacetQuery', facets, negative);
+  //   // return undefined;
+  //   const facetQuery = [];
+  //   for (const [facetName, facetValues] of Object.entries(facets)) {
+  //     const negation = negative ? '-' : '';
+  //     const wrappedValues = facetValues.map(value => `"${value}"`);
+  //     const valueQuery = wrappedValues.join(` OR `);
+  //     facetQuery.push(`${negation}${facetName}:(${valueQuery})`);
+  //   }
+  //   return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
+  // }
 
-  facetsChanged(e: CustomEvent<Record<string, string[]>>) {
+  facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
   }
 
-  hiddenFacetsChanged(e: CustomEvent<Record<string, string[]>>) {
-    this.hiddenFacets = e.detail;
-  }
+  // negativeFacetsChanged(e: CustomEvent<Record<string, string[]>>) {
+  //   this.negativeFacets = e.detail;
+  // }
 
   private async fetchFacets() {
     if (!this.fullQuery) return;
