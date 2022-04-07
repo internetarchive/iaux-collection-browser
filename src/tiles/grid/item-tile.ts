@@ -40,13 +40,13 @@ export class ItemTile extends LitElement {
     return html`
       <div id="container">
         <div id="stealth-popup">
-          <div id="collection-image" style="background-image:url(${imgSrcUrl})"></div>
-          <p id="collection-name">${this.model?.collections[0]}</p>
+          <div id="collection-thumbnail" style="background-image:url(${imgSrcUrl})"></div>
+          <div id="collection-title-text">${this.model?.collections[0]}</div>
         </div>
         <div id="title-image-container">
-          <p id="item-title" title=${itemTitle}>
+          <h1 id="item-title" title=${itemTitle}>
             ${this.model?.title}
-          </p>
+          </h1>
           <div id="item-image-container">
             ${this.renderItemImageView}
           </div>
@@ -103,6 +103,7 @@ export class ItemTile extends LitElement {
         display: flex;
         flex-direction: column;
         height: 100%;
+        position: relative;
       }
 
       #title-image-container {
@@ -151,7 +152,7 @@ export class ItemTile extends LitElement {
         border-radius: 0.8rem;
         overflow: hidden;
         box-shadow: 1px 1px 2px 0px;
-        border: 5px solid #0000000;
+        border: 1px solid #000000;
         position: relative;
         display: flex;
       }
@@ -168,7 +169,7 @@ export class ItemTile extends LitElement {
       }
 
       .tile-action {
-        border: 2px solid currentColor;
+        border: 1px solid currentColor;
         border-radius: 1px;
         padding: 5px;
         font-weight: 500;
@@ -257,51 +258,52 @@ export class ItemTile extends LitElement {
       }
 
       #container:hover #stealth-popup {
-        margin-top: -30px;
-        visiblity: visible;
+        margin-top: -25px;
+        visibility: visible;
         opacity: 1;
       }
 
       #stealth-popup {
         transition: margin-top 0.3s ease, opacity 0.3s ease;
         position: absolute;
-        visiblity: hidden;
-        z-index: 1;
-        opacity: 0;
-        color: black;
-        margin-top: -15px;
-        margin-left: -15px;
+        visibility: hidden;
+        margin-left: -10px;
         text-align: left;
         display: flex;
-        align-items: center;
+        padding: 5px;
+        width: 96%;
+        background: #f5f5f7 100%;
+        border: 1px #2c2c2c;
+        box-shadow: 1px 1px 2px 0px;
       }
 
-      #collection-image {
+      #collection-thumbnail {
+        display: flex;
         transition: opacity 0.3s ease;
-        width: 4.5rem;
-        height: 4.5rem;
-        border-radius: 22px;
-        box-shadow: 0px 0px 10px #ccc;
-        background-color: white;
-        border: 2px solid #ddd;
+        width: 3rem;
+        height: 3rem;
+        flex: 0 0 3rem;
+        border-radius: 8px;
+        border: 1px solid #ddd;
         overflow: hidden;
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center center;
       }
 
-      #collection-name {
-        width: 160px;
+      #collection-title-text {
         line-height: 1;
-        max-height: 25px;
-        font-size: 12px;
+        font-size: 16px;
         font-weight: bold;
+        text-align: left;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        height: 3.5rem;
         display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
         overflow: hidden;
-        bottom: 20px;
-        padding: 1rem;
+        text-overflow: ellipsis;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
     `;
   }
