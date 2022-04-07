@@ -33,7 +33,9 @@ export class ItemTile extends LitElement {
   }
 
   render() {
-    const collectionUrl = `${this.baseNavigationUrl}/details/${this.model?.collections[0]}`;
+    const collectionName = this.model?.collections[0];
+    const collectionUrl = `${this.baseNavigationUrl}/details/${collectionName}`;
+
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.collections[0]}`;
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
@@ -43,7 +45,7 @@ export class ItemTile extends LitElement {
         <a href=${collectionUrl}>
           <div id="stealth-popup">
             <div id="collection-thumbnail" style="background-image:url(${imgSrcUrl})"></div>
-            <div id="collection-title-text">${this.model?.collections[0]}</div>
+            <div id="collection-title-text">${collectionName}</div>
           </div>
         </a>
         <div id="title-image-container">
@@ -146,15 +148,18 @@ export class ItemTile extends LitElement {
         background-repeat: no-repeat;
         background-position: center center;
         background-size: contain;
+        position: relative;
         filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+        overflow: visible;
+        -webkit-appearance: none;
       }
 
       #item-image-box {
         width: 16rem;
         height: 16rem;
         overflow: hidden;
-        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
         position: relative;
+        box-shadow: 1px 1px 2px 0px;
         display: flex;
       }
 
@@ -165,8 +170,10 @@ export class ItemTile extends LitElement {
         background-position: center;
         background-size: cover;
         filter: blur(15px);
-        position: absolute;
+        position: relative;
         z-index: 1;
+        overflow: visible;
+        -webkit-appearance: none;
       }
 
       .tile-action {
