@@ -17,19 +17,25 @@ export class ItemTile extends LitElement {
 
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
+
     const containsDeemphasize = this.model?.collections.includes('deemphasize');
-    return !containsDeemphasize
-      ? html`<div
-          id="item-image"
+    const itemImageBoxClass = containsDeemphasize ? 'item-image-box' : '';
+    const itemImageClass = `item-image ${
+      !containsDeemphasize ? 'default' : 'deemphasize'
+    }`;
+    const tileActionClass = `tile-action no-preview${
+      !containsDeemphasize ? ' hidden' : ''
+    }`;
+
+    return html`
+      <div class=${itemImageBoxClass}>
+        <div
+          class=${itemImageClass}
           style="background-image:url(${imgSrcUrl})"
-        ></div>`
-      : html`<div id="item-image-box">
-          <div
-            id="item-image-deemphasize"
-            style="background-image:url(${imgSrcUrl})"
-          ></div>
-          <div class="tile-action no-preview">Content may be inappropriate</div>
-        </div>`;
+        ></div>
+        <div class=${tileActionClass}>Content may be inappropriate</div>
+      </div>
+    `;
   }
 
   render() {
@@ -135,20 +141,7 @@ export class ItemTile extends LitElement {
         flex: 1;
       }
 
-      #item-image {
-        width: 16rem;
-        height: 16rem;
-        object-fit: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: contain;
-        position: relative;
-        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
-        overflow: visible;
-        -webkit-appearance: none;
-      }
-
-      #item-image-box {
+      .item-image-box {
         width: 16rem;
         height: 16rem;
         overflow: hidden;
@@ -157,17 +150,26 @@ export class ItemTile extends LitElement {
         display: flex;
       }
 
-      #item-image-deemphasize {
+      .item-image {
         width: 16rem;
         height: 16rem;
         object-fit: cover;
-        background-position: center;
+        background-repeat: no-repeat;
+        background-position: center center;
+        position: relative;
+        -webkit-appearance: none;
+        overflow: visible;
+      }
+
+      .default {
+        background-size: contain;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+      }
+
+      .deemphasize {
         background-size: cover;
         filter: blur(15px);
-        position: relative;
         z-index: 1;
-        overflow: visible;
-        -webkit-appearance: none;
       }
 
       .tile-action {
