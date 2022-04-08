@@ -44,17 +44,16 @@ export class ItemTile extends LitElement {
       <div id="container">
         <a href=${collectionUrl}>
           <div id="stealth-popup">
-            <div id="collection-thumbnail" style="background-image:url(${imgSrcUrl})"></div>
+            <div
+              id="collection-thumbnail"
+              style="background-image:url(${imgSrcUrl})"
+            ></div>
             <div id="collection-title-text">${collectionName}</div>
           </div>
         </a>
         <div id="title-image-container">
-          <h1 id="item-title" title=${itemTitle}>
-            ${this.model?.title}
-          </h1>
-          <div id="item-image-container">
-            ${this.renderItemImageView}
-          </div>
+          <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
+          <div id="item-image-container">${this.renderItemImageView}</div>
           <div class="item-creator">
             <span id="text-by">By:</span>
             <span>${itemCreator}</span>
@@ -63,33 +62,29 @@ export class ItemTile extends LitElement {
         <div id="item-stats-container">
           <div id="stats-holder">
             <div class="col">
-              <mediatype-icon mediatype="${
-                this.model?.mediatype
-              }" showText="true">
+              <mediatype-icon
+                .mediatype=${this.model?.mediatype}
+                ?showText=${true}
+              >
+              </mediatype-icon>
             </div>
             <div class="col">
               ${viewsIcon}
-              <p class="status-text">${formatCount(
-                this.model?.viewCount,
-                'short',
-                'short'
-              )}</p>
+              <p class="status-text">
+                ${formatCount(this.model?.viewCount, 'short', 'short')}
+              </p>
             </div>
             <div class="col">
               ${favoriteFilledIcon}
-              <p class="status-text">${formatCount(
-                this.model?.itemCount,
-                'short',
-                'short'
-              )}</p>
+              <p class="status-text">
+                ${formatCount(this.model?.itemCount, 'short', 'short')}
+              </p>
             </div>
             <div class="col">
               ${reviewsIcon}
-              <p class="status-text">${formatCount(
-                this.model?.favCount,
-                'short',
-                'short'
-              )}</p>
+              <p class="status-text">
+                ${formatCount(this.model?.favCount, 'short', 'short')}
+              </p>
             </div>
           </div>
         </div>
