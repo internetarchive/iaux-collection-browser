@@ -12,6 +12,7 @@ import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
 import './list/tile-list';
+import './list/tile-list-compact';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -121,6 +122,13 @@ export class TileDispatcher
             ></item-tile>`;
         }
       case 'list-compact':
+        return html`<tile-list-compact
+          .model=${model}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam}
+        ></tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list
           .model=${model}
