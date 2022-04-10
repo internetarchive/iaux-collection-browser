@@ -930,14 +930,9 @@ export class CollectionBrowser
         --collectionBrowserCellMinWidth,
         100%
       );
-      --infiniteScrollerCellMinHeight: var(
-        --collectionBrowserCellMinHeight,
-        2rem
-      );
-      --infiniteScrollerCellMaxHeight: var(
-        --collectionBrowserCellMaxHeight,
-        2rem
-      );
+      --infiniteScrollerCellMinHeight: 0px; /* override infinite scroller component */
+      --infiniteScrollerCellMaxHeight: unset;
+      --infiniteScrollerRowGap: 0px;
     }
 
     infinite-scroller.list-detail {
