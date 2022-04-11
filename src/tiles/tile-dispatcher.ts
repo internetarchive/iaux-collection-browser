@@ -136,7 +136,6 @@ export class TileDispatcher
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
-          .displayMode=${this.displayMode}
         ></tile-list>`;
       default:
         return nothing;
