@@ -2,7 +2,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
-import { CollectionDisplayMode, TileModel } from '../../models';
+import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import '../../mediatype-icon';
@@ -19,76 +19,121 @@ export class TileList extends LitElement {
 
   @property({ type: Object }) sortParam?: SortParam;
 
-  @property({ type: String }) displayMode: CollectionDisplayMode =
-    'list-compact';
-
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
-        <div id="views">
-          ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
+        <div id="list-line-left">
+          <div id="thumb">${this.img()}</div>
+          ${this.iconLeft()}
         </div>
-        <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
-        <div id="date">${formatDate(this.date, this.formatSize)}</div>
-        <div id="creator">${DOMPurify.sanitize(this.model?.creator ?? '')}</div>
-        <div id="icon">
-          <mediatype-icon .mediatype=${this.model?.mediatype}></mediatype-icon>
+        <div id="list-line-right">
+          <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
+          ${this.creator()}
+          <div id="date">
+            <span class="label">Published:</span> ${formatDate(
+              this.date,
+              this.formatSize
+            )}
+          </div>
+          <div id="views-line">
+            ${this.views()} ${this.rating()} ${this.reviews()}
+          </div>
+          ${this.description()}
         </div>
       </div>
-      ${this.displayMode === 'list-detail' ? this.detail() : html``}
     `;
   }
 
-  private detail() {
-    const descriptionHtml = this.description();
-    const topicHtml = this.topic();
-    const sourceHtml = this.source();
-    const reviewsHtml = this.reviews();
-
-    if (descriptionHtml || topicHtml || sourceHtml) {
-      return html`
-        <div id="list-detail" class="${this.classSize}">
-          <div></div>
-          <div id="details">
-            ${descriptionHtml} ${topicHtml} ${sourceHtml} ${reviewsHtml}
-          </div>
-          <div></div>
-        </div>
-      `;
+  private img() {
+    if (!this.model?.identifier) {
+      return html``;
     }
-    return html``;
+    return html` <img
+      src="${this.baseNavigationUrl}/services/img/${this.model.identifier}"
+      alt="${this.model.identifier}"
+      class=${this.model?.mediatype}
+    />`;
+  }
+
+  private iconLeft() {
+    if (this.classSize !== 'desktop') {
+      return html``;
+    }
+    return html`
+      <div id="icon-left">
+        <mediatype-icon .mediatype=${this.model?.mediatype} .showText=${true}>
+        </mediatype-icon>
+      </div>
+    `;
+  }
+
+  private creator() {
+    if (!this.model?.creator) {
+      return html``;
+    }
+    return html`
+      <div id="creator">
+        <span class="label">By: </span>
+        ${DOMPurify.sanitize(this.model?.creator ?? '')}
+      </div>
+    `;
+  }
+
+  private views() {
+    return html`
+      <div id="views">
+        <span class="label">Views: </span>
+        ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
+      </div>
+    `;
+  }
+
+  private rating() {
+    if (!this.model?.averageRating) {
+      return html``;
+    }
+    return html`
+      <div id="reviews">
+        <span class="label">Avg Rating: </span>
+        ${this.model?.averageRating}
+      </div>
+    `;
+  }
+
+  private reviews() {
+    if (!this.model?.commentCount) {
+      return html``;
+    }
+    return html`
+      <div id="reviews">
+        <span class="label">Reviews: </span>
+        ${this.model?.commentCount}
+      </div>
+    `;
   }
 
   private description() {
-    if (this.model?.description) {
-      const description = DOMPurify.sanitize(`${this.model?.description}`);
-      return html`<div id="description">${description}</div>`;
+    if (!this.model?.description) {
+      return html``;
     }
-    return html``;
+    const description = DOMPurify.sanitize(`${this.model?.description}`);
+    return html`<div id="description">${description}</div>`;
   }
 
   private topic() {
-    if (this.model?.subject) {
-      return html`<div id="topic">
-        Topic: ${DOMPurify.sanitize(this.model?.subject)}
-      </div>`;
+    if (!this.model?.subject) {
+      return html``;
     }
-    return html``;
+    return html` <div id="topic">
+      <span class="label">Topics: </span>
+      ${DOMPurify.sanitize(this.model?.subject)}
+    </div>`;
   }
 
   private source() {
     if (this.model?.source) {
       return html`<div id="source">
         Source: ${DOMPurify.sanitize(this.model?.source)}
-      </div>`;
-    }
-    return html``;
-  }
-
-  private reviews() {
-    if (this.model?.averageRating) {
-      return html`<div id="reviews">
-        Reviews: ${this.model?.averageRating}
       </div>`;
     }
     return html``;
@@ -122,18 +167,73 @@ export class TileList extends LitElement {
 
   static get styles() {
     return css`
-      .mobile div {
-        font-size: 11px;
+      html {
+        font-size: unset;
       }
-      .desktop div {
+
+      div {
         font-size: 14px;
+      }
+
+      .label {
+        font-weight: bold;
       }
 
       /* fields */
 
+      #thumb img {
+        object-fit: cover;
+        display: block;
+      }
+
+      .mobile #thumb img {
+        width: 90px;
+        height: 90px;
+      }
+
+      .desktop #thumb img {
+        width: 100px;
+        height: 100px;
+      }
+
+      #thumb img.collection {
+        border-radius: 8px;
+        -webkit-border-radius: 8px;
+        -moz-border-radius: 8px;
+      }
+
+      .mobile #thumb img.account {
+        border-radius: 45px;
+        -webkit-border-radius: 45px;
+        -moz-border-radius: 45px;
+      }
+
+      .desktop #thumb img.account {
+        border-radius: 50px;
+        -webkit-border-radius: 50px;
+        -moz-border-radius: 50px;
+      }
+
+      #icon.show-text svg {
+        height: unset;
+        width: unset;
+      }
+
+      #iconLeft #icon.show-text svg {
+        height: 20px;
+      }
+
       #title {
         color: #4b64ff;
         text-decoration: none;
+        font-size: 22px;
+        font-weight: bold;
+        line-height: 30px;
+      }
+
+      #creator,
+      #date {
+        line-height: 20px;
       }
 
       #title,
@@ -149,35 +249,12 @@ export class TileList extends LitElement {
         white-space: nowrap;
       }
 
-      #views,
-      #date {
-        text-align: right;
-      }
-
-      #views,
-      #details {
-        color: #767676;
-      }
-
       #icon {
-        padding-right: 6px;
-      }
-
-      .desktop #description,
-      .desktop #topic,
-      .desktop #source,
-      .desktop #reviews {
-        font-size: 12px;
-      }
-
-      .mobile #description,
-      .mobile #topic,
-      .mobile #source,
-      .mobile #reviews {
-        font-size: 11px;
+        padding-top: 5px;
       }
 
       #description {
+        padding-top: 10px;
         overflow: hidden;
         text-overflow: ellipsis;
         -webkit-line-clamp: 2;
@@ -193,40 +270,19 @@ export class TileList extends LitElement {
       /* list-line */
 
       #list-line {
-        display: grid;
-        column-gap: 10px;
-        line-height: 1.42857143;
-        border-top: 1px solid #ddd !important;
-        padding-top: 5px;
-        align-items: center;
-      }
-
-      #list-line.mobile {
-        grid-template-columns: 33px 3fr 30px 2fr 29.5px;
-      }
-      #list-line.desktop {
-        grid-template-columns: 60px 3fr 90px 2fr 29.5px;
+        display: flex;
+        column-gap: 5px;
       }
 
       #list-line:hover #title {
         text-decoration: underline;
       }
 
-      /* list-detail */
-
-      #list-detail {
-        display: grid;
-        column-gap: 10px;
-        line-height: 1.42857143;
-        align-items: center;
-      }
-
-      #list-detail.mobile {
-        grid-template-columns: 33px auto 29.5px;
-      }
-
-      #list-detail.desktop {
-        grid-template-columns: 60px auto 29.5px;
+      #views-line {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        line-height: 20px;
       }
     `;
   }

@@ -110,10 +110,10 @@ export class TileListCompact extends LitElement {
         -moz-border-radius: 8px;
       }
 
-      .desktop #thumb img.account {
-        border-radius: 22.5px;
-        -webkit-border-radius: 22.5px;
-        -moz-border-radius: 22.5px;
+      .mobile #thumb img.account {
+        border-radius: 15px;
+        -webkit-border-radius: 15px;
+        -moz-border-radius: 15px;
       }
 
       .desktop #thumb img.account {
