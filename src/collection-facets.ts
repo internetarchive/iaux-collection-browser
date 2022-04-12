@@ -46,6 +46,10 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
 
+  @property({ type: String }) minSelectedDate?: string;
+
+  @property({ type: String }) maxSelectedDate?: string;
+
   @property({ type: Boolean }) facetsLoading = false;
 
   @property({ type: Boolean }) fullYearAggregationLoading = false;
@@ -98,14 +102,13 @@ export class CollectionFacets extends LitElement {
   }
 
   private get histogramTemplate() {
-    const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
-      this;
+    const { fullYearsHistogramAggregation } = this;
     return html`
       <histogram-date-range
         .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
         .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
-        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
         .updateDelay=${100}
         missingDataMessage="..."
         .width=${180}

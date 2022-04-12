@@ -89,6 +89,10 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
+  @state() private minSelectedDate?: string;
+
+  @state() private maxSelectedDate?: string;
+
   @state() private totalResults?: number;
 
   @state() private titleQuery?: string;
@@ -195,6 +199,8 @@ export class CollectionBrowser
               .aggregations=${this.aggregations}
               .fullYearsHistogramAggregation=${this
                 .fullYearsHistogramAggregation}
+              .minSelectedDate=${this.minSelectedDate}
+              .maxSelectedDate=${this.maxSelectedDate}
               .selectedFacets=${this.selectedFacets}
               ?facetsLoading=${this.facetDataLoading}
               ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
@@ -430,6 +436,9 @@ export class CollectionBrowser
       ands.forEach(and => {
         const [field, value] = and.split(':');
         if (field === 'year') {
+          const [minDate, maxDate] = value.split(' TO ');
+          this.minSelectedDate = minDate.substring(1, minDate.length);
+          this.maxSelectedDate = maxDate.substring(0, maxDate.length - 1);
           this.dateRangeQueryClause = `year:${value}`;
         } else {
           this.selectedFacets[field as FacetOption][value] = 'selected';
