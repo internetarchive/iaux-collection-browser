@@ -361,6 +361,7 @@ export class SortFilterBar extends LitElement {
     #sort-direction-container {
       display: flex;
       flex-direction: column;
+      gap: 3px;
     }
 
     #sort-selector li {

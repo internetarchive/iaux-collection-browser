@@ -20,6 +20,7 @@ import {
 } from '@internetarchive/search-service';
 import {
   AggregateSearchParams,
+  SortDirection,
   SortParam,
 } from '@internetarchive/search-service/dist/src/search-params';
 import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
@@ -31,7 +32,7 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
-import { SelectedFacets } from './models';
+import { SelectedFacets, FacetOption } from './models';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -194,6 +195,7 @@ export class CollectionBrowser
               .aggregations=${this.aggregations}
               .fullYearsHistogramAggregation=${this
                 .fullYearsHistogramAggregation}
+              .selectedFacets=${this.selectedFacets}
               ?facetsLoading=${this.facetDataLoading}
               ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
             ></collection-facets>
@@ -301,6 +303,10 @@ export class CollectionBrowser
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
   }
 
+  firstUpdated(): void {
+    this.loadStateFromUrl();
+  }
+
   updated(changed: PropertyValues) {
     if (
       changed.has('displayMode') ||
@@ -308,6 +314,9 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl')
     ) {
       this.infiniteScroller.reload();
+    }
+    if (changed.has('currentPage')) {
+      this.updateUrl();
     }
     if (
       changed.has('baseQuery') ||
@@ -324,6 +333,47 @@ export class CollectionBrowser
       if (!this.endOfDataReached) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
+    }
+  }
+
+  private loadStateFromUrl() {
+    const url = new URL(window.location.href);
+    const pageNumber = url.searchParams.get('page');
+    const searchQuery = url.searchParams.get('query');
+    const sortQuery = url.searchParams.get('sort');
+    const facetAnds = url.searchParams.get('and');
+    const facetNots = url.searchParams.get('not');
+    if (pageNumber) {
+      const parsed = parseInt(pageNumber, 10);
+      this.currentPage = parsed;
+      if (parsed > 1) {
+        this.goToPage(parsed);
+      }
+    } else {
+      this.currentPage = 1;
+    }
+    if (searchQuery) {
+      this.baseQuery = searchQuery;
+    }
+    if (sortQuery) {
+      const [field, direction] = sortQuery.split(' ');
+      this.sortParam = new SortParam(field, direction as SortDirection);
+    } else {
+      this.sortParam = new SortParam('date', 'desc');
+    }
+    if (facetAnds) {
+      const ands = facetAnds.split(',');
+      ands.forEach(and => {
+        const [field, value] = and.split(':');
+        this.selectedFacets[field as FacetOption][value] = 'selected';
+      });
+    }
+    if (facetNots) {
+      const nots = facetNots.split(',');
+      nots.forEach(not => {
+        const [field, value] = not.split(':');
+        this.selectedFacets[field as FacetOption][value] = 'hidden';
+      });
     }
   }
 
@@ -344,6 +394,9 @@ export class CollectionBrowser
       visibleCellIndices[visibleCellIndices.length - 1];
     const lastVisibleCellPage =
       Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
+    if (this.currentPage !== lastVisibleCellPage) {
+      this.currentPage = lastVisibleCellPage;
+    }
     const event = new CustomEvent('visiblePageChanged', {
       detail: {
         pageNumber: lastVisibleCellPage,
@@ -373,12 +426,73 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
+    this.updateUrl();
 
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
       this.fetchFullYearHistogram(),
     ]);
+  }
+
+  private updateUrl() {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.delete('sort');
+    searchParams.delete('query');
+    searchParams.delete('page');
+    searchParams.delete('and');
+    searchParams.delete('not');
+
+    if (this.sortParam) {
+      url.searchParams.set('sort', this.sortParam.asString);
+    }
+
+    if (this.baseQuery) {
+      url.searchParams.set('query', this.baseQuery);
+    }
+
+    if (this.currentPage) {
+      if (this.currentPage > 1) {
+        url.searchParams.set('page', this.currentPage.toString());
+      } else {
+        url.searchParams.delete('page');
+      }
+    }
+
+    const ands: string[] = [];
+    const nots: string[] = [];
+    for (const [facetName, facetValues] of Object.entries(
+      this.selectedFacets
+    )) {
+      const facetEntries = Object.entries(facetValues);
+      // eslint-disable-next-line no-continue
+      if (facetEntries.length === 0) continue;
+      for (const [key, facetState] of facetEntries) {
+        const notValue = facetState === 'hidden';
+        const paramValue = `${facetName}:${key}`;
+        if (notValue) {
+          nots.push(paramValue);
+        } else {
+          ands.push(paramValue);
+        }
+      }
+    }
+    if (ands.length > 0) {
+      url.searchParams.set('and', ands.join(','));
+    }
+    if (nots.length > 0) {
+      url.searchParams.set('not', nots.join(','));
+    }
+
+    window.history.pushState(
+      {
+        page: this.currentPage,
+        query: this.baseQuery,
+      },
+      '',
+      url
+    );
   }
 
   private async doInitialPageFetch() {

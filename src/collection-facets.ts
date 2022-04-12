@@ -1,5 +1,5 @@
 import { css, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
@@ -50,7 +50,7 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) fullYearAggregationLoading = false;
 
-  @state() private selectedFacets: SelectedFacets = {
+  @property({ type: Object }) selectedFacets: SelectedFacets = {
     subject: {},
     mediatype: {},
     language: {},
