@@ -1,3 +1,4 @@
+/* eslint-disable lit/no-invalid-html */
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
@@ -28,7 +29,7 @@ export class TileList extends LitElement {
         </div>
         <div id="list-line-right">
           <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
-          ${this.creator()}
+          ${this.itemLine()} ${this.creator()}
           <div id="date">
             <span class="label">Published:</span> ${formatDate(
               this.date,
@@ -38,7 +39,7 @@ export class TileList extends LitElement {
           <div id="views-line">
             ${this.views()} ${this.rating()} ${this.reviews()}
           </div>
-          ${this.description()}
+          ${this.topics()} ${this.description()}
         </div>
       </div>
     `;
@@ -77,6 +78,14 @@ export class TileList extends LitElement {
         ${DOMPurify.sanitize(this.model?.creator ?? '')}
       </div>
     `;
+  }
+
+  private itemLine() {
+    const source = this.source();
+    if (!source) {
+      return html``;
+    }
+    return html` <div id="item-line">${source}</div> `;
   }
 
   private views() {
@@ -120,11 +129,11 @@ export class TileList extends LitElement {
     return html`<div id="description">${description}</div>`;
   }
 
-  private topic() {
+  private topics() {
     if (!this.model?.subject) {
       return html``;
     }
-    return html` <div id="topic">
+    return html` <div id="topics">
       <span class="label">Topics: </span>
       ${DOMPurify.sanitize(this.model?.subject)}
     </div>`;
@@ -133,10 +142,26 @@ export class TileList extends LitElement {
   private source() {
     if (this.model?.source) {
       return html`<div id="source">
-        Source: ${DOMPurify.sanitize(this.model?.source)}
+        <span class="label">Source: </span>${this.searchLink(
+          'source',
+          this.model.source
+        )}
       </div>`;
     }
     return html``;
+  }
+
+  private searchLink(field: string, searchTerm: string) {
+    if (!field || !searchTerm) {
+      return html``;
+    }
+    const query = encodeURIComponent(`${field}:"${searchTerm}"`);
+    // eslint-disable-next-line lit/no-invalid-html
+    return html`
+      <a href="${this.baseNavigationUrl}/search.php?query=${query}">
+        ${DOMPurify.sanitize(searchTerm)}
+      </a>
+    `;
   }
 
   /*
@@ -179,6 +204,15 @@ export class TileList extends LitElement {
         font-weight: bold;
       }
 
+      .mobile {
+        --infiniteScrollerRowGap: 20px;
+        --infiniteScrollerRowHeight: auto;
+      }
+
+      .desktop {
+        --infiniteScrollerRowGap: 30px;
+        --infiniteScrollerRowHeight: auto;
+      }
       /* fields */
 
       #thumb img {
@@ -232,7 +266,9 @@ export class TileList extends LitElement {
       }
 
       #creator,
-      #date {
+      #date,
+      #topics,
+      #item-line {
         line-height: 20px;
       }
 
@@ -278,6 +314,7 @@ export class TileList extends LitElement {
         text-decoration: underline;
       }
 
+      #item-line,
       #views-line {
         display: flex;
         flex-direction: row;
