@@ -73,6 +73,10 @@ export class MediatypeIcon extends LitElement {
       #icon.hide-text p {
         display: none;
       }
+
+      .fill-color {
+        fill: var(--iconFillColor);
+      }
     `;
   }
 }
