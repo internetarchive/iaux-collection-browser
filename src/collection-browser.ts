@@ -600,6 +600,7 @@ export class CollectionBrowser
         'publicdate',
         'reviewdate',
         'creator',
+        'collections_raw',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -679,6 +680,7 @@ export class CollectionBrowser
         datePublished: doc.date?.value,
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
+        collections: doc.collections_raw?.values ?? [],
       });
     });
     datasource[pageNumber] = tiles;

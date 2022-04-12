@@ -106,6 +106,7 @@ export class TileDispatcher
           default:
             return html`<item-tile
               .model=${model}
+              .baseNavigationUrl=${this.baseNavigationUrl}
               .currentWidth=${this.currentWidth}
               .currentHeight=${this.currentHeight}
             ></item-tile>`;
