@@ -336,6 +336,70 @@ export class CollectionBrowser
     }
   }
 
+  private updateUrl() {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.delete('sort');
+    searchParams.delete('query');
+    searchParams.delete('page');
+    searchParams.delete('and');
+    searchParams.delete('not');
+
+    if (this.sortParam) {
+      url.searchParams.set('sort', this.sortParam.asString);
+    }
+
+    if (this.baseQuery) {
+      url.searchParams.set('query', this.baseQuery);
+    }
+
+    if (this.currentPage) {
+      if (this.currentPage > 1) {
+        url.searchParams.set('page', this.currentPage.toString());
+      } else {
+        url.searchParams.delete('page');
+      }
+    }
+
+    const ands: string[] = [];
+    const nots: string[] = [];
+    for (const [facetName, facetValues] of Object.entries(
+      this.selectedFacets
+    )) {
+      const facetEntries = Object.entries(facetValues);
+      // eslint-disable-next-line no-continue
+      if (facetEntries.length === 0) continue;
+      for (const [key, facetState] of facetEntries) {
+        const notValue = facetState === 'hidden';
+        const paramValue = `${facetName}:${key}`;
+        if (notValue) {
+          nots.push(paramValue);
+        } else {
+          ands.push(paramValue);
+        }
+      }
+    }
+    if (this.dateRangeQueryClause) {
+      ands.push(this.dateRangeQueryClause);
+    }
+
+    if (ands.length > 0) {
+      url.searchParams.set('and', ands.join(','));
+    }
+    if (nots.length > 0) {
+      url.searchParams.set('not', nots.join(','));
+    }
+
+    window.history.pushState(
+      {
+        page: this.currentPage,
+        query: this.baseQuery,
+      },
+      '',
+      url
+    );
+  }
+
   private loadStateFromUrl() {
     const url = new URL(window.location.href);
     const pageNumber = url.searchParams.get('page');
@@ -365,7 +429,11 @@ export class CollectionBrowser
       const ands = facetAnds.split(',');
       ands.forEach(and => {
         const [field, value] = and.split(':');
-        this.selectedFacets[field as FacetOption][value] = 'selected';
+        if (field === 'year') {
+          this.dateRangeQueryClause = `year:${value}`;
+        } else {
+          this.selectedFacets[field as FacetOption][value] = 'selected';
+        }
       });
     }
     if (facetNots) {
@@ -433,66 +501,6 @@ export class CollectionBrowser
       this.fetchFacets(),
       this.fetchFullYearHistogram(),
     ]);
-  }
-
-  private updateUrl() {
-    const url = new URL(window.location.href);
-    const { searchParams } = url;
-    searchParams.delete('sort');
-    searchParams.delete('query');
-    searchParams.delete('page');
-    searchParams.delete('and');
-    searchParams.delete('not');
-
-    if (this.sortParam) {
-      url.searchParams.set('sort', this.sortParam.asString);
-    }
-
-    if (this.baseQuery) {
-      url.searchParams.set('query', this.baseQuery);
-    }
-
-    if (this.currentPage) {
-      if (this.currentPage > 1) {
-        url.searchParams.set('page', this.currentPage.toString());
-      } else {
-        url.searchParams.delete('page');
-      }
-    }
-
-    const ands: string[] = [];
-    const nots: string[] = [];
-    for (const [facetName, facetValues] of Object.entries(
-      this.selectedFacets
-    )) {
-      const facetEntries = Object.entries(facetValues);
-      // eslint-disable-next-line no-continue
-      if (facetEntries.length === 0) continue;
-      for (const [key, facetState] of facetEntries) {
-        const notValue = facetState === 'hidden';
-        const paramValue = `${facetName}:${key}`;
-        if (notValue) {
-          nots.push(paramValue);
-        } else {
-          ands.push(paramValue);
-        }
-      }
-    }
-    if (ands.length > 0) {
-      url.searchParams.set('and', ands.join(','));
-    }
-    if (nots.length > 0) {
-      url.searchParams.set('not', nots.join(','));
-    }
-
-    window.history.pushState(
-      {
-        page: this.currentPage,
-        query: this.baseQuery,
-      },
-      '',
-      url
-    );
   }
 
   private async doInitialPageFetch() {
