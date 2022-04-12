@@ -74,6 +74,11 @@ export class MediatypeIcon extends LitElement {
         display: none;
       }
 
+      svg {
+        height: var(--iconHeight);
+        width: var(--iconWidth);
+      }
+
       .fill-color {
         fill: var(--iconFillColor);
       }
