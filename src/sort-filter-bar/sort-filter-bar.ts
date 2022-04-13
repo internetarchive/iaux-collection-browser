@@ -20,7 +20,7 @@ type SortField = 'relevance' | 'views' | 'title' | 'date' | 'creator';
 export class SortFilterBar extends LitElement {
   @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
 
-  @property({ type: String }) sortDirection: 'asc' | 'desc' = 'asc';
+  @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
 
   @property({ type: String }) sortField: string | null = null;
 
@@ -180,8 +180,19 @@ export class SortFilterBar extends LitElement {
       this.displayModeChanged();
     }
 
-    if (changed.has('sortDirection') || changed.has('sortField')) {
+    if (
+      (changed.has('sortDirection') || changed.has('sortField')) &&
+      this.sortDirection !== null
+    ) {
       this.sortChanged();
+    }
+
+    if (
+      changed.has('sortField') &&
+      this.sortField !== null &&
+      this.sortDirection === null
+    ) {
+      this.sortDirection = 'desc';
     }
   }
 

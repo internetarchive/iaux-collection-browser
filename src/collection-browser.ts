@@ -348,8 +348,8 @@ export class CollectionBrowser
     searchParams.delete('sort');
     searchParams.delete('query');
     searchParams.delete('page');
-    searchParams.delete('and');
-    searchParams.delete('not');
+    searchParams.delete('and[]');
+    searchParams.delete('not[]');
 
     if (this.sortParam) {
       url.searchParams.set('sort', this.sortParam.asString);
@@ -367,8 +367,6 @@ export class CollectionBrowser
       }
     }
 
-    const ands: string[] = [];
-    const nots: string[] = [];
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets
     )) {
@@ -379,21 +377,14 @@ export class CollectionBrowser
         const notValue = facetState === 'hidden';
         const paramValue = `${facetName}:${key}`;
         if (notValue) {
-          nots.push(paramValue);
+          url.searchParams.append('not[]', paramValue);
         } else {
-          ands.push(paramValue);
+          url.searchParams.append('and[]', paramValue);
         }
       }
     }
     if (this.dateRangeQueryClause) {
-      ands.push(this.dateRangeQueryClause);
-    }
-
-    if (ands.length > 0) {
-      url.searchParams.set('and', ands.join(','));
-    }
-    if (nots.length > 0) {
-      url.searchParams.set('not', nots.join(','));
+      url.searchParams.append('and[]', this.dateRangeQueryClause);
     }
 
     window.history.pushState(
@@ -411,8 +402,8 @@ export class CollectionBrowser
     const pageNumber = url.searchParams.get('page');
     const searchQuery = url.searchParams.get('query');
     const sortQuery = url.searchParams.get('sort');
-    const facetAnds = url.searchParams.get('and');
-    const facetNots = url.searchParams.get('not');
+    const facetAnds = url.searchParams.getAll('and[]');
+    const facetNots = url.searchParams.getAll('not[]');
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
       this.currentPage = parsed;
@@ -432,8 +423,7 @@ export class CollectionBrowser
       this.sortParam = new SortParam('date', 'desc');
     }
     if (facetAnds) {
-      const ands = facetAnds.split(',');
-      ands.forEach(and => {
+      facetAnds.forEach(and => {
         const [field, value] = and.split(':');
         if (field === 'year') {
           const [minDate, maxDate] = value.split(' TO ');
@@ -446,8 +436,7 @@ export class CollectionBrowser
       });
     }
     if (facetNots) {
-      const nots = facetNots.split(',');
-      nots.forEach(not => {
+      facetNots.forEach(not => {
         const [field, value] = not.split(':');
         this.selectedFacets[field as FacetOption][value] = 'hidden';
       });
