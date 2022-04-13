@@ -855,7 +855,7 @@ export class CollectionBrowser
     }
 
     .column {
-      padding-top: 2rem;
+      padding: 2rem 1rem;
     }
 
     #facets-container {
@@ -895,6 +895,11 @@ export class CollectionBrowser
     circular-activity-indicator {
       width: 30px;
       height: 30px;
+    }
+
+    sort-filter-bar {
+      display: block;
+      margin-bottom: 4rem;
     }
 
     infinite-scroller {
