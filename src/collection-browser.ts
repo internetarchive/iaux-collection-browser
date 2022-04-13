@@ -49,6 +49,7 @@ import {
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
+import { DataManagerInterface, DataManager } from './data-manager';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -110,6 +111,9 @@ export class CollectionBrowser
   );
 
   @property({ type: Number }) mobileBreakpoint = 600;
+
+  @property({ type: Object }) dataManager: DataManagerInterface =
+    new DataManager();
 
   /**
    * The page that the consumer wants to load.
