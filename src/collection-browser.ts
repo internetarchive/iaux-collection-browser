@@ -32,6 +32,7 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
+import { DataManagerInterface, DataManager } from './data-manager';
 import { SelectedFacets, FacetOption } from './models';
 
 @customElement('collection-browser')
@@ -56,6 +57,9 @@ export class CollectionBrowser
   @property({ type: Number }) pageSize = 50;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
+
+  @property({ type: Object }) dataManager: DataManagerInterface =
+    new DataManager();
 
   /**
    * The page that the consumer wants to load.
