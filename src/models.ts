@@ -22,6 +22,62 @@ export interface TileModel {
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
 
+/**
+ * The sort fields shown in the sort filter bar
+ */
+export type SortField =
+  | 'relevance'
+  | 'views'
+  | 'title'
+  | 'datearchived'
+  | 'datepublished'
+  | 'datereviewed'
+  | 'dateadded'
+  | 'creator';
+
+/**
+ * The metadata fields we sort by that map to the SortFields above
+ */
+export type MetadataSortField =
+  | 'week'
+  | 'titleSorter'
+  | 'date'
+  | 'creatorSorter'
+  | 'publicdate'
+  | 'reviewdate'
+  | 'addeddate';
+
+/**
+ * Maps the SortField above to the corresponding Metadata field in the API.
+ */
+export const SortFieldToMetadataField: {
+  [key in SortField]: MetadataSortField | null;
+} = {
+  relevance: null,
+  views: 'week',
+  title: 'titleSorter',
+  datearchived: 'date',
+  datepublished: 'publicdate',
+  datereviewed: 'reviewdate',
+  dateadded: 'addeddate',
+  creator: 'creatorSorter',
+};
+
+/**
+ * Maps the Metadata field to the corresponding SortField field in the API.
+ */
+export const MetadataFieldToSortField: {
+  [key in MetadataSortField]: SortField;
+} = {
+  titleSorter: 'title',
+  date: 'datearchived',
+  publicdate: 'datepublished',
+  reviewdate: 'datereviewed',
+  addeddate: 'dateadded',
+  creatorSorter: 'creator',
+  week: 'views',
+};
+
 export type FacetOption =
   | 'subject'
   | 'mediatype'

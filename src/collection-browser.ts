@@ -32,7 +32,14 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
-import { SelectedFacets, FacetOption } from './models';
+import {
+  SelectedFacets,
+  FacetOption,
+  SortField,
+  SortFieldToMetadataField,
+  MetadataFieldToSortField,
+  MetadataSortField,
+} from './models';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -50,6 +57,10 @@ export class CollectionBrowser
   @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
 
   @property({ type: Object }) sortParam: SortParam | null = null;
+
+  @property({ type: String }) selectedSort: SortField = 'relevance';
+
+  @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
 
   @property({ type: String }) dateRangeQueryClause?: string;
 
@@ -210,6 +221,8 @@ export class CollectionBrowser
         <div id="right-column" class="column">
           ${this.searchResultsLoading ? this.loadingTemplate : nothing}
           <sort-filter-bar
+            .selectedSort=${this.selectedSort}
+            .sortDirection=${this.sortDirection}
             @sortChanged=${this.sortChanged}
             @displayModeChanged=${this.displayModeChanged}
             @titleLetterChanged=${this.titleLetterChanged}
@@ -231,16 +244,26 @@ export class CollectionBrowser
 
   private sortChanged(
     e: CustomEvent<{
-      sortField: string | null;
+      selectedSort: SortField;
       sortDirection: 'asc' | 'desc' | null;
     }>
   ) {
-    const { sortField, sortDirection } = e.detail;
-    if (sortField && sortDirection) {
-      this.sortParam = new SortParam(sortField, sortDirection);
-    } else {
+    const { selectedSort, sortDirection } = e.detail;
+    this.selectedSort = selectedSort;
+    this.sortDirection = sortDirection;
+  }
+
+  private selectedSortChanged() {
+    if (this.selectedSort === 'relevance' || this.sortDirection === null) {
       this.sortParam = null;
+      return;
     }
+
+    const sortField = SortFieldToMetadataField[this.selectedSort];
+
+    if (!sortField) return;
+
+    this.sortParam = new SortParam(sortField, this.sortDirection);
 
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
@@ -335,6 +358,9 @@ export class CollectionBrowser
     ) {
       this.handleQueryChange();
     }
+    if (changed.has('selectedSort') || changed.has('sortDirection')) {
+      this.selectedSortChanged();
+    }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
@@ -418,9 +444,14 @@ export class CollectionBrowser
     }
     if (sortQuery) {
       const [field, direction] = sortQuery.split(' ');
-      this.sortParam = new SortParam(field, direction as SortDirection);
-    } else {
-      this.sortParam = new SortParam('date', 'desc');
+      const metadataField =
+        MetadataFieldToSortField[field as MetadataSortField];
+      if (metadataField) {
+        this.selectedSort = metadataField;
+      }
+      if (direction === 'desc' || direction === 'asc') {
+        this.sortDirection = direction as SortDirection;
+      }
     }
     if (facetAnds) {
       facetAnds.forEach(and => {
