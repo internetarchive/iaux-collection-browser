@@ -1,14 +1,19 @@
 import {
+  Aggregation,
   SortParam,
   SearchParams,
   SearchService,
   SearchServiceInterface,
   Metadata,
+  AggregateSearchParams,
 } from '@internetarchive/search-service';
 import { SelectedFacets } from './models';
 import type { TileModel } from './models';
 
-export interface DataManagerInterface {}
+export interface DataManagerInterface {
+  fetchFullYearHistogram(): Promise<Aggregation | undefined>;
+  fetchFacets(): Promise<Record<string, Aggregation> | undefined>;
+}
 
 export class DataManager implements DataManagerInterface {
   searchService: SearchServiceInterface = SearchService.default;
@@ -40,6 +45,105 @@ export class DataManager implements DataManagerInterface {
 
   // this maps the query to the pages being fetched for that query
   private pageFetchesInProgress: Record<string, Set<number>> = {};
+
+  /**
+   * The query key is a string that uniquely identifies the current query
+   * without the date range.
+   *
+   * If this doesn't change, we don't need to re-fetch the histogram date range
+   */
+  private get fullQueryNoDateKey() {
+    return `${this.fullQueryWithoutDate}-${this.sortParam?.asString}`;
+  }
+
+  /**
+   * If we haven't changed the query, we don't need to fetch the full year histogram
+   *
+   * @private
+   * @type {string}
+   * @memberof CollectionBrowser
+   */
+  private previousFullQueryNoDate?: string;
+
+  /**
+   * This method is similar to fetching the facets above,
+   * but only fetching the year histogram. There is a subtle difference
+   * in how you have to fetch the year histogram where you can't use the
+   * advanced JSON syntax like the other aggregations. It's a special
+   * case that @ximm put it place.
+   */
+  async fetchFullYearHistogram(): Promise<Aggregation | undefined> {
+    const { fullQueryNoDateKey } = this;
+    if (
+      !this.fullQueryWithoutDate ||
+      fullQueryNoDateKey === this.previousFullQueryNoDate
+    )
+      return undefined;
+    this.previousFullQueryNoDate = fullQueryNoDateKey;
+
+    const aggregations = new AggregateSearchParams({
+      simpleParams: ['year'],
+    });
+
+    const params = new SearchParams({
+      query: this.fullQueryWithoutDate,
+      fields: ['identifier'],
+      aggregations,
+      rows: 1,
+    });
+
+    // this.fullYearAggregationLoading = true;
+    const results = await this.searchService?.search(params);
+    // this.fullYearAggregationLoading = false;
+
+    // this.fullYearsHistogramAggregation =
+    return results?.success?.response?.aggregations?.year_histogram;
+  }
+
+  async fetchFacets(): Promise<Record<string, Aggregation> | undefined> {
+    if (!this.fullQuery) return undefined;
+
+    const aggregations = new AggregateSearchParams({
+      advancedParams: [
+        {
+          field: 'subjectSorter',
+          size: 6,
+        },
+        {
+          field: 'mediatypeSorter',
+          size: 6,
+        },
+        {
+          field: 'languageSorter',
+          size: 6,
+        },
+        {
+          field: 'creatorSorter',
+          size: 6,
+        },
+        {
+          field: 'collection',
+          size: 12,
+        },
+        {
+          field: 'year',
+          size: 50,
+        },
+      ],
+    });
+
+    const params = new SearchParams({
+      query: this.fullQuery,
+      fields: ['identifier'],
+      aggregations,
+      rows: 1,
+    });
+    // this.facetsLoading = true;
+    const results = await this.searchService?.search(params);
+    // this.facetsLoading = false;
+
+    return results?.success?.response.aggregations;
+  }
 
   /**
    * Generates a query string for the given facets
