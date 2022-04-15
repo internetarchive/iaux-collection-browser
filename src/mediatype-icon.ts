@@ -1,6 +1,7 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+import { accountIcon } from './assets/img/icons/mediatype/account';
 import { audioIcon } from './assets/img/icons/mediatype/audio';
 import { etreeIcon } from './assets/img/icons/mediatype/etree';
 import { imagesIcon } from './assets/img/icons/mediatype/images';
@@ -19,6 +20,7 @@ export class MediatypeIcon extends LitElement {
   @property({ type: Boolean }) showText = false;
 
   private readonly mediatypeIcons: { [key: string]: any } = {
+    account: accountIcon,
     audio: audioIcon,
     collection: collectionIcon,
     data: etreeIcon,
@@ -34,6 +36,7 @@ export class MediatypeIcon extends LitElement {
   };
 
   private readonly mediatypeText: { [key: string]: any } = {
+    account: 'Account',
     audio: 'Audio',
     collection: 'Collection',
     data: 'Data',
@@ -74,9 +77,13 @@ export class MediatypeIcon extends LitElement {
         display: none;
       }
 
-      #icon.show-text svg {
-        height: 10px;
-        width: 10px;
+      svg {
+        height: var(--iconHeight);
+        width: var(--iconWidth);
+      }
+
+      .fill-color {
+        fill: var(--iconFillColor);
       }
     `;
   }

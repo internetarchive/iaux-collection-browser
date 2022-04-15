@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 
 @customElement('alpha-bar')
 export class AlphaBar extends LitElement {
-  @property({ type: String }) selectedLetter?: string;
+  @property({ type: String }) selectedLetter: string | null = null;
 
   private get selectedUppercaseLetter(): string | undefined {
     return this.selectedLetter?.toUpperCase();
@@ -40,7 +40,7 @@ export class AlphaBar extends LitElement {
 
   private letterClicked(letter: string) {
     if (letter === this.selectedUppercaseLetter) {
-      this.selectedLetter = undefined;
+      this.selectedLetter = null;
     } else {
       this.selectedLetter = letter;
     }

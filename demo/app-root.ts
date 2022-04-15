@@ -1,10 +1,6 @@
 import { SearchService } from '@internetarchive/search-service';
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
-import {
-  SortDirection,
-  SortParam,
-} from '@internetarchive/search-service/dist/src/search-params';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
@@ -18,8 +14,6 @@ export class AppRoot extends LitElement {
   @state() private currentPage?: number;
 
   @state() private searchQuery?: string;
-
-  @state() private sortParam?: SortParam;
 
   @state() private cellWidth: number = 18;
 
@@ -50,90 +44,18 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.goToPage(this.currentPage);
   }
 
-  protected firstUpdated(): void {
-    this.loadStateFromUrl();
-  }
-
   protected updated(changed: PropertyValues): void {
     if (changed.has('currentPage') && this.currentPage) {
       this.pageNumberInput.value = this.currentPage.toString();
-      this.updateUrl();
     }
 
     if (changed.has('searchQuery')) {
       this.queryUpdated();
     }
-
-    if (changed.has('sortParam')) {
-      this.sortParamUpdated();
-    }
-  }
-
-  private loadStateFromUrl() {
-    const url = new URL(window.location.href);
-    const pageNumber = url.searchParams.get('page');
-    const searchQuery = url.searchParams.get('query');
-    const sortQuery = url.searchParams.get('sort');
-    if (pageNumber) {
-      const parsed = parseInt(pageNumber, 10);
-      this.currentPage = parsed;
-      if (parsed > 1) {
-        this.collectionBrowser.goToPage(parsed);
-      }
-    } else {
-      this.currentPage = 1;
-    }
-    if (searchQuery) {
-      this.searchQuery = searchQuery;
-    } else {
-      this.searchQuery = 'collection:etree';
-    }
-    if (sortQuery) {
-      const [field, direction] = sortQuery.split(' ');
-      this.sortParam = new SortParam(field, direction as SortDirection);
-    } else {
-      this.sortParam = new SortParam('date', 'desc');
-    }
   }
 
   private queryUpdated() {
     this.collectionBrowser.baseQuery = this.searchQuery;
-    this.updateUrl();
-  }
-
-  private sortParamUpdated() {
-    if (!this.sortParam) return;
-    this.collectionBrowser.sortParam = this.sortParam;
-    // this.sortFilterBar.sortDirection = this.sortParam.direction;
-    this.updateUrl();
-  }
-
-  private updateUrl() {
-    const url = new URL(window.location.href);
-    if (this.sortParam) {
-      url.searchParams.set('sort', this.sortParam.asString);
-    }
-
-    if (this.searchQuery) {
-      url.searchParams.set('query', this.searchQuery);
-    }
-
-    if (this.currentPage) {
-      if (this.currentPage > 1) {
-        url.searchParams.set('page', this.currentPage.toString());
-      } else {
-        url.searchParams.delete('page');
-      }
-    }
-
-    window.history.pushState(
-      {
-        page: this.currentPage,
-        query: this.searchQuery,
-      },
-      '',
-      url.toString()
-    );
   }
 
   render() {

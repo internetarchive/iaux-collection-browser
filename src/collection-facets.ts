@@ -1,16 +1,17 @@
 import { css, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
-import type {
+import {
   FacetOption,
   SelectedFacets,
   FacetGroup,
   FacetBucket,
+  defaultSelectedFacets,
 } from './models';
 
 const facetDisplayOrder: FacetOption[] = [
@@ -46,18 +47,15 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
 
+  @property({ type: String }) minSelectedDate?: string;
+
+  @property({ type: String }) maxSelectedDate?: string;
+
   @property({ type: Boolean }) facetsLoading = false;
 
   @property({ type: Boolean }) fullYearAggregationLoading = false;
 
-  @state() private selectedFacets: SelectedFacets = {
-    subject: {},
-    mediatype: {},
-    language: {},
-    creator: {},
-    collection: {},
-    year: {},
-  };
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   render() {
     return html`
@@ -98,14 +96,13 @@ export class CollectionFacets extends LitElement {
   }
 
   private get histogramTemplate() {
-    const { currentYearsHistogramAggregation, fullYearsHistogramAggregation } =
-      this;
+    const { fullYearsHistogramAggregation } = this;
     return html`
       <histogram-date-range
         .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
         .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-        .minSelectedDate=${currentYearsHistogramAggregation?.first_bucket_key}
-        .maxSelectedDate=${currentYearsHistogramAggregation?.last_bucket_key}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
         .updateDelay=${100}
         missingDataMessage="..."
         .width=${180}
@@ -188,6 +185,8 @@ export class CollectionFacets extends LitElement {
    * which is easier to work with
    */
   private get selectedFacetGroups(): FacetGroup[] {
+    if (!this.selectedFacets) return [];
+
     const facetGroups: FacetGroup[] = Object.entries(this.selectedFacets).map(
       ([key, selectedFacets]) => {
         const option = key as FacetOption;
@@ -297,16 +296,30 @@ export class CollectionFacets extends LitElement {
 
   private facetChecked(key: FacetOption, value: string, negative: boolean) {
     const { selectedFacets } = this;
-    const facetClone = { ...selectedFacets };
-    facetClone[key][value] = negative ? 'hidden' : 'selected';
-    this.selectedFacets = facetClone;
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+    newFacets[key][value] = negative ? 'hidden' : 'selected';
+    this.selectedFacets = newFacets;
   }
 
   private facetUnchecked(key: FacetOption, value: string) {
     const { selectedFacets } = this;
-    const facetClone = { ...selectedFacets };
-    delete facetClone[key][value];
-    this.selectedFacets = facetClone;
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+    delete newFacets[key][value];
+    this.selectedFacets = newFacets;
   }
 
   /**

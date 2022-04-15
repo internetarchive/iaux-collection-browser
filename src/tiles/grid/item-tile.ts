@@ -17,19 +17,25 @@ export class ItemTile extends LitElement {
 
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
+
     const containsDeemphasize = this.model?.collections.includes('deemphasize');
-    return !containsDeemphasize
-      ? html`<div
-          id="item-image"
+    const itemImageBoxClass = containsDeemphasize ? 'item-image-box' : '';
+    const itemImageClass = `item-image ${
+      !containsDeemphasize ? 'default' : 'deemphasize'
+    }`;
+    const tileActionClass = `tile-action no-preview${
+      !containsDeemphasize ? ' hidden' : ''
+    }`;
+
+    return html`
+      <div class=${itemImageBoxClass}>
+        <div
+          class=${itemImageClass}
           style="background-image:url(${imgSrcUrl})"
-        ></div>`
-      : html`<div id="item-image-box">
-          <div
-            id="item-image-deemphasize"
-            style="background-image:url(${imgSrcUrl})"
-          ></div>
-          <div class="tile-action no-preview">Content may be inappropriate</div>
-        </div>`;
+        ></div>
+        <div class=${tileActionClass}>Content may be inappropriate</div>
+      </div>
+    `;
   }
 
   render() {
@@ -44,17 +50,16 @@ export class ItemTile extends LitElement {
       <div id="container">
         <a href=${collectionUrl}>
           <div id="stealth-popup">
-            <div id="collection-thumbnail" style="background-image:url(${imgSrcUrl})"></div>
+            <div
+              id="collection-thumbnail"
+              style="background-image:url(${imgSrcUrl})"
+            ></div>
             <div id="collection-title-text">${collectionName}</div>
           </div>
         </a>
         <div id="title-image-container">
-          <h1 id="item-title" title=${itemTitle}>
-            ${this.model?.title}
-          </h1>
-          <div id="item-image-container">
-            ${this.renderItemImageView}
-          </div>
+          <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
+          <div id="item-image-container">${this.renderItemImageView}</div>
           <div class="item-creator">
             <span id="text-by">By:</span>
             <span>${itemCreator}</span>
@@ -63,33 +68,29 @@ export class ItemTile extends LitElement {
         <div id="item-stats-container">
           <div id="stats-holder">
             <div class="col">
-              <mediatype-icon mediatype="${
-                this.model?.mediatype
-              }" showText="true">
+              <mediatype-icon
+                .mediatype=${this.model?.mediatype}
+                ?showText=${true}
+              >
+              </mediatype-icon>
             </div>
             <div class="col">
               ${viewsIcon}
-              <p class="status-text">${formatCount(
-                this.model?.viewCount,
-                'short',
-                'short'
-              )}</p>
+              <p class="status-text">
+                ${formatCount(this.model?.viewCount, 'short', 'short')}
+              </p>
             </div>
             <div class="col">
               ${favoriteFilledIcon}
-              <p class="status-text">${formatCount(
-                this.model?.itemCount,
-                'short',
-                'short'
-              )}</p>
+              <p class="status-text">
+                ${formatCount(this.model?.itemCount, 'short', 'short')}
+              </p>
             </div>
             <div class="col">
               ${reviewsIcon}
-              <p class="status-text">${formatCount(
-                this.model?.favCount,
-                'short',
-                'short'
-              )}</p>
+              <p class="status-text">
+                ${formatCount(this.model?.favCount, 'short', 'short')}
+              </p>
             </div>
           </div>
         </div>
@@ -109,6 +110,10 @@ export class ItemTile extends LitElement {
         flex-direction: column;
         height: 100%;
         position: relative;
+      }
+
+      mediatype-icon {
+        --iconHeight: 10px;
       }
 
       #title-image-container {
@@ -140,21 +145,7 @@ export class ItemTile extends LitElement {
         flex: 1;
       }
 
-      #item-image {
-        width: 16rem;
-        height: 16rem;
-        overflow: hidden;
-        object-fit: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        background-size: contain;
-        position: relative;
-        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
-        overflow: visible;
-        -webkit-appearance: none;
-      }
-
-      #item-image-box {
+      .item-image-box {
         width: 16rem;
         height: 16rem;
         overflow: hidden;
@@ -163,17 +154,26 @@ export class ItemTile extends LitElement {
         display: flex;
       }
 
-      #item-image-deemphasize {
+      .item-image {
         width: 16rem;
         height: 16rem;
         object-fit: cover;
-        background-position: center;
+        background-repeat: no-repeat;
+        background-position: center center;
+        position: relative;
+        -webkit-appearance: none;
+        overflow: visible;
+      }
+
+      .default {
+        background-size: contain;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+      }
+
+      .deemphasize {
         background-size: cover;
         filter: blur(15px);
-        position: relative;
         z-index: 1;
-        overflow: visible;
-        -webkit-appearance: none;
       }
 
       .tile-action {

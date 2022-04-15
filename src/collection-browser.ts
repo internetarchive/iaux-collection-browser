@@ -8,6 +8,7 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
   InfiniteScroller,
   InfiniteScrollerCellProviderInterface,
@@ -17,11 +18,12 @@ import {
   Metadata,
   SearchParams,
   SearchServiceInterface,
+  SortDirection,
 } from '@internetarchive/search-service';
 import {
   AggregateSearchParams,
   SortParam,
-} from '@internetarchive/search-service/dist/src/search-params';
+} from '@internetarchive/search-service';
 import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
@@ -31,7 +33,18 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
-import { SelectedFacets } from './models';
+import {
+  SelectedFacets,
+  SortField,
+  SortFieldToMetadataField,
+  CollectionBrowserContext,
+  defaultSelectedFacets,
+} from './models';
+import {
+  RestorationStateHandlerInterface,
+  RestorationStateHandler,
+  RestorationState,
+} from './restoration-state-handler';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -46,15 +59,44 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showDeleteButtons = false;
 
-  @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
+  @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   @property({ type: Object }) sortParam: SortParam | null = null;
+
+  @property({ type: String }) selectedSort: SortField = 'relevance';
+
+  @property({ type: String }) selectedTitleFilter: string | null = null;
+
+  @property({ type: String }) selectedCreatorFilter: string | null = null;
+
+  @property({ type: String }) sortDirection: SortDirection | null = null;
 
   @property({ type: String }) dateRangeQueryClause?: string;
 
   @property({ type: Number }) pageSize = 50;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
+
+  @property({ type: String }) titleQuery?: string;
+
+  @property({ type: String }) creatorQuery?: string;
+
+  @property({ type: Number }) currentPage?: number;
+
+  @property({ type: String }) minSelectedDate?: string;
+
+  @property({ type: String }) maxSelectedDate?: string;
+
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
+
+  @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
+
+  @property({ type: Object })
+  restorationStateHandler: RestorationStateHandlerInterface = new RestorationStateHandler(
+    {
+      context: this.pageContext,
+    }
+  );
 
   /**
    * The page that the consumer wants to load.
@@ -71,15 +113,6 @@ export class CollectionBrowser
 
   @state() private searchResultsLoading = false;
 
-  @state() private selectedFacets: SelectedFacets = {
-    subject: {},
-    creator: {},
-    mediatype: {},
-    language: {},
-    collection: {},
-    year: {},
-  };
-
   @state() private facetsLoading = false;
 
   @state() private fullYearAggregationLoading = false;
@@ -89,12 +122,6 @@ export class CollectionBrowser
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
   @state() private totalResults?: number;
-
-  @state() private titleQuery?: string;
-
-  @state() private creatorQuery?: string;
-
-  @state() private currentPage?: number;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -162,9 +189,9 @@ export class CollectionBrowser
   private infiniteScroller!: InfiniteScroller;
 
   /**
+   * Go to the given page of results
    *
    * @param pageNumber
-   * @param scroll
    */
   goToPage(pageNumber: number) {
     this.initialPageNumber = pageNumber;
@@ -174,8 +201,6 @@ export class CollectionBrowser
 
   render() {
     return html`
-      ${this.queryDebuggingTemplate}
-
       <div id="content-container">
         <div id="left-column" class="column">
           <div id="results-total">
@@ -194,6 +219,9 @@ export class CollectionBrowser
               .aggregations=${this.aggregations}
               .fullYearsHistogramAggregation=${this
                 .fullYearsHistogramAggregation}
+              .minSelectedDate=${this.minSelectedDate}
+              .maxSelectedDate=${this.maxSelectedDate}
+              .selectedFacets=${this.selectedFacets}
               ?facetsLoading=${this.facetDataLoading}
               ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
             ></collection-facets>
@@ -202,14 +230,19 @@ export class CollectionBrowser
         <div id="right-column" class="column">
           ${this.searchResultsLoading ? this.loadingTemplate : nothing}
           <sort-filter-bar
+            .selectedSort=${this.selectedSort}
+            .sortDirection=${this.sortDirection}
+            .displayMode=${this.displayMode}
+            .selectedTitleFilter=${this.selectedTitleFilter}
+            .selectedCreatorFilter=${this.selectedCreatorFilter}
             @sortChanged=${this.sortChanged}
             @displayModeChanged=${this.displayModeChanged}
-            @titleLetterChanged=${this.titleLetterChanged}
-            @creatorLetterChanged=${this.creatorLetterChanged}
+            @titleLetterChanged=${this.titleLetterSelected}
+            @creatorLetterChanged=${this.creatorLetterSelected}
           ></sort-filter-bar>
 
           <infinite-scroller
-            class="${this.displayMode}"
+            class="${ifDefined(this.displayMode)}"
             .cellProvider=${this}
             .placeholderCellTemplate=${this.placeholderCellTemplate}
             @scrollThresholdReached=${this.scrollThresholdReached}
@@ -223,16 +256,26 @@ export class CollectionBrowser
 
   private sortChanged(
     e: CustomEvent<{
-      sortField: string | null;
-      sortDirection: 'asc' | 'desc' | null;
+      selectedSort: SortField;
+      sortDirection: SortDirection | null;
     }>
   ) {
-    const { sortField, sortDirection } = e.detail;
-    if (sortField && sortDirection) {
-      this.sortParam = new SortParam(sortField, sortDirection);
-    } else {
+    const { selectedSort, sortDirection } = e.detail;
+    this.selectedSort = selectedSort;
+    this.sortDirection = sortDirection;
+  }
+
+  private selectedSortChanged() {
+    if (this.selectedSort === 'relevance' || this.sortDirection === null) {
       this.sortParam = null;
+      return;
     }
+
+    const sortField = SortFieldToMetadataField[this.selectedSort];
+
+    if (!sortField) return;
+
+    this.sortParam = new SortParam(sortField, this.sortDirection);
 
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
@@ -246,22 +289,24 @@ export class CollectionBrowser
     this.displayMode = e.detail.displayMode;
   }
 
-  private titleLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
-    const letter = e.detail.selectedLetter;
-    if (letter) {
-      this.titleQuery = `firstTitle:${letter}`;
-    } else {
-      this.titleQuery = undefined;
-    }
+  private selectedTitleLetterChanged() {
+    this.titleQuery = this.selectedTitleFilter
+      ? `firstTitle:${this.selectedTitleFilter}`
+      : undefined;
   }
 
-  private creatorLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
-    const letter = e.detail.selectedLetter;
-    if (letter) {
-      this.creatorQuery = `firstCreator:${letter}`;
-    } else {
-      this.creatorQuery = undefined;
-    }
+  private selectedCreatorLetterChanged() {
+    this.creatorQuery = this.selectedCreatorFilter
+      ? `firstCreator:${this.selectedCreatorFilter}`
+      : undefined;
+  }
+
+  private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+    this.selectedTitleFilter = e.detail.selectedLetter;
+  }
+
+  private creatorLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+    this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
   private get facetDataLoading(): boolean {
@@ -301,6 +346,10 @@ export class CollectionBrowser
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
   }
 
+  firstUpdated(): void {
+    this.restoreState();
+  }
+
   updated(changed: PropertyValues) {
     if (
       changed.has('displayMode') ||
@@ -308,6 +357,9 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl')
     ) {
       this.infiniteScroller.reload();
+    }
+    if (changed.has('currentPage') || changed.has('displayMode')) {
+      this.persistState();
     }
     if (
       changed.has('baseQuery') ||
@@ -319,6 +371,15 @@ export class CollectionBrowser
       changed.has('searchService')
     ) {
       this.handleQueryChange();
+    }
+    if (changed.has('selectedSort') || changed.has('sortDirection')) {
+      this.selectedSortChanged();
+    }
+    if (changed.has('selectedTitleFilter')) {
+      this.selectedTitleLetterChanged();
+    }
+    if (changed.has('selectedCreatorFilter')) {
+      this.selectedCreatorLetterChanged();
     }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
@@ -344,6 +405,9 @@ export class CollectionBrowser
       visibleCellIndices[visibleCellIndices.length - 1];
     const lastVisibleCellPage =
       Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
+    if (this.currentPage !== lastVisibleCellPage) {
+      this.currentPage = lastVisibleCellPage;
+    }
     const event = new CustomEvent('visiblePageChanged', {
       detail: {
         pageNumber: lastVisibleCellPage,
@@ -373,12 +437,54 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
+    this.persistState();
 
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
       this.fetchFullYearHistogram(),
     ]);
+  }
+
+  private restoreState() {
+    const restorationState = this.restorationStateHandler.getRestorationState();
+    this.displayMode = restorationState.displayMode;
+    this.selectedSort = restorationState.selectedSort ?? 'relevance';
+    this.sortDirection = restorationState.sortDirection ?? null;
+    this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
+    this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
+    this.selectedFacets = restorationState.selectedFacets;
+    this.baseQuery = restorationState.baseQuery;
+    this.titleQuery = restorationState.titleQuery;
+    this.creatorQuery = restorationState.creatorQuery;
+    this.dateRangeQueryClause = restorationState.dateRangeQueryClause;
+    this.sortParam = restorationState.sortParam ?? null;
+    this.currentPage = restorationState.currentPage ?? 1;
+    this.minSelectedDate = restorationState.minSelectedDate;
+    this.maxSelectedDate = restorationState.maxSelectedDate;
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage);
+    }
+  }
+
+  private persistState() {
+    const restorationState: RestorationState = {
+      displayMode: this.displayMode,
+      sortParam: this.sortParam ?? undefined,
+      selectedSort: this.selectedSort,
+      sortDirection: this.sortDirection ?? undefined,
+      selectedFacets: this.selectedFacets ?? defaultSelectedFacets,
+      baseQuery: this.baseQuery,
+      currentPage: this.currentPage,
+      dateRangeQueryClause: this.dateRangeQueryClause,
+      titleQuery: this.titleQuery,
+      creatorQuery: this.creatorQuery,
+      minSelectedDate: this.minSelectedDate,
+      maxSelectedDate: this.maxSelectedDate,
+      selectedTitleFilter: this.selectedTitleFilter ?? undefined,
+      selectedCreatorFilter: this.selectedCreatorFilter ?? undefined,
+    };
+    this.restorationStateHandler.persistState(restorationState);
   }
 
   private async doInitialPageFetch() {
@@ -415,6 +521,7 @@ export class CollectionBrowser
    * Example: `mediatype:("collection" OR "audio" OR -"etree") AND year:("2000" OR "2001")`
    */
   private get facetQuery(): string | undefined {
+    if (!this.selectedFacets) return undefined;
     const facetQuery = [];
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets
@@ -600,8 +707,6 @@ export class CollectionBrowser
         'publicdate',
         'reviewdate',
         'creator',
-        'subject', // topic
-        'source',
         'collections_raw',
       ],
       page: pageNumber,
@@ -682,8 +787,6 @@ export class CollectionBrowser
         datePublished: doc.date?.value,
         creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
-        subject: doc.subject?.value,
-        source: doc.source?.value,
         collections: doc.collections_raw?.values ?? [],
       });
     });
@@ -762,7 +865,7 @@ export class CollectionBrowser
     }
 
     .column {
-      padding-top: 2rem;
+      padding: 2rem 1rem;
     }
 
     #facets-container {
@@ -802,6 +905,11 @@ export class CollectionBrowser
     circular-activity-indicator {
       width: 30px;
       height: 30px;
+    }
+
+    sort-filter-bar {
+      display: block;
+      margin-bottom: 4rem;
     }
 
     infinite-scroller {

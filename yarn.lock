@@ -146,10 +146,10 @@
   dependencies:
     lit "^2.0.2"
 
-"@internetarchive/infinite-scroller@0.0.1-alpha.17":
-  version "0.0.1-alpha.17"
-  resolved "https://registry.npmjs.org/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.17.tgz"
-  integrity sha512-iW9cuUC4U7k/11u6cdi32SCCBzgqEtFdfQ2YiQBnf/Ky75j42LVk26mjZfvjzQ1NnV5XAn/099PkgLSPVa1aBA==
+"@internetarchive/infinite-scroller@0.0.1-alpha.18":
+  version "0.0.1-alpha.18"
+  resolved "https://registry.npmjs.org/@internetarchive/infinite-scroller/-/infinite-scroller-0.0.1-alpha.18.tgz"
+  integrity sha512-A/oRFs3oXzRb0u9fM2WUAWh31pN0qxTlpjVI0DOnGXXcPL684Yvicb2yDe85QeASMhMb6gXfkt89dNgMqsa3kw==
   dependencies:
     lit "^2.0.2"
 
@@ -175,7 +175,7 @@
 
 "@internetarchive/search-service@0.3.0-alpha.4":
   version "0.3.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.3.0-alpha.4.tgz#aef90415a82791a46fc30992343b3cc2167803ef"
+  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-0.3.0-alpha.4.tgz"
   integrity sha512-ytB5m2JITKw8rXHofdhMZoiDFVAYTeKzzKW932x34IDMiO0+MYu7/ua0X9fCgUagY06yl6ciTYmNLoJB9KVLPg==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.1"
@@ -4148,6 +4148,11 @@ type-is@^1.6.16:
   dependencies:
     media-typer "0.3.0"
     mime-types "~2.1.24"
+
+typescript-cookie@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/typescript-cookie/-/typescript-cookie-1.0.3.tgz#fa036aac4937ee528258035b7495a7813a7656d5"
+  integrity sha512-eGu8HYw2oI+NXV7JJ1QDFi02EWYTl8zENevq5kSI3JcAdCxtUvjW6Nj5Mjrej83/oK8O/5OyRDuivhSFU49GcA==
 
 typescript-memoize@^1.1.0:
   version "1.1.0"

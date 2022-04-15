@@ -17,7 +17,7 @@ export class TileDispatcher
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
 {
-  @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
+  @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   @property({ type: Object }) model?: TileModel;
 
