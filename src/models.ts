@@ -91,6 +91,7 @@ export type FacetOption =
 export type SelectedFacetState = 'selected' | 'hidden';
 
 export type FacetState = SelectedFacetState | 'none';
+
 export interface FacetBucket {
   // for some facets, we augment the key with a display value
   displayText?: string;
@@ -111,3 +112,12 @@ export type SelectedFacets = Record<
   FacetOption,
   Record<FacetValue, SelectedFacetState>
 >;
+
+export const defaultSelectedFacets: SelectedFacets = {
+  subject: {},
+  mediatype: {},
+  language: {},
+  creator: {},
+  collection: {},
+  year: {},
+};

@@ -18,6 +18,7 @@ import {
   Metadata,
   SearchParams,
   SearchServiceInterface,
+  SortDirection,
 } from '@internetarchive/search-service';
 import {
   AggregateSearchParams,
@@ -37,10 +38,12 @@ import {
   SortField,
   SortFieldToMetadataField,
   CollectionBrowserContext,
+  defaultSelectedFacets,
 } from './models';
 import {
   RestorationStateHandlerInterface,
   RestorationStateHandler,
+  RestorationState,
 } from './restoration-state-handler';
 
 @customElement('collection-browser')
@@ -66,7 +69,7 @@ export class CollectionBrowser
 
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
-  @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
+  @property({ type: String }) sortDirection: SortDirection | null = null;
 
   @property({ type: String }) dateRangeQueryClause?: string;
 
@@ -84,21 +87,13 @@ export class CollectionBrowser
 
   @property({ type: String }) maxSelectedDate?: string;
 
-  @property({ type: Object }) selectedFacets: SelectedFacets = {
-    subject: {},
-    creator: {},
-    mediatype: {},
-    language: {},
-    collection: {},
-    year: {},
-  };
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
 
   @property({ type: Object })
   restorationStateHandler: RestorationStateHandlerInterface = new RestorationStateHandler(
     {
-      collectionBrowser: this,
       context: this.pageContext,
     }
   );
@@ -264,7 +259,7 @@ export class CollectionBrowser
   private sortChanged(
     e: CustomEvent<{
       selectedSort: SortField;
-      sortDirection: 'asc' | 'desc' | null;
+      sortDirection: SortDirection | null;
     }>
   ) {
     const { selectedSort, sortDirection } = e.detail;
@@ -354,7 +349,7 @@ export class CollectionBrowser
   }
 
   firstUpdated(): void {
-    this.restorationStateHandler.restoreState();
+    this.restoreState();
   }
 
   updated(changed: PropertyValues) {
@@ -366,7 +361,7 @@ export class CollectionBrowser
       this.infiniteScroller.reload();
     }
     if (changed.has('currentPage') || changed.has('displayMode')) {
-      this.restorationStateHandler.persistState();
+      this.persistState();
     }
     if (
       changed.has('baseQuery') ||
@@ -444,13 +439,54 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
-    this.restorationStateHandler.persistState();
+    this.persistState();
 
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
       this.fetchFullYearHistogram(),
     ]);
+  }
+
+  private restoreState() {
+    const restorationState = this.restorationStateHandler.getRestorationState();
+    this.displayMode = restorationState.displayMode;
+    this.selectedSort = restorationState.selectedSort ?? 'relevance';
+    this.sortDirection = restorationState.sortDirection ?? null;
+    this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
+    this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
+    this.selectedFacets = restorationState.selectedFacets;
+    this.baseQuery = restorationState.baseQuery;
+    this.titleQuery = restorationState.titleQuery;
+    this.creatorQuery = restorationState.creatorQuery;
+    this.dateRangeQueryClause = restorationState.dateRangeQueryClause;
+    this.sortParam = restorationState.sortParam ?? null;
+    this.currentPage = restorationState.currentPage ?? 1;
+    this.minSelectedDate = restorationState.minSelectedDate;
+    this.maxSelectedDate = restorationState.maxSelectedDate;
+    if (this.currentPage > 1) {
+      this.goToPage(this.currentPage);
+    }
+  }
+
+  private persistState() {
+    const restorationState: RestorationState = {
+      displayMode: this.displayMode,
+      sortParam: this.sortParam ?? undefined,
+      selectedSort: this.selectedSort,
+      sortDirection: this.sortDirection ?? undefined,
+      selectedFacets: this.selectedFacets ?? defaultSelectedFacets,
+      baseQuery: this.baseQuery,
+      currentPage: this.currentPage,
+      dateRangeQueryClause: this.dateRangeQueryClause,
+      titleQuery: this.titleQuery,
+      creatorQuery: this.creatorQuery,
+      minSelectedDate: this.minSelectedDate,
+      maxSelectedDate: this.maxSelectedDate,
+      selectedTitleFilter: this.selectedTitleFilter ?? undefined,
+      selectedCreatorFilter: this.selectedCreatorFilter ?? undefined,
+    };
+    this.restorationStateHandler.persistState(restorationState);
   }
 
   private async doInitialPageFetch() {
@@ -487,6 +523,7 @@ export class CollectionBrowser
    * Example: `mediatype:("collection" OR "audio" OR -"etree") AND year:("2000" OR "2001")`
    */
   private get facetQuery(): string | undefined {
+    if (!this.selectedFacets) return undefined;
     const facetQuery = [];
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets

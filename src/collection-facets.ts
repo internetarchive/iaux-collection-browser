@@ -6,11 +6,12 @@ import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
-import type {
+import {
   FacetOption,
   SelectedFacets,
   FacetGroup,
   FacetBucket,
+  defaultSelectedFacets,
 } from './models';
 
 const facetDisplayOrder: FacetOption[] = [
@@ -54,14 +55,7 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) fullYearAggregationLoading = false;
 
-  @property({ type: Object }) selectedFacets: SelectedFacets = {
-    subject: {},
-    mediatype: {},
-    language: {},
-    creator: {},
-    collection: {},
-    year: {},
-  };
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   render() {
     return html`
@@ -191,6 +185,8 @@ export class CollectionFacets extends LitElement {
    * which is easier to work with
    */
   private get selectedFacetGroups(): FacetGroup[] {
+    if (!this.selectedFacets) return [];
+
     const facetGroups: FacetGroup[] = Object.entries(this.selectedFacets).map(
       ([key, selectedFacets]) => {
         const option = key as FacetOption;
@@ -300,16 +296,30 @@ export class CollectionFacets extends LitElement {
 
   private facetChecked(key: FacetOption, value: string, negative: boolean) {
     const { selectedFacets } = this;
-    const facetClone = { ...selectedFacets };
-    facetClone[key][value] = negative ? 'hidden' : 'selected';
-    this.selectedFacets = facetClone;
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+    newFacets[key][value] = negative ? 'hidden' : 'selected';
+    this.selectedFacets = newFacets;
   }
 
   private facetUnchecked(key: FacetOption, value: string) {
     const { selectedFacets } = this;
-    const facetClone = { ...selectedFacets };
-    delete facetClone[key][value];
-    this.selectedFacets = facetClone;
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+    delete newFacets[key][value];
+    this.selectedFacets = newFacets;
   }
 
   /**

@@ -1,23 +1,40 @@
-import { SortDirection } from '@internetarchive/search-service';
+import { SortDirection, SortParam } from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
-import type { CollectionBrowser } from './collection-browser';
 import {
   MetadataFieldToSortField,
   MetadataSortField,
   FacetOption,
   CollectionBrowserContext,
+  CollectionDisplayMode,
+  SelectedFacets,
+  SortField,
 } from './models';
 
+export interface RestorationState {
+  displayMode?: CollectionDisplayMode;
+  sortParam?: SortParam;
+  selectedSort?: SortField;
+  sortDirection?: SortDirection;
+  selectedFacets: SelectedFacets;
+  baseQuery?: string;
+  currentPage?: number;
+  dateRangeQueryClause?: string;
+  titleQuery?: string;
+  creatorQuery?: string;
+  minSelectedDate?: string;
+  maxSelectedDate?: string;
+  selectedTitleFilter?: string;
+  selectedCreatorFilter?: string;
+}
+
 export interface RestorationStateHandlerInterface {
-  persistState(): void;
-  restoreState(): void;
+  persistState(state: RestorationState): void;
+  getRestorationState(): RestorationState;
 }
 
 export class RestorationStateHandler
   implements RestorationStateHandlerInterface
 {
-  private collectionBrowser: CollectionBrowser;
-
   private context: CollectionBrowserContext;
 
   private cookieDomain = '.archive.org';
@@ -26,33 +43,30 @@ export class RestorationStateHandler
 
   private cookiePath = '/';
 
-  constructor(options: {
-    collectionBrowser: CollectionBrowser;
-    context: CollectionBrowserContext;
-  }) {
-    this.collectionBrowser = options.collectionBrowser;
+  constructor(options: { context: CollectionBrowserContext }) {
     this.context = options.context;
   }
 
-  persistState(): void {
-    this.persisteViewStateToCookies();
-    this.persistQueryStateToUrl();
+  persistState(state: RestorationState): void {
+    if (state.displayMode) this.persistViewStateToCookies(state.displayMode);
+    this.persistQueryStateToUrl(state);
   }
 
-  restoreState(): void {
-    this.loadQueryStateFromUrl();
-    this.loadTileViewStateFromCookies();
+  getRestorationState(): RestorationState {
+    const restorationState = this.loadQueryStateFromUrl();
+    const displayMode = this.loadTileViewStateFromCookies();
+    restorationState.displayMode = displayMode;
+    return restorationState;
   }
 
-  private persisteViewStateToCookies() {
-    const state = this.collectionBrowser.displayMode;
-    const gridState = state === 'grid' ? 'tiles' : 'lists';
+  private persistViewStateToCookies(displayMode: CollectionDisplayMode) {
+    const gridState = displayMode === 'grid' ? 'tiles' : 'lists';
     setCookie(`view-${this.context}`, gridState, {
       domain: this.cookieDomain,
       expires: this.cookieExpiration,
       path: this.cookiePath,
     });
-    const detailsState = state === 'list-detail' ? 'showdetails' : '';
+    const detailsState = displayMode === 'list-detail' ? 'showdetails' : '';
     setCookie(`showdetails-${this.context}`, detailsState, {
       domain: this.cookieDomain,
       expires: this.cookieExpiration,
@@ -60,19 +74,15 @@ export class RestorationStateHandler
     });
   }
 
-  private loadTileViewStateFromCookies() {
+  private loadTileViewStateFromCookies(): CollectionDisplayMode {
     const viewState = getCookie(`view-${this.context}`);
     const detailsState = getCookie(`showdetails-${this.context}`);
-    if (viewState === 'tiles') {
-      this.collectionBrowser.displayMode = 'grid';
-    } else if (detailsState === 'showdetails') {
-      this.collectionBrowser.displayMode = 'list-detail';
-    } else {
-      this.collectionBrowser.displayMode = 'list-compact';
-    }
+    if (viewState === 'tiles' || viewState === undefined) return 'grid';
+    if (detailsState === 'showdetails') return 'list-detail';
+    return 'list-compact';
   }
 
-  private persistQueryStateToUrl() {
+  private persistQueryStateToUrl(state: RestorationState) {
     const url = new URL(window.location.href);
     const { searchParams } = url;
     searchParams.delete('sort');
@@ -81,92 +91,98 @@ export class RestorationStateHandler
     searchParams.delete('and[]');
     searchParams.delete('not[]');
 
-    if (this.collectionBrowser.sortParam) {
-      url.searchParams.set('sort', this.collectionBrowser.sortParam.asString);
+    if (state.sortParam) {
+      url.searchParams.set('sort', state.sortParam.asString);
     }
 
-    if (this.collectionBrowser.baseQuery) {
-      url.searchParams.set('query', this.collectionBrowser.baseQuery);
+    if (state.baseQuery) {
+      url.searchParams.set('query', state.baseQuery);
     }
 
-    if (this.collectionBrowser.currentPage) {
-      if (this.collectionBrowser.currentPage > 1) {
-        url.searchParams.set(
-          'page',
-          this.collectionBrowser.currentPage.toString()
-        );
+    if (state.currentPage) {
+      if (state.currentPage > 1) {
+        url.searchParams.set('page', state.currentPage.toString());
       } else {
         url.searchParams.delete('page');
       }
     }
 
-    for (const [facetName, facetValues] of Object.entries(
-      this.collectionBrowser.selectedFacets
-    )) {
-      const facetEntries = Object.entries(facetValues);
-      // eslint-disable-next-line no-continue
-      if (facetEntries.length === 0) continue;
-      for (const [key, facetState] of facetEntries) {
-        const notValue = facetState === 'hidden';
-        const paramValue = `${facetName}:${key}`;
-        if (notValue) {
-          url.searchParams.append('not[]', paramValue);
-        } else {
-          url.searchParams.append('and[]', paramValue);
+    if (state.selectedFacets) {
+      for (const [facetName, facetValues] of Object.entries(
+        state.selectedFacets
+      )) {
+        const facetEntries = Object.entries(facetValues);
+        // eslint-disable-next-line no-continue
+        if (facetEntries.length === 0) continue;
+        for (const [key, facetState] of facetEntries) {
+          const notValue = facetState === 'hidden';
+          const paramValue = `${facetName}:${key}`;
+          if (notValue) {
+            url.searchParams.append('not[]', paramValue);
+          } else {
+            url.searchParams.append('and[]', paramValue);
+          }
         }
       }
     }
-    if (this.collectionBrowser.dateRangeQueryClause) {
-      url.searchParams.append(
-        'and[]',
-        this.collectionBrowser.dateRangeQueryClause
-      );
+
+    if (state.dateRangeQueryClause) {
+      url.searchParams.append('and[]', state.dateRangeQueryClause);
     }
-    if (this.collectionBrowser.titleQuery) {
-      url.searchParams.append('and[]', this.collectionBrowser.titleQuery);
+    if (state.titleQuery) {
+      url.searchParams.append('and[]', state.titleQuery);
     }
-    if (this.collectionBrowser.creatorQuery) {
-      url.searchParams.append('and[]', this.collectionBrowser.creatorQuery);
+    if (state.creatorQuery) {
+      url.searchParams.append('and[]', state.creatorQuery);
     }
 
     window.history.pushState(
       {
-        page: this.collectionBrowser.currentPage,
-        query: this.collectionBrowser.baseQuery,
+        page: state.currentPage,
+        query: state.baseQuery,
       },
       '',
       url
     );
   }
 
-  private loadQueryStateFromUrl() {
+  private loadQueryStateFromUrl(): RestorationState {
     const url = new URL(window.location.href);
     const pageNumber = url.searchParams.get('page');
     const searchQuery = url.searchParams.get('query');
     const sortQuery = url.searchParams.get('sort');
     const facetAnds = url.searchParams.getAll('and[]');
     const facetNots = url.searchParams.getAll('not[]');
+
+    const restorationState: RestorationState = {
+      selectedFacets: {
+        subject: {},
+        creator: {},
+        mediatype: {},
+        language: {},
+        collection: {},
+        year: {},
+      },
+    };
+
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
-      this.collectionBrowser.currentPage = parsed;
-      if (parsed > 1) {
-        this.collectionBrowser.goToPage(parsed);
-      }
+      restorationState.currentPage = parsed;
     } else {
-      this.collectionBrowser.currentPage = 1;
+      restorationState.currentPage = 1;
     }
     if (searchQuery) {
-      this.collectionBrowser.baseQuery = searchQuery;
+      restorationState.baseQuery = searchQuery;
     }
     if (sortQuery) {
       const [field, direction] = sortQuery.split(' ');
       const metadataField =
         MetadataFieldToSortField[field as MetadataSortField];
       if (metadataField) {
-        this.collectionBrowser.selectedSort = metadataField;
+        restorationState.selectedSort = metadataField;
       }
       if (direction === 'desc' || direction === 'asc') {
-        this.collectionBrowser.sortDirection = direction as SortDirection;
+        restorationState.sortDirection = direction as SortDirection;
       }
     }
     if (facetAnds) {
@@ -175,25 +191,34 @@ export class RestorationStateHandler
         switch (field) {
           case 'year': {
             const [minDate, maxDate] = value.split(' TO ');
-            this.collectionBrowser.minSelectedDate = minDate.substring(
-              1,
-              minDate.length
-            );
-            this.collectionBrowser.maxSelectedDate = maxDate.substring(
-              0,
-              maxDate.length - 1
-            );
-            this.collectionBrowser.dateRangeQueryClause = `year:${value}`;
+            // we have two potential ways of filtering by date:
+            // the range with "date TO date" or the single date with "date"
+            // this is checking for the range case and if we don't have those, fall
+            // back to the single date case
+            if (minDate && maxDate) {
+              restorationState.minSelectedDate = minDate.substring(
+                1,
+                minDate.length
+              );
+              restorationState.maxSelectedDate = maxDate.substring(
+                0,
+                maxDate.length - 1
+              );
+              restorationState.dateRangeQueryClause = `year:${value}`;
+            } else {
+              restorationState.selectedFacets[field as FacetOption][value] =
+                'selected';
+            }
             break;
           }
           case 'firstTitle':
-            this.collectionBrowser.selectedTitleFilter = value;
+            restorationState.selectedTitleFilter = value;
             break;
           case 'firstCreator':
-            this.collectionBrowser.selectedCreatorFilter = value;
+            restorationState.selectedCreatorFilter = value;
             break;
           default:
-            this.collectionBrowser.selectedFacets[field as FacetOption][value] =
+            restorationState.selectedFacets[field as FacetOption][value] =
               'selected';
         }
       });
@@ -201,9 +226,9 @@ export class RestorationStateHandler
     if (facetNots) {
       facetNots.forEach(not => {
         const [field, value] = not.split(':');
-        this.collectionBrowser.selectedFacets[field as FacetOption][value] =
-          'hidden';
+        restorationState.selectedFacets[field as FacetOption][value] = 'hidden';
       });
     }
+    return restorationState;
   }
 }
