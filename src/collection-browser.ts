@@ -235,7 +235,7 @@ export class CollectionBrowser
             .displayMode=${this.displayMode}
             .selectedTitleFilter=${this.selectedTitleFilter}
             .selectedCreatorFilter=${this.selectedCreatorFilter}
-            @sortChanged=${this.sortChanged}
+            @sortChanged=${this.userChangedSort}
             @displayModeChanged=${this.displayModeChanged}
             @titleLetterChanged=${this.titleLetterSelected}
             @creatorLetterChanged=${this.creatorLetterSelected}
@@ -254,7 +254,7 @@ export class CollectionBrowser
     `;
   }
 
-  private sortChanged(
+  private userChangedSort(
     e: CustomEvent<{
       selectedSort: SortField;
       sortDirection: SortDirection | null;
@@ -263,6 +263,11 @@ export class CollectionBrowser
     const { selectedSort, sortDirection } = e.detail;
     this.selectedSort = selectedSort;
     this.sortDirection = sortDirection;
+
+    if ((this.currentPage ?? 1) > 1) {
+      this.goToPage(1);
+    }
+    this.currentPage = 1;
   }
 
   private selectedSortChanged() {
@@ -270,17 +275,9 @@ export class CollectionBrowser
       this.sortParam = null;
       return;
     }
-
     const sortField = SortFieldToMetadataField[this.selectedSort];
-
     if (!sortField) return;
-
     this.sortParam = new SortParam(sortField, this.sortDirection);
-
-    if ((this.currentPage ?? 1) > 1) {
-      this.goToPage(1);
-    }
-    this.currentPage = 1;
   }
 
   private displayModeChanged(
