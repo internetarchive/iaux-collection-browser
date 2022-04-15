@@ -8,6 +8,7 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
   InfiniteScroller,
   InfiniteScrollerCellProviderInterface,
@@ -31,7 +32,12 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
-import { SelectedFacets, SortField, SortFieldToMetadataField } from './models';
+import {
+  SelectedFacets,
+  SortField,
+  SortFieldToMetadataField,
+  CollectionBrowserContext,
+} from './models';
 import {
   RestorationStateHandlerInterface,
   RestorationStateHandler,
@@ -50,7 +56,7 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showDeleteButtons = false;
 
-  @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
+  @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
@@ -87,6 +93,16 @@ export class CollectionBrowser
     year: {},
   };
 
+  @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
+
+  @property({ type: Object })
+  restorationStateHandler: RestorationStateHandlerInterface = new RestorationStateHandler(
+    {
+      collectionBrowser: this,
+      context: this.pageContext,
+    }
+  );
+
   /**
    * The page that the consumer wants to load.
    */
@@ -111,11 +127,6 @@ export class CollectionBrowser
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
   @state() private totalResults?: number;
-
-  private restorationStateHandler: RestorationStateHandlerInterface =
-    new RestorationStateHandler({
-      collectionBrowser: this,
-    });
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -228,6 +239,7 @@ export class CollectionBrowser
           <sort-filter-bar
             .selectedSort=${this.selectedSort}
             .sortDirection=${this.sortDirection}
+            .displayMode=${this.displayMode}
             .selectedTitleFilter=${this.selectedTitleFilter}
             .selectedCreatorFilter=${this.selectedCreatorFilter}
             @sortChanged=${this.sortChanged}
@@ -237,7 +249,7 @@ export class CollectionBrowser
           ></sort-filter-bar>
 
           <infinite-scroller
-            class="${this.displayMode}"
+            class="${ifDefined(this.displayMode)}"
             .cellProvider=${this}
             .placeholderCellTemplate=${this.placeholderCellTemplate}
             @scrollThresholdReached=${this.scrollThresholdReached}
@@ -353,7 +365,7 @@ export class CollectionBrowser
     ) {
       this.infiniteScroller.reload();
     }
-    if (changed.has('currentPage')) {
+    if (changed.has('currentPage') || changed.has('displayMode')) {
       this.restorationStateHandler.persistState();
     }
     if (

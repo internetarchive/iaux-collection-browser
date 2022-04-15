@@ -16,7 +16,7 @@ enum SortFieldName {
 
 @customElement('sort-filter-bar')
 export class SortFilterBar extends LitElement {
-  @property({ type: String }) displayMode: CollectionDisplayMode = 'grid';
+  @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
 
@@ -152,7 +152,11 @@ export class SortFilterBar extends LitElement {
               ${this.displayMode !== 'grid'
                 ? html`<li>
                     <label id="show-details">
-                      <input type="checkbox" @click=${this.detailSelected} />
+                      <input
+                        type="checkbox"
+                        @click=${this.detailSelected}
+                        ?checked=${this.displayMode === 'list-detail'}
+                      />
                       Show Details
                     </label>
                   </li>`

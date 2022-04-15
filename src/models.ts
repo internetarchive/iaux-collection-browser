@@ -22,6 +22,8 @@ export interface TileModel {
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
 
+export type CollectionBrowserContext = 'collection' | 'search';
+
 /**
  * The sort fields shown in the sort filter bar
  */

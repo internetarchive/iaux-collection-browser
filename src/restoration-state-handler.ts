@@ -1,9 +1,11 @@
 import { SortDirection } from '@internetarchive/search-service';
+import { getCookie, setCookie } from 'typescript-cookie';
 import type { CollectionBrowser } from './collection-browser';
 import {
   MetadataFieldToSortField,
   MetadataSortField,
   FacetOption,
+  CollectionBrowserContext,
 } from './models';
 
 export interface RestorationStateHandlerInterface {
@@ -16,19 +18,61 @@ export class RestorationStateHandler
 {
   private collectionBrowser: CollectionBrowser;
 
-  constructor(options: { collectionBrowser: CollectionBrowser }) {
+  private context: CollectionBrowserContext;
+
+  private cookieDomain = '.archive.org';
+
+  private cookieExpiration = 30;
+
+  private cookiePath = '/';
+
+  constructor(options: {
+    collectionBrowser: CollectionBrowser;
+    context: CollectionBrowserContext;
+  }) {
     this.collectionBrowser = options.collectionBrowser;
+    this.context = options.context;
   }
 
   persistState(): void {
-    this.updateUrl();
+    this.persisteViewStateToCookies();
+    this.persistQueryStateToUrl();
   }
 
   restoreState(): void {
-    this.loadStateFromUrl();
+    this.loadQueryStateFromUrl();
+    this.loadTileViewStateFromCookies();
   }
 
-  private updateUrl() {
+  private persisteViewStateToCookies() {
+    const state = this.collectionBrowser.displayMode;
+    const gridState = state === 'grid' ? 'tiles' : 'lists';
+    setCookie(`view-${this.context}`, gridState, {
+      domain: this.cookieDomain,
+      expires: this.cookieExpiration,
+      path: this.cookiePath,
+    });
+    const detailsState = state === 'list-detail' ? 'showdetails' : '';
+    setCookie(`showdetails-${this.context}`, detailsState, {
+      domain: this.cookieDomain,
+      expires: this.cookieExpiration,
+      path: this.cookiePath,
+    });
+  }
+
+  private loadTileViewStateFromCookies() {
+    const viewState = getCookie(`view-${this.context}`);
+    const detailsState = getCookie(`showdetails-${this.context}`);
+    if (viewState === 'tiles') {
+      this.collectionBrowser.displayMode = 'grid';
+    } else if (detailsState === 'showdetails') {
+      this.collectionBrowser.displayMode = 'list-detail';
+    } else {
+      this.collectionBrowser.displayMode = 'list-compact';
+    }
+  }
+
+  private persistQueryStateToUrl() {
     const url = new URL(window.location.href);
     const { searchParams } = url;
     searchParams.delete('sort');
@@ -95,7 +139,7 @@ export class RestorationStateHandler
     );
   }
 
-  private loadStateFromUrl() {
+  private loadQueryStateFromUrl() {
     const url = new URL(window.location.href);
     const pageNumber = url.searchParams.get('page');
     const searchQuery = url.searchParams.get('query');
