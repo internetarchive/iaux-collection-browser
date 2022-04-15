@@ -37,8 +37,12 @@ export class SortFilterBar extends LitElement {
   render() {
     return html`
       <div id="container">
-        ${this.titleSelectorVisible ? this.titleSelectorBar : nothing}
-        ${this.creatorSelectorVisible ? this.creatorSelectorBar : nothing}
+        ${this.titleSelectorVisible || this.selectedSort === 'title'
+          ? this.titleSelectorBar
+          : nothing}
+        ${this.creatorSelectorVisible || this.selectedSort === 'creator'
+          ? this.creatorSelectorBar
+          : nothing}
 
         <div id="sort-bar">
           <div id="sort-selector">
@@ -198,6 +202,14 @@ export class SortFilterBar extends LitElement {
     if (changed.has('selectedSort') && this.sortDirection === null) {
       this.sortDirection = 'desc';
     }
+
+    if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {
+      this.titleSelectorVisible = true;
+    }
+
+    if (changed.has('selectedCreatorFilter') && this.selectedCreatorFilter) {
+      this.creatorSelectorVisible = true;
+    }
   }
 
   private get dateSortSelector() {
@@ -285,12 +297,14 @@ export class SortFilterBar extends LitElement {
 
   private get titleSelectorBar() {
     return html` <alpha-bar
+      .selectedLetter=${this.selectedTitleFilter}
       @letterChanged=${this.titleLetterChanged}
     ></alpha-bar>`;
   }
 
   private get creatorSelectorBar() {
     return html` <alpha-bar
+      .selectedLetter=${this.selectedCreatorFilter}
       @letterChanged=${this.creatorLetterChanged}
     ></alpha-bar>`;
   }

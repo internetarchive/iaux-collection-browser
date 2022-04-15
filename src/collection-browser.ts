@@ -20,9 +20,8 @@ import {
 } from '@internetarchive/search-service';
 import {
   AggregateSearchParams,
-  SortDirection,
   SortParam,
-} from '@internetarchive/search-service/dist/src/search-params';
+} from '@internetarchive/search-service';
 import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
@@ -32,14 +31,11 @@ import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
+import { SelectedFacets, SortField, SortFieldToMetadataField } from './models';
 import {
-  SelectedFacets,
-  FacetOption,
-  SortField,
-  SortFieldToMetadataField,
-  MetadataFieldToSortField,
-  MetadataSortField,
-} from './models';
+  RestorationStateHandlerInterface,
+  RestorationStateHandler,
+} from './restoration-state-handler';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -60,6 +56,10 @@ export class CollectionBrowser
 
   @property({ type: String }) selectedSort: SortField = 'relevance';
 
+  @property({ type: String }) selectedTitleFilter: string | null = null;
+
+  @property({ type: String }) selectedCreatorFilter: string | null = null;
+
   @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
 
   @property({ type: String }) dateRangeQueryClause?: string;
@@ -67,6 +67,25 @@ export class CollectionBrowser
   @property({ type: Number }) pageSize = 50;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
+
+  @property({ type: String }) titleQuery?: string;
+
+  @property({ type: String }) creatorQuery?: string;
+
+  @property({ type: Number }) currentPage?: number;
+
+  @property({ type: String }) minSelectedDate?: string;
+
+  @property({ type: String }) maxSelectedDate?: string;
+
+  @property({ type: Object }) selectedFacets: SelectedFacets = {
+    subject: {},
+    creator: {},
+    mediatype: {},
+    language: {},
+    collection: {},
+    year: {},
+  };
 
   /**
    * The page that the consumer wants to load.
@@ -83,15 +102,6 @@ export class CollectionBrowser
 
   @state() private searchResultsLoading = false;
 
-  @state() private selectedFacets: SelectedFacets = {
-    subject: {},
-    creator: {},
-    mediatype: {},
-    language: {},
-    collection: {},
-    year: {},
-  };
-
   @state() private facetsLoading = false;
 
   @state() private fullYearAggregationLoading = false;
@@ -100,17 +110,12 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
-  @state() private minSelectedDate?: string;
-
-  @state() private maxSelectedDate?: string;
-
   @state() private totalResults?: number;
 
-  @state() private titleQuery?: string;
-
-  @state() private creatorQuery?: string;
-
-  @state() private currentPage?: number;
+  private restorationStateHandler: RestorationStateHandlerInterface =
+    new RestorationStateHandler({
+      collectionBrowser: this,
+    });
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -178,9 +183,9 @@ export class CollectionBrowser
   private infiniteScroller!: InfiniteScroller;
 
   /**
+   * Go to the given page of results
    *
    * @param pageNumber
-   * @param scroll
    */
   goToPage(pageNumber: number) {
     this.initialPageNumber = pageNumber;
@@ -223,10 +228,12 @@ export class CollectionBrowser
           <sort-filter-bar
             .selectedSort=${this.selectedSort}
             .sortDirection=${this.sortDirection}
+            .selectedTitleFilter=${this.selectedTitleFilter}
+            .selectedCreatorFilter=${this.selectedCreatorFilter}
             @sortChanged=${this.sortChanged}
             @displayModeChanged=${this.displayModeChanged}
-            @titleLetterChanged=${this.titleLetterChanged}
-            @creatorLetterChanged=${this.creatorLetterChanged}
+            @titleLetterChanged=${this.titleLetterSelected}
+            @creatorLetterChanged=${this.creatorLetterSelected}
           ></sort-filter-bar>
 
           <infinite-scroller
@@ -277,22 +284,24 @@ export class CollectionBrowser
     this.displayMode = e.detail.displayMode;
   }
 
-  private titleLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
-    const letter = e.detail.selectedLetter;
-    if (letter) {
-      this.titleQuery = `firstTitle:${letter}`;
-    } else {
-      this.titleQuery = undefined;
-    }
+  private selectedTitleLetterChanged() {
+    this.titleQuery = this.selectedTitleFilter
+      ? `firstTitle:${this.selectedTitleFilter}`
+      : undefined;
   }
 
-  private creatorLetterChanged(e: CustomEvent<{ selectedLetter: string }>) {
-    const letter = e.detail.selectedLetter;
-    if (letter) {
-      this.creatorQuery = `firstCreator:${letter}`;
-    } else {
-      this.creatorQuery = undefined;
-    }
+  private selectedCreatorLetterChanged() {
+    this.creatorQuery = this.selectedCreatorFilter
+      ? `firstCreator:${this.selectedCreatorFilter}`
+      : undefined;
+  }
+
+  private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+    this.selectedTitleFilter = e.detail.selectedLetter;
+  }
+
+  private creatorLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+    this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
   private get facetDataLoading(): boolean {
@@ -333,7 +342,7 @@ export class CollectionBrowser
   }
 
   firstUpdated(): void {
-    this.loadStateFromUrl();
+    this.restorationStateHandler.restoreState();
   }
 
   updated(changed: PropertyValues) {
@@ -345,7 +354,7 @@ export class CollectionBrowser
       this.infiniteScroller.reload();
     }
     if (changed.has('currentPage')) {
-      this.updateUrl();
+      this.restorationStateHandler.persistState();
     }
     if (
       changed.has('baseQuery') ||
@@ -361,116 +370,16 @@ export class CollectionBrowser
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
       this.selectedSortChanged();
     }
+    if (changed.has('selectedTitleFilter')) {
+      this.selectedTitleLetterChanged();
+    }
+    if (changed.has('selectedCreatorFilter')) {
+      this.selectedCreatorLetterChanged();
+    }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
-    }
-  }
-
-  private updateUrl() {
-    const url = new URL(window.location.href);
-    const { searchParams } = url;
-    searchParams.delete('sort');
-    searchParams.delete('query');
-    searchParams.delete('page');
-    searchParams.delete('and[]');
-    searchParams.delete('not[]');
-
-    if (this.sortParam) {
-      url.searchParams.set('sort', this.sortParam.asString);
-    }
-
-    if (this.baseQuery) {
-      url.searchParams.set('query', this.baseQuery);
-    }
-
-    if (this.currentPage) {
-      if (this.currentPage > 1) {
-        url.searchParams.set('page', this.currentPage.toString());
-      } else {
-        url.searchParams.delete('page');
-      }
-    }
-
-    for (const [facetName, facetValues] of Object.entries(
-      this.selectedFacets
-    )) {
-      const facetEntries = Object.entries(facetValues);
-      // eslint-disable-next-line no-continue
-      if (facetEntries.length === 0) continue;
-      for (const [key, facetState] of facetEntries) {
-        const notValue = facetState === 'hidden';
-        const paramValue = `${facetName}:${key}`;
-        if (notValue) {
-          url.searchParams.append('not[]', paramValue);
-        } else {
-          url.searchParams.append('and[]', paramValue);
-        }
-      }
-    }
-    if (this.dateRangeQueryClause) {
-      url.searchParams.append('and[]', this.dateRangeQueryClause);
-    }
-
-    window.history.pushState(
-      {
-        page: this.currentPage,
-        query: this.baseQuery,
-      },
-      '',
-      url
-    );
-  }
-
-  private loadStateFromUrl() {
-    const url = new URL(window.location.href);
-    const pageNumber = url.searchParams.get('page');
-    const searchQuery = url.searchParams.get('query');
-    const sortQuery = url.searchParams.get('sort');
-    const facetAnds = url.searchParams.getAll('and[]');
-    const facetNots = url.searchParams.getAll('not[]');
-    if (pageNumber) {
-      const parsed = parseInt(pageNumber, 10);
-      this.currentPage = parsed;
-      if (parsed > 1) {
-        this.goToPage(parsed);
-      }
-    } else {
-      this.currentPage = 1;
-    }
-    if (searchQuery) {
-      this.baseQuery = searchQuery;
-    }
-    if (sortQuery) {
-      const [field, direction] = sortQuery.split(' ');
-      const metadataField =
-        MetadataFieldToSortField[field as MetadataSortField];
-      if (metadataField) {
-        this.selectedSort = metadataField;
-      }
-      if (direction === 'desc' || direction === 'asc') {
-        this.sortDirection = direction as SortDirection;
-      }
-    }
-    if (facetAnds) {
-      facetAnds.forEach(and => {
-        const [field, value] = and.split(':');
-        if (field === 'year') {
-          const [minDate, maxDate] = value.split(' TO ');
-          this.minSelectedDate = minDate.substring(1, minDate.length);
-          this.maxSelectedDate = maxDate.substring(0, maxDate.length - 1);
-          this.dateRangeQueryClause = `year:${value}`;
-        } else {
-          this.selectedFacets[field as FacetOption][value] = 'selected';
-        }
-      });
-    }
-    if (facetNots) {
-      facetNots.forEach(not => {
-        const [field, value] = not.split(':');
-        this.selectedFacets[field as FacetOption][value] = 'hidden';
-      });
     }
   }
 
@@ -523,7 +432,7 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
-    this.updateUrl();
+    this.restorationStateHandler.persistState();
 
     await Promise.all([
       this.doInitialPageFetch(),
