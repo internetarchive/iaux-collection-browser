@@ -201,8 +201,6 @@ export class CollectionBrowser
 
   render() {
     return html`
-      ${this.queryDebuggingTemplate}
-
       <div id="content-container">
         <div id="left-column" class="column">
           <div id="results-total">
