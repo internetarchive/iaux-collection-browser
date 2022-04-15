@@ -289,6 +289,10 @@ export class TileList extends LitElement {
         padding-top: 5px;
       }
 
+      mediatype-icon {
+        --iconHeight: 20px;
+      }
+
       #description {
         padding-top: 10px;
         overflow: hidden;
