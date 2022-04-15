@@ -112,6 +112,10 @@ export class ItemTile extends LitElement {
         position: relative;
       }
 
+      mediatype-icon {
+        --iconHeight: 10px;
+      }
+
       #title-image-container {
         display: flex;
         flex: 1;
