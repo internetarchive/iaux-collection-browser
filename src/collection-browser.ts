@@ -108,6 +108,8 @@ export class CollectionBrowser
       context: this.pageContext,
     }
   );
+  
+  @property({ type: Number }) mobileBreakpoint = 530;
 
   /**
    * The page that the consumer wants to load.
@@ -277,6 +279,10 @@ export class CollectionBrowser
             @creatorLetterChanged=${this.creatorLetterSelected}
           ></sort-filter-bar>
 
+          ${this.displayMode === `list-compact`
+            ? this.listHeaderTemplate
+            : nothing}
+
           <infinite-scroller
             class="${ifDefined(this.displayMode)}"
             .cellProvider=${this}
@@ -370,6 +376,17 @@ export class CollectionBrowser
       <div class="loading-cover">
         <circular-activity-indicator></circular-activity-indicator>
       </div>
+    `;
+  }
+
+  private get listHeaderTemplate() {
+    return html`
+      <tile-dispatcher
+        .displayMode=${'list-header'}
+        .resizeObserver=${this.resizeObserver}
+        .sortParam=${this.sortParam}
+      >
+      </tile-dispatcher>
     `;
   }
 
@@ -795,13 +812,8 @@ export class CollectionBrowser
         'num_reviews',
         'publicdate',
         'reviewdate',
-<<<<<<< HEAD
         'title',
         'subject', // topic
-=======
-        'creator',
-        'collections_raw',
->>>>>>> d142247 (Add reviews and collection check)
         'source'
       ],
       page: pageNumber,
