@@ -1,4 +1,4 @@
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
@@ -22,7 +22,7 @@ export class TileListCompact extends LitElement {
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
-        <div id="thumb">${this.img()}</div>
+        <div id="thumb">${this.imageTemplate}</div>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
         <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="creator">${DOMPurify.sanitize(this.model?.creator ?? '')}</div>
@@ -36,15 +36,15 @@ export class TileListCompact extends LitElement {
     `;
   }
 
-  private img() {
-    if (this.model?.identifier) {
-      return html` <img
-        src="${this.baseNavigationUrl}/services/img/${this.model.identifier}"
-        alt="${this.model.identifier}"
-        class=${this.model?.mediatype}
-      />`;
+  private get imageTemplate() {
+    if (!this.model?.identifier) {
+      return nothing;
     }
-    return html``;
+    return html` <img
+      src="${this.baseNavigationUrl}/services/img/${this.model.identifier}"
+      alt="${this.model.identifier}"
+      class="${this.model?.mediatype}"
+    />`;
   }
 
   /*
@@ -160,7 +160,7 @@ export class TileListCompact extends LitElement {
       #list-line {
         display: grid;
         column-gap: 10px;
-        border-top: 1px solid #ddd !important;
+        border-top: 1px solid #ddd;
         align-items: center;
         line-height: 20px;
       }
@@ -195,7 +195,7 @@ export class TileListCompact extends LitElement {
         flex-shrink: 1;
         flex-basis: 0;
       }
-      */
+    */
 
       #list-line:hover #title {
         text-decoration: underline;
