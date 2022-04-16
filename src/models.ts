@@ -22,7 +22,11 @@ export interface TileModel {
   source?: string;
 }
 
-export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
+export type CollectionDisplayMode =
+  | 'grid'
+  | 'list-compact'
+  | 'list-detail'
+  | 'list-header';
 
 /**
  * This is mainly used to set the cookies for the collection display mode.
