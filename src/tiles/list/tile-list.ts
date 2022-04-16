@@ -1,5 +1,5 @@
 /* eslint-disable lit/no-invalid-html */
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
@@ -24,12 +24,12 @@ export class TileList extends LitElement {
     return html`
       <div id="list-line" class="${this.classSize}">
         <div id="list-line-left">
-          <div id="thumb">${this.img()}</div>
-          ${this.iconLeft()}
+          <div id="thumb">${this.imgTemplate}</div>
+          ${this.iconLeftTemplate}
         </div>
         <div id="list-line-right">
           <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
-          ${this.itemLine()} ${this.creator()}
+          ${this.itemLineTemplate} ${this.creatorTemplate}
           <div id="date">
             <span class="label">Published:</span> ${formatDate(
               this.date,
@@ -37,17 +37,17 @@ export class TileList extends LitElement {
             )}
           </div>
           <div id="views-line">
-            ${this.views()} ${this.rating()} ${this.reviews()}
+            ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
           </div>
-          ${this.topics()} ${this.description()}
+          ${this.topicsTemplate} ${this.descriptionTemplate}
         </div>
       </div>
     `;
   }
 
-  private img() {
+  private get imgTemplate() {
     if (!this.model?.identifier) {
-      return html``;
+      return nothing;
     }
     return html` <img
       src="${this.baseNavigationUrl}/services/img/${this.model.identifier}"
@@ -56,9 +56,9 @@ export class TileList extends LitElement {
     />`;
   }
 
-  private iconLeft() {
+  private get iconLeftTemplate() {
     if (this.classSize !== 'desktop') {
-      return html``;
+      return nothing;
     }
     return html`
       <div id="icon-left">
@@ -68,9 +68,9 @@ export class TileList extends LitElement {
     `;
   }
 
-  private creator() {
+  private get creatorTemplate() {
     if (!this.model?.creator) {
-      return html``;
+      return nothing;
     }
     return html`
       <div id="creator">
@@ -80,15 +80,15 @@ export class TileList extends LitElement {
     `;
   }
 
-  private itemLine() {
-    const source = this.source();
+  private get itemLineTemplate() {
+    const source = this.sourceTemplate;
     if (!source) {
-      return html``;
+      return nothing;
     }
     return html` <div id="item-line">${source}</div> `;
   }
 
-  private views() {
+  private get viewsTemplate() {
     return html`
       <div id="views">
         <span class="label">Views: </span>
@@ -97,9 +97,9 @@ export class TileList extends LitElement {
     `;
   }
 
-  private rating() {
+  private get ratingTemplate() {
     if (!this.model?.averageRating) {
-      return html``;
+      return nothing;
     }
     return html`
       <div id="reviews">
@@ -109,9 +109,9 @@ export class TileList extends LitElement {
     `;
   }
 
-  private reviews() {
+  private get reviewsTemplate() {
     if (!this.model?.commentCount) {
-      return html``;
+      return nothing;
     }
     return html`
       <div id="reviews">
@@ -121,39 +121,41 @@ export class TileList extends LitElement {
     `;
   }
 
-  private description() {
+  private get descriptionTemplate() {
     if (!this.model?.description) {
-      return html``;
+      return nothing;
     }
     const description = DOMPurify.sanitize(`${this.model?.description}`);
-    return html`<div id="description">${description}</div>`;
+    return html` <div id="description">${description}</div> `;
   }
 
-  private topics() {
+  private get topicsTemplate() {
     if (!this.model?.subject) {
-      return html``;
+      return nothing;
     }
-    return html` <div id="topics">
-      <span class="label">Topics: </span>
-      ${DOMPurify.sanitize(this.model?.subject)}
-    </div>`;
+    return html`
+      <div id="topics">
+        <span class="label">Topics: </span>
+        ${DOMPurify.sanitize(this.model?.subject)}
+      </div>
+    `;
   }
 
-  private source() {
-    if (this.model?.source) {
-      return html`<div id="source">
-        <span class="label">Source: </span>${this.searchLink(
-          'source',
-          this.model.source
-        )}
-      </div>`;
+  private get sourceTemplate() {
+    if (!this.model?.source) {
+      return nothing;
     }
-    return html``;
+    return html`
+      <div id="source">
+        <span class="label">Source: </span>
+        ${this.searchLink('source', this.model.source)}
+      </div>
+    `;
   }
 
   private searchLink(field: string, searchTerm: string) {
     if (!field || !searchTerm) {
-      return html``;
+      return nothing;
     }
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
     // eslint-disable-next-line lit/no-invalid-html
