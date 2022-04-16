@@ -12,6 +12,7 @@ import './grid/item-tile';
 import './grid/account-tile';
 import './list/tile-list';
 import './list/tile-list-compact';
+import './list/tile-list-compact-header';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -39,16 +40,36 @@ export class TileDispatcher
   render() {
     return html`
       <div id="container">
-        ${this.showDeleteButton
-          ? html`<button id="delete-button">X</button>`
-          : nothing}
-        <a
-          href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-          title=${ifDefined(this.model?.title)}
-        >
-          ${this.tile}
-        </a>
+        ${this.displayMode === 'list-header'
+          ? this.headerTemplate
+          : this.tileTemplate}
       </div>
+    `;
+  }
+
+  private get headerTemplate() {
+    const { currentWidth, sortParam } = this;
+    return html`
+      <tile-list-compact-header
+        class="header"
+        .currentWidth=${currentWidth}
+        .sortParam=${sortParam}
+      >
+      </tile-list-compact-header>
+    `;
+  }
+
+  private get tileTemplate() {
+    return html`
+      ${this.showDeleteButton
+        ? html`<button id="delete-button">X</button>`
+        : nothing}
+      <a
+        href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
+        title=${ifDefined(this.model?.title)}
+      >
+        ${this.tile}
+      </a>
     `;
   }
 
@@ -111,9 +132,9 @@ export class TileDispatcher
           default:
             return html`<item-tile
               .model=${model}
-              .baseNavigationUrl=${this.baseNavigationUrl}
-              .currentWidth=${this.currentWidth}
-              .currentHeight=${this.currentHeight}
+              .baseNavigationUrl=${baseNavigationUrl}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
             ></item-tile>`;
         }
       case 'list-compact':
@@ -141,7 +162,6 @@ export class TileDispatcher
     return css`
       :host {
         display: block;
-        height: 100%;
       }
 
       #container {
