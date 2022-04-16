@@ -78,8 +78,8 @@ export class MediatypeIcon extends LitElement {
       }
 
       svg {
-        height: var(--iconHeight);
-        width: var(--iconWidth);
+        height: var(--iconHeight, 10px);
+        width: var(--iconWidth, 10px);
       }
 
       .fill-color {
