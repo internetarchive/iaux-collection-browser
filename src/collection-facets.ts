@@ -1,11 +1,12 @@
-import { css, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { css, html, LitElement, PropertyValues, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
+import chevronIcon from './assets/img/icons/chevron';
 import {
   FacetOption,
   SelectedFacets,
@@ -57,6 +58,17 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
+  @property({ type: Boolean }) collapsableFacets = false;
+
+  @state() openFacets: Record<FacetOption, boolean> = {
+    subject: false,
+    mediatype: false,
+    language: false,
+    creator: false,
+    collection: false,
+    year: false,
+  };
+
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -65,14 +77,8 @@ export class CollectionFacets extends LitElement {
           ${this.histogramTemplate}
         </div>
 
-        ${this.mergedFacets.map(
-          facetGroup =>
-            html`
-              <div class="facet-group">
-                <h1>${facetGroup.title}</h1>
-                ${this.getFacetTemplate(facetGroup)}
-              </div>
-            `
+        ${this.mergedFacets.map(facetGroup =>
+          this.getFacetGroupTemplate(facetGroup)
         )}
       </div>
     `;
@@ -236,6 +242,36 @@ export class CollectionFacets extends LitElement {
     return facetGroups;
   }
 
+  private getFacetGroupTemplate(facetGroup: FacetGroup) {
+    const { key } = facetGroup;
+    const isOpen = this.openFacets[key];
+    const collapser = html`
+      <span
+        ><button
+          class="collapser ${isOpen ? 'open' : ''}"
+          @click=${() => {
+            const newOpenFacets = { ...this.openFacets };
+            newOpenFacets[key] = !isOpen;
+            this.openFacets = newOpenFacets;
+          }}
+        >
+          ${chevronIcon}
+        </button></span
+      >
+    `;
+
+    return html`
+      <div class="facet-group">
+        <h1>
+          ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
+        </h1>
+        ${this.collapsableFacets && !isOpen
+          ? nothing
+          : this.getFacetTemplate(facetGroup)}
+      </div>
+    `;
+  }
+
   private getFacetTemplate(facetGroup: FacetGroup) {
     return html`
       <ul class="facet-list">
@@ -346,6 +382,22 @@ export class CollectionFacets extends LitElement {
     return css`
       #container.loading {
         opacity: 0.5;
+      }
+
+      .collapser {
+        background: none;
+        color: inherit;
+        border: none;
+        appearance: none;
+        cursor: pointer;
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .collapser.open {
+        transform: rotate(90deg);
       }
 
       h1 {
