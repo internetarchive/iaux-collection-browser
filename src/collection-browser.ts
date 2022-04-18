@@ -63,7 +63,7 @@ export class CollectionBrowser
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @property({ type: String }) selectedSort: SortField = 'relevance';
+  @property({ type: String }) selectedSort: SortField = SortField.relevance;
 
   @property({ type: String }) selectedTitleFilter: string | null = null;
 
@@ -235,6 +235,7 @@ export class CollectionBrowser
             .displayMode=${this.displayMode}
             .selectedTitleFilter=${this.selectedTitleFilter}
             .selectedCreatorFilter=${this.selectedCreatorFilter}
+            .resizeObserver=${this.resizeObserver}
             @sortChanged=${this.userChangedSort}
             @displayModeChanged=${this.displayModeChanged}
             @titleLetterChanged=${this.titleLetterSelected}
@@ -446,7 +447,7 @@ export class CollectionBrowser
   private restoreState() {
     const restorationState = this.restorationStateHandler.getRestorationState();
     this.displayMode = restorationState.displayMode;
-    this.selectedSort = restorationState.selectedSort ?? 'relevance';
+    this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
     this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
