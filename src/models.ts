@@ -32,15 +32,16 @@ export type CollectionBrowserContext = 'collection' | 'search';
 /**
  * The sort fields shown in the sort filter bar
  */
-export type SortField =
-  | 'relevance'
-  | 'views'
-  | 'title'
-  | 'datearchived'
-  | 'datepublished'
-  | 'datereviewed'
-  | 'dateadded'
-  | 'creator';
+export enum SortField {
+  'relevance' = 'relevance',
+  'views' = 'views',
+  'title' = 'title',
+  'datearchived' = 'datearchived',
+  'datepublished' = 'datepublished',
+  'datereviewed' = 'datereviewed',
+  'dateadded' = 'dateadded',
+  'creator' = 'creator',
+}
 
 /**
  * The metadata fields we sort by that map to the SortFields above
@@ -53,6 +54,19 @@ export type MetadataSortField =
   | 'publicdate'
   | 'reviewdate'
   | 'addeddate';
+
+export const SortFieldDisplayName: {
+  [key in SortField]: string;
+} = {
+  relevance: 'Relevance',
+  views: 'Views',
+  title: 'Title',
+  datearchived: 'Date Archived',
+  datepublished: 'Date Published',
+  datereviewed: 'Date Reviewed',
+  dateadded: 'Date Added',
+  creator: 'Creator',
+};
 
 /**
  * Maps the SortField above to the corresponding Metadata field in the API.
@@ -76,13 +90,13 @@ export const SortFieldToMetadataField: {
 export const MetadataFieldToSortField: {
   [key in MetadataSortField]: SortField;
 } = {
-  titleSorter: 'title',
-  date: 'datearchived',
-  publicdate: 'datepublished',
-  reviewdate: 'datereviewed',
-  addeddate: 'dateadded',
-  creatorSorter: 'creator',
-  week: 'views',
+  titleSorter: SortField.title,
+  date: SortField.datearchived,
+  publicdate: SortField.datepublished,
+  reviewdate: SortField.datereviewed,
+  addeddate: SortField.dateadded,
+  creatorSorter: SortField.creator,
+  week: SortField.views,
 };
 
 export type FacetOption =
