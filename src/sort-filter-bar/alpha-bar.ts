@@ -75,7 +75,7 @@ export class AlphaBar extends LitElement {
     a {
       color: #333;
       text-decoration: none;
-      padding: 0.5rem 0.7rem;
+      padding: 0.5rem 0;
       display: block;
     }
 

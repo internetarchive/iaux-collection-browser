@@ -24,7 +24,10 @@ import {
   AggregateSearchParams,
   SortParam,
 } from '@internetarchive/search-service';
-import { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
+import {
+  SharedResizeObserverInterface,
+  SharedResizeObserverResizeHandlerInterface,
+} from '@internetarchive/shared-resize-observer';
 import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
 import './tiles/tile-dispatcher';
@@ -49,7 +52,9 @@ import {
 @customElement('collection-browser')
 export class CollectionBrowser
   extends LitElement
-  implements InfiniteScrollerCellProviderInterface
+  implements
+    InfiniteScrollerCellProviderInterface,
+    SharedResizeObserverResizeHandlerInterface
 {
   @property({ type: String }) baseNavigationUrl?: string;
 
@@ -122,6 +127,10 @@ export class CollectionBrowser
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
   @state() private totalResults?: number;
+
+  @state() private mobileView = false;
+
+  @query('#content-container') private contentContainer!: HTMLDivElement;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -222,6 +231,7 @@ export class CollectionBrowser
               .minSelectedDate=${this.minSelectedDate}
               .maxSelectedDate=${this.maxSelectedDate}
               .selectedFacets=${this.selectedFacets}
+              ?collapsableFacets=${this.mobileView}
               ?facetsLoading=${this.facetDataLoading}
               ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
             ></collection-facets>
@@ -384,6 +394,42 @@ export class CollectionBrowser
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
+    if (changed.has('resizeObserver')) {
+      const oldObserver = changed.get(
+        'resizeObserver'
+      ) as SharedResizeObserverInterface;
+      if (oldObserver) this.disconnectResizeObserver(oldObserver);
+      this.setupResizeObserver();
+    }
+  }
+
+  disconnectedCallback(): void {
+    if (this.resizeObserver) {
+      this.disconnectResizeObserver(this.resizeObserver);
+    }
+  }
+
+  handleResize(entry: ResizeObserverEntry): void {
+    if (entry.target === this.contentContainer) {
+      this.mobileView = entry.contentRect.width < 600;
+    }
+  }
+
+  private disconnectResizeObserver(
+    resizeObserver: SharedResizeObserverInterface
+  ) {
+    resizeObserver.removeObserver({
+      target: this.contentContainer,
+      handler: this,
+    });
+  }
+
+  private setupResizeObserver() {
+    if (!this.resizeObserver) return;
+    this.resizeObserver.addObserver({
+      target: this.contentContainer,
+      handler: this,
+    });
   }
 
   /**
