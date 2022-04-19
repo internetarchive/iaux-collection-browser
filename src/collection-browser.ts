@@ -219,7 +219,14 @@ export class CollectionBrowser
             ${this.mobileView
               ? html`
                   <div id="mobile-filter-collapse">
-                    <h1>
+                    <h1
+                      @click=${() => {
+                        this.mobileFacetsVisible = !this.mobileFacetsVisible;
+                      }}
+                      @keyup=${() => {
+                        this.mobileFacetsVisible = !this.mobileFacetsVisible;
+                      }}
+                    >
                       <button
                         class="collapser ${this.mobileFacetsVisible
                           ? 'open'
@@ -945,6 +952,10 @@ export class CollectionBrowser
       width: 20px;
       height: 20px;
       transition: transform 0.2s ease-in-out;
+    }
+
+    #mobile-filter-collapse h1 {
+      cursor: pointer;
     }
 
     .collapser.open {
