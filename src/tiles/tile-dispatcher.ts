@@ -162,6 +162,7 @@ export class TileDispatcher
     return css`
       :host {
         display: block;
+        height: 100%;
       }
 
       #container {
