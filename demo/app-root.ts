@@ -235,10 +235,6 @@ export class AppRoot extends LitElement {
       font-size: 1.6rem;
     }
 
-    #collection-browser-container {
-      padding: 0 2rem;
-    }
-
     collection-browser {
       margin-top: 30rem;
     }

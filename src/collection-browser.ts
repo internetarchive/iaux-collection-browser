@@ -48,6 +48,7 @@ import {
   RestorationStateHandler,
   RestorationState,
 } from './restoration-state-handler';
+import chevronIcon from './assets/img/icons/chevron';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -130,6 +131,8 @@ export class CollectionBrowser
 
   @state() private mobileView = false;
 
+  @state() private mobileFacetsVisible = false;
+
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
   /**
@@ -210,31 +213,41 @@ export class CollectionBrowser
 
   render() {
     return html`
-      <div id="content-container">
+      <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
         <div id="left-column" class="column">
-          <div id="results-total">
-            <span id="big-results-count"
-              >${this.totalResults
-                ? this.totalResults.toLocaleString()
-                : '-'}</span
-            >
-            <span id="big-results-label">Results</span>
+          <div id="mobile-header-container">
+            ${this.mobileView
+              ? html`
+                  <div id="mobile-filter-collapse">
+                    <h1>
+                      <button
+                        class="collapser ${this.mobileFacetsVisible
+                          ? 'open'
+                          : ''}"
+                        @click=${() => {
+                          this.mobileFacetsVisible = !this.mobileFacetsVisible;
+                        }}
+                      >
+                        ${chevronIcon}
+                      </button>
+                      Filters
+                    </h1>
+                  </div>
+                `
+              : nothing}
+            <div id="results-total">
+              <span id="big-results-count"
+                >${this.totalResults
+                  ? this.totalResults.toLocaleString()
+                  : '-'}</span
+              >
+              <span id="big-results-label">Results</span>
+            </div>
           </div>
           <div id="facets-container">
-            ${this.facetsLoading ? this.loadingTemplate : nothing}
-            <collection-facets
-              @facetsChanged=${this.facetsChanged}
-              @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-              .aggregations=${this.aggregations}
-              .fullYearsHistogramAggregation=${this
-                .fullYearsHistogramAggregation}
-              .minSelectedDate=${this.minSelectedDate}
-              .maxSelectedDate=${this.maxSelectedDate}
-              .selectedFacets=${this.selectedFacets}
-              ?collapsableFacets=${this.mobileView}
-              ?facetsLoading=${this.facetDataLoading}
-              ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
-            ></collection-facets>
+            ${!this.mobileView || this.mobileFacetsVisible
+              ? this.facetsTemplate
+              : nothing}
           </div>
         </div>
         <div id="right-column" class="column">
@@ -319,6 +332,24 @@ export class CollectionBrowser
 
   private get facetDataLoading(): boolean {
     return this.facetsLoading || this.fullYearAggregationLoading;
+  }
+
+  private get facetsTemplate() {
+    return html`
+      ${this.facetsLoading ? this.loadingTemplate : nothing}
+      <collection-facets
+        @facetsChanged=${this.facetsChanged}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+        .aggregations=${this.aggregations}
+        .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
+        .selectedFacets=${this.selectedFacets}
+        ?collapsableFacets=${this.mobileView}
+        ?facetsLoading=${this.facetDataLoading}
+        ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
+      ></collection-facets>
+    `;
   }
 
   private get loadingTemplate() {
@@ -874,19 +905,56 @@ export class CollectionBrowser
       display: flex;
     }
 
+    .collapser {
+      background: none;
+      color: inherit;
+      border: none;
+      appearance: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .collapser.open {
+      transform: rotate(90deg);
+    }
+
+    #content-container.mobile {
+      display: block;
+    }
+
+    .column {
+      padding-top: 2rem;
+    }
+
     #right-column {
       flex: 1;
       position: relative;
       border-left: 1px solid rgb(232, 232, 232);
+      padding-left: 1rem;
+    }
+
+    .mobile #right-column {
+      border-left: none;
+      padding: 0;
     }
 
     #left-column {
       width: 18rem;
       padding-right: 12px;
+      padding-right: 1rem;
     }
 
-    .column {
-      padding: 2rem 1rem;
+    .mobile #left-column {
+      width: 100%;
+      padding: 0;
+    }
+
+    #mobile-header-container {
+      display: flex;
+      justify-content: space-between;
     }
 
     #facets-container {
@@ -897,6 +965,10 @@ export class CollectionBrowser
       display: flex;
       align-items: center;
       margin-bottom: 5rem;
+    }
+
+    .mobile #results-total {
+      margin-bottom: 0;
     }
 
     #big-results-count {
