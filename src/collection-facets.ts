@@ -246,28 +246,28 @@ export class CollectionFacets extends LitElement {
     const { key } = facetGroup;
     const isOpen = this.openFacets[key];
     const collapser = html`
-      <span
-        ><button
-          class="collapser ${isOpen ? 'open' : ''}"
+      <span class="collapser ${isOpen ? 'open' : ''}"> ${chevronIcon} </span>
+    `;
+
+    return html`
+      <div class="facet-group ${this.collapsableFacets ? 'mobile' : ''}">
+        <h1
           @click=${() => {
             const newOpenFacets = { ...this.openFacets };
             newOpenFacets[key] = !isOpen;
             this.openFacets = newOpenFacets;
           }}
+          @keyup=${() => {
+            const newOpenFacets = { ...this.openFacets };
+            newOpenFacets[key] = !isOpen;
+            this.openFacets = newOpenFacets;
+          }}
         >
-          ${chevronIcon}
-        </button></span
-      >
-    `;
-
-    return html`
-      <div class="facet-group">
-        <h1>
           ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
         </h1>
-        ${this.collapsableFacets && !isOpen
-          ? nothing
-          : this.getFacetTemplate(facetGroup)}
+        <div class="facet-group-content ${isOpen ? 'open' : ''}">
+          ${this.getFacetTemplate(facetGroup)}
+        </div>
       </div>
     `;
   }
@@ -385,18 +385,17 @@ export class CollectionFacets extends LitElement {
       }
 
       .collapser {
-        background: none;
-        color: inherit;
-        border: none;
-        appearance: none;
+        display: inline-block;
         cursor: pointer;
-        -webkit-appearance: none;
-        width: 20px;
-        height: 20px;
+        width: 10px;
+        height: 10px;
+      }
+
+      .collapser svg {
         transition: transform 0.2s ease-in-out;
       }
 
-      .collapser.open {
+      .collapser.open svg {
         transform: rotate(90deg);
       }
 
@@ -406,6 +405,23 @@ export class CollectionFacets extends LitElement {
 
       .facet-group h1 {
         margin-bottom: 0.7rem;
+      }
+
+      .facet-group.mobile h1 {
+        cursor: pointer;
+      }
+
+      .facet-group-content {
+        transition: max-height 0.2s ease-in-out;
+      }
+
+      .facet-group.mobile .facet-group-content {
+        max-height: 0;
+        overflow: hidden;
+      }
+
+      .facet-group.mobile .facet-group-content.open {
+        max-height: 2000px;
       }
 
       h1 {
