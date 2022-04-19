@@ -1,10 +1,9 @@
-import { localized, msg } from '@lit/localize';
+import { msg } from '@lit/localize';
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { TileModel } from '../../models';
 
-@localized()
 @customElement('collection-tile')
 export class CollectionTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
