@@ -125,10 +125,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1-alpha.1.tgz"
   integrity sha512-FBuOkxiSKk20Cn5bbyUkTPO1Uk+/XgoCZwwcdFDQNQEZnT7bTiJapfggxUVvRwQvF9IWMdzXvWUvtmgzKJKFRA==
 
-"@internetarchive/field-parsers@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.1.tgz"
-  integrity sha512-yPkH/m1a15V0tnewQutK3RQJgSwe9RoMdTuzgUxGgZtDXX8Tw+MFcvTpvZQjEo3ZgyL9sNLr2Lv+KiSAsZ9OOg==
+"@internetarchive/field-parsers@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.3.tgz#c73f4a0cf9d03b64ab34cbcd4ccb8f9eb98c8021"
+  integrity sha512-gN7ivwHWlf8V7fD3VakQ4NtddSou5i3A3TqbIo8EKF+XTxJXaXpNBmzkZEGf2oMVK8rHvrabFxZKVEy9qG7Omw==
 
 "@internetarchive/histogram-date-range@^0.1.6":
   version "0.1.6"
@@ -173,12 +173,12 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@0.3.0-alpha.4":
-  version "0.3.0-alpha.4"
-  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-0.3.0-alpha.4.tgz"
-  integrity sha512-ytB5m2JITKw8rXHofdhMZoiDFVAYTeKzzKW932x34IDMiO0+MYu7/ua0X9fCgUagY06yl6ciTYmNLoJB9KVLPg==
+"@internetarchive/search-service@0.3.0-alpha.6":
+  version "0.3.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.3.0-alpha.6.tgz#c94426888e3a87c96c622c0c629777db2f10a4cb"
+  integrity sha512-Askr+mQQbKwYAZheuVfRcWTFNoSzpppFddXNGkwA5TK5XEN8iLdleFI+j4n3z8CjR5dTWIIel4DZObSJma3zvw==
   dependencies:
-    "@internetarchive/field-parsers" "^0.1.1"
+    "@internetarchive/field-parsers" "^0.1.3"
     "@internetarchive/result-type" "^0.0.1"
     decorator-cache-getter "^1.0.0"
     typescript-memoize "^1.1.0"

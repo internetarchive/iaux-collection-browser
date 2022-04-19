@@ -1,25 +1,24 @@
 import type { MediaType } from '@internetarchive/field-parsers';
 
 export interface TileModel {
-  identifier: string;
-  title: string;
   averageRating?: number;
-  dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
-  dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
-  dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
-  datePublished?: Date; // Date work published in the world (user-defined) [from: date]
-  mediatype: MediaType;
-  viewCount: number;
-  itemCount: number;
-  favCount: number;
-  commentCount: number;
-  description?: string;
   collectionIdentifier?: string;
   collectionName?: string;
-  creator?: string;
-  subject?: string;
-  source?: string;
   collections: string[];
+  commentCount: number;
+  creator?: string;
+  dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
+  dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
+  datePublished?: Date; // Date work published in the world (user-defined) [from: date]
+  dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
+  description?: string;
+  favCount: number;
+  identifier: string;
+  itemCount: number;
+  mediatype: MediaType;
+  subjects?: string[];
+  title: string;
+  viewCount: number;
 }
 
 export type CollectionDisplayMode =
