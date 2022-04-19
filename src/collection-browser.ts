@@ -1114,6 +1114,7 @@ export class CollectionBrowser
         --collectionBrowserCellMinHeight,
         5rem
       );
+      --infiniteScrollerRowGap: 30px;
     }
 
     infinite-scroller.grid {
