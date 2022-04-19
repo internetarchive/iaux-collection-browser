@@ -227,16 +227,13 @@ export class CollectionBrowser
                         this.mobileFacetsVisible = !this.mobileFacetsVisible;
                       }}
                     >
-                      <button
+                      <span
                         class="collapser ${this.mobileFacetsVisible
                           ? 'open'
                           : ''}"
-                        @click=${() => {
-                          this.mobileFacetsVisible = !this.mobileFacetsVisible;
-                        }}
                       >
                         ${chevronIcon}
-                      </button>
+                      </span>
                       Filters
                     </h1>
                   </div>
@@ -251,10 +248,13 @@ export class CollectionBrowser
               <span id="big-results-label">Results</span>
             </div>
           </div>
-          <div id="facets-container">
-            ${!this.mobileView || this.mobileFacetsVisible
-              ? this.facetsTemplate
-              : nothing}
+          <div
+            id="facets-container"
+            class=${!this.mobileView || this.mobileFacetsVisible
+              ? 'expanded'
+              : ''}
+          >
+            ${this.facetsTemplate}
           </div>
         </div>
         <div id="right-column" class="column">
@@ -913,23 +913,21 @@ export class CollectionBrowser
     }
 
     .collapser {
-      background: none;
-      color: inherit;
-      border: none;
-      appearance: none;
-      cursor: pointer;
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      transition: transform 0.2s ease-in-out;
+      display: inline-block;
+    }
+
+    .collapser svg {
+      width: 10px;
+      height: 10px;
+      transition: transform 0.2s ease-out;
+    }
+
+    .collapser.open svg {
+      transform: rotate(90deg);
     }
 
     #mobile-filter-collapse h1 {
       cursor: pointer;
-    }
-
-    .collapser.open {
-      transform: rotate(90deg);
     }
 
     #content-container.mobile {
@@ -970,6 +968,13 @@ export class CollectionBrowser
 
     #facets-container {
       position: relative;
+      max-height: 0;
+      transition: max-height 0.2s ease-in-out;
+      overflow: hidden;
+    }
+
+    #facets-container.expanded {
+      max-height: 2000px;
     }
 
     #results-total {
