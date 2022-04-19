@@ -47,7 +47,8 @@ export class TileListCompactHeader extends LitElement {
 
       #views {
         text-align: right;
-        padding-right: 6px;
+        /* Lower icon to align with text baseline */
+        line-height: 14px;
       }
       #views svg {
         height: 18px;
@@ -59,6 +60,7 @@ export class TileListCompactHeader extends LitElement {
         align-items: center;
         padding-left: 1rem;
         padding-right: 1rem;
+        padding-bottom: 2px;
       }
 
       #list-line-header.mobile {

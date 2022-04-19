@@ -1,5 +1,7 @@
 /* eslint-disable lit/no-invalid-html */
 import { css, html, LitElement, nothing } from 'lit';
+import { join } from 'lit/directives/join.js';
+import { map } from 'lit/directives/map.js';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
@@ -39,7 +41,8 @@ export class TileList extends LitElement {
           <div id="views-line">
             ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
           </div>
-          ${this.topicsTemplate} ${this.descriptionTemplate}
+          ${this.topicsTemplate} ${this.collectionsTemplate}
+          ${this.descriptionTemplate}
         </div>
       </div>
     `;
@@ -62,8 +65,32 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="icon-left">
-        <mediatype-icon .mediatype=${this.model?.mediatype} .showText=${true}>
+        <mediatype-icon
+          .mediatype=${this.model?.mediatype}
+          .showText=${true}
+          style="--iconHeight: 20px; --iconWidth: 20px;text-align: center;"
+        >
         </mediatype-icon>
+      </div>
+    `;
+  }
+
+  private get itemLineTemplate() {
+    const source = this.sourceTemplate;
+    if (!source) {
+      return nothing;
+    }
+    return html` <div id="item-line">${source}</div> `;
+  }
+
+  private get sourceTemplate() {
+    if (!this.model?.source) {
+      return nothing;
+    }
+    return html`
+      <div id="source">
+        <span class="label">Source: </span>
+        ${this.searchLink('source', this.model.source)}
       </div>
     `;
   }
@@ -78,14 +105,6 @@ export class TileList extends LitElement {
         ${DOMPurify.sanitize(this.model?.creator ?? '')}
       </div>
     `;
-  }
-
-  private get itemLineTemplate() {
-    const source = this.sourceTemplate;
-    if (!source) {
-      return nothing;
-    }
-    return html` <div id="item-line">${source}</div> `;
   }
 
   private get viewsTemplate() {
@@ -121,14 +140,6 @@ export class TileList extends LitElement {
     `;
   }
 
-  private get descriptionTemplate() {
-    if (!this.model?.description) {
-      return nothing;
-    }
-    const description = DOMPurify.sanitize(`${this.model?.description}`);
-    return html` <div id="description">${description}</div> `;
-  }
-
   private get topicsTemplate() {
     if (!this.model?.subject) {
       return nothing;
@@ -141,16 +152,27 @@ export class TileList extends LitElement {
     `;
   }
 
-  private get sourceTemplate() {
-    if (!this.model?.source) {
+  private get collectionsTemplate() {
+    if (!this.model?.collections) {
       return nothing;
     }
     return html`
-      <div id="source">
-        <span class="label">Source: </span>
-        ${this.searchLink('source', this.model.source)}
+      <div id="collections">
+        <span class="label">Collections: </span>
+        ${join(
+          map(this.model.collections, id => this.detailsLink(id)),
+          html`, `
+        )}
       </div>
     `;
+  }
+
+  private get descriptionTemplate() {
+    if (!this.model?.description) {
+      return nothing;
+    }
+    const description = DOMPurify.sanitize(`${this.model?.description}`);
+    return html` <div id="description">${description}</div> `;
   }
 
   private searchLink(field: string, searchTerm: string) {
@@ -164,6 +186,16 @@ export class TileList extends LitElement {
         ${DOMPurify.sanitize(searchTerm)}
       </a>
     `;
+  }
+
+  private detailsLink(identifier: string) {
+    if (!identifier) {
+      return nothing;
+    }
+    // No whitespace after closing tag
+    return html` <a href="${this.baseNavigationUrl}/details/${identifier}"
+      >${DOMPurify.sanitize(identifier)}</a
+    >`;
   }
 
   /*
@@ -250,13 +282,8 @@ export class TileList extends LitElement {
         -moz-border-radius: 50px;
       }
 
-      #icon.show-text svg {
-        height: unset;
-        width: unset;
-      }
-
-      #iconLeft #icon.show-text svg {
-        height: 20px;
+      #icon-left {
+        padding-top: 5px;
       }
 
       #title {
@@ -269,6 +296,7 @@ export class TileList extends LitElement {
 
       #creator,
       #date,
+      #collections,
       #topics,
       #item-line {
         line-height: 20px;

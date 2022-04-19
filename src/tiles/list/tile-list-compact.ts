@@ -30,7 +30,11 @@ export class TileListCompact extends LitElement {
           ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
         </div>
         <div id="icon">
-          <mediatype-icon .mediatype=${this.model?.mediatype}></mediatype-icon>
+          <mediatype-icon
+            .mediatype=${this.model?.mediatype}
+            style="--iconHeight: 20px; --iconWidth: 20px;"
+          >
+          </mediatype-icon>
         </div>
       </div>
     `;
