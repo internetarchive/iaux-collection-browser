@@ -386,7 +386,10 @@ export class SortFilterBar
    * @memberof SortFilterBar
    */
   private get dateSortField(): string {
-    return SortFieldDisplayName[this.selectedSort] ?? 'Date Archived';
+    const defaultSort = SortFieldDisplayName[SortField.datearchived];
+    return this.dateOptionSelected
+      ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
+      : defaultSort;
   }
 
   private get titleSelectorBar() {
