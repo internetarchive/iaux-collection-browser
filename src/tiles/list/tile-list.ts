@@ -234,6 +234,10 @@ export class TileList extends LitElement {
         font-size: 14px;
       }
 
+      div a {
+        text-decoration: none;
+      }
+
       .label {
         font-weight: bold;
       }
@@ -291,7 +295,10 @@ export class TileList extends LitElement {
         text-decoration: none;
         font-size: 22px;
         font-weight: bold;
-        line-height: 30px;
+        /* align top of text with image */
+        line-height: 25px;
+        margin-top: -4px;
+        padding-bottom: 2px;
       }
 
       #creator,
@@ -340,7 +347,8 @@ export class TileList extends LitElement {
         column-gap: 5px;
       }
 
-      #list-line:hover #title {
+      #list-line:hover #title,
+      div a:hover {
         text-decoration: underline;
       }
 

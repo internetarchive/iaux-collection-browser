@@ -108,7 +108,7 @@ export class CollectionBrowser
       context: this.pageContext,
     }
   );
-  
+
   @property({ type: Number }) mobileBreakpoint = 530;
 
   /**
@@ -1112,6 +1112,7 @@ export class CollectionBrowser
         --collectionBrowserCellMinHeight,
         5rem
       );
+      --infiniteScrollerRowGap: 30px;
     }
 
     infinite-scroller.grid {
