@@ -291,7 +291,7 @@ export class SortFilterBar
                   @click=${this.detailSelected}
                   ?checked=${this.displayMode === 'list-detail'}
                 />
-                Show Details
+                <span> Show Details </span>
               </label>
             </li>`
           : nothing}
@@ -525,6 +525,12 @@ export class SortFilterBar
     #show-details {
       text-transform: uppercase;
       cursor: pointer;
+      display: flex;
+    }
+
+    #show-details input {
+      margin-right: 0.5rem;
+      flex: 0 0 12px;
     }
 
     #sort-descending-btn {
