@@ -16,7 +16,7 @@ export interface TileModel {
   identifier: string;
   itemCount: number;
   mediatype: MediaType;
-  subjects?: string[];
+  subjects: string[];
   title: string;
   viewCount: number;
 }
