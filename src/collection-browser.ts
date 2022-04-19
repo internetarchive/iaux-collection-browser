@@ -375,12 +375,14 @@ export class CollectionBrowser
 
   private get listHeaderTemplate() {
     return html`
-      <tile-dispatcher
-        .displayMode=${'list-header'}
-        .resizeObserver=${this.resizeObserver}
-        .sortParam=${this.sortParam}
-      >
-      </tile-dispatcher>
+      <div id="list-header">
+        <tile-dispatcher
+          .displayMode=${'list-header'}
+          .resizeObserver=${this.resizeObserver}
+          .sortParam=${this.sortParam}
+        >
+        </tile-dispatcher>
+      </div>
     `;
   }
 
@@ -1044,6 +1046,10 @@ export class CollectionBrowser
       font-size: 1rem;
       font-weight: 200;
       text-transform: uppercase;
+    }
+
+    #list-header {
+      max-height: 3rem;
     }
 
     .loading-cover {
