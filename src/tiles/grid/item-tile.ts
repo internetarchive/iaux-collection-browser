@@ -136,7 +136,7 @@ export class ItemTile extends LitElement {
 
       #item-title {
         font-weight: bold;
-        color: #000000;
+        color: #2c2c2c;
         font-size: 1.6rem;
         text-align: center;
         margin-top: 0rem;
@@ -201,7 +201,7 @@ export class ItemTile extends LitElement {
 
       .no-preview {
         background-color: #fffecb;
-        color: #000000;
+        color: #2c2c2c;
         font-size: 1.4rem;
         line-height: 2rem;
         text-align: center;
@@ -225,7 +225,7 @@ export class ItemTile extends LitElement {
       }
 
       .item-creator {
-        color: #000000;
+        color: #2c2c2c;
         display: -webkit-box;
         font-size: 1.4rem;
         height: 3rem;
