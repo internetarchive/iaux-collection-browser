@@ -889,6 +889,7 @@ export class CollectionBrowser
         identifier: doc.identifier,
         itemCount: doc.item_count?.value ?? 0,
         mediatype: doc.mediatype?.value ?? 'data',
+        source: doc.source?.value,
         subjects: doc.subject?.values ?? [],
         title: doc.title?.value ?? '',
         viewCount: doc.downloads?.value ?? 0,

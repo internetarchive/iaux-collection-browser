@@ -141,13 +141,13 @@ export class TileList extends LitElement {
   }
 
   private get topicsTemplate() {
-    if (!this.model?.subject) {
+    if (!this.model?.subjects[0]) {
       return nothing;
     }
     return html`
       <div id="topics">
         <span class="label">Topics: </span>
-        ${DOMPurify.sanitize(this.model?.subject)}
+        ${DOMPurify.sanitize(this.model?.subjects[0])}
       </div>
     `;
   }
