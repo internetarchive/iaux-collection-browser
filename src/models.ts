@@ -14,12 +14,14 @@ export interface TileModel {
   description?: string;
   favCount: number;
   identifier: string;
+  issue?: string;
   itemCount: number;
   mediatype: MediaType;
   source?: string;
   subjects: string[];
   title: string;
   viewCount: number;
+  volume?: string;
 }
 
 export type CollectionDisplayMode =

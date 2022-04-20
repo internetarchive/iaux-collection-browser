@@ -808,6 +808,7 @@ export class CollectionBrowser
         'description',
         'downloads',
         'identifier',
+        'issue',
         'item_count',
         'mediatype',
         'num_favorites',
@@ -817,6 +818,7 @@ export class CollectionBrowser
         'source',
         'subject',
         'title',
+        'volume',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -1114,7 +1116,8 @@ export class CollectionBrowser
         --collectionBrowserCellMinHeight,
         5rem
       );
-      --infiniteScrollerRowGap: 30px;
+      /* 30px, but compensating for a -5px margin */
+      --infiniteScrollerRowGap: 35px;
     }
 
     infinite-scroller.grid {
