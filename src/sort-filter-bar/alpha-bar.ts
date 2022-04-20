@@ -72,6 +72,12 @@ export class AlphaBar extends LitElement {
       justify-content: space-between;
     }
 
+    ul li {
+      flex: 1;
+      text-align: center;
+      max-width: 2.5rem;
+    }
+
     a {
       color: #333;
       text-decoration: none;
