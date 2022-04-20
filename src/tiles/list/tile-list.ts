@@ -30,7 +30,7 @@ export class TileList extends LitElement {
           ${this.iconLeftTemplate}
         </div>
         <div id="list-line-right">
-          <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
+          <div id="title">${this.titleTemplate}</div>
           ${this.itemLineTemplate} ${this.creatorTemplate}
           <div id="date">
             <span class="label">Published:</span> ${formatDate(
@@ -73,6 +73,13 @@ export class TileList extends LitElement {
         </mediatype-icon>
       </div>
     `;
+  }
+
+  private get titleTemplate() {
+    if (!this.model?.title) {
+      return nothing;
+    }
+    return html` ${this.detailsLink(this.model.identifier, this.model.title)} `;
   }
 
   private get itemLineTemplate() {
@@ -141,13 +148,16 @@ export class TileList extends LitElement {
   }
 
   private get topicsTemplate() {
-    if (!this.model?.subjects[0]) {
+    if (!this.model?.subjects || this.model.subjects.length === 0) {
       return nothing;
     }
     return html`
       <div id="topics">
         <span class="label">Topics: </span>
-        ${DOMPurify.sanitize(this.model?.subjects[0])}
+        ${join(
+          map(this.model.subjects, id => this.searchLink('subject', id)),
+          html`, `
+        )}
       </div>
     `;
   }
@@ -181,20 +191,19 @@ export class TileList extends LitElement {
     }
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
     // eslint-disable-next-line lit/no-invalid-html
-    return html`
-      <a href="${this.baseNavigationUrl}/search.php?query=${query}">
-        ${DOMPurify.sanitize(searchTerm)}
-      </a>
-    `;
+    return html` <a href="${this.baseNavigationUrl}/search.php?query=${query}">
+      ${DOMPurify.sanitize(searchTerm)}</a
+    >`;
   }
 
-  private detailsLink(identifier: string) {
+  private detailsLink(identifier: string, text?: string) {
     if (!identifier) {
       return nothing;
     }
+    const linkText = text ?? identifier;
     // No whitespace after closing tag
     return html` <a href="${this.baseNavigationUrl}/details/${identifier}"
-      >${DOMPurify.sanitize(identifier)}</a
+      >${DOMPurify.sanitize(linkText)}</a
     >`;
   }
 
@@ -309,17 +318,11 @@ export class TileList extends LitElement {
         line-height: 20px;
       }
 
-      #title,
       #creator,
       #topic,
       #source {
         text-overflow: ellipsis;
         overflow: hidden;
-      }
-
-      #title,
-      #creator {
-        white-space: nowrap;
       }
 
       #icon {
@@ -351,7 +354,6 @@ export class TileList extends LitElement {
         column-gap: 5px;
       }
 
-      #list-line:hover #title,
       div a:hover {
         text-decoration: underline;
       }
