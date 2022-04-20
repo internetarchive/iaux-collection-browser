@@ -19,8 +19,9 @@ import {
 import './alpha-bar';
 
 import { sortIcon } from './img/sort-triangle';
-import { gridIcon } from './img/grid';
+import { tileIcon } from './img/tile';
 import { listIcon } from './img/list';
+import { compactIcon } from './img/compact';
 
 @customElement('sort-filter-bar')
 export class SortFilterBar
@@ -283,35 +284,37 @@ export class SortFilterBar
   private get displayOptionTemplate() {
     return html`
       <ul>
-        ${this.displayMode !== 'grid'
-          ? html`<li>
-              <label id="show-details">
-                <input
-                  type="checkbox"
-                  @click=${this.detailSelected}
-                  ?checked=${this.displayMode === 'list-detail'}
-                />
-                <span> Show Details </span>
-              </label>
-            </li>`
-          : nothing}
-
         <li>
           <button
             id="grid-button"
-            @click=${this.gridSelected}
+            @click=${() => {
+              this.displayMode = 'grid';
+            }}
             class=${this.displayMode === 'grid' ? 'active' : ''}
           >
-            ${gridIcon}
+            ${tileIcon}
+          </button>
+        </li>
+        <li>
+          <button
+            id="grid-button"
+            @click=${() => {
+              this.displayMode = 'list-detail';
+            }}
+            class=${this.displayMode === 'list-detail' ? 'active' : ''}
+          >
+            ${listIcon}
           </button>
         </li>
         <li>
           <button
             id="list-button"
-            @click=${this.listSelected}
-            class=${this.displayMode !== 'grid' ? 'active' : ''}
+            @click=${() => {
+              this.displayMode = 'list-compact';
+            }}
+            class=${this.displayMode === 'list-compact' ? 'active' : ''}
           >
-            ${listIcon}
+            ${compactIcon}
           </button>
         </li>
       </ul>
@@ -422,23 +425,6 @@ export class SortFilterBar
       detail: { selectedLetter: e.detail.selectedLetter },
     });
     this.dispatchEvent(event);
-  }
-
-  private gridSelected() {
-    this.displayMode = 'grid';
-    this.emitSortChangedEvent();
-  }
-
-  private listSelected() {
-    this.displayMode = 'list-compact';
-    this.emitSortChangedEvent();
-  }
-
-  private detailSelected(e: Event) {
-    this.displayMode = (e.target as HTMLInputElement).checked
-      ? 'list-detail'
-      : 'list-compact';
-    this.emitSortChangedEvent();
   }
 
   private displayModeChanged() {
