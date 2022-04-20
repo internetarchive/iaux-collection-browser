@@ -20,6 +20,8 @@ export interface TileModel {
   title: string;
   viewCount: number;
   source?: string;
+  volume?: string;
+  issue?: string;
 }
 
 export type CollectionDisplayMode =

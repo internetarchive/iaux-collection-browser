@@ -68,6 +68,12 @@ export class TileDispatcher
       ${this.showDeleteButton
         ? html`<button id="delete-button">X</button>`
         : nothing}
+      ${this.displayMode === 'list-detail' ? this.tile : this.linkTileTemplate}
+    `;
+  }
+
+  private get linkTileTemplate() {
+    return html`
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
         title=${ifDefined(this.model?.title)}

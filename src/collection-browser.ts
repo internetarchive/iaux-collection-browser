@@ -381,7 +381,7 @@ export class CollectionBrowser
 
   private get listHeaderTemplate() {
     return html`
-      <div id="list-header"></div>
+      <div id="list-header">
         <tile-dispatcher
           .displayMode=${'list-header'}
           .resizeObserver=${this.resizeObserver}
@@ -815,8 +815,10 @@ export class CollectionBrowser
         'publicdate',
         'reviewdate',
         'title',
+        'source',
         'subject', // topic
-        'source'
+        'volume',
+        'issue',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -1118,7 +1120,8 @@ export class CollectionBrowser
         --collectionBrowserCellMinHeight,
         5rem
       );
-      --infiniteScrollerRowGap: 30px;
+      /* 30px, but compensating for a -5px margin */
+      --infiniteScrollerRowGap: 35px;
     }
 
     infinite-scroller.grid {
