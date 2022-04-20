@@ -448,10 +448,6 @@ export class SortFilterBar
   }
 
   static styles = css`
-    #container {
-      margin: 0 1rem 2.5rem 1rem;
-    }
-
     #sort-bar {
       display: flex;
       justify-content: space-between;
