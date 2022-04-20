@@ -972,6 +972,10 @@ export class CollectionBrowser
       position: relative;
       max-height: 0;
       transition: max-height 0.2s ease-in-out;
+      z-index: 1;
+    }
+
+    .mobile #facets-container {
       overflow: hidden;
     }
 
