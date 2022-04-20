@@ -64,6 +64,10 @@ export class MediatypeIcon extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
+    const iconFillColor = css`var(--iconFillColor, #000000)`;
+    const iconHeight = css`var(--iconHeight, 10px)`;
+    const iconWidth = css`var(--iconWidth, 10px)`;
+
     return css`
       .status-text {
         font-size: 14px;
@@ -78,12 +82,12 @@ export class MediatypeIcon extends LitElement {
       }
 
       svg {
-        height: var(--iconHeight, 10px);
-        width: var(--iconWidth, 10px);
+        height: ${iconHeight};
+        width: ${iconWidth};
       }
 
       .fill-color {
-        fill: var(--iconFillColor);
+        fill: ${iconFillColor};
       }
     `;
   }

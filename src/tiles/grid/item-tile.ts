@@ -18,8 +18,20 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseNavigationUrl?: string;
 
-  @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  private readonly mediatypeIconsColor: { [key: string]: any } = {
+    account: '#000000',
+    audio: '#8fdaef',
+    data: '#333333',
+    etree: '#3871c1',
+    film: '#bf1b2c',
+    image: '#62c4a9',
+    movies: '#bf1b2c',
+    software: '#80cc28',
+    texts: '#f9a72b',
+    tv: '#f25d54',
+    video: '#bf1b2c',
+    web: '#fddd10',
+  };
 
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
@@ -45,29 +57,14 @@ export class ItemTile extends LitElement {
   }
 
   render() {
-    const collectionIdentifier = this.model?.collections[0];
-    const collectionUrl = `${this.baseNavigationUrl}/details/${collectionIdentifier}`;
+    const mediatype = this.model?.mediatype || '';
+    const iconFillColor = this.mediatypeIconsColor[mediatype];
 
-    const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.collections[0]}`;
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
 
     return html`
       <div id="container">
-        <a href=${collectionUrl}>
-          <div id="stealth-popup">
-            <div
-              id="collection-thumbnail"
-              style="background-image:url(${imgSrcUrl})"
-            ></div>
-            <div id="collection-title-text">
-              <async-collection-name
-                .collectionNameCache=${this.collectionNameCache}
-                .identifier=${collectionIdentifier}
-              ></async-collection-name>
-            </div>
-          </div>
-        </a>
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
@@ -76,12 +73,16 @@ export class ItemTile extends LitElement {
             <span>${itemCreator}</span>
           </div>
         </div>
+
+        <div class="hr"></div>
+
         <div id="item-stats-container">
           <div id="stats-holder">
             <div class="col">
               <mediatype-icon
-                .mediatype=${this.model?.mediatype}
+                .mediatype=${mediatype}
                 ?showText=${true}
+                style="--iconFillColor: ${iconFillColor};"
               >
               </mediatype-icon>
             </div>
@@ -135,7 +136,6 @@ export class ItemTile extends LitElement {
       }
 
       #item-title {
-        font-weight: bold;
         color: #2c2c2c;
         font-size: 1.6rem;
         text-align: center;
@@ -276,6 +276,14 @@ export class ItemTile extends LitElement {
         width: 25%;
       }
 
+      .hr {
+        display: block;
+        height: 1px;
+        border: 0;
+        border-top: 1px solid #ccc;
+      }
+
+      /* 
       #container:hover #stealth-popup {
         margin-top: -25px;
         visibility: visible;
@@ -331,7 +339,8 @@ export class ItemTile extends LitElement {
         color: #333;
         text-decoration: none;
         display: block;
-      }
+      } 
+      */
     `;
   }
 }
