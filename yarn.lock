@@ -170,7 +170,7 @@
 
 "@internetarchive/result-type@^0.0.1":
   version "0.0.1"
-  resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
+  resolved "https://registry.yarnpkg.com/@internetarchive/result-type/-/result-type-0.0.1.tgz#a1bda4428dc557cc644a67783f1b8d5944ae4d54"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
 "@internetarchive/search-service@0.3.0-alpha.6":

@@ -29,6 +29,7 @@
     "typescript-cookie": "^1.0.3"
   },
   "devDependencies": {
+    "@internetarchive/result-type": "^0.0.1",
     "@open-wc/eslint-config": "^7.0.0",
     "@open-wc/testing": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "^5.3.1",
