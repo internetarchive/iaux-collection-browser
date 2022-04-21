@@ -1,5 +1,8 @@
+/* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import '@internetarchive/collection-name-cache';
+import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
 
@@ -14,6 +17,9 @@ export class ItemTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
   @property({ type: String }) baseNavigationUrl?: string;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
@@ -39,8 +45,8 @@ export class ItemTile extends LitElement {
   }
 
   render() {
-    const collectionName = this.model?.collections[0];
-    const collectionUrl = `${this.baseNavigationUrl}/details/${collectionName}`;
+    const collectionIdentifier = this.model?.collections[0];
+    const collectionUrl = `${this.baseNavigationUrl}/details/${collectionIdentifier}`;
 
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.collections[0]}`;
     const itemTitle = this.model?.title || '';
@@ -54,7 +60,12 @@ export class ItemTile extends LitElement {
               id="collection-thumbnail"
               style="background-image:url(${imgSrcUrl})"
             ></div>
-            <div id="collection-title-text">${collectionName}</div>
+            <div id="collection-title-text">
+              <async-collection-name
+                .collectionNameCache=${this.collectionNameCache}
+                .identifier=${collectionIdentifier}
+              ></async-collection-name>
+            </div>
           </div>
         </a>
         <div id="title-image-container">

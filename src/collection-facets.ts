@@ -1,9 +1,12 @@
+/* eslint-disable import/no-duplicates */
 import { css, html, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
+import '@internetarchive/collection-name-cache';
+import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -59,6 +62,9 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   @property({ type: Boolean }) collapsableFacets = false;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -280,6 +286,20 @@ export class CollectionFacets extends LitElement {
           bucket => `${facetGroup.key}:${bucket.key}`,
           bucket => {
             const negativeCheckboxId = `${facetGroup.key}:${bucket.key}-negative`;
+            // for collections, we need to asynchronously load the collection name
+            // so we use the `async-collection-name` widget and for the rest, we have
+            // a static value to use
+            const bucketTextDisplay =
+              facetGroup.key === 'collection'
+                ? html`
+                    <async-collection-name
+                      .collectionNameCache=${this.collectionNameCache}
+                      .identifier=${bucket.key}
+                      placeholder="-"
+                    ></async-collection-name>
+                  `
+                : html`${bucket.key}`;
+
             return html`
               <li>
                 <label class="facet-row">
@@ -309,7 +329,7 @@ export class CollectionFacets extends LitElement {
                       ${bucket.state === 'hidden' ? eyeClosedIcon : eyeIcon}
                     </label>
                   </div>
-                  <div class="facet-title">${bucket.key}</div>
+                  <div class="facet-title">${bucketTextDisplay}</div>
                   <div class="facet-count">${bucket.count}</div>
                 </label>
               </li>
