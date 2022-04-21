@@ -895,6 +895,7 @@ export class CollectionBrowser
         collections: doc.collections_raw?.values ?? [],
         commentCount: doc.num_reviews?.value ?? 0,
         creator: doc.creator?.value,
+        creators: doc.creator?.values ?? [],
         dateAdded: doc.addeddate?.value,
         dateArchived: doc.publicdate?.value,
         datePublished: doc.date?.value,
@@ -902,11 +903,17 @@ export class CollectionBrowser
         description: doc.description?.value,
         favCount: doc.num_favorites?.value ?? 0,
         identifier: doc.identifier,
+        issue: doc.issue?.value,
         itemCount: doc.item_count?.value ?? 0,
         mediatype: doc.mediatype?.value ?? 'data',
         source: doc.source?.value,
         subjects: doc.subject?.values ?? [],
-        title: doc.title?.value ?? '',
+        title: this.etreeTitle(
+          doc.title?.value,
+          doc.mediatype?.value,
+          doc.collection?.values
+        ),
+        volume: doc.volume?.value,
         viewCount: doc.downloads?.value ?? 0,
       });
     });

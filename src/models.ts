@@ -7,6 +7,7 @@ export interface TileModel {
   collections: string[];
   commentCount: number;
   creator?: string;
+  creators: string[];
   dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
   dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
   datePublished?: Date; // Date work published in the world (user-defined) [from: date]
