@@ -5,14 +5,15 @@ import {
   SearchServiceInterface,
 } from '@internetarchive/search-service';
 
-export interface CollectionNameFetcherInterface {
+export interface CollectionNameCacheInterface {
   collectionNameFor(identifier: string): Promise<string | null>;
   preloadIdentifiers(identifiers: string[]): Promise<void>;
 }
 
-type CollectionFetcherResolver = (name: string | null) => Promise<void>;
+// this is the callback type received after the name is fetched
+type CollectionNameResolver = (name: string | null) => Promise<void>;
 
-export class CollectionNameFetcher implements CollectionNameFetcherInterface {
+export class CollectionNameCache implements CollectionNameCacheInterface {
   async collectionNameFor(identifier: string): Promise<string | null> {
     const cachedName = this.collectionNameCache[identifier];
     // we're specifically looking for `undefined`, because `null`
@@ -23,7 +24,7 @@ export class CollectionNameFetcher implements CollectionNameFetcherInterface {
     return new Promise(resolve => {
       this.pendingIdentifierQueue.push(identifier);
       const currentPromises = this.pendingPromises[identifier] ?? [];
-      const resultHandler: CollectionFetcherResolver = async (
+      const resultHandler: CollectionNameResolver = async (
         name: string | null
       ) => {
         resolve(name);
@@ -43,7 +44,7 @@ export class CollectionNameFetcher implements CollectionNameFetcherInterface {
 
   private pendingIdentifierQueue: string[] = [];
 
-  private pendingPromises: { [key: string]: CollectionFetcherResolver[] } = {};
+  private pendingPromises: { [key: string]: CollectionNameResolver[] } = {};
 
   private collectionNameCache: { [key: string]: string | null | undefined } =
     {};

@@ -10,6 +10,8 @@ import { SearchServiceError } from '@internetarchive/search-service/dist/src/sea
 export class MockSearchService implements SearchServiceInterface {
   searchParams?: SearchParams;
 
+  searchCallCount = 0;
+
   fetchMetadataIdentifier?: string;
 
   fetchMatadataValues?: [identifier: string, keypath: string];
@@ -20,6 +22,7 @@ export class MockSearchService implements SearchServiceInterface {
     params: SearchParams
   ): Promise<Result<SearchResponse, SearchServiceError>> {
     this.searchParams = params;
+    this.searchCallCount += 1;
     return Promise.resolve(this.searchResult ?? { success: undefined });
   }
 
