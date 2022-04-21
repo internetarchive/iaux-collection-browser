@@ -816,7 +816,7 @@ export class CollectionBrowser
         'publicdate',
         'reviewdate',
         'source',
-        'subject',
+        'subject', // topic
         'title',
         'volume',
       ],
