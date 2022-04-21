@@ -1,5 +1,6 @@
 /* eslint-disable lit/no-invalid-html */
 import { css, html, LitElement, nothing } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { customElement, property } from 'lit/decorators.js';
@@ -32,7 +33,7 @@ export class TileList extends LitElement {
         <div id="list-line-right">
           <div id="title">${this.titleTemplate}</div>
           ${this.itemLineTemplate} ${this.creatorTemplate}
-          <div id="date">
+          <div id="date" class="metadata">
             <span class="label">Published:</span> ${formatDate(
               this.date,
               this.formatSize
@@ -48,6 +49,7 @@ export class TileList extends LitElement {
     `;
   }
 
+  // Display templates
   private get imgTemplate() {
     if (!this.model?.identifier) {
       return nothing;
@@ -84,10 +86,20 @@ export class TileList extends LitElement {
 
   private get itemLineTemplate() {
     const source = this.sourceTemplate;
-    if (!source) {
+    const volume = this.volumeTemplate;
+    const issue = this.issueTemplate;
+    if (!source && !volume && !issue) {
       return nothing;
     }
-    return html` <div id="item-line">${source}</div> `;
+    return html` <div id="item-line">${source} ${volume} ${issue}</div> `;
+  }
+
+  private get volumeTemplate() {
+    return this.metadataTemplate(this.model?.volume, 'Volume');
+  }
+
+  private get issueTemplate() {
+    return this.metadataTemplate(this.model?.issue, 'Issue');
   }
 
   private get sourceTemplate() {
@@ -96,55 +108,40 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="source">
-        <span class="label">Source: </span>
+        ${this.labelTemplate('Source')}
         ${this.searchLink('source', this.model.source)}
       </div>
     `;
   }
 
   private get creatorTemplate() {
-    if (!this.model?.creator) {
+    if (!this.model?.creators || this.model.creators.length === 0) {
       return nothing;
     }
     return html`
-      <div id="creator">
-        <span class="label">By: </span>
-        ${DOMPurify.sanitize(this.model?.creator ?? '')}
+      <div id="creator" class="metadata">
+        ${this.labelTemplate('By')}
+        ${join(
+          map(this.model.creators, id => this.searchLink('creator', id)),
+          html`, `
+        )}
       </div>
     `;
   }
 
   private get viewsTemplate() {
-    return html`
-      <div id="views">
-        <span class="label">Views: </span>
-        ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
-      </div>
-    `;
+    return this.metadataTemplate(
+      `${formatCount(this.model?.viewCount ?? 0, this.formatSize)}`,
+      'Views'
+    );
   }
 
   private get ratingTemplate() {
-    if (!this.model?.averageRating) {
-      return nothing;
-    }
-    return html`
-      <div id="reviews">
-        <span class="label">Avg Rating: </span>
-        ${this.model?.averageRating}
-      </div>
-    `;
+    return this.metadataTemplate(this.model?.averageRating, 'Avg Rating');
   }
 
   private get reviewsTemplate() {
-    if (!this.model?.commentCount) {
-      return nothing;
-    }
-    return html`
-      <div id="reviews">
-        <span class="label">Reviews: </span>
-        ${this.model?.commentCount}
-      </div>
-    `;
+    return this.metadataTemplate(this.model?.commentCount, 'Reviews');
   }
 
   private get topicsTemplate() {
@@ -152,8 +149,8 @@ export class TileList extends LitElement {
       return nothing;
     }
     return html`
-      <div id="topics">
-        <span class="label">Topics: </span>
+      <div id="topics" class="metadata">
+        ${this.labelTemplate('Topics')}
         ${join(
           map(this.model.subjects, id => this.searchLink('subject', id)),
           html`, `
@@ -167,8 +164,8 @@ export class TileList extends LitElement {
       return nothing;
     }
     return html`
-      <div id="collections">
-        <span class="label">Collections: </span>
+      <div id="collections" class="metadata">
+        ${this.labelTemplate('Collections')}
         ${join(
           map(this.model.collections, id => this.detailsLink(id)),
           html`, `
@@ -178,11 +175,27 @@ export class TileList extends LitElement {
   }
 
   private get descriptionTemplate() {
-    if (!this.model?.description) {
-      return nothing;
-    }
-    const description = DOMPurify.sanitize(`${this.model?.description}`);
-    return html` <div id="description">${description}</div> `;
+    return this.metadataTemplate(
+      DOMPurify.sanitize(this.model?.description ?? ''),
+      '',
+      'description'
+    );
+  }
+
+  // Utility functions
+  private metadataTemplate(text: any, label = '', id?: string) {
+    if (!text) return nothing;
+    return html`
+      <div id=${ifDefined(id)} class="metadata">
+        ${this.labelTemplate(label)} ${text}
+      </div>
+    `;
+  }
+
+  private labelTemplate(label: string) {
+    return html`${label
+      ? html`<span class="label">${label}: </span>`
+      : nothing}`;
   }
 
   private searchLink(field: string, searchTerm: string) {
@@ -190,7 +203,7 @@ export class TileList extends LitElement {
       return nothing;
     }
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
-    // eslint-disable-next-line lit/no-invalid-html
+    // No whitespace after closing tag
     return html` <a href="${this.baseNavigationUrl}/search.php?query=${query}">
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
@@ -310,11 +323,7 @@ export class TileList extends LitElement {
         padding-bottom: 2px;
       }
 
-      #creator,
-      #date,
-      #collections,
-      #topics,
-      #item-line {
+      .metadata {
         line-height: 20px;
       }
 
@@ -359,7 +368,6 @@ export class TileList extends LitElement {
         display: flex;
         flex-direction: row;
         gap: 10px;
-        line-height: 20px;
       }
     `;
   }
