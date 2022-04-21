@@ -110,6 +110,15 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
+"@internetarchive/collection-name-cache@0.0.1-alpha.4":
+  version "0.0.1-alpha.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.0.1-alpha.4.tgz#13be01b4c54709027332c4b9ce9dedee0d533431"
+  integrity sha512-ee7pfPFEZVJvUtxNI0/1IvzCvI/z/5uirGr54d3UbEyoC1mTYrw07ZpHEX9oeiKiKo0lJXmcJhCODxx5qRIC/g==
+  dependencies:
+    "@internetarchive/local-cache" "^0.2.1"
+    "@internetarchive/search-service" "0.3.0-alpha.6"
+    lit "^2.0.2"
+
 "@internetarchive/feature-feedback@^0.1.2":
   version "0.1.2"
   resolved "https://registry.npmjs.org/@internetarchive/feature-feedback/-/feature-feedback-0.1.2.tgz"
@@ -160,6 +169,13 @@
   dependencies:
     nanoevents "^6.0.2"
 
+"@internetarchive/local-cache@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/local-cache/-/local-cache-0.2.1.tgz#fa416cae81227228b73f51d82f3361d460e27539"
+  integrity sha512-8FFAvEEoazktWsIEod2NVYp0r+Fk3OxM8woe42mNlXHbht3Je98yQjooIFiA3/sJYB7xsZB2RHzUzh+GmBHFgw==
+  dependencies:
+    idb-keyval "^6.1.0"
+
 "@internetarchive/recaptcha-manager@^0.1.1":
   version "0.1.1"
   resolved "https://registry.npmjs.org/@internetarchive/recaptcha-manager/-/recaptcha-manager-0.1.1.tgz"
@@ -170,7 +186,7 @@
 
 "@internetarchive/result-type@^0.0.1":
   version "0.0.1"
-  resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
+  resolved "https://registry.yarnpkg.com/@internetarchive/result-type/-/result-type-0.0.1.tgz#a1bda4428dc557cc644a67783f1b8d5944ae4d54"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
 "@internetarchive/search-service@0.3.0-alpha.6":
@@ -2449,6 +2465,13 @@ iconv-lite@0.4.24:
   dependencies:
     safer-buffer ">= 2.1.2 < 3"
 
+idb-keyval@^6.1.0:
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/idb-keyval/-/idb-keyval-6.1.0.tgz#e659cff41188e6097d7fadd69926f6adbbe70041"
+  integrity sha512-u/qHZ75rlD3gH+Zah8dAJVJcGW/RfCnfNrFkElC5RpRCnpsCXXhqjVk+6MoVKJ3WhmNbRYdI6IIVP88e+5sxGw==
+  dependencies:
+    safari-14-idb-fix "^3.0.0"
+
 ieee754@^1.1.13:
   version "1.2.1"
   resolved "https://registry.npmjs.org/ieee754/-/ieee754-1.2.1.tgz"
@@ -3762,6 +3785,11 @@ rxjs@^6.6.3:
   integrity sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==
   dependencies:
     tslib "^1.9.0"
+
+safari-14-idb-fix@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/safari-14-idb-fix/-/safari-14-idb-fix-3.0.0.tgz#450fc049b996ec7f3fd9ca2f89d32e0761583440"
+  integrity sha512-eBNFLob4PMq8JA1dGyFn6G97q3/WzNtFK4RnzT1fnLq+9RyrGknzYiM/9B12MnKAxuj1IXr7UKYtTNtjyKMBog==
 
 safe-buffer@5.1.2, safe-buffer@~5.1.1:
   version "5.1.2"

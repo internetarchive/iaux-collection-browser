@@ -5,6 +5,7 @@ import {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { CollectionDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
@@ -30,6 +31,9 @@ export class TileDispatcher
   @property({ type: Number }) currentHeight?: number;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   @query('#container') private container!: HTMLDivElement;
 
@@ -109,6 +113,7 @@ export class TileDispatcher
               .baseNavigationUrl=${this.baseNavigationUrl}
               .currentWidth=${this.currentWidth}
               .currentHeight=${this.currentHeight}
+              .collectionNameCache=${this.collectionNameCache}
             ></item-tile>`;
         }
       case 'list-compact':
