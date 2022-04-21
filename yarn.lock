@@ -110,10 +110,10 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@internetarchive/collection-name-cache@0.0.1-alpha.1":
-  version "0.0.1-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.0.1-alpha.1.tgz#19a7dbc635d07b9943079b123fa8ac9b152b61b5"
-  integrity sha512-j3irqKAaHOn4x4lAEid6KYx6XwqiKXgZpZOvtKxkQY7lAbdW9NhAlZFkM8d+tyF32mtAK0/8+7f3/q8eDpCX1w==
+"@internetarchive/collection-name-cache@0.0.1-alpha.4":
+  version "0.0.1-alpha.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.0.1-alpha.4.tgz#13be01b4c54709027332c4b9ce9dedee0d533431"
+  integrity sha512-ee7pfPFEZVJvUtxNI0/1IvzCvI/z/5uirGr54d3UbEyoC1mTYrw07ZpHEX9oeiKiKo0lJXmcJhCODxx5qRIC/g==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
     "@internetarchive/search-service" "0.3.0-alpha.6"

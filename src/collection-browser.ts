@@ -833,7 +833,6 @@ export class CollectionBrowser
   }
 
   private preloadCollectionNames(docs: Metadata[]) {
-    console.debug('preloading collection names', docs);
     const collectionIds = docs.map(doc => doc.collections_raw?.values).flat();
     const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
