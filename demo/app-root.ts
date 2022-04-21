@@ -1,7 +1,9 @@
 import { SearchService } from '@internetarchive/search-service';
+import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
+import { CollectionNameCache } from '@internetarchive/collection-name-cache';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 
@@ -10,6 +12,13 @@ export class AppRoot extends LitElement {
   private searchService = SearchService.default;
 
   private resizeObserver = new SharedResizeObserver();
+
+  private localCache = new LocalCache();
+
+  private collectionNameCache = new CollectionNameCache({
+    searchService: this.searchService,
+    localCache: this.localCache,
+  });
 
   @state() private currentPage?: number;
 
@@ -158,6 +167,7 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
+          .collectionNameCache=${this.collectionNameCache}
           @visiblePageChanged=${this.visiblePageChanged}
         >
         </collection-browser>

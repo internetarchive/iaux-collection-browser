@@ -18,6 +18,7 @@
   },
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@internetarchive/collection-name-cache": "0.0.1-alpha.1",
     "@internetarchive/feature-feedback": "^0.1.2",
     "@internetarchive/field-parsers": "0.1.1-alpha.1",
     "@internetarchive/histogram-date-range": "^0.1.6",
@@ -29,6 +30,7 @@
     "typescript-cookie": "^1.0.3"
   },
   "devDependencies": {
+    "@internetarchive/local-cache": "^0.2.1",
     "@internetarchive/result-type": "^0.0.1",
     "@open-wc/eslint-config": "^7.0.0",
     "@open-wc/testing": "^3.0.3",

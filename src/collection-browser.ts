@@ -28,8 +28,8 @@ import {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
-import type { TileModel, CollectionDisplayMode } from './models';
 import '@internetarchive/infinite-scroller';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import './tiles/tile-dispatcher';
 import './tiles/loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -42,6 +42,8 @@ import {
   SortFieldToMetadataField,
   CollectionBrowserContext,
   defaultSelectedFacets,
+  TileModel,
+  CollectionDisplayMode,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -94,6 +96,9 @@ export class CollectionBrowser
   @property({ type: String }) maxSelectedDate?: string;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
 
@@ -352,6 +357,7 @@ export class CollectionBrowser
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
+        .collectionNameCache=${this.collectionNameCache}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
@@ -814,6 +820,7 @@ export class CollectionBrowser
 
     const { docs } = success.response;
     if (docs && docs.length > 0) {
+      this.preloadCollectionNames(docs);
       this.updateDataSource(pageNumber, docs);
     }
     if (docs.length < this.pageSize) {
@@ -823,6 +830,13 @@ export class CollectionBrowser
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
+  }
+
+  private preloadCollectionNames(docs: Metadata[]) {
+    console.debug('preloading collection names', docs);
+    const collectionIds = docs.map(doc => doc.collections_raw?.values).flat();
+    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
+    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
   }
 
   /**
@@ -892,6 +906,7 @@ export class CollectionBrowser
       .model=${model}
       .displayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}
+      .collectionNameCache=${this.collectionNameCache}
       ?showDeleteButton=${this.showDeleteButtons}
     ></tile-dispatcher>`;
   }
