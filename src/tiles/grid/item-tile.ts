@@ -283,9 +283,10 @@ export class ItemTile extends LitElement {
       }
 
       #stealth-popup {
-        transition: margin-top 0.3s ease, opacity 0.3s ease;
+        transition: margin-top 0.3s ease 0.5s, opacity 0.3s ease 0.5s;
         position: absolute;
         visibility: hidden;
+        opacity: 0;
         margin-left: -10px;
         text-align: left;
         display: flex;
