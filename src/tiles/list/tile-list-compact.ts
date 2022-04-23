@@ -24,17 +24,13 @@ export class TileListCompact extends LitElement {
       <div id="list-line" class="${this.classSize}">
         <div id="thumb">${this.imageTemplate}</div>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
-        <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="creator">${DOMPurify.sanitize(this.model?.creator ?? '')}</div>
+        <div id="date">${formatDate(this.date, this.formatSize)}</div>
+        <div id="icon">
+          <mediatype-icon .mediatype=${this.model?.mediatype}> </mediatype-icon>
+        </div>
         <div id="views">
           ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
-        </div>
-        <div id="icon">
-          <mediatype-icon
-            .mediatype=${this.model?.mediatype}
-            style="--iconHeight: 20px; --iconWidth: 20px;"
-          >
-          </mediatype-icon>
         </div>
       </div>
     `;
@@ -140,23 +136,21 @@ export class TileListCompact extends LitElement {
 
       #views {
         text-align: right;
+        padding-right: 8px;
       }
 
       .mobile #views {
         display: none;
       }
 
-      #icon {
-        height: 20px;
-        padding-right: 6px;
-      }
-
-      .mobile #icon {
-        height: 14px;
+      .mobile mediatype-icon {
+        --iconHeight: 14px;
+        --iconWidth: 14px;
       }
 
       .desktop #icon {
-        height: 20px;
+        --iconHeight: 20px;
+        --iconWidth: 20px;
       }
 
       /* list-line */
@@ -170,13 +164,13 @@ export class TileListCompact extends LitElement {
       }
 
       #list-line.mobile {
-        grid-template-columns: 30px 3fr 29px 2fr 19px;
+        grid-template-columns: 36px 3fr 2fr 29px 19px;
         padding-top: 2px;
         padding-bottom: 2px;
       }
 
       #list-line.desktop {
-        grid-template-columns: 51px 3fr 100px 2fr 60px 26px;
+        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
         padding-top: 5px;
         padding-bottom: 5px;
       }

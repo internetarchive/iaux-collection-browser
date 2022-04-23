@@ -1,7 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
-import eyeIcon from '../../assets/img/icons/eye';
 import { TileModel } from '../../models';
 
 @customElement('tile-list-compact-header')
@@ -17,10 +16,10 @@ export class TileListCompactHeader extends LitElement {
       <div id="list-line-header" class="${this.classSize}">
         <div id="thumb"></div>
         <div id="title">Title</div>
-        <div id="date">Date Archived</div>
         <div id="creator">Creator</div>
-        <div id="views">${eyeIcon}</div>
+        <div id="date">Date Archived</div>
         <div id="icon"></div>
+        <div id="views">Views</div>
       </div>
     `;
   }
@@ -47,28 +46,21 @@ export class TileListCompactHeader extends LitElement {
 
       #views {
         text-align: right;
-        /* Lower icon to align with text baseline */
-        line-height: 14px;
-      }
-      #views svg {
-        height: 18px;
       }
 
       #list-line-header {
         display: grid;
         column-gap: 10px;
-        align-items: center;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        align-items: flex-end;
         padding-bottom: 2px;
       }
 
       #list-line-header.mobile {
-        grid-template-columns: 30px 3fr 29px 2fr 19px;
+        grid-template-columns: 36px 3fr 2fr 58px;
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 100px 2fr 60px 26px;
+        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
       }
     `;
   }

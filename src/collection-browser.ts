@@ -1073,7 +1073,7 @@ export class CollectionBrowser
     }
 
     #list-header {
-      max-height: 3rem;
+      max-height: 4.2rem;
     }
 
     .loading-cover {
