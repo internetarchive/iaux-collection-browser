@@ -6,6 +6,7 @@ import { map } from 'lit/directives/map.js';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
+import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
@@ -16,6 +17,9 @@ export class TileList extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
   @property({ type: String }) baseNavigationUrl?: string;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   @property({ type: Number }) currentWidth?: number;
 
@@ -165,10 +169,10 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="collections" class="metadata">
-        ${this.labelTemplate('Collections')}
+        ${this.labelTemplate('Collections', true)}
         ${join(
-          map(this.model.collections, id => this.detailsLink(id)),
-          html`, `
+          map(this.model.collections, id => this.collectionLink(id)),
+          html`,&nbsp;`
         )}
       </div>
     `;
@@ -192,9 +196,12 @@ export class TileList extends LitElement {
     `;
   }
 
-  private labelTemplate(label: string) {
+  private labelTemplate(label: string, isFlex = false) {
+    // Note nobreak space needed to use display:flex
+    // in parent element when making , delimnited list
+    // to remove space between text and ,
     return html`${label
-      ? html`<span class="label">${label}: </span>`
+      ? html`<span class="label">${label}:${isFlex ? html`&nbsp;` : ` `}</span>`
       : nothing}`;
   }
 
@@ -204,7 +211,7 @@ export class TileList extends LitElement {
     }
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
     // No whitespace after closing tag
-    return html` <a href="${this.baseNavigationUrl}/search.php?query=${query}">
+    return html`<a href="${this.baseNavigationUrl}/search.php?query=${query}">
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
   }
@@ -215,9 +222,26 @@ export class TileList extends LitElement {
     }
     const linkText = text ?? identifier;
     // No whitespace after closing tag
-    return html` <a href="${this.baseNavigationUrl}/details/${identifier}"
+    return html`<a href="${this.baseNavigationUrl}/details/${identifier}"
       >${DOMPurify.sanitize(linkText)}</a
     >`;
+  }
+
+  private collectionLink(identifier: string) {
+    if (!identifier) {
+      return nothing;
+    }
+    // No whitespace after closing tag
+    return html`<a href="${this.baseNavigationUrl}/details/${identifier}"
+      >${this.collectionName(identifier)}</a
+    >`;
+  }
+
+  private collectionName(identifier: string) {
+    return html`<async-collection-name
+      .collectionNameCache=${this.collectionNameCache}
+      .identifier=${identifier}
+    ></async-collection-name>`;
   }
 
   /*
@@ -336,6 +360,14 @@ export class TileList extends LitElement {
 
       #icon {
         padding-top: 5px;
+      }
+
+      #collections {
+        /*
+          Hack to collapse line whitespace between text and ,
+          Use &nbsp; for required spaces
+        */
+        display: flex;
       }
 
       #description {

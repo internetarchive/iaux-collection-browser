@@ -36,7 +36,7 @@ export class TileDispatcher
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
-  
+
   @property({ type: Object }) sortParam?: SortParam;
 
   @query('#container') private container!: HTMLDivElement;
@@ -159,6 +159,7 @@ export class TileDispatcher
       case 'list-detail':
         return html`<tile-list
           .model=${model}
+          .collectionNameCache=${this.collectionNameCache}
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
