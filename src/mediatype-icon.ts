@@ -3,9 +3,11 @@ import { customElement, property } from 'lit/decorators.js';
 
 import { accountIcon } from './assets/img/icons/mediatype/account';
 import { audioIcon } from './assets/img/icons/mediatype/audio';
+import { dataIcon } from './assets/img/icons/mediatype/data';
 import { etreeIcon } from './assets/img/icons/mediatype/etree';
 import { imagesIcon } from './assets/img/icons/mediatype/images';
 import { filmIcon } from './assets/img/icons/mediatype/film';
+import { radioIcon } from './assets/img/icons/mediatype/radio';
 import { softwareIcon } from './assets/img/icons/mediatype/software';
 import { textsIcon } from './assets/img/icons/mediatype/texts';
 import { tvIcon } from './assets/img/icons/mediatype/tv';
@@ -22,12 +24,12 @@ export class MediatypeIcon extends LitElement {
   private readonly mediatypeIcons: { [key: string]: any } = {
     account: accountIcon,
     audio: audioIcon,
-    collection: collectionIcon,
-    data: etreeIcon,
+    data: dataIcon,
     etree: etreeIcon,
     film: filmIcon,
     image: imagesIcon,
     movies: filmIcon,
+    radioIcon,
     software: softwareIcon,
     texts: textsIcon,
     tv: tvIcon,
@@ -64,10 +66,6 @@ export class MediatypeIcon extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
-    const iconFillColor = css`var(--iconFillColor, #000000)`;
-    const iconHeight = css`var(--iconHeight, 10px)`;
-    const iconWidth = css`var(--iconWidth, 10px)`;
-
     return css`
       .status-text {
         font-size: 14px;
@@ -82,12 +80,12 @@ export class MediatypeIcon extends LitElement {
       }
 
       svg {
-        height: ${iconHeight};
-        width: ${iconWidth};
+        height: var(--iconHeight, 10px);
+        width: var(--iconWidth, 10px);
       }
 
       .fill-color {
-        fill: ${iconFillColor};
+        fill: var(--iconFillColor, '#000000');
       }
     `;
   }
