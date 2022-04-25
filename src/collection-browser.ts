@@ -955,7 +955,7 @@ export class CollectionBrowser
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
       .model=${model}
-      .displayMode=${this.displayMode}
+      .tileDisplayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}
       .collectionNameCache=${this.collectionNameCache}
       .sortParam=${this.sortParam}

@@ -7,11 +7,7 @@ import {
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SortParam } from '@internetarchive/search-service';
-import type {
-  CollectionDisplayMode,
-  TileDisplayMode,
-  TileModel,
-} from '../models';
+import type { TileDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
@@ -24,8 +20,6 @@ export class TileDispatcher
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
 {
-  @property({ type: String }) displayMode?: CollectionDisplayMode;
-
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
 
   @property({ type: Object }) model?: TileModel;
@@ -77,7 +71,9 @@ export class TileDispatcher
       ${this.showDeleteButton
         ? html`<button id="delete-button">X</button>`
         : nothing}
-      ${this.displayMode === 'list-detail' ? this.tile : this.linkTileTemplate}
+      ${this.tileDisplayMode === 'list-detail'
+        ? this.tile
+        : this.linkTileTemplate}
     `;
   }
 
@@ -138,7 +134,7 @@ export class TileDispatcher
 
     if (!model) return nothing;
 
-    switch (this.displayMode) {
+    switch (this.tileDisplayMode) {
       case 'grid':
         switch (model.mediatype) {
           case 'collection':
