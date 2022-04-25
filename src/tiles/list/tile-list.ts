@@ -208,7 +208,9 @@ export class TileList extends LitElement {
     }
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
     // No whitespace after closing tag
-    // Note single ' for href to wrap " in query var
+    // Note: single ' for href='' to wrap " in query var gets changed back by yarn format
+
+    // eslint-disable-next-line lit/no-invalid-html
     return html`<a href="${this.baseNavigationUrl}/search.php?query=${query}">
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
@@ -261,25 +263,23 @@ export class TileList extends LitElement {
   }
 
   private get classSize(): string {
-    if (this.mobileBreakpoint) {
-      if (
-        this.currentWidth ??
-        this.mobileBreakpoint + 1 < this.mobileBreakpoint
-      ) {
-        return 'mobile';
-      }
+    if (
+      this.mobileBreakpoint &&
+      this.currentWidth &&
+      this.currentWidth < this.mobileBreakpoint
+    ) {
+      return 'mobile';
     }
     return 'desktop';
   }
 
   private get formatSize(): DateFormat | NumberFormat {
-    if (this.mobileBreakpoint) {
-      if (
-        this.currentWidth ??
-        this.mobileBreakpoint + 1 < this.mobileBreakpoint
-      ) {
-        return 'short';
-      }
+    if (
+      this.mobileBreakpoint &&
+      this.currentWidth &&
+      this.currentWidth < this.mobileBreakpoint
+    ) {
+      return 'short';
     }
     return 'long';
   }

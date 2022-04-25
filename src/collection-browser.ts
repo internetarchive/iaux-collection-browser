@@ -386,6 +386,7 @@ export class CollectionBrowser
           .tileDisplayMode=${'list-header'}
           .resizeObserver=${this.resizeObserver}
           .sortParam=${this.sortParam}
+          .mobileBreakpoint=${this.mobileBreakpoint}
         >
         </tile-dispatcher>
       </div>
@@ -960,6 +961,7 @@ export class CollectionBrowser
       .collectionNameCache=${this.collectionNameCache}
       .sortParam=${this.sortParam}
       ?showDeleteButton=${this.showDeleteButtons}
+      .mobileBreakpoint=${this.mobileBreakpoint}
     ></tile-dispatcher>`;
   }
 

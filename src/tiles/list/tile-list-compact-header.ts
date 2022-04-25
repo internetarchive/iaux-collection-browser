@@ -40,13 +40,12 @@ export class TileListCompactHeader extends LitElement {
   }
 
   private get classSize(): string {
-    if (this.mobileBreakpoint) {
-      if (
-        this.currentWidth ??
-        this.mobileBreakpoint + 1 < this.mobileBreakpoint
-      ) {
-        return 'mobile';
-      }
+    if (
+      this.mobileBreakpoint &&
+      this.currentWidth &&
+      this.currentWidth < this.mobileBreakpoint
+    ) {
+      return 'mobile';
     }
     return 'desktop';
   }
