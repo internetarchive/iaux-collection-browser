@@ -86,8 +86,8 @@ export const SortFieldToMetadataField: {
   relevance: null,
   views: 'week',
   title: 'titleSorter',
-  datearchived: 'date',
-  datepublished: 'publicdate',
+  datearchived: 'publicdate',
+  datepublished: 'date',
   datereviewed: 'reviewdate',
   dateadded: 'addeddate',
   creator: 'creatorSorter',
@@ -100,8 +100,8 @@ export const MetadataFieldToSortField: {
   [key in MetadataSortField]: SortField;
 } = {
   titleSorter: SortField.title,
-  date: SortField.datearchived,
-  publicdate: SortField.datepublished,
+  date: SortField.datepublished,
+  publicdate: SortField.datearchived,
   reviewdate: SortField.datereviewed,
   addeddate: SortField.dateadded,
   creatorSorter: SortField.creator,
