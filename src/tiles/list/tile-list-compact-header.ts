@@ -9,7 +9,9 @@ export class TileListCompactHeader extends LitElement {
 
   @property({ type: Number }) currentWidth?: number;
 
-  @property({ type: Object }) sortParam?: SortParam;
+  @property({ type: Object }) sortParam: SortParam | null = null;
+
+  @property({ type: Number }) mobileBreakpoint?: number;
 
   render() {
     return html`
@@ -17,15 +19,36 @@ export class TileListCompactHeader extends LitElement {
         <div id="thumb"></div>
         <div id="title">Title</div>
         <div id="creator">Creator</div>
-        <div id="date">Date Archived</div>
+        <div id="date">${this.dateLabel}</div>
         <div id="icon"></div>
         <div id="views">Views</div>
       </div>
     `;
   }
 
+  private get dateLabel(): string {
+    switch (this.sortParam?.field) {
+      case 'date':
+        return 'Date Published';
+      case 'reviewdate':
+        return 'Date Reviewed';
+      case 'addeddate':
+        return 'Date Added';
+      default:
+        return 'Date Archived';
+    }
+  }
+
   private get classSize(): string {
-    return (this.currentWidth ?? 531) < 530 ? 'mobile' : 'desktop';
+    if (this.mobileBreakpoint) {
+      if (
+        this.currentWidth ??
+        this.mobileBreakpoint + 1 < this.mobileBreakpoint
+      ) {
+        return 'mobile';
+      }
+    }
+    return 'desktop';
   }
 
   static get styles() {

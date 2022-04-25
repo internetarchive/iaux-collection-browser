@@ -7,7 +7,11 @@ import {
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SortParam } from '@internetarchive/search-service';
-import type { CollectionDisplayMode, TileModel } from '../models';
+import type {
+  CollectionDisplayMode,
+  TileDisplayMode,
+  TileModel,
+} from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
@@ -21,6 +25,8 @@ export class TileDispatcher
   implements SharedResizeObserverResizeHandlerInterface
 {
   @property({ type: String }) displayMode?: CollectionDisplayMode;
+
+  @property({ type: String }) tileDisplayMode?: TileDisplayMode;
 
   @property({ type: Object }) model?: TileModel;
 
@@ -37,14 +43,16 @@ export class TileDispatcher
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  @property({ type: Object }) sortParam?: SortParam;
+  @property({ type: Object }) sortParam: SortParam | null = null;
 
   @query('#container') private container!: HTMLDivElement;
+
+  @property({ type: Number }) mobileBreakpoint?: number;
 
   render() {
     return html`
       <div id="container">
-        ${this.displayMode === 'list-header'
+        ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
       </div>
@@ -52,12 +60,13 @@ export class TileDispatcher
   }
 
   private get headerTemplate() {
-    const { currentWidth, sortParam } = this;
+    const { currentWidth, sortParam, mobileBreakpoint } = this;
     return html`
       <tile-list-compact-header
         class="header"
         .currentWidth=${currentWidth}
         .sortParam=${sortParam}
+        .mobileBreakpoint=${mobileBreakpoint}
       >
       </tile-list-compact-header>
     `;
@@ -118,8 +127,14 @@ export class TileDispatcher
   }
 
   private get tile() {
-    const { model, baseNavigationUrl, currentWidth, currentHeight, sortParam } =
-      this;
+    const {
+      model,
+      baseNavigationUrl,
+      currentWidth,
+      currentHeight,
+      sortParam,
+      mobileBreakpoint,
+    } = this;
 
     if (!model) return nothing;
 
@@ -155,6 +170,7 @@ export class TileDispatcher
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
+          .mobileBreakpoint=${mobileBreakpoint}
         ></tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list
@@ -164,6 +180,7 @@ export class TileDispatcher
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
+          .mobileBreakpoint=${mobileBreakpoint}
         ></tile-list>`;
       default:
         return nothing;

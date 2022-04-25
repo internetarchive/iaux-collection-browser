@@ -1,4 +1,3 @@
-/* eslint-disable lit/no-invalid-html */
 import { css, html, LitElement, nothing } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
@@ -25,7 +24,9 @@ export class TileList extends LitElement {
 
   @property({ type: Number }) currentHeight?: number;
 
-  @property({ type: Object }) sortParam?: SortParam;
+  @property({ type: Object }) sortParam: SortParam | null = null;
+
+  @property({ type: Number }) mobileBreakpoint?: number;
 
   render() {
     return html`
@@ -71,11 +72,7 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="icon-left">
-        <mediatype-icon
-          .mediatype=${this.model?.mediatype}
-          .showText=${true}
-          style="--iconHeight: 20px; --iconWidth: 20px;text-align: center;"
-        >
+        <mediatype-icon .mediatype=${this.model?.mediatype} .showText=${true}>
         </mediatype-icon>
       </div>
     `;
@@ -211,6 +208,7 @@ export class TileList extends LitElement {
     }
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
     // No whitespace after closing tag
+    // Note single ' for href to wrap " in query var
     return html`<a href="${this.baseNavigationUrl}/search.php?query=${query}">
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
@@ -263,11 +261,27 @@ export class TileList extends LitElement {
   }
 
   private get classSize(): string {
-    return (this.currentWidth ?? 531) < 530 ? 'mobile' : 'desktop';
+    if (this.mobileBreakpoint) {
+      if (
+        this.currentWidth ??
+        this.mobileBreakpoint + 1 < this.mobileBreakpoint
+      ) {
+        return 'mobile';
+      }
+    }
+    return 'desktop';
   }
 
   private get formatSize(): DateFormat | NumberFormat {
-    return (this.currentWidth ?? 531) < 530 ? 'short' : 'long';
+    if (this.mobileBreakpoint) {
+      if (
+        this.currentWidth ??
+        this.mobileBreakpoint + 1 < this.mobileBreakpoint
+      ) {
+        return 'short';
+      }
+    }
+    return 'long';
   }
 
   static get styles() {
@@ -334,6 +348,9 @@ export class TileList extends LitElement {
 
       #icon-left {
         padding-top: 5px;
+        --iconHeight: 20px;
+        --iconWidth: 20px;
+        text-align: center;
       }
 
       #title {

@@ -383,7 +383,7 @@ export class CollectionBrowser
     return html`
       <div id="list-header">
         <tile-dispatcher
-          .displayMode=${'list-header'}
+          .tileDisplayMode=${'list-header'}
           .resizeObserver=${this.resizeObserver}
           .sortParam=${this.sortParam}
         >
@@ -1123,8 +1123,12 @@ export class CollectionBrowser
         --collectionBrowserCellMinHeight,
         5rem
       );
-      /* 30px, but compensating for a -5px margin */
-      --infiniteScrollerRowGap: 35px;
+      /*
+        30px in spec, compensating for a -4px margin
+        to align title with top of item image
+        src/tiles/list/tile-list.ts
+       */
+      --infiniteScrollerRowGap: 34px;
     }
 
     infinite-scroller.grid {

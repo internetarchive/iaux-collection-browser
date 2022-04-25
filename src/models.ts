@@ -25,11 +25,9 @@ export interface TileModel {
   volume?: string;
 }
 
-export type CollectionDisplayMode =
-  | 'grid'
-  | 'list-compact'
-  | 'list-detail'
-  | 'list-header';
+export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
+
+export type TileDisplayMode = 'list-header';
 
 /**
  * This is mainly used to set the cookies for the collection display mode.

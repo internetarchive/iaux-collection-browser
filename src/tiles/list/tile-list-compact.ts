@@ -17,7 +17,9 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Number }) currentHeight?: number;
 
-  @property({ type: Object }) sortParam?: SortParam;
+  @property({ type: Object }) sortParam: SortParam | null = null;
+
+  @property({ type: Number }) mobileBreakpoint?: number;
 
   render() {
     return html`
@@ -66,11 +68,27 @@ export class TileListCompact extends LitElement {
   }
 
   private get classSize(): string {
-    return (this.currentWidth ?? 531) < 530 ? 'mobile' : 'desktop';
+    if (this.mobileBreakpoint) {
+      if (
+        this.currentWidth ??
+        this.mobileBreakpoint + 1 < this.mobileBreakpoint
+      ) {
+        return 'mobile';
+      }
+    }
+    return 'desktop';
   }
 
   private get formatSize(): DateFormat | NumberFormat {
-    return (this.currentWidth ?? 531) < 530 ? 'short' : 'long';
+    if (this.mobileBreakpoint) {
+      if (
+        this.currentWidth ??
+        this.mobileBreakpoint + 1 < this.mobileBreakpoint
+      ) {
+        return 'short';
+      }
+    }
+    return 'long';
   }
 
   static get styles() {
@@ -174,26 +192,6 @@ export class TileListCompact extends LitElement {
         padding-top: 5px;
         padding-bottom: 5px;
       }
-
-      /*
-      #title {
-        flex-grow: 3;
-        flex-shrink: 3;
-        flex-basis: 0;
-      }
-
-      #creator {
-        flex-grow: 2;
-        flex-shrink: 2;
-        flex-basis: 0;
-      }
-
-      #date {
-        flex-grow: 1;
-        flex-shrink: 1;
-        flex-basis: 0;
-      }
-    */
 
       #list-line:hover #title {
         text-decoration: underline;
