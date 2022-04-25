@@ -19,6 +19,8 @@ import { collectionIcon } from './assets/img/icons/mediatype/collection';
 export class MediatypeIcon extends LitElement {
   @property({ type: String }) mediatype: string | undefined;
 
+  @property({ type: Array }) collection: string[] | undefined;
+
   @property({ type: Boolean }) showText = false;
 
   private readonly mediatypeIcons: { [key: string]: any } = {
@@ -29,7 +31,7 @@ export class MediatypeIcon extends LitElement {
     film: filmIcon,
     image: imagesIcon,
     movies: filmIcon,
-    radioIcon,
+    radio: radioIcon,
     software: softwareIcon,
     texts: textsIcon,
     tv: tvIcon,
@@ -46,6 +48,7 @@ export class MediatypeIcon extends LitElement {
     film: 'Film',
     image: 'Image',
     movies: 'Movie',
+    radio: 'Radio',
     software: 'Software',
     texts: 'Text',
     tv: 'TV',
@@ -53,14 +56,36 @@ export class MediatypeIcon extends LitElement {
     web: 'Web',
   };
 
+  private getDisplayMediaType = () => {
+    const tvIdentifier = ['tvnews', 'tvarchive', 'television'];
+    const radioIdentifier = ['radio', 'radioprogram'];
+
+    if (
+      this.mediatype === 'movies' &&
+      this.collection?.some(id => tvIdentifier.indexOf(id) >= 0)
+    ) {
+      return 'tv';
+    }
+    if (
+      this.mediatype === 'audio' &&
+      this.collection?.some(id => radioIdentifier.indexOf(id) >= 0)
+    ) {
+      return 'radio';
+    }
+    return this.mediatype;
+  };
+
   render() {
     if (!this.mediatype) {
       return html``;
     }
+
+    const displayMediatype = this.getDisplayMediaType() || '';
+
     return html`
       <div id="icon" class="${this.showText ? 'show-text' : 'hide-text'}">
-        ${this.mediatypeIcons[this.mediatype]}
-        <p class="status-text">${this.mediatypeText[this.mediatype]}</p>
+        ${this.mediatypeIcons[displayMediatype]}
+        <p class="status-text">${this.mediatypeText[displayMediatype]}</p>
       </div>
     `;
   }

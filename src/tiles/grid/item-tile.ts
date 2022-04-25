@@ -81,6 +81,7 @@ export class ItemTile extends LitElement {
             <div class="col">
               <mediatype-icon
                 .mediatype=${mediatype}
+                .collection=${this.model?.collections}
                 ?showText=${true}
                 style="--iconFillColor: ${iconFillColor};"
               >
