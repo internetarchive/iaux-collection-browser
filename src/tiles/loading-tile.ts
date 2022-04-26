@@ -20,50 +20,9 @@ export class LoadingTile extends LitElement {
           rgba(25, 69, 154, 0.1),
           rgb(105, 161, 234, 0.2)
         );
-        background-size: 400% 400%;
-
-        -webkit-animation: AnimationName 4s ease infinite;
-        -moz-animation: AnimationName 4s ease infinite;
-        animation: AnimationName 4s ease infinite;
-
+        background-size: 100% 100%;
         display: block;
         height: 100%;
-      }
-
-      @-webkit-keyframes AnimationName {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-
-      @-moz-keyframes AnimationName {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
-      }
-
-      @keyframes AnimationName {
-        0% {
-          background-position: 0% 50%;
-        }
-        50% {
-          background-position: 100% 50%;
-        }
-        100% {
-          background-position: 0% 50%;
-        }
       }
     `;
   }
