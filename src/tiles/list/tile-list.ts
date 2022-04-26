@@ -129,15 +129,14 @@ export class TileList extends LitElement {
   }
 
   private get datePublishedTemplate() {
-    return html`
-      <div class="metadata">
-        ${this.labelTemplate('Published')}
-        ${formatDate(this.model?.datePublished, 'long')}
-      </div>
-    `;
+    return this.metadataTemplate(
+      formatDate(this.model?.datePublished, 'long'),
+      'Published'
+    );
   }
 
-  // Show date value if sorted by that date type
+  // Show date label/value when sorted by date type
+  // Except datePublished which is always shown
   private get dateSortByTemplate() {
     if (
       this.sortParam &&
@@ -145,12 +144,10 @@ export class TileList extends LitElement {
         this.sortParam.field === 'reviewdate' ||
         this.sortParam.field === 'publicdate')
     ) {
-      return html`
-        <div class="metadata">
-          ${this.labelTemplate(dateLabel(this.sortParam.field))}
-          ${formatDate(this.date, 'long')}
-        </div>
-      `;
+      return this.metadataTemplate(
+        formatDate(this.date, 'long'),
+        dateLabel(this.sortParam.field)
+      );
     }
     return nothing;
   }
