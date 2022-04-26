@@ -231,10 +231,6 @@ export class ItemTile extends LitElement {
         padding-top: 1rem;
       }
 
-      #by {
-        font-weight: bold;
-      }
-
       #item-stats-container {
         align-items: center;
         display: flex;
