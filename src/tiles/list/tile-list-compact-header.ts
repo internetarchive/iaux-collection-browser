@@ -66,7 +66,7 @@ export class TileListCompactHeader extends LitElement {
       }
 
       #list-line-header.mobile {
-        grid-template-columns: 36px 3fr 2fr 58px;
+        grid-template-columns: 36px 3fr 2fr 91px;
       }
 
       #list-line-header.desktop {
