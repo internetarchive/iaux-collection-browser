@@ -1,8 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import '@internetarchive/collection-name-cache';
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
 
@@ -18,8 +16,20 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseNavigationUrl?: string;
 
-  @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  private readonly mediatypeIconsColor: { [key: string]: any } = {
+    account: '#000000',
+    audio: '#8fdaef',
+    data: '#333333',
+    etree: '#3871c1',
+    film: '#bf1b2c',
+    image: '#62c4a9',
+    movies: '#bf1b2c',
+    software: '#80cc28',
+    texts: '#f9a72b',
+    tv: '#f25d54',
+    video: '#bf1b2c',
+    web: '#fddd10',
+  };
 
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
@@ -45,29 +55,14 @@ export class ItemTile extends LitElement {
   }
 
   render() {
-    const collectionIdentifier = this.model?.collections[0];
-    const collectionUrl = `${this.baseNavigationUrl}/details/${collectionIdentifier}`;
+    const mediatype = this.model?.mediatype || '';
+    const iconFillColor = this.mediatypeIconsColor[mediatype];
 
-    const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.collections[0]}`;
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
 
     return html`
       <div id="container">
-        <a href=${collectionUrl}>
-          <div id="stealth-popup">
-            <div
-              id="collection-thumbnail"
-              style="background-image:url(${imgSrcUrl})"
-            ></div>
-            <div id="collection-title-text">
-              <async-collection-name
-                .collectionNameCache=${this.collectionNameCache}
-                .identifier=${collectionIdentifier}
-              ></async-collection-name>
-            </div>
-          </div>
-        </a>
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
@@ -76,12 +71,15 @@ export class ItemTile extends LitElement {
             <span>${itemCreator}</span>
           </div>
         </div>
+
         <div id="item-stats-container">
           <div id="stats-holder">
             <div class="col">
               <mediatype-icon
-                .mediatype=${this.model?.mediatype}
+                .mediatype=${mediatype}
+                .collection=${this.model?.collections}
                 ?showText=${true}
+                style="--iconFillColor: ${iconFillColor};"
               >
               </mediatype-icon>
             </div>
@@ -135,8 +133,7 @@ export class ItemTile extends LitElement {
       }
 
       #item-title {
-        font-weight: bold;
-        color: #000000;
+        color: #2c2c2c;
         font-size: 1.6rem;
         text-align: center;
         margin-top: 0rem;
@@ -201,7 +198,7 @@ export class ItemTile extends LitElement {
 
       .no-preview {
         background-color: #fffecb;
-        color: #000000;
+        color: #2c2c2c;
         font-size: 1.4rem;
         line-height: 2rem;
         text-align: center;
@@ -225,7 +222,7 @@ export class ItemTile extends LitElement {
       }
 
       .item-creator {
-        color: #000000;
+        color: #2c2c2c;
         display: -webkit-box;
         font-size: 1.4rem;
         height: 3rem;
@@ -248,6 +245,7 @@ export class ItemTile extends LitElement {
         height: 5.5rem;
         padding-left: 1rem;
         padding-right: 0.5rem;
+        border-top: 1px solid #ccc;
       }
 
       #stats-holder {
@@ -274,63 +272,6 @@ export class ItemTile extends LitElement {
 
       .col {
         width: 25%;
-      }
-
-      #container:hover #stealth-popup {
-        margin-top: -25px;
-        visibility: visible;
-        opacity: 1;
-      }
-
-      #stealth-popup {
-        transition: margin-top 0.3s ease 0.5s, opacity 0.3s ease 0.5s;
-        position: absolute;
-        visibility: hidden;
-        opacity: 0;
-        margin-left: -10px;
-        text-align: left;
-        display: flex;
-        padding: 5px;
-        width: 96%;
-        background: #f5f5f7 100%;
-        border: 1px #2c2c2c;
-        border-radius: ${cornerRadiusCss};
-        box-shadow: 1px 1px 2px 0px;
-      }
-
-      #collection-thumbnail {
-        display: flex;
-        transition: opacity 0.3s ease;
-        width: 3rem;
-        height: 3rem;
-        flex: 0 0 3rem;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        overflow: hidden;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-      }
-
-      #collection-title-text {
-        line-height: 1;
-        font-size: 16px;
-        font-weight: bold;
-        text-align: left;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-        height: 3.5rem;
-        display: -webkit-box;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-      }
-
-      a {
-        color: #333;
-        text-decoration: none;
-        display: block;
       }
     `;
   }

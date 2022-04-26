@@ -3,19 +3,23 @@ import { customElement, property } from 'lit/decorators.js';
 
 import { accountIcon } from './assets/img/icons/mediatype/account';
 import { audioIcon } from './assets/img/icons/mediatype/audio';
+import { collectionIcon } from './assets/img/icons/mediatype/collection';
+import { dataIcon } from './assets/img/icons/mediatype/data';
 import { etreeIcon } from './assets/img/icons/mediatype/etree';
 import { imagesIcon } from './assets/img/icons/mediatype/images';
 import { filmIcon } from './assets/img/icons/mediatype/film';
+import { radioIcon } from './assets/img/icons/mediatype/radio';
 import { softwareIcon } from './assets/img/icons/mediatype/software';
 import { textsIcon } from './assets/img/icons/mediatype/texts';
 import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
-import { collectionIcon } from './assets/img/icons/mediatype/collection';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
   @property({ type: String }) mediatype: string | undefined;
+
+  @property({ type: Array }) collections: string[] | undefined;
 
   @property({ type: Boolean }) showText = false;
 
@@ -23,11 +27,12 @@ export class MediatypeIcon extends LitElement {
     account: accountIcon,
     audio: audioIcon,
     collection: collectionIcon,
-    data: etreeIcon,
+    data: dataIcon,
     etree: etreeIcon,
     film: filmIcon,
     image: imagesIcon,
     movies: filmIcon,
+    radio: radioIcon,
     software: softwareIcon,
     texts: textsIcon,
     tv: tvIcon,
@@ -44,6 +49,7 @@ export class MediatypeIcon extends LitElement {
     film: 'Film',
     image: 'Image',
     movies: 'Movie',
+    radio: 'Radio',
     software: 'Software',
     texts: 'Text',
     tv: 'TV',
@@ -51,14 +57,36 @@ export class MediatypeIcon extends LitElement {
     web: 'Web',
   };
 
+  private get displayMediaType() {
+    const tvIdentifier = ['tvnews', 'tvarchive', 'television'];
+    const radioIdentifier = ['radio', 'radioprogram'];
+
+    if (
+      this.mediatype === 'movies' &&
+      this.collections?.some(id => tvIdentifier.indexOf(id) >= 0)
+    ) {
+      return 'tv';
+    }
+    if (
+      this.mediatype === 'audio' &&
+      this.collections?.some(id => radioIdentifier.indexOf(id) >= 0)
+    ) {
+      return 'radio';
+    }
+    return this.mediatype;
+  }
+
   render() {
     if (!this.mediatype) {
       return html``;
     }
+
+    const displayMediatype = this.displayMediaType || '';
+
     return html`
       <div id="icon" class="${this.showText ? 'show-text' : 'hide-text'}">
-        ${this.mediatypeIcons[this.mediatype]}
-        <p class="status-text">${this.mediatypeText[this.mediatype]}</p>
+        ${this.mediatypeIcons[displayMediatype]}
+        <p class="status-text">${this.mediatypeText[displayMediatype]}</p>
       </div>
     `;
   }
@@ -83,7 +111,7 @@ export class MediatypeIcon extends LitElement {
       }
 
       .fill-color {
-        fill: var(--iconFillColor);
+        fill: var(--iconFillColor, '#000000');
       }
     `;
   }
