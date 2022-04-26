@@ -1,8 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import '@internetarchive/collection-name-cache';
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
 
@@ -73,8 +71,6 @@ export class ItemTile extends LitElement {
             <span>${itemCreator}</span>
           </div>
         </div>
-
-        <div class="hr"></div>
 
         <div id="item-stats-container">
           <div id="stats-holder">
@@ -249,6 +245,7 @@ export class ItemTile extends LitElement {
         height: 5.5rem;
         padding-left: 1rem;
         padding-right: 0.5rem;
+        border-top: 1px solid #ccc;
       }
 
       #stats-holder {
@@ -276,72 +273,6 @@ export class ItemTile extends LitElement {
       .col {
         width: 25%;
       }
-
-      .hr {
-        display: block;
-        height: 1px;
-        border: 0;
-        border-top: 1px solid #ccc;
-      }
-
-      /* 
-      #container:hover #stealth-popup {
-        margin-top: -25px;
-        visibility: visible;
-        opacity: 1;
-      }
-
-      #stealth-popup {
-        transition: margin-top 0.3s ease 0.5s, opacity 0.3s ease 0.5s;
-        position: absolute;
-        visibility: hidden;
-        opacity: 0;
-        margin-left: -10px;
-        text-align: left;
-        display: flex;
-        padding: 5px;
-        width: 96%;
-        background: #f5f5f7 100%;
-        border: 1px #2c2c2c;
-        border-radius: ${cornerRadiusCss};
-        box-shadow: 1px 1px 2px 0px;
-      }
-
-      #collection-thumbnail {
-        display: flex;
-        transition: opacity 0.3s ease;
-        width: 3rem;
-        height: 3rem;
-        flex: 0 0 3rem;
-        border-radius: 8px;
-        border: 1px solid #ddd;
-        overflow: hidden;
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-      }
-
-      #collection-title-text {
-        line-height: 1;
-        font-size: 16px;
-        font-weight: bold;
-        text-align: left;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-        height: 3.5rem;
-        display: -webkit-box;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-      }
-
-      a {
-        color: #333;
-        text-decoration: none;
-        display: block;
-      } 
-      */
     `;
   }
 }
