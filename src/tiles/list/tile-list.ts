@@ -39,12 +39,8 @@ export class TileList extends LitElement {
         <div id="list-line-right">
           <div id="title">${this.titleTemplate}</div>
           ${this.itemLineTemplate} ${this.creatorTemplate}
-          <div id="date" class="metadata">
-            <span class="label">Published: </span> ${formatDate(
-              this.date,
-              'long'
-            )}
-            ${this.sortDateTemplate}
+          <div id="dates-line">
+            ${this.datePublishedTemplate} ${this.dateSortByTemplate}
           </div>
           <div id="views-line">
             ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
@@ -132,19 +128,26 @@ export class TileList extends LitElement {
     `;
   }
 
-  // Show date value if sorted by that date type
-  private get sortDateTemplate() {
+  private get datePublishedTemplate() {
+    return this.metadataTemplate(
+      formatDate(this.model?.datePublished, 'long'),
+      'Published'
+    );
+  }
+
+  // Show date label/value when sorted by date type
+  // Except datePublished which is always shown
+  private get dateSortByTemplate() {
     if (
       this.sortParam &&
       (this.sortParam.field === 'addeddate' ||
         this.sortParam.field === 'reviewdate' ||
         this.sortParam.field === 'publicdate')
     ) {
-      return html`
-        <span class="label">${dateLabel(this.sortParam.field)}: </span>
-        ${formatDate(this.date, 'long')}
-      </div>
-    `;
+      return this.metadataTemplate(
+        formatDate(this.date, 'long'),
+        dateLabel(this.sortParam.field)
+      );
     }
     return nothing;
   }
@@ -420,8 +423,7 @@ export class TileList extends LitElement {
         text-align: left;
       }
 
-      /* list-line */
-
+      /* Top level container */
       #list-line {
         display: flex;
         column-gap: 5px;
@@ -431,7 +433,9 @@ export class TileList extends LitElement {
         text-decoration: underline;
       }
 
+      /* Lines containing multiple div as row */
       #item-line,
+      #dates-line,
       #views-line {
         display: flex;
         flex-direction: row;
