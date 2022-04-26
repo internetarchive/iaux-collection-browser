@@ -6,6 +6,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import { dateLabel } from './date-label';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
@@ -39,10 +40,11 @@ export class TileList extends LitElement {
           <div id="title">${this.titleTemplate}</div>
           ${this.itemLineTemplate} ${this.creatorTemplate}
           <div id="date" class="metadata">
-            <span class="label">Published:</span> ${formatDate(
+            <span class="label">Published: </span> ${formatDate(
               this.date,
-              this.formatSize
+              'long'
             )}
+            ${this.sortDateTemplate}
           </div>
           <div id="views-line">
             ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
@@ -128,6 +130,23 @@ export class TileList extends LitElement {
         )}
       </div>
     `;
+  }
+
+  // Show date value if sorted by that date type
+  private get sortDateTemplate() {
+    if (
+      this.sortParam &&
+      (this.sortParam.field === 'addeddate' ||
+        this.sortParam.field === 'reviewdate' ||
+        this.sortParam.field === 'publicdate')
+    ) {
+      return html`
+        <span class="label">${dateLabel(this.sortParam.field)}: </span>
+        ${formatDate(this.date, 'long')}
+      </div>
+    `;
+    }
+    return nothing;
   }
 
   private get viewsTemplate() {

@@ -1,6 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
+import { dateLabel } from './date-label';
 import { TileModel } from '../../models';
 
 @customElement('tile-list-compact-header')
@@ -19,24 +20,11 @@ export class TileListCompactHeader extends LitElement {
         <div id="thumb"></div>
         <div id="title">Title</div>
         <div id="creator">Creator</div>
-        <div id="date">${this.dateLabel}</div>
+        <div id="date">${dateLabel(this.sortParam?.field)}</div>
         <div id="icon"></div>
         <div id="views">Views</div>
       </div>
     `;
-  }
-
-  private get dateLabel(): string {
-    switch (this.sortParam?.field) {
-      case 'date':
-        return 'Date Published';
-      case 'reviewdate':
-        return 'Date Reviewed';
-      case 'addeddate':
-        return 'Date Added';
-      default:
-        return 'Date Archived';
-    }
   }
 
   private get classSize(): string {
