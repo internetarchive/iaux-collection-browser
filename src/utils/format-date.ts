@@ -19,6 +19,7 @@ export function formatDate(
   };
   switch (format) {
     case 'short':
+      options.month = 'short';
       options.year = 'numeric';
       break;
     case 'long':

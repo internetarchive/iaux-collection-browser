@@ -9,7 +9,7 @@ describe('formatDate', () => {
   });
 
   it('returns short date when no DateFormat', () => {
-    expect(formatDate(testDate)).to.equal('12/20');
+    expect(formatDate(testDate)).to.equal('Dec 2020');
   });
 
   it('returns long date when long DateFormat', () => {

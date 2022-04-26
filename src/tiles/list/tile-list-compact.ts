@@ -180,7 +180,7 @@ export class TileListCompact extends LitElement {
       }
 
       #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 29px 19px;
+        grid-template-columns: 36px 3fr 2fr 62px 19px;
         padding-top: 2px;
         padding-bottom: 2px;
       }
