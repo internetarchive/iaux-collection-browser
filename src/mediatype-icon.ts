@@ -3,6 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 
 import { accountIcon } from './assets/img/icons/mediatype/account';
 import { audioIcon } from './assets/img/icons/mediatype/audio';
+import { collectionIcon } from './assets/img/icons/mediatype/collection';
 import { dataIcon } from './assets/img/icons/mediatype/data';
 import { etreeIcon } from './assets/img/icons/mediatype/etree';
 import { imagesIcon } from './assets/img/icons/mediatype/images';
@@ -13,7 +14,6 @@ import { textsIcon } from './assets/img/icons/mediatype/texts';
 import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
-import { collectionIcon } from './assets/img/icons/mediatype/collection';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
@@ -26,6 +26,7 @@ export class MediatypeIcon extends LitElement {
   private readonly mediatypeIcons: { [key: string]: any } = {
     account: accountIcon,
     audio: audioIcon,
+    collection: collectionIcon,
     data: dataIcon,
     etree: etreeIcon,
     film: filmIcon,
