@@ -19,7 +19,7 @@ import { webIcon } from './assets/img/icons/mediatype/web';
 export class MediatypeIcon extends LitElement {
   @property({ type: String }) mediatype: string | undefined;
 
-  @property({ type: Array }) collection: string[] | undefined;
+  @property({ type: Array }) collections: string[] | undefined;
 
   @property({ type: Boolean }) showText = false;
 
@@ -57,31 +57,31 @@ export class MediatypeIcon extends LitElement {
     web: 'Web',
   };
 
-  private getDisplayMediaType = () => {
+  private get displayMediaType() {
     const tvIdentifier = ['tvnews', 'tvarchive', 'television'];
     const radioIdentifier = ['radio', 'radioprogram'];
 
     if (
       this.mediatype === 'movies' &&
-      this.collection?.some(id => tvIdentifier.indexOf(id) >= 0)
+      this.collections?.some(id => tvIdentifier.indexOf(id) >= 0)
     ) {
       return 'tv';
     }
     if (
       this.mediatype === 'audio' &&
-      this.collection?.some(id => radioIdentifier.indexOf(id) >= 0)
+      this.collections?.some(id => radioIdentifier.indexOf(id) >= 0)
     ) {
       return 'radio';
     }
     return this.mediatype;
-  };
+  }
 
   render() {
     if (!this.mediatype) {
       return html``;
     }
 
-    const displayMediatype = this.getDisplayMediaType() || '';
+    const displayMediatype = this.displayMediaType || '';
 
     return html`
       <div id="icon" class="${this.showText ? 'show-text' : 'hide-text'}">
