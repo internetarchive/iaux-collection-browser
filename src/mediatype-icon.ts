@@ -11,6 +11,7 @@ import { textsIcon } from './assets/img/icons/mediatype/texts';
 import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
+import { collectionIcon } from './assets/img/icons/mediatype/collection';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
@@ -21,6 +22,7 @@ export class MediatypeIcon extends LitElement {
   private readonly mediatypeIcons: { [key: string]: any } = {
     account: accountIcon,
     audio: audioIcon,
+    collection: collectionIcon,
     data: etreeIcon,
     etree: etreeIcon,
     film: filmIcon,
@@ -36,6 +38,7 @@ export class MediatypeIcon extends LitElement {
   private readonly mediatypeText: { [key: string]: any } = {
     account: 'Account',
     audio: 'Audio',
+    collection: 'Collection',
     data: 'Data',
     etree: 'E-tree',
     film: 'Film',
@@ -75,8 +78,8 @@ export class MediatypeIcon extends LitElement {
       }
 
       svg {
-        height: var(--iconHeight);
-        width: var(--iconWidth);
+        height: var(--iconHeight, 10px);
+        width: var(--iconWidth, 10px);
       }
 
       .fill-color {

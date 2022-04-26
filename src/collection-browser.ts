@@ -109,6 +109,8 @@ export class CollectionBrowser
     }
   );
 
+  @property({ type: Number }) mobileBreakpoint = 530;
+
   /**
    * The page that the consumer wants to load.
    */
@@ -277,6 +279,10 @@ export class CollectionBrowser
             @creatorLetterChanged=${this.creatorLetterSelected}
           ></sort-filter-bar>
 
+          ${this.displayMode === `list-compact`
+            ? this.listHeaderTemplate
+            : nothing}
+
           <infinite-scroller
             class="${ifDefined(this.displayMode)}"
             .cellProvider=${this}
@@ -369,6 +375,20 @@ export class CollectionBrowser
     return html`
       <div class="loading-cover">
         <circular-activity-indicator></circular-activity-indicator>
+      </div>
+    `;
+  }
+
+  private get listHeaderTemplate() {
+    return html`
+      <div id="list-header">
+        <tile-dispatcher
+          .tileDisplayMode=${'list-header'}
+          .resizeObserver=${this.resizeObserver}
+          .sortParam=${this.sortParam}
+          .mobileBreakpoint=${this.mobileBreakpoint}
+        >
+        </tile-dispatcher>
       </div>
     `;
   }
@@ -789,14 +809,17 @@ export class CollectionBrowser
         'description',
         'downloads',
         'identifier',
+        'issue',
         'item_count',
         'mediatype',
         'num_favorites',
         'num_reviews',
         'publicdate',
         'reviewdate',
-        'subject',
+        'source',
+        'subject', // topic
         'title',
+        'volume',
       ],
       page: pageNumber,
       rows: this.pageSize,
@@ -873,6 +896,7 @@ export class CollectionBrowser
         collections: doc.collections_raw?.values ?? [],
         commentCount: doc.num_reviews?.value ?? 0,
         creator: doc.creator?.value,
+        creators: doc.creator?.values ?? [],
         dateAdded: doc.addeddate?.value,
         dateArchived: doc.publicdate?.value,
         datePublished: doc.date?.value,
@@ -880,10 +904,17 @@ export class CollectionBrowser
         description: doc.description?.value,
         favCount: doc.num_favorites?.value ?? 0,
         identifier: doc.identifier,
+        issue: doc.issue?.value,
         itemCount: doc.item_count?.value ?? 0,
         mediatype: doc.mediatype?.value ?? 'data',
+        source: doc.source?.value,
         subjects: doc.subject?.values ?? [],
-        title: doc.title?.value ?? '',
+        title: this.etreeTitle(
+          doc.title?.value,
+          doc.mediatype?.value,
+          doc.collection?.values
+        ),
+        volume: doc.volume?.value,
         viewCount: doc.downloads?.value ?? 0,
       });
     });
@@ -896,6 +927,28 @@ export class CollectionBrowser
     }
   }
 
+  /*
+   * Convert etree titles
+   * "[Creator] Live at [Place] on [Date]" => "[Date]: [Place]"
+   *
+   * Todo: Check collection(s) for etree, need to get as array.
+   * Current search-service only returns first collection as string.
+   */
+  private etreeTitle(
+    title: string | undefined,
+    mediatype: string | undefined,
+    collections: string[] | undefined
+  ): string {
+    if (mediatype === 'etree' || collections?.includes('etree')) {
+      const regex = /^(.*) Live at (.*) on (\d\d\d\d-\d\d-\d\d)$/;
+      const newTitle = title?.replace(regex, '$3: $2');
+      if (newTitle) {
+        return `${newTitle}`;
+      }
+    }
+    return title ?? '';
+  }
+
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
@@ -903,10 +956,12 @@ export class CollectionBrowser
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
       .model=${model}
-      .displayMode=${this.displayMode}
+      .tileDisplayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}
       .collectionNameCache=${this.collectionNameCache}
+      .sortParam=${this.sortParam}
       ?showDeleteButton=${this.showDeleteButtons}
+      .mobileBreakpoint=${this.mobileBreakpoint}
     ></tile-dispatcher>`;
   }
 
@@ -1019,6 +1074,10 @@ export class CollectionBrowser
       text-transform: uppercase;
     }
 
+    #list-header {
+      max-height: 4.2rem;
+    }
+
     .loading-cover {
       position: absolute;
       top: 0;
@@ -1052,14 +1111,9 @@ export class CollectionBrowser
         --collectionBrowserCellMinWidth,
         100%
       );
-      --infiniteScrollerCellMinHeight: var(
-        --collectionBrowserCellMinHeight,
-        5rem
-      );
-      --infiniteScrollerCellMaxHeight: var(
-        --collectionBrowserCellMaxHeight,
-        5rem
-      );
+      --infiniteScrollerCellMinHeight: 34px; /* override infinite scroller component */
+      --infiniteScrollerCellMaxHeight: 56px;
+      --infiniteScrollerRowGap: 0px;
     }
 
     infinite-scroller.list-detail {
@@ -1071,6 +1125,12 @@ export class CollectionBrowser
         --collectionBrowserCellMinHeight,
         5rem
       );
+      /*
+        30px in spec, compensating for a -4px margin
+        to align title with top of item image
+        src/tiles/list/tile-list.ts
+       */
+      --infiniteScrollerRowGap: 34px;
     }
 
     infinite-scroller.grid {

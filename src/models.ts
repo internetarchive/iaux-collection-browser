@@ -7,6 +7,7 @@ export interface TileModel {
   collections: string[];
   commentCount: number;
   creator?: string;
+  creators: string[];
   dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
   dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
   datePublished?: Date; // Date work published in the world (user-defined) [from: date]
@@ -14,14 +15,23 @@ export interface TileModel {
   description?: string;
   favCount: number;
   identifier: string;
+  issue?: string;
   itemCount: number;
   mediatype: MediaType;
+  source?: string;
   subjects: string[];
   title: string;
   viewCount: number;
+  volume?: string;
 }
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
+
+export type TileDisplayMode =
+  | 'grid'
+  | 'list-compact'
+  | 'list-detail'
+  | 'list-header';
 
 /**
  * This is mainly used to set the cookies for the collection display mode.
@@ -78,8 +88,8 @@ export const SortFieldToMetadataField: {
   relevance: null,
   views: 'week',
   title: 'titleSorter',
-  datearchived: 'date',
-  datepublished: 'publicdate',
+  datearchived: 'publicdate',
+  datepublished: 'date',
   datereviewed: 'reviewdate',
   dateadded: 'addeddate',
   creator: 'creatorSorter',
@@ -92,8 +102,8 @@ export const MetadataFieldToSortField: {
   [key in MetadataSortField]: SortField;
 } = {
   titleSorter: SortField.title,
-  date: SortField.datearchived,
-  publicdate: SortField.datepublished,
+  date: SortField.datepublished,
+  publicdate: SortField.datearchived,
   reviewdate: SortField.datereviewed,
   addeddate: SortField.dateadded,
   creatorSorter: SortField.creator,

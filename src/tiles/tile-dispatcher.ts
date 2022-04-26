@@ -6,19 +6,21 @@ import {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import type { CollectionDisplayMode, TileModel } from '../models';
+import { SortParam } from '@internetarchive/search-service';
+import type { TileDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
-import './list/tile-list-detail';
+import './list/tile-list';
 import './list/tile-list-compact';
+import './list/tile-list-compact-header';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
 {
-  @property({ type: String }) displayMode?: CollectionDisplayMode;
+  @property({ type: String }) tileDisplayMode?: TileDisplayMode;
 
   @property({ type: Object }) model?: TileModel;
 
@@ -35,21 +37,54 @@ export class TileDispatcher
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
+  @property({ type: Object }) sortParam: SortParam | null = null;
+
   @query('#container') private container!: HTMLDivElement;
+
+  @property({ type: Number }) mobileBreakpoint?: number;
 
   render() {
     return html`
       <div id="container">
-        ${this.showDeleteButton
-          ? html`<button id="delete-button">X</button>`
-          : nothing}
-        <a
-          href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-          title=${ifDefined(this.model?.title)}
-        >
-          ${this.tile}
-        </a>
+        ${this.tileDisplayMode === 'list-header'
+          ? this.headerTemplate
+          : this.tileTemplate}
       </div>
+    `;
+  }
+
+  private get headerTemplate() {
+    const { currentWidth, sortParam, mobileBreakpoint } = this;
+    return html`
+      <tile-list-compact-header
+        class="header"
+        .currentWidth=${currentWidth}
+        .sortParam=${sortParam}
+        .mobileBreakpoint=${mobileBreakpoint}
+      >
+      </tile-list-compact-header>
+    `;
+  }
+
+  private get tileTemplate() {
+    return html`
+      ${this.showDeleteButton
+        ? html`<button id="delete-button">X</button>`
+        : nothing}
+      ${this.tileDisplayMode === 'list-detail'
+        ? this.tile
+        : this.linkTileTemplate}
+    `;
+  }
+
+  private get linkTileTemplate() {
+    return html`
+      <a
+        href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
+        title=${ifDefined(this.model?.title)}
+      >
+        ${this.tile}
+      </a>
     `;
   }
 
@@ -88,24 +123,32 @@ export class TileDispatcher
   }
 
   private get tile() {
-    const { model } = this;
+    const {
+      model,
+      baseNavigationUrl,
+      currentWidth,
+      currentHeight,
+      sortParam,
+      mobileBreakpoint,
+    } = this;
+
     if (!model) return nothing;
 
-    switch (this.displayMode) {
+    switch (this.tileDisplayMode) {
       case 'grid':
         switch (model.mediatype) {
           case 'collection':
             return html`<collection-tile
               .model=${model}
-              .currentWidth=${this.currentWidth}
-              .currentHeight=${this.currentHeight}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
             >
             </collection-tile>`;
           case 'account':
             return html`<account-tile
               .model=${model}
-              .currentWidth=${this.currentWidth}
-              .currentHeight=${this.currentHeight}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
             ></account-tile>`;
           default:
             return html`<item-tile
@@ -119,15 +162,22 @@ export class TileDispatcher
       case 'list-compact':
         return html`<tile-list-compact
           .model=${model}
-          .currentWidth=${this.currentWidth}
-          .currentHeight=${this.currentHeight}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam}
+          .mobileBreakpoint=${mobileBreakpoint}
         ></tile-list-compact>`;
       case 'list-detail':
-        return html`<tile-list-detail
+        return html`<tile-list
           .model=${model}
-          .currentWidth=${this.currentWidth}
-          .currentHeight=${this.currentHeight}
-        ></tile-list-detail>`;
+          .collectionNameCache=${this.collectionNameCache}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam}
+          .mobileBreakpoint=${mobileBreakpoint}
+        ></tile-list>`;
       default:
         return nothing;
     }
