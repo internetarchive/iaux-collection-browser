@@ -67,7 +67,7 @@ export class ItemTile extends LitElement {
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
           <div class="item-creator">
-            <div><span id="by">By:&nbsp;</span>${itemCreator}</div>
+            <span><strong>By:&nbsp;</strong>${itemCreator}</span>
           </div>
         </div>
 
