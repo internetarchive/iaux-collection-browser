@@ -7,6 +7,7 @@ import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { dateLabel } from './date-label';
+import { accountLabel } from './account-label';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
@@ -114,6 +115,15 @@ export class TileList extends LitElement {
   }
 
   private get creatorTemplate() {
+    // "Achivist since" if account tile
+    if (this.model?.mediatype === 'account') {
+      return html`
+        <div id="creator">
+          <span class="label"> ${accountLabel(this.model?.dateAdded)} </span>
+        </div>
+      `;
+    }
+    // "Creator" if not account tile
     if (!this.model?.creators || this.model.creators.length === 0) {
       return nothing;
     }
