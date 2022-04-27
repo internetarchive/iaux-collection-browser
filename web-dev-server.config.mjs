@@ -24,5 +24,7 @@ export default /** @type {import('@web/dev-server').DevServerConfig} */ ({
     // hmr && hmrPlugin({ exclude: ['**/*/node_modules/**/*'], presets: [presets.litElement] }),
   ],
 
-  // See documentation for all available options
+  http2: true,
+  sslCert: './local.archive.org.cert',
+  sslKey: './local.archive.org.key',
 });
