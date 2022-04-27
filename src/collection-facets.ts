@@ -285,7 +285,9 @@ export class CollectionFacets extends LitElement {
           facetGroup.buckets,
           bucket => `${facetGroup.key}:${bucket.key}`,
           bucket => {
+            const showOnlyCheckboxId = `${facetGroup.key}:${bucket.key}-show-only`;
             const negativeCheckboxId = `${facetGroup.key}:${bucket.key}-negative`;
+
             // for collections, we need to asynchronously load the collection name
             // so we use the `async-collection-name` widget and for the rest, we have
             // a static value to use
@@ -300,9 +302,20 @@ export class CollectionFacets extends LitElement {
                   `
                 : html`${bucket.key}`;
 
+            const facetHidden = bucket.state === 'hidden';
+            const facetSelected = bucket.state === 'selected';
+
+            const titleText = `${facetGroup.key}: ${bucket.key}`;
+            const onlyShowText = facetSelected
+              ? `Show all ${facetGroup.key}s`
+              : `Only show ${titleText}`;
+            const hideText = `Hide ${titleText}`;
+            const unhideText = `Unhide ${titleText}`;
+            const showHideText = facetHidden ? unhideText : hideText;
+
             return html`
               <li>
-                <label class="facet-row">
+                <div class="facet-row">
                   <div class="facet-checkbox">
                     <input
                       type="checkbox"
@@ -311,8 +324,10 @@ export class CollectionFacets extends LitElement {
                       @click=${(e: Event) => {
                         this.facetClicked(e, bucket, false);
                       }}
-                      .checked=${bucket.state === 'selected'}
+                      .checked=${facetSelected}
                       class="select-facet-checkbox"
+                      title=${onlyShowText}
+                      id=${showOnlyCheckboxId}
                     />
                     <input
                       type="checkbox"
@@ -322,16 +337,27 @@ export class CollectionFacets extends LitElement {
                       @click=${(e: Event) => {
                         this.facetClicked(e, bucket, true);
                       }}
-                      .checked=${bucket.state === 'hidden'}
+                      .checked=${facetHidden}
                       class="hide-facet-checkbox"
                     />
-                    <label for=${negativeCheckboxId} class="hide-facet-icon">
-                      ${bucket.state === 'hidden' ? eyeClosedIcon : eyeIcon}
+                    <label
+                      for=${negativeCheckboxId}
+                      class="hide-facet-icon"
+                      title=${showHideText}
+                    >
+                      ${facetHidden ? eyeClosedIcon : eyeIcon}
                     </label>
                   </div>
-                  <div class="facet-title">${bucketTextDisplay}</div>
-                  <div class="facet-count">${bucket.count}</div>
-                </label>
+
+                  <label
+                    for=${showOnlyCheckboxId}
+                    class="facet-info-display"
+                    title=${onlyShowText}
+                  >
+                    <div class="facet-title">${bucketTextDisplay}</div>
+                    <div class="facet-count">${bucket.count}</div>
+                  </label>
+                </div>
               </li>
             `;
           }
@@ -475,6 +501,12 @@ export class CollectionFacets extends LitElement {
         font-size: 1.2rem;
       }
 
+      .facet-info-display {
+        display: flex;
+        flex: 1;
+        cursor: pointer;
+      }
+
       .facet-title {
         flex: 1;
       }
@@ -484,6 +516,7 @@ export class CollectionFacets extends LitElement {
       }
 
       .select-facet-checkbox {
+        cursor: pointer;
         margin-right: 5px;
       }
 
