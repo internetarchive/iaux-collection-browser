@@ -344,7 +344,9 @@ export class CollectionFacets extends LitElement {
             const facetHidden = bucket.state === 'hidden';
             const facetSelected = bucket.state === 'selected';
 
-            const titleText = `${facetGroup.key}: ${bucket.key}`;
+            const titleText = `${facetGroup.key}: ${
+              bucket.displayText ?? bucket.key
+            }`;
             const onlyShowText = facetSelected
               ? `Show all ${facetGroup.key}s`
               : `Only show ${titleText}`;
