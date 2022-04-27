@@ -67,8 +67,7 @@ export class ItemTile extends LitElement {
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
           <div class="item-creator">
-            <span id="text-by">By:</span>
-            <span>${itemCreator}</span>
+            <span><strong>By:&nbsp;</strong>${itemCreator}</span>
           </div>
         </div>
 
@@ -121,15 +120,11 @@ export class ItemTile extends LitElement {
         position: relative;
       }
 
-      mediatype-icon {
-        --iconHeight: 10px;
-      }
-
       #title-image-container {
         display: flex;
         flex: 1;
         flex-direction: column;
-        padding: 0.5rem;
+        padding: 0.5rem 0.5rem 0 0.5rem;
       }
 
       #item-title {
@@ -223,20 +218,17 @@ export class ItemTile extends LitElement {
 
       .item-creator {
         color: #2c2c2c;
-        display: -webkit-box;
         font-size: 1.4rem;
         height: 3rem;
-        margin: 0px;
         overflow: hidden;
-        padding: 0.5rem;
         text-align: center;
         text-overflow: ellipsis;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
-      }
-
-      #text-by {
-        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        padding-top: 1rem;
       }
 
       #item-stats-container {
