@@ -229,6 +229,7 @@ export class ItemTile extends LitElement {
         justify-content: center;
         align-items: flex-end;
         padding-top: 1rem;
+        padding-bottom: 0.5rem;
       }
 
       #item-stats-container {
