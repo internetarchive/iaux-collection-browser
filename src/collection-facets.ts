@@ -24,6 +24,7 @@ import {
   FacetBucket,
   defaultSelectedFacets,
 } from './models';
+import { codeToLanguageMap, languageToCodeMap } from './language-code-mapping';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -211,11 +212,20 @@ export class CollectionFacets extends LitElement {
         const title = facetTitles[option];
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
-          ([value, facetState]) => ({
-            key: value,
-            count: 0,
-            state: facetState,
-          })
+          ([value, facetState]) => {
+            let displayText = value;
+            // for selected languages, we store the language code instead of the
+            // display name, so look up the name from the mapping
+            if (option === 'language') {
+              displayText = codeToLanguageMap[value] ?? value;
+            }
+            return {
+              displayText,
+              key: value,
+              count: 0,
+              state: facetState,
+            };
+          }
         );
 
         return {
@@ -240,11 +250,21 @@ export class CollectionFacets extends LitElement {
       const option = this.getFacetOptionFromKey(key);
       const title = facetTitles[option];
       const castedBuckets = buckets.buckets as Bucket[];
-      const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => ({
-        key: `${bucket.key}`,
-        count: bucket.doc_count,
-        state: 'none',
-      }));
+      const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
+        let bucketKey = bucket.key;
+        // for languages, we need to search by language code instead of the
+        // display name, which is what we get from the search engine result
+        if (option === 'language') {
+          const languageCodeKey = languageToCodeMap[bucket.key];
+          bucketKey = languageCodeKey ?? bucket.key;
+        }
+        return {
+          displayText: `${bucket.key}`,
+          key: `${bucketKey}`,
+          count: bucket.doc_count,
+          state: 'none',
+        };
+      });
       const group: FacetGroup = {
         title,
         key: option,
@@ -312,7 +332,7 @@ export class CollectionFacets extends LitElement {
             // a static value to use
             const bucketTextDisplay =
               facetGroup.key !== 'collection'
-                ? html`${bucket.key}`
+                ? html`${bucket.displayText ?? bucket.key}`
                 : html`
                     <async-collection-name
                       .collectionNameCache=${this.collectionNameCache}
