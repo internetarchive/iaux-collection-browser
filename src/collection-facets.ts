@@ -1,5 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import { css, html, LitElement, PropertyValues, nothing } from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  PropertyValues,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
@@ -169,13 +176,12 @@ export class CollectionFacets extends LitElement {
           const selectedBucket = aggregateFacetGroup.buckets.find(
             b => b.key === bucket.key
           );
-          if (selectedBucket) {
-            return {
-              ...bucket,
-              count: selectedBucket.count,
-            };
-          }
-          return bucket;
+          return selectedBucket
+            ? {
+                ...bucket,
+                count: selectedBucket.count,
+              }
+            : bucket;
         }) ?? [];
 
       // append any additional buckets that were not selected
@@ -229,6 +235,7 @@ export class CollectionFacets extends LitElement {
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
+      // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
       const option = this.getFacetOptionFromKey(key);
       const title = facetTitles[option];
@@ -248,7 +255,11 @@ export class CollectionFacets extends LitElement {
     return facetGroups;
   }
 
-  private getFacetGroupTemplate(facetGroup: FacetGroup) {
+  /**
+   * Generate the template for a facet group with a header and the collapsible
+   * chevron for the mobile view
+   */
+  private getFacetGroupTemplate(facetGroup: FacetGroup): TemplateResult {
     const { key } = facetGroup;
     const isOpen = this.openFacets[key];
     const collapser = html`
@@ -278,11 +289,19 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
-  private getFacetTemplate(facetGroup: FacetGroup) {
+  /**
+   * Generate the list template for each bucket in a facet group
+   */
+  private getFacetTemplate(facetGroup: FacetGroup): TemplateResult {
+    const bucketsNoFavorites = facetGroup.buckets.filter(
+      bucket => bucket.key.startsWith('fav-') === false
+    );
+    const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
+
     return html`
       <ul class="facet-list">
         ${repeat(
-          facetGroup.buckets,
+          bucketsMaxSix,
           bucket => `${facetGroup.key}:${bucket.key}`,
           bucket => {
             const showOnlyCheckboxId = `${facetGroup.key}:${bucket.key}-show-only`;
@@ -292,15 +311,15 @@ export class CollectionFacets extends LitElement {
             // so we use the `async-collection-name` widget and for the rest, we have
             // a static value to use
             const bucketTextDisplay =
-              facetGroup.key === 'collection'
-                ? html`
+              facetGroup.key !== 'collection'
+                ? html`${bucket.key}`
+                : html`
                     <async-collection-name
                       .collectionNameCache=${this.collectionNameCache}
                       .identifier=${bucket.key}
                       placeholder="-"
                     ></async-collection-name>
-                  `
-                : html`${bucket.key}`;
+                  `;
 
             const facetHidden = bucket.state === 'hidden';
             const facetSelected = bucket.state === 'selected';
