@@ -5,6 +5,7 @@ import DOMPurify from 'dompurify';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
+import { accountLabel } from './account-label';
 import '../../mediatype-icon';
 
 @customElement('tile-list-compact')
@@ -26,7 +27,11 @@ export class TileListCompact extends LitElement {
       <div id="list-line" class="${this.classSize}">
         <div id="thumb">${this.imageTemplate}</div>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
-        <div id="creator">${DOMPurify.sanitize(this.model?.creator ?? '')}</div>
+        <div id="creator">
+          ${this.model?.mediatype === 'account'
+            ? accountLabel(this.model?.dateAdded)
+            : DOMPurify.sanitize(this.model?.creator ?? '')}
+        </div>
         <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="icon">
           <mediatype-icon .mediatype=${this.model?.mediatype}> </mediatype-icon>
