@@ -138,8 +138,12 @@ export class RestorationStateHandler
 
     window.history.pushState(
       {
-        page: state.currentPage,
+        sort: state.sortParam,
         query: state.baseQuery,
+        page: state.currentPage,
+        and: state.selectedFacets,
+        not: state.selectedFacets,
+        dateRange: state.dateRangeQueryClause,
       },
       '',
       url

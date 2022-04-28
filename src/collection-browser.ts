@@ -423,6 +423,7 @@ export class CollectionBrowser
   }
 
   firstUpdated(): void {
+    this.setupStateRestorationObserver();
     this.restoreState();
   }
 
@@ -474,6 +475,9 @@ export class CollectionBrowser
   disconnectedCallback(): void {
     if (this.resizeObserver) {
       this.disconnectResizeObserver(this.resizeObserver);
+    }
+    if (this.boundNavigationHandler) {
+      window.removeEventListener('popstate', this.boundNavigationHandler);
     }
   }
 
@@ -532,6 +536,8 @@ export class CollectionBrowser
   // so this keeps track of whether we've already set the initial query
   private initialQueryChangeHappened = false;
 
+  private historyPopOccurred = false;
+
   // this lets us store the query key so we know if it's actually changed or not
   private previousQueryKey?: string;
 
@@ -549,13 +555,32 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
-    this.persistState();
+    // if the query changed as part of a window.history pop event, we don't want to
+    // persist the state because it overwrites the forward history
+    if (!this.historyPopOccurred) {
+      this.persistState();
+      this.historyPopOccurred = false;
+    }
 
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
       this.fetchFullYearHistogram(),
     ]);
+  }
+
+  private setupStateRestorationObserver() {
+    if (this.boundNavigationHandler) return;
+    this.boundNavigationHandler = this.historyNavigationHandler.bind(this);
+    // when the user navigates back, we want to update the UI to match the URL
+    window.addEventListener('popstate', this.boundNavigationHandler);
+  }
+
+  private boundNavigationHandler?: () => void;
+
+  private historyNavigationHandler() {
+    this.historyPopOccurred = true;
+    this.restoreState();
   }
 
   private restoreState() {
