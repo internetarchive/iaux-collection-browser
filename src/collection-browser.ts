@@ -344,10 +344,12 @@ export class CollectionBrowser
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+    this.selectedCreatorFilter = null;
     this.selectedTitleFilter = e.detail.selectedLetter;
   }
 
   private creatorLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+    this.selectedTitleFilter = null;
     this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 

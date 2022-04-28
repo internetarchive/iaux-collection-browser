@@ -23,6 +23,8 @@ import { tileIcon } from './img/tile';
 import { listIcon } from './img/list';
 import { compactIcon } from './img/compact';
 
+type AlphaSelector = 'creator' | 'title';
+
 @customElement('sort-filter-bar')
 export class SortFilterBar
   extends LitElement
@@ -42,9 +44,7 @@ export class SortFilterBar
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
-  @state() titleSelectorVisible: boolean = false;
-
-  @state() creatorSelectorVisible: boolean = false;
+  @state() alphaSelectorVisible: AlphaSelector | null = null;
 
   @state() dateSortSelectorVisible = false;
 
@@ -63,13 +63,6 @@ export class SortFilterBar
   render() {
     return html`
       <div id="container">
-        ${this.titleSelectorVisible || this.selectedSort === 'title'
-          ? this.titleSelectorBar
-          : nothing}
-        ${this.creatorSelectorVisible || this.selectedSort === 'creator'
-          ? this.creatorSelectorBar
-          : nothing}
-
         <div id="sort-bar">
           <div id="sort-direction-container">
             ${this.sortDirectionSelectorTemplate}
@@ -86,6 +79,7 @@ export class SortFilterBar
         ${this.dateSortSelectorVisible && !this.mobileSelectorVisible
           ? this.dateSortSelector
           : nothing}
+        ${this.alphaBarTemplate}
 
         <div id="bottom-shadow"></div>
       </div>
@@ -102,11 +96,11 @@ export class SortFilterBar
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {
-      this.titleSelectorVisible = true;
+      this.alphaSelectorVisible = 'title';
     }
 
     if (changed.has('selectedCreatorFilter') && this.selectedCreatorFilter) {
-      this.creatorSelectorVisible = true;
+      this.alphaSelectorVisible = 'creator';
     }
 
     if (changed.has('resizeObserver')) {
@@ -153,6 +147,19 @@ export class SortFilterBar
 
   private get mobileSelectorVisible() {
     return this.selectorBarContainerWidth - 10 < this.desktopSelectorBarWidth;
+  }
+
+  private get alphaBarTemplate(): TemplateResult | typeof nothing {
+    if (this.alphaSelectorVisible === null) {
+      if (this.selectedSort === 'creator') return this.creatorSelectorBar;
+      if (this.selectedSort === 'title') return this.titleSelectorBar;
+    } else {
+      return this.alphaSelectorVisible === 'creator'
+        ? this.creatorSelectorBar
+        : this.titleSelectorBar;
+    }
+
+    return nothing;
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -202,13 +209,28 @@ export class SortFilterBar
             : nothing}
         </li>
         <li>${this.getSortDisplayOption(SortField.views)}</li>
-        <li>${this.getSortDisplayOption(SortField.title)}</li>
+        <li>
+          ${this.getSortDisplayOption(SortField.title, {
+            clickEvent: () => {
+              this.alphaSelectorVisible = 'title';
+              this.selectedCreatorFilter = null;
+              this.dateSortSelectorVisible = false;
+              this.setSelectedSort(SortField.title);
+              this.emitCreatorLetterChangedEvent();
+            },
+          })}
+        </li>
         <li>
           ${this.getSortDisplayOption(SortField.date, {
             clickEvent: () => {
               if (!this.dateOptionSelected)
                 this.setSelectedSort(SortField.date);
               this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
+              this.alphaSelectorVisible = null;
+              this.selectedTitleFilter = null;
+              this.selectedCreatorFilter = null;
+              this.emitTitleLetterChangedEvent();
+              this.emitCreatorLetterChangedEvent();
             },
             displayName: html`${this.dateSortField}`,
             isSelected: () => this.dateOptionSelected,
@@ -217,7 +239,11 @@ export class SortFilterBar
         <li>
           ${this.getSortDisplayOption(SortField.creator, {
             clickEvent: () => {
-              this.creatorSelectorVisible = !this.creatorSelectorVisible;
+              this.alphaSelectorVisible = 'creator';
+              this.selectedTitleFilter = null;
+              this.dateSortSelectorVisible = false;
+              this.setSelectedSort(SortField.creator);
+              this.emitTitleLetterChangedEvent();
             },
           })}
         </li>
@@ -257,7 +283,13 @@ export class SortFilterBar
           if (options?.clickEvent) {
             options.clickEvent(e);
           } else {
+            this.alphaSelectorVisible = null;
+            this.dateSortSelectorVisible = false;
+            this.selectedTitleFilter = null;
+            this.selectedCreatorFilter = null;
             this.setSelectedSort(sortField);
+            this.emitTitleLetterChangedEvent();
+            this.emitCreatorLetterChangedEvent();
           }
         }}
         class=${isSelected() ? 'selected' : ''}
@@ -424,18 +456,34 @@ export class SortFilterBar
   private titleLetterChanged(
     e: CustomEvent<{ selectedLetter: string | undefined }>
   ) {
-    const event = new CustomEvent('titleLetterChanged', {
-      detail: { selectedLetter: e.detail.selectedLetter },
-    });
-    this.dispatchEvent(event);
+    this.selectedTitleFilter = e.detail.selectedLetter ?? null;
+    this.emitTitleLetterChangedEvent();
   }
 
   private creatorLetterChanged(
     e: CustomEvent<{ selectedLetter: string | undefined }>
   ) {
-    const event = new CustomEvent('creatorLetterChanged', {
-      detail: { selectedLetter: e.detail.selectedLetter },
-    });
+    this.selectedCreatorFilter = e.detail.selectedLetter ?? null;
+    this.emitCreatorLetterChangedEvent();
+  }
+
+  private emitTitleLetterChangedEvent() {
+    const event = new CustomEvent<{ selectedLetter: string | null }>(
+      'titleLetterChanged',
+      {
+        detail: { selectedLetter: this.selectedTitleFilter },
+      }
+    );
+    this.dispatchEvent(event);
+  }
+
+  private emitCreatorLetterChangedEvent() {
+    const event = new CustomEvent<{ selectedLetter: string | null }>(
+      'creatorLetterChanged',
+      {
+        detail: { selectedLetter: this.selectedCreatorFilter },
+      }
+    );
     this.dispatchEvent(event);
   }
 
