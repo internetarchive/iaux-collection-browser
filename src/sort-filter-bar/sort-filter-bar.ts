@@ -200,7 +200,7 @@ export class SortFilterBar
         <li>${this.getSortDisplayOption(SortField.views)}</li>
         <li>${this.getSortDisplayOption(SortField.title)}</li>
         <li>
-          ${this.getSortDisplayOption(SortField.datearchived, {
+          ${this.getSortDisplayOption(SortField.date, {
             additionalClickEvent: () => {
               this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
             },
@@ -326,7 +326,7 @@ export class SortFilterBar
       <div id="date-sort-selector">
         <ul>
           <li>${this.getDateSortButton(SortField.datearchived)}</li>
-          <li>${this.getDateSortButton(SortField.datepublished)}</li>
+          <li>${this.getDateSortButton(SortField.date)}</li>
           <li>${this.getDateSortButton(SortField.datereviewed)}</li>
           <li>${this.getDateSortButton(SortField.dateadded)}</li>
         </ul>
@@ -372,12 +372,13 @@ export class SortFilterBar
    * @memberof SortFilterBar
    */
   private get dateOptionSelected(): boolean {
-    return [
-      'datearchived',
-      'datepublished',
-      'datereviewed',
-      'dateadded',
-    ].includes(this.selectedSort);
+    const dateSortFields: SortField[] = [
+      SortField.datearchived,
+      SortField.date,
+      SortField.datereviewed,
+      SortField.dateadded,
+    ];
+    return dateSortFields.includes(this.selectedSort);
   }
 
   /**
@@ -389,10 +390,19 @@ export class SortFilterBar
    * @memberof SortFilterBar
    */
   private get dateSortField(): string {
-    const defaultSort = SortFieldDisplayName[SortField.datearchived];
-    return this.dateOptionSelected
+    const defaultSort = SortFieldDisplayName[SortField.date];
+    const name = this.dateOptionSelected
       ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
       : defaultSort;
+    console.debug(
+      'dateSortField',
+      name,
+      defaultSort,
+      this.dateOptionSelected,
+      this.selectedSort,
+      SortFieldDisplayName[this.selectedSort]
+    );
+    return name;
   }
 
   private get titleSelectorBar() {
