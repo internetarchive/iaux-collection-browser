@@ -52,6 +52,8 @@ export class SortFilterBar
 
   @state() selectorBarContainerWidth = 0;
 
+  @state() hoveringOverDateSortOptions = false;
+
   @query('#desktop-sort-selector')
   private desktopSortSelector!: HTMLUListElement;
 
@@ -81,7 +83,9 @@ export class SortFilterBar
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
         </div>
 
-        ${this.dateSortSelectorVisible ? this.dateSortSelector : nothing}
+        ${this.dateSortSelectorVisible && !this.mobileSelectorVisible
+          ? this.dateSortSelector
+          : nothing}
 
         <div id="bottom-shadow"></div>
       </div>
@@ -201,7 +205,9 @@ export class SortFilterBar
         <li>${this.getSortDisplayOption(SortField.title)}</li>
         <li>
           ${this.getSortDisplayOption(SortField.date, {
-            additionalClickEvent: () => {
+            clickEvent: () => {
+              if (!this.dateOptionSelected)
+                this.setSelectedSort(SortField.date);
               this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
             },
             displayName: html`${this.dateSortField}`,
@@ -210,7 +216,7 @@ export class SortFilterBar
         </li>
         <li>
           ${this.getSortDisplayOption(SortField.creator, {
-            additionalClickEvent: () => {
+            clickEvent: () => {
               this.creatorSelectorVisible = !this.creatorSelectorVisible;
             },
           })}
@@ -235,7 +241,7 @@ export class SortFilterBar
   private getSortDisplayOption(
     sortField: SortField,
     options?: {
-      additionalClickEvent?: (e: Event) => void;
+      clickEvent?: (e: Event) => void;
       isSelected?: () => boolean;
       displayName?: TemplateResult;
     }
@@ -248,8 +254,11 @@ export class SortFilterBar
         href="#"
         @click=${(e: Event) => {
           e.preventDefault();
-          this.setSelectedSort(sortField);
-          options?.additionalClickEvent?.(e);
+          if (options?.clickEvent) {
+            options.clickEvent(e);
+          } else {
+            this.setSelectedSort(sortField);
+          }
         }}
         class=${isSelected() ? 'selected' : ''}
       >
@@ -340,6 +349,7 @@ export class SortFilterBar
         @click=${() => {
           this.selectDateSort(sortField);
         }}
+        class=${this.selectedSort === sortField ? 'selected' : ''}
       >
         ${SortFieldDisplayName[sortField]}
       </button>
@@ -450,6 +460,10 @@ export class SortFilterBar
   }
 
   static styles = css`
+    #container {
+      position: relative;
+    }
+
     #sort-bar {
       display: flex;
       justify-content: space-between;
@@ -504,6 +518,36 @@ export class SortFilterBar
     .sort-button:disabled {
       opacity: 0.25;
       cursor: default;
+    }
+
+    #date-sort-selector {
+      position: absolute;
+      left: 150px;
+      top: 40px;
+
+      z-index: 1;
+      padding: 1rem;
+      background-color: rgba(255, 255, 255, 0.75);
+      border-radius: 2.5rem;
+      border: 1px solid #404142;
+    }
+
+    #date-sort-selector button {
+      background: none;
+      border-radius: 15px;
+      color: #404142;
+      border: none;
+      appearance: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      font-size: 1.4rem;
+      font-weight: 400;
+      padding: 0.5rem 1.2rem;
+    }
+
+    #date-sort-selector button.selected {
+      background-color: #404142;
+      color: white;
     }
 
     #show-details {
@@ -562,6 +606,7 @@ export class SortFilterBar
       text-transform: uppercase;
       font-size: 1.4rem;
       color: #333;
+      line-height: 2.5;
     }
 
     #desktop-sort-selector li a.selected {
