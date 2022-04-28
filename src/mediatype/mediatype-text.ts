@@ -1,0 +1,16 @@
+export const mediatypeText: { [key: string]: any } = {
+  account: 'Account',
+  audio: 'Audio',
+  collection: 'Collection',
+  data: 'Data',
+  etree: 'E-tree',
+  film: 'Film',
+  image: 'Image',
+  movies: 'Movie',
+  radio: 'Radio',
+  software: 'Software',
+  texts: 'Text',
+  tv: 'TV',
+  video: 'Video',
+  web: 'Web',
+};

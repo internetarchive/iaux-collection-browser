@@ -15,6 +15,9 @@ import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
 
+import { mediatypeColor } from './mediatype/mediatype-color';
+import { mediatypeText } from './mediatype/mediatype-text';
+
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
   @property({ type: String }) mediatype: string | undefined;
@@ -38,23 +41,6 @@ export class MediatypeIcon extends LitElement {
     tv: tvIcon,
     video: videoIcon,
     web: webIcon,
-  };
-
-  private readonly mediatypeText: { [key: string]: any } = {
-    account: 'Account',
-    audio: 'Audio',
-    collection: 'Collection',
-    data: 'Data',
-    etree: 'E-tree',
-    film: 'Film',
-    image: 'Image',
-    movies: 'Movie',
-    radio: 'Radio',
-    software: 'Software',
-    texts: 'Text',
-    tv: 'TV',
-    video: 'Video',
-    web: 'Web',
   };
 
   private get displayMediaType() {
@@ -82,11 +68,16 @@ export class MediatypeIcon extends LitElement {
     }
 
     const displayMediatype = this.displayMediaType || '';
+    const fillColor = mediatypeColor[displayMediatype];
 
     return html`
-      <div id="icon" class="${this.showText ? 'show-text' : 'hide-text'}">
+      <div
+        id="icon"
+        class="${this.showText ? 'show-text' : 'hide-text'}"
+        style="--iconFillColor:${fillColor}"
+      >
         ${this.mediatypeIcons[displayMediatype]}
-        <p class="status-text">${this.mediatypeText[displayMediatype]}</p>
+        <p class="status-text">${mediatypeText[displayMediatype]}</p>
       </div>
     `;
   }

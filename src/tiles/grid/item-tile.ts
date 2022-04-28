@@ -17,21 +17,6 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseNavigationUrl?: string;
 
-  private readonly mediatypeIconsColor: { [key: string]: any } = {
-    account: '#000000',
-    audio: '#8fdaef',
-    data: '#333333',
-    etree: '#3871c1',
-    film: '#bf1b2c',
-    image: '#62c4a9',
-    movies: '#bf1b2c',
-    software: '#80cc28',
-    texts: '#f9a72b',
-    tv: '#f25d54',
-    video: '#bf1b2c',
-    web: '#fddd10',
-  };
-
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
 
@@ -73,9 +58,6 @@ export class ItemTile extends LitElement {
   }
 
   render() {
-    const mediatype = this.model?.mediatype || '';
-    const iconFillColor = this.mediatypeIconsColor[mediatype];
-
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
 
@@ -93,10 +75,9 @@ export class ItemTile extends LitElement {
           <div id="stats-holder">
             <div class="col">
               <mediatype-icon
-                .mediatype=${mediatype}
+                .mediatype=${this.model?.mediatype}
                 .collection=${this.model?.collections}
                 ?showText=${true}
-                style="--iconFillColor: ${iconFillColor};"
               >
               </mediatype-icon>
             </div>
