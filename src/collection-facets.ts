@@ -71,6 +71,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) collapsableFacets = false;
 
+  @property({ type: Boolean }) showHistogramDatePicker = false;
+
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
@@ -89,11 +91,14 @@ export class CollectionFacets extends LitElement {
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
-        <div class="facet-group">
-          <h1>Year Published <feature-feedback></feature-feedback></h1>
-          ${this.histogramTemplate}
-        </div>
-
+        ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
+          ? html`
+              <div class="facet-group">
+                <h1>Year Published <feature-feedback></feature-feedback></h1>
+                ${this.histogramTemplate}
+              </div>
+            `
+          : nothing}
         ${this.mergedFacets.map(facetGroup =>
           this.getFacetGroupTemplate(facetGroup)
         )}
@@ -245,14 +250,6 @@ export class CollectionFacets extends LitElement {
     return facetGroups;
   }
 
-  // private languageDelimiter = '•••';
-
-  // private getLanguageName(languageCode: string): string {
-  //   const split = languageCode.split(this.languageDelimiter);
-
-  //   return languageCode;
-  // }
-
   /**
    * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
    */
@@ -297,7 +294,10 @@ export class CollectionFacets extends LitElement {
    * Generate the template for a facet group with a header and the collapsible
    * chevron for the mobile view
    */
-  private getFacetGroupTemplate(facetGroup: FacetGroup): TemplateResult {
+  private getFacetGroupTemplate(
+    facetGroup: FacetGroup
+  ): TemplateResult | typeof nothing {
+    if (facetGroup.buckets.length === 0) return nothing;
     const { key } = facetGroup;
     const isOpen = this.openFacets[key];
     const collapser = html`

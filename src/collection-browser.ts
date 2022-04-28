@@ -98,6 +98,8 @@ export class CollectionBrowser
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
+  @property({ type: Boolean }) showHistogramDatePicker = false;
+
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
@@ -251,7 +253,7 @@ export class CollectionBrowser
               : nothing}
             <div id="results-total">
               <span id="big-results-count"
-                >${this.totalResults
+                >${this.totalResults !== undefined
                   ? this.totalResults.toLocaleString()
                   : '-'}</span
               >
@@ -284,6 +286,14 @@ export class CollectionBrowser
 
           ${this.displayMode === `list-compact`
             ? this.listHeaderTemplate
+            : nothing}
+          ${Object.keys(this.dataSource).length === 0
+            ? html`
+                <h2>
+                  Your search did not match any items in the Archive. Try
+                  different keywords or a more general search.
+                </h2>
+              `
             : nothing}
 
           <infinite-scroller
@@ -370,6 +380,7 @@ export class CollectionBrowser
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
+        .showHistogramDatePicker=${this.showHistogramDatePicker}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
@@ -439,6 +450,9 @@ export class CollectionBrowser
     }
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
+    }
+    if (changed.has('baseQuery')) {
+      this.selectedFacets = undefined;
     }
     if (
       changed.has('baseQuery') ||
