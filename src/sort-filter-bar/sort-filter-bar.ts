@@ -394,14 +394,6 @@ export class SortFilterBar
     const name = this.dateOptionSelected
       ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
       : defaultSort;
-    console.debug(
-      'dateSortField',
-      name,
-      defaultSort,
-      this.dateOptionSelected,
-      this.selectedSort,
-      SortFieldDisplayName[this.selectedSort]
-    );
     return name;
   }
 
