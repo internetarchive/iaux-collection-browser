@@ -51,6 +51,7 @@ import {
   RestorationState,
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
+import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -141,6 +142,8 @@ export class CollectionBrowser
   @state() private mobileFacetsVisible = false;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
+
+  private languageCodeHandler = new LanguageCodeHandler();
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
@@ -364,6 +367,7 @@ export class CollectionBrowser
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
+        .languageCodeHandler=${this.languageCodeHandler}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
@@ -639,7 +643,17 @@ export class CollectionBrowser
       if (facetEntries.length === 0) continue;
       const facetValuesArray: string[] = [];
       for (const [key, facetState] of facetEntries) {
-        facetValuesArray.push(`${facetState === 'hidden' ? '-' : ''}"${key}"`);
+        const plusMinusPrefix = facetState === 'hidden' ? '-' : '';
+
+        if (facetName === 'language') {
+          const languages =
+            this.languageCodeHandler.getCodeArrayFromCodeString(key);
+          for (const language of languages) {
+            facetValuesArray.push(`${plusMinusPrefix}"${language}"`);
+          }
+        } else {
+          facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
+        }
       }
       const valueQuery = facetValuesArray.join(` OR `);
       facetQuery.push(`${facetName}:(${valueQuery})`);

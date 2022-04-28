@@ -24,7 +24,7 @@ import {
   FacetBucket,
   defaultSelectedFacets,
 } from './models';
-import { codeToLanguageMap, languageToCodeMap } from './language-code-mapping';
+import { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -70,6 +70,9 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   @property({ type: Boolean }) collapsableFacets = false;
+
+  @property({ type: Object })
+  languageCodeHandler?: LanguageCodeHandlerInterface;
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
@@ -217,7 +220,10 @@ export class CollectionFacets extends LitElement {
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
             if (option === 'language') {
-              displayText = codeToLanguageMap[value] ?? value;
+              displayText =
+                this.languageCodeHandler?.getLanguageNameFromCodeString(
+                  value
+                ) ?? value;
             }
             return {
               displayText,
@@ -239,6 +245,14 @@ export class CollectionFacets extends LitElement {
     return facetGroups;
   }
 
+  // private languageDelimiter = '•••';
+
+  // private getLanguageName(languageCode: string): string {
+  //   const split = languageCode.split(this.languageDelimiter);
+
+  //   return languageCode;
+  // }
+
   /**
    * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
    */
@@ -255,8 +269,12 @@ export class CollectionFacets extends LitElement {
         // for languages, we need to search by language code instead of the
         // display name, which is what we get from the search engine result
         if (option === 'language') {
-          const languageCodeKey = languageToCodeMap[bucket.key];
-          bucketKey = languageCodeKey ?? bucket.key;
+          // const languageCodeKey = languageToCodeMap[bucket.key];
+          bucketKey =
+            this.languageCodeHandler?.getCodeStringFromLanguageName(
+              `${bucket.key}`
+            ) ?? bucket.key;
+          // bucketKey = languageCodeKey ?? bucket.key;
         }
         return {
           displayText: `${bucket.key}`,
