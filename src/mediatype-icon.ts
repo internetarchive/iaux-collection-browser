@@ -98,7 +98,7 @@ export class MediatypeIcon extends LitElement {
         color: #2c2c2c;
         margin: auto;
         display: block;
-        text-align: center;
+        text-align: var(--iconTextAlign, center);
       }
 
       #icon.hide-text p {

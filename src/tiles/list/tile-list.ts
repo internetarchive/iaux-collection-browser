@@ -34,10 +34,12 @@ export class TileList extends LitElement {
       <div id="list-line" class="${this.classSize}">
         <div id="list-line-left">
           <div id="thumb">${this.imgTemplate}</div>
-          ${this.iconLeftTemplate}
         </div>
         <div id="list-line-right">
-          <div id="title">${this.titleTemplate}</div>
+          <div id="title-line">
+            <div id="title">${this.titleTemplate}</div>
+            ${this.iconRightTemplate}
+          </div>
           ${this.itemLineTemplate} ${this.creatorTemplate}
           <div id="dates-line">
             ${this.datePublishedTemplate} ${this.dateSortByTemplate}
@@ -64,13 +66,17 @@ export class TileList extends LitElement {
     />`;
   }
 
-  private get iconLeftTemplate() {
+  private get iconRightTemplate() {
     if (this.classSize !== 'desktop') {
       return nothing;
     }
     return html`
-      <div id="icon-left">
-        <mediatype-icon .mediatype=${this.model?.mediatype} .showText=${true}>
+      <div id="icon-right">
+        <mediatype-icon
+          .mediatype=${this.model?.mediatype}
+          .collections=${this.model?.collections}
+          .showText=${false}
+        >
         </mediatype-icon>
       </div>
     `;
@@ -368,11 +374,14 @@ export class TileList extends LitElement {
         -moz-border-radius: 50px;
       }
 
-      #icon-left {
+      #icon-right {
+        width: 20px;
         padding-top: 5px;
         --iconHeight: 20px;
         --iconWidth: 20px;
-        text-align: center;
+        --iconTextAlign: right;
+        margin-top: -10px;
+        text-align: right;
       }
 
       #title {
@@ -384,6 +393,7 @@ export class TileList extends LitElement {
         line-height: 25px;
         margin-top: -4px;
         padding-bottom: 2px;
+        flex-grow: 1;
       }
 
       .metadata {
@@ -429,6 +439,10 @@ export class TileList extends LitElement {
         column-gap: 5px;
       }
 
+      #list-line-right {
+        width: 100%;
+      }
+
       div a:hover {
         text-decoration: underline;
       }
@@ -436,7 +450,8 @@ export class TileList extends LitElement {
       /* Lines containing multiple div as row */
       #item-line,
       #dates-line,
-      #views-line {
+      #views-line,
+      #title-line {
         display: flex;
         flex-direction: row;
         gap: 10px;
