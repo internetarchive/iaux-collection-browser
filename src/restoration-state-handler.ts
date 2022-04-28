@@ -92,18 +92,19 @@ export class RestorationStateHandler
     searchParams.delete('not[]');
 
     if (state.sortParam) {
-      url.searchParams.set('sort', state.sortParam.asString);
+      const prefix = state.sortParam.direction === 'desc' ? '-' : '';
+      searchParams.set('sort', `${prefix}${state.sortParam.field}`);
     }
 
     if (state.baseQuery) {
-      url.searchParams.set('query', state.baseQuery);
+      searchParams.set('query', state.baseQuery);
     }
 
     if (state.currentPage) {
       if (state.currentPage > 1) {
-        url.searchParams.set('page', state.currentPage.toString());
+        searchParams.set('page', state.currentPage.toString());
       } else {
-        url.searchParams.delete('page');
+        searchParams.delete('page');
       }
     }
 
@@ -118,22 +119,22 @@ export class RestorationStateHandler
           const notValue = facetState === 'hidden';
           const paramValue = `${facetName}:${key}`;
           if (notValue) {
-            url.searchParams.append('not[]', paramValue);
+            searchParams.append('not[]', paramValue);
           } else {
-            url.searchParams.append('and[]', paramValue);
+            searchParams.append('and[]', paramValue);
           }
         }
       }
     }
 
     if (state.dateRangeQueryClause) {
-      url.searchParams.append('and[]', state.dateRangeQueryClause);
+      searchParams.append('and[]', state.dateRangeQueryClause);
     }
     if (state.titleQuery) {
-      url.searchParams.append('and[]', state.titleQuery);
+      searchParams.append('and[]', state.titleQuery);
     }
     if (state.creatorQuery) {
-      url.searchParams.append('and[]', state.creatorQuery);
+      searchParams.append('and[]', state.creatorQuery);
     }
 
     window.history.pushState(
@@ -179,14 +180,27 @@ export class RestorationStateHandler
       restorationState.baseQuery = searchQuery;
     }
     if (sortQuery) {
-      const [field, direction] = sortQuery.split(' ');
-      const metadataField =
-        MetadataFieldToSortField[field as MetadataSortField];
-      if (metadataField) {
-        restorationState.selectedSort = metadataField;
-      }
-      if (direction === 'desc' || direction === 'asc') {
-        restorationState.sortDirection = direction as SortDirection;
+      // check for two different sort formats: `date desc` and `-date`
+      const hasSpace = sortQuery.indexOf(' ') > -1;
+      if (hasSpace) {
+        const [field, direction] = sortQuery.split(' ');
+        const metadataField =
+          MetadataFieldToSortField[field as MetadataSortField];
+        if (metadataField) {
+          restorationState.selectedSort = metadataField;
+        }
+        if (direction === 'desc' || direction === 'asc') {
+          restorationState.sortDirection = direction as SortDirection;
+        }
+      } else {
+        const sortDirection = sortQuery.startsWith('-') ? 'desc' : 'asc';
+        const sortField = sortQuery.startsWith('-')
+          ? sortQuery.slice(1)
+          : sortQuery;
+        const metadataField =
+          MetadataFieldToSortField[sortField as MetadataSortField];
+        if (metadataField) restorationState.selectedSort = metadataField;
+        restorationState.sortDirection = sortDirection as SortDirection;
       }
     }
     if (facetAnds) {
