@@ -1,7 +1,7 @@
 import { codeToLanguageMap } from './language-code-mapping';
 
 // To serialize the list of potential language codes, we store
-// the string in the format `en-us•••en•••en-gb` with `•••` being the separator.
+// the string in the format `en-us|en|en-gb` with `|` being the separator.
 // This allows us to generate a query of `language:(en-us OR en OR en-gb)`
 // when we deserialize the string.
 export interface LanguageCodeHandlerInterface {
@@ -20,19 +20,13 @@ export interface LanguageCodeHandlerInterface {
 }
 
 export class LanguageCodeHandler implements LanguageCodeHandlerInterface {
-  private delimeter = '•';
+  private delimeter = '|';
 
   getLanguageNameFromCodeString(languageCodes: string): string {
     const split = this.getCodeArrayFromCodeString(languageCodes);
     if (split.length === 0) return '';
     const languageCode = split[0];
     const languageName = codeToLanguageMap[languageCode];
-    console.debug(
-      'getLanguageNameFromCodeString',
-      languageCodes,
-      languageCode,
-      languageName
-    );
     return languageName ?? languageCodes;
   }
 
@@ -41,18 +35,11 @@ export class LanguageCodeHandler implements LanguageCodeHandlerInterface {
       code => codeToLanguageMap[code] === languageName
     );
     const stringifiedCodes = languageCodes?.join(this.delimeter);
-    console.debug(
-      'getCodeStringFromLanguageName',
-      languageName,
-      languageCodes,
-      stringifiedCodes
-    );
     return stringifiedCodes;
   }
 
   getCodeArrayFromCodeString(languageCodes: string): string[] {
     const split = languageCodes.split(this.delimeter);
-    console.debug('getCodeArrayFromCodeString', languageCodes, split);
     return split;
   }
 }

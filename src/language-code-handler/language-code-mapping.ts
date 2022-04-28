@@ -6,7 +6,6 @@
 // linked to a query on just that value)
 
 export const codeToLanguageMap: Record<string, string> = {
-  '|d': 'skip',
   'ambient noise wall': 'Music',
   'american english': 'English',
   'arabic videos': 'Arabic',
