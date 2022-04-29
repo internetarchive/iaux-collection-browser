@@ -287,7 +287,7 @@ export class CollectionBrowser
           ${this.displayMode === `list-compact`
             ? this.listHeaderTemplate
             : nothing}
-          ${Object.keys(this.dataSource).length === 0
+          ${!this.searchResultsLoading && this.totalResults === 0
             ? html`
                 <h2>
                   Your search did not match any items in the Archive. Try
