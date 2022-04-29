@@ -223,6 +223,17 @@ export class CollectionBrowser
     this.scrollToPage(pageNumber);
   }
 
+  clearFilters() {
+    this.selectedFacets = defaultSelectedFacets;
+    this.sortParam = null;
+    this.selectedTitleFilter = null;
+    this.selectedCreatorFilter = null;
+    this.titleQuery = undefined;
+    this.creatorQuery = undefined;
+    this.selectedSort = SortField.relevance;
+    this.sortDirection = null;
+  }
+
   render() {
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
@@ -450,16 +461,6 @@ export class CollectionBrowser
     }
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
-    }
-    if (changed.has('baseQuery')) {
-      this.selectedFacets = undefined;
-      this.sortParam = null;
-      this.selectedTitleFilter = null;
-      this.selectedCreatorFilter = null;
-      this.titleQuery = undefined;
-      this.creatorQuery = undefined;
-      this.selectedSort = SortField.relevance;
-      this.sortDirection = null;
     }
     if (
       changed.has('baseQuery') ||
