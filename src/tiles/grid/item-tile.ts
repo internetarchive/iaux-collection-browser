@@ -5,6 +5,7 @@ import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
 
 import '../../mediatype-icon';
+import '../../waveform-thumbnail';
 
 import { favoriteFilledIcon } from './icons/favorite-filled';
 import { reviewsIcon } from './icons/reviews';
@@ -43,12 +44,29 @@ export class ItemTile extends LitElement {
       !containsDeemphasize ? ' hidden' : ''
     }`;
 
-    return html`
-      <div class=${itemImageBoxClass}>
+    const isMediatypeAudio = this.model?.mediatype === 'audio';
+
+    const renderView = () => {
+      if (isMediatypeAudio) {
+        return html`
+          <waveform-thumbnail
+            .baseNavigationUrl=${this.baseNavigationUrl}
+            .identifier=${this.model?.identifier}
+          >
+          </waveform-thumbnail>
+        `;
+      }
+      return html`
         <div
           class=${itemImageClass}
           style="background-image:url(${imgSrcUrl})"
         ></div>
+      `;
+    };
+
+    return html`
+      <div class=${itemImageBoxClass}>
+        ${renderView()}
         <div class=${tileActionClass}>Content may be inappropriate</div>
       </div>
     `;
