@@ -66,10 +66,14 @@ export class ItemTile extends LitElement {
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
-          <div class="item-creator">
-            <span><strong>By:&nbsp;</strong>${itemCreator}</span>
+          <div class="flex">
+            <span class="item-creator"
+              ><strong>By:&nbsp;</strong>${itemCreator}</span
+            >
           </div>
         </div>
+
+        <div class="hr"></div>
 
         <div id="item-stats-container">
           <div id="stats-holder">
@@ -215,20 +219,30 @@ export class ItemTile extends LitElement {
         background-color: #fcfcfc;
       }
 
+      .flex {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+
       .item-creator {
         color: #2c2c2c;
-        font-size: 1.4rem;
         height: 3rem;
+        font-size: 1.4rem;
         overflow: hidden;
         text-align: center;
         text-overflow: ellipsis;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
-        display: flex;
+        display: -webkit-box;
         justify-content: center;
         align-items: flex-end;
         padding-top: 1rem;
         padding-bottom: 0.5rem;
+      }
+
+      .hr {
+        border: 0.5px solid #ccc;
       }
 
       #item-stats-container {
@@ -237,7 +251,6 @@ export class ItemTile extends LitElement {
         height: 5.5rem;
         padding-left: 1rem;
         padding-right: 0.5rem;
-        border-top: 1px solid #ccc;
       }
 
       #stats-holder {

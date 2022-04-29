@@ -1,5 +1,6 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { accountIcon } from './assets/img/icons/mediatype/account';
 import { audioIcon } from './assets/img/icons/mediatype/audio';
@@ -15,8 +16,7 @@ import { tvIcon } from './assets/img/icons/mediatype/tv';
 import { videoIcon } from './assets/img/icons/mediatype/video';
 import { webIcon } from './assets/img/icons/mediatype/web';
 
-import { mediatypeColor } from './mediatype/mediatype-color';
-import { mediatypeText } from './mediatype/mediatype-text';
+import { mediatypeColor, mediatypeText } from './mediatype/mediatype-display';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
@@ -67,17 +67,20 @@ export class MediatypeIcon extends LitElement {
       return html``;
     }
 
-    const displayMediatype = this.displayMediaType || '';
-    const fillColor = mediatypeColor[displayMediatype];
+    const displayMediatype = this.displayMediaType ?? '';
 
     return html`
       <div
         id="icon"
         class="${this.showText ? 'show-text' : 'hide-text'}"
-        style="--iconFillColor:${fillColor}"
+        style="--iconFillColor: ${ifDefined(
+          mediatypeColor[displayMediatype]
+            ? mediatypeColor[displayMediatype]
+            : undefined
+        )}"
       >
-        ${this.mediatypeIcons[displayMediatype]}
-        <p class="status-text">${mediatypeText[displayMediatype]}</p>
+        ${ifDefined(this.mediatypeIcons[displayMediatype])}
+        <p class="status-text">${ifDefined(mediatypeText[displayMediatype])}</p>
       </div>
     `;
   }
