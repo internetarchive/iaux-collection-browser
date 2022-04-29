@@ -204,10 +204,10 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="collections" class="metadata">
-        ${this.labelTemplate('Collections', true)}
+        ${this.labelTemplate('Collections')}
         ${join(
           map(this.model.collections, id => this.collectionLink(id)),
-          html`,&nbsp;`
+          html`, `
         )}
       </div>
     `;
@@ -231,12 +231,12 @@ export class TileList extends LitElement {
     `;
   }
 
-  private labelTemplate(label: string, isFlex = false) {
+  private labelTemplate(label: string) {
     // Note nobreak space needed to use display:flex
     // in parent element when making , delimnited list
     // to remove space between text and ,
     return html`${label
-      ? html`<span class="label">${label}:${isFlex ? html`&nbsp;` : ` `}</span>`
+      ? html`<span class="label">${label}: </span>`
       : nothing}`;
   }
 
@@ -421,14 +421,6 @@ export class TileList extends LitElement {
         padding-top: 5px;
       }
 
-      #collections {
-        /*
-          Hack to collapse line whitespace between text and ,
-          Use &nbsp; for required spaces
-        */
-        display: flex;
-      }
-
       #description {
         padding-top: 10px;
         overflow: hidden;
@@ -446,11 +438,15 @@ export class TileList extends LitElement {
       /* Top level container */
       #list-line {
         display: flex;
-        column-gap: 5px;
+        column-gap: 10px;
       }
 
       #list-line-right {
         width: 100%;
+      }
+
+      async-collection-name {
+        display: inline-block;
       }
 
       div a:hover {
