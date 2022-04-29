@@ -103,6 +103,10 @@ export class SortFilterBar
       this.alphaSelectorVisible = 'creator';
     }
 
+    if (changed.has('dateSortSelectorVisible')) {
+      this.setupEscapeListeners();
+    }
+
     if (changed.has('resizeObserver')) {
       const oldObserver = changed.get(
         'resizeObserver'
@@ -111,6 +115,26 @@ export class SortFilterBar
       this.setupResizeObserver();
     }
   }
+
+  private setupEscapeListeners() {
+    if (this.dateSortSelectorVisible) {
+      document.addEventListener(
+        'keydown',
+        this.boundDateSelectorEscapeListener
+      );
+    } else {
+      document.removeEventListener(
+        'keydown',
+        this.boundDateSelectorEscapeListener
+      );
+    }
+  }
+
+  private boundDateSelectorEscapeListener = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      this.dateSortSelectorVisible = false;
+    }
+  };
 
   disconnectedCallback(): void {
     if (this.resizeObserver) {
@@ -364,6 +388,15 @@ export class SortFilterBar
 
   private get dateSortSelector() {
     return html`
+      <div
+        id="date-sort-selector-backdrop"
+        @keyup=${() => {
+          this.dateSortSelectorVisible = false;
+        }}
+        @click=${() => {
+          this.dateSortSelectorVisible = false;
+        }}
+      ></div>
       <div id="date-sort-selector">
         <ul>
           <li>${this.getDateSortButton(SortField.datearchived)}</li>
@@ -571,11 +604,11 @@ export class SortFilterBar
     #date-sort-selector {
       position: absolute;
       left: 150px;
-      top: 40px;
+      top: 45px;
 
       z-index: 1;
       padding: 1rem;
-      background-color: rgba(255, 255, 255, 0.75);
+      background-color: white;
       border-radius: 2.5rem;
       border: 1px solid #404142;
     }
@@ -638,6 +671,16 @@ export class SortFilterBar
 
     #mobile-sort-selector.hidden {
       display: none;
+    }
+
+    #date-sort-selector-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background-color: rgba(255, 255, 255, 0.5);
     }
 
     #desktop-sort-selector {
