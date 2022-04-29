@@ -66,10 +66,8 @@ export class ItemTile extends LitElement {
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
-          <div class="flex">
-            <span class="item-creator"
-              ><strong>By:&nbsp;</strong>${itemCreator}</span
-            >
+          <div class="item-creator">
+            <span><strong>By:&nbsp;</strong>${itemCreator}</span>
           </div>
         </div>
 
@@ -217,12 +215,6 @@ export class ItemTile extends LitElement {
 
       #container:hover > #item-title {
         background-color: #fcfcfc;
-      }
-
-      .flex {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
       }
 
       .item-creator {
