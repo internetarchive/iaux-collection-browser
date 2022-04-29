@@ -174,6 +174,8 @@ export class SortFilterBar
   }
 
   private get alphaBarTemplate(): TemplateResult | typeof nothing {
+    if (!['title', 'creator'].includes(this.selectedSort)) return nothing;
+
     if (this.alphaSelectorVisible === null) {
       if (this.selectedSort === 'creator') return this.creatorSelectorBar;
       if (this.selectedSort === 'title') return this.titleSelectorBar;

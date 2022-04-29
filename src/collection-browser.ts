@@ -453,6 +453,13 @@ export class CollectionBrowser
     }
     if (changed.has('baseQuery')) {
       this.selectedFacets = undefined;
+      this.sortParam = null;
+      this.selectedTitleFilter = null;
+      this.selectedCreatorFilter = null;
+      this.titleQuery = undefined;
+      this.creatorQuery = undefined;
+      this.selectedSort = SortField.relevance;
+      this.sortDirection = null;
     }
     if (
       changed.has('baseQuery') ||
