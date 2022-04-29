@@ -67,7 +67,9 @@ export class ItemTile extends LitElement {
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
           <div class="item-creator">
-            <span><strong>By:&nbsp;</strong>${itemCreator}</span>
+            <div class="truncated">
+              <span><strong>By:&nbsp;</strong>${itemCreator}</span>
+            </div>
           </div>
         </div>
 
@@ -218,19 +220,29 @@ export class ItemTile extends LitElement {
       }
 
       .item-creator {
-        color: #2c2c2c;
-        height: 3rem;
-        font-size: 1.4rem;
-        overflow: hidden;
-        text-align: center;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        display: -webkit-box;
+        display: flex;
         justify-content: center;
-        align-items: flex-end;
+        align-items: flex-end; /* Important to start text from bottom */
+        height: 3rem;
         padding-top: 1rem;
-        padding-bottom: 0.5rem;
+      }
+
+      .truncated {
+        flex: 1;
+        min-width: 0; /* Important for long words! */
+      }
+
+      .truncated span {
+        font-size: 1.4rem;
+        color: #2c2c2c;
+        -webkit-line-clamp: 2;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        word-wrap: break-word;
+        line-height: 2rem;
+        text-align: center;
       }
 
       .hr {
