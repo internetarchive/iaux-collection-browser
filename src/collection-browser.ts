@@ -459,6 +459,9 @@ export class CollectionBrowser
     ) {
       this.infiniteScroller.reload();
     }
+    if (changed.has('baseQuery')) {
+      this.emitBaseQueryChanged();
+    }
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
     }
@@ -509,6 +512,16 @@ export class CollectionBrowser
     if (entry.target === this.contentContainer) {
       this.mobileView = entry.contentRect.width < 600;
     }
+  }
+
+  private emitBaseQueryChanged() {
+    this.dispatchEvent(
+      new CustomEvent<{ baseQuery?: string }>('baseQueryChanged', {
+        detail: {
+          baseQuery: this.baseQuery,
+        },
+      })
+    );
   }
 
   private disconnectResizeObserver(
