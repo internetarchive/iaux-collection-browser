@@ -1209,6 +1209,10 @@ export class CollectionBrowser
       --infiniteScrollerRowGap: 34px;
     }
 
+    .mobile infinite-scroller.list-detail {
+      --infiniteScrollerRowGap: 24px;
+    }
+
     infinite-scroller.grid {
       --infiniteScrollerCellMinWidth: var(
         --collectionBrowserCellMinWidth,
