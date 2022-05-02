@@ -17,21 +17,6 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseNavigationUrl?: string;
 
-  private readonly mediatypeIconsColor: { [key: string]: any } = {
-    account: '#000000',
-    audio: '#8fdaef',
-    data: '#333333',
-    etree: '#3871c1',
-    film: '#bf1b2c',
-    image: '#62c4a9',
-    movies: '#bf1b2c',
-    software: '#80cc28',
-    texts: '#f9a72b',
-    tv: '#f25d54',
-    video: '#bf1b2c',
-    web: '#fddd10',
-  };
-
   get renderItemImageView() {
     const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
 
@@ -73,9 +58,6 @@ export class ItemTile extends LitElement {
   }
 
   render() {
-    const mediatype = this.model?.mediatype || '';
-    const iconFillColor = this.mediatypeIconsColor[mediatype];
-
     const itemTitle = this.model?.title || '';
     const itemCreator = this.model?.creator || '-';
 
@@ -85,18 +67,21 @@ export class ItemTile extends LitElement {
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
           <div id="item-image-container">${this.renderItemImageView}</div>
           <div class="item-creator">
-            <span><strong>By:&nbsp;</strong>${itemCreator}</span>
+            <div class="truncated">
+              <span><strong>By:&nbsp;</strong>${itemCreator}</span>
+            </div>
           </div>
         </div>
+
+        <div class="hr"></div>
 
         <div id="item-stats-container">
           <div id="stats-holder">
             <div class="col">
               <mediatype-icon
-                .mediatype=${mediatype}
+                .mediatype=${this.model?.mediatype}
                 .collection=${this.model?.collections}
                 ?showText=${true}
-                style="--iconFillColor: ${iconFillColor};"
               >
               </mediatype-icon>
             </div>
@@ -235,19 +220,33 @@ export class ItemTile extends LitElement {
       }
 
       .item-creator {
-        color: #2c2c2c;
-        font-size: 1.4rem;
-        height: 3rem;
-        overflow: hidden;
-        text-align: center;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
         display: flex;
         justify-content: center;
-        align-items: flex-end;
+        align-items: flex-end; /* Important to start text from bottom */
+        height: 3rem;
         padding-top: 1rem;
-        padding-bottom: 0.5rem;
+      }
+
+      .truncated {
+        flex: 1;
+        min-width: 0; /* Important for long words! */
+      }
+
+      .truncated span {
+        font-size: 1.4rem;
+        color: #2c2c2c;
+        -webkit-line-clamp: 2;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        word-wrap: break-word;
+        line-height: 2rem;
+        text-align: center;
+      }
+
+      .hr {
+        border: 0.5px solid #ccc;
       }
 
       #item-stats-container {
@@ -256,7 +255,6 @@ export class ItemTile extends LitElement {
         height: 5.5rem;
         padding-left: 1rem;
         padding-right: 0.5rem;
-        border-top: 1px solid #ccc;
       }
 
       #stats-holder {
