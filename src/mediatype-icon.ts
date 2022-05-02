@@ -1,6 +1,5 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { mediatypeConfig } from './mediatype/mediatype-config';
 
@@ -32,20 +31,20 @@ export class MediatypeIcon extends LitElement {
   }
 
   render() {
-    if (!this.displayMediatype) {
+    const toDisplayMediatype = mediatypeConfig[this.displayMediatype];
+
+    if (!toDisplayMediatype) {
       return html``;
     }
-
-    const toDisplayMediatype = mediatypeConfig[this.displayMediatype];
 
     return html`
       <div
         id="icon"
         class="${this.showText ? 'show-text' : 'hide-text'}"
-        style="--iconFillColor: ${ifDefined(toDisplayMediatype.color)}"
+        style="--iconFillColor: ${toDisplayMediatype.color}"
       >
-        ${ifDefined(toDisplayMediatype.icon)}
-        <p class="status-text">${ifDefined(toDisplayMediatype.text)}</p>
+        ${toDisplayMediatype.icon}
+        <p class="status-text">${toDisplayMediatype.text}</p>
       </div>
     `;
   }
