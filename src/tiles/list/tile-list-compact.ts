@@ -1,4 +1,5 @@
 import { css, html, LitElement, nothing } from 'lit';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
@@ -34,13 +35,26 @@ export class TileListCompact extends LitElement {
         </div>
         <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="icon">
-          <mediatype-icon .mediatype=${this.model?.mediatype}> </mediatype-icon>
+          <mediatype-icon
+            .mediatype=${this.model?.mediatype}
+            .collections=${this.model?.collections}
+            style="--iconCustomFillColor: ${ifDefined(this.collectionColor)}"
+          >
+          </mediatype-icon>
         </div>
         <div id="views">
           ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
         </div>
       </div>
     `;
+  }
+
+  // Only in list, not tile
+  private get collectionColor() {
+    if (this.model?.mediatype !== 'collection') {
+      return undefined;
+    }
+    return '#4666FF';
   }
 
   private get imageTemplate() {

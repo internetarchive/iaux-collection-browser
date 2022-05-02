@@ -31,9 +31,8 @@ export class MediatypeIcon extends LitElement {
   }
 
   render() {
-    const toDisplayMediatype = mediatypeConfig[this.displayMediatype];
-
-    if (!toDisplayMediatype) {
+    const config = mediatypeConfig[this.displayMediatype];
+    if (!config) {
       return html``;
     }
 
@@ -41,10 +40,10 @@ export class MediatypeIcon extends LitElement {
       <div
         id="icon"
         class="${this.showText ? 'show-text' : 'hide-text'}"
-        style="--iconFillColor: ${toDisplayMediatype.color}"
+        style="--iconFillColor: ${config.color}"
       >
-        ${toDisplayMediatype.icon}
-        <p class="status-text">${toDisplayMediatype.text}</p>
+        ${config.icon}
+        <p class="status-text">${config.text}</p>
       </div>
     `;
   }
@@ -69,7 +68,7 @@ export class MediatypeIcon extends LitElement {
       }
 
       .fill-color {
-        fill: var(--iconFillColor, '#000000');
+        fill: var(--iconCustomFillColor, var(--iconFillColor, '#000000'));
       }
     `;
   }
