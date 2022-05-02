@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { mediatypeData } from './mediatype/mediatype-display';
+import { mediatypeConfig } from './mediatype/mediatype-config';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
@@ -12,7 +12,7 @@ export class MediatypeIcon extends LitElement {
 
   @property({ type: Boolean }) showText = false;
 
-  private get displayMediaType() {
+  private get displayMediatype(): string {
     const tvIdentifier = ['tvnews', 'tvarchive', 'television'];
     const radioIdentifier = ['radio', 'radioprogram'];
 
@@ -28,7 +28,7 @@ export class MediatypeIcon extends LitElement {
     ) {
       return 'radio';
     }
-    return this.mediatype;
+    return this.mediatype || '';
   }
 
   render() {
@@ -36,21 +36,17 @@ export class MediatypeIcon extends LitElement {
       return html``;
     }
 
-    const displayMediatype = this.displayMediaType ?? '';
-
     return html`
       <div
         id="icon"
         class="${this.showText ? 'show-text' : 'hide-text'}"
         style="--iconFillColor: ${ifDefined(
-          mediatypeData[displayMediatype]
-            ? mediatypeData[displayMediatype]?.color
-            : undefined
+          mediatypeConfig[this.displayMediatype].color
         )}"
       >
-        ${ifDefined(mediatypeData[displayMediatype].icon)}
+        ${ifDefined(mediatypeConfig[this.displayMediatype].icon)}
         <p class="status-text">
-          ${ifDefined(mediatypeData[displayMediatype].text)}
+          ${ifDefined(mediatypeConfig[this.displayMediatype].text)}
         </p>
       </div>
     `;

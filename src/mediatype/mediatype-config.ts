@@ -12,7 +12,7 @@ import { tvIcon } from '../assets/img/icons/mediatype/tv';
 import { videoIcon } from '../assets/img/icons/mediatype/video';
 import { webIcon } from '../assets/img/icons/mediatype/web';
 
-export const mediatypeData: { [key: string]: any } = {
+export const mediatypeConfig: { [key: string]: any } = {
   account: {
     color: '#000000',
     icon: accountIcon,
