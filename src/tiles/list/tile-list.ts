@@ -1,8 +1,15 @@
-import { css, html, LitElement, nothing } from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+  TemplateResult,
+} from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
@@ -30,9 +37,53 @@ export class TileList extends LitElement {
 
   @property({ type: Number }) mobileBreakpoint?: number;
 
+  @state() private collectionLinks: TemplateResult[] = [];
+
+  protected updated(changed: PropertyValues): void {
+    if (changed.has('model')) {
+      this.fetchCollectionNames();
+    }
+  }
+
+  private async fetchCollectionNames() {
+    if (
+      !this.model?.collections ||
+      this.model.collections.length === 0 ||
+      !this.collectionNameCache
+    ) {
+      return;
+    }
+    // Note: quirk of Lit: need to replace collectionLinks array,
+    // otherwise it will not re-render. Can't simply alter the array.
+    this.collectionLinks = [];
+    const newCollellectionLinks: TemplateResult[] = [];
+    const promises: Promise<void>[] = [];
+    for (const collection of this.model.collections) {
+      promises.push(
+        this.collectionNameCache?.collectionNameFor(collection).then(name => {
+          newCollellectionLinks.push(
+            this.detailsLink(collection, name ?? collection)
+          );
+        })
+      );
+    }
+    await Promise.all(promises);
+    this.collectionLinks = newCollellectionLinks;
+  }
+
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
+        ${this.classSize === 'mobile'
+          ? this.mobileTemplate
+          : this.desktopTemplate}
+      </div>
+    `;
+  }
+
+  private get mobileTemplate() {
+    return html`
+      <div id="list-line-top">
         <div id="list-line-left">
           <div id="thumb">${this.imgTemplate}</div>
         </div>
@@ -41,21 +92,42 @@ export class TileList extends LitElement {
             <div id="title">${this.titleTemplate}</div>
             ${this.iconRightTemplate}
           </div>
-          ${this.itemLineTemplate} ${this.creatorTemplate}
-          <div id="dates-line">
-            ${this.datePublishedTemplate} ${this.dateSortByTemplate}
-          </div>
-          <div id="views-line">
-            ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
-          </div>
-          ${this.topicsTemplate} ${this.collectionsTemplate}
-          ${this.descriptionTemplate}
         </div>
+      </div>
+      <div id="list-line-bottom">${this.detailsTemplate}</div>
+    `;
+  }
+
+  private get desktopTemplate() {
+    return html`
+      <div id="list-line-left">
+        <div id="thumb">${this.imgTemplate}</div>
+      </div>
+      <div id="list-line-right">
+        <div id="title-line">
+          <div id="title">${this.titleTemplate}</div>
+          ${this.iconRightTemplate}
+        </div>
+        ${this.detailsTemplate}
       </div>
     `;
   }
 
-  // Display templates
+  private get detailsTemplate() {
+    return html`
+      ${this.itemLineTemplate} ${this.creatorTemplate}
+      <div id="dates-line">
+        ${this.datePublishedTemplate} ${this.dateSortByTemplate}
+      </div>
+      <div id="views-line">
+        ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
+      </div>
+      ${this.topicsTemplate} ${this.collectionsTemplate}
+      ${this.descriptionTemplate}
+    `;
+  }
+
+  // Data templates
   private get imgTemplate() {
     if (!this.model?.identifier) {
       return nothing;
@@ -68,9 +140,6 @@ export class TileList extends LitElement {
   }
 
   private get iconRightTemplate() {
-    if (this.classSize !== 'desktop') {
-      return nothing;
-    }
     return html`
       <div id="icon-right">
         <mediatype-icon
@@ -100,6 +169,18 @@ export class TileList extends LitElement {
     return html` <div id="item-line">${source} ${volume} ${issue}</div> `;
   }
 
+  private get sourceTemplate() {
+    if (!this.model?.source) {
+      return nothing;
+    }
+    return html`
+      <div id="source" class="metadata">
+        ${this.labelTemplate('Source')}
+        ${this.searchLink('source', this.model.source)}
+      </div>
+    `;
+  }
+
   private get volumeTemplate() {
     return this.metadataTemplate(this.model?.volume, 'Volume');
   }
@@ -108,23 +189,11 @@ export class TileList extends LitElement {
     return this.metadataTemplate(this.model?.issue, 'Issue');
   }
 
-  private get sourceTemplate() {
-    if (!this.model?.source) {
-      return nothing;
-    }
-    return html`
-      <div id="source">
-        ${this.labelTemplate('Source')}
-        ${this.searchLink('source', this.model.source)}
-      </div>
-    `;
-  }
-
   private get creatorTemplate() {
-    // "Achivist since" if account tile
+    // "Achivist since" if account
     if (this.model?.mediatype === 'account') {
       return html`
-        <div id="creator">
+        <div id="creator" class="metadata">
           <span class="label"> ${accountLabel(this.model?.dateAdded)} </span>
         </div>
       `;
@@ -199,16 +268,13 @@ export class TileList extends LitElement {
   }
 
   private get collectionsTemplate() {
-    if (!this.model?.collections) {
+    if (!this.collectionLinks || this.collectionLinks.length === 0) {
       return nothing;
     }
     return html`
       <div id="collections" class="metadata">
         ${this.labelTemplate('Collections')}
-        ${join(
-          map(this.model.collections, id => this.collectionLink(id)),
-          html`, `
-        )}
+        ${join(this.collectionLinks, html`, `)}
       </div>
     `;
   }
@@ -232,10 +298,7 @@ export class TileList extends LitElement {
   }
 
   private labelTemplate(label: string) {
-    // Note nobreak space needed to use display:flex
-    // in parent element when making , delimnited list
-    // to remove space between text and ,
-    return html`${label
+    return html` ${label
       ? html`<span class="label">${label}: </span>`
       : nothing}`;
   }
@@ -254,32 +317,14 @@ export class TileList extends LitElement {
     >`;
   }
 
-  private detailsLink(identifier: string, text?: string) {
-    if (!identifier) {
-      return nothing;
-    }
+  private detailsLink(identifier: string, text?: string): TemplateResult {
     const linkText = text ?? identifier;
     // No whitespace after closing tag
-    return html`<a href="${this.baseNavigationUrl}/details/${identifier}"
+    // identifiers (all ASCII in their creation) should be safe to use in href, but sanitize anyway
+    return html`<a
+      href="${this.baseNavigationUrl}/details/${encodeURI(identifier)}"
       >${DOMPurify.sanitize(linkText)}</a
     >`;
-  }
-
-  private collectionLink(identifier: string) {
-    if (!identifier) {
-      return nothing;
-    }
-    // No whitespace after closing tag
-    return html`<a href="${this.baseNavigationUrl}/details/${identifier}"
-      >${this.collectionName(identifier)}</a
-    >`;
-  }
-
-  private collectionName(identifier: string) {
-    return html`<async-collection-name
-      .collectionNameCache=${this.collectionNameCache}
-      .identifier=${identifier}
-    ></async-collection-name>`;
   }
 
   /*
@@ -340,15 +385,16 @@ export class TileList extends LitElement {
         font-weight: bold;
       }
 
-      .mobile {
+      #list-line.mobile {
         --infiniteScrollerRowGap: 20px;
         --infiniteScrollerRowHeight: auto;
       }
 
-      .desktop {
+      #list-line.desktop {
         --infiniteScrollerRowGap: 30px;
         --infiniteScrollerRowHeight: auto;
       }
+
       /* fields */
 
       #thumb img {
@@ -390,7 +436,7 @@ export class TileList extends LitElement {
         --iconHeight: 20px;
         --iconWidth: 20px;
         --iconTextAlign: right;
-        margin-top: -10px;
+        margin-top: -8px;
         text-align: right;
       }
 
@@ -410,11 +456,18 @@ export class TileList extends LitElement {
         line-height: 20px;
       }
 
+      #description,
       #creator,
-      #topic,
+      #topics,
       #source {
-        text-overflow: ellipsis;
+        text-align: left;
         overflow: hidden;
+        text-overflow: ellipsis;
+        -webkit-box-orient: vertical;
+        display: -webkit-box;
+        word-break: break-word;
+        -webkit-line-clamp: 3; /* number of lines to show */
+        line-clamp: 3;
       }
 
       #icon {
@@ -423,30 +476,34 @@ export class TileList extends LitElement {
 
       #description {
         padding-top: 10px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        display: -webkit-box;
-        word-break: break-word;
-        -webkit-line-clamp: 3; /* number of lines to show */
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
-        text-align: left;
       }
 
       /* Top level container */
       #list-line {
         display: flex;
+      }
+
+      #list-line.mobile {
+        flex-direction: column;
+      }
+
+      #list-line.desktop {
         column-gap: 10px;
       }
 
-      #list-line-right {
-        width: 100%;
+      #list-line-top {
+        display: flex;
+        column-gap: 7px;
       }
 
-      async-collection-name {
-        display: inline-block;
+      #list-line-bottom {
+        padding-top: 4px;
+      }
+
+      #list-line-right,
+      #list-line-top,
+      #list-line-bottom {
+        width: 100%;
       }
 
       div a:hover {
