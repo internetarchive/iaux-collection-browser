@@ -13,15 +13,12 @@ import type {
   InfiniteScroller,
   InfiniteScrollerCellProviderInterface,
 } from '@internetarchive/infinite-scroller';
-import {
+import type {
   Aggregation,
   Metadata,
   SearchParams,
   SearchServiceInterface,
   SortDirection,
-} from '@internetarchive/search-service';
-import {
-  AggregateSearchParams,
   SortParam,
 } from '@internetarchive/search-service';
 import {
@@ -343,7 +340,7 @@ export class CollectionBrowser
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
     if (!sortField) return;
-    this.sortParam = new SortParam(sortField, this.sortDirection);
+    this.sortParam = { field: sortField, direction: this.sortDirection };
   }
 
   private displayModeChanged(
@@ -730,7 +727,7 @@ export class CollectionBrowser
   private async fetchFacets() {
     if (!this.fullQuery) return;
 
-    const aggregations = new AggregateSearchParams({
+    const aggregations = {
       advancedParams: [
         {
           field: 'subjectSorter',
@@ -757,14 +754,14 @@ export class CollectionBrowser
           size: 50,
         },
       ],
-    });
+    };
 
-    const params = new SearchParams({
+    const params: SearchParams = {
       query: this.fullQuery,
       fields: ['identifier'],
       aggregations,
       rows: 1,
-    });
+    };
     this.facetsLoading = true;
     const results = await this.searchService?.search(params);
     this.facetsLoading = false;
@@ -788,7 +785,7 @@ export class CollectionBrowser
    * If this doesn't change, we don't need to re-fetch the histogram date range
    */
   private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDate}-${this.sortParam?.asString}`;
+    return `${this.fullQueryWithoutDate}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   /**
@@ -807,16 +804,16 @@ export class CollectionBrowser
       return;
     this.previousFullQueryNoDate = fullQueryNoDateKey;
 
-    const aggregations = new AggregateSearchParams({
+    const aggregations = {
       simpleParams: ['year'],
-    });
+    };
 
-    const params = new SearchParams({
+    const params = {
       query: this.fullQueryWithoutDate,
       fields: ['identifier'],
       aggregations,
       rows: 1,
-    });
+    };
 
     this.fullYearAggregationLoading = true;
     const results = await this.searchService?.search(params);
@@ -851,7 +848,7 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.fullQuery}-${this.sortParam?.asString}`;
+    return `${this.fullQuery}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   // this maps the query to the pages being fetched for that query
@@ -874,7 +871,7 @@ export class CollectionBrowser
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
-    const params = new SearchParams({
+    const params = {
       query: this.fullQuery,
       fields: [
         'addeddate',
@@ -900,7 +897,7 @@ export class CollectionBrowser
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
-    });
+    };
     const results = await this.searchService?.search(params);
     const success = results?.success;
 
@@ -913,8 +910,28 @@ export class CollectionBrowser
     // right behind it
     const searchQuery = success.responseHeader.params.qin;
     const searchSort = success.responseHeader.params.sort;
+    let sortChanged = false;
+    if (!searchSort) {
+      // if we went from no sort to sort, the sort has changed
+      if (this.sortParam) {
+        sortChanged = true;
+      }
+    } else {
+      // check if the sort has changed
+      const split = searchSort.split(' ');
+      if (split.length > 1) {
+        const field = searchSort.split(' ')[0];
+        const direction = searchSort.split(' ')[1];
+        if (
+          field !== this.sortParam?.field ||
+          direction !== this.sortParam?.direction
+        ) {
+          sortChanged = true;
+        }
+      }
+    }
     const queryChangedSinceFetch =
-      searchQuery !== this.fullQuery || searchSort !== this.sortParam?.asString;
+      searchQuery !== this.fullQuery || sortChanged;
     if (queryChangedSinceFetch) return;
 
     const { docs } = success.response;
