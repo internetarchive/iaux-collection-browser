@@ -168,11 +168,17 @@ export class AppRoot extends LitElement {
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
+          .showHistogramDatePicker=${true}
           @visiblePageChanged=${this.visiblePageChanged}
+          @baseQueryChanged=${this.baseQueryChanged}
         >
         </collection-browser>
       </div>
     `;
+  }
+
+  private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>) {
+    this.searchQuery = e.detail.baseQuery;
   }
 
   private outlineChanged(e: Event) {
