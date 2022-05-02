@@ -1,8 +1,8 @@
 import { css, html, LitElement } from 'lit';
 import { customElement } from 'lit/decorators.js';
 
-@customElement('loading-tile')
-export class LoadingTile extends LitElement {
+@customElement('collection-browser-loading-tile')
+export class CollectionBrowserLoadingTile extends LitElement {
   render() {
     return html` <div id="container"></div> `;
   }

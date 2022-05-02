@@ -31,7 +31,7 @@ import {
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import './tiles/tile-dispatcher';
-import './tiles/loading-tile';
+import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
@@ -158,7 +158,7 @@ export class CollectionBrowser
    */
   private endOfDataReached = false;
 
-  private placeholderCellTemplate = html`<loading-tile></loading-tile>`;
+  private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
     const pageNumber = Math.floor(index / this.pageSize) + 1;
