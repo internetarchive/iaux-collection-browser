@@ -32,22 +32,20 @@ export class MediatypeIcon extends LitElement {
   }
 
   render() {
-    if (!this.mediatype || !this.displayMediatype) {
+    if (!this.displayMediatype) {
       return html``;
     }
+
+    const toDisplayMediatype = mediatypeConfig[this.displayMediatype];
 
     return html`
       <div
         id="icon"
         class="${this.showText ? 'show-text' : 'hide-text'}"
-        style="--iconFillColor: ${ifDefined(
-          mediatypeConfig[this.displayMediatype].color
-        )}"
+        style="--iconFillColor: ${ifDefined(toDisplayMediatype.color)}"
       >
-        ${ifDefined(mediatypeConfig[this.displayMediatype].icon)}
-        <p class="status-text">
-          ${ifDefined(mediatypeConfig[this.displayMediatype].text)}
-        </p>
+        ${ifDefined(toDisplayMediatype.icon)}
+        <p class="status-text">${ifDefined(toDisplayMediatype.text)}</p>
       </div>
     `;
   }
