@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { mediatypeConfig } from '../src/mediatype/mediatypeConfig';
+import { mediatypeConfig } from '../src/mediatype/mediatype-config';
 
 describe('mediatypeConfig', () => {
   it('returns undefined', () => {

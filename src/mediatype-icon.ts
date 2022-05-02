@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { mediatypeConfig } from './mediatype/mediatypeConfig';
+import { mediatypeConfig } from './mediatype/mediatype-config';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
