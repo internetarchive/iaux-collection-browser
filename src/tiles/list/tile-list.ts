@@ -51,7 +51,7 @@ export class TileList extends LitElement {
       this.model.collections.length === 0 ||
       !this.collectionNameCache
     ) {
-      return [];
+      return;
     }
     // Note: quirk of Lit: need to replace collectionLinks array,
     // otherwise it will not re-render. Can't simply alter the array.
@@ -69,7 +69,6 @@ export class TileList extends LitElement {
     }
     await Promise.all(promises);
     this.collectionLinks = newCollellectionLinks;
-    return newCollellectionLinks;
   }
 
   render() {
@@ -321,7 +320,9 @@ export class TileList extends LitElement {
   private detailsLink(identifier: string, text?: string): TemplateResult {
     const linkText = text ?? identifier;
     // No whitespace after closing tag
-    return html`<a href="${this.baseNavigationUrl}/details/${identifier}"
+    // identifiers (all ASCII in their creation) should be safe to use in href, but sanitize anyway
+    return html`<a
+      href="${this.baseNavigationUrl}/details/${encodeURI(identifier)}"
       >${DOMPurify.sanitize(linkText)}</a
     >`;
   }
