@@ -110,13 +110,13 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-"@internetarchive/collection-name-cache@0.1.2-alpha.1":
-  version "0.1.2-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.1.2-alpha.1.tgz#86cfdd2c77fe622a2ddee346f19da0da40ab9c94"
-  integrity sha512-mjn/fZZ9Z6Ss/OXI1PxTrfoZ3HdswR5MVmI9bEcxD0LjzwNyyaYXsjAdJlfZXuMdkLJg2COFDbGInNx6/dyIsA==
+"@internetarchive/collection-name-cache@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.1.2.tgz#faa9e30ff6b4aab0b6e83a23f30efad23f8c0a29"
+  integrity sha512-Mm/MV+BYHXn3af+HscBy4zoFnnjKAqAi8lIKX8T1EzKOcZK10W/1yFu6dMR8YBNv/zRVbapd68fhALzVEzAE0g==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
-    "@internetarchive/search-service" "0.3.2-alpha.1"
+    "@internetarchive/search-service" "^0.3.2"
     lit "^2.0.2"
 
 "@internetarchive/feature-feedback@^0.1.2":
@@ -184,10 +184,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@0.3.2-alpha.1":
-  version "0.3.2-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.3.2-alpha.1.tgz#f373be6349a74c13ff78fe5de45d57dc8ad1586f"
-  integrity sha512-AcBSYr5J5h+HqWX1E6jn9q54BXMiyMaeKkzYqMCRod7Jy6gFrkceI+l6AK46BqQW2UHb2imFutwubHwqJmwejA==
+"@internetarchive/search-service@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.3.2.tgz#dde9eeb439ff600b1a1a21c205bea2d23be5b41a"
+  integrity sha512-6HlHbsFfhWs7XKKKUsE5oIClwDhHkn3yr3B4GEbEmz7p8gaTQDq2WfHmrzmvGN8My3uNlVS2Fs4F5PRw1EGogw==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.3"
     "@internetarchive/result-type" "^0.0.1"
