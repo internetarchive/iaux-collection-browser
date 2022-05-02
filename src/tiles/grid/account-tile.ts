@@ -8,7 +8,7 @@ import { reviewsIcon } from './icons/reviews';
 import { uploadIcon } from './icons/upload';
 
 @customElement('account-tile')
-export class UserTile extends LitElement {
+export class AccountTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
   render() {
