@@ -32,7 +32,7 @@ export class MediatypeIcon extends LitElement {
   }
 
   render() {
-    if (!this.mediatype) {
+    if (!this.mediatype || !this.displayMediatype) {
       return html``;
     }
 
