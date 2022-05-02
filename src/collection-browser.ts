@@ -112,7 +112,7 @@ export class CollectionBrowser
     }
   );
 
-  @property({ type: Number }) mobileBreakpoint = 530;
+  @property({ type: Number }) mobileBreakpoint = 600;
 
   /**
    * The page that the consumer wants to load.
