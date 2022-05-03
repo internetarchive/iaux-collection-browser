@@ -60,10 +60,11 @@ export class ItemImage extends LitElement {
   private get waveformTemplate() {
     return html`
       <div class="box" id=${this.randomGradient}>
-        <div
-          class="item-image"
-          style="background-image:url(${this.imageSrc})"
-        ></div>
+        <img
+          class="item-image waveform"
+          src="${this.imageSrc}"
+          alt="${ifDefined(this.model?.identifier)}"
+        />
       </div>
     `;
   }
@@ -110,6 +111,9 @@ export class ItemImage extends LitElement {
         position: relative;
         -webkit-appearance: none;
         overflow: visible;
+      }
+
+      .waveform {
         mix-blend-mode: screen;
       }
 
