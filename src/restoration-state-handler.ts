@@ -117,7 +117,7 @@ export class RestorationStateHandler
         if (facetEntries.length === 0) continue;
         for (const [key, facetState] of facetEntries) {
           const notValue = facetState === 'hidden';
-          const paramValue = `${facetName}:${key}`;
+          const paramValue = `${facetName}:"${key}"`;
           if (notValue) {
             searchParams.append('not[]', paramValue);
           } else {
@@ -206,6 +206,8 @@ export class RestorationStateHandler
     if (facetAnds) {
       facetAnds.forEach(and => {
         const [field, value] = and.split(':');
+        const unQuotedValue = this.stripQuotes(value);
+
         switch (field) {
           case 'year': {
             const [minDate, maxDate] = value.split(' TO ');
@@ -224,8 +226,9 @@ export class RestorationStateHandler
               );
               restorationState.dateRangeQueryClause = `year:${value}`;
             } else {
-              restorationState.selectedFacets[field as FacetOption][value] =
-                'selected';
+              restorationState.selectedFacets[field as FacetOption][
+                unQuotedValue
+              ] = 'selected';
             }
             break;
           }
@@ -236,17 +239,28 @@ export class RestorationStateHandler
             restorationState.selectedCreatorFilter = value;
             break;
           default:
-            restorationState.selectedFacets[field as FacetOption][value] =
-              'selected';
+            restorationState.selectedFacets[field as FacetOption][
+              unQuotedValue
+            ] = 'selected';
         }
       });
     }
     if (facetNots) {
       facetNots.forEach(not => {
         const [field, value] = not.split(':');
-        restorationState.selectedFacets[field as FacetOption][value] = 'hidden';
+        const unQuotedValue = this.stripQuotes(value);
+        restorationState.selectedFacets[field as FacetOption][unQuotedValue] =
+          'hidden';
       });
     }
     return restorationState;
+  }
+
+  // remove optional opening and closing quotes from a string
+  private stripQuotes(value: string): string {
+    if (value.startsWith('"') && value.endsWith('"')) {
+      return value.substring(1, value.length - 1);
+    }
+    return value;
   }
 }
