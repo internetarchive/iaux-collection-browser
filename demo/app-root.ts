@@ -44,7 +44,6 @@ export class AppRoot extends LitElement {
     if ((this.currentPage ?? 1) > 1) {
       this.collectionBrowser.goToPage(this.currentPage ?? 1);
     }
-    this.currentPage = 1;
   }
 
   private changePagePressed(e: Event) {
