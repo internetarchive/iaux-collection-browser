@@ -84,15 +84,6 @@ export class AppRoot extends LitElement {
           <input type="submit" value="Go" />
         </form>
 
-        <button
-          @click=${() => {
-            this.collectionBrowser.showDeleteButtons =
-              !this.collectionBrowser.showDeleteButtons;
-          }}
-        >
-          Toggle Delete Mode
-        </button>
-
         <div id="cell-controls">
           <div id="cell-size-control">
             <div>

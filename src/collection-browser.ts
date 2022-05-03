@@ -63,8 +63,6 @@ export class CollectionBrowser
 
   @property({ type: String }) baseQuery?: string;
 
-  @property({ type: Boolean }) showDeleteButtons = false;
-
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   @property({ type: Object }) sortParam: SortParam | null = null;
@@ -449,11 +447,7 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    if (
-      changed.has('displayMode') ||
-      changed.has('showDeleteButtons') ||
-      changed.has('baseNavigationUrl')
-    ) {
+    if (changed.has('displayMode') || changed.has('baseNavigationUrl')) {
       this.infiniteScroller.reload();
     }
     if (changed.has('baseQuery')) {
@@ -1053,7 +1047,6 @@ export class CollectionBrowser
       .resizeObserver=${this.resizeObserver}
       .collectionNameCache=${this.collectionNameCache}
       .sortParam=${this.sortParam}
-      ?showDeleteButton=${this.showDeleteButtons}
       .mobileBreakpoint=${this.mobileBreakpoint}
     ></tile-dispatcher>`;
   }

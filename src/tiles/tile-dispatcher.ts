@@ -26,8 +26,6 @@ export class TileDispatcher
 
   @property({ type: String }) baseNavigationUrl?: string;
 
-  @property({ type: Boolean }) showDeleteButton = false;
-
   @property({ type: Number }) currentWidth?: number;
 
   @property({ type: Number }) currentHeight?: number;
@@ -68,9 +66,6 @@ export class TileDispatcher
 
   private get tileTemplate() {
     return html`
-      ${this.showDeleteButton
-        ? html`<button id="delete-button">X</button>`
-        : nothing}
       ${this.tileDisplayMode === 'list-detail'
         ? this.tile
         : this.linkTileTemplate}
