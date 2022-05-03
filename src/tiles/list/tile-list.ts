@@ -145,11 +145,19 @@ export class TileList extends LitElement {
         <mediatype-icon
           .mediatype=${this.model?.mediatype}
           .collections=${this.model?.collections}
-          .showText=${false}
+          style="--iconCustomFillColor: ${ifDefined(this.collectionColor)}"
         >
         </mediatype-icon>
       </div>
     `;
+  }
+
+  // Only in list, not tile
+  private get collectionColor() {
+    if (this.model?.mediatype !== 'collection') {
+      return undefined;
+    }
+    return '#4666FF';
   }
 
   private get titleTemplate() {
