@@ -1,20 +1,17 @@
-![Build Status](https://github.com/internetarchive/iaux-typescript-wc-template/actions/workflows/ci.yml/badge.svg)
+![Build Status](https://github.com/internetarchive/iaux-collection-browser/actions/workflows/ci.yml/badge.svg)
 
-# Internet Archive Typescript WebComponent Template
+# Internet Archive Collection Browser
 
-This is a base template for creating Typescript WebComponents. It is based off of the [Open WebComponents generator](https://open-wc.org/docs/development/generator/) with some IA-specific customizations and some development niceities.
+This is the main collection browser for the Internet Archive website.
 
 ## Usage
 
-1. Click the "Use this Template" button in GitHub to create a new repository based on this one.
-2. Clone your new repo and update the things below:
+```ts
+import '@internetarchive/collection-browser';
 
-### Things to update in your copy
-1. Remove this section
-2. Search for the strings `your-webcomponent` and `YourWebComponent` and those are most of the spots that need to be updated.
-3. `README.md` (this file). Update the readme in general, but also the badge URLs
-4. `package.json` Update the name and description
-5. Rename the `your-webcomponent.ts` and its associated `.test` file
+<collection-browser>
+</collection-browser>
+```
 
 ## Local Demo with `web-dev-server`
 ```bash
