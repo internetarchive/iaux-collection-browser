@@ -6,7 +6,7 @@ import { codeToLanguageMap } from './language-code-mapping';
 // when we deserialize the string.
 export interface LanguageCodeHandlerInterface {
   /**
-   * This takes a list of codes in the format `en-us•••en•••en-gb` and
+   * This takes a list of codes in the format `en-us|en|en-gb` and
    * returns the first language code in the list.
    *
    * The codes in the string should always represent the same language name.
