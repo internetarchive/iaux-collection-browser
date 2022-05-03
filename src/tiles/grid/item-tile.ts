@@ -3,10 +3,8 @@ import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
-
 import '../../mediatype-icon';
-import '../../waveform-thumbnail';
-
+import '../item-image';
 import { favoriteFilledIcon } from './icons/favorite-filled';
 import { reviewsIcon } from './icons/reviews';
 import viewsIcon from './icons/views';
@@ -65,7 +63,13 @@ export class ItemTile extends LitElement {
       <div id="container">
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
-          <div id="item-image-container">${this.renderItemImageView}</div>
+          <div id="item-image-container">
+            <item-image
+              .model=${this.model}
+              .baseNavigationUrl=${this.baseNavigationUrl}
+            >
+            </item-image>
+          </div>
           <div class="item-creator">
             <div class="truncated">
               <span><strong>By:&nbsp;</strong>${itemCreator}</span>
@@ -149,57 +153,6 @@ export class ItemTile extends LitElement {
         display: flex;
         justify-content: center;
         flex: 1;
-      }
-
-      .item-image-box {
-        width: 16rem;
-        height: 16rem;
-        overflow: hidden;
-        position: relative;
-        box-shadow: 1px 1px 2px 0px;
-        display: flex;
-      }
-
-      .item-image {
-        width: 16rem;
-        height: 16rem;
-        object-fit: cover;
-        background-repeat: no-repeat;
-        background-position: center center;
-        position: relative;
-        -webkit-appearance: none;
-        overflow: visible;
-      }
-
-      .default {
-        background-size: contain;
-        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
-      }
-
-      .deemphasize {
-        background-size: cover;
-        filter: blur(15px);
-        z-index: 1;
-      }
-
-      .tile-action {
-        border: 1px solid currentColor;
-        border-radius: 1px;
-        padding: 5px;
-        font-weight: 500;
-        width: auto;
-        position: absolute;
-        z-index: 2;
-        display: flex;
-        top: 5.5rem;
-      }
-
-      .no-preview {
-        background-color: #fffecb;
-        color: #2c2c2c;
-        font-size: 1.4rem;
-        line-height: 2rem;
-        text-align: center;
       }
 
       .hidden {
