@@ -15,13 +15,30 @@ export interface LanguageCodeHandlerInterface {
    * @param languageCodes
    */
   getLanguageNameFromCodeString(languageCodes: string): string;
+
+  /**
+   * This creates a serialized string of language codes for the given language.
+   *
+   * eg. `English` becomes `en-us|en|en-gb|.....`
+   *
+   * @param languageName
+   */
   getCodeStringFromLanguageName(languageName: string): string;
+
+  /**
+   * Get an array of langauge codes from a serialized string.
+   *
+   * eg. `en-us|en|en-gb` becomes `['en-us', 'en', 'en-gb']`
+   *
+   * @param languageCodes
+   */
   getCodeArrayFromCodeString(languageCodes: string): string[];
 }
 
 export class LanguageCodeHandler implements LanguageCodeHandlerInterface {
   private delimeter = '|';
 
+  /** @inheritdoc */
   getLanguageNameFromCodeString(languageCodes: string): string {
     const split = this.getCodeArrayFromCodeString(languageCodes);
     if (split.length === 0) return '';
@@ -30,6 +47,7 @@ export class LanguageCodeHandler implements LanguageCodeHandlerInterface {
     return languageName ?? languageCodes;
   }
 
+  /** @inheritdoc */
   getCodeStringFromLanguageName(languageName: string): string {
     const languageCodes = Object.keys(codeToLanguageMap).filter(
       code => codeToLanguageMap[code] === languageName
@@ -38,6 +56,7 @@ export class LanguageCodeHandler implements LanguageCodeHandlerInterface {
     return stringifiedCodes;
   }
 
+  /** @inheritdoc */
   getCodeArrayFromCodeString(languageCodes: string): string[] {
     const split = languageCodes.split(this.delimeter);
     return split;
