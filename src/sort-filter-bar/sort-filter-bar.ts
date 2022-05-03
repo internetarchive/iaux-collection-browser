@@ -189,10 +189,11 @@ export class SortFilterBar
   }
 
   handleResize(entry: ResizeObserverEntry): void {
-    if (entry.target === this.desktopSortSelector)
+    if (entry.target === this.desktopSortSelector) {
       this.desktopSelectorBarWidth = entry.contentRect.width;
-    else if (entry.target === this.sortSelectorContainer)
+    } else if (entry.target === this.sortSelectorContainer) {
       this.selectorBarContainerWidth = entry.contentRect.width;
+    }
   }
 
   private get sortDirectionSelectorTemplate() {
