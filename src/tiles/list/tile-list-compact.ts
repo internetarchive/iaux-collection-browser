@@ -7,7 +7,7 @@ import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { accountLabel } from './account-label';
-import '../../mediatype-icon';
+import '../mediatype-icon';
 
 @customElement('tile-list-compact')
 export class TileListCompact extends LitElement {

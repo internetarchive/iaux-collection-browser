@@ -7,8 +7,9 @@ import {
   LitElement,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+
 import { TileModel } from '../models';
-import './waveform-thumbnail';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -33,7 +34,7 @@ export class ItemImage extends LitElement {
 
   render() {
     return html`
-      <div class=${this.imageBoxClass}>
+      <div class=${ifDefined(this.imageBoxClass)}>
         ${this.model?.mediatype === 'audio'
           ? this.waveformTemplate
           : this.backgroundImageTemplate}
@@ -58,11 +59,12 @@ export class ItemImage extends LitElement {
 
   private get waveformTemplate() {
     return html`
-      <waveform-thumbnail
-        .baseNavigationUrl=${this.baseNavigationUrl}
-        .identifier=${this.model?.identifier}
-      >
-      </waveform-thumbnail>
+      <div class="box" id=${this.randomGradient}>
+        <div
+          class="item-image"
+          style="background-image:url(${this.imageSrc})"
+        ></div>
+      </div>
     `;
   }
 
@@ -81,7 +83,11 @@ export class ItemImage extends LitElement {
   }
 
   private get imageBoxClass() {
-    return `${this.isDeemphasize ? 'item-image-box' : ''}`;
+    return this.isDeemphasize ? 'item-image-box' : undefined;
+  }
+
+  private get randomGradient() {
+    return `grad${Math.floor(Math.random() * (6 - 1) + 1)}`;
   }
 
   static get styles(): CSSResultGroup {
@@ -104,6 +110,7 @@ export class ItemImage extends LitElement {
         position: relative;
         -webkit-appearance: none;
         overflow: visible;
+        mix-blend-mode: screen;
       }
 
       .default {
@@ -135,6 +142,60 @@ export class ItemImage extends LitElement {
         font-size: 1.4rem;
         line-height: 2rem;
         text-align: center;
+      }
+
+      #grad1 {
+        background: linear-gradient(
+          hsl(300, 80%, 55%),
+          hsl(330, 80%, 33%) 35%,
+          hsl(330, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
+      }
+
+      #grad2 {
+        background: linear-gradient(
+          hsl(200, 80%, 55%),
+          hsl(230, 80%, 33%) 35%,
+          hsl(230, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
+      }
+
+      #grad3 {
+        background: linear-gradient(
+          hsl(160, 80%, 55%),
+          hsl(190, 80%, 33%) 35%,
+          hsl(190, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
+      }
+
+      #grad4 {
+        background: linear-gradient(
+          hsl(250, 80%, 55%),
+          hsl(280, 80%, 33%) 35%,
+          hsl(280, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
+      }
+
+      #grad5 {
+        background: linear-gradient(
+          hsl(280, 80%, 55%),
+          hsl(310, 80%, 33%) 35%,
+          hsl(310, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
+      }
+
+      #grad6 {
+        background: linear-gradient(
+          hsl(340, 80%, 55%),
+          hsl(0, 80%, 33%) 35%,
+          hsl(0, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
       }
     `;
   }

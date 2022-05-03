@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { mediatypeConfig } from './mediatype/mediatype-config';
+import { mediatypeConfig } from '../mediatype/mediatype-config';
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {

@@ -18,7 +18,7 @@ import { accountLabel } from './account-label';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
-import '../../mediatype-icon';
+import '../mediatype-icon';
 
 @customElement('tile-list')
 export class TileList extends LitElement {

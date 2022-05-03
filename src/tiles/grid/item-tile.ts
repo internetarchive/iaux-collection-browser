@@ -1,59 +1,22 @@
 /* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
-import '../../mediatype-icon';
-import '../item-image';
+
 import { favoriteFilledIcon } from './icons/favorite-filled';
 import { reviewsIcon } from './icons/reviews';
 import viewsIcon from './icons/views';
+
+import '../mediatype-icon';
+import '../item-image';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
   @property({ type: String }) baseNavigationUrl?: string;
-
-  get renderItemImageView() {
-    const imgSrcUrl = `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
-
-    const containsDeemphasize = this.model?.collections.includes('deemphasize');
-    const itemImageBoxClass = containsDeemphasize ? 'item-image-box' : '';
-    const itemImageClass = `item-image ${
-      !containsDeemphasize ? 'default' : 'deemphasize'
-    }`;
-    const tileActionClass = `tile-action no-preview${
-      !containsDeemphasize ? ' hidden' : ''
-    }`;
-
-    const isMediatypeAudio = this.model?.mediatype === 'audio';
-
-    const renderView = () => {
-      if (isMediatypeAudio) {
-        return html`
-          <waveform-thumbnail
-            .baseNavigationUrl=${this.baseNavigationUrl}
-            .identifier=${this.model?.identifier}
-          >
-          </waveform-thumbnail>
-        `;
-      }
-      return html`
-        <div
-          class=${itemImageClass}
-          style="background-image:url(${imgSrcUrl})"
-        ></div>
-      `;
-    };
-
-    return html`
-      <div class=${itemImageBoxClass}>
-        ${renderView()}
-        <div class=${tileActionClass}>Content may be inappropriate</div>
-      </div>
-    `;
-  }
 
   render() {
     const itemTitle = this.model?.title || '';
