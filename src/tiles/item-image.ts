@@ -21,7 +21,7 @@ export class ItemImage extends LitElement {
 
   @state() private isDeemphasize = false;
 
-  @query('.item-image') _itemImageWaveform!: HTMLImageElement;
+  @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
@@ -83,10 +83,10 @@ export class ItemImage extends LitElement {
 
   private onLoadItemImageCheck() {
     const aspectRatio =
-      this._itemImageWaveform.naturalWidth /
-      this._itemImageWaveform.naturalHeight;
+      this.itemImageWaveform.naturalWidth /
+      this.itemImageWaveform.naturalHeight;
     if (aspectRatio === 4) {
-      this._itemImageWaveform.classList.add('waveform');
+      this.itemImageWaveform.classList.add('waveform');
     }
   }
 
