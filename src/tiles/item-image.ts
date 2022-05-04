@@ -15,7 +15,7 @@ import { TileModel } from '../models';
 export class ItemImage extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
-  @property({ type: String }) baseNavigationUrl?: string;
+  @property({ type: String }) imageBaseUrl?: string;
 
   @property({ type: Boolean }) isListTile = false;
 
@@ -46,7 +46,7 @@ export class ItemImage extends LitElement {
   }
 
   private get imageSrc() {
-    return `${this.baseNavigationUrl}/services/img/${this.model?.identifier}`;
+    return `${this.imageBaseUrl}/services/img/${this.model?.identifier}`;
   }
 
   // Templates

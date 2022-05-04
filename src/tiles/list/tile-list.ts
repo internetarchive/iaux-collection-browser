@@ -39,6 +39,8 @@ export class TileList extends LitElement {
 
   @state() private collectionLinks: TemplateResult[] = [];
 
+  @property({ type: String }) imageBaseUrl?: string;
+
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
       this.fetchCollectionNames();
@@ -133,7 +135,7 @@ export class TileList extends LitElement {
       return nothing;
     }
     return html` <img
-      src="${this.baseNavigationUrl}/services/img/${this.model.identifier}"
+      src="${this.imageBaseUrl}/services/img/${this.model.identifier}"
       alt="${this.model.identifier}"
       class=${this.model?.mediatype}
     />`;

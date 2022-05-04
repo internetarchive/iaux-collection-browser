@@ -1042,6 +1042,7 @@ export class CollectionBrowser
 
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
+      .imageBaseUrl=${'https://archive.org'}
       .model=${model}
       .tileDisplayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}
