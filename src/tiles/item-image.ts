@@ -6,7 +6,7 @@ import {
   PropertyValues,
   LitElement,
 } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { TileModel } from '../models';
@@ -20,6 +20,8 @@ export class ItemImage extends LitElement {
   @property({ type: Boolean }) isListTile = false;
 
   @state() private isDeemphasize = false;
+
+  @query('.item-image') _itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
@@ -61,9 +63,10 @@ export class ItemImage extends LitElement {
     return html`
       <div class="box" id=${this.randomGradient}>
         <img
-          class="item-image waveform"
+          class="item-image"
           src="${this.imageSrc}"
           alt="${ifDefined(this.model?.identifier)}"
+          @load=${this.onLoadItemImageCheck}
         />
       </div>
     `;
@@ -76,6 +79,15 @@ export class ItemImage extends LitElement {
     return html`
       <div class="tile-action no-preview">Content may be inappropriate</div>
     `;
+  }
+
+  private onLoadItemImageCheck() {
+    const aspectRatio =
+      this._itemImageWaveform.naturalWidth /
+      this._itemImageWaveform.naturalHeight;
+    if (aspectRatio === 4) {
+      this._itemImageWaveform.classList.add('waveform');
+    }
   }
 
   // Classes
