@@ -48,7 +48,7 @@ export class ItemTile extends LitElement {
               <mediatype-icon
                 .mediatype=${this.model?.mediatype}
                 .collection=${this.model?.collections}
-                ?showText=${true}
+                style="--iconHeight:25px; --iconWidth:25px;"
               >
               </mediatype-icon>
             </div>
