@@ -23,7 +23,7 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Number }) mobileBreakpoint?: number;
 
-  @property({ type: String }) imageBaseUrl?: string;
+  @property({ type: String }) baseImageUrl?: string;
 
   render() {
     return html`
@@ -64,7 +64,7 @@ export class TileListCompact extends LitElement {
       return nothing;
     }
     return html` <img
-      src="${this.imageBaseUrl}/services/img/${this.model.identifier}"
+      src="${this.baseImageUrl}/services/img/${this.model.identifier}"
       alt="${this.model.identifier}"
       class="${this.model?.mediatype}"
     />`;

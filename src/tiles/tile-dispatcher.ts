@@ -41,7 +41,7 @@ export class TileDispatcher
 
   @property({ type: Number }) mobileBreakpoint?: number;
 
-  @property({ type: String }) imageBaseUrl?: string;
+  @property({ type: String }) baseImageUrl?: string;
 
   render() {
     return html`
@@ -153,7 +153,7 @@ export class TileDispatcher
               .currentWidth=${this.currentWidth}
               .currentHeight=${this.currentHeight}
               .collectionNameCache=${this.collectionNameCache}
-              .imageBaseUrl=${this.imageBaseUrl}
+              .baseImageUrl=${this.baseImageUrl}
             ></item-tile>`;
         }
       case 'list-compact':
@@ -164,7 +164,7 @@ export class TileDispatcher
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
           .mobileBreakpoint=${mobileBreakpoint}
-          .imageBaseUrl=${this.imageBaseUrl}
+          .baseImageUrl=${this.baseImageUrl}
         ></tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list
@@ -175,7 +175,7 @@ export class TileDispatcher
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
           .mobileBreakpoint=${mobileBreakpoint}
-          .imageBaseUrl=${this.imageBaseUrl}
+          .baseImageUrl=${this.baseImageUrl}
         ></tile-list>`;
       default:
         return nothing;

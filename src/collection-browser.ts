@@ -59,6 +59,8 @@ export class CollectionBrowser
 {
   @property({ type: String }) baseNavigationUrl?: string;
 
+  @property({ type: String }) baseImageUrl?: string;
+
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: String }) baseQuery?: string;
@@ -1042,7 +1044,7 @@ export class CollectionBrowser
 
     return html` <tile-dispatcher
       .baseNavigationUrl=${this.baseNavigationUrl}
-      .imageBaseUrl=${'https://archive.org'}
+      .baseImageUrl=${this.baseImageUrl}
       .model=${model}
       .tileDisplayMode=${this.displayMode}
       .resizeObserver=${this.resizeObserver}

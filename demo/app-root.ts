@@ -155,6 +155,7 @@ export class AppRoot extends LitElement {
       <div id="collection-browser-container">
         <collection-browser
           .baseNavigationUrl=${'https://archive.org'}
+          .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
