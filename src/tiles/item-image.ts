@@ -117,7 +117,7 @@ export class ItemImage extends LitElement {
       .item-image {
         width: 16rem;
         height: 16rem;
-        object-fit: cover;
+        object-fit: contain;
         background-repeat: no-repeat;
         background-position: center center;
         position: relative;
