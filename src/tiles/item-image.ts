@@ -21,7 +21,7 @@ export class ItemImage extends LitElement {
 
   @state() private isDeemphasize = false;
 
-  @query('.box') private box!: HTMLDivElement;
+  @state() isWaveform: boolean = false;
 
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
@@ -63,9 +63,9 @@ export class ItemImage extends LitElement {
 
   private get waveformTemplate() {
     return html`
-      <div class="box">
+      <div class=${this.boxWaveformClass}>
         <img
-          class="item-image"
+          class=${this.itemImageWaveformClass}
           src="${this.imageSrc}"
           alt="${ifDefined(this.model?.identifier)}"
           @load=${this.onLoadItemImageCheck}
@@ -88,8 +88,7 @@ export class ItemImage extends LitElement {
       this.itemImageWaveform.naturalWidth /
       this.itemImageWaveform.naturalHeight;
     if (aspectRatio === 4) {
-      this.box.classList.add(this.randomGradient);
-      this.itemImageWaveform.classList.add('waveform');
+      this.isWaveform = true;
     }
   }
 
@@ -100,6 +99,14 @@ export class ItemImage extends LitElement {
 
   private get imageBoxClass() {
     return this.isDeemphasize ? 'item-image-box' : undefined;
+  }
+
+  private get boxWaveformClass() {
+    return `box${this.isWaveform ? ` ${this.randomGradient}` : ''}`;
+  }
+
+  private get itemImageWaveformClass() {
+    return `item-image${this.isWaveform ? ' waveform' : ''}`;
   }
 
   private get randomGradient() {
