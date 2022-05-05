@@ -1,22 +1,44 @@
-import {
+import type {
   Aggregation,
   SortParam,
-  SearchParams,
-  SearchService,
   SearchServiceInterface,
   Metadata,
-  AggregateSearchParams,
 } from '@internetarchive/search-service';
-import { SelectedFacets } from './models';
-import type { TileModel } from './models';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { SelectedFacets, TileModel } from './models';
 
 export interface DataManagerInterface {
+  updateQuery(options: {
+    baseQuery: string | null;
+    sort: SortParam | null;
+  }): Promise<void>;
+
   fetchFullYearHistogram(): Promise<Aggregation | undefined>;
   fetchFacets(): Promise<Record<string, Aggregation> | undefined>;
 }
 
 export class DataManager implements DataManagerInterface {
-  searchService: SearchServiceInterface = SearchService.default;
+  private searchService: SearchServiceInterface;
+
+  private collectionNameCache: CollectionNameCacheInterface;
+
+  async updateQuery(options: {
+    baseQuery: string | null;
+    sort: SortParam | null;
+  }): Promise<void> {
+    this.baseQuery = options.baseQuery;
+    this.sortParam = options.sort;
+  }
+
+  constructor(options: {
+    searchService: SearchServiceInterface;
+    collectionNameCache: CollectionNameCacheInterface;
+    pageSize: number;
+  }) {
+    this.searchService = options.searchService;
+    this.collectionNameCache = options.collectionNameCache;
+    this.pageSize = options.pageSize;
+  }
 
   dataSource: Record<string, TileModel[]> = {};
 
@@ -24,7 +46,7 @@ export class DataManager implements DataManagerInterface {
 
   creatorQuery?: string;
 
-  baseQuery?: string;
+  baseQuery: string | null = null;
 
   sortParam: SortParam | null = null;
 
@@ -53,7 +75,7 @@ export class DataManager implements DataManagerInterface {
    * If this doesn't change, we don't need to re-fetch the histogram date range
    */
   private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDate}-${this.sortParam?.asString}`;
+    return `${this.fullQueryWithoutDate}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   /**
@@ -77,20 +99,21 @@ export class DataManager implements DataManagerInterface {
     if (
       !this.fullQueryWithoutDate ||
       fullQueryNoDateKey === this.previousFullQueryNoDate
-    )
+    ) {
       return undefined;
+    }
     this.previousFullQueryNoDate = fullQueryNoDateKey;
 
-    const aggregations = new AggregateSearchParams({
+    const aggregations = {
       simpleParams: ['year'],
-    });
+    };
 
-    const params = new SearchParams({
+    const params = {
       query: this.fullQueryWithoutDate,
       fields: ['identifier'],
       aggregations,
       rows: 1,
-    });
+    };
 
     // this.fullYearAggregationLoading = true;
     const results = await this.searchService?.search(params);
@@ -103,7 +126,7 @@ export class DataManager implements DataManagerInterface {
   async fetchFacets(): Promise<Record<string, Aggregation> | undefined> {
     if (!this.fullQuery) return undefined;
 
-    const aggregations = new AggregateSearchParams({
+    const aggregations = {
       advancedParams: [
         {
           field: 'subjectSorter',
@@ -130,14 +153,14 @@ export class DataManager implements DataManagerInterface {
           size: 50,
         },
       ],
-    });
+    };
 
-    const params = new SearchParams({
+    const params = {
       query: this.fullQuery,
       fields: ['identifier'],
       aggregations,
       rows: 1,
-    });
+    };
     // this.facetsLoading = true;
     const results = await this.searchService?.search(params);
     // this.facetsLoading = false;
@@ -202,8 +225,77 @@ export class DataManager implements DataManagerInterface {
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.fullQuery}-${this.sortParam?.asString}`;
+    return `${this.fullQuery}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
+
+  // async fetchPage(pageNumber: number) {
+  //   if (!this.fullQuery) return;
+
+  //   // if we already have data, don't fetch again
+  //   if (this.dataSource[pageNumber]) return;
+
+  //   if (this.endOfDataReached) return;
+
+  //   // if a fetch is already in progress for this query and page, don't fetch again
+  //   const { pageFetchQueryKey } = this;
+  //   const pageFetches =
+  //     this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
+  //   if (pageFetches.has(pageNumber)) return;
+  //   pageFetches.add(pageNumber);
+  //   this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
+
+  //   const sortParams = this.sortParam ? [this.sortParam] : [];
+  //   const params = new SearchParams({
+  //     query: this.fullQuery,
+  //     fields: [
+  //       'identifier',
+  //       'title',
+  //       'mediatype',
+  //       'downloads',
+  //       'avg_rating',
+  //       'num_favorites',
+  //       'num_reviews',
+  //       'item_count',
+  //       'description',
+  //       'date',
+  //       'addeddate',
+  //       'publicdate',
+  //       'reviewdate',
+  //       'creator',
+  //       'collections_raw',
+  //     ],
+  //     page: pageNumber,
+  //     rows: this.pageSize,
+  //     sort: sortParams,
+  //   });
+  //   const results = await this.searchService?.search(params);
+  //   const success = results?.success;
+
+  //   if (!success) return;
+
+  //   // this.totalResults = success.response.numFound;
+
+  //   // this is checking to see if the query has changed since the data was fetched
+  //   // if so, we just want to discard the data since there should be a new query
+  //   // right behind it
+  //   const searchQuery = success.responseHeader.params.qin;
+  //   const searchSort = success.responseHeader.params.sort;
+  //   const queryChangedSinceFetch =
+  //     searchQuery !== this.fullQuery || searchSort !== this.sortParam?.asString;
+  //   if (queryChangedSinceFetch) return;
+
+  //   const { docs } = success.response;
+  //   if (docs && docs.length > 0) {
+  //     this.updateDataSource(pageNumber, docs);
+  //   }
+  //   if (docs.length < this.pageSize) {
+  //     this.endOfDataReached = true;
+  //     // this updates the infinite scroller to show the actual size
+  //     // this.infiniteScroller.itemCount = this.actualTileCount;
+  //   }
+  //   this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
+  //   // this.searchResultsLoading = false;
+  // }
 
   async fetchPage(pageNumber: number) {
     if (!this.fullQuery) return;
@@ -222,29 +314,33 @@ export class DataManager implements DataManagerInterface {
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
-    const params = new SearchParams({
+    const params = {
       query: this.fullQuery,
       fields: [
-        'identifier',
-        'title',
-        'mediatype',
-        'downloads',
+        'addeddate',
         'avg_rating',
+        'collections_raw',
+        'creator',
+        'date',
+        'description',
+        'downloads',
+        'identifier',
+        'issue',
+        'item_count',
+        'mediatype',
         'num_favorites',
         'num_reviews',
-        'item_count',
-        'description',
-        'date',
-        'addeddate',
         'publicdate',
         'reviewdate',
-        'creator',
-        'collections_raw',
+        'source',
+        'subject', // topic
+        'title',
+        'volume',
       ],
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
-    });
+    };
     const results = await this.searchService?.search(params);
     const success = results?.success;
 
@@ -257,12 +353,33 @@ export class DataManager implements DataManagerInterface {
     // right behind it
     const searchQuery = success.responseHeader.params.qin;
     const searchSort = success.responseHeader.params.sort;
+    let sortChanged = false;
+    if (!searchSort) {
+      // if we went from no sort to sort, the sort has changed
+      if (this.sortParam) {
+        sortChanged = true;
+      }
+    } else {
+      // check if the sort has changed
+      const split = searchSort.split(' ');
+      if (split.length > 1) {
+        const field = searchSort.split(' ')[0];
+        const direction = searchSort.split(' ')[1];
+        if (
+          field !== this.sortParam?.field ||
+          direction !== this.sortParam?.direction
+        ) {
+          sortChanged = true;
+        }
+      }
+    }
     const queryChangedSinceFetch =
-      searchQuery !== this.fullQuery || searchSort !== this.sortParam?.asString;
+      searchQuery !== this.fullQuery || sortChanged;
     if (queryChangedSinceFetch) return;
 
     const { docs } = success.response;
     if (docs && docs.length > 0) {
+      this.preloadCollectionNames(docs);
       this.updateDataSource(pageNumber, docs);
     }
     if (docs.length < this.pageSize) {
@@ -280,6 +397,47 @@ export class DataManager implements DataManagerInterface {
    * @param pageNumber
    * @param docs
    */
+  // private updateDataSource(pageNumber: number, docs: Metadata[]) {
+  //   // copy our existing datasource so when we set it below, it gets set
+  //   // instead of modifying the existing dataSource since object changes
+  //   // don't trigger a re-render
+  //   const datasource = { ...this.dataSource };
+  //   const tiles: TileModel[] = [];
+  //   docs?.forEach(doc => {
+  //     if (!doc.identifier) return;
+  //     tiles.push({
+  //       identifier: doc.identifier,
+  //       title: doc.title?.value ?? '',
+  //       mediatype: doc.mediatype?.value ?? 'data',
+  //       viewCount: doc.downloads?.value ?? 0,
+  //       favCount: doc.num_favorites?.value ?? 0,
+  //       commentCount: doc.num_reviews?.value ?? 0,
+  //       itemCount: doc.item_count?.value ?? 0,
+  //       description: doc.description?.value,
+  //       dateAdded: doc.addeddate?.value,
+  //       dateArchived: doc.publicdate?.value,
+  //       dateReviewed: doc.reviewdate?.value,
+  //       datePublished: doc.date?.value,
+  //       creator: doc.creator?.value,
+  //       averageRating: doc.avg_rating?.value,
+  //       collections: doc.collections_raw?.values ?? [],
+  //     });
+  //   });
+  //   datasource[pageNumber] = tiles;
+  //   this.dataSource = datasource;
+  //   // const visiblePages = this.currentVisiblePageNumbers;
+  //   // const needsReload = visiblePages.includes(pageNumber);
+  //   // if (needsReload) {
+  //   //   this.infiniteScroller.reload();
+  //   // }
+  // }
+
+  /**
+   * Update the datasource from the fetch response
+   *
+   * @param pageNumber
+   * @param docs
+   */
   private updateDataSource(pageNumber: number, docs: Metadata[]) {
     // copy our existing datasource so when we set it below, it gets set
     // instead of modifying the existing dataSource since object changes
@@ -289,21 +447,30 @@ export class DataManager implements DataManagerInterface {
     docs?.forEach(doc => {
       if (!doc.identifier) return;
       tiles.push({
-        identifier: doc.identifier,
-        title: doc.title?.value ?? '',
-        mediatype: doc.mediatype?.value ?? 'data',
-        viewCount: doc.downloads?.value ?? 0,
-        favCount: doc.num_favorites?.value ?? 0,
-        commentCount: doc.num_reviews?.value ?? 0,
-        itemCount: doc.item_count?.value ?? 0,
-        description: doc.description?.value,
-        dateAdded: doc.addeddate?.value,
-        dateArchived: doc.publicdate?.value,
-        dateReviewed: doc.reviewdate?.value,
-        datePublished: doc.date?.value,
-        creator: doc.creator?.value,
         averageRating: doc.avg_rating?.value,
         collections: doc.collections_raw?.values ?? [],
+        commentCount: doc.num_reviews?.value ?? 0,
+        creator: doc.creator?.value,
+        creators: doc.creator?.values ?? [],
+        dateAdded: doc.addeddate?.value,
+        dateArchived: doc.publicdate?.value,
+        datePublished: doc.date?.value,
+        dateReviewed: doc.reviewdate?.value,
+        description: doc.description?.value,
+        favCount: doc.num_favorites?.value ?? 0,
+        identifier: doc.identifier,
+        issue: doc.issue?.value,
+        itemCount: doc.item_count?.value ?? 0,
+        mediatype: doc.mediatype?.value ?? 'data',
+        source: doc.source?.value,
+        subjects: doc.subject?.values ?? [],
+        title: this.etreeTitle(
+          doc.title?.value,
+          doc.mediatype?.value,
+          doc.collection?.values
+        ),
+        volume: doc.volume?.value,
+        viewCount: doc.downloads?.value ?? 0,
       });
     });
     datasource[pageNumber] = tiles;
@@ -311,7 +478,35 @@ export class DataManager implements DataManagerInterface {
     // const visiblePages = this.currentVisiblePageNumbers;
     // const needsReload = visiblePages.includes(pageNumber);
     // if (needsReload) {
-    //   this.infiniteScroller.reload();
+    // this.infiniteScroller.reload();
     // }
+  }
+
+  private preloadCollectionNames(docs: Metadata[]) {
+    const collectionIds = docs.map(doc => doc.collections_raw?.values).flat();
+    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
+    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
+  }
+
+  /*
+   * Convert etree titles
+   * "[Creator] Live at [Place] on [Date]" => "[Date]: [Place]"
+   *
+   * Todo: Check collection(s) for etree, need to get as array.
+   * Current search-service only returns first collection as string.
+   */
+  private etreeTitle(
+    title: string | undefined,
+    mediatype: string | undefined,
+    collections: string[] | undefined
+  ): string {
+    if (mediatype === 'etree' || collections?.includes('etree')) {
+      const regex = /^(.*) Live at (.*) on (\d\d\d\d-\d\d-\d\d)$/;
+      const newTitle = title?.replace(regex, '$3: $2');
+      if (newTitle) {
+        return `${newTitle}`;
+      }
+    }
+    return title ?? '';
   }
 }

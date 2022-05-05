@@ -112,8 +112,7 @@ export class CollectionBrowser
 
   @property({ type: Number }) mobileBreakpoint = 600;
 
-  @property({ type: Object }) dataManager: DataManagerInterface =
-    new DataManager();
+  @property({ type: Object }) dataManager?: DataManagerInterface;
 
   /**
    * The page that the consumer wants to load.
@@ -493,6 +492,16 @@ export class CollectionBrowser
       ) as SharedResizeObserverInterface;
       if (oldObserver) this.disconnectResizeObserver(oldObserver);
       this.setupResizeObserver();
+    }
+    if (
+      (changed.has('searchService') || changed.has('collectionNameCache')) &&
+      this.searchService &&
+      this.collectionNameCache
+    ) {
+      this.dataManager = new DataManager({
+        searchService: this.searchService,
+        collectionNameCache: this.collectionNameCache,
+      });
     }
   }
 
