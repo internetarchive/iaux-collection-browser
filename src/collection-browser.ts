@@ -449,7 +449,11 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    if (changed.has('displayMode') || changed.has('baseNavigationUrl')) {
+    if (
+      changed.has('displayMode') ||
+      changed.has('baseNavigationUrl') ||
+      changed.has('baseImageUrl')
+    ) {
       this.infiniteScroller.reload();
     }
     if (changed.has('baseQuery')) {
