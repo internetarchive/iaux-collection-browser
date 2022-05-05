@@ -59,7 +59,7 @@ export class CollectionBrowser
 {
   @property({ type: String }) baseNavigationUrl?: string;
 
-  @property({ type: String }) baseImageUrl?: string;
+  @property({ type: String }) baseImageUrl: string = 'https://archive.org';
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
