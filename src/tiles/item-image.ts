@@ -102,7 +102,7 @@ export class ItemImage extends LitElement {
   }
 
   private get boxWaveformClass() {
-    return `box${this.isWaveform ? ` ${this.randomGradient}` : ''}`;
+    return `item-audio${this.isWaveform ? ` ${this.randomGradient}` : ''}`;
   }
 
   private get itemImageWaveformClass() {
