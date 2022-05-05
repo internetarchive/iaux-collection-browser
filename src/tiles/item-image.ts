@@ -27,13 +27,16 @@ export class ItemImage extends LitElement {
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
-      this.setDeemphsize();
+      this.setDeemphasize();
     }
   }
 
-  private setDeemphsize() {
+  // Don't deemphasize if item is a collection
+  private setDeemphasize() {
     this.isDeemphasize =
-      this.model?.collections.includes('deemphasize') ?? false;
+      (this.model?.mediatype !== 'collection' &&
+        this.model?.collections.includes('deemphasize')) ??
+      false;
   }
 
   render() {
@@ -41,8 +44,7 @@ export class ItemImage extends LitElement {
       <div class=${ifDefined(this.imageBoxClass)}>
         ${this.model?.mediatype === 'audio'
           ? this.waveformTemplate
-          : this.backgroundImageTemplate}
-        ${this.tileActionTemplate}
+          : this.ImageTemplate}
       </div>
     `;
   }
@@ -52,12 +54,32 @@ export class ItemImage extends LitElement {
   }
 
   // Templates
-  private get backgroundImageTemplate() {
+  private get ImageTemplate() {
+    return html`
+      ${this.isListTile ? this.listImageTemplate : this.tileImageTemplate}
+    `;
+  }
+
+  private get tileImageTemplate() {
     return html`
       <div
         class=${this.imageClass}
         style="background-image:url(${this.imageSrc})"
       ></div>
+      ${this.tileActionTemplate}
+    `;
+  }
+
+  private get listImageTemplate() {
+    if (!this.model) {
+      return nothing;
+    }
+    return html`
+      <img
+        src="${this.imageSrc}"
+        alt="${ifDefined(this.model?.title)}"
+        class="${this.listImageClass}"
+      />
     `;
   }
 
@@ -67,7 +89,7 @@ export class ItemImage extends LitElement {
         <img
           class=${this.itemImageWaveformClass}
           src="${this.imageSrc}"
-          alt="${ifDefined(this.model?.identifier)}"
+          alt="${ifDefined(this.model?.title)}"
           @load=${this.onLoadItemImageCheck}
         />
       </div>
@@ -97,8 +119,23 @@ export class ItemImage extends LitElement {
     return `item-image ${this.isDeemphasize ? 'deemphasize' : 'default'}`;
   }
 
+  private get listImageClass() {
+    const classList = ['list-image'];
+    classList.push(`${this.model?.mediatype}`);
+    if (this.isDeemphasize) {
+      classList.push('deemphasize');
+    }
+    return classList.join(' ');
+  }
+
   private get imageBoxClass() {
-    return this.isDeemphasize ? 'item-image-box' : undefined;
+    if (this.isListTile) {
+      return 'list-image';
+    }
+    if (this.isDeemphasize) {
+      return 'item-image-box';
+    }
+    return undefined;
   }
 
   private get boxWaveformClass() {
@@ -143,6 +180,19 @@ export class ItemImage extends LitElement {
         position: relative;
         -webkit-appearance: none;
         overflow: visible;
+      }
+
+      .list-image {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      .list-image img {
+        object-fit: cover;
+        border-radius: var(--border-radius, 0);
+        -webkit-border-radius: var(--border-radius, 0);
+        -moz-border-radius: var(--border-radius, 0);
       }
 
       .waveform {

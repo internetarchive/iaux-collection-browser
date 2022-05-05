@@ -87,7 +87,9 @@ export class TileList extends LitElement {
     return html`
       <div id="list-line-top">
         <div id="list-line-left">
-          <div id="thumb">${this.imgTemplate}</div>
+          <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
+            ${this.imgTemplate}
+          </div>
         </div>
         <div id="list-line-right">
           <div id="title-line">
@@ -103,7 +105,9 @@ export class TileList extends LitElement {
   private get desktopTemplate() {
     return html`
       <div id="list-line-left">
-        <div id="thumb">${this.imgTemplate}</div>
+        <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
+          ${this.imgTemplate}
+        </div>
       </div>
       <div id="list-line-right">
         <div id="title-line">
@@ -134,11 +138,14 @@ export class TileList extends LitElement {
     if (!this.model?.identifier) {
       return nothing;
     }
-    return html` <img
-      src="${this.baseImageUrl}/services/img/${this.model.identifier}"
-      alt="${this.model.identifier}"
-      class=${this.model?.mediatype}
-    />`;
+    return html`
+      <item-image
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .isListTile=${true}
+      >
+      </item-image>
+    `;
   }
 
   private get iconRightTemplate() {
@@ -412,32 +419,26 @@ export class TileList extends LitElement {
         display: block;
       }
 
-      .mobile #thumb img {
+      .mobile #thumb {
         width: 90px;
         height: 90px;
       }
 
-      .desktop #thumb img {
+      .desktop #thumb {
         width: 100px;
         height: 100px;
       }
 
-      #thumb img.collection {
-        border-radius: 8px;
-        -webkit-border-radius: 8px;
-        -moz-border-radius: 8px;
+      #thumb.collection {
+        --border-radius: 8px;
       }
 
-      .mobile #thumb img.account {
-        border-radius: 45px;
-        -webkit-border-radius: 45px;
-        -moz-border-radius: 45px;
+      .mobile #thumb.account {
+        --border-radius: 45px;
       }
 
-      .desktop #thumb img.account {
-        border-radius: 50px;
-        -webkit-border-radius: 50px;
-        -moz-border-radius: 50px;
+      .desktop #thumb.account {
+        --border-radius: 50px;
       }
 
       #icon-right {
