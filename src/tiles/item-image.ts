@@ -19,9 +19,9 @@ export class ItemImage extends LitElement {
 
   @property({ type: Boolean }) isListTile = false;
 
-  @state() private isDeemphasize = false;
+  @state() private isDeemphasize: boolean = false;
 
-  @state() isWaveform: boolean = false;
+  @state() private isWaveform: boolean = false;
 
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
