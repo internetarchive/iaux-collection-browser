@@ -21,6 +21,8 @@ export class ItemImage extends LitElement {
 
   @state() private isDeemphasize = false;
 
+  @query('.box') private box!: HTMLDivElement;
+
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
@@ -61,7 +63,7 @@ export class ItemImage extends LitElement {
 
   private get waveformTemplate() {
     return html`
-      <div class="box" id=${this.randomGradient}>
+      <div class="box">
         <img
           class="item-image"
           src="${this.imageSrc}"
@@ -86,6 +88,7 @@ export class ItemImage extends LitElement {
       this.itemImageWaveform.naturalWidth /
       this.itemImageWaveform.naturalHeight;
     if (aspectRatio === 4) {
+      this.box.classList.add(this.randomGradient);
       this.itemImageWaveform.classList.add('waveform');
     }
   }
@@ -160,7 +163,7 @@ export class ItemImage extends LitElement {
         text-align: center;
       }
 
-      #grad1 {
+      .grad1 {
         background: linear-gradient(
           hsl(300, 80%, 55%),
           hsl(330, 80%, 33%) 35%,
@@ -169,7 +172,7 @@ export class ItemImage extends LitElement {
         );
       }
 
-      #grad2 {
+      .grad2 {
         background: linear-gradient(
           hsl(200, 80%, 55%),
           hsl(230, 80%, 33%) 35%,
@@ -178,7 +181,7 @@ export class ItemImage extends LitElement {
         );
       }
 
-      #grad3 {
+      .grad3 {
         background: linear-gradient(
           hsl(160, 80%, 55%),
           hsl(190, 80%, 33%) 35%,
@@ -187,7 +190,7 @@ export class ItemImage extends LitElement {
         );
       }
 
-      #grad4 {
+      .grad4 {
         background: linear-gradient(
           hsl(250, 80%, 55%),
           hsl(280, 80%, 33%) 35%,
@@ -196,7 +199,7 @@ export class ItemImage extends LitElement {
         );
       }
 
-      #grad5 {
+      .grad5 {
         background: linear-gradient(
           hsl(280, 80%, 55%),
           hsl(310, 80%, 33%) 35%,
@@ -205,7 +208,7 @@ export class ItemImage extends LitElement {
         );
       }
 
-      #grad6 {
+      .grad6 {
         background: linear-gradient(
           hsl(340, 80%, 55%),
           hsl(0, 80%, 33%) 35%,
