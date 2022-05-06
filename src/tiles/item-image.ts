@@ -110,7 +110,13 @@ export class ItemImage extends LitElement {
   }
 
   private get randomGradient() {
-    return `grad${Math.floor(Math.random() * (6 - 1) + 1)}`;
+    return `grad${this.generateHashCode(this.model?.identifier!) % 6}`;
+  }
+
+  private generateHashCode(str: string): number {
+    return str
+      .split('')
+      .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   }
 
   static get styles(): CSSResultGroup {
