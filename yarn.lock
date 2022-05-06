@@ -150,10 +150,10 @@
   dependencies:
     lit "^2.0.2"
 
-"@internetarchive/infinite-scroller@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.0.tgz#ceebc04e24471bbf7e2eb023d6cd1696fc64da3e"
-  integrity sha512-BiqyWJregcxIBgONnr2UIJdI/q3iBWmF7VnDufPuqKvjkC13CHYkpQ3rBMXNePMOpeF/HK34A6EnX34io32ZhQ==
+"@internetarchive/infinite-scroller@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.2.tgz#1bbe3c5020853cc8c05e2c41eb775a8c105d80fd"
+  integrity sha512-VGaXbyjxgtIHyGdX1vbAt3toM8LDfH+jQKzY36MHKdBcPyYh8BBriJOxepE5ASdIT5s2ynk+oh44XE7SaV7hKA==
   dependencies:
     lit "^2.0.2"
 
