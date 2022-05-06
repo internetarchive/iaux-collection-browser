@@ -114,6 +114,9 @@ export class ItemImage extends LitElement {
     if (this.model?.identifier) {
       gradientInt = this.generateHashCode(this.model.identifier) % 6;
     }
+    if (gradientInt === 0) gradientInt += 1;
+    if (gradientInt > 6) gradientInt = 6;
+
     return `grad${gradientInt}`;
   }
 
