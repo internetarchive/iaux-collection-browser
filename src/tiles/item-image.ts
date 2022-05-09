@@ -102,25 +102,22 @@ export class ItemImage extends LitElement {
   }
 
   private get boxWaveformClass() {
-    return `item-audio${this.isWaveform ? ` ${this.randomGradient}` : ''}`;
+    return `item-audio${this.isWaveform ? ` ${this.hashBasedGradient}` : ''}`;
   }
 
   private get itemImageWaveformClass() {
     return `item-image${this.isWaveform ? ' waveform' : ''}`;
   }
 
-  private get randomGradient() {
-    let gradientInt = 1;
-    if (this.model?.identifier) {
-      gradientInt = this.generateHashCode(this.model.identifier) % 6;
+  private get hashBasedGradient() {
+    if (!this.model?.identifier) {
+      return 'grad1';
     }
-    if (gradientInt === 0) gradientInt += 1;
-    if (gradientInt > 6) gradientInt = 6;
-
-    return `grad${gradientInt}`;
+    const gradient = this.hashStrToInt(this.model.identifier) % 6; // returns 0-5
+    return `grad${gradient}`;
   }
 
-  private generateHashCode(str: string): number {
+  private hashStrToInt(str: string): number {
     return str
       .split('')
       .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
@@ -183,6 +180,15 @@ export class ItemImage extends LitElement {
         text-align: center;
       }
 
+      .grad0 {
+        background: linear-gradient(
+          hsl(340, 80%, 55%),
+          hsl(0, 80%, 33%) 35%,
+          hsl(0, 80%, 22%) 70%,
+          hsl(0, 0%, 0%)
+        );
+      }
+
       .grad1 {
         background: linear-gradient(
           hsl(300, 80%, 55%),
@@ -224,15 +230,6 @@ export class ItemImage extends LitElement {
           hsl(280, 80%, 55%),
           hsl(310, 80%, 33%) 35%,
           hsl(310, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
-
-      .grad6 {
-        background: linear-gradient(
-          hsl(340, 80%, 55%),
-          hsl(0, 80%, 33%) 35%,
-          hsl(0, 80%, 22%) 70%,
           hsl(0, 0%, 0%)
         );
       }
