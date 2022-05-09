@@ -8,7 +8,7 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-
+import { restrictedIcon } from '../assets/img/icons/restricted';
 import { TileModel } from '../models';
 
 @customElement('item-image')
@@ -19,10 +19,12 @@ export class ItemImage extends LitElement {
 
   @property({ type: Boolean }) isListTile = false;
 
-  @state() private isDeemphasize: boolean = false;
+  @property({ type: Boolean }) isCompactTile = false;
 
-  @state() private isWaveform: boolean = false;
+  @state() private isDeemphasize = false;
 
+  @state() private isWaveform = false;
+  
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
@@ -75,11 +77,8 @@ export class ItemImage extends LitElement {
       return nothing;
     }
     return html`
-      <img
-        src="${this.imageSrc}"
-        alt="${ifDefined(this.model?.title)}"
-        class="${this.listImageClass}"
-      />
+      <img src="${this.imageSrc}" alt="" class="${this.listImageClass}" />
+      ${this.restrictedIconTemplate}
     `;
   }
 
@@ -94,6 +93,13 @@ export class ItemImage extends LitElement {
         />
       </div>
     `;
+  }
+
+  private get restrictedIconTemplate() {
+    if (!this.isDeemphasize) {
+      return nothing;
+    }
+    return html` ${restrictedIcon} `;
   }
 
   private get tileActionTemplate() {
@@ -120,17 +126,14 @@ export class ItemImage extends LitElement {
   }
 
   private get listImageClass() {
-    const classList = ['list-image'];
-    classList.push(`${this.model?.mediatype}`);
-    if (this.isDeemphasize) {
-      classList.push('deemphasize');
-    }
-    return classList.join(' ');
+    return `list-image ${this.model?.mediatype}${
+      this.isCompactTile ? ' compact' : ''
+    }`;
   }
 
   private get imageBoxClass() {
     if (this.isListTile) {
-      return 'list-image';
+      return `list-image-box${this.isDeemphasize ? ' deemphasize' : ''}`;
     }
     if (this.isDeemphasize) {
       return 'item-image-box';
@@ -182,17 +185,35 @@ export class ItemImage extends LitElement {
         overflow: visible;
       }
 
+      .list-image-box.deemphasize {
+        border: 1px solid #ddd;
+      }
+
+      .list-image-box {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+        display: flex;
+        position: relative;
+      }
+
       .list-image {
         width: 100%;
         height: 100%;
         overflow: hidden;
       }
 
-      .list-image img {
-        object-fit: cover;
+      img.list-image {
+        overflow: hidden;
+        object-fit: contain;
         border-radius: var(--border-radius, 0);
         -webkit-border-radius: var(--border-radius, 0);
         -moz-border-radius: var(--border-radius, 0);
+      }
+
+      img.list-image.compact {
+        object-fit: cover;
       }
 
       .waveform {
@@ -204,10 +225,17 @@ export class ItemImage extends LitElement {
         filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
       }
 
-      .deemphasize {
+      .deemphasize .list-image,
+      .deemphasize.item-image {
         background-size: cover;
         filter: blur(15px);
         z-index: 1;
+      }
+
+      .deemphasize svg {
+        padding: 25%;
+        z-index: 2;
+        position: absolute;
       }
 
       .tile-action {

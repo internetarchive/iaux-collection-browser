@@ -70,6 +70,7 @@ export class TileListCompact extends LitElement {
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
+        .isCompactTile=${true}
       >
       </item-image>
     `;
@@ -125,12 +126,27 @@ export class TileListCompact extends LitElement {
         font-size: 14px;
       }
 
-      /* fields */
-
-      #thumb {
-        padding-left: 6px;
+      #list-line {
+        display: grid;
+        column-gap: 10px;
+        border-top: 1px solid #ddd;
+        align-items: center;
+        line-height: 20px;
       }
 
+      #list-line.mobile {
+        grid-template-columns: 36px 3fr 2fr 62px 19px;
+      }
+
+      #list-line.desktop {
+        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+      }
+
+      #list-line:hover #title {
+        text-decoration: underline;
+      }
+
+      /* fields */
       #thumb {
         object-fit: cover;
         display: block;
@@ -139,11 +155,17 @@ export class TileListCompact extends LitElement {
       .mobile #thumb {
         width: 30px;
         height: 30px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        padding-left: 4px;
       }
 
       .desktop #thumb {
         width: 45px;
         height: 45px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-left: 6px;
       }
 
       #thumb.collection {
@@ -187,32 +209,6 @@ export class TileListCompact extends LitElement {
       .desktop #icon {
         --iconHeight: 20px;
         --iconWidth: 20px;
-      }
-
-      /* list-line */
-
-      #list-line {
-        display: grid;
-        column-gap: 10px;
-        border-top: 1px solid #ddd;
-        align-items: center;
-        line-height: 20px;
-      }
-
-      #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 62px 19px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-      }
-
-      #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-      }
-
-      #list-line:hover #title {
-        text-decoration: underline;
       }
     `;
   }
