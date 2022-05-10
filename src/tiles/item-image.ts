@@ -46,7 +46,7 @@ export class ItemImage extends LitElement {
       <div class=${ifDefined(this.imageBoxClass)}>
         ${this.model?.mediatype === 'audio'
           ? this.waveformTemplate
-          : this.ImageTemplate}
+          : this.itemImageTemplate}
       </div>
     `;
   }
@@ -56,7 +56,7 @@ export class ItemImage extends LitElement {
   }
 
   // Templates
-  private get ImageTemplate() {
+  private get itemImageTemplate() {
     return html`
       ${this.isListTile ? this.listImageTemplate : this.tileImageTemplate}
     `;
