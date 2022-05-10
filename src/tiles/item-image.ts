@@ -24,7 +24,7 @@ export class ItemImage extends LitElement {
   @state() private isDeemphasize = false;
 
   @state() private isWaveform = false;
-  
+
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
