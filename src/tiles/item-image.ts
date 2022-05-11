@@ -25,11 +25,14 @@ export class ItemImage extends LitElement {
 
   @state() private isWaveform = false;
 
+  @state() private isWithWaveformMediatype: boolean = false;
+
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
       this.setDeemphasize();
+      this.setWithWaveformMediatype();
     }
   }
 
@@ -41,10 +44,18 @@ export class ItemImage extends LitElement {
       false;
   }
 
+  private setWithWaveformMediatype() {
+    const withWaveformMediatype = ['audio', 'etree'];
+    if (this.model?.mediatype)
+      this.isWithWaveformMediatype = withWaveformMediatype.includes(
+        this.model?.mediatype
+      );
+  }
+
   render() {
     return html`
       <div class=${ifDefined(this.imageBoxClass)}>
-        ${this.model?.mediatype === 'audio'
+        ${this.isWithWaveformMediatype
           ? this.waveformTemplate
           : this.itemImageTemplate}
       </div>
