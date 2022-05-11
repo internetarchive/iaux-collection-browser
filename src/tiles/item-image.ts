@@ -185,6 +185,11 @@ export class ItemImage extends LitElement {
         display: flex;
       }
 
+      .item-audio {
+        width: 16rem;
+        height: 16rem;
+      }
+
       .item-image {
         width: 16rem;
         height: 16rem;
@@ -229,6 +234,11 @@ export class ItemImage extends LitElement {
 
       .waveform {
         mix-blend-mode: screen;
+        width: 16rem;
+        height: 10rem;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
       }
 
       .default {
