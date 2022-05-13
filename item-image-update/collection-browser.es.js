@@ -4306,10 +4306,9 @@ let ItemImage = class ItemImage2 extends s$e {
     this.isDeemphasize = (_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.collections.includes("deemphasize")) !== null && _b !== void 0 ? _b : false;
   }
   render() {
-    var _a;
     return $$4`
       <div class=${l$8(this.imageBoxClass)}>
-        ${((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) === "audio" ? this.waveformTemplate : this.backgroundImageTemplate}
+        ${this.isWithWaveformMediatype ? this.waveformTemplate : this.backgroundImageTemplate}
         ${this.tileActionTemplate}
       </div>
     `;
@@ -4317,6 +4316,10 @@ let ItemImage = class ItemImage2 extends s$e {
   get imageSrc() {
     var _a;
     return `${this.baseImageUrl}/services/img/${(_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier}`;
+  }
+  get isWithWaveformMediatype() {
+    var _a, _b;
+    return ((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) === "audio" || ((_b = this.model) === null || _b === void 0 ? void 0 : _b.mediatype) === "etree";
   }
   get backgroundImageTemplate() {
     return $$4`
@@ -4387,6 +4390,11 @@ let ItemImage = class ItemImage2 extends s$e {
         display: flex;
       }
 
+      .item-audio {
+        width: 16rem;
+        height: 16rem;
+      }
+
       .item-image {
         width: 16rem;
         height: 16rem;
@@ -4400,6 +4408,11 @@ let ItemImage = class ItemImage2 extends s$e {
 
       .waveform {
         mix-blend-mode: screen;
+        width: 16rem;
+        height: 10rem;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
       }
 
       .default {
@@ -4408,7 +4421,7 @@ let ItemImage = class ItemImage2 extends s$e {
       }
 
       .deemphasize {
-        background-size: cover;
+        background-size: contain;
         filter: blur(15px);
         z-index: 1;
       }
