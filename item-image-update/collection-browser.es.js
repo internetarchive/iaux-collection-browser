@@ -4289,56 +4289,20 @@ __decorate([
 MediatypeIcon = __decorate([
   n$g("mediatype-icon")
 ], MediatypeIcon);
-let ItemImage = class ItemImage2 extends s$e {
+let BackgroundImage = class BackgroundImage2 extends s$e {
   constructor() {
     super(...arguments);
-    this.isListTile = false;
     this.isDeemphasize = false;
-    this.isWaveform = false;
-  }
-  updated(changed) {
-    if (changed.has("model")) {
-      this.setDeemphsize();
-    }
-  }
-  setDeemphsize() {
-    var _a, _b;
-    this.isDeemphasize = (_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.collections.includes("deemphasize")) !== null && _b !== void 0 ? _b : false;
   }
   render() {
     return $$4`
       <div class=${l$8(this.imageBoxClass)}>
-        ${this.isWithWaveformMediatype ? this.waveformTemplate : this.backgroundImageTemplate}
-        ${this.tileActionTemplate}
-      </div>
-    `;
-  }
-  get imageSrc() {
-    var _a;
-    return `${this.baseImageUrl}/services/img/${(_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier}`;
-  }
-  get isWithWaveformMediatype() {
-    var _a, _b;
-    return ((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) === "audio" || ((_b = this.model) === null || _b === void 0 ? void 0 : _b.mediatype) === "etree";
-  }
-  get backgroundImageTemplate() {
-    return $$4`
-      <div
-        class=${this.imageClass}
-        style="background-image:url(${this.imageSrc})"
-      ></div>
-    `;
-  }
-  get waveformTemplate() {
-    var _a;
-    return $$4`
-      <div class=${this.boxWaveformClass}>
         <img
-          class=${this.itemImageWaveformClass}
-          src="${this.imageSrc}"
-          alt="${l$8((_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier)}"
-          @load=${this.onLoadItemImageCheck}
+          class=${this.imageClass}
+          src="${l$8(this.imageSrc)}"
+          alt="${l$8(this.identifier)}"
         />
+        ${this.tileActionTemplate}
       </div>
     `;
   }
@@ -4350,34 +4314,11 @@ let ItemImage = class ItemImage2 extends s$e {
       <div class="tile-action no-preview">Content may be inappropriate</div>
     `;
   }
-  onLoadItemImageCheck() {
-    const aspectRatio = this.itemImageWaveform.naturalWidth / this.itemImageWaveform.naturalHeight;
-    if (aspectRatio === 4) {
-      this.isWaveform = true;
-    }
-  }
-  get imageClass() {
-    return `item-image ${this.isDeemphasize ? "deemphasize" : "default"}`;
-  }
   get imageBoxClass() {
     return this.isDeemphasize ? "item-image-box" : void 0;
   }
-  get boxWaveformClass() {
-    return `item-audio${this.isWaveform ? ` ${this.hashBasedGradient}` : ""}`;
-  }
-  get itemImageWaveformClass() {
-    return `item-image${this.isWaveform ? " waveform" : ""}`;
-  }
-  get hashBasedGradient() {
-    var _a;
-    if (!((_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier)) {
-      return "grad1";
-    }
-    const gradient = this.hashStrToInt(this.model.identifier) % 6;
-    return `grad${gradient}`;
-  }
-  hashStrToInt(str2) {
-    return str2.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  get imageClass() {
+    return `item-image ${this.isDeemphasize ? "deemphasize" : "default"}`;
   }
   static get styles() {
     return r$9`
@@ -4390,11 +4331,6 @@ let ItemImage = class ItemImage2 extends s$e {
         display: flex;
       }
 
-      .item-audio {
-        width: 16rem;
-        height: 16rem;
-      }
-
       .item-image {
         width: 16rem;
         height: 16rem;
@@ -4404,15 +4340,6 @@ let ItemImage = class ItemImage2 extends s$e {
         position: relative;
         -webkit-appearance: none;
         overflow: visible;
-      }
-
-      .waveform {
-        mix-blend-mode: screen;
-        width: 16rem;
-        height: 10rem;
-        position: relative;
-        top: 50%;
-        transform: translateY(-50%);
       }
 
       .default {
@@ -4444,6 +4371,91 @@ let ItemImage = class ItemImage2 extends s$e {
         font-size: 1.4rem;
         line-height: 2rem;
         text-align: center;
+      }
+    `;
+  }
+};
+__decorate([
+  e$f({ type: String })
+], BackgroundImage.prototype, "imageSrc", void 0);
+__decorate([
+  e$f({ type: String })
+], BackgroundImage.prototype, "identifier", void 0);
+__decorate([
+  e$f({ type: Boolean })
+], BackgroundImage.prototype, "isDeemphasize", void 0);
+BackgroundImage = __decorate([
+  n$g("background-image")
+], BackgroundImage);
+let WaveformImage = class WaveformImage2 extends s$e {
+  constructor() {
+    super(...arguments);
+    this.isWaveform = false;
+  }
+  render() {
+    return $$4`
+      <div class=${this.boxWaveformClass}>
+        <img
+          class=${this.itemImageWaveformClass}
+          src="${l$8(this.imageSrc)}"
+          alt="${l$8(this.identifier)}"
+          @load=${this.onLoadItemImageCheck}
+        />
+      </div>
+    `;
+  }
+  hashStrToInt(str2) {
+    return str2.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  }
+  get hashBasedGradient() {
+    if (!this.identifier) {
+      return "grad1";
+    }
+    const gradient = this.hashStrToInt(this.identifier) % 6;
+    return `grad${gradient}`;
+  }
+  get boxWaveformClass() {
+    return `item-audio${this.isWaveform ? ` ${this.hashBasedGradient}` : ""}`;
+  }
+  get itemImageWaveformClass() {
+    return `item-image${this.isWaveform ? " waveform" : ""}`;
+  }
+  onLoadItemImageCheck() {
+    const aspectRatio = this.itemImageWaveform.naturalWidth / this.itemImageWaveform.naturalHeight;
+    if (aspectRatio === 4) {
+      this.isWaveform = true;
+    }
+  }
+  static get styles() {
+    return r$9`
+      .item-audio {
+        width: 16rem;
+        height: 16rem;
+      }
+
+      .item-image {
+        width: 16rem;
+        height: 16rem;
+        object-fit: contain;
+        background-repeat: no-repeat;
+        background-position: center center;
+        position: relative;
+        -webkit-appearance: none;
+        overflow: visible;
+      }
+
+      .waveform {
+        mix-blend-mode: screen;
+        width: 16rem;
+        height: 10rem;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .default {
+        background-size: contain;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
       }
 
       .grad0 {
@@ -4503,6 +4515,71 @@ let ItemImage = class ItemImage2 extends s$e {
   }
 };
 __decorate([
+  e$f({ type: String })
+], WaveformImage.prototype, "imageSrc", void 0);
+__decorate([
+  e$f({ type: String })
+], WaveformImage.prototype, "identifier", void 0);
+__decorate([
+  t$b()
+], WaveformImage.prototype, "isWaveform", void 0);
+__decorate([
+  i$d(".item-image")
+], WaveformImage.prototype, "itemImageWaveform", void 0);
+WaveformImage = __decorate([
+  n$g("waveform-image")
+], WaveformImage);
+let ItemImage = class ItemImage2 extends s$e {
+  constructor() {
+    super(...arguments);
+    this.isListTile = false;
+    this.isDeemphasize = false;
+  }
+  updated(changed) {
+    if (changed.has("model")) {
+      this.setDeemphsize();
+    }
+  }
+  setDeemphsize() {
+    var _a, _b;
+    this.isDeemphasize = (_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.collections.includes("deemphasize")) !== null && _b !== void 0 ? _b : false;
+  }
+  render() {
+    return $$4`
+      ${this.isWithWaveformMediatype ? this.waveformImageTemplate : this.backgroundImageTemplate}
+    `;
+  }
+  get imageSrc() {
+    var _a;
+    return `${this.baseImageUrl}/services/img/${(_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier}`;
+  }
+  get isWithWaveformMediatype() {
+    var _a, _b;
+    return ((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) === "audio" || ((_b = this.model) === null || _b === void 0 ? void 0 : _b.mediatype) === "etree";
+  }
+  get backgroundImageTemplate() {
+    var _a;
+    return $$4`
+      <background-image
+        .imageSrc=${this.imageSrc}
+        .identifier=${(_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier}
+        .isDeemphasize=${this.isDeemphasize}
+      >
+      </background-image>
+    `;
+  }
+  get waveformImageTemplate() {
+    var _a;
+    return $$4`
+      <waveform-image
+        .imageSrc=${this.imageSrc}
+        .identifier=${(_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier}
+      >
+      </waveform-image>
+    `;
+  }
+};
+__decorate([
   e$f({ type: Object })
 ], ItemImage.prototype, "model", void 0);
 __decorate([
@@ -4514,12 +4591,6 @@ __decorate([
 __decorate([
   t$b()
 ], ItemImage.prototype, "isDeemphasize", void 0);
-__decorate([
-  t$b()
-], ItemImage.prototype, "isWaveform", void 0);
-__decorate([
-  i$d(".item-image")
-], ItemImage.prototype, "itemImageWaveform", void 0);
 ItemImage = __decorate([
   n$g("item-image")
 ], ItemImage);
