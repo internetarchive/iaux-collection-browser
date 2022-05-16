@@ -1,15 +1,13 @@
-import {
-  css,
-  CSSResultGroup,
-  html,
-  nothing,
-  PropertyValues,
-  LitElement,
-} from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { css, html, nothing, CSSResultGroup, LitElement, PropertyValues } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
 import { restrictedIcon } from '../assets/img/icons/restricted';
+
 import { TileModel } from '../models';
+
+import './image/background-image';
+import './image/waveform-image';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -24,8 +22,6 @@ export class ItemImage extends LitElement {
   @state() private isDeemphasize = false;
 
   @state() private isWaveform = false;
-
-  @query('.item-image') private itemImageWaveform!: HTMLImageElement;
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
@@ -43,11 +39,14 @@ export class ItemImage extends LitElement {
 
   render() {
     return html`
-      <div class=${ifDefined(this.imageBoxClass)}>
+      <!-- <div class=${ifDefined(this.imageBoxClass)}>
         ${this.isWithWaveformMediatype
-          ? this.waveformTemplate
+          ? this.waveformImageTemplate
           : this.itemImageTemplate}
-      </div>
+      </div> -->
+      ${this.isWithWaveformMediatype
+        ? this.waveformImageTemplate
+        : this.backgroundImageTemplate}
     `;
   }
 
@@ -62,6 +61,17 @@ export class ItemImage extends LitElement {
   }
 
   // Templates
+  private get backgroundImageTemplate() {
+    return html`
+      <background-image
+      .imageSrc=${this.imageSrc}
+      .identifier=${this.model?.identifier}
+      .isDeemphasize=${this.isDeemphasize}
+      >
+      </background-image>
+    ` 
+  }
+
   private get itemImageTemplate() {
     return html`
       ${this.isListTile ? this.listImageTemplate : this.tileImageTemplate}
@@ -88,16 +98,13 @@ export class ItemImage extends LitElement {
     `;
   }
 
-  private get waveformTemplate() {
+  private get waveformImageTemplate() {
     return html`
-      <div class=${this.boxWaveformClass}>
-        <img
-          class=${this.itemImageWaveformClass}
-          src="${this.imageSrc}"
-          alt="${ifDefined(this.model?.title)}"
-          @load=${this.onLoadItemImageCheck}
-        />
-      </div>
+      <waveform-image
+        .imageSrc=${this.imageSrc}
+        .identifier=${this.model?.identifier}
+      >
+      </waveform-image>
     `;
   }
 
@@ -115,15 +122,6 @@ export class ItemImage extends LitElement {
     return html`
       <div class="tile-action no-preview">Content may be inappropriate</div>
     `;
-  }
-
-  private onLoadItemImageCheck() {
-    const aspectRatio =
-      this.itemImageWaveform.naturalWidth /
-      this.itemImageWaveform.naturalHeight;
-    if (aspectRatio === 4) {
-      this.isWaveform = true;
-    }
   }
 
   // Classes
@@ -145,28 +143,6 @@ export class ItemImage extends LitElement {
       return 'item-image-box';
     }
     return undefined;
-  }
-
-  private get boxWaveformClass() {
-    return `item-audio${this.isWaveform ? ` ${this.hashBasedGradient}` : ''}`;
-  }
-
-  private get itemImageWaveformClass() {
-    return `item-image${this.isWaveform ? ' waveform' : ''}`;
-  }
-
-  private get hashBasedGradient() {
-    if (!this.model?.identifier) {
-      return 'grad1';
-    }
-    const gradient = this.hashStrToInt(this.model.identifier) % 6; // returns 0-5
-    return `grad${gradient}`;
-  }
-
-  private hashStrToInt(str: string): number {
-    return str
-      .split('')
-      .reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
   }
 
   static get styles(): CSSResultGroup {
@@ -265,68 +241,7 @@ export class ItemImage extends LitElement {
         display: flex;
         top: 5.5rem;
       }
-
-      .no-preview {
-        background-color: #fffecb;
-        color: #2c2c2c;
-        font-size: 1.4rem;
-        line-height: 2rem;
-        text-align: center;
-      }
-
-      .grad0 {
-        background: linear-gradient(
-          hsl(340, 80%, 55%),
-          hsl(0, 80%, 33%) 35%,
-          hsl(0, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
-
-      .grad1 {
-        background: linear-gradient(
-          hsl(300, 80%, 55%),
-          hsl(330, 80%, 33%) 35%,
-          hsl(330, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
-
-      .grad2 {
-        background: linear-gradient(
-          hsl(200, 80%, 55%),
-          hsl(230, 80%, 33%) 35%,
-          hsl(230, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
-
-      .grad3 {
-        background: linear-gradient(
-          hsl(160, 80%, 55%),
-          hsl(190, 80%, 33%) 35%,
-          hsl(190, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
-
-      .grad4 {
-        background: linear-gradient(
-          hsl(250, 80%, 55%),
-          hsl(280, 80%, 33%) 35%,
-          hsl(280, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
-
-      .grad5 {
-        background: linear-gradient(
-          hsl(280, 80%, 55%),
-          hsl(310, 80%, 33%) 35%,
-          hsl(310, 80%, 22%) 70%,
-          hsl(0, 0%, 0%)
-        );
-      }
     `;
   }
+
 }
