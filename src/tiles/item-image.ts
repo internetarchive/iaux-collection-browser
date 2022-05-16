@@ -186,7 +186,7 @@ export class ItemImage extends LitElement {
       }
 
       .list-image-box.deemphasize {
-        border: 1px solid #ddd;
+        border: 1px solid #767676;
       }
 
       .list-image-box {
@@ -227,7 +227,7 @@ export class ItemImage extends LitElement {
 
       .deemphasize .list-image,
       .deemphasize.item-image {
-        background-size: cover;
+        background-size: contain;
         filter: blur(15px);
         z-index: 1;
       }
