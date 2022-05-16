@@ -28,7 +28,9 @@ export class TileListCompact extends LitElement {
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
-        <div id="thumb">${this.imageTemplate}</div>
+        <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
+          ${this.imageTemplate}
+        </div>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
         <div id="creator">
           ${this.model?.mediatype === 'account'
@@ -63,11 +65,15 @@ export class TileListCompact extends LitElement {
     if (!this.model?.identifier) {
       return nothing;
     }
-    return html` <img
-      src="${this.baseImageUrl}/services/img/${this.model.identifier}"
-      alt="${this.model.identifier}"
-      class="${this.model?.mediatype}"
-    />`;
+    return html`
+      <item-image
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .isListTile=${true}
+        .isCompactTile=${true}
+      >
+      </item-image>
+    `;
   }
 
   /*
@@ -120,43 +126,58 @@ export class TileListCompact extends LitElement {
         font-size: 14px;
       }
 
-      /* fields */
-
-      #thumb {
-        padding-left: 6px;
+      #list-line {
+        display: grid;
+        column-gap: 10px;
+        border-top: 1px solid #ddd;
+        align-items: center;
+        line-height: 20px;
       }
 
-      #thumb img {
+      #list-line.mobile {
+        grid-template-columns: 36px 3fr 2fr 62px 19px;
+      }
+
+      #list-line.desktop {
+        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+      }
+
+      #list-line:hover #title {
+        text-decoration: underline;
+      }
+
+      /* fields */
+      #thumb {
         object-fit: cover;
         display: block;
       }
 
-      .mobile #thumb img {
+      .mobile #thumb {
         width: 30px;
         height: 30px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        padding-left: 4px;
       }
 
-      .desktop #thumb img {
+      .desktop #thumb {
         width: 45px;
         height: 45px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-left: 6px;
       }
 
-      #thumb img.collection {
-        border-radius: 8px;
-        -webkit-border-radius: 8px;
-        -moz-border-radius: 8px;
+      #thumb.collection {
+        --border-radius: 8px;
       }
 
-      .mobile #thumb img.account {
-        border-radius: 15px;
-        -webkit-border-radius: 15px;
-        -moz-border-radius: 15px;
+      .mobile #thumb.account {
+        --border-radius: 15px;
       }
 
-      .desktop #thumb img.account {
-        border-radius: 22.5px;
-        -webkit-border-radius: 22.5px;
-        -moz-border-radius: 22.5px;
+      .desktop #thumb.account {
+        --border-radius: 22.5px;
       }
 
       #title {
@@ -188,32 +209,6 @@ export class TileListCompact extends LitElement {
       .desktop #icon {
         --iconHeight: 20px;
         --iconWidth: 20px;
-      }
-
-      /* list-line */
-
-      #list-line {
-        display: grid;
-        column-gap: 10px;
-        border-top: 1px solid #ddd;
-        align-items: center;
-        line-height: 20px;
-      }
-
-      #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 62px 19px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-      }
-
-      #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-      }
-
-      #list-line:hover #title {
-        text-decoration: underline;
       }
     `;
   }
