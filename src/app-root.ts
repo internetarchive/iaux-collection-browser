@@ -4,8 +4,8 @@ import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
-import type { CollectionBrowser } from '../src/collection-browser';
-import '../src/collection-browser';
+import type { CollectionBrowser } from './collection-browser';
+import './collection-browser';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
