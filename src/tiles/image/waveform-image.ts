@@ -59,6 +59,15 @@ export class WaveformImage extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      .list-image-box {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+        display: flex;
+        position: relative;
+      }
+
       .item-audio {
         width: 16rem;
         height: 16rem;
@@ -67,12 +76,12 @@ export class WaveformImage extends LitElement {
       .item-image {
         width: 16rem;
         height: 16rem;
-        object-fit: contain;
+        /* object-fit: contain;
         background-repeat: no-repeat;
         background-position: center center;
         position: relative;
         -webkit-appearance: none;
-        overflow: visible;
+        overflow: visible; */
       }
 
       .waveform {

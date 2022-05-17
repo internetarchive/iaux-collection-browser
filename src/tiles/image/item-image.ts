@@ -21,12 +21,7 @@ export class ItemImage extends LitElement {
   render() {
     return html`
       <div class=${ifDefined(this.imageBoxClass)}>
-        <img
-          class=${this.imageClass}
-          src="${ifDefined(this.imageSrc)}"
-          alt="${ifDefined(this.model?.identifier)}"
-        />
-        ${this.tileActionTemplate}
+        ${this.itemTileImageTemplate} ${this.tileActionTemplate}
       </div>
     `;
   }
@@ -48,10 +43,11 @@ export class ItemImage extends LitElement {
 
   private get tileImageTemplate() {
     return html`
-      <div
+      <img
         class=${this.imageClass}
-        style="background-image:url(${this.imageSrc})"
-      ></div>
+        src="${ifDefined(this.imageSrc)}"
+        alt="${ifDefined(this.model?.identifier)}"
+      />
       ${this.tileActionTemplate}
     `;
   }
@@ -101,8 +97,8 @@ export class ItemImage extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .item-image-box {
-        width: 16rem;
-        height: 16rem;
+        width: 100%;
+        height: 100%;
         overflow: hidden;
         position: relative;
         box-shadow: 1px 1px 2px 0px;
