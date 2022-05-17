@@ -4289,28 +4289,55 @@ __decorate([
 MediatypeIcon = __decorate([
   n$g("mediatype-icon")
 ], MediatypeIcon);
+const restrictedIcon = y$1`
+  <svg
+    viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g
+      fill="none"
+      fill-rule="evenodd"
+    >
+    <path
+      d="m56.4612493 8.80450354 41.8901185 75.94632926c1.7706782 2.8433173 2.1150372 5.2623412 1.0330766 7.2570716-1.0819604 1.9947304-3.26978 2.9920956-6.5634587 2.9920956h-85.69973905c-3.29367873 0-5.46954894-.9973652-6.52761065-2.9920956-1.0580617-1.9947304-.70175345-4.4137543 1.06892476-7.2570716l41.89011844-75.12308969c1.8184757-2.84331737 3.9693609-4.37738627 6.4526556-4.60220671s4.6341799 1.03483527 6.4526556 3.77896714z"
+      fill="#000"
+      fill-rule="nonzero"
+    />
+    <path
+      d="m94.0140845 90-44.5547054-79-44.4593791 79z"
+      fill="#f8e71c"
+      fill-rule="nonzero"
+    />
+    <path
+      d="m54 69v8h-8v-8zm0-30v10.2515641l-2.0923567 14.7484359h-3.8184713l-2.089172-14.7484359v-10.2515641z"
+      fill="#000"
+    />
+    </g>
+    <title>Content may be inappropriate</title>
+  </svg>
+`;
 let ItemImage = class ItemImage2 extends s$e {
   constructor() {
     super(...arguments);
     this.isListTile = false;
+    this.isCompactTile = false;
     this.isDeemphasize = false;
     this.isWaveform = false;
   }
   updated(changed) {
     if (changed.has("model")) {
-      this.setDeemphsize();
+      this.setDeemphasize();
     }
   }
-  setDeemphsize() {
-    var _a, _b;
-    this.isDeemphasize = (_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.collections.includes("deemphasize")) !== null && _b !== void 0 ? _b : false;
+  setDeemphasize() {
+    var _a, _b, _c;
+    this.isDeemphasize = (_c = ((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) !== "collection" && ((_b = this.model) === null || _b === void 0 ? void 0 : _b.collections.includes("deemphasize"))) !== null && _c !== void 0 ? _c : false;
   }
   render() {
     var _a;
     return $$4`
       <div class=${l$8(this.imageBoxClass)}>
-        ${((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) === "audio" ? this.waveformTemplate : this.backgroundImageTemplate}
-        ${this.tileActionTemplate}
+        ${((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) === "audio" ? this.waveformTemplate : this.itemImageTemplate}
       </div>
     `;
   }
@@ -4318,12 +4345,27 @@ let ItemImage = class ItemImage2 extends s$e {
     var _a;
     return `${this.baseImageUrl}/services/img/${(_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier}`;
   }
-  get backgroundImageTemplate() {
+  get itemImageTemplate() {
+    return $$4`
+      ${this.isListTile ? this.listImageTemplate : this.tileImageTemplate}
+    `;
+  }
+  get tileImageTemplate() {
     return $$4`
       <div
         class=${this.imageClass}
         style="background-image:url(${this.imageSrc})"
       ></div>
+      ${this.tileActionTemplate}
+    `;
+  }
+  get listImageTemplate() {
+    if (!this.model) {
+      return w$4;
+    }
+    return $$4`
+      <img src="${this.imageSrc}" alt="" class="${this.listImageClass}" />
+      ${this.restrictedIconTemplate}
     `;
   }
   get waveformTemplate() {
@@ -4333,11 +4375,17 @@ let ItemImage = class ItemImage2 extends s$e {
         <img
           class=${this.itemImageWaveformClass}
           src="${this.imageSrc}"
-          alt="${l$8((_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier)}"
+          alt="${l$8((_a = this.model) === null || _a === void 0 ? void 0 : _a.title)}"
           @load=${this.onLoadItemImageCheck}
         />
       </div>
     `;
+  }
+  get restrictedIconTemplate() {
+    if (!this.isDeemphasize) {
+      return w$4;
+    }
+    return $$4` ${restrictedIcon} `;
   }
   get tileActionTemplate() {
     if (!this.isDeemphasize) {
@@ -4356,8 +4404,18 @@ let ItemImage = class ItemImage2 extends s$e {
   get imageClass() {
     return `item-image ${this.isDeemphasize ? "deemphasize" : "default"}`;
   }
+  get listImageClass() {
+    var _a;
+    return `list-image ${(_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype}${this.isCompactTile ? " compact" : ""}`;
+  }
   get imageBoxClass() {
-    return this.isDeemphasize ? "item-image-box" : void 0;
+    if (this.isListTile) {
+      return `list-image-box${this.isDeemphasize ? " deemphasize" : ""}`;
+    }
+    if (this.isDeemphasize) {
+      return "item-image-box";
+    }
+    return void 0;
   }
   get boxWaveformClass() {
     return `item-audio${this.isWaveform ? ` ${this.hashBasedGradient}` : ""}`;
@@ -4398,6 +4456,37 @@ let ItemImage = class ItemImage2 extends s$e {
         overflow: visible;
       }
 
+      .list-image-box.deemphasize {
+        border: 1px solid #767676;
+      }
+
+      .list-image-box {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
+        display: flex;
+        position: relative;
+      }
+
+      .list-image {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      img.list-image {
+        overflow: hidden;
+        object-fit: contain;
+        border-radius: var(--border-radius, 0);
+        -webkit-border-radius: var(--border-radius, 0);
+        -moz-border-radius: var(--border-radius, 0);
+      }
+
+      img.list-image.compact {
+        object-fit: cover;
+      }
+
       .waveform {
         mix-blend-mode: screen;
       }
@@ -4407,10 +4496,17 @@ let ItemImage = class ItemImage2 extends s$e {
         filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
       }
 
-      .deemphasize {
-        background-size: cover;
+      .deemphasize .list-image,
+      .deemphasize.item-image {
+        background-size: contain;
         filter: blur(15px);
         z-index: 1;
+      }
+
+      .deemphasize svg {
+        padding: 25%;
+        z-index: 2;
+        position: absolute;
       }
 
       .tile-action {
@@ -4498,6 +4594,9 @@ __decorate([
 __decorate([
   e$f({ type: Boolean })
 ], ItemImage.prototype, "isListTile", void 0);
+__decorate([
+  e$f({ type: Boolean })
+], ItemImage.prototype, "isCompactTile", void 0);
 __decorate([
   t$b()
 ], ItemImage.prototype, "isDeemphasize", void 0);
@@ -5780,10 +5879,13 @@ let TileList = class TileList2 extends s$e {
     `;
   }
   get mobileTemplate() {
+    var _a;
     return $$4`
       <div id="list-line-top">
         <div id="list-line-left">
-          <div id="thumb">${this.imgTemplate}</div>
+          <div id="thumb" class="${l$8((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype)}">
+            ${this.imgTemplate}
+          </div>
         </div>
         <div id="list-line-right">
           <div id="title-line">
@@ -5796,9 +5898,12 @@ let TileList = class TileList2 extends s$e {
     `;
   }
   get desktopTemplate() {
+    var _a;
     return $$4`
       <div id="list-line-left">
-        <div id="thumb">${this.imgTemplate}</div>
+        <div id="thumb" class="${l$8((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype)}">
+          ${this.imgTemplate}
+        </div>
       </div>
       <div id="list-line-right">
         <div id="title-line">
@@ -5823,15 +5928,18 @@ let TileList = class TileList2 extends s$e {
     `;
   }
   get imgTemplate() {
-    var _a, _b;
+    var _a;
     if (!((_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier)) {
       return w$4;
     }
-    return $$4` <img
-      src="${this.baseImageUrl}/services/img/${this.model.identifier}"
-      alt="${this.model.identifier}"
-      class=${(_b = this.model) === null || _b === void 0 ? void 0 : _b.mediatype}
-    />`;
+    return $$4`
+      <item-image
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .isListTile=${true}
+      >
+      </item-image>
+    `;
   }
   get iconRightTemplate() {
     var _a, _b;
@@ -6045,32 +6153,26 @@ let TileList = class TileList2 extends s$e {
         display: block;
       }
 
-      .mobile #thumb img {
+      .mobile #thumb {
         width: 90px;
         height: 90px;
       }
 
-      .desktop #thumb img {
+      .desktop #thumb {
         width: 100px;
         height: 100px;
       }
 
-      #thumb img.collection {
-        border-radius: 8px;
-        -webkit-border-radius: 8px;
-        -moz-border-radius: 8px;
+      #thumb.collection {
+        --border-radius: 8px;
       }
 
-      .mobile #thumb img.account {
-        border-radius: 45px;
-        -webkit-border-radius: 45px;
-        -moz-border-radius: 45px;
+      .mobile #thumb.account {
+        --border-radius: 45px;
       }
 
-      .desktop #thumb img.account {
-        border-radius: 50px;
-        -webkit-border-radius: 50px;
-        -moz-border-radius: 50px;
+      .desktop #thumb.account {
+        --border-radius: 50px;
       }
 
       #icon-right {
@@ -6201,25 +6303,27 @@ let TileListCompact = class TileListCompact2 extends s$e {
     this.sortParam = null;
   }
   render() {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     return $$4`
       <div id="list-line" class="${this.classSize}">
-        <div id="thumb">${this.imageTemplate}</div>
-        <div id="title">${purify.sanitize((_b = (_a = this.model) === null || _a === void 0 ? void 0 : _a.title) !== null && _b !== void 0 ? _b : "")}</div>
+        <div id="thumb" class="${l$8((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype)}">
+          ${this.imageTemplate}
+        </div>
+        <div id="title">${purify.sanitize((_c = (_b = this.model) === null || _b === void 0 ? void 0 : _b.title) !== null && _c !== void 0 ? _c : "")}</div>
         <div id="creator">
-          ${((_c = this.model) === null || _c === void 0 ? void 0 : _c.mediatype) === "account" ? accountLabel((_d = this.model) === null || _d === void 0 ? void 0 : _d.dateAdded) : purify.sanitize((_f = (_e = this.model) === null || _e === void 0 ? void 0 : _e.creator) !== null && _f !== void 0 ? _f : "")}
+          ${((_d = this.model) === null || _d === void 0 ? void 0 : _d.mediatype) === "account" ? accountLabel((_e = this.model) === null || _e === void 0 ? void 0 : _e.dateAdded) : purify.sanitize((_g = (_f = this.model) === null || _f === void 0 ? void 0 : _f.creator) !== null && _g !== void 0 ? _g : "")}
         </div>
         <div id="date">${formatDate(this.date, this.formatSize)}</div>
         <div id="icon">
           <mediatype-icon
-            .mediatype=${(_g = this.model) === null || _g === void 0 ? void 0 : _g.mediatype}
-            .collections=${(_h = this.model) === null || _h === void 0 ? void 0 : _h.collections}
+            .mediatype=${(_h = this.model) === null || _h === void 0 ? void 0 : _h.mediatype}
+            .collections=${(_j = this.model) === null || _j === void 0 ? void 0 : _j.collections}
             style="--iconCustomFillColor: ${l$8(this.collectionColor)}"
           >
           </mediatype-icon>
         </div>
         <div id="views">
-          ${formatCount((_k = (_j = this.model) === null || _j === void 0 ? void 0 : _j.viewCount) !== null && _k !== void 0 ? _k : 0, this.formatSize)}
+          ${formatCount((_l = (_k = this.model) === null || _k === void 0 ? void 0 : _k.viewCount) !== null && _l !== void 0 ? _l : 0, this.formatSize)}
         </div>
       </div>
     `;
@@ -6232,15 +6336,19 @@ let TileListCompact = class TileListCompact2 extends s$e {
     return "#4666FF";
   }
   get imageTemplate() {
-    var _a, _b;
+    var _a;
     if (!((_a = this.model) === null || _a === void 0 ? void 0 : _a.identifier)) {
       return w$4;
     }
-    return $$4` <img
-      src="${this.baseImageUrl}/services/img/${this.model.identifier}"
-      alt="${this.model.identifier}"
-      class="${(_b = this.model) === null || _b === void 0 ? void 0 : _b.mediatype}"
-    />`;
+    return $$4`
+      <item-image
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .isListTile=${true}
+        .isCompactTile=${true}
+      >
+      </item-image>
+    `;
   }
   get date() {
     var _a, _b, _c, _d, _e;
@@ -6277,43 +6385,58 @@ let TileListCompact = class TileListCompact2 extends s$e {
         font-size: 14px;
       }
 
-      /* fields */
-
-      #thumb {
-        padding-left: 6px;
+      #list-line {
+        display: grid;
+        column-gap: 10px;
+        border-top: 1px solid #ddd;
+        align-items: center;
+        line-height: 20px;
       }
 
-      #thumb img {
+      #list-line.mobile {
+        grid-template-columns: 36px 3fr 2fr 62px 19px;
+      }
+
+      #list-line.desktop {
+        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+      }
+
+      #list-line:hover #title {
+        text-decoration: underline;
+      }
+
+      /* fields */
+      #thumb {
         object-fit: cover;
         display: block;
       }
 
-      .mobile #thumb img {
+      .mobile #thumb {
         width: 30px;
         height: 30px;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        padding-left: 4px;
       }
 
-      .desktop #thumb img {
+      .desktop #thumb {
         width: 45px;
         height: 45px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-left: 6px;
       }
 
-      #thumb img.collection {
-        border-radius: 8px;
-        -webkit-border-radius: 8px;
-        -moz-border-radius: 8px;
+      #thumb.collection {
+        --border-radius: 8px;
       }
 
-      .mobile #thumb img.account {
-        border-radius: 15px;
-        -webkit-border-radius: 15px;
-        -moz-border-radius: 15px;
+      .mobile #thumb.account {
+        --border-radius: 15px;
       }
 
-      .desktop #thumb img.account {
-        border-radius: 22.5px;
-        -webkit-border-radius: 22.5px;
-        -moz-border-radius: 22.5px;
+      .desktop #thumb.account {
+        --border-radius: 22.5px;
       }
 
       #title {
@@ -6345,32 +6468,6 @@ let TileListCompact = class TileListCompact2 extends s$e {
       .desktop #icon {
         --iconHeight: 20px;
         --iconWidth: 20px;
-      }
-
-      /* list-line */
-
-      #list-line {
-        display: grid;
-        column-gap: 10px;
-        border-top: 1px solid #ddd;
-        align-items: center;
-        line-height: 20px;
-      }
-
-      #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 62px 19px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-      }
-
-      #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-      }
-
-      #list-line:hover #title {
-        text-decoration: underline;
       }
     `;
   }
