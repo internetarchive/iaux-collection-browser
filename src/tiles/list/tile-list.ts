@@ -18,7 +18,9 @@ import { accountLabel } from './account-label';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
+
 import '../mediatype-icon';
+import '../item-tile-image';
 
 @customElement('tile-list')
 export class TileList extends LitElement {
@@ -139,12 +141,12 @@ export class TileList extends LitElement {
       return nothing;
     }
     return html`
-      <item-image
+      <item-tile-image
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
       >
-      </item-image>
+      </item-tile-image>
     `;
   }
 

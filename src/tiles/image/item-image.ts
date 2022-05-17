@@ -1,78 +1,46 @@
-import { css, html, nothing, CSSResultGroup, LitElement, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
-import { restrictedIcon } from '../assets/img/icons/restricted';
+import { TileModel } from '../../models';
 
-import { TileModel } from '../models';
-
-import './image/background-image';
-import './image/waveform-image';
+import { restrictedIcon } from '../../assets/img/icons/restricted';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
-  @property({ type: String }) baseImageUrl?: string;
-
-  @property({ type: Boolean }) isListTile = false;
+  @property({ type: String }) imageSrc?: string;
 
   @property({ type: Boolean }) isCompactTile = false;
 
-  @state() private isDeemphasize = false;
+  @property({ type: Boolean }) isDeemphasize = false;
 
-  @state() private isWaveform = false;
-
-  protected updated(changed: PropertyValues): void {
-    if (changed.has('model')) {
-      this.setDeemphasize();
-    }
-  }
-
-  // Don't deemphasize if item is a collection
-  private setDeemphasize() {
-    this.isDeemphasize =
-      (this.model?.mediatype !== 'collection' &&
-        this.model?.collections.includes('deemphasize')) ??
-      false;
-  }
+  @property({ type: Boolean }) isListTile = false;
 
   render() {
     return html`
-      <!-- <div class=${ifDefined(this.imageBoxClass)}>
-        ${this.isWithWaveformMediatype
-          ? this.waveformImageTemplate
-          : this.itemImageTemplate}
-      </div> -->
-      ${this.isWithWaveformMediatype
-        ? this.waveformImageTemplate
-        : this.backgroundImageTemplate}
+      <div class=${ifDefined(this.imageBoxClass)}>
+        <img
+          class=${this.imageClass}
+          src="${ifDefined(this.imageSrc)}"
+          alt="${ifDefined(this.model?.identifier)}"
+        />
+        ${this.tileActionTemplate}
+      </div>
     `;
   }
 
-  private get imageSrc() {
-    return `${this.baseImageUrl}/services/img/${this.model?.identifier}`;
-  }
-
-  private get isWithWaveformMediatype() {
-    return (
-      this.model?.mediatype === 'audio' || this.model?.mediatype === 'etree'
-    );
-  }
-
-  // Templates
-  private get backgroundImageTemplate() {
+  private get tileActionTemplate() {
+    if (!this.isDeemphasize) {
+      return nothing;
+    }
     return html`
-      <background-image
-      .imageSrc=${this.imageSrc}
-      .identifier=${this.model?.identifier}
-      .isDeemphasize=${this.isDeemphasize}
-      >
-      </background-image>
-    ` 
+      <div class="tile-action no-preview">Content may be inappropriate</div>
+    `;
   }
 
-  private get itemImageTemplate() {
+  private get itemTileImageTemplate() {
     return html`
       ${this.isListTile ? this.listImageTemplate : this.tileImageTemplate}
     `;
@@ -93,18 +61,12 @@ export class ItemImage extends LitElement {
       return nothing;
     }
     return html`
-      <img src="${this.imageSrc}" alt="" class="${this.listImageClass}" />
+      <img
+        src="${ifDefined(this.imageSrc)}"
+        alt=""
+        class="${this.listImageClass}"
+      />
       ${this.restrictedIconTemplate}
-    `;
-  }
-
-  private get waveformImageTemplate() {
-    return html`
-      <waveform-image
-        .imageSrc=${this.imageSrc}
-        .identifier=${this.model?.identifier}
-      >
-      </waveform-image>
     `;
   }
 
@@ -113,15 +75,6 @@ export class ItemImage extends LitElement {
       return nothing;
     }
     return html` ${restrictedIcon} `;
-  }
-
-  private get tileActionTemplate() {
-    if (!this.isDeemphasize) {
-      return nothing;
-    }
-    return html`
-      <div class="tile-action no-preview">Content may be inappropriate</div>
-    `;
   }
 
   // Classes
@@ -154,11 +107,6 @@ export class ItemImage extends LitElement {
         position: relative;
         box-shadow: 1px 1px 2px 0px;
         display: flex;
-      }
-
-      .item-audio {
-        width: 16rem;
-        height: 16rem;
       }
 
       .item-image {
@@ -203,20 +151,6 @@ export class ItemImage extends LitElement {
         object-fit: cover;
       }
 
-      .waveform {
-        mix-blend-mode: screen;
-        width: 16rem;
-        height: 10rem;
-        position: relative;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-
-      .default {
-        background-size: contain;
-        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
-      }
-
       .deemphasize .list-image,
       .deemphasize.item-image {
         background-size: contain;
@@ -241,7 +175,37 @@ export class ItemImage extends LitElement {
         display: flex;
         top: 5.5rem;
       }
+
+      .default {
+        background-size: contain;
+        filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+      }
+
+      .deemphasize {
+        background-size: contain;
+        filter: blur(15px);
+        z-index: 1;
+      }
+
+      .tile-action {
+        border: 1px solid currentColor;
+        border-radius: 1px;
+        padding: 5px;
+        font-weight: 500;
+        width: auto;
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        top: 5.5rem;
+      }
+
+      .no-preview {
+        background-color: #fffecb;
+        color: #2c2c2c;
+        font-size: 1.4rem;
+        line-height: 2rem;
+        text-align: center;
+      }
     `;
   }
-
 }

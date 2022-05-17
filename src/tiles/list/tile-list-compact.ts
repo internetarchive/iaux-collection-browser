@@ -1,13 +1,18 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { customElement, property } from 'lit/decorators.js';
+
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
+
 import { TileModel } from '../../models';
+
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { accountLabel } from './account-label';
+
 import '../mediatype-icon';
+import '../item-tile-image';
 
 @customElement('tile-list-compact')
 export class TileListCompact extends LitElement {
@@ -66,13 +71,13 @@ export class TileListCompact extends LitElement {
       return nothing;
     }
     return html`
-      <item-image
+      <item-tile-image
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
         .isCompactTile=${true}
       >
-      </item-image>
+      </item-tile-image>
     `;
   }
 
