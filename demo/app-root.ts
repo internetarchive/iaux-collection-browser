@@ -32,7 +32,7 @@ export class AppRoot extends LitElement {
 
   @state() private colGap: number = 1.7;
 
-  @state() private LoggedIn: boolean = false;
+  @state() private loggedIn: boolean = false;
 
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
@@ -170,7 +170,7 @@ export class AppRoot extends LitElement {
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
-          .loggedIn=${this.LoggedIn}
+          .loggedIn=${this.loggedIn}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >
@@ -186,9 +186,9 @@ export class AppRoot extends LitElement {
   private loginChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.checked) {
-      this.LoggedIn = true;
+      this.loggedIn = true;
     } else {
-      this.LoggedIn = false;
+      this.loggedIn = false;
     }
   }
 
