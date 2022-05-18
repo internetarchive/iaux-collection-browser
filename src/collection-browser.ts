@@ -111,6 +111,8 @@ export class CollectionBrowser
 
   @property({ type: Number }) mobileBreakpoint = 600;
 
+  @property({ type: Boolean }) loggedIn = false;
+
   /**
    * The page that the consumer wants to load.
    */
@@ -984,6 +986,26 @@ export class CollectionBrowser
     const tiles: TileModel[] = [];
     docs?.forEach(doc => {
       if (!doc.identifier) return;
+
+      let loginRequired = false;
+      let contentWarning = false;
+      // Check if item and item in "modifying" collection, setting above flags
+      if (
+        doc.collections_raw?.values &&
+        doc.mediatype?.value !== 'collection'
+      ) {
+        for (const collection of doc.collections_raw?.values) {
+          if (collection === 'loggedin') {
+            loginRequired = true;
+            if (contentWarning) break;
+          }
+          if (collection === 'no-preview') {
+            contentWarning = true;
+            if (loginRequired) break;
+          }
+        }
+      }
+
       tiles.push({
         averageRating: doc.avg_rating?.value,
         collections: doc.collections_raw?.values ?? [],
@@ -1009,6 +1031,8 @@ export class CollectionBrowser
         ),
         volume: doc.volume?.value,
         viewCount: doc.downloads?.value ?? 0,
+        loginRequired,
+        contentWarning,
       });
     });
     datasource[pageNumber] = tiles;
