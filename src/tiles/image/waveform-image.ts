@@ -8,6 +8,10 @@ export class WaveformImage extends LitElement {
 
   @property({ type: String }) identifier?: string;
 
+  @property({ type: Boolean }) isCompactTile = false;
+
+  @property({ type: Boolean }) isListTile = false;
+
   @state() private isWaveform: boolean = false;
 
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
@@ -41,7 +45,11 @@ export class WaveformImage extends LitElement {
   }
 
   private get boxWaveformClass() {
-    return `item-audio${this.isWaveform ? ` ${this.hashBasedGradient}` : ''}`;
+    return `${
+      this.isListTile || this.isCompactTile
+        ? 'list-item-audio'
+        : 'grid-item-audio'
+    } ${this.isWaveform ? this.hashBasedGradient : ''}`;
   }
 
   private get itemImageWaveformClass() {
@@ -59,13 +67,14 @@ export class WaveformImage extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      .list-image-box {
+      .list-item-audio {
         width: 100%;
         height: 100%;
-        overflow: hidden;
-        box-sizing: border-box;
-        display: flex;
-        position: relative;
+      }
+
+      .grid-item-audio {
+        width: 16rem;
+        height: 16rem;
       }
 
       .item-audio {
@@ -74,20 +83,16 @@ export class WaveformImage extends LitElement {
       }
 
       .item-image {
-        width: 16rem;
-        height: 16rem;
-        /* object-fit: contain;
-        background-repeat: no-repeat;
-        background-position: center center;
-        position: relative;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
         -webkit-appearance: none;
-        overflow: visible; */
+        overflow: hidden;
       }
 
       .waveform {
         mix-blend-mode: screen;
-        width: 16rem;
-        height: 10rem;
+        height: 100%;
         position: relative;
         top: 50%;
         transform: translateY(-50%);

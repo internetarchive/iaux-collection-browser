@@ -69,6 +69,8 @@ export class ItemImage extends LitElement {
       <waveform-image
         .imageSrc=${this.imageSrc}
         .identifier=${this.model?.identifier}
+        .isCompactTile=${this.isCompactTile}
+        .isListTile=${this.isListTile}
       >
       </waveform-image>
     `;
