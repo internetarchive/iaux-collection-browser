@@ -13,49 +13,50 @@ import '@internetarchive/collection-browser';
 </collection-browser>
 ```
 
-## Local Demo with `web-dev-server`
+## Local Demo with `vite`
 ```bash
-yarn start
+npm install
+npm start
 ```
-To run a local development server that serves the basic demo located in `demo/index.html`
+To run a local development server that serves the basic demo located in `index.html`
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run
 ```bash
-yarn run test
+npm run test
 ```
 
 To run the tests in watch mode (for &lt;abbr title=&#34;test driven development&#34;&gt;TDD&lt;/abbr&gt;, for example), run
 
 ```bash
-yarn run test:watch
+npm run test:watch
 ```
 
 ## Linting with ESLint, Prettier, and Types
 To scan the project for linting errors, run
 ```bash
-yarn run lint
+npm run lint
 ```
 
 You can lint with ESLint and Prettier individually as well
 ```bash
-yarn run lint:eslint
+npm run lint:eslint
 ```
 ```bash
-yarn run lint:prettier
+npm run lint:prettier
 ```
 
 To automatically fix many linting errors, run
 ```bash
-yarn run format
+npm run format
 ```
 
 You can format using ESLint and Prettier individually as well
 ```bash
-yarn run format:eslint
+npm run format:eslint
 ```
 ```bash
-yarn run format:prettier
+npm run format:prettier
 ```
 
 ## Tooling configs
@@ -63,3 +64,9 @@ yarn run format:prettier
 For most of the tools, the configuration is in the `package.json` to reduce the amount of files in your project.
 
 If you customize the configuration a lot, you can consider moving them to individual files.
+
+## Deploying using `gh-pages`
+
+```
+npm run deploy -- -e <branch_name>
+```

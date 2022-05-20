@@ -22,6 +22,5 @@ export default defineConfig({
     port: 8080,
     open: true,
     cors: true,
-    hmr: { port: 3001 },
   },
 });

@@ -10,11 +10,12 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "outDir": "dist",
+    "outDir": "build",
     "sourceMap": true,
     "inlineSources": true,
     "rootDir": "./",
     "declaration": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
