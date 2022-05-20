@@ -113,7 +113,7 @@ export class CollectionTile extends LitElement {
         border-bottom-right-radius: ${cornerRadiusCss};
         display: flex;
         padding: 0rem 0.5rem;
-        height: 5.5rem;
+        height: 3.5rem;
         align-items: center;
       }
 
@@ -123,12 +123,16 @@ export class CollectionTile extends LitElement {
 
       #item-count-stacked-text {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         color: #fff;
       }
+      #item-count-image-container {
+        align-items: center;
+        height: 2.5rem;
+      }
+
       #item-count-image-container svg {
         height: 2.5rem;
-        align-items: baseline;
       }
 
       #container:hover > #item-count-container {
