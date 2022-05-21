@@ -8,7 +8,7 @@
   "module": "dist/index.js",
   "homepage": "https://internetarchive.github.io/iaux-collection-browser/",
   "scripts": {
-    "start": "tsc && vite",
+    "start": "vite",
     "build": "vite build",
     "prepare": "tsc && husky install",
     "preview": "vite preview",
