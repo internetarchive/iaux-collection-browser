@@ -32,6 +32,8 @@ export class AppRoot extends LitElement {
 
   @state() private colGap: number = 1.7;
 
+  @state() private loggedIn: boolean = false;
+
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
@@ -120,6 +122,14 @@ export class AppRoot extends LitElement {
                 @click=${this.outlineChanged}
               />
             </div>
+            <div>
+              <label for="simulate-login">Simulate Login:</label>
+              <input
+                type="checkbox"
+                id="simulate-login"
+                @click=${this.loginChanged}
+              />
+            </div>
           </div>
           <div id="cell-gap-control">
             <div>
@@ -160,6 +170,7 @@ export class AppRoot extends LitElement {
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
+          .loggedIn=${this.loggedIn}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >
@@ -170,6 +181,15 @@ export class AppRoot extends LitElement {
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>) {
     this.searchQuery = e.detail.baseQuery;
+  }
+
+  private loginChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.checked) {
+      this.loggedIn = true;
+    } else {
+      this.loggedIn = false;
+    }
   }
 
   private outlineChanged(e: Event) {

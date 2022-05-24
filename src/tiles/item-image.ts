@@ -1,11 +1,4 @@
-import {
-  css,
-  CSSResultGroup,
-  html,
-  nothing,
-  PropertyValues,
-  LitElement,
-} from 'lit';
+import { css, CSSResultGroup, html, nothing, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restrictedIcon } from '../assets/img/icons/restricted';
@@ -21,25 +14,9 @@ export class ItemImage extends LitElement {
 
   @property({ type: Boolean }) isCompactTile = false;
 
-  @state() private isDeemphasize = false;
-
   @state() private isWaveform = false;
 
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
-
-  protected updated(changed: PropertyValues): void {
-    if (changed.has('model')) {
-      this.setDeemphasize();
-    }
-  }
-
-  // Don't deemphasize if item is a collection
-  private setDeemphasize() {
-    this.isDeemphasize =
-      (this.model?.mediatype !== 'collection' &&
-        this.model?.collections.includes('deemphasize')) ??
-      false;
-  }
 
   render() {
     return html`
@@ -96,14 +73,14 @@ export class ItemImage extends LitElement {
   }
 
   private get restrictedIconTemplate() {
-    if (!this.isDeemphasize) {
+    if (!this.model?.contentWarning) {
       return nothing;
     }
     return html` ${restrictedIcon} `;
   }
 
   private get tileActionTemplate() {
-    if (!this.isDeemphasize) {
+    if (!this.model?.contentWarning) {
       return nothing;
     }
     return html`
@@ -122,7 +99,9 @@ export class ItemImage extends LitElement {
 
   // Classes
   private get imageClass() {
-    return `item-image ${this.isDeemphasize ? 'deemphasize' : 'default'}`;
+    return `item-image ${
+      this.model?.contentWarning ? 'deemphasize' : 'default'
+    }`;
   }
 
   private get listImageClass() {
@@ -133,9 +112,11 @@ export class ItemImage extends LitElement {
 
   private get imageBoxClass() {
     if (this.isListTile) {
-      return `list-image-box${this.isDeemphasize ? ' deemphasize' : ''}`;
+      return `list-image-box${
+        this.model?.contentWarning ? ' deemphasize' : ''
+      }`;
     }
-    if (this.isDeemphasize) {
+    if (this.model?.contentWarning) {
       return 'item-image-box';
     }
     return undefined;

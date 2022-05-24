@@ -23,6 +23,8 @@ export interface TileModel {
   title: string;
   viewCount: number;
   volume?: string;
+  loginRequired: boolean;
+  contentWarning: boolean;
 }
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
