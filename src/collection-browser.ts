@@ -166,7 +166,7 @@ export class CollectionBrowser
    * When page width resizes from desktop to mobile, set true to
    * disable expand/collapse transition when loading.
    */
-  private mobileFiltersloading = false;
+  private isResizeToMobile = false;
 
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
@@ -249,7 +249,7 @@ export class CollectionBrowser
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
         <div
           id="left-column"
-          class="column${this.mobileFiltersloading ? ' preload' : ''}"
+          class="column${this.isResizeToMobile ? ' preload' : ''}"
         >
           <div id="mobile-header-container">
             ${this.mobileView ? this.mobileFacetsTemplate : nothing}
@@ -374,11 +374,11 @@ export class CollectionBrowser
       <div id="mobile-filter-collapse">
         <h1
           @click=${() => {
-            this.mobileFiltersloading = false;
+            this.isResizeToMobile = false;
             this.mobileFacetsVisible = !this.mobileFacetsVisible;
           }}
           @keyup=${() => {
-            this.mobileFiltersloading = false;
+            this.isResizeToMobile = false;
             this.mobileFacetsVisible = !this.mobileFacetsVisible;
           }}
         >
@@ -527,7 +527,7 @@ export class CollectionBrowser
       this.mobileView = entry.contentRect.width < this.mobileBreakpoint;
       // If changing from desktop to mobile disable transition
       if (this.mobileView && !previousView) {
-        this.mobileFiltersloading = true;
+        this.isResizeToMobile = true;
       }
     }
   }
