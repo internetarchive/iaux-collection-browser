@@ -114,6 +114,11 @@ export class CollectionBrowser
   @property({ type: Boolean }) loggedIn = false;
 
   /**
+   * If item management UI active
+   */
+  @property({ type: Boolean }) isManageView = false;
+
+  /**
    * The page that the consumer wants to load.
    */
   private initialPageNumber = 1;
@@ -991,7 +996,7 @@ export class CollectionBrowser
       let contentWarning = false;
       // Check if item and item in "modifying" collection, setting above flags
       if (
-        doc.collections_raw?.values &&
+        doc.collections_raw?.values.length &&
         doc.mediatype?.value !== 'collection'
       ) {
         for (const collection of doc.collections_raw?.values) {
