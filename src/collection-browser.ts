@@ -163,8 +163,8 @@ export class CollectionBrowser
   private endOfDataReached = false;
 
   /**
-   * When the page transitions from desktop to mobile, we need to
-   * disable the transition animation.
+   * When page width resizes from desktop to mobile, set true to
+   * disable expand/collapse transition when loading.
    */
   private mobileFiltersloading = false;
 
@@ -1115,6 +1115,10 @@ export class CollectionBrowser
       display: block;
     }
 
+    /**
+    * When page width resizes from desktop to mobile, use this class to
+    * disable expand/collapse transition when loading.
+    */
     .preload * {
       transition: none !important;
       -webkit-transition: none !important;
