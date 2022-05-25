@@ -30,6 +30,11 @@ let CollectionBrowser = class CollectionBrowser extends LitElement {
             context: this.pageContext,
         });
         this.mobileBreakpoint = 600;
+        this.loggedIn = false;
+        /**
+         * If item management UI active
+         */
+        this.isManageView = false;
         /**
          * The page that the consumer wants to load.
          */
@@ -789,30 +794,50 @@ let CollectionBrowser = class CollectionBrowser extends LitElement {
         const datasource = { ...this.dataSource };
         const tiles = [];
         docs === null || docs === void 0 ? void 0 : docs.forEach(doc => {
-            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7;
             if (!doc.identifier)
                 return;
+            let loginRequired = false;
+            let contentWarning = false;
+            // Check if item and item in "modifying" collection, setting above flags
+            if (((_a = doc.collections_raw) === null || _a === void 0 ? void 0 : _a.values.length) &&
+                ((_b = doc.mediatype) === null || _b === void 0 ? void 0 : _b.value) !== 'collection') {
+                for (const collection of (_c = doc.collections_raw) === null || _c === void 0 ? void 0 : _c.values) {
+                    if (collection === 'loggedin') {
+                        loginRequired = true;
+                        if (contentWarning)
+                            break;
+                    }
+                    if (collection === 'no-preview') {
+                        contentWarning = true;
+                        if (loginRequired)
+                            break;
+                    }
+                }
+            }
             tiles.push({
-                averageRating: (_a = doc.avg_rating) === null || _a === void 0 ? void 0 : _a.value,
-                collections: (_c = (_b = doc.collections_raw) === null || _b === void 0 ? void 0 : _b.values) !== null && _c !== void 0 ? _c : [],
-                commentCount: (_e = (_d = doc.num_reviews) === null || _d === void 0 ? void 0 : _d.value) !== null && _e !== void 0 ? _e : 0,
-                creator: (_f = doc.creator) === null || _f === void 0 ? void 0 : _f.value,
-                creators: (_h = (_g = doc.creator) === null || _g === void 0 ? void 0 : _g.values) !== null && _h !== void 0 ? _h : [],
-                dateAdded: (_j = doc.addeddate) === null || _j === void 0 ? void 0 : _j.value,
-                dateArchived: (_k = doc.publicdate) === null || _k === void 0 ? void 0 : _k.value,
-                datePublished: (_l = doc.date) === null || _l === void 0 ? void 0 : _l.value,
-                dateReviewed: (_m = doc.reviewdate) === null || _m === void 0 ? void 0 : _m.value,
-                description: (_o = doc.description) === null || _o === void 0 ? void 0 : _o.value,
-                favCount: (_q = (_p = doc.num_favorites) === null || _p === void 0 ? void 0 : _p.value) !== null && _q !== void 0 ? _q : 0,
+                averageRating: (_d = doc.avg_rating) === null || _d === void 0 ? void 0 : _d.value,
+                collections: (_f = (_e = doc.collections_raw) === null || _e === void 0 ? void 0 : _e.values) !== null && _f !== void 0 ? _f : [],
+                commentCount: (_h = (_g = doc.num_reviews) === null || _g === void 0 ? void 0 : _g.value) !== null && _h !== void 0 ? _h : 0,
+                creator: (_j = doc.creator) === null || _j === void 0 ? void 0 : _j.value,
+                creators: (_l = (_k = doc.creator) === null || _k === void 0 ? void 0 : _k.values) !== null && _l !== void 0 ? _l : [],
+                dateAdded: (_m = doc.addeddate) === null || _m === void 0 ? void 0 : _m.value,
+                dateArchived: (_o = doc.publicdate) === null || _o === void 0 ? void 0 : _o.value,
+                datePublished: (_p = doc.date) === null || _p === void 0 ? void 0 : _p.value,
+                dateReviewed: (_q = doc.reviewdate) === null || _q === void 0 ? void 0 : _q.value,
+                description: (_r = doc.description) === null || _r === void 0 ? void 0 : _r.value,
+                favCount: (_t = (_s = doc.num_favorites) === null || _s === void 0 ? void 0 : _s.value) !== null && _t !== void 0 ? _t : 0,
                 identifier: doc.identifier,
-                issue: (_r = doc.issue) === null || _r === void 0 ? void 0 : _r.value,
-                itemCount: (_t = (_s = doc.item_count) === null || _s === void 0 ? void 0 : _s.value) !== null && _t !== void 0 ? _t : 0,
-                mediatype: (_v = (_u = doc.mediatype) === null || _u === void 0 ? void 0 : _u.value) !== null && _v !== void 0 ? _v : 'data',
-                source: (_w = doc.source) === null || _w === void 0 ? void 0 : _w.value,
-                subjects: (_y = (_x = doc.subject) === null || _x === void 0 ? void 0 : _x.values) !== null && _y !== void 0 ? _y : [],
-                title: this.etreeTitle((_z = doc.title) === null || _z === void 0 ? void 0 : _z.value, (_0 = doc.mediatype) === null || _0 === void 0 ? void 0 : _0.value, (_1 = doc.collection) === null || _1 === void 0 ? void 0 : _1.values),
-                volume: (_2 = doc.volume) === null || _2 === void 0 ? void 0 : _2.value,
-                viewCount: (_4 = (_3 = doc.downloads) === null || _3 === void 0 ? void 0 : _3.value) !== null && _4 !== void 0 ? _4 : 0,
+                issue: (_u = doc.issue) === null || _u === void 0 ? void 0 : _u.value,
+                itemCount: (_w = (_v = doc.item_count) === null || _v === void 0 ? void 0 : _v.value) !== null && _w !== void 0 ? _w : 0,
+                mediatype: (_y = (_x = doc.mediatype) === null || _x === void 0 ? void 0 : _x.value) !== null && _y !== void 0 ? _y : 'data',
+                source: (_z = doc.source) === null || _z === void 0 ? void 0 : _z.value,
+                subjects: (_1 = (_0 = doc.subject) === null || _0 === void 0 ? void 0 : _0.values) !== null && _1 !== void 0 ? _1 : [],
+                title: this.etreeTitle((_2 = doc.title) === null || _2 === void 0 ? void 0 : _2.value, (_3 = doc.mediatype) === null || _3 === void 0 ? void 0 : _3.value, (_4 = doc.collection) === null || _4 === void 0 ? void 0 : _4.values),
+                volume: (_5 = doc.volume) === null || _5 === void 0 ? void 0 : _5.value,
+                viewCount: (_7 = (_6 = doc.downloads) === null || _6 === void 0 ? void 0 : _6.value) !== null && _7 !== void 0 ? _7 : 0,
+                loginRequired,
+                contentWarning,
             });
         });
         datasource[pageNumber] = tiles;
@@ -1115,6 +1140,12 @@ __decorate([
 __decorate([
     property({ type: Number })
 ], CollectionBrowser.prototype, "mobileBreakpoint", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "loggedIn", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "isManageView", void 0);
 __decorate([
     state()
 ], CollectionBrowser.prototype, "pagesToRender", void 0);

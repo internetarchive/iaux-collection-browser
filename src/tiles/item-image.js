@@ -1,5 +1,5 @@
 import { __decorate } from "tslib";
-import { css, html, nothing, LitElement, } from 'lit';
+import { css, html, nothing, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { restrictedIcon } from '../assets/img/icons/restricted';
@@ -8,20 +8,7 @@ let ItemImage = class ItemImage extends LitElement {
         super(...arguments);
         this.isListTile = false;
         this.isCompactTile = false;
-        this.isDeemphasize = false;
         this.isWaveform = false;
-    }
-    updated(changed) {
-        if (changed.has('model')) {
-            this.setDeemphasize();
-        }
-    }
-    // Don't deemphasize if item is a collection
-    setDeemphasize() {
-        var _a, _b, _c;
-        this.isDeemphasize =
-            (_c = (((_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype) !== 'collection' &&
-                ((_b = this.model) === null || _b === void 0 ? void 0 : _b.collections.includes('deemphasize')))) !== null && _c !== void 0 ? _c : false;
     }
     render() {
         var _a;
@@ -75,13 +62,15 @@ let ItemImage = class ItemImage extends LitElement {
     `;
     }
     get restrictedIconTemplate() {
-        if (!this.isDeemphasize) {
+        var _a;
+        if (!((_a = this.model) === null || _a === void 0 ? void 0 : _a.contentWarning)) {
             return nothing;
         }
         return html ` ${restrictedIcon} `;
     }
     get tileActionTemplate() {
-        if (!this.isDeemphasize) {
+        var _a;
+        if (!((_a = this.model) === null || _a === void 0 ? void 0 : _a.contentWarning)) {
             return nothing;
         }
         return html `
@@ -97,17 +86,19 @@ let ItemImage = class ItemImage extends LitElement {
     }
     // Classes
     get imageClass() {
-        return `item-image ${this.isDeemphasize ? 'deemphasize' : 'default'}`;
+        var _a;
+        return `item-image ${((_a = this.model) === null || _a === void 0 ? void 0 : _a.contentWarning) ? 'deemphasize' : 'default'}`;
     }
     get listImageClass() {
         var _a;
         return `list-image ${(_a = this.model) === null || _a === void 0 ? void 0 : _a.mediatype}${this.isCompactTile ? ' compact' : ''}`;
     }
     get imageBoxClass() {
+        var _a, _b;
         if (this.isListTile) {
-            return `list-image-box${this.isDeemphasize ? ' deemphasize' : ''}`;
+            return `list-image-box${((_a = this.model) === null || _a === void 0 ? void 0 : _a.contentWarning) ? ' deemphasize' : ''}`;
         }
-        if (this.isDeemphasize) {
+        if ((_b = this.model) === null || _b === void 0 ? void 0 : _b.contentWarning) {
             return 'item-image-box';
         }
         return undefined;
@@ -294,9 +285,6 @@ __decorate([
 __decorate([
     property({ type: Boolean })
 ], ItemImage.prototype, "isCompactTile", void 0);
-__decorate([
-    state()
-], ItemImage.prototype, "isDeemphasize", void 0);
 __decorate([
     state()
 ], ItemImage.prototype, "isWaveform", void 0);
