@@ -8,13 +8,15 @@
   "module": "dist/index.js",
   "scripts": {
     "start": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
-    "build": "tsc",
+    "build": "rimraf dist && tsc && rollup -c rollup.config.js",
     "prepare": "tsc && husky install",
     "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
     "format": "eslint --ext .ts,.html . --fix --ignore-path .gitignore && prettier \"**/*.ts\" --write --ignore-path .gitignore",
     "circular": "madge --circular --extensions ts .",
     "test": "tsc && yarn run lint && yarn run circular && wtr --coverage",
-    "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\""
+    "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
+    "deploy": "yarn run build && touch dist/.nojekyll && yarn run deploy:gh",
+    "deploy:gh": "gh-pages -t -d dist -m \"Build for $(git log --pretty=format:\"%h %an %ai %s\" -n1) [skip ci]\""
   },
   "types": "dist/index.d.ts",
   "dependencies": {
@@ -33,6 +35,7 @@
   "devDependencies": {
     "@internetarchive/local-cache": "^0.2.1",
     "@internetarchive/result-type": "^0.0.1",
+    "@open-wc/building-rollup": "^2.0.1",
     "@open-wc/eslint-config": "^7.0.0",
     "@open-wc/testing": "^3.0.3",
     "@types/dompurify": "^2.3.3",
@@ -41,14 +44,17 @@
     "@web/dev-server": "^0.1.28",
     "@web/test-runner": "^0.13.22",
     "concurrently": "^6.3.0",
+    "deepmerge": "^4.2.2",
     "eslint": "^8.2.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-lit-a11y": "^2.2.0",
     "eslint-plugin-wc": "^1.3.2",
+    "gh-pages": "^4.0.0",
     "husky": "^7.0.0",
     "madge": "^5.0.1",
     "prettier": "^2.4.1",
+    "rimraf": "^3.0.2",
     "sinon": "^12.0.1",
     "tslib": "^2.3.1",
     "typescript": "^4.4.4"
