@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, nothing, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { restrictedIcon } from '../assets/img/icons/restricted';
+import './item-image-overlay';
 import { TileModel } from '../models';
 
 @customElement('item-image')
@@ -14,6 +14,8 @@ export class ItemImage extends LitElement {
 
   @property({ type: Boolean }) isCompactTile = false;
 
+  @property({ type: Boolean }) loggedIn = false;
+
   @state() private isWaveform = false;
 
   @query('.item-image') private itemImageWaveform!: HTMLImageElement;
@@ -24,6 +26,7 @@ export class ItemImage extends LitElement {
         ${this.model?.mediatype === 'audio'
           ? this.waveformTemplate
           : this.itemImageTemplate}
+        ${this.ItemImageOverlayTemplate}
       </div>
     `;
   }
@@ -45,7 +48,6 @@ export class ItemImage extends LitElement {
         class=${this.imageClass}
         style="background-image:url(${this.imageSrc})"
       ></div>
-      ${this.tileActionTemplate}
     `;
   }
 
@@ -55,7 +57,6 @@ export class ItemImage extends LitElement {
     }
     return html`
       <img src="${this.imageSrc}" alt="" class="${this.listImageClass}" />
-      ${this.restrictedIconTemplate}
     `;
   }
 
@@ -72,11 +73,19 @@ export class ItemImage extends LitElement {
     `;
   }
 
-  private get restrictedIconTemplate() {
-    if (!this.model?.contentWarning) {
+  private get ItemImageOverlayTemplate() {
+    if (!this.model?.loginRequired && !this.model?.contentWarning) {
       return nothing;
     }
-    return html` ${restrictedIcon} `;
+    return html`
+      <item-image-overlay
+        .isListTile=${this.isListTile}
+        .isCompactTile=${this.isCompactTile}
+        .loggedIn=${this.loggedIn}
+        .loginRequired=${this.model?.loginRequired}
+        .contentWarning=${this.model?.contentWarning}
+      ></item-image-overlay>
+    `;
   }
 
   private get tileActionTemplate() {
@@ -211,32 +220,6 @@ export class ItemImage extends LitElement {
         background-size: contain;
         filter: blur(15px);
         z-index: 1;
-      }
-
-      .deemphasize svg {
-        padding: 25%;
-        z-index: 2;
-        position: absolute;
-      }
-
-      .tile-action {
-        border: 1px solid currentColor;
-        border-radius: 1px;
-        padding: 5px;
-        font-weight: 500;
-        width: auto;
-        position: absolute;
-        z-index: 2;
-        display: flex;
-        top: 5.5rem;
-      }
-
-      .no-preview {
-        background-color: #fffecb;
-        color: #2c2c2c;
-        font-size: 1.4rem;
-        line-height: 2rem;
-        text-align: center;
       }
 
       .grad0 {
