@@ -10,9 +10,9 @@ export class ItemImage extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
-  @property({ type: Boolean }) isListTile = false;
+  @property({ type: Boolean }) isListTile = false; // true if container is a list tile
 
-  @property({ type: Boolean }) isCompactTile = false;
+  @property({ type: Boolean }) isCompactTile = false; // true if container is list compact tile
 
   @property({ type: Boolean }) loggedIn = false;
 
