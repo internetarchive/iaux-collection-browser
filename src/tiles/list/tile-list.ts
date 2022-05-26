@@ -21,7 +21,7 @@ import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 
-import '../item-tile-image';
+import '../item-image';
 import '../mediatype-icon';
 
 @customElement('tile-list')
@@ -143,12 +143,12 @@ export class TileList extends LitElement {
       return nothing;
     }
     return html`
-      <item-tile-image
+      <item-image
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
       >
-      </item-tile-image>
+      </item-image>
     `;
   }
 

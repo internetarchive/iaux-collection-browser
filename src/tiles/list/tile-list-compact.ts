@@ -9,7 +9,7 @@ import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { accountLabel } from './account-label';
 
-import '../item-tile-image';
+import '../item-image';
 import '../mediatype-icon';
 
 @customElement('tile-list-compact')
@@ -69,13 +69,13 @@ export class TileListCompact extends LitElement {
       return nothing;
     }
     return html`
-      <item-tile-image
+      <item-image
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
         .isCompactTile=${true}
       >
-      </item-tile-image>
+      </item-image>
     `;
   }
 

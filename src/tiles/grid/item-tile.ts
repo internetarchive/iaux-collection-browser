@@ -10,7 +10,7 @@ import { reviewsIcon } from './icons/reviews';
 import viewsIcon from './icons/views';
 
 import '../mediatype-icon';
-import '../item-tile-image';
+import '../item-image';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
@@ -26,11 +26,8 @@ export class ItemTile extends LitElement {
         <div id="title-image-container">
           <h1 id="item-title" title=${itemTitle}>${itemTitle}</h1>
           <div id="item-image-container">
-            <item-tile-image
-              .model=${this.model}
-              .baseImageUrl=${this.baseImageUrl}
-            >
-            </item-tile-image>
+            <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
+            </item-image>
           </div>
           <div class="item-creator">
             <div class="truncated">
