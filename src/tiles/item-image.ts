@@ -59,6 +59,7 @@ export class ItemImage extends LitElement {
    */
   private getItemBaseClass(): ClassInfo {
     return {
+      'list-image-box': this.isListTile,
       default: true,
       [this.hashBasedGradient]: this.isWaveform,
     };
@@ -66,6 +67,8 @@ export class ItemImage extends LitElement {
 
   private getItemImageClass(): ClassInfo {
     return {
+      'grid-tile': !this.isListTile,
+      'list-tile': this.isListTile,
       'item-image': true,
       waveform: this.isWaveform,
     };
@@ -93,15 +96,6 @@ export class ItemImage extends LitElement {
       css`
         .list-image-box.deemphasize {
           border: 1px solid #767676;
-        }
-
-        .list-image-box {
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          box-sizing: border-box;
-          display: flex;
-          position: relative;
         }
 
         .list-image {

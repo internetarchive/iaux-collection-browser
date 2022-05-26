@@ -4,9 +4,26 @@ import { css } from 'lit';
  * Base item-image styles
  */
 export const baseItemImageStyles = css`
-  .item-image {
+  .grid-tile {
     width: 16rem;
     height: 16rem;
+  }
+
+  .list-tile {
+    width: 100%;
+    height: 100%;
+  }
+
+  .list-image-box {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
+    display: flex;
+    position: relative;
+  }
+
+  .item-image {
     object-fit: contain;
     background-repeat: no-repeat;
     background-position: center center;
