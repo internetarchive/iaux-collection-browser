@@ -20,7 +20,6 @@ let AppRoot = class AppRoot extends LitElement {
         this.cellHeight = 29;
         this.rowGap = 1.7;
         this.colGap = 1.7;
-        this.loggedIn = false;
     }
     searchPressed(e) {
         var _a, _b;
@@ -101,14 +100,6 @@ let AppRoot = class AppRoot extends LitElement {
                 @click=${this.outlineChanged}
               />
             </div>
-            <div>
-              <label for="simulate-login">Simulate Login:</label>
-              <input
-                type="checkbox"
-                id="simulate-login"
-                @click=${this.loginChanged}
-              />
-            </div>
           </div>
           <div id="cell-gap-control">
             <div>
@@ -149,7 +140,6 @@ let AppRoot = class AppRoot extends LitElement {
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
-          .loggedIn=${this.loggedIn}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >
@@ -159,15 +149,6 @@ let AppRoot = class AppRoot extends LitElement {
     }
     baseQueryChanged(e) {
         this.searchQuery = e.detail.baseQuery;
-    }
-    loginChanged(e) {
-        const target = e.target;
-        if (target.checked) {
-            this.loggedIn = true;
-        }
-        else {
-            this.loggedIn = false;
-        }
     }
     outlineChanged(e) {
         const target = e.target;
@@ -266,9 +247,6 @@ __decorate([
 __decorate([
     state()
 ], AppRoot.prototype, "colGap", void 0);
-__decorate([
-    state()
-], AppRoot.prototype, "loggedIn", void 0);
 __decorate([
     query('#base-query-field')
 ], AppRoot.prototype, "baseQueryField", void 0);

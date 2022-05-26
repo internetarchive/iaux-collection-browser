@@ -11,7 +11,6 @@ export declare class AppRoot extends LitElement {
     private cellHeight;
     private rowGap;
     private colGap;
-    private loggedIn;
     private baseQueryField;
     private pageNumberInput;
     private collectionBrowser;
@@ -21,7 +20,6 @@ export declare class AppRoot extends LitElement {
     private queryUpdated;
     render(): import("lit-html").TemplateResult<1>;
     private baseQueryChanged;
-    private loginChanged;
     private outlineChanged;
     private rowGapChanged;
     private colGapChanged;

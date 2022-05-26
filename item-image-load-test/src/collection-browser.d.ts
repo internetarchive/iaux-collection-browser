@@ -37,11 +37,6 @@ export declare class CollectionBrowser extends LitElement implements InfiniteScr
     pageContext: CollectionBrowserContext;
     restorationStateHandler: RestorationStateHandlerInterface;
     mobileBreakpoint: number;
-    loggedIn: boolean;
-    /**
-     * If item management UI active
-     */
-    isManageView: boolean;
     /**
      * The page that the consumer wants to load.
      */

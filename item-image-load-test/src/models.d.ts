@@ -22,8 +22,6 @@ export interface TileModel {
     title: string;
     viewCount: number;
     volume?: string;
-    loginRequired: boolean;
-    contentWarning: boolean;
 }
 export declare type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
 export declare type TileDisplayMode = 'grid' | 'list-compact' | 'list-detail' | 'list-header';
