@@ -98,24 +98,6 @@ export class ItemImage extends LitElement {
           border: 1px solid #767676;
         }
 
-        .list-image {
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-        }
-
-        img.list-image {
-          overflow: hidden;
-          object-fit: contain;
-          border-radius: var(--border-radius, 0);
-          -webkit-border-radius: var(--border-radius, 0);
-          -moz-border-radius: var(--border-radius, 0);
-        }
-
-        img.list-image.compact {
-          object-fit: cover;
-        }
-
         .deemphasize .list-image,
         .deemphasize.item-image {
           background-size: contain;

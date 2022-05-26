@@ -29,7 +29,7 @@ export const baseItemImageStyles = css`
     background-position: center center;
     position: relative;
     -webkit-appearance: none;
-    overflow: visible;
+    overflow: hidden;
   }
 
   .default {
