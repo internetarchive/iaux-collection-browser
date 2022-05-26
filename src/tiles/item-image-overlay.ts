@@ -22,8 +22,10 @@ export class ItemImageOverlay extends LitElement {
 
   private get loginRequiredTemplate() {
     if (this.isListTile) {
+      // List views
       return html` ${LoginRequiredIcon} `;
     }
+    // Tile view
     return html`
       <div class="tile-action no-preview">Log in to view this item</div>
     `;
@@ -31,8 +33,10 @@ export class ItemImageOverlay extends LitElement {
 
   private get contentWarningTemplate() {
     if (this.isListTile) {
+      // List views
       return html` ${restrictedIcon} `;
     }
+    // Tile view
     return html`
       <div class="tile-action no-preview">Content may be inappropriate</div>
     `;
