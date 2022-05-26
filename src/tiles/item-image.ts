@@ -80,7 +80,6 @@ export class ItemImage extends LitElement {
     return html`
       <item-image-overlay
         .isListTile=${this.isListTile}
-        .isCompactTile=${this.isCompactTile}
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
         .contentWarning=${this.model?.contentWarning}

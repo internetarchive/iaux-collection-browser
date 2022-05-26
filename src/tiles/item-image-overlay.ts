@@ -7,8 +7,6 @@ import { LoginRequiredIcon } from '../assets/img/icons/login-required';
 export class ItemImageOverlay extends LitElement {
   @property({ type: Boolean }) isListTile = false;
 
-  @property({ type: Boolean }) isCompactTile = false;
-
   @property({ type: Boolean }) loggedIn = false;
 
   @property({ type: Boolean }) loginRequired = false;
