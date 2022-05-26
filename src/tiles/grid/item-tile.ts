@@ -20,7 +20,7 @@ export class ItemTile extends LitElement {
 
   render() {
     const itemTitle = this.model?.title || '';
-    const itemCreator = this.model?.creator || '-';
+    const itemCreator = this.model?.creator || '';
 
     return html`
       <div id="container">
@@ -32,7 +32,7 @@ export class ItemTile extends LitElement {
           </div>
           <div class="item-creator">
             <div class="truncated">
-              <span><strong>By:&nbsp;</strong>${itemCreator}</span>
+              ${itemCreator ? html`<span>by&nbsp;${itemCreator}</span>` : ''}
             </div>
           </div>
         </div>
