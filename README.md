@@ -19,7 +19,7 @@ import '@internetarchive/collection-browser';
 yarn install
 yarn start
 ```
-To run a local development server that serves the basic demo located in `demo/index.html`
+To run a local development server that serves the basic demo located in `index.html`
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run
@@ -68,6 +68,11 @@ If you customize the configuration a lot, you can consider moving them to indivi
 
 ## Deploying using `gh-pages`
 
+
 ```
 yarn run deploy -e <review_app_name>
 ```
+
+Review app URL: [https://internetarchive.github.io/iaux-collection-browser](https://internetarchive.github.io/iaux-collection-browser)
+
+
