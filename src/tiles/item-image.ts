@@ -29,7 +29,7 @@ export class ItemImage extends LitElement {
 
   render() {
     return html`
-      <div class="img-box">
+      <div>
         <div class=${classMap(this.getItemBaseClass())}>
           <img
             class=${classMap(this.getItemImageClass())}
@@ -94,6 +94,7 @@ export class ItemImage extends LitElement {
    */
   private getItemBaseClass(): ClassInfo {
     return {
+      'img-box': true,
       'list-image-box': this.isListTile,
       [this.hashBasedGradient]: this.isWaveform,
     };
