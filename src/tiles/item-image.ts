@@ -30,9 +30,9 @@ export class ItemImage extends LitElement {
   render() {
     return html`
       <div>
-        <div class=${classMap(this.getItemBaseClass())}>
+        <div class=${classMap(this.itemBaseClass)}>
           <img
-            class=${classMap(this.getItemImageClass())}
+            class=${classMap(this.itemImageClass)}
             src="${this.imageSrc}"
             alt=""
             @load=${this.onLoadItemImageCheck}
@@ -92,7 +92,7 @@ export class ItemImage extends LitElement {
   /**
    * Classes
    */
-  private getItemBaseClass(): ClassInfo {
+  private get itemBaseClass(): ClassInfo {
     return {
       'img-box': true,
       'list-image-box': this.isListTile,
@@ -100,7 +100,7 @@ export class ItemImage extends LitElement {
     };
   }
 
-  private getItemImageClass(): ClassInfo {
+  private get itemImageClass(): ClassInfo {
     return {
       'base-img': true,
       'grid-tile': !this.isListTile,
