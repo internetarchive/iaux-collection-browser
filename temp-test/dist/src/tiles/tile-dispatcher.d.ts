@@ -1,0 +1,35 @@
+import { LitElement, PropertyValues } from 'lit';
+import { SharedResizeObserverInterface, SharedResizeObserverResizeHandlerInterface } from '@internetarchive/shared-resize-observer';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import { SortParam } from '@internetarchive/search-service';
+import type { TileDisplayMode, TileModel } from '../models';
+import './grid/collection-tile';
+import './grid/item-tile';
+import './grid/account-tile';
+import './list/tile-list';
+import './list/tile-list-compact';
+import './list/tile-list-compact-header';
+export declare class TileDispatcher extends LitElement implements SharedResizeObserverResizeHandlerInterface {
+    tileDisplayMode?: TileDisplayMode;
+    model?: TileModel;
+    baseNavigationUrl?: string;
+    currentWidth?: number;
+    currentHeight?: number;
+    resizeObserver?: SharedResizeObserverInterface;
+    collectionNameCache?: CollectionNameCacheInterface;
+    sortParam: SortParam | null;
+    private container;
+    mobileBreakpoint?: number;
+    baseImageUrl?: string;
+    render(): import("lit-html").TemplateResult<1>;
+    private get headerTemplate();
+    private get tileTemplate();
+    private get linkTileTemplate();
+    handleResize(entry: ResizeObserverEntry): void;
+    disconnectedCallback(): void;
+    private stopResizeObservation;
+    private startResizeObservation;
+    updated(props: PropertyValues): void;
+    private get tile();
+    static get styles(): import("lit").CSSResult;
+}
