@@ -69,5 +69,5 @@ If you customize the configuration a lot, you can consider moving them to indivi
 ## Deploying using `gh-pages`
 
 ```
-yarn run deploy -- -e <branch_name>
+yarn run deploy -e <review_app_name>
 ```
