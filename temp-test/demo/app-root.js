@@ -1,11 +1,11 @@
-import { __decorate } from "tslib";
+// import { __decorate } from "tslib";
 import { SearchService } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
-import '../src/collection-browser';
+import '../dist/src/collection-browser';
 let AppRoot = class AppRoot extends LitElement {
     constructor() {
         super(...arguments);
