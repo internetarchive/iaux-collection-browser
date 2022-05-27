@@ -1,10 +1,15 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 import { TileModel } from '../models';
 
-import { baseItemImageStyles, waveformGradientStyles } from '../styles';
+import { restrictedIcon } from '../assets/img/icons/restricted';
+import {
+  baseItemImageStyles,
+  contentWarningStyles,
+  waveformGradientStyles,
+} from '../styles';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -18,18 +23,48 @@ export class ItemImage extends LitElement {
 
   @state() private isWaveform = false;
 
-  @query('.item-image') private itemImageWaveform!: HTMLImageElement;
+  @state() private tileActionText = '';
+
+  @query('.base-img') private itemImageWaveform!: HTMLImageElement;
 
   render() {
     return html`
-      <div class=${classMap(this.getItemBaseClass())}>
-        <img
-          class=${classMap(this.getItemImageClass())}
-          src="${this.imageSrc}"
-          alt=""
-          @load=${this.onLoadItemImageCheck}
-        />
+      <div class="img-box">
+        <div class=${classMap(this.getItemBaseClass())}>
+          <img
+            class=${classMap(this.getItemImageClass())}
+            src="${this.imageSrc}"
+            alt=""
+            @load=${this.onLoadItemImageCheck}
+          />
+          ${this.restrictedIconTemplate}
+        </div>
+        ${this.contentWarningTemplate}
       </div>
+    `;
+  }
+
+  private get contentWarningTemplate() {
+    if (!this.model?.contentWarning || this.isListTile) {
+      return nothing;
+    }
+    // add check if loggedIn
+    // this.tileActionText = 'Log in to view this item'
+    this.tileActionText = 'Content may be inappropriate';
+    return this.tileActionTemplate;
+  }
+
+  private get restrictedIconTemplate() {
+    if (!this.model?.contentWarning || !this.isListTile) {
+      return nothing;
+    }
+
+    return html`<div class="svg-overlay">${restrictedIcon}</div>`;
+  }
+
+  private get tileActionTemplate() {
+    return html`
+      <div class="tile-action no-preview">${this.tileActionText}</div>
     `;
   }
 
@@ -60,16 +95,18 @@ export class ItemImage extends LitElement {
   private getItemBaseClass(): ClassInfo {
     return {
       'list-image-box': this.isListTile,
-      default: true,
       [this.hashBasedGradient]: this.isWaveform,
     };
   }
 
   private getItemImageClass(): ClassInfo {
     return {
+      'base-img': true,
       'grid-tile': !this.isListTile,
       'list-tile': this.isListTile,
-      'item-image': true,
+      'img-default': !this.isCompactTile,
+      'img-list-compact': this.isCompactTile,
+      blur: this.model?.contentWarning || false,
       waveform: this.isWaveform,
     };
   }
@@ -78,6 +115,11 @@ export class ItemImage extends LitElement {
    * Event listener
    */
   private onLoadItemImageCheck() {
+    const isAudioEtree =
+      this.model?.mediatype === 'audio' || this.model?.mediatype === 'etree';
+
+    if (!isAudioEtree) return;
+
     const aspectRatio =
       this.itemImageWaveform.naturalWidth /
       this.itemImageWaveform.naturalHeight;
@@ -93,24 +135,8 @@ export class ItemImage extends LitElement {
     return [
       baseItemImageStyles,
       waveformGradientStyles,
+      contentWarningStyles,
       css`
-        .list-image-box.deemphasize {
-          border: 1px solid #767676;
-        }
-
-        .deemphasize .list-image,
-        .deemphasize.item-image {
-          background-size: contain;
-          filter: blur(15px);
-          z-index: 1;
-        }
-
-        .deemphasize svg {
-          padding: 25%;
-          z-index: 2;
-          position: absolute;
-        }
-
         .tile-action {
           border: 1px solid currentColor;
           border-radius: 1px;

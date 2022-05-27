@@ -4,6 +4,11 @@ import { css } from 'lit';
  * Base item-image styles
  */
 export const baseItemImageStyles = css`
+  .img-box {
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+    overflow: hidden;
+  }
+
   .grid-tile {
     width: 16rem;
     height: 16rem;
@@ -23,18 +28,34 @@ export const baseItemImageStyles = css`
     position: relative;
   }
 
-  .item-image {
+  .img-default {
     object-fit: contain;
-    background-repeat: no-repeat;
-    background-position: center center;
-    position: relative;
-    -webkit-appearance: none;
-    overflow: hidden;
   }
 
-  .default {
-    background-size: contain;
-    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
+  .img-list-compact {
+    object-fit: cover;
+  }
+`;
+
+/**
+ * Content warning styles
+ */
+export const contentWarningStyles = css`
+  .svg-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto;
+    height: 40%;
+    width: 40%;
+  }
+
+  .blur {
+    filter: blur(15px);
+    width: 100%;
+    transform: scale(1.1);
   }
 `;
 
