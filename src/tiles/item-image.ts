@@ -9,7 +9,7 @@ import {
   baseItemImageStyles,
   contentWarningStyles,
   waveformGradientStyles,
-} from '../styles';
+} from '../styles/item-image-styles';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -35,7 +35,7 @@ export class ItemImage extends LitElement {
             class=${classMap(this.itemImageClass)}
             src="${this.imageSrc}"
             alt=""
-            @load=${this.onLoadItemImageCheck}
+            @load=${this.onLoad}
           />
           ${this.restrictedIconTemplate}
         </div>
@@ -113,14 +113,15 @@ export class ItemImage extends LitElement {
   }
 
   /**
-   * Event listener
+   * Sets isWaveform true if image is waveform
    */
-  private onLoadItemImageCheck() {
-    const isAudioEtree =
-      this.model?.mediatype === 'audio' || this.model?.mediatype === 'etree';
-
-    if (!isAudioEtree) return;
-
+  private onLoad() {
+    if (
+      this.model?.mediatype === 'audio' ||
+      this.model?.mediatype === 'etree'
+    ) {
+      return;
+    }
     const aspectRatio =
       this.itemImageWaveform.naturalWidth /
       this.itemImageWaveform.naturalHeight;
