@@ -25,7 +25,7 @@ export class ItemImage extends LitElement {
 
   @state() private tileActionText = '';
 
-  @query('.base-img') private itemImageWaveform!: HTMLImageElement;
+  @query('.base-img') private baseImage!: HTMLImageElement;
 
   render() {
     return html`
@@ -113,19 +113,14 @@ export class ItemImage extends LitElement {
   }
 
   /**
-   * Sets isWaveform true if image is waveform
+   * Event listener sets isWaveform true if image is waveform
    */
   private onLoad() {
     if (
-      this.model?.mediatype === 'audio' ||
-      this.model?.mediatype === 'etree'
+      (this.model?.mediatype === 'audio' ||
+        this.model?.mediatype === 'etree') &&
+      this.baseImage.naturalWidth / this.baseImage.naturalHeight === 4
     ) {
-      return;
-    }
-    const aspectRatio =
-      this.itemImageWaveform.naturalWidth /
-      this.itemImageWaveform.naturalHeight;
-    if (aspectRatio === 4) {
       this.isWaveform = true;
     }
   }
