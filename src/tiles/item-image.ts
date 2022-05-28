@@ -25,7 +25,7 @@ export class ItemImage extends LitElement {
 
   @state() private tileActionText = '';
 
-  @query('.base-img') private baseImage!: HTMLImageElement;
+  @query('img') private baseImage!: HTMLImageElement;
 
   render() {
     return html`
@@ -102,7 +102,6 @@ export class ItemImage extends LitElement {
 
   private get itemImageClass(): ClassInfo {
     return {
-      'base-img': true,
       'grid-tile': !this.isListTile,
       'list-tile': this.isListTile,
       'img-default': !this.isCompactTile,
