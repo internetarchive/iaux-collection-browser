@@ -5,6 +5,7 @@
 
 This is the main collection browser for the Internet Archive website.
 
+[Review app URL](https://internetarchive.github.io/iaux-collection-browser/main) 
 ## Usage
 
 ```ts
@@ -66,13 +67,14 @@ For most of the tools, the configuration is in the `package.json` to reduce the 
 
 If you customize the configuration a lot, you can consider moving them to individual files.
 
-## Deploying using `gh-pages`
+## Manual Deploy using `gh-pages`
 
+Review app base URL: [https://internetarchive.github.io/iaux-collection-browser](https://internetarchive.github.io/iaux-collection-browser)
 
 ```
 yarn run deploy -e <review_app_name>
 ```
 
-Review app URL: [https://internetarchive.github.io/iaux-collection-browser](https://internetarchive.github.io/iaux-collection-browser)
+**NOTE:** :exclamation:  This is very important
 
-
+- if you just run only the command: `yarn run deploy` or `yarn deploy` without the `-e` parameter, it will delete all the files in `gh-pages` branch and replace it with the new changes you just deployed

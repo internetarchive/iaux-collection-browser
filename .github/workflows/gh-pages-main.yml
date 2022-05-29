@@ -1,0 +1,34 @@
+name: App build CI/CD to main branch
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Install dependencies
+        run: yarn install
+  
+      - name: Create build files for gh-pages deploy
+        run: yarn prepare:ghpages
+
+      # Reference: https://github.com/JamesIves/github-pages-deploy-action
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.3.3
+        with:
+          branch: gh-pages
+          folder: dist
+          clean: false
+          target-folder: main
+          token: ${{ secrets.GH_TOKEN }}
