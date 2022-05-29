@@ -20,9 +20,9 @@ jobs:
       - name: Install and Build
         run: |
           yarn install
-          yarn build
+          yarn prepare:ghpages
 
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
-          source-dir: ./dist/
+          source-dir: ./ghpages/
