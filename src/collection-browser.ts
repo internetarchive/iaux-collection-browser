@@ -388,6 +388,7 @@ export class CollectionBrowser
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+        @moreLinkClicked=${this.moreLinkClicked}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -446,6 +447,17 @@ export class CollectionBrowser
       maxDate: string;
     }>
   ) {
+    const { minDate, maxDate } = e.detail;
+    this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
+  }
+
+  private moreLinkClicked(
+    e: CustomEvent<{
+      minDate: string;
+      maxDate: string;
+    }>
+  ) {
+    // console.log(e.detail);
     const { minDate, maxDate } = e.detail;
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
   }

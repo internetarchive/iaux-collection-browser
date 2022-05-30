@@ -322,9 +322,49 @@ export class CollectionFacets extends LitElement {
         </h1>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.getFacetTemplate(facetGroup)}
+          <button
+            @click=${(e: Event) => {
+              this.emitMoreLinkClickedEvent(e, facetGroup);
+            }}
+          >
+            More...
+          </button>
         </div>
       </div>
     `;
+  }
+
+  private emitMoreLinkClickedEvent(e: Event, facetGroup: FacetGroup) {
+    this.getMoreContentTemplate();
+    const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
+      detail: facetGroup,
+    });
+    this.dispatchEvent(event);
+  }
+
+  private getMoreContentTemplate() {
+    return html`<div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Modal title</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Modal body text goes here.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary">Save changes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>`;
   }
 
   /**
