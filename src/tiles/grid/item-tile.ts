@@ -1,5 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import { TileModel } from '../../models';
@@ -19,20 +19,22 @@ export class ItemTile extends LitElement {
   @property({ type: String }) baseImageUrl?: string;
 
   render() {
-    const itemTitle = this.model?.title || '';
-    const itemCreator = this.model?.creator || '';
-
+    const itemCreator = this.model?.creator;
     return html`
       <div id="container">
         <div id="title-image-container">
-          <h1 id="item-title" title=${itemTitle}>${this.model?.title}</h1>
+          <h1 id="item-title" title=${this.model?.title}>
+            ${this.model?.title}
+          </h1>
           <div id="item-image-container">
             <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
           <div class="item-creator">
             <div class="truncated">
-              ${itemCreator ? html`<span>by&nbsp;${itemCreator}</span>` : ''}
+              ${itemCreator
+                ? html`<span>by&nbsp;${itemCreator}</span>`
+                : nothing}
             </div>
           </div>
         </div>
