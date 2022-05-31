@@ -27,10 +27,13 @@ import {
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+// import '@internetarchive/modal-manager';
+// import { ModalConfig } from '@internetarchive/modal-manager';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
+import './collection-facets/facets-more-content';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
 import {
@@ -117,6 +120,11 @@ export class CollectionBrowser
    * If item management UI active
    */
   @property({ type: Boolean }) isManageView = false;
+
+  /**
+   * If item management UI active
+   */
+  @property({ type: Boolean }) showMoreContent = false;
 
   /**
    * The page that the consumer wants to load.
@@ -241,6 +249,8 @@ export class CollectionBrowser
   render() {
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
+        <facets-more-content ?showMoreContent=${this.showMoreContent}>
+        </facets-more-content>
         <div id="left-column" class="column">
           <div id="mobile-header-container">
             ${this.mobileView
@@ -389,6 +399,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         @moreLinkClicked=${this.moreLinkClicked}
+        @moreFacetsClosed=${this.moreFacetsClosed}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -451,15 +462,36 @@ export class CollectionBrowser
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
   }
 
-  private moreLinkClicked(
+  private async moreFacetsClosed() {
+    console.log('moreFacetsClosed clicked');
+    this.showMoreContent = false;
+    this.performUpdate();
+  }
+
+  private async moreLinkClicked(
     e: CustomEvent<{
       minDate: string;
       maxDate: string;
     }>
   ) {
-    // console.log(e.detail);
-    const { minDate, maxDate } = e.detail;
-    this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
+    // try {
+    //   await fetch()
+    //     .then(response => {
+    //       return response.json();
+    //     })
+    //     .then(data => {
+    //       console.log(data)
+    //       // `data` is the parsed version of the JSON returned from the above endpoint.
+
+    //     });
+    // } catch (err) {
+    //   // window?.Sentry?.captureException(err);
+    //   console.log(err)
+    // }
+
+    // fetch()
+    this.showMoreContent = true;
+    console.log(e.detail);
   }
 
   firstUpdated(): void {
@@ -1110,6 +1142,19 @@ export class CollectionBrowser
 
   static styles = css`
     :host {
+      display: block;
+    }
+
+    /* add the following styles to ensure proper modal visibility */
+    body.modal-manager-open {
+      overflow: hidden;
+    }
+
+    modal-manager {
+      display: none;
+    }
+
+    modal-manager[mode='open'] {
       display: block;
     }
 
