@@ -75,6 +75,8 @@ Review app base URL: [https://internetarchive.github.io/iaux-collection-browser]
 yarn run deploy -e <review_app_name>
 ```
 
-**NOTE:** :exclamation:  This is very important
+**NOTE:** 
 
+:exclamation: This is very important
 - if you just run only the command: `yarn run deploy` or `yarn deploy` without the `-e` parameter, it will delete all the files in `gh-pages` branch and replace it with the new changes you just deployed
+- always add `-e` parameter if you are doing manual deploy to Github pages
