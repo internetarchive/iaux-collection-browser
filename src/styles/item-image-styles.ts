@@ -4,7 +4,7 @@ import { css } from 'lit';
  * Base item-image styles
  */
 export const baseItemImageStyles = css`
-  .img-box {
+  .drop-shadow {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
     overflow: hidden;
   }

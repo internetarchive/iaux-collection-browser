@@ -63,7 +63,7 @@ export class ItemImage extends LitElement {
    */
   private get itemBaseClass(): ClassInfo {
     return {
-      'img-box': true,
+      'drop-shadow': true,
       'list-image-box': this.isListTile,
       [this.hashBasedGradient]: this.isWaveform,
     };
