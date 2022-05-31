@@ -1,10 +1,9 @@
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 import { TileModel } from '../models';
 
-import { restrictedIcon } from '../assets/img/icons/restricted';
 import {
   baseItemImageStyles,
   contentWarningStyles,
@@ -23,48 +22,18 @@ export class ItemImage extends LitElement {
 
   @state() private isWaveform = false;
 
-  @state() private tileActionText = '';
-
   @query('img') private baseImage!: HTMLImageElement;
 
   render() {
     return html`
-      <div>
-        <div class=${classMap(this.itemBaseClass)}>
-          <img
-            class=${classMap(this.itemImageClass)}
-            src="${this.imageSrc}"
-            alt=""
-            @load=${this.onLoad}
-          />
-          ${this.restrictedIconTemplate}
-        </div>
-        ${this.contentWarningTemplate}
+      <div class=${classMap(this.itemBaseClass)}>
+        <img
+          class=${classMap(this.itemImageClass)}
+          src="${this.imageSrc}"
+          alt=""
+          @load=${this.onLoad}
+        />
       </div>
-    `;
-  }
-
-  private get contentWarningTemplate() {
-    if (!this.model?.contentWarning || this.isListTile) {
-      return nothing;
-    }
-    // add check if loggedIn
-    // this.tileActionText = 'Log in to view this item'
-    this.tileActionText = 'Content may be inappropriate';
-    return this.tileActionTemplate;
-  }
-
-  private get restrictedIconTemplate() {
-    if (!this.model?.contentWarning || !this.isListTile) {
-      return nothing;
-    }
-
-    return html`<div class="svg-overlay">${restrictedIcon}</div>`;
-  }
-
-  private get tileActionTemplate() {
-    return html`
-      <div class="tile-action no-preview">${this.tileActionText}</div>
     `;
   }
 
