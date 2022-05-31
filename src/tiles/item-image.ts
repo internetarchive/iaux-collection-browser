@@ -64,7 +64,7 @@ export class ItemImage extends LitElement {
   private get itemBaseClass(): ClassInfo {
     return {
       'drop-shadow': true,
-      'list-image-box': this.isListTile,
+      'list-box': this.isListTile,
       [this.hashBasedGradient]: this.isWaveform,
     };
   }
@@ -73,8 +73,8 @@ export class ItemImage extends LitElement {
     return {
       'grid-tile': !this.isListTile,
       'list-tile': this.isListTile,
-      'img-default': !this.isCompactTile,
-      'img-list-compact': this.isCompactTile,
+      contain: !this.isCompactTile,
+      cover: this.isCompactTile,
       blur: this.model?.contentWarning || false,
       waveform: this.isWaveform,
     };

@@ -19,7 +19,7 @@ export const baseItemImageStyles = css`
     height: 100%;
   }
 
-  .list-image-box {
+  .list-box {
     width: 100%;
     height: 100%;
     overflow: hidden;
@@ -28,11 +28,11 @@ export const baseItemImageStyles = css`
     position: relative;
   }
 
-  .img-default {
+  .contain {
     object-fit: contain;
   }
 
-  .img-list-compact {
+  .cover {
     object-fit: cover;
   }
 `;
