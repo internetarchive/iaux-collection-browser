@@ -169,7 +169,7 @@ export class AppRoot extends LitElement {
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
-          .showHistogramDatePicker=${true}
+          .showHistogramDatePicker=${false}
           .loggedIn=${this.loggedIn}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}

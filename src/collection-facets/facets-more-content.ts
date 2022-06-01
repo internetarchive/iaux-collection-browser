@@ -1,11 +1,38 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
   @property({ type: String }) content?: string;
 
+  @property({ type: String }) query?: string;
+
   @property({ type: Boolean }) showMoreContent = false;
+
+  @property({ type: Array }) options = [];
+
+  constructor() {
+    super();
+    this.fetchFacetOptions();
+    // this.context = options.context;
+  }
+
+  async fetchFacetOptions() {
+    try {
+      console.log('this.query', this.query);
+      // https://archive.org/search.php?query=mediatype%3Atexts&and[]=year%3A%222015%22&and[]=languageSorter%3A%22French%22&and[]=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&morf=subject&headless=1&output=json
+      this.options = await fetch(`https://archive.org/search.php?query=mediatype%3Atexts&and%5B%5D=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&output=json&morf=${this.query}&headless=1&output=json`)
+        .then(response => {
+          return response.json();
+        })
+        .then(data => {
+          console.log(data)
+          return data;
+        });
+    } catch (err) {
+      console.log(err)
+    }
+  }
 
   closeClicked() {
     this.showMoreContent = false;
@@ -19,48 +46,90 @@ export class FacetsMoreContent extends LitElement {
     const event = new CustomEvent('moreFacetsClosed', {
       // detail: facetGroup,
     });
-    this.dispatchEvent(event);
+    // this.dispatchEvent(event);
+  }
+
+  private get itemsTemplate() {
+    return html`d`;
+    // const options = this.options.map((option, n) => {
+    //   const displayValue = option.txt ? option.txt : option.val
+    //   const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
+
+    //   if (this.item === option.val) {
+    //     return html``
+    //   }
+
+    //   return html`
+    //     <div class="${optionWrapperClass}">
+    //       <div class="facell">
+    //         <input
+    //           type="checkbox"
+    //           ?checked=${this.checked[option.val]}
+    //           name="${option.val}"
+    //           value="${option.val}"
+    //         />
+    //       </div>
+    //       <div class="facell">
+    //         ${add_commas(option.n)}
+    //       </div>
+    //       <div class="facell">
+    //         ${this.href.match(/morf=collection$/)
+    // /**/      ? html`<a href="/details/${option.val}">${displayValue}</a>`
+    // /**/      : html`${displayValue}`}
+    //       </div>
+    //     </div>`
+    // })
+
+    // return options;
   }
 
   render() {
-    // console.log(this.showMoreContent)
+    console.log(this.options);
+    const loadnote = (true
+      ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
+      : '');
+
+
+    const paging: unknown = []
+    // const npages = (Math.ceil(this.options.length / FACETS_PER_PAGE))
+    // const loadnote = (loading
+    //   ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
+    //   : '')
+    // if (!loading) {
+    //   let page = 1
+    //   for (page = 1; page <= npages; page++) {
+    //     if (this.page === page)
+    //       paging.push(html`<div class="topinblock">${page}</div>`)
+    //     else
+    //       paging.push(html`<a href="#${page}" @click="${this.pageClick}">${page}</a>`)
+    //     paging.push(html` `)
+    //   }
+    //   if (this.page < npages) {
+    //     paging.push(html`
+    //       <a href="#${1 + this.page}" @click="${this.pageClick}" data-action="pager_next">
+    //         <span class="iconochive-right-solid" />
+    //       </a>`)
+    //   }
+    // }
+
     return html`
       <section
         class="facets-more-content ${this.showMoreContent ? 'show' : 'hide'}"
       >
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Modal title</h5>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p>Modal body text goes here.</p>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              @click=${(e: Event) => {
-                this.emitMoreFacetsCloseClickedEvent(e);
-              }}
-              class="btn btn-primary"
-            >
-              Save changes
-            </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
+        <div id="morf-page">
+          <form>
+            <div class="fatable"> 
+              ${this.itemsTemplate}
+            </div>
+            ${loadnote}
+            <div id="morf-paging">
+              ${paging}
+            </div>
+            <center>
+              <input class="btn '{loading ? 'btn-archive hidden' : 'btn-archive'}" type="button"
+                value="Apply your filters" @click='{this.submitClick}' />
+            </center>
+          </form>
         </div>
       </section>
     `;
@@ -68,20 +137,6 @@ export class FacetsMoreContent extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      .facets-more-content {
-        display: none; /* Hidden by default */
-        position: fixed; /* Stay in place */
-        z-index: 10; /* Sit on top */
-        padding-top: 100px; /* Location of the box */
-        left: 0;
-        top: 0;
-        width: 100%; /* Full width */
-        height: 100%; /* Full height */
-        overflow: auto; /* Enable scroll if needed */
-        background-color: rgb(0, 0, 0); /* Fallback color */
-        background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
-      }
-
       .modal-content {
         background-color: #fefefe;
         margin: auto;

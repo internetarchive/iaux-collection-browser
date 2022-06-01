@@ -27,8 +27,8 @@ import {
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-// import '@internetarchive/modal-manager';
-// import { ModalConfig } from '@internetarchive/modal-manager';
+import '@internetarchive/modal-manager';
+import { ModalConfig } from '@internetarchive/modal-manager';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -124,12 +124,13 @@ export class CollectionBrowser
   /**
    * If item management UI active
    */
-  @property({ type: Boolean }) showMoreContent = false;
+  @property({ type: Boolean }) showMoreContent = true;
 
   /**
    * The page that the consumer wants to load.
    */
   private initialPageNumber = 1;
+
 
   /**
    * This the the number of pages that we want to show.
@@ -156,6 +157,7 @@ export class CollectionBrowser
   @state() private mobileFacetsVisible = false;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
+  @query('modal-manager') private modalManager!: any;
 
   private languageCodeHandler = new LanguageCodeHandler();
 
@@ -249,8 +251,7 @@ export class CollectionBrowser
   render() {
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        <facets-more-content ?showMoreContent=${this.showMoreContent}>
-        </facets-more-content>
+        <modal-manager></modal-manager>
         <div id="left-column" class="column">
           <div id="mobile-header-container">
             ${this.mobileView
@@ -470,28 +471,27 @@ export class CollectionBrowser
 
   private async moreLinkClicked(
     e: CustomEvent<{
-      minDate: string;
-      maxDate: string;
+      facetGroup: Object;
     }>
   ) {
-    // try {
-    //   await fetch()
-    //     .then(response => {
-    //       return response.json();
-    //     })
-    //     .then(data => {
-    //       console.log(data)
-    //       // `data` is the parsed version of the JSON returned from the above endpoint.
+    const { facetGroup } = e.detail;
+    console.log(facetGroup)
+    // console.log(e.detail.key)
+    const config = new ModalConfig();
+    config.headline = html`Hi, Everybody!`;
+    config.message = html`Hi, Doctor Nick!`;
+    config.closeOnBackdropClick = true;
+    config.message = html`
+      <facets-more-content
+        .query=${facetGroup}
+        ?showMoreContent=${this.showMoreContent}>
 
-    //     });
-    // } catch (err) {
-    //   // window?.Sentry?.captureException(err);
-    //   console.log(err)
-    // }
+      </facets-more-content>
+    `;
+    this.modalManager.showModal({config});
 
-    // fetch()
-    this.showMoreContent = true;
-    console.log(e.detail);
+    // this.showMoreContent = true;
+    // console.log(e.detail);
   }
 
   firstUpdated(): void {

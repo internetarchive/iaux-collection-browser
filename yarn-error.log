@@ -1,8 +1,8 @@
 Arguments: 
-  /usr/local/bin/node /usr/share/yarn/bin/yarn.js install
+  /usr/local/bin/node /usr/share/yarn/bin/yarn.js add @internetarchive/iaux-modal-manager@0.2.3
 
 PATH: 
-  .:home/ongraph/petabox/sw/bin:home/ongraph/petabox/sw/books/bin:/home/ongraph/.local/bin:.:home/ongraph/petabox/sw/bin:home/ongraph/petabox/sw/books/bin:/home/ongraph/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+  .:home/ongraph/petabox/sw/bin:home/ongraph/petabox/sw/books/bin:/home/ongraph/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 
 Yarn version: 
   1.22.5
@@ -14,12 +14,17 @@ Platform:
   linux x64
 
 Trace: 
-  SyntaxError: /home/ongraph/iaux-collection-browser/package.json: Unexpected token / in JSON at position 1215
-      at JSON.parse (<anonymous>)
-      at /usr/share/yarn/lib/cli.js:1625:59
-      at Generator.next (<anonymous>)
-      at step (/usr/share/yarn/lib/cli.js:310:30)
-      at /usr/share/yarn/lib/cli.js:321:13
+  Error: https://registry.yarnpkg.com/@internetarchive%2fiaux-modal-manager: Not found
+      at Request.params.callback [as _callback] (/usr/share/yarn/lib/cli.js:66988:18)
+      at Request.self.callback (/usr/share/yarn/lib/cli.js:140749:22)
+      at Request.emit (node:events:527:28)
+      at Request.<anonymous> (/usr/share/yarn/lib/cli.js:141721:10)
+      at Request.emit (node:events:527:28)
+      at IncomingMessage.<anonymous> (/usr/share/yarn/lib/cli.js:141643:12)
+      at Object.onceWrapper (node:events:641:28)
+      at IncomingMessage.emit (node:events:539:35)
+      at endReadableNT (node:internal/streams/readable:1345:12)
+      at processTicksAndRejections (node:internal/process/task_queues:83:21)
 
 npm manifest: 
   {
@@ -45,9 +50,8 @@ npm manifest:
       "@internetarchive/collection-name-cache": "^0.1.4",
       "@internetarchive/feature-feedback": "^0.1.2",
       "@internetarchive/field-parsers": "^0.1.3",
-      "@internetarchive/histogram-date-range": "0.1.6",
+      "@internetarchive/histogram-date-range": "0.1.6-alpha1",
       "@internetarchive/infinite-scroller": "^0.1.2",
-      // "@internetarchive/modal-manager": "0.2.3",
       "@internetarchive/search-service": "^0.3.4",
       "@internetarchive/shared-resize-observer": "^0.2.0",
       "@lit/localize": "^0.11.2",
@@ -117,8 +121,6 @@ npm manifest:
     },
     "lint-staged": {
       "*.ts": [
-        "eslint --fix",
-        "prettier --write",
         "git add"
       ]
     }
@@ -280,27 +282,6 @@ Lockfile:
     dependencies:
       lit "^2.2.2"
   
-  "@internetarchive/icon-close@^1.3.2":
-    version "1.3.2"
-    resolved "https://registry.yarnpkg.com/@internetarchive/icon-close/-/icon-close-1.3.2.tgz#391b025241fe4c065263414870d21034823aebdf"
-    integrity sha512-4QhM/MDC1IsWQZoE3lt7A4l3/VOopJta+xVnDLqsbA3OW2sT+ilm/mUiP4l4Lm/NzdbQQwhnQMOZPcQvllxkzA==
-    dependencies:
-      lit "^2.0.2"
-  
-  "@internetarchive/icon-ia-logo@^1.3.2":
-    version "1.3.2"
-    resolved "https://registry.yarnpkg.com/@internetarchive/icon-ia-logo/-/icon-ia-logo-1.3.2.tgz#0ec0f5b537ea6b8c46ba6410e5d925d806141c03"
-    integrity sha512-lDZdaqj7A6nv5dJPaes6UZwDqlr3yMgaKJZSuMTqMUpjaZ0bcfDIoDFO4y2YjQ2uUHoRIgRNqyZVMSNJMowXzQ==
-    dependencies:
-      lit "^2.0.2"
-  
-  "@internetarchive/icon-user@^1.3.2":
-    version "1.3.2"
-    resolved "https://registry.yarnpkg.com/@internetarchive/icon-user/-/icon-user-1.3.2.tgz#727b9be48889c9abc089f16ff5cf0632c20d4fba"
-    integrity sha512-A5fCby40AEWWbrSSgGzhcSVDfL9M+S/Zl1oPTid/+mBuZPik0KPS5xoMBkT/952/ujbnLLR9URemzfPdSeBx+Q==
-    dependencies:
-      lit "^2.0.2"
-  
   "@internetarchive/infinite-scroller@^0.1.2":
     version "0.1.2"
     resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.2.tgz#1bbe3c5020853cc8c05e2c41eb775a8c105d80fd"
@@ -321,18 +302,6 @@ Lockfile:
     integrity sha512-8FFAvEEoazktWsIEod2NVYp0r+Fk3OxM8woe42mNlXHbht3Je98yQjooIFiA3/sJYB7xsZB2RHzUzh+GmBHFgw==
     dependencies:
       idb-keyval "^6.1.0"
-  
-  "@internetarchive/modal-manager@0.2.3":
-    version "0.2.3"
-    resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.3.tgz#420373dcf0695c254d510b87fd1938f7168e3e1f"
-    integrity sha512-d4+lPeNimJhCoFkkUZtpjx8MRovRakHCQjr0XcB8jbtNkWOUvCfqhSrl1CwWI5N3guZPW4biv4lcaxWxT/rCsg==
-    dependencies:
-      "@internetarchive/ia-activity-indicator" "^0.0.3"
-      "@internetarchive/icon-close" "^1.3.2"
-      "@internetarchive/icon-ia-logo" "^1.3.2"
-      "@internetarchive/icon-user" "^1.3.2"
-      lit "^2.2.2"
-      throttle-debounce "^2.2.1"
   
   "@internetarchive/recaptcha-manager@^0.1.1":
     version "0.1.1"
@@ -4240,11 +4209,6 @@ Lockfile:
     version "0.2.0"
     resolved "https://registry.npmjs.org/text-table/-/text-table-0.2.0.tgz"
     integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
-  
-  throttle-debounce@^2.2.1:
-    version "2.3.0"
-    resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-2.3.0.tgz#fd31865e66502071e411817e241465b3e9c372e2"
-    integrity sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==
   
   through@^2.3.8:
     version "2.3.8"

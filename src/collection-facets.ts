@@ -10,7 +10,7 @@ import {
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { Aggregation, Bucket } from '@internetarchive/search-service';
-import '@internetarchive/histogram-date-range';
+// import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
@@ -125,6 +125,7 @@ export class CollectionFacets extends LitElement {
 
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
+    return html``;
     return html`
       <histogram-date-range
         .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
@@ -336,6 +337,8 @@ export class CollectionFacets extends LitElement {
 
   private emitMoreLinkClickedEvent(e: Event, facetGroup: FacetGroup) {
     this.getMoreContentTemplate();
+    // console.log(facetGroup)
+
     const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
       detail: facetGroup,
     });
