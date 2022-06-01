@@ -1,4 +1,5 @@
-![Build Status](https://github.com/internetarchive/iaux-collection-browser/actions/workflows/ci.yml/badge.svg)
+![Build Status](https://github.com/internetarchive/iaux-collection-browser/actions/workflows/ci.yml/badge.svg) [![codecov](https://codecov.io/gh/internetarchive/iaux-collection-browser/branch/main/graph/badge.svg?token=CLWEGO4RMQ)](https://codecov.io/gh/internetarchive/iaux-collection-browser)
+
 
 # Internet Archive Collection Browser
 
@@ -15,9 +16,10 @@ import '@internetarchive/collection-browser';
 
 ## Local Demo with `web-dev-server`
 ```bash
+yarn install
 yarn start
 ```
-To run a local development server that serves the basic demo located in `demo/index.html`
+To run a local development server that serves the basic demo located in `index.html`
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run
@@ -63,3 +65,14 @@ yarn run format:prettier
 For most of the tools, the configuration is in the `package.json` to reduce the amount of files in your project.
 
 If you customize the configuration a lot, you can consider moving them to individual files.
+
+## Deploying using `gh-pages`
+
+
+```
+yarn run deploy -e <review_app_name>
+```
+
+Review app URL: [https://internetarchive.github.io/iaux-collection-browser](https://internetarchive.github.io/iaux-collection-browser)
+
+

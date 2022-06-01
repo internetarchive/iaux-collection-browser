@@ -17,7 +17,7 @@ export class AccountTile extends LitElement {
         <div class="inner-holder">
           <div id="header-holder">
             <div id="title-holder">
-              <h1>${this.model?.identifier}</h1>
+              <h1 class="truncated">${this.model?.identifier}</h1>
             </div>
             <div id="avatar-holder">
               <div
@@ -125,11 +125,26 @@ export class AccountTile extends LitElement {
         height: 25px;
         display: flex;
         justify-content: space-evenly;
+        line-height: initial;
       }
 
       #patron-icon {
         height: 25px;
         width: 25px;
+      }
+
+      .truncated {
+        flex: 1;
+        min-width: 0; /* Important for long words! */
+        -webkit-line-clamp: 2;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        word-wrap: break-word;
+        word-break: break-all;
+        line-height: 2rem;
+        text-align: center;
       }
 
       .stat-icon {
