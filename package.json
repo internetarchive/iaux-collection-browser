@@ -7,7 +7,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "start": "yarn run prepare && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
+    "start": "yarn run prepare && tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
     "prepare:ghpages": "rimraf ghpages && yarn run prepare && vite build",
     "prepare": "rimraf dist && tsc && husky install",
     "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
