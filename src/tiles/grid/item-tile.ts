@@ -19,13 +19,12 @@ export class ItemTile extends LitElement {
   @property({ type: String }) baseImageUrl?: string;
 
   render() {
+    const itemTitle = this.model?.title || nothing;
     const itemCreator = this.model?.creator;
     return html`
       <div id="container">
         <div id="title-image-container">
-          <h1 id="item-title" title=${this.model?.title}>
-            ${this.model?.title}
-          </h1>
+          <h1 id="item-title" title=${itemTitle}>${itemTitle}</h1>
           <div id="item-image-container">
             <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
             </item-image>
