@@ -74,6 +74,7 @@ export class TileListCompact extends LitElement {
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
         .isCompactTile=${true}
+        style="--imgHeight: 100%; --imgWidth: 100%"
       >
       </item-image>
     `;

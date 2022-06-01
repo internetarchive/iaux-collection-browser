@@ -35,22 +35,6 @@ export const baseItemImageStyles = css`
   .cover {
     object-fit: cover;
   }
-`;
-
-/**
- * Content warning styles
- */
-export const contentWarningStyles = css`
-  .svg-overlay {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin: auto;
-    height: 40%;
-    width: 40%;
-  }
 
   .blur {
     filter: blur(15px);
@@ -67,7 +51,7 @@ export const waveformGradientStyles = css`
     mix-blend-mode: screen;
   }
 
-  .grad0 {
+  .waveform-grad0 {
     background: linear-gradient(
       hsl(340, 80%, 55%),
       hsl(0, 80%, 33%) 35%,
@@ -76,7 +60,7 @@ export const waveformGradientStyles = css`
     );
   }
 
-  .grad1 {
+  .waveform-grad1 {
     background: linear-gradient(
       hsl(300, 80%, 55%),
       hsl(330, 80%, 33%) 35%,
@@ -85,7 +69,7 @@ export const waveformGradientStyles = css`
     );
   }
 
-  .grad2 {
+  .waveform-grad2 {
     background: linear-gradient(
       hsl(200, 80%, 55%),
       hsl(230, 80%, 33%) 35%,
@@ -94,7 +78,7 @@ export const waveformGradientStyles = css`
     );
   }
 
-  .grad3 {
+  .waveform-grad3 {
     background: linear-gradient(
       hsl(160, 80%, 55%),
       hsl(190, 80%, 33%) 35%,
@@ -103,7 +87,7 @@ export const waveformGradientStyles = css`
     );
   }
 
-  .grad4 {
+  .waveform-grad4 {
     background: linear-gradient(
       hsl(250, 80%, 55%),
       hsl(280, 80%, 33%) 35%,
@@ -112,7 +96,7 @@ export const waveformGradientStyles = css`
     );
   }
 
-  .grad5 {
+  .waveform-grad5 {
     background: linear-gradient(
       hsl(280, 80%, 55%),
       hsl(310, 80%, 33%) 35%,

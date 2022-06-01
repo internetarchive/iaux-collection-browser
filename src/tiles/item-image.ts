@@ -6,7 +6,6 @@ import { TileModel } from '../models';
 
 import {
   baseItemImageStyles,
-  contentWarningStyles,
   waveformGradientStyles,
 } from '../styles/item-image-styles';
 
@@ -19,6 +18,8 @@ export class ItemImage extends LitElement {
   @property({ type: Boolean }) isListTile = false;
 
   @property({ type: Boolean }) isCompactTile = false;
+
+  @property({ type: Boolean }) loggedIn = false;
 
   @state() private isWaveform = false;
 
@@ -46,10 +47,10 @@ export class ItemImage extends LitElement {
 
   private get hashBasedGradient() {
     if (!this.model?.identifier) {
-      return 'grad0';
+      return 'waveform-grad0';
     }
     const gradient = this.hashStrToInt(this.model.identifier) % 6; // returns 0-5
-    return `grad${gradient}`;
+    return `waveform-grad${gradient}`;
   }
 
   private hashStrToInt(str: string): number {
@@ -71,8 +72,6 @@ export class ItemImage extends LitElement {
 
   private get itemImageClass(): ClassInfo {
     return {
-      'grid-tile': !this.isListTile,
-      'list-tile': this.isListTile,
       contain: !this.isCompactTile,
       cover: this.isCompactTile,
       blur: this.model?.contentWarning || false,
@@ -100,26 +99,10 @@ export class ItemImage extends LitElement {
     return [
       baseItemImageStyles,
       waveformGradientStyles,
-      contentWarningStyles,
       css`
-        .tile-action {
-          border: 1px solid currentColor;
-          border-radius: 1px;
-          padding: 5px;
-          font-weight: 500;
-          width: auto;
-          position: absolute;
-          z-index: 2;
-          display: flex;
-          top: 5.5rem;
-        }
-
-        .no-preview {
-          background-color: #fffecb;
-          color: #2c2c2c;
-          font-size: 1.4rem;
-          line-height: 2rem;
-          text-align: center;
+        img {
+          height: var(--imgHeight, 16rem);
+          width: var(--imgWidth, 16rem);
         }
       `,
     ];
