@@ -674,17 +674,17 @@ var co=Object.defineProperty,ho=Object.defineProperties;var uo=Object.getOwnProp
           hsl(0, 0%, 0%)
         );
       }
-    `}};n([p({type:Object})],Fe.prototype,"model",void 0);n([p({type:String})],Fe.prototype,"baseImageUrl",void 0);n([p({type:Boolean})],Fe.prototype,"isListTile",void 0);n([p({type:Boolean})],Fe.prototype,"isCompactTile",void 0);n([D()],Fe.prototype,"isWaveform",void 0);n([le(".item-image")],Fe.prototype,"itemImageWaveform",void 0);Fe=n([G("item-image")],Fe);let si=class extends B{render(){var e,t,i,r,o,s,l,d;const h=((e=this.model)===null||e===void 0?void 0:e.title)||"",u=((t=this.model)===null||t===void 0?void 0:t.creator)||"-";return m`
+    `}};n([p({type:Object})],Fe.prototype,"model",void 0);n([p({type:String})],Fe.prototype,"baseImageUrl",void 0);n([p({type:Boolean})],Fe.prototype,"isListTile",void 0);n([p({type:Boolean})],Fe.prototype,"isCompactTile",void 0);n([D()],Fe.prototype,"isWaveform",void 0);n([le(".item-image")],Fe.prototype,"itemImageWaveform",void 0);Fe=n([G("item-image")],Fe);let si=class extends B{render(){var e,t,i,r,o,s,l;const d=((e=this.model)===null||e===void 0?void 0:e.title)||_,h=(t=this.model)===null||t===void 0?void 0:t.creator;return m`
       <div id="container">
         <div id="title-image-container">
-          <h1 id="item-title" title=${h}>${(i=this.model)===null||i===void 0?void 0:i.title}</h1>
+          <h1 id="item-title" title=${d}>${d}</h1>
           <div id="item-image-container">
             <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
           <div class="item-creator">
             <div class="truncated">
-              <span><strong>By:&nbsp;</strong>${u}</span>
+              ${h?m`<span>by&nbsp;${h}</span>`:_}
             </div>
           </div>
         </div>
@@ -695,8 +695,8 @@ var co=Object.defineProperty,ho=Object.defineProperties;var uo=Object.getOwnProp
           <div id="stats-holder">
             <div class="col">
               <mediatype-icon
-                .mediatype=${(r=this.model)===null||r===void 0?void 0:r.mediatype}
-                .collection=${(o=this.model)===null||o===void 0?void 0:o.collections}
+                .mediatype=${(i=this.model)===null||i===void 0?void 0:i.mediatype}
+                .collection=${(r=this.model)===null||r===void 0?void 0:r.collections}
                 style="--iconHeight:25px; --iconWidth:25px;"
               >
               </mediatype-icon>
@@ -704,19 +704,19 @@ var co=Object.defineProperty,ho=Object.defineProperties;var uo=Object.getOwnProp
             <div class="col">
               ${os}
               <p class="status-text">
-                ${Ft((s=this.model)===null||s===void 0?void 0:s.viewCount,"short","short")}
+                ${Ft((o=this.model)===null||o===void 0?void 0:o.viewCount,"short","short")}
               </p>
             </div>
             <div class="col">
               ${Pa}
               <p class="status-text">
-                ${Ft((l=this.model)===null||l===void 0?void 0:l.itemCount,"short","short")}
+                ${Ft((s=this.model)===null||s===void 0?void 0:s.itemCount,"short","short")}
               </p>
             </div>
             <div class="col">
               ${Ba}
               <p class="status-text">
-                ${Ft((d=this.model)===null||d===void 0?void 0:d.favCount,"short","short")}
+                ${Ft((l=this.model)===null||l===void 0?void 0:l.favCount,"short","short")}
               </p>
             </div>
           </div>
