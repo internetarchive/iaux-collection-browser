@@ -33,7 +33,7 @@ jobs:
         with:
           branch: gh-pages
           folder: ghpages
-          clean-exclude: pr-preview/
+          clean-exclude: pr/
           force: false
           target-folder: main
           token: ${{ secrets.GH_TOKEN }}
