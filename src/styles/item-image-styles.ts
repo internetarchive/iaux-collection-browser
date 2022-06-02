@@ -9,16 +9,6 @@ export const baseItemImageStyles = css`
     overflow: hidden;
   }
 
-  .grid-tile {
-    width: 16rem;
-    height: 16rem;
-  }
-
-  .list-tile {
-    width: 100%;
-    height: 100%;
-  }
-
   .list-box {
     width: 100%;
     height: 100%;
