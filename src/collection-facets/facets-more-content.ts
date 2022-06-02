@@ -1,5 +1,12 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import {
+  FacetOption,
+  SelectedFacets,
+  FacetGroup,
+  FacetBucket,
+  defaultSelectedFacets,
+} from '../models';
 
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
@@ -11,22 +18,95 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Array }) options = [];
 
+  @property({ type: Object }) aggr = [];
+
   constructor() {
     super();
-    this.fetchFacetOptions();
+    console.log(this.query)
+    // this.fetchFacetOptions();
     // this.context = options.context;
   }
 
+  updated(changed: PropertyValues) {
+    if (changed.has('query') || changed.has('aggr')) {
+      console.log(this.aggr);
+      // this.fetchFacetOptions();
+    }
+  }
+
   async fetchFacetOptions() {
+    var data1: (string | undefined)[] = [];
     try {
       console.log('this.query', this.query);
+
+      // aggr
+
+      Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+        console.log('key', key)
+        if (key != 'year_histogram') {
+          var parts = key.split('__');
+          var fieldNamePart = parts[2];
+          console.log('fieldNamePart', fieldNamePart)
+          var fieldName = fieldNamePart.split(':')[1];
+          console.log('fieldName', fieldName)
+          var facetMatch = Object.entries({
+            subjectSorter: 'subject',
+            mediatypeSorter: 'mediatype',
+            languageSorter: 'language',
+            creatorSorter: 'creator',
+            collection: 'collection',
+            year: 'year',
+          }).find(([key2]) =>
+            fieldName.includes(key2)
+          );
+          var option = facetMatch?.[1];
+          data1.push(option);
+          // if (!option) throw new Error(`Could not find facet option for key: ${key}`);
+          // return option;
+        }
+      });
+
+      console.log(data1)
+      return data1;
       // https://archive.org/search.php?query=mediatype%3Atexts&and[]=year%3A%222015%22&and[]=languageSorter%3A%22French%22&and[]=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&morf=subject&headless=1&output=json
-      this.options = await fetch(`https://archive.org/search.php?query=mediatype%3Atexts&and%5B%5D=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&output=json&morf=${this.query}&headless=1&output=json`)
-        .then(response => {
+      // this.options = await fetch(`https://archive.org/search.php?query=mediatype%3Atexts&and%5B%5D=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&output=json&morf=${this.query}&headless=1&output=json`)
+      this.options = await fetch(`https://archive.org/advancedsearch.php?q=title%3Ajaipur&output=json&rows=1&fl=identifier&user_aggs=${this.query}`
+      ).then(response => {
           return response.json();
         })
         .then(data => {
           console.log(data)
+          console.log(data.response)
+          console.log(data.response.aggregations)
+          
+          Object.entries(data.response.aggregations ?? []).forEach(([key, buckets]) => {
+            console.log('key', key)
+            if (key != 'year_histogram') {
+              var parts = key.split('__');
+              var fieldNamePart = parts[2];
+              console.log('fieldNamePart', fieldNamePart)
+              var fieldName = fieldNamePart.split(':')[1];
+              console.log('fieldName', fieldName)
+              var facetMatch = Object.entries({
+                subjectSorter: 'subject',
+                mediatypeSorter: 'mediatype',
+                languageSorter: 'language',
+                creatorSorter: 'creator',
+                collection: 'collection',
+                year: 'year',
+              }).find(([key2]) =>
+                fieldName.includes(key2)
+              );
+              var option = facetMatch?.[1];
+              data1.push(option);
+              // if (!option) throw new Error(`Could not find facet option for key: ${key}`);
+              // return option;
+            }
+          });
+
+          console.log(data1)
+          return data1;
+          // console.log(data.response.aggregations.user_aggs__terms__field:year__size:25)
           return data;
         });
     } catch (err) {
@@ -84,7 +164,7 @@ export class FacetsMoreContent extends LitElement {
   }
 
   render() {
-    console.log(this.options);
+    // console.log(this.options);
     const loadnote = (true
       ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
       : '');

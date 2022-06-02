@@ -325,7 +325,7 @@ export class CollectionFacets extends LitElement {
           ${this.getFacetTemplate(facetGroup)}
           <button
             @click=${(e: Event) => {
-              this.emitMoreLinkClickedEvent(e, facetGroup);
+              this.emitMoreLinkClickedEvent(facetGroup);
             }}
           >
             More...
@@ -335,10 +335,10 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
-  private emitMoreLinkClickedEvent(e: Event, facetGroup: FacetGroup) {
+  private emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
     this.getMoreContentTemplate();
     // console.log(facetGroup)
-
+    // const { key, title } = facetGroup;
     const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
       detail: facetGroup,
     });
