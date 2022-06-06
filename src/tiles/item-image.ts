@@ -1,4 +1,4 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
@@ -8,6 +8,8 @@ import {
   baseItemImageStyles,
   waveformGradientStyles,
 } from '../styles/item-image-styles';
+
+import './item-tile-overlay';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -34,7 +36,25 @@ export class ItemImage extends LitElement {
           alt=""
           @load=${this.onLoad}
         />
+        ${this.itemImageOverlayTemplate}
       </div>
+    `;
+  }
+
+  /**
+   * Templates
+   */
+  private get itemImageOverlayTemplate() {
+    if (!this.model?.loginRequired && !this.model?.contentWarning) {
+      return nothing;
+    }
+    return html`
+      <item-image-overlay
+        .isListTile=${this.isListTile}
+        .loggedIn=${this.loggedIn}
+        .loginRequired=${this.model?.loginRequired}
+        .contentWarning=${this.model?.contentWarning}
+      ></item-image-overlay>
     `;
   }
 
