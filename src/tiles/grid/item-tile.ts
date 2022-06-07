@@ -1,6 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
@@ -19,12 +20,12 @@ export class ItemTile extends LitElement {
   @property({ type: String }) baseImageUrl?: string;
 
   render() {
-    const itemTitle = this.model?.title || nothing;
+    const itemTitle = this.model?.title;
     const itemCreator = this.model?.creator;
     return html`
       <div id="container">
         <div id="title-image-container">
-          <h1 id="item-title" title=${itemTitle}>${itemTitle}</h1>
+          <h1 id="item-title" title=${ifDefined(itemTitle)}>${itemTitle}</h1>
           <div id="item-image-container">
             <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
             </item-image>
