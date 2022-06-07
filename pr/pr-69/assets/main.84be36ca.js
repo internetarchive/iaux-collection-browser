@@ -483,6 +483,7 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
   .drop-shadow {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
     overflow: hidden;
+    height: 100%;
   }
 
   .list-box {
@@ -510,6 +511,10 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
 `,ws=b`
   .waveform {
     mix-blend-mode: screen;
+    height: 100px;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .waveform-grad0 {
