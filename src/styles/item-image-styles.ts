@@ -41,7 +41,7 @@ export const waveformGradientStyles = css`
   .waveform {
     mix-blend-mode: screen;
     position: relative;
-    height: calc((var(--imgWidth) * 0.625));
+    height: 62.5%;
     top: 50%;
     transform: translateY(-50%);
   }

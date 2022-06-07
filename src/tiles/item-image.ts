@@ -26,12 +26,6 @@ export class ItemImage extends LitElement {
   @query('img') private baseImage!: HTMLImageElement;
 
   render() {
-    const width = () => {
-      if (this.isListTile && !this.isCompactTile) return '100px';
-      if (this.isListTile && this.isCompactTile) return '45px';
-      return '160px';
-    };
-
     return html`
       <div class=${classMap(this.itemBaseClass)}>
         <img
@@ -39,7 +33,6 @@ export class ItemImage extends LitElement {
           src="${this.imageSrc}"
           alt=""
           @load=${this.onLoad}
-          style="--imgWidth:${width()};"
         />
       </div>
     `;
