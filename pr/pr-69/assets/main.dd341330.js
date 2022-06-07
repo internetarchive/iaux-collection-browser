@@ -483,7 +483,7 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
   .drop-shadow {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
     overflow: hidden;
-    height: 160px;
+    height: 100%;
   }
 
   .list-box {
