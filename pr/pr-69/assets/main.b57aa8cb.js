@@ -511,10 +511,12 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
 `,ws=b`
   .waveform {
     mix-blend-mode: screen;
-    height: 100px;
     position: relative;
+    height: 100px;
     top: 50%;
     transform: translateY(-50%);
+    /* 
+     */
   }
 
   .waveform-grad0 {
