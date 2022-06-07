@@ -23,9 +23,7 @@ export class ItemImageOverlay extends LitElement {
   private get loginRequiredTemplate() {
     if (this.isListTile) {
       // List views
-      return html`<div class="svg-overlay logged-in">
-        ${LoginRequiredIcon}
-      </div>`;
+      return html` ${LoginRequiredIcon} `;
     }
     // Tile view
     return html`
@@ -36,7 +34,7 @@ export class ItemImageOverlay extends LitElement {
   private get contentWarningTemplate() {
     if (this.isListTile) {
       // List views
-      return html`<div class="svg-overlay">${restrictedIcon}</div>`;
+      return html` ${restrictedIcon} `;
     }
     // Tile view
     return html`
@@ -54,22 +52,7 @@ export class ItemImageOverlay extends LitElement {
       }
 
       svg {
-        padding: 10%;
-      }
-
-      .svg-overlay {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        margin: auto;
-        height: 40%;
-        width: 40%;
-      }
-
-      .logged-in {
-        background-color: #eeeeee;
+        padding: 25%;
       }
 
       .tile-action {

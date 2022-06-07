@@ -21,6 +21,8 @@ export class ItemTile extends LitElement {
 
   render() {
     const itemTitle = this.model?.title;
+    const itemCreator = this.model?.creator;
+
     return html`
       <div class="container">
         <div class="item-info">
