@@ -512,7 +512,7 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
   .waveform {
     mix-blend-mode: screen;
     position: relative;
-    height: calc((var(--imgWidth) * 0.625));
+    height: 62.5%;
     top: 50%;
     transform: translateY(-50%);
   }
@@ -570,14 +570,13 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
       hsl(0, 0%, 0%)
     );
   }
-`;let Ce=class extends B{constructor(){super(...arguments),this.isListTile=!1,this.isCompactTile=!1,this.loggedIn=!1,this.isWaveform=!1}render(){const e=()=>this.isListTile&&!this.isCompactTile?"100px":this.isListTile&&this.isCompactTile?"45px":"160px";return m`
+`;let Ce=class extends B{constructor(){super(...arguments),this.isListTile=!1,this.isCompactTile=!1,this.loggedIn=!1,this.isWaveform=!1}render(){return m`
       <div class=${Jr(this.itemBaseClass)}>
         <img
           class=${Jr(this.itemImageClass)}
           src="${this.imageSrc}"
           alt=""
           @load=${this.onLoad}
-          style="--imgWidth:${e()};"
         />
       </div>
     `}get imageSrc(){var e;return`${this.baseImageUrl}/services/img/${(e=this.model)===null||e===void 0?void 0:e.identifier}`}get hashBasedGradient(){var e;return!((e=this.model)===null||e===void 0)&&e.identifier?`waveform-grad${this.hashStrToInt(this.model.identifier)%6}`:"waveform-grad0"}hashStrToInt(e){return e.split("").reduce((t,i)=>t+i.charCodeAt(0),0)}get itemBaseClass(){return{"drop-shadow":!0,"list-box":this.isListTile,[this.hashBasedGradient]:this.isWaveform}}get itemImageClass(){var e;return{contain:!this.isCompactTile&&!this.isWaveform,cover:this.isCompactTile,blur:((e=this.model)===null||e===void 0?void 0:e.contentWarning)||!1,waveform:this.isWaveform}}onLoad(){var e,t;(((e=this.model)===null||e===void 0?void 0:e.mediatype)==="audio"||((t=this.model)===null||t===void 0?void 0:t.mediatype)==="etree")&&this.baseImage.naturalWidth/this.baseImage.naturalHeight===4&&(this.isWaveform=!0)}static get styles(){return[ys,ws,b`
