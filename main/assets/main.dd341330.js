@@ -483,6 +483,7 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
   .drop-shadow {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
     overflow: hidden;
+    height: 100%;
   }
 
   .list-box {
@@ -510,6 +511,10 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
 `,ws=b`
   .waveform {
     mix-blend-mode: screen;
+    position: relative;
+    height: 62.5%;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .waveform-grad0 {
@@ -574,7 +579,7 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
           @load=${this.onLoad}
         />
       </div>
-    `}get imageSrc(){var e;return`${this.baseImageUrl}/services/img/${(e=this.model)===null||e===void 0?void 0:e.identifier}`}get hashBasedGradient(){var e;return!((e=this.model)===null||e===void 0)&&e.identifier?`waveform-grad${this.hashStrToInt(this.model.identifier)%6}`:"waveform-grad0"}hashStrToInt(e){return e.split("").reduce((t,i)=>t+i.charCodeAt(0),0)}get itemBaseClass(){return{"drop-shadow":!0,"list-box":this.isListTile,[this.hashBasedGradient]:this.isWaveform}}get itemImageClass(){var e;return{contain:!this.isCompactTile,cover:this.isCompactTile,blur:((e=this.model)===null||e===void 0?void 0:e.contentWarning)||!1,waveform:this.isWaveform}}onLoad(){var e,t;(((e=this.model)===null||e===void 0?void 0:e.mediatype)==="audio"||((t=this.model)===null||t===void 0?void 0:t.mediatype)==="etree")&&this.baseImage.naturalWidth/this.baseImage.naturalHeight===4&&(this.isWaveform=!0)}static get styles(){return[ys,ws,b`
+    `}get imageSrc(){var e;return`${this.baseImageUrl}/services/img/${(e=this.model)===null||e===void 0?void 0:e.identifier}`}get hashBasedGradient(){var e;return!((e=this.model)===null||e===void 0)&&e.identifier?`waveform-grad${this.hashStrToInt(this.model.identifier)%6}`:"waveform-grad0"}hashStrToInt(e){return e.split("").reduce((t,i)=>t+i.charCodeAt(0),0)}get itemBaseClass(){return{"drop-shadow":!0,"list-box":this.isListTile,[this.hashBasedGradient]:this.isWaveform}}get itemImageClass(){var e;return{contain:!this.isCompactTile&&!this.isWaveform,cover:this.isCompactTile,blur:((e=this.model)===null||e===void 0?void 0:e.contentWarning)||!1,waveform:this.isWaveform}}onLoad(){var e,t;(((e=this.model)===null||e===void 0?void 0:e.mediatype)==="audio"||((t=this.model)===null||t===void 0?void 0:t.mediatype)==="etree")&&this.baseImage.naturalWidth/this.baseImage.naturalHeight===4&&(this.isWaveform=!0)}static get styles(){return[ys,ws,b`
         img {
           height: var(--imgHeight, 16rem);
           width: var(--imgWidth, 16rem);
