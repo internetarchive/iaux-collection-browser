@@ -7,6 +7,7 @@ export const baseItemImageStyles = css`
   .drop-shadow {
     filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
     overflow: hidden;
+    height: 100%;
   }
 
   .list-box {
@@ -39,6 +40,10 @@ export const baseItemImageStyles = css`
 export const waveformGradientStyles = css`
   .waveform {
     mix-blend-mode: screen;
+    position: relative;
+    height: 62.5%;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .waveform-grad0 {
