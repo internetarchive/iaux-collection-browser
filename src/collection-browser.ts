@@ -402,6 +402,7 @@ export class CollectionBrowser
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         @moreLinkClicked=${this.moreLinkClicked}
         @moreFacetsClosed=${this.moreFacetsClosed}
+        .searchService=${this.searchService}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -476,13 +477,10 @@ export class CollectionBrowser
     }>
   ) {
 
-    console.log(e)
-    console.log(e.detail)
+
     // const { key, title } = e.detail;
     const query = e.detail.key;
-    // console.log(facetGroup)
-    // console.log(facetGroup)
-    // console.log(e.detail.key)
+
     const config = new ModalConfig();
     config.headline = html`Hi, Everybody!`;
     config.message = html`Hi, Doctor Nick!`;
@@ -493,8 +491,8 @@ export class CollectionBrowser
     ]);
     
 
-    console.log('query', query)
-    console.log('aggr', this.aggr)
+    // console.log('query', query)
+    // console.log('aggr', this.aggr)
     config.message = html`
       <facets-more-content
         .query=${query}
@@ -1192,6 +1190,7 @@ export class CollectionBrowser
 
     modal-manager {
       display: none;
+      --modalWidth: 100rem;
     }
 
     modal-manager[mode='open'] {

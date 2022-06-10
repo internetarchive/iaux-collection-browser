@@ -7,13 +7,15 @@ import {
   nothing,
   TemplateResult,
 } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Aggregation, Bucket } from '@internetarchive/search-service';
+import { Aggregation, Bucket, SearchParams, SearchServiceInterface } from '@internetarchive/search-service';
 // import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import '@internetarchive/modal-manager';
+import { ModalConfig } from '@internetarchive/modal-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -25,6 +27,7 @@ import {
   defaultSelectedFacets,
 } from './models';
 import { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
+import './collection-facets/facets-more-content';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -73,11 +76,18 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  // @property({ type: Object }) searchService?: {};
+  @property({ type: Object }) searchService?: SearchServiceInterface;
+
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
+  /**
+   * If item management UI active
+   */
+   @property({ type: Boolean }) showMoreContent = true;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -88,7 +98,15 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
+  @query('modal-manager') private modalManager!: any;
+
+  // fullQuery: string;
+  // aggr: any;
+  @state() private aggr?: {};
+
+
   render() {
+    // console.log(this.mergedFacets)
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
         ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
@@ -335,41 +353,83 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
-  private emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
-    this.getMoreContentTemplate();
+  async fetchSpecificFacets(specificFacet: string) {
+    // console.log('this.fullQuery', this.fullQuery);
+    // console.log('specificFacet', specificFacet);
+
+    const aggregations = {
+      advancedParams: [
+        {
+          field: specificFacet,
+          size: 100,
+        },
+      ],
+    };
+
+    // console.log(aggregations)
+    const params: SearchParams = {
+      query: 'title:hello',
+      fields: ['identifier'],
+      aggregations,
+      rows: 1,
+    };
+
+    const results = await this.searchService?.search(params);
+    this.aggregations = results?.success?.response.aggregations;
+  }
+  
+  async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
+  
+    // console.log(e)
+    // console.log(e.detail)
+    // const { key, title } = e.detail;
+    // const query = e.detail.key;
+    // console.log(facetGroup)
+    // console.log(facetGroup)
+    // console.log(e.detail.key)
+    const config = new ModalConfig();
+    config.headline = html`Hi, Everybody1!`;
+    // config.message = html`Hi, Doctor Nick!`;
+    config.closeOnBackdropClick = true;
+
+    console.log('before')
+    // await Promise.all([
+    //   this.fetchSpecificFacets(facetGroup as unknown as string),
+    // ]);
+    await this.fetchSpecificFacets(facetGroup.key as unknown as string),
+
+    console.log('after')
+    
+
+    // console.log('query', query)
+    // console.log('new aggr1', this.aggregations)
+
+    // this.aggregationFacetGroups.map(facetGroup =>
+    //   console.log(this.getFacetGroupTemplate(facetGroup))
+    // )
+
+    config.message = html`
+      <facets-more-content
+        .query=${facetGroup}
+        .aggr=${this.aggregationFacetGroups}
+        ?showMoreContent=${this.showMoreContent}>
+      </facets-more-content>
+    `;
+    this.modalManager.showModal({config});
+
+    // this.showMoreContent = true;
+    // console.log(e.detail);
+
+    // this.getMoreContentTemplate();
     // console.log(facetGroup)
     // const { key, title } = facetGroup;
     const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
       detail: facetGroup,
     });
-    this.dispatchEvent(event);
+    // this.dispatchEvent(event);
   }
 
-  private getMoreContentTemplate() {
-    return html`<div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Modal title</h5>
-        <button
-          type="button"
-          class="close"
-          data-dismiss="modal"
-          aria-label="Close"
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p>Modal body text goes here.</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary">Save changes</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>`;
-  }
-
+  
   /**
    * Generate the list template for each bucket in a facet group
    */
@@ -378,8 +438,9 @@ export class CollectionFacets extends LitElement {
       bucket => bucket.key.startsWith('fav-') === false
     );
     const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
-
+    // console.log
     return html`
+      <modal-manager></modal-manager>
       <ul class="facet-list">
         ${repeat(
           bucketsMaxSix,
@@ -530,6 +591,24 @@ export class CollectionFacets extends LitElement {
     return css`
       #container.loading {
         opacity: 0.5;
+      }
+
+      /* add the following styles to ensure proper modal visibility */
+      body.modal-manager-open {
+        overflow: hidden;
+      }
+  
+      modal-manager {
+        display: none;
+        --modalWidth: 100rem;
+      }
+  
+      modal-manager[mode='open'] {
+        display: block;
+      }
+  
+      #content-container {
+        display: flex;
       }
 
       .collapser {

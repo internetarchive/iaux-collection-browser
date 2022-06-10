@@ -274,7 +274,7 @@ export class AppRoot extends LitElement {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 10;
+      z-index: 1;
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;

@@ -1,12 +1,26 @@
-import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
+import { css, CSSResultGroup, html, LitElement, nothing, PropertyValues, render, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
+
+import type {
+  Aggregation,
+  Bucket,
+  Metadata,
+  SearchParams,
+  SearchServiceInterface,
+  SortDirection,
+  SortParam,
+} from '@internetarchive/search-service';
+
 import {
   FacetOption,
   SelectedFacets,
   FacetGroup,
   FacetBucket,
   defaultSelectedFacets,
+  // Bucket,
 } from '../models';
+import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
@@ -17,193 +31,208 @@ export class FacetsMoreContent extends LitElement {
   @property({ type: Boolean }) showMoreContent = false;
 
   @property({ type: Array }) options = [];
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
+  @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object }) aggr = [];
+  @property({ type: Object })
+  languageCodeHandler?: LanguageCodeHandlerInterface;
 
-  constructor() {
-    super();
-    console.log(this.query)
-    // this.fetchFacetOptions();
-    // this.context = options.context;
-  }
+  @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
+
+  // @state() private options?: {};
 
   updated(changed: PropertyValues) {
     if (changed.has('query') || changed.has('aggr')) {
-      console.log(this.aggr);
-      // this.fetchFacetOptions();
+      // console.log('changed called in more-facets');
+
+      // console.log(this.aggr)
+
+      // this.renderMoreFacets;
     }
   }
 
-  async fetchFacetOptions() {
-    var data1: (string | undefined)[] = [];
-    try {
-      console.log('this.query', this.query);
+  private renderMoreFacets() {
+    return html`${Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+      // console.log(key, buckets)
+      const castedBuckets = buckets['buckets'] as FacetBucket[];
+      // console.log(castedBuckets)
+      return repeat(
+        castedBuckets,
+        // bucket => `${facetGroup.key}:${bucket.key}`,
+        option => {
+          const displayValue = option.displayText ? option.displayText : option.key
+          // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
 
-      // aggr
-
-      Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
-        console.log('key', key)
-        if (key != 'year_histogram') {
-          var parts = key.split('__');
-          var fieldNamePart = parts[2];
-          console.log('fieldNamePart', fieldNamePart)
-          var fieldName = fieldNamePart.split(':')[1];
-          console.log('fieldName', fieldName)
-          var facetMatch = Object.entries({
-            subjectSorter: 'subject',
-            mediatypeSorter: 'mediatype',
-            languageSorter: 'language',
-            creatorSorter: 'creator',
-            collection: 'collection',
-            year: 'year',
-          }).find(([key2]) =>
-            fieldName.includes(key2)
-          );
-          var option = facetMatch?.[1];
-          data1.push(option);
-          // if (!option) throw new Error(`Could not find facet option for key: ${key}`);
-          // return option;
+          return html`
+            <div class="">
+              <div class="facell">
+                <input
+                  type="checkbox"
+                  name="${option.key}"
+                  value="${option.key}"
+                />
+              </div>
+              <div class="facell">
+                ${displayValue}
+              </div>
+              <div class="facell">
+                <a href="/details/${option.key}">${option.displayText}</a>
+              </div>
+            </div>`;
         }
-      });
+      )
+      // castedBuckets.forEach(bucket => {
+      //   const option = bucket;
+      //   // console.log(option)
+      //   // console.log(option.displayText);
+      //   const displayValue = option.displayText ? option.displayText : option.key
+      //   // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
 
-      console.log(data1)
-      return data1;
-      // https://archive.org/search.php?query=mediatype%3Atexts&and[]=year%3A%222015%22&and[]=languageSorter%3A%22French%22&and[]=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&morf=subject&headless=1&output=json
-      // this.options = await fetch(`https://archive.org/search.php?query=mediatype%3Atexts&and%5B%5D=creator%3A%22islam+sphere%22&headless=1&facets_xhr=facets&output=json&morf=${this.query}&headless=1&output=json`)
-      this.options = await fetch(`https://archive.org/advancedsearch.php?q=title%3Ajaipur&output=json&rows=1&fl=identifier&user_aggs=${this.query}`
-      ).then(response => {
-          return response.json();
-        })
-        .then(data => {
-          console.log(data)
-          console.log(data.response)
-          console.log(data.response.aggregations)
-          
-          Object.entries(data.response.aggregations ?? []).forEach(([key, buckets]) => {
-            console.log('key', key)
-            if (key != 'year_histogram') {
-              var parts = key.split('__');
-              var fieldNamePart = parts[2];
-              console.log('fieldNamePart', fieldNamePart)
-              var fieldName = fieldNamePart.split(':')[1];
-              console.log('fieldName', fieldName)
-              var facetMatch = Object.entries({
-                subjectSorter: 'subject',
-                mediatypeSorter: 'mediatype',
-                languageSorter: 'language',
-                creatorSorter: 'creator',
-                collection: 'collection',
-                year: 'year',
-              }).find(([key2]) =>
-                fieldName.includes(key2)
-              );
-              var option = facetMatch?.[1];
-              data1.push(option);
-              // if (!option) throw new Error(`Could not find facet option for key: ${key}`);
-              // return option;
-            }
-          });
-
-          console.log(data1)
-          return data1;
-          // console.log(data.response.aggregations.user_aggs__terms__field:year__size:25)
-          return data;
-        });
-    } catch (err) {
-      console.log(err)
-    }
+      //   return html`
+      //     <div class="">
+      //       <div class="facell">
+      //         <input
+      //           type="checkbox"
+      //           name="${option.key}"
+      //           value="${option.key}"
+      //         />
+      //       </div>
+      //       <div class="facell">
+      //         ${displayValue}
+      //       </div>
+      //       <div class="facell">
+      //         <a href="/details/${option.key}">${option.displayText}</a>
+      //       </div>
+      //     </div>`;
+      // })
+      // return facetBuckets;
+    })}`
+    // console.log(dd)
+    // return dd; 
+    // return 1
   }
+
+
 
   closeClicked() {
     this.showMoreContent = false;
     // console.log('here')
   }
 
-  private emitMoreFacetsCloseClickedEvent() {
-    this.showMoreContent = false;
 
-    // console.log(e)
-    const event = new CustomEvent('moreFacetsClosed', {
-      // detail: facetGroup,
-    });
-    // this.dispatchEvent(event);
-  }
-
-  private get itemsTemplate() {
-    return html`d`;
-    // const options = this.options.map((option, n) => {
-    //   const displayValue = option.txt ? option.txt : option.val
-    //   const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
-
-    //   if (this.item === option.val) {
-    //     return html``
-    //   }
-
-    //   return html`
-    //     <div class="${optionWrapperClass}">
-    //       <div class="facell">
-    //         <input
-    //           type="checkbox"
-    //           ?checked=${this.checked[option.val]}
-    //           name="${option.val}"
-    //           value="${option.val}"
-    //         />
-    //       </div>
-    //       <div class="facell">
-    //         ${add_commas(option.n)}
-    //       </div>
-    //       <div class="facell">
-    //         ${this.href.match(/morf=collection$/)
-    // /**/      ? html`<a href="/details/${option.val}">${displayValue}</a>`
-    // /**/      : html`${displayValue}`}
-    //       </div>
-    //     </div>`
-    // })
-
-    // return options;
-  }
 
   render() {
-    // console.log(this.options);
+
+    const options = Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+      // console.log(key, buckets)
+      const castedBuckets = buckets['buckets'] as FacetBucket[];
+      // console.log(castedBuckets)
+      repeat(
+        castedBuckets,
+        // bucket => `${facetGroup.key}:${bucket.key}`,
+        option => {
+          const displayValue = option.displayText ? option.displayText : option.key
+          // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
+
+          return html`
+            <div class="">
+              <div class="facell">
+                <input
+                  type="checkbox"
+                  name="${option.key}"
+                  value="${option.key}"
+                />
+              </div>
+              <div class="facell">
+                ${displayValue}
+              </div>
+              <div class="facell">
+                <a href="/details/${option.key}">${option.displayText}</a>
+              </div>
+            </div>`;
+        }
+      )
+    });
     const loadnote = (true
       ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
       : '');
 
-
-    const paging: unknown = []
-    // const npages = (Math.ceil(this.options.length / FACETS_PER_PAGE))
-    // const loadnote = (loading
-    //   ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
-    //   : '')
-    // if (!loading) {
-    //   let page = 1
-    //   for (page = 1; page <= npages; page++) {
-    //     if (this.page === page)
-    //       paging.push(html`<div class="topinblock">${page}</div>`)
-    //     else
-    //       paging.push(html`<a href="#${page}" @click="${this.pageClick}">${page}</a>`)
-    //     paging.push(html` `)
-    //   }
-    //   if (this.page < npages) {
-    //     paging.push(html`
-    //       <a href="#${1 + this.page}" @click="${this.pageClick}" data-action="pager_next">
-    //         <span class="iconochive-right-solid" />
-    //       </a>`)
-    //   }
-    // }
 
     return html`
       <section
         class="facets-more-content ${this.showMoreContent ? 'show' : 'hide'}"
       >
         <div id="morf-page">
-          <form>
-            <div class="fatable"> 
-              ${this.itemsTemplate}
-            </div>
+        <form>
+        ${this.renderMoreFacets}
+
+        ${
+          Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+            // console.log(key, buckets)
+
+            if (key === 'year_histogram') return;
+
+            const castedBuckets = buckets['buckets'] as FacetBucket[];
+            console.log(castedBuckets)
+
+            castedBuckets.forEach(bucket => {
+            const option = bucket;
+            // console.log(option)
+            // console.log(option.displayText);
+            const displayValue = option.displayText ? option.displayText : option.key
+            // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
+            
+            html`
+              <div class="">
+                <div class="facell">
+                  <input
+                    type="checkbox"
+                    name="${option.key}"
+                    value="${option.key}"
+                  />
+                </div>
+                <div class="facell">
+                  ${displayValue}
+                </div>
+                <div class="facell">
+                  <a href="/details/${option.key}">${option.displayText}</a>
+                </div>
+              </div>`;
+            })
+
+
+          
+            return repeat(
+              castedBuckets,
+              bucket => `${bucket.key}`,
+              option => {
+                const displayValue = option.displayText ? option.displayText : option.key
+                // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
+                console.log(displayValue)
+                html`
+                  <div class="">
+                    <div class="facell">
+                      <input
+                        type="checkbox"
+                        name="${option.key}"
+                        value="${option.key}"
+                      />
+                    </div>
+                    <div class="facell">
+                      ${displayValue}
+                    </div>
+                    <div class="facell">
+                      <a href="/details/${option.key}">${option.displayText}</a>
+                    </div>
+                  </div>`;
+              }
+            )
+        })}
+
+            
             ${loadnote}
             <div id="morf-paging">
-              ${paging}
             </div>
             <center>
               <input class="btn '{loading ? 'btn-archive hidden' : 'btn-archive'}" type="button"
@@ -239,6 +268,73 @@ export class FacetsMoreContent extends LitElement {
         font-size: 28px;
         font-weight: bold;
       }
+
+      .fatable { /* xxx pull these rules out of archive.less if decide to pull "no JS" facets page.. */
+  /**/-webkit-column-width: 250px;/*android*/
+  /**/   -moz-column-width: 250px;/*firefox*/
+  /**/        column-width: 250px;/*SUPERGREAT CSS3 FEATURE*/
+  font-size: 12px;
+}
+.farow {
+  width: 100%;
+  display: inline-block;
+  margin-bottom: 0;
+  font-weight: 500;
+}
+.farow.hidden {
+  display: none;
+}
+.farow .facell a {
+  word-break: break-word;
+}
+.facell.fin {
+  background-color: rgb(252, 194, 76); /*@yellow-em*/
+  color: black;
+}
+.facell:first-child {
+  float: left;
+  width: 20px;
+}
+.facell:nth-child(2){
+  text-align: right;
+  float: right;
+}
+.facell:last-child {
+  .breaker-breaker;
+  display: flex; /*because want to lay facets cells out in one direction so that checkbox and facet cells value can in two different column*/
+}
+
+#morf-paging {
+  margin-top:15px;
+  margin-bottom:15px;
+  background-color:#efefef;
+  text-align:right;
+  font-size:13px;
+  padding-top:7px;
+  padding-bottom:7px;
+  padding-right:15px;
+  word-spacing: 5px;
+  color:#4a4a4a;
+}
+#morf-paging .topinblock {
+  background-color: #fafafa;
+  padding:7px 5px;
+  margin-top:-7px;
+  margin-bottom:-7px;
+}
+
+.loading {
+  font-style: italic;
+  margin: 25px;
+  text-align: center;
+}
+.loading img {
+  width: 25px;
+}
     `;
   }
 }
+function add_commas(displayText: string | undefined): unknown {
+  throw new Error('Function not implemented.');
+}
+
