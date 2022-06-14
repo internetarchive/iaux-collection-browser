@@ -89,7 +89,7 @@ export const baseItemTileStyles = css`
   }
 
   .hr {
-    border: 0.5px solid #ccc;
+    border: 0.5px solid #bbb;
   }
 
   #item-stats-container {
@@ -107,8 +107,8 @@ export const baseItemTileStyles = css`
     justify-content: space-evenly;
     text-align: center;
     width: 100%;
-    padding-top: 0.625rem;
-    padding-bottom: 0.625rem;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 
   svg {
