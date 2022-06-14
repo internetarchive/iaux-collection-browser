@@ -771,7 +771,7 @@ export class CollectionBrowser
     this.selectedFacets = e.detail;
   }
 
-
+  // not used
   private async fetchSpecificFacets(specificFacet: string) {
     console.log('this.fullQuery', this.fullQuery);
     console.log('specificFacet', specificFacet);
