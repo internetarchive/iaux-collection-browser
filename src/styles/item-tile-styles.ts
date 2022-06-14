@@ -11,16 +11,14 @@ export const baseItemTileStyles = css`
     display: flex;
     flex-direction: column;
     height: 100%;
-    position: relative;
   }
-
-  #title-image-container {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 0.5rem 0.5rem 0 0.5rem;
+  .title-wrapper,
+  .stats-wrapper {
+    flex-shrink: 0;
   }
-
+  .image-wrapper {
+    flex-grow: 1;
+  }
   #item-title {
     color: #2c2c2c;
     font-size: 1.6rem;
@@ -35,43 +33,37 @@ export const baseItemTileStyles = css`
     line-height: 2rem;
     height: 4rem;
   }
-
   #item-image-container {
     display: flex;
     justify-content: center;
     flex: 1;
+    height: 16rem;
   }
-
   .hidden {
     display: none;
   }
-
   #container:hover > #title-image-container > .item-title {
     text-decoration: underline;
   }
-
   /** this is a workaround for Safari 15 where the hover effects are not working */
   #title-image-container:hover > #item-title {
     text-decoration: underline;
   }
-
   #container:hover > #item-title {
     background-color: #fcfcfc;
   }
-
   .item-creator {
     display: flex;
     justify-content: center;
     align-items: flex-end; /* Important to start text from bottom */
     height: 3rem;
     padding-top: 1rem;
+    margin-top: 5px;
   }
-
   .truncated {
     flex: 1;
     min-width: 0; /* Important for long words! */
   }
-
   .truncated span {
     font-size: 1.4rem;
     color: #2c2c2c;
@@ -84,19 +76,16 @@ export const baseItemTileStyles = css`
     line-height: 2rem;
     text-align: center;
   }
-
   .hr {
     border: 0.5px solid #ccc;
   }
-
   #item-stats-container {
     align-items: center;
     display: flex;
-    height: 4rem;
+    height: 2.1875rem;
     padding-left: 1rem;
     padding-right: 0.5rem;
   }
-
   #stats-holder {
     align-items: center;
     display: flex;
@@ -104,13 +93,13 @@ export const baseItemTileStyles = css`
     justify-content: space-evenly;
     text-align: center;
     width: 100%;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
   }
-
   svg {
     height: 10px;
     width: 10px;
   }
-
   .status-text {
     font-size: 14px;
     color: #2c2c2c;
@@ -119,7 +108,6 @@ export const baseItemTileStyles = css`
     display: block;
     text-align: center;
   }
-
   .col {
     width: 25%;
   }
