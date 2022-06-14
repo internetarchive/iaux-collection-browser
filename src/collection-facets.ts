@@ -355,9 +355,6 @@ export class CollectionFacets extends LitElement {
   }
 
   async fetchSpecificFacets(specificFacet: string) {
-    // console.log('this.fullQuery', this.fullQuery);
-    console.log('specificFacet', specificFacet);
-
     const aggregations = {
       advancedParams: [
         {
@@ -367,7 +364,6 @@ export class CollectionFacets extends LitElement {
       ],
     };
 
-    // console.log(aggregations)
     const params: SearchParams = {
       query: 'year:2020',
       fields: ['identifier'],
@@ -380,7 +376,6 @@ export class CollectionFacets extends LitElement {
   }
   
   async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
-
     const config = new ModalConfig();
     config.headline = html`${facetGroup.key}`;
     config.closeOnBackdropClick = true;
@@ -397,7 +392,6 @@ export class CollectionFacets extends LitElement {
     `;
     this.modalManager.showModal({config});
 
-
     const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
       detail: facetGroup,
     });
@@ -413,7 +407,6 @@ export class CollectionFacets extends LitElement {
       bucket => bucket.key.startsWith('fav-') === false
     );
     const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
-    // console.log
     return html`
       <modal-manager></modal-manager>
       <ul class="facet-list">

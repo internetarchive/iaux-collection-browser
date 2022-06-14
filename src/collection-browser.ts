@@ -252,7 +252,6 @@ export class CollectionBrowser
   render() {
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        <modal-manager></modal-manager>
         <div id="left-column" class="column">
           <div id="mobile-header-container">
             ${this.mobileView
@@ -401,7 +400,6 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         @moreLinkClicked=${this.moreLinkClicked}
-        @moreFacetsClosed=${this.moreFacetsClosed}
         .searchService=${this.searchService}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
@@ -465,20 +463,12 @@ export class CollectionBrowser
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
   }
 
-  private async moreFacetsClosed() {
-    console.log('moreFacetsClosed clicked');
-    this.showMoreContent = false;
-    this.performUpdate();
-  }
-
+  // not used
   private async moreLinkClicked(
     e: CustomEvent<{
       key: unknown; facetGroup: Object 
     }>
   ) {
-
-
-    // const { key, title } = e.detail;
     const query = e.detail.key;
 
     const config = new ModalConfig();
@@ -489,10 +479,7 @@ export class CollectionBrowser
     await Promise.all([
       this.fetchSpecificFacets(query as string),
     ]);
-    
 
-    // console.log('query', query)
-    // console.log('aggr', this.aggr)
     config.message = html`
       <facets-more-content
         .query=${query}
@@ -501,9 +488,6 @@ export class CollectionBrowser
       </facets-more-content>
     `;
     this.modalManager.showModal({config});
-
-    // this.showMoreContent = true;
-    // console.log(e.detail);
   }
 
   firstUpdated(): void {
@@ -813,7 +797,7 @@ export class CollectionBrowser
     this.aggr = results?.success?.response.aggregations;
   }
 
-  private async fetchFacets(specificFacet = '') {
+  private async fetchFacets() {
     if (!this.fullQuery) return;
 
     const aggregations = {
@@ -1180,20 +1164,6 @@ export class CollectionBrowser
 
   static styles = css`
     :host {
-      display: block;
-    }
-
-    /* add the following styles to ensure proper modal visibility */
-    body.modal-manager-open {
-      overflow: hidden;
-    }
-
-    modal-manager {
-      display: none;
-      --modalWidth: 100rem;
-    }
-
-    modal-manager[mode='open'] {
       display: block;
     }
 
