@@ -4,17 +4,12 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 
 import { TileModel } from '../../models';
-import { formatCount } from '../../utils/format-count';
-
-import { favoriteFilledIcon } from './icons/favorite-filled';
-import { reviewsIcon } from './icons/reviews';
-import viewsIcon from './icons/views';
 
 import '../mediatype-icon';
 import '../item-image';
+import '../item-stats';
 
-import '../../styles/item-tile-styles';
-import { baseItemTileStyles } from '../../styles/item-tile-styles';
+import { itemTileStyles } from '../../styles/item-tile-styles';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
@@ -38,50 +33,27 @@ export class ItemTile extends LitElement {
           </div>
           <div class="item-creator">
             <div class="truncated">
-              ${itemCreator
-                ? html`<span>by&nbsp;${itemCreator}</span>`
-                : nothing}
+              ${
+                itemCreator
+                  ? html`<span>by&nbsp;${itemCreator}</span>`
+                  : nothing
+              }
             </div>
           </div>
         </div>
 
-        <div class="stats-wrapper">
-          <div class="hr"></div>
-
-          <div id="stats-holder">
-            <div class="col">
-              <mediatype-icon
-                .mediatype=${this.model?.mediatype}
-                .collection=${this.model?.collections}
-                style="--iconHeight:25px; --iconWidth:25px;"
-              >
-              </mediatype-icon>
-            </div>
-            <div class="col">
-              ${viewsIcon}
-              <p class="status-text">
-                ${formatCount(this.model?.viewCount, 'short', 'short')}
-              </p>
-            </div>
-            <div class="col">
-              ${favoriteFilledIcon}
-              <p class="status-text">
-                ${formatCount(this.model?.itemCount, 'short', 'short')}
-              </p>
-            </div>
-            <div class="col">
-              ${reviewsIcon}
-              <p class="status-text">
-                ${formatCount(this.model?.favCount, 'short', 'short')}
-              </p>
-            </div>
-          </div>
+        <item-stats 
+          .mediatype=${this.model?.mediatype}
+          .viewCount=${this.model?.viewCount}
+          .favCount=${this.model?.favCount}
+          .commentCount=${this.model?.commentCount}>
+        </item-stats>
         </div>
       </div>
     `;
   }
 
   static get styles(): CSSResultGroup {
-    return [baseItemTileStyles];
+    return [itemTileStyles];
   }
 }
