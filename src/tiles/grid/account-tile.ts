@@ -2,10 +2,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { TileModel } from '../../models';
 
-import { accountIcon } from './icons/account';
-import { favoriteFilledIcon } from './icons/favorite-filled';
-import { reviewsIcon } from './icons/reviews';
-import { uploadIcon } from './icons/upload';
+import '../item-stats';
 
 @customElement('account-tile')
 export class AccountTile extends LitElement {
@@ -20,11 +17,11 @@ export class AccountTile extends LitElement {
               <h1 class="truncated">${this.model?.identifier}</h1>
             </div>
             <div id="avatar-holder">
-              <div
+              <img
                 id="avatar"
-                style="background-image: url('https://archive.org/services/img/${this
-                  .model?.identifier}')"
-              ></div>
+                alt="patron-avatar"
+                src="https://archive.org/services/img/${this.model?.identifier}"
+              />
             </div>
           </div>
           <div id="year-holder">
@@ -35,21 +32,14 @@ export class AccountTile extends LitElement {
               <h3>${this.model?.dateAdded?.getFullYear()}</h3>
             </div>
           </div>
-          <div id="status-holder">
-            <div id="patron-icon">${accountIcon}</div>
-            <div class="stat-icon">
-              ${uploadIcon}
-              <h3>${this.model?.itemCount}</h3>
-            </div>
-            <div class="stat-icon">
-              ${favoriteFilledIcon}
-              <h3>${this.model?.favCount}</h3>
-            </div>
-            <div class="stat-icon">
-              ${reviewsIcon}
-              <h3>${this.model?.commentCount}</h3>
-            </div>
-          </div>
+
+          <item-stats
+            .mediatype=${this.model?.mediatype}
+            .itemCount=${this.model?.itemCount}
+            .favCount=${this.model?.favCount}
+            .commentCount=${this.model?.commentCount}
+          >
+          </item-stats>
         </div>
       </div>
     `;
@@ -121,18 +111,6 @@ export class AccountTile extends LitElement {
         margin: 0px;
       }
 
-      #status-holder {
-        height: 25px;
-        display: flex;
-        justify-content: space-evenly;
-        line-height: initial;
-      }
-
-      #patron-icon {
-        height: 25px;
-        width: 25px;
-      }
-
       .truncated {
         flex: 1;
         min-width: 0; /* Important for long words! */
@@ -145,11 +123,6 @@ export class AccountTile extends LitElement {
         word-break: break-all;
         line-height: 2rem;
         text-align: center;
-      }
-
-      .stat-icon {
-        height: 10px;
-        width: 10px;
       }
     `;
   }

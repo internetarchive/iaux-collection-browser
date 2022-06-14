@@ -1,9 +1,6 @@
 import { css } from 'lit';
 
-/**
- * Base item-tile styles
- */
-export const baseItemTileStyles = css`
+export const itemTileStyles = css`
   #container {
     background-color: #ffffff;
     border-radius: var(--collectionTileCornerRadius, 4px);
@@ -13,8 +10,7 @@ export const baseItemTileStyles = css`
     height: 100%;
   }
 
-  .title-wrapper,
-  .stats-wrapper {
+  .title-wrapper {
     flex-shrink: 0;
   }
 
@@ -86,46 +82,5 @@ export const baseItemTileStyles = css`
     word-wrap: break-word;
     line-height: 2rem;
     text-align: center;
-  }
-
-  .hr {
-    border: 0.5px solid #bbb;
-  }
-
-  #item-stats-container {
-    align-items: center;
-    display: flex;
-    height: 2.1875rem;
-    padding-left: 1rem;
-    padding-right: 0.5rem;
-  }
-
-  #stats-holder {
-    align-items: center;
-    display: flex;
-    flex: 1;
-    justify-content: space-evenly;
-    text-align: center;
-    width: 100%;
-    padding-top: 5px;
-    padding-bottom: 5px;
-  }
-
-  svg {
-    height: 10px;
-    width: 10px;
-  }
-
-  .status-text {
-    font-size: 14px;
-    color: #2c2c2c;
-    line-height: 15px;
-    margin: auto;
-    display: block;
-    text-align: center;
-  }
-
-  .col {
-    width: 25%;
   }
 `;
