@@ -1,16 +1,9 @@
 import { css, CSSResultGroup, html, LitElement, nothing, PropertyValues, render, TemplateResult } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
-import type {
-  Aggregation,
-  Bucket,
-  Metadata,
-  SearchParams,
-  SearchServiceInterface,
-  SortDirection,
-  SortParam,
-} from '@internetarchive/search-service';
+import { Aggregation, Bucket, SearchParams, SearchServiceInterface } from '@internetarchive/search-service';
+
 
 import {
   FacetOption,
@@ -30,218 +23,164 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Boolean }) showMoreContent = false;
 
-  @property({ type: Array }) options = [];
   @property({ type: Object }) selectedFacets?: SelectedFacets;
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object }) aggr = [];
+
+  @property({ type: Object }) castedBuckets?: Bucket[] = [];
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
-  // @state() private options?: {};
+  @state() options?: {};
+  @state() lenght?: Number;
+
+  private facetsPerPage = 25;
+  @state() pageNumber = 1;
+
+  @query('.page-number') private pageNum!: any;
 
   updated(changed: PropertyValues) {
     if (changed.has('query') || changed.has('aggr')) {
-      // console.log('changed called in more-facets');
-
-      // console.log(this.aggr)
-
-      // this.renderMoreFacets;
+      console.log('changed called in more-facets');
+      this.filterFacets();
     }
   }
+  firstUpdated() {
+    window.addEventListener('pageClick', this.pageClick);
+  }
 
-  private renderMoreFacets() {
-    return html`${Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
-      // console.log(key, buckets)
-      const castedBuckets = buckets['buckets'] as FacetBucket[];
-      // console.log(castedBuckets)
-      return repeat(
-        castedBuckets,
-        // bucket => `${facetGroup.key}:${bucket.key}`,
-        option => {
-          const displayValue = option.displayText ? option.displayText : option.key
-          // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
+  async filterFacets() {
 
-          return html`
-            <div class="">
-              <div class="facell">
-                <input
-                  type="checkbox"
-                  name="${option.key}"
-                  value="${option.key}"
-                />
-              </div>
-              <div class="facell">
-                ${displayValue}
-              </div>
-              <div class="facell">
-                <a href="/details/${option.key}">${option.displayText}</a>
-              </div>
-            </div>`;
-        }
-      )
-      // castedBuckets.forEach(bucket => {
-      //   const option = bucket;
-      //   // console.log(option)
-      //   // console.log(option.displayText);
-      //   const displayValue = option.displayText ? option.displayText : option.key
-      //   // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
-
-      //   return html`
-      //     <div class="">
-      //       <div class="facell">
-      //         <input
-      //           type="checkbox"
-      //           name="${option.key}"
-      //           value="${option.key}"
-      //         />
-      //       </div>
-      //       <div class="facell">
-      //         ${displayValue}
-      //       </div>
-      //       <div class="facell">
-      //         <a href="/details/${option.key}">${option.displayText}</a>
-      //       </div>
-      //     </div>`;
-      // })
-      // return facetBuckets;
-    })}`
-    // console.log(dd)
-    // return dd; 
-    // return 1
+     Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+      if (key === 'year_histogram') return;
+      this.castedBuckets = buckets['buckets'] as Bucket[];
+    });
   }
 
 
+  async fetchSpecificFacets() {
+    // console.log('this.fullQuery', this.fullQuery);
+    console.log('specificFacet1', this.query);
 
-  closeClicked() {
-    this.showMoreContent = false;
-    // console.log('here')
+    const aggregations = {
+      advancedParams: [
+        {
+          field: 'year',
+          size: 50,
+        },
+      ],
+    };
+
+    const params: SearchParams = {
+      query: 'year:2020',
+      fields: ['identifier'],
+      aggregations,
+      rows: 1, 
+    };
+
+    const results = await this.searchService?.search(params);
+    this.options = results?.success?.response.aggregations;
+  }
+  
+  private get renderPaginations() {
+    var loading = 1;
+    const paging = []
+
+    const lenght = Object.keys(this.castedBuckets as []).length
+    console.log(lenght)
+    const numberOfPages = lenght / this.facetsPerPage
+    const loadnote = (loading
+      ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
+      : '')
+    // if (!loading) {
+
+      let page = 1
+      for (page = 1; page <= numberOfPages; page++) {
+        if (this.pageNumber === page)
+          paging.push(html`<div class="topinblock">${page}</div>`)
+        else
+          paging.push(html`<a href="#${page}" class="page-number" @click="${(e: Event) => {
+            this.dispatchEvent(new CustomEvent('pageClick', { detail: page }));
+            // this.pageClick();
+         }}">${page}</a>`)
+        paging.push(html` `)
+        // console.log(page)
+      }
+      if (loading < numberOfPages) {
+        paging.push(html`
+          <a href="#${1 + loading}" @click="${(e: Event) => {
+            this.dispatchEvent(new CustomEvent('pageClick', { detail: { page, pager_next: true }}));
+            }}" data-action="pager_next">
+            <span class="iconochive-right-solid" />
+          </a>`)
+      }
+
+      return paging;
   }
 
+  private pageClick(e: Event) {
+    e.stopPropagation() 
+    e.preventDefault()
+    console.log(e)
+    // console.log(e.detail)
+    // console.log(_page)
+    // return;
+    // if user clicked on the |> "next page" icon, advance one page;
+    // else they clicked on a specific page number to go to
+    // this.pageNumber = this.pageNumber + 1
+    // this.pageNumber = _page
+    // this.pageNumber = (
+    //   e.explicitOriginalTarget === 'pager_next'
+    //     ? this.page + 1
+    //     : parseInt($(e.target).text(), 10)
+    // )
+  }
+
+  private get renderMoreFacets() {
+    const min = (this.pageNumber - 1) * this.facetsPerPage;
+    const max = (min + this.facetsPerPage) - 1;
+
+    return html`${this.castedBuckets?.map((option, n) => {
+      const optionWrapperClass = (n >= min && n <= max) ? 'farow' : 'farow hidden'
+      return html`
+        <div class=${optionWrapperClass}>
+          <div class="facell">
+            <input
+              type="checkbox"
+              name="${option.key}"
+              value="${option.key}"
+            />
+          </div>
+          <div class="facell">
+            ${option.doc_count}
+          </div>
+          <div class="facell">
+            ${option.key}
+          </div>
+        </div>`;
+      }
+    )}`
+  }
 
 
   render() {
-
-    const options = Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
-      // console.log(key, buckets)
-      const castedBuckets = buckets['buckets'] as FacetBucket[];
-      // console.log(castedBuckets)
-      repeat(
-        castedBuckets,
-        // bucket => `${facetGroup.key}:${bucket.key}`,
-        option => {
-          const displayValue = option.displayText ? option.displayText : option.key
-          // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
-
-          return html`
-            <div class="">
-              <div class="facell">
-                <input
-                  type="checkbox"
-                  name="${option.key}"
-                  value="${option.key}"
-                />
-              </div>
-              <div class="facell">
-                ${displayValue}
-              </div>
-              <div class="facell">
-                <a href="/details/${option.key}">${option.displayText}</a>
-              </div>
-            </div>`;
-        }
-      )
-    });
-    const loadnote = (true
-      ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
-      : '');
-
-
-    return html`
-      <section
-        class="facets-more-content ${this.showMoreContent ? 'show' : 'hide'}"
-      >
-        <div id="morf-page">
-        <form>
-        ${this.renderMoreFacets}
-
-        ${
-          Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
-            // console.log(key, buckets)
-
-            if (key === 'year_histogram') return;
-
-            const castedBuckets = buckets['buckets'] as FacetBucket[];
-            console.log(castedBuckets)
-
-            castedBuckets.forEach(bucket => {
-            const option = bucket;
-            // console.log(option)
-            // console.log(option.displayText);
-            const displayValue = option.displayText ? option.displayText : option.key
-            // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
-            
-            html`
-              <div class="">
-                <div class="facell">
-                  <input
-                    type="checkbox"
-                    name="${option.key}"
-                    value="${option.key}"
-                  />
-                </div>
-                <div class="facell">
-                  ${displayValue}
-                </div>
-                <div class="facell">
-                  <a href="/details/${option.key}">${option.displayText}</a>
-                </div>
-              </div>`;
-            })
-
-
-          
-            return repeat(
-              castedBuckets,
-              bucket => `${bucket.key}`,
-              option => {
-                const displayValue = option.displayText ? option.displayText : option.key
-                // const optionWrapperClass = (n >= min && n <= max && !loading) ? 'farow' : 'farow hidden'
-                console.log(displayValue)
-                html`
-                  <div class="">
-                    <div class="facell">
-                      <input
-                        type="checkbox"
-                        name="${option.key}"
-                        value="${option.key}"
-                      />
-                    </div>
-                    <div class="facell">
-                      ${displayValue}
-                    </div>
-                    <div class="facell">
-                      <a href="/details/${option.key}">${option.displayText}</a>
-                    </div>
-                  </div>`;
-              }
-            )
-        })}
-
-            
-            ${loadnote}
-            <div id="morf-paging">
-            </div>
-            <center>
-              <input class="btn '{loading ? 'btn-archive hidden' : 'btn-archive'}" type="button"
-                value="Apply your filters" @click='{this.submitClick}' />
-            </center>
-          </form>
+    return html`<div id="morf-page">
+      <form>
+        <div class="fatable">
+          ${this.renderMoreFacets}
         </div>
-      </section>
-    `;
+        <div id="morf-paging">
+          ${this.renderPaginations}
+        </div>
+        <center>
+          <input class="btn loading ? 'btn-archive hidden' : 'btn-archive'}" type="button"
+            value="Apply your filters" @click=this.submitClick} />
+        </center>
+      </form>
+    </div>`;
   }
 
   static get styles(): CSSResultGroup {
@@ -274,6 +213,7 @@ export class FacetsMoreContent extends LitElement {
   /**/   -moz-column-width: 250px;/*firefox*/
   /**/        column-width: 250px;/*SUPERGREAT CSS3 FEATURE*/
   font-size: 12px;
+  padding: 0 20px;
 }
 .farow {
   width: 100%;
@@ -318,9 +258,9 @@ export class FacetsMoreContent extends LitElement {
 }
 #morf-paging .topinblock {
   background-color: #fafafa;
-  padding:7px 5px;
   margin-top:-7px;
   margin-bottom:-7px;
+  display: inline-block;
 }
 
 .loading {

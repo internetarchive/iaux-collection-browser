@@ -131,6 +131,7 @@ export class CollectionFacets extends LitElement {
   }
 
   private dispatchFacetsChangedEvent() {
+    console.log(this.selectedFacets)
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
     });
@@ -355,74 +356,48 @@ export class CollectionFacets extends LitElement {
 
   async fetchSpecificFacets(specificFacet: string) {
     // console.log('this.fullQuery', this.fullQuery);
-    // console.log('specificFacet', specificFacet);
+    console.log('specificFacet', specificFacet);
 
     const aggregations = {
       advancedParams: [
         {
           field: specificFacet,
-          size: 100,
+          size: 250,
         },
       ],
     };
 
     // console.log(aggregations)
     const params: SearchParams = {
-      query: 'title:hello',
+      query: 'year:2020',
       fields: ['identifier'],
       aggregations,
       rows: 1,
     };
 
     const results = await this.searchService?.search(params);
-    this.aggregations = results?.success?.response.aggregations;
+    this.aggr = results?.success?.response.aggregations;
   }
   
   async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
-  
-    // console.log(e)
-    // console.log(e.detail)
-    // const { key, title } = e.detail;
-    // const query = e.detail.key;
-    // console.log(facetGroup)
-    // console.log(facetGroup)
-    // console.log(e.detail.key)
+
     const config = new ModalConfig();
-    config.headline = html`Hi, Everybody1!`;
-    // config.message = html`Hi, Doctor Nick!`;
+    config.headline = html`${facetGroup.key}`;
     config.closeOnBackdropClick = true;
 
-    console.log('before')
-    // await Promise.all([
-    //   this.fetchSpecificFacets(facetGroup as unknown as string),
-    // ]);
     await this.fetchSpecificFacets(facetGroup.key as unknown as string),
-
-    console.log('after')
-    
-
-    // console.log('query', query)
-    // console.log('new aggr1', this.aggregations)
-
-    // this.aggregationFacetGroups.map(facetGroup =>
-    //   console.log(this.getFacetGroupTemplate(facetGroup))
-    // )
-
+    console.log('fetchSpecificFacets')
+  
     config.message = html`
       <facets-more-content
-        .query=${facetGroup}
-        .aggr=${this.aggregationFacetGroups}
+        .query=${facetGroup.key}
+        .aggr=${this.aggr}
         ?showMoreContent=${this.showMoreContent}>
       </facets-more-content>
     `;
     this.modalManager.showModal({config});
 
-    // this.showMoreContent = true;
-    // console.log(e.detail);
 
-    // this.getMoreContentTemplate();
-    // console.log(facetGroup)
-    // const { key, title } = facetGroup;
     const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
       detail: facetGroup,
     });
@@ -600,7 +575,7 @@ export class CollectionFacets extends LitElement {
   
       modal-manager {
         display: none;
-        --modalWidth: 100rem;
+        --modalWidth: 85rem;
       }
   
       modal-manager[mode='open'] {
