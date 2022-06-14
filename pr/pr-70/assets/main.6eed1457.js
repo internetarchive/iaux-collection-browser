@@ -670,7 +670,7 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
   }
 
   .hr {
-    border: 0.5px solid #ccc;
+    border: 0.5px solid #bbb;
   }
 
   #item-stats-container {
@@ -688,8 +688,8 @@ var ho=Object.defineProperty,uo=Object.defineProperties;var po=Object.getOwnProp
     justify-content: space-evenly;
     text-align: center;
     width: 100%;
-    padding-top: 0.625rem;
-    padding-bottom: 0.625rem;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 
   svg {
