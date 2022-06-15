@@ -1,186 +1,173 @@
 import { css, CSSResultGroup, html, LitElement, nothing, PropertyValues, render, TemplateResult } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { repeat } from 'lit/directives/repeat.js';
-
-import { Aggregation, Bucket, SearchParams, SearchServiceInterface } from '@internetarchive/search-service';
-
+import { Bucket, SearchServiceInterface } from '@internetarchive/search-service';
 
 import {
-  FacetOption,
   SelectedFacets,
   FacetGroup,
-  FacetBucket,
   defaultSelectedFacets,
-  // Bucket,
 } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
   @property({ type: String }) content?: string;
-
   @property({ type: String }) query?: string;
-
   @property({ type: Boolean }) showMoreContent = false;
-
   @property({ type: Object }) selectedFacets?: SelectedFacets;
+  @property({ type: Object }) modalManager?: any;
   @property({ type: Object }) searchService?: SearchServiceInterface;
-
   @property({ type: Object }) aggr = [];
-
   @property({ type: Object }) castedBuckets?: Bucket[] = [];
-  @property({ type: Object })
-  languageCodeHandler?: LanguageCodeHandlerInterface;
-
+  @property({ type: Object }) selectedFieldName?: String;
+  @property({ type: Object }) languageCodeHandler?: LanguageCodeHandlerInterface;
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
-  @state() options?: {};
-  @state() lenght?: Number;
-
-  private facetsPerPage = 25;
   @state() pageNumber = 1;
 
-  @query('.page-number') private pageNum!: any;
+  private facetsPerPage = 25;
 
   updated(changed: PropertyValues) {
     if (changed.has('query') || changed.has('aggr')) {
-      console.log('changed called in more-facets');
       this.filterFacets();
     }
   }
-  firstUpdated() {
-    window.addEventListener('pageClick', this.pageClick);
-  }
 
   async filterFacets() {
-
      Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
       if (key === 'year_histogram') return;
+      const parts = key.split('__');
+      const fieldNamePart = parts[2];
+      this.selectedFieldName = fieldNamePart.split(':')[1];
       this.castedBuckets = buckets['buckets'] as Bucket[];
     });
   }
 
-
-  async fetchSpecificFacets() {
-    // console.log('this.fullQuery', this.fullQuery);
-    console.log('specificFacet1', this.query);
-
-    const aggregations = {
-      advancedParams: [
-        {
-          field: 'year',
-          size: 50,
-        },
-      ],
-    };
-
-    const params: SearchParams = {
-      query: 'year:2020',
-      fields: ['identifier'],
-      aggregations,
-      rows: 1, 
-    };
-
-    const results = await this.searchService?.search(params);
-    this.options = results?.success?.response.aggregations;
-  }
-  
   private get renderPaginations() {
     var loading = 1;
     const paging = []
 
     const lenght = Object.keys(this.castedBuckets as []).length
-    console.log(lenght)
     const numberOfPages = lenght / this.facetsPerPage
-    const loadnote = (loading
-      ? html`<div class="loading">loading filters... <img alt="" src="/images/loading.gif"/></div>`
-      : '')
-    // if (!loading) {
 
-      let page = 1
-      for (page = 1; page <= numberOfPages; page++) {
-        if (this.pageNumber === page)
-          paging.push(html`<div class="topinblock">${page}</div>`)
-        else
-          paging.push(html`<a href="#${page}" class="page-number" @click="${(e: Event) => {
-            this.dispatchEvent(new CustomEvent('pageClick', { detail: page }));
-            // this.pageClick();
-         }}">${page}</a>`)
-        paging.push(html` `)
-        // console.log(page)
-      }
-      if (loading < numberOfPages) {
-        paging.push(html`
-          <a href="#${1 + loading}" @click="${(e: Event) => {
-            this.dispatchEvent(new CustomEvent('pageClick', { detail: { page, pager_next: true }}));
-            }}" data-action="pager_next">
-            <span class="iconochive-right-solid" />
-          </a>`)
-      }
+    const onClickEvent = (e: Event) => {
+      this.pageClick(e);
+    }
 
-      return paging;
+    let page = 1
+    for (page = 1; page <= numberOfPages; page++) {
+      if (this.pageNumber === page) {
+        paging.push(html`<a class="page-number current-page">${page}</a>`)
+      } else {
+        paging.push(html`<a class="page-number" href="#${page}" @click="${onClickEvent}">${page}</a>`)
+      }
+    }
+
+    if (loading < numberOfPages) {
+      paging.push(html`<a
+        class="page-number" 
+        href="#${1 + loading}" 
+        @click="${onClickEvent}" 
+        data-action="pager_next">&#8658;
+      </a>`)
+    }
+
+    return paging;
   }
 
   private pageClick(e: Event) {
     e.stopPropagation() 
     e.preventDefault()
-    console.log(e)
-    // console.log(e.detail)
-    // console.log(_page)
-    // return;
-    // if user clicked on the |> "next page" icon, advance one page;
-    // else they clicked on a specific page number to go to
-    // this.pageNumber = this.pageNumber + 1
-    // this.pageNumber = _page
-    // this.pageNumber = (
-    //   e.explicitOriginalTarget === 'pager_next'
-    //     ? this.page + 1
-    //     : parseInt($(e.target).text(), 10)
-    // )
+
+    const target = e.target as HTMLElement;
+    const { textContent, dataset } = target;
+
+    if (textContent) this.pageNumber = parseInt(textContent)
   }
 
   private get renderMoreFacets() {
     const min = (this.pageNumber - 1) * this.facetsPerPage;
     const max = (min + this.facetsPerPage) - 1;
-
-    return html`${this.castedBuckets?.map((option, n) => {
-      const optionWrapperClass = (n >= min && n <= max) ? 'farow' : 'farow hidden'
-      return html`
-        <div class=${optionWrapperClass}>
-          <div class="facell">
-            <input
-              type="checkbox"
-              name="${option.key}"
-              value="${option.key}"
-            />
-          </div>
-          <div class="facell">
-            ${option.doc_count}
-          </div>
-          <div class="facell">
-            ${option.key}
-          </div>
-        </div>`;
-      }
+    return html`<ul class="facet-list">
+      ${this.castedBuckets?.map((option, n) => {
+        const optionWrapperClass = (n >= min && n <= max) ? 'farow' : 'farow hidden'
+        return html`
+          <li class=${optionWrapperClass}>
+            <div class="facet-row">
+              <input
+                type="checkbox"
+                class="selected-facets"
+                name="${option.key}"
+                value="${option.key}"
+                data-facet="${this.selectedFieldName}"
+                @click=${(e: Event) => {
+                  this.facetClicked(e, this.selectedFieldName);
+                }}
+              />
+              <label
+                class="facet-info-display"
+                title=${option.key}
+              >
+                <div class="facet-title">${option.key}</div>
+                <div class="facet-count">${option.doc_count}</div>
+              </label>
+            </div>
+          </li>`;
+        }
     )}`
   }
 
+  private facetClicked(e: Event, key: any) {
+    const { selectedFacets } = this;
+
+    const target = e.target as HTMLInputElement;
+    const { checked, value, dataset } = target;
+    const facetKey = dataset.facet as string;
+
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+
+    if (checked) {
+      newFacets[facetKey as keyof typeof newFacets][value] = false ? 'hidden' : 'selected';
+    } else {
+      delete newFacets[facetKey as keyof typeof newFacets][value];
+    }
+
+    this.selectedFacets = newFacets;
+    console.log(newFacets)
+  }
 
   render() {
     return html`<div id="morf-page">
       <form>
-        <div class="fatable">
+        <div class="facets-content">
           ${this.renderMoreFacets}
         </div>
-        <div id="morf-paging">
+        <div class="facets-paging">
           ${this.renderPaginations}
         </div>
         <center>
           <input class="btn loading ? 'btn-archive hidden' : 'btn-archive'}" type="button"
-            value="Apply your filters" @click=this.submitClick} />
+            value="Apply your filters" @click=${this.submitClick} />
         </center>
       </form>
     </div>`;
+  }
+
+  private submitClick(e: Event) {
+    const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+      detail: this.selectedFacets,
+      bubbles: true,
+      composed: true
+    });
+    this.dispatchEvent(event);
+    this.modalManager?.closeModal()
   }
 
   static get styles(): CSSResultGroup {
@@ -193,88 +180,83 @@ export class FacetsMoreContent extends LitElement {
         width: 80%;
       }
 
-      .show {
-        display: block;
+      .facets-content {
+        -webkit-column-width: 250px;
+        -moz-column-width: 250px;
+        column-width: 250px;
+        font-size: 12px;
+        padding: 0 20px;
       }
-      .hide {
+
+      .facets-paging {
+        margin: 15px;
+        background-color: #efefef;
+        text-align: right;
+        padding: 10px;
+      }
+      .facets-paging .topinblock {
+        background-color: #fafafa;
+        margin-top:-7px;
+        margin-bottom:-7px;
+        display: inline-block;
+      }
+
+      .farow {
+        width: 100%;
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: 500;
+      }
+      .farow.hidden {
         display: none;
       }
 
-      /* The Close Button */
-      .close {
-        color: #aaaaaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
+      ul.facet-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      ul.facet-list li {
+        margin-bottom: 0.2rem;
+      }
+      .facet-row {
+        text-align: left;
+      }
+      .facet-row {
+        display: flex;
+        align-items: start;
+        font-weight: 500;
+        font-size: 1.2rem;
       }
 
-      .fatable { /* xxx pull these rules out of archive.less if decide to pull "no JS" facets page.. */
-  /**/-webkit-column-width: 250px;/*android*/
-  /**/   -moz-column-width: 250px;/*firefox*/
-  /**/        column-width: 250px;/*SUPERGREAT CSS3 FEATURE*/
-  font-size: 12px;
-  padding: 0 20px;
-}
-.farow {
-  width: 100%;
-  display: inline-block;
-  margin-bottom: 0;
-  font-weight: 500;
-}
-.farow.hidden {
-  display: none;
-}
-.farow .facell a {
-  word-break: break-word;
-}
-.facell.fin {
-  background-color: rgb(252, 194, 76); /*@yellow-em*/
-  color: black;
-}
-.facell:first-child {
-  float: left;
-  width: 20px;
-}
-.facell:nth-child(2){
-  text-align: right;
-  float: right;
-}
-.facell:last-child {
-  .breaker-breaker;
-  display: flex; /*because want to lay facets cells out in one direction so that checkbox and facet cells value can in two different column*/
-}
+      .facet-info-display {
+        display: flex;
+        flex: 1;
+        cursor: pointer;
+      }
 
-#morf-paging {
-  margin-top:15px;
-  margin-bottom:15px;
-  background-color:#efefef;
-  text-align:right;
-  font-size:13px;
-  padding-top:7px;
-  padding-bottom:7px;
-  padding-right:15px;
-  word-spacing: 5px;
-  color:#4a4a4a;
-}
-#morf-paging .topinblock {
-  background-color: #fafafa;
-  margin-top:-7px;
-  margin-bottom:-7px;
-  display: inline-block;
-}
-
-.loading {
-  font-style: italic;
-  margin: 25px;
-  text-align: center;
-}
-.loading img {
-  width: 25px;
-}
+      .facet-title {
+        flex: 1;
+      }
+      .facet-count {
+        margin-left: 0.5rem;
+      }
+      .page-number {
+        padding: 5px;
+        color: blue;
+      }
+      .current-page {
+        background: white;
+        padding: 5px;
+        color: initial;
+      }
+      .loading {
+        font-style: italic;
+        text-align: center;
+      }
+      .loading img {
+        width: 25px;
+      }
     `;
   }
 }
-function add_commas(displayText: string | undefined): unknown {
-  throw new Error('Function not implemented.');
-}
-

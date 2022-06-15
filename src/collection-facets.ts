@@ -76,7 +76,6 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
-  // @property({ type: Object }) searchService?: {};
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object })
@@ -84,10 +83,11 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
+
   /**
    * If item management UI active
    */
-   @property({ type: Boolean }) showMoreContent = true;
+  @property({ type: Boolean }) showMoreContent = true;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -100,13 +100,10 @@ export class CollectionFacets extends LitElement {
 
   @query('modal-manager') private modalManager!: any;
 
-  // fullQuery: string;
   // aggr: any;
   @state() private aggr?: {};
 
-
   render() {
-    // console.log(this.mergedFacets)
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
         ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
@@ -131,7 +128,6 @@ export class CollectionFacets extends LitElement {
   }
 
   private dispatchFacetsChangedEvent() {
-    console.log(this.selectedFacets)
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
     });
@@ -365,7 +361,7 @@ export class CollectionFacets extends LitElement {
     };
 
     const params: SearchParams = {
-      query: 'year:2020',
+      query: 'title:hello',
       fields: ['identifier'],
       aggregations,
       rows: 1,
@@ -387,15 +383,12 @@ export class CollectionFacets extends LitElement {
       <facets-more-content
         .query=${facetGroup.key}
         .aggr=${this.aggr}
+        .modalManager=${this.modalManager}
+        .selectedFacets=${this.selectedFacets}
         ?showMoreContent=${this.showMoreContent}>
       </facets-more-content>
     `;
     this.modalManager.showModal({config});
-
-    const event = new CustomEvent<FacetGroup>('moreLinkClicked', {
-      detail: facetGroup,
-    });
-    // this.dispatchEvent(event);
   }
 
   
@@ -407,6 +400,7 @@ export class CollectionFacets extends LitElement {
       bucket => bucket.key.startsWith('fav-') === false
     );
     const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
+
     return html`
       <modal-manager></modal-manager>
       <ul class="facet-list">
