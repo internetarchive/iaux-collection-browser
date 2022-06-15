@@ -92,7 +92,6 @@ export class ItemTile extends LitElement {
         text-overflow: ellipsis;
         display: -webkit-box;
         word-wrap: break-word;
-        word-break: break-all;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         line-height: 2rem;
@@ -146,7 +145,6 @@ export class ItemTile extends LitElement {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         word-wrap: break-word;
-        word-break: break-all;
         line-height: 2rem;
         text-align: center;
       }
