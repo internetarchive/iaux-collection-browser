@@ -167,6 +167,12 @@ export class CollectionBrowser
    */
   private endOfDataReached = false;
 
+  /**
+   * When page width resizes from desktop to mobile, set true to
+   * disable expand/collapse transition when loading.
+   */
+  private isResizeToMobile = false;
+
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
@@ -246,31 +252,12 @@ export class CollectionBrowser
   render() {
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        <div id="left-column" class="column">
+        <div
+          id="left-column"
+          class="column${this.isResizeToMobile ? ' preload' : ''}"
+        >
           <div id="mobile-header-container">
-            ${this.mobileView
-              ? html`
-                  <div id="mobile-filter-collapse">
-                    <h1
-                      @click=${() => {
-                        this.mobileFacetsVisible = !this.mobileFacetsVisible;
-                      }}
-                      @keyup=${() => {
-                        this.mobileFacetsVisible = !this.mobileFacetsVisible;
-                      }}
-                    >
-                      <span
-                        class="collapser ${this.mobileFacetsVisible
-                          ? 'open'
-                          : ''}"
-                      >
-                        ${chevronIcon}
-                      </span>
-                      Filters
-                    </h1>
-                  </div>
-                `
-              : nothing}
+            ${this.mobileView ? this.mobileFacetsTemplate : nothing}
             <div id="results-total">
               <span id="big-results-count"
                 >${this.totalResults !== undefined
@@ -385,6 +372,28 @@ export class CollectionBrowser
 
   private get facetDataLoading(): boolean {
     return this.facetsLoading || this.fullYearAggregationLoading;
+  }
+
+  private get mobileFacetsTemplate() {
+    return html`
+      <div id="mobile-filter-collapse">
+        <h1
+          @click=${() => {
+            this.isResizeToMobile = false;
+            this.mobileFacetsVisible = !this.mobileFacetsVisible;
+          }}
+          @keyup=${() => {
+            this.isResizeToMobile = false;
+            this.mobileFacetsVisible = !this.mobileFacetsVisible;
+          }}
+        >
+          <span class="collapser ${this.mobileFacetsVisible ? 'open' : ''}">
+            ${chevronIcon}
+          </span>
+          Filters
+        </h1>
+      </div>
+    `;
   }
 
   private get facetsTemplate() {
@@ -546,8 +555,13 @@ export class CollectionBrowser
   }
 
   handleResize(entry: ResizeObserverEntry): void {
+    const previousView = this.mobileView;
     if (entry.target === this.contentContainer) {
-      this.mobileView = entry.contentRect.width < 600;
+      this.mobileView = entry.contentRect.width < this.mobileBreakpoint;
+      // If changing from desktop to mobile disable transition
+      if (this.mobileView && !previousView) {
+        this.isResizeToMobile = true;
+      }
     }
   }
 
@@ -1158,6 +1172,18 @@ export class CollectionBrowser
   static styles = css`
     :host {
       display: block;
+    }
+
+    /**
+    * When page width resizes from desktop to mobile, use this class to
+    * disable expand/collapse transition when loading.
+    */
+    .preload * {
+      transition: none !important;
+      -webkit-transition: none !important;
+      -moz-transition: none !important;
+      -ms-transition: none !important;
+      -o-transition: none !important;
     }
 
     #content-container {

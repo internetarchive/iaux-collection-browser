@@ -125,6 +125,7 @@ export class AccountTile extends LitElement {
         height: 25px;
         display: flex;
         justify-content: space-evenly;
+        line-height: initial;
       }
 
       #patron-icon {
@@ -141,6 +142,7 @@ export class AccountTile extends LitElement {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         word-wrap: break-word;
+        word-break: break-all;
         line-height: 2rem;
         text-align: center;
       }

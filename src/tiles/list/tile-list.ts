@@ -10,14 +10,18 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { customElement, property, state } from 'lit/decorators.js';
+
+import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+
 import { dateLabel } from './date-label';
 import { accountLabel } from './account-label';
 import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
+
+import '../item-image';
 import '../mediatype-icon';
 
 @customElement('tile-list')
@@ -143,6 +147,7 @@ export class TileList extends LitElement {
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
+        style="--imgHeight: 100%; --imgWidth: 100%"
       >
       </item-image>
     `;
