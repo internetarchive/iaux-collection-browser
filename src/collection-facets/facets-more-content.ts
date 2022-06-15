@@ -19,7 +19,7 @@ export class FacetsMoreContent extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
   @property({ type: Object }) aggr = [];
   @property({ type: Object }) castedBuckets?: Bucket[] = [];
-  @property({ type: Object }) selectedFieldName?: String;
+  @property({ type: Object }) selectedFacet?: String;
   @property({ type: Object }) languageCodeHandler?: LanguageCodeHandlerInterface;
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
@@ -38,13 +38,12 @@ export class FacetsMoreContent extends LitElement {
       if (key === 'year_histogram') return;
       const parts = key.split('__');
       const fieldNamePart = parts[2];
-      this.selectedFieldName = fieldNamePart.split(':')[1];
+      this.selectedFacet = fieldNamePart.split(':')[1];
       this.castedBuckets = buckets['buckets'] as Bucket[];
     });
   }
 
   private get renderPaginations() {
-    var loading = 1;
     const paging = []
 
     const lenght = Object.keys(this.castedBuckets as []).length
@@ -61,15 +60,6 @@ export class FacetsMoreContent extends LitElement {
       } else {
         paging.push(html`<a class="page-number" href="#${page}" @click="${onClickEvent}">${page}</a>`)
       }
-    }
-
-    if (loading < numberOfPages) {
-      paging.push(html`<a
-        class="page-number" 
-        href="#${1 + loading}" 
-        @click="${onClickEvent}" 
-        data-action="pager_next">&#8658;
-      </a>`)
     }
 
     return paging;
@@ -99,9 +89,9 @@ export class FacetsMoreContent extends LitElement {
                 class="selected-facets"
                 name="${option.key}"
                 value="${option.key}"
-                data-facet="${this.selectedFieldName}"
+                data-facet="${this.selectedFacet}"
                 @click=${(e: Event) => {
-                  this.facetClicked(e, this.selectedFieldName);
+                  this.facetClicked(e);
                 }}
               />
               <label
@@ -117,7 +107,7 @@ export class FacetsMoreContent extends LitElement {
     )}`
   }
 
-  private facetClicked(e: Event, key: any) {
+  private facetClicked(e: Event) {
     const { selectedFacets } = this;
 
     const target = e.target as HTMLInputElement;
@@ -153,7 +143,7 @@ export class FacetsMoreContent extends LitElement {
           ${this.renderPaginations}
         </div>
         <center>
-          <input class="btn loading ? 'btn-archive hidden' : 'btn-archive'}" type="button"
+          <input class="btn btn-archive}" type="button"
             value="Apply your filters" @click=${this.submitClick} />
         </center>
       </form>

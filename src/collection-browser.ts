@@ -122,15 +122,9 @@ export class CollectionBrowser
   @property({ type: Boolean }) isManageView = false;
 
   /**
-   * If item management UI active
-   */
-  @property({ type: Boolean }) showMoreContent = true;
-
-  /**
    * The page that the consumer wants to load.
    */
   private initialPageNumber = 1;
-
 
   /**
    * This the the number of pages that we want to show.
@@ -483,8 +477,7 @@ export class CollectionBrowser
     config.message = html`
       <facets-more-content
         .query=${query}
-        .aggr=${this.aggr}
-        ?showMoreContent=${this.showMoreContent}>
+        .aggr=${this.aggr}>
       </facets-more-content>
     `;
     this.modalManager.showModal({config});
