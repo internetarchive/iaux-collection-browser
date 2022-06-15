@@ -27,9 +27,9 @@ export class ItemTile extends LitElement {
 
           <div class="image-wrapper">
             <div id="item-image-container">
-              <item-image .model=${this.model} .baseImageUrl=${
-      this.baseImageUrl
-    }>
+              <item-image
+                .model=${this.model}
+                .baseImageUrl=${this.baseImageUrl}>
               </item-image>
             </div>
             <div class="item-creator">
