@@ -2,10 +2,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { TileModel } from '../../models';
 
-import { accountIcon } from './icons/account';
-import { favoriteFilledIcon } from './icons/favorite-filled';
-import { reviewsIcon } from './icons/reviews';
-import { uploadIcon } from './icons/upload';
+import './tile-stats';
 
 @customElement('account-tile')
 export class AccountTile extends LitElement {
@@ -14,43 +11,37 @@ export class AccountTile extends LitElement {
   render() {
     return html`
       <div class="outer-holder">
-        <div class="inner-holder">
-          <div id="header-holder">
-            <div id="title-holder">
-              <h1 class="truncated">${this.model?.identifier}</h1>
-            </div>
-            <div id="avatar-holder">
-              <div
-                id="avatar"
-                style="background-image: url('https://archive.org/services/img/${this
-                  .model?.identifier}')"
-              ></div>
-            </div>
+        <div id="header-holder">
+          <div id="title-holder">
+            <h1 class="truncated">${this.model?.identifier}</h1>
           </div>
+        </div>
+
+        <div class="inner-holder">
+          <div id="avatar-holder">
+            <img
+              id="avatar"
+              alt="patron-avatar"
+              src="https://archive.org/services/img/${this.model?.identifier}"
+            />
+          </div>
+
           <div id="year-holder">
             <div id="archivist-since">
-              <h3>Archivist Since</h3>
-            </div>
-            <div id="year-holder">
-              <h3>${this.model?.dateAdded?.getFullYear()}</h3>
-            </div>
-          </div>
-          <div id="status-holder">
-            <div id="patron-icon">${accountIcon}</div>
-            <div class="stat-icon">
-              ${uploadIcon}
-              <h3>${this.model?.itemCount}</h3>
-            </div>
-            <div class="stat-icon">
-              ${favoriteFilledIcon}
-              <h3>${this.model?.favCount}</h3>
-            </div>
-            <div class="stat-icon">
-              ${reviewsIcon}
-              <h3>${this.model?.commentCount}</h3>
+              <span>
+                Archivist since ${this.model?.dateAdded?.getFullYear()}
+              </span>
             </div>
           </div>
         </div>
+
+        <tile-stats
+          .mediatype=${this.model?.mediatype}
+          .itemCount=${this.model?.itemCount}
+          .favCount=${this.model?.favCount}
+          .commentCount=${this.model?.commentCount}
+        >
+        </tile-stats>
       </div>
     `;
   }
@@ -63,9 +54,8 @@ export class AccountTile extends LitElement {
         margin: 0;
       }
 
-      h3 {
+      span {
         font-size: 14px;
-        font-weight: bold;
         color: #2c2c2c;
         margin: 0px;
       }
@@ -77,22 +67,18 @@ export class AccountTile extends LitElement {
         box-shadow: 1px 1px 2px 0px;
         height: 100%;
         display: flex;
+        flex-direction: column;
         text-align: center;
         width: 100%;
+        padding-bottom: 5px;
       }
 
       .inner-holder {
-        padding: 5px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-
-      #header-holder {
-        flex: 1;
+        flex-grow: 1;
       }
 
       #title-holder {
+        flex-shrink: 0;
         height: 40px;
         margin-bottom: 5px;
       }
@@ -117,22 +103,6 @@ export class AccountTile extends LitElement {
         height: 40px;
       }
 
-      #year-holder {
-        margin: 0px;
-      }
-
-      #status-holder {
-        height: 25px;
-        display: flex;
-        justify-content: space-evenly;
-        line-height: initial;
-      }
-
-      #patron-icon {
-        height: 25px;
-        width: 25px;
-      }
-
       .truncated {
         flex: 1;
         min-width: 0; /* Important for long words! */
@@ -145,11 +115,6 @@ export class AccountTile extends LitElement {
         word-break: break-all;
         line-height: 2rem;
         text-align: center;
-      }
-
-      .stat-icon {
-        height: 10px;
-        width: 10px;
       }
     `;
   }
