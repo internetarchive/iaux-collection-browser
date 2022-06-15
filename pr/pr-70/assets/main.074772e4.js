@@ -735,7 +735,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         text-overflow: ellipsis;
         display: -webkit-box;
         word-wrap: break-word;
-        word-break: break-all;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         line-height: 2rem;
@@ -789,7 +788,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         display: -webkit-box;
         -webkit-box-orient: vertical;
         word-wrap: break-word;
-        word-break: break-all;
         line-height: 2rem;
         text-align: center;
       }
@@ -891,7 +889,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         display: -webkit-box;
         -webkit-box-orient: vertical;
         word-wrap: break-word;
-        word-break: break-all;
         line-height: 2rem;
         text-align: center;
       }
