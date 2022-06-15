@@ -20,22 +20,26 @@ export class ItemTile extends LitElement {
     const itemCreator = this.model?.creator;
     return html`
       <div id="container">
-        <div class="title-wrapper">
-          <h1 id="item-title" title=${ifDefined(itemTitle)}>${itemTitle}</h1>
-        </div>
-
-        <div class="image-wrapper">
-          <div id="item-image-container">
-            <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
-            </item-image>
+        <div id="inner-wrapper">
+          <div class="title-wrapper">
+            <h1 id="item-title" title=${ifDefined(itemTitle)}>${itemTitle}</h1>
           </div>
-          <div class="item-creator">
-            <div class="truncated">
-              ${
-                itemCreator
-                  ? html`<span>by&nbsp;${itemCreator}</span>`
-                  : nothing
-              }
+
+          <div class="image-wrapper">
+            <div id="item-image-container">
+              <item-image .model=${this.model} .baseImageUrl=${
+      this.baseImageUrl
+    }>
+              </item-image>
+            </div>
+            <div class="item-creator">
+              <div class="truncated">
+                ${
+                  itemCreator
+                    ? html`<span>by&nbsp;${itemCreator}</span>`
+                    : nothing
+                }
+              </div>
             </div>
           </div>
         </div>
@@ -60,6 +64,13 @@ export class ItemTile extends LitElement {
         display: flex;
         flex-direction: column;
         height: 100%;
+        padding-bottom: 5px;
+      }
+
+      #inner-wrapper {
+        padding-top: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
       }
 
       .title-wrapper {
@@ -71,7 +82,9 @@ export class ItemTile extends LitElement {
       }
 
       #item-title {
+        flex: 1;
         color: #2c2c2c;
+        min-width: 0; /* Important for long words! */
         font-size: 1.6rem;
         text-align: center;
         margin-top: 0rem;
@@ -79,6 +92,8 @@ export class ItemTile extends LitElement {
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
+        word-wrap: break-word;
+        word-break: break-all;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         line-height: 2rem;
@@ -132,6 +147,7 @@ export class ItemTile extends LitElement {
         display: -webkit-box;
         -webkit-box-orient: vertical;
         word-wrap: break-word;
+        word-break: break-all;
         line-height: 2rem;
         text-align: center;
       }
