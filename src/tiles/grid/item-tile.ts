@@ -64,7 +64,6 @@ export class ItemTile extends LitElement {
         display: flex;
         flex-direction: column;
         height: 100%;
-        padding-bottom: 5px;
       }
 
       #inner-wrapper {

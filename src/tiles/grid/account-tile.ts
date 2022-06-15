@@ -70,7 +70,6 @@ export class AccountTile extends LitElement {
         flex-direction: column;
         text-align: center;
         width: 100%;
-        padding-bottom: 5px;
       }
 
       .inner-holder {
@@ -80,10 +79,10 @@ export class AccountTile extends LitElement {
       #title-holder {
         flex-shrink: 0;
         height: 40px;
-        margin-bottom: 5px;
       }
 
       #avatar-holder {
+        margin-top: 5px;
         margin-bottom: 5px;
         display: flex;
         align-items: center;

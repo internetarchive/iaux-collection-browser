@@ -68,7 +68,8 @@ export class TileStats extends LitElement {
       }
 
       .hr {
-        border: 1px solid #bbb;
+        display: block;
+        border-top: 1px solid #bbb;
       }
 
       #stats-holder {
@@ -79,6 +80,7 @@ export class TileStats extends LitElement {
         text-align: center;
         width: 100%;
         padding-top: 5px;
+        padding-bottom: 5px;
       }
 
       svg {
