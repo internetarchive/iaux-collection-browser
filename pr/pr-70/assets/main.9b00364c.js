@@ -647,7 +647,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         justify-content: space-evenly;
         text-align: center;
         width: 100%;
-        padding-top: 5px;
+        padding-top: 4px;
         padding-bottom: 5px;
       }
 
