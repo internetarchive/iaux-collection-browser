@@ -6,7 +6,7 @@ export const statusWrapperStyles = css`
   }
 
   .hr {
-    border: 0.5px solid #bbb;
+    border: 1px solid #bbb;
   }
 
   #stats-holder {
@@ -16,7 +16,9 @@ export const statusWrapperStyles = css`
     justify-content: space-evenly;
     text-align: center;
     width: 100%;
-    height: 35px;
+    max-height: 35px;
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 
   svg {
