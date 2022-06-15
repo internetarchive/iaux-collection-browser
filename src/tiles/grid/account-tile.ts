@@ -28,9 +28,9 @@ export class AccountTile extends LitElement {
 
           <div id="year-holder">
             <div id="archivist-since">
-              <span
-                >Archivist since ${this.model?.dateAdded?.getFullYear()}</span
-              >
+              <span>
+                Archivist since ${this.model?.dateAdded?.getFullYear()}
+              </span>
             </div>
           </div>
         </div>
@@ -70,15 +70,12 @@ export class AccountTile extends LitElement {
         flex-direction: column;
         text-align: center;
         width: 100%;
+        padding-bottom: 5px;
       }
 
       .inner-holder {
         flex-grow: 1;
       }
-
-      /* #header-holder {
-        flex: 1;
-      } */
 
       #title-holder {
         flex-shrink: 0;
