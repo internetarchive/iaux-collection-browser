@@ -139,7 +139,7 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.6.tgz#baccb9c5126cc2872d9b6433282456301fa71217"
   integrity sha512-762h1ouU/vaeNzLBiQW4Ow5hTlPppo9DspmAFLrzWuIs6o/vnRtk0ln/jgZZMdl+IJoCDF6LNCCB2M8rgqeR0Q==
   dependencies:
-    "@internetarchive/ia-activity-indicator" "^0.0.3"
+    "@internetarchive/ia-activity-indicator" "^0.0.2"
     dayjs "^1.10.7"
     lit "^2.1.1"
 
@@ -147,6 +147,34 @@
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@internetarchive/ia-activity-indicator/-/ia-activity-indicator-0.0.2.tgz#6e02670d52a9f1b673f322252b6e649453ea2ef0"
   integrity sha512-PHSTn8LJyozrVcMj6eMQKqBJD+029YhxffbW+oLKGAfmS5tAkpl2LfHlFcLCozT5e9e+KECCq2m2UeUyPYPjcw==
+  dependencies:
+    lit "^2.0.2"
+
+"@internetarchive/ia-activity-indicator@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-activity-indicator/-/ia-activity-indicator-0.0.3.tgz#25e75e1e93b10f84878a22d34eab2bb873c27290"
+  integrity sha512-82Otj9Qs6uXQkfl+r2hsrnZd8R0hcpGK6FJ7hPbnZKwcHGuuvF6EJYnR2soN7P8S7OUUtmygUgx5G4lV7gwh9w==
+  dependencies:
+    lit "^2.2.2"
+
+"@internetarchive/icon-close@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/icon-close/-/icon-close-1.3.2.tgz#391b025241fe4c065263414870d21034823aebdf"
+  integrity sha512-4QhM/MDC1IsWQZoE3lt7A4l3/VOopJta+xVnDLqsbA3OW2sT+ilm/mUiP4l4Lm/NzdbQQwhnQMOZPcQvllxkzA==
+  dependencies:
+    lit "^2.0.2"
+
+"@internetarchive/icon-ia-logo@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/icon-ia-logo/-/icon-ia-logo-1.3.2.tgz#0ec0f5b537ea6b8c46ba6410e5d925d806141c03"
+  integrity sha512-lDZdaqj7A6nv5dJPaes6UZwDqlr3yMgaKJZSuMTqMUpjaZ0bcfDIoDFO4y2YjQ2uUHoRIgRNqyZVMSNJMowXzQ==
+  dependencies:
+    lit "^2.0.2"
+
+"@internetarchive/icon-user@^1.3.2":
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/icon-user/-/icon-user-1.3.2.tgz#727b9be48889c9abc089f16ff5cf0632c20d4fba"
+  integrity sha512-A5fCby40AEWWbrSSgGzhcSVDfL9M+S/Zl1oPTid/+mBuZPik0KPS5xoMBkT/952/ujbnLLR9URemzfPdSeBx+Q==
   dependencies:
     lit "^2.0.2"
 
@@ -3215,6 +3243,15 @@ lit-html@^2.0.0, lit-html@^2.2.0:
   integrity sha512-IPY0V0z/QWcTduxb6DlP46Un8n6tG+mHSAijGcPozfXTjVkvFLN4/irPzthtq/eC8RU+7CUqh6h4KB7tnRPJfg==
   dependencies:
     "@types/trusted-types" "^2.0.2"
+
+lit@2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/lit/-/lit-2.2.1.tgz#4b679e1d8cb6c7977b64921b1ea3eca7850ca1dd"
+  integrity sha512-dSe++R50JqrvNGXmI9OE13de1z5U/Y3J2dTm/9GC86vedI8ILoR8ZGnxfThFpvQ9m0lR0qRnIR4IiKj/jDCfYw==
+  dependencies:
+    "@lit/reactive-element" "^1.3.0"
+    lit-element "^3.2.0"
+    lit-html "^2.2.0"
 
 lit@^2.0.0, lit@^2.0.2, lit@^2.1.1, lit@^2.2.2:
   version "2.2.4"
