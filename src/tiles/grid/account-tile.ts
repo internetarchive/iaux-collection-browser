@@ -2,7 +2,7 @@ import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { TileModel } from '../../models';
 
-import '../item-stats';
+import './tile-stats';
 
 @customElement('account-tile')
 export class AccountTile extends LitElement {
@@ -11,36 +11,37 @@ export class AccountTile extends LitElement {
   render() {
     return html`
       <div class="outer-holder">
-        <div class="inner-holder">
-          <div id="header-holder">
-            <div id="title-holder">
-              <h1 class="truncated">${this.model?.identifier}</h1>
-            </div>
-            <div id="avatar-holder">
-              <img
-                id="avatar"
-                alt="patron-avatar"
-                src="https://archive.org/services/img/${this.model?.identifier}"
-              />
-            </div>
+        <div id="header-holder">
+          <div id="title-holder">
+            <h1 class="truncated">${this.model?.identifier}</h1>
           </div>
-          <div id="year-holder">
-            <div id="archivist-since">
-              <h3>Archivist Since</h3>
-            </div>
-            <div id="year-holder">
-              <h3>${this.model?.dateAdded?.getFullYear()}</h3>
-            </div>
+        </div>
+
+        <div class="inner-holder">
+          <div id="avatar-holder">
+            <img
+              id="avatar"
+              alt="patron-avatar"
+              src="https://archive.org/services/img/${this.model?.identifier}"
+            />
           </div>
 
-          <item-stats
-            .mediatype=${this.model?.mediatype}
-            .itemCount=${this.model?.itemCount}
-            .favCount=${this.model?.favCount}
-            .commentCount=${this.model?.commentCount}
-          >
-          </item-stats>
+          <div id="year-holder">
+            <div id="archivist-since">
+              <span
+                >Archivist since ${this.model?.dateAdded?.getFullYear()}</span
+              >
+            </div>
+          </div>
         </div>
+
+        <tile-stats
+          .mediatype=${this.model?.mediatype}
+          .itemCount=${this.model?.itemCount}
+          .favCount=${this.model?.favCount}
+          .commentCount=${this.model?.commentCount}
+        >
+        </tile-stats>
       </div>
     `;
   }
@@ -53,9 +54,8 @@ export class AccountTile extends LitElement {
         margin: 0;
       }
 
-      h3 {
+      span {
         font-size: 14px;
-        font-weight: bold;
         color: #2c2c2c;
         margin: 0px;
       }
@@ -67,22 +67,21 @@ export class AccountTile extends LitElement {
         box-shadow: 1px 1px 2px 0px;
         height: 100%;
         display: flex;
+        flex-direction: column;
         text-align: center;
         width: 100%;
       }
 
       .inner-holder {
-        padding: 5px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
+        flex-grow: 1;
       }
 
-      #header-holder {
+      /* #header-holder {
         flex: 1;
-      }
+      } */
 
       #title-holder {
+        flex-shrink: 0;
         height: 40px;
         margin-bottom: 5px;
       }
@@ -105,10 +104,6 @@ export class AccountTile extends LitElement {
       #year-holder {
         margin-bottom: 5px;
         height: 40px;
-      }
-
-      #year-holder {
-        margin: 0px;
       }
 
       .truncated {

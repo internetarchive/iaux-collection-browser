@@ -7,7 +7,7 @@ import { TileModel } from '../../models';
 
 import '../mediatype-icon';
 import '../item-image';
-import '../item-stats';
+import './tile-stats';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
@@ -40,12 +40,12 @@ export class ItemTile extends LitElement {
           </div>
         </div>
 
-        <item-stats 
+        <tile-stats 
           .mediatype=${this.model?.mediatype}
           .viewCount=${this.model?.viewCount}
           .favCount=${this.model?.favCount}
           .commentCount=${this.model?.commentCount}>
-        </item-stats>
+        </tile-stats>
         </div>
       </div>
     `;
