@@ -1,16 +1,15 @@
-import { CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { favoriteFilledIcon } from '../assets/img/icons/favorite-filled';
-import { reviewsIcon } from '../assets/img/icons/reviews';
-import { uploadIcon } from '../assets/img/icons/upload';
-import { viewsIcon } from '../assets/img/icons/views';
+import { favoriteFilledIcon } from '../../assets/img/icons/favorite-filled';
+import { reviewsIcon } from '../../assets/img/icons/reviews';
+import { uploadIcon } from '../../assets/img/icons/upload';
+import { viewsIcon } from '../../assets/img/icons/views';
 
-import { statusWrapperStyles } from '../styles/item-stats-styles';
-import { formatCount } from '../utils/format-count';
+import { formatCount } from '../../utils/format-count';
 
-@customElement('item-stats')
-export class ItemStats extends LitElement {
+@customElement('tile-stats')
+export class TileStats extends LitElement {
   @property({ type: String }) mediatype?: string;
 
   @property({ type: Number }) itemCount?: number;
@@ -62,6 +61,45 @@ export class ItemStats extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
-    return [statusWrapperStyles];
+    return css`
+      .stats-wrapper {
+        flex-shrink: 0;
+      }
+
+      .hr {
+        border: 1px solid #bbb;
+      }
+
+      #stats-holder {
+        align-items: center;
+        display: flex;
+        flex: 1;
+        justify-content: space-evenly;
+        text-align: center;
+        width: 100%;
+        max-height: 35px;
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
+      svg {
+        height: 10px;
+        width: 10px;
+      }
+
+      .status-text {
+        font-size: 14px;
+        color: #2c2c2c;
+        line-height: 15px;
+        margin: auto;
+        display: block;
+        text-align: center;
+      }
+
+      .col {
+        width: 25%;
+        height: 25px;
+      }
+    `;
   }
 }
