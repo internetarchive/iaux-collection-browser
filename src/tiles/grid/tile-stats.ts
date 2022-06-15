@@ -63,6 +63,7 @@ export class TileStats extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .stats-wrapper {
+        height: 35px;
         flex-shrink: 0;
       }
 
@@ -77,9 +78,7 @@ export class TileStats extends LitElement {
         justify-content: space-evenly;
         text-align: center;
         width: 100%;
-        max-height: 35px;
         padding-top: 5px;
-        padding-bottom: 5px;
       }
 
       svg {
