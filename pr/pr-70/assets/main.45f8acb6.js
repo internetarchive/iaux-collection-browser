@@ -636,7 +636,8 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
       }
 
       .hr {
-        border: 1px solid #bbb;
+        display: block;
+        border-top: 1px solid #bbb;
       }
 
       #stats-holder {
@@ -647,6 +648,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         text-align: center;
         width: 100%;
         padding-top: 5px;
+        padding-bottom: 5px;
       }
 
       svg {
@@ -705,7 +707,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         display: flex;
         flex-direction: column;
         height: 100%;
-        padding-bottom: 5px;
       }
 
       #inner-wrapper {
@@ -849,7 +850,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         flex-direction: column;
         text-align: center;
         width: 100%;
-        padding-bottom: 5px;
       }
 
       .inner-holder {
@@ -859,10 +859,10 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
       #title-holder {
         flex-shrink: 0;
         height: 40px;
-        margin-bottom: 5px;
       }
 
       #avatar-holder {
+        margin-top: 5px;
         margin-bottom: 5px;
         display: flex;
         align-items: center;
