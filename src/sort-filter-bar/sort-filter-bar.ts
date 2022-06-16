@@ -359,7 +359,7 @@ export class SortFilterBar
               this.displayMode = 'grid';
             }}
             class=${this.displayMode === 'grid' ? 'active' : ''}
-            title="Show thumbnails"
+            title="Tile view"
           >
             ${tileIcon}
           </button>
@@ -371,7 +371,7 @@ export class SortFilterBar
               this.displayMode = 'list-detail';
             }}
             class=${this.displayMode === 'list-detail' ? 'active' : ''}
-            title="Show details"
+            title="Extended list view"
           >
             ${listIcon}
           </button>
@@ -383,7 +383,7 @@ export class SortFilterBar
               this.displayMode = 'list-compact';
             }}
             class=${this.displayMode === 'list-compact' ? 'active' : ''}
-            title="Show list"
+            title="Compact list view"
           >
             ${compactIcon}
           </button>
