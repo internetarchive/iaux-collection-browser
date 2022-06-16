@@ -1560,7 +1560,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="grid-button"
             @click=${()=>{this.displayMode="grid"}}
             class=${this.displayMode==="grid"?"active":""}
-            title="Show thumbnails"
+            title="Tile view"
           >
             ${Xs}
           </button>
@@ -1570,7 +1570,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="grid-button"
             @click=${()=>{this.displayMode="list-detail"}}
             class=${this.displayMode==="list-detail"?"active":""}
-            title="Show details"
+            title="Extended list view"
           >
             ${Zs}
           </button>
@@ -1580,7 +1580,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="list-button"
             @click=${()=>{this.displayMode="list-compact"}}
             class=${this.displayMode==="list-compact"?"active":""}
-            title="Show list"
+            title="Compact list view"
           >
             ${Js}
           </button>
