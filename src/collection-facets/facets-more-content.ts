@@ -1,6 +1,6 @@
 import { css, CSSResultGroup, html, LitElement, nothing, PropertyValues, render, TemplateResult } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { Bucket, SearchServiceInterface } from '@internetarchive/search-service';
+import { Bucket, SearchParams } from '@internetarchive/search-service';
 
 import {
   SelectedFacets,
@@ -16,7 +16,7 @@ export class FacetsMoreContent extends LitElement {
   @property({ type: Boolean }) showMoreContent = false;
   @property({ type: Object }) selectedFacets?: SelectedFacets;
   @property({ type: Object }) modalManager?: any;
-  @property({ type: Object }) searchService?: SearchServiceInterface;
+  @property({ type: Object }) searchService?: any;
   @property({ type: Object }) aggr = [];
   @property({ type: Object }) castedBuckets?: Bucket[] = [];
   @property({ type: Object }) selectedFacet?: String;
@@ -24,18 +24,47 @@ export class FacetsMoreContent extends LitElement {
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
   @state() pageNumber = 1;
+  @state() loading = 1;
 
   private facetsPerPage = 25;
 
-  updated(changed: PropertyValues) {
-    if (changed.has('query') || changed.has('aggr')) {
+  async updated(changed: PropertyValues) {
+    if (changed.has('query')) {
+      this.loading = 1;
+      await this.fetchSpecificFacets(this.query as unknown as string);
+      this.loading = 0;
+    }
+
+    if (changed.has('aggr')) {
       this.filterFacets();
     }
+  }
+
+  async fetchSpecificFacets(specificFacet: string) {
+    const aggregations = {
+      advancedParams: [
+        {
+          field: specificFacet,
+          size: 2500,
+        },
+      ],
+    };
+
+    const params: SearchParams = {
+      query: 'title:hello',
+      fields: ['identifier'],
+      aggregations,
+      rows: 1,
+    };
+
+    const results = await this.searchService?.search(params);
+    this.aggr = results?.success?.response.aggregations;
   }
 
   async filterFacets() {
      Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
       if (key === 'year_histogram') return;
+
       const parts = key.split('__');
       const fieldNamePart = parts[2];
       this.selectedFacet = fieldNamePart.split(':')[1];
@@ -78,6 +107,7 @@ export class FacetsMoreContent extends LitElement {
   private get renderMoreFacets() {
     const min = (this.pageNumber - 1) * this.facetsPerPage;
     const max = (min + this.facetsPerPage) - 1;
+    this.loading = 0;
     return html`<ul class="facet-list">
       ${this.castedBuckets?.map((option, n) => {
         const optionWrapperClass = (n >= min && n <= max) ? 'farow' : 'farow hidden'
@@ -87,7 +117,6 @@ export class FacetsMoreContent extends LitElement {
               <input
                 type="checkbox"
                 class="selected-facets"
-                name="${option.key}"
                 value="${option.key}"
                 data-facet="${this.selectedFacet}"
                 @click=${(e: Event) => {
@@ -133,9 +162,16 @@ export class FacetsMoreContent extends LitElement {
     console.log(newFacets)
   }
 
+  private get loaderTemplate() {
+    return this.loading
+      ? html`<div class="loading">loading facets... <img alt="" src="https://archive.org/images/loading.gif"/></div>`
+      : '';
+  }
+
   render() {
     return html`<div id="morf-page">
       <form>
+        ${this.loaderTemplate}
         <div class="facets-content">
           ${this.renderMoreFacets}
         </div>
@@ -165,30 +201,25 @@ export class FacetsMoreContent extends LitElement {
       .modal-content {
         background-color: #fefefe;
         margin: auto;
-        padding: 20px;
+        padding: 0rem;
         border: 1px solid #888;
         width: 80%;
       }
 
       .facets-content {
-        -webkit-column-width: 250px;
-        -moz-column-width: 250px;
-        column-width: 250px;
-        font-size: 12px;
-        padding: 0 20px;
+        -webkit-column-width: 25rem;
+        -moz-column-width: 25rem;
+        column-width: 25rem;
+        font-size: 1.2rem;
+        padding: 0 1rem;
       }
 
       .facets-paging {
-        margin: 15px;
+        margin: 1.5rem;
         background-color: #efefef;
         text-align: right;
-        padding: 10px;
-      }
-      .facets-paging .topinblock {
-        background-color: #fafafa;
-        margin-top:-7px;
-        margin-bottom:-7px;
-        display: inline-block;
+        padding: 1rem;
+        font-size: 1.2rem;
       }
 
       .farow {
@@ -232,12 +263,12 @@ export class FacetsMoreContent extends LitElement {
         margin-left: 0.5rem;
       }
       .page-number {
-        padding: 5px;
+        padding: 0.5rem;
         color: blue;
       }
       .current-page {
         background: white;
-        padding: 5px;
+        padding: 0.5rem;
         color: initial;
       }
       .loading {
@@ -245,7 +276,7 @@ export class FacetsMoreContent extends LitElement {
         text-align: center;
       }
       .loading img {
-        width: 25px;
+        width: 2.5rem;
       }
     `;
   }

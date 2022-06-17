@@ -100,12 +100,12 @@ export class CollectionFacets extends LitElement {
 
   @query('modal-manager') private modalManager!: any;
 
-  // aggr: any;
   @state() private aggr?: {};
 
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
+        <modal-manager></modal-manager>
         ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
           ? html`
               <div class="facet-group">
@@ -338,52 +338,47 @@ export class CollectionFacets extends LitElement {
         </h1>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.getFacetTemplate(facetGroup)}
-          <button
-            @click=${(e: Event) => {
-              this.emitMoreLinkClickedEvent(facetGroup);
-            }}
-          >
-            More...
-          </button>
+          ${this.getMoreLink(facetGroup)}
         </div>
       </div>
     `;
   }
 
-  async fetchSpecificFacets(specificFacet: string) {
-    const aggregations = {
-      advancedParams: [
-        {
-          field: specificFacet,
-          size: 250,
-        },
-      ],
-    };
+  /**
+   * Generate the More... link button just below the facets group
+   */
+  private getMoreLink(
+    facetGroup: FacetGroup
+  ): TemplateResult | typeof nothing {
 
-    const params: SearchParams = {
-      query: 'title:hello',
-      fields: ['identifier'],
-      aggregations,
-      rows: 1,
-    };
+    // don't render More... link if you facets is < 5
+    if (Object.keys(facetGroup.buckets).length < 5)
+      return html``;
 
-    const results = await this.searchService?.search(params);
-    this.aggr = results?.success?.response.aggregations;
-  }
-  
+    return html`<a
+      href="javascript:void(0)"
+      class="more-link"
+      @click=${(e: Event) => {
+        this.emitMoreLinkClickedEvent(facetGroup);
+      }}
+    >
+      More...
+    </a>`
+  }  
+
   async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
     const config = new ModalConfig();
-    config.headline = html`${facetGroup.key}`;
+    config.headline = html`<span style="display:block;text-align:left;font-size:2rem;padding-left:1rem;">${facetTitles[facetGroup.key]}</span><hr>`;
     config.closeOnBackdropClick = true;
 
-    await this.fetchSpecificFacets(facetGroup.key as unknown as string),
-    console.log('fetchSpecificFacets')
-  
+    // not used
+    // await this.fetchSpecificFacets(facetGroup.key as unknown as string);
+
     config.message = html`
       <facets-more-content
         .query=${facetGroup.key}
-        .aggr=${this.aggr}
         .modalManager=${this.modalManager}
+        .searchService=${this.searchService}
         .selectedFacets=${this.selectedFacets}
         ?showMoreContent=${this.showMoreContent}>
       </facets-more-content>
@@ -391,7 +386,6 @@ export class CollectionFacets extends LitElement {
     this.modalManager.showModal({config});
   }
 
-  
   /**
    * Generate the list template for each bucket in a facet group
    */
@@ -402,7 +396,6 @@ export class CollectionFacets extends LitElement {
     const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
 
     return html`
-      <modal-manager></modal-manager>
       <ul class="facet-list">
         ${repeat(
           bucketsMaxSix,
@@ -671,6 +664,12 @@ export class CollectionFacets extends LitElement {
         width: 15px;
         height: 15px;
         cursor: pointer;
+      }
+
+      .more-link {
+        font-size: 1.2rem;
+        text-decoration: navajowhite;
+        padding: 0 0.4rem;
       }
     `;
   }
