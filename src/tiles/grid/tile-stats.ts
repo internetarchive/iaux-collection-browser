@@ -79,7 +79,7 @@ export class TileStats extends LitElement {
         justify-content: space-evenly;
         text-align: center;
         width: 100%;
-        padding-top: 4px;
+        padding-top: 5px;
         padding-bottom: 5px;
       }
 
@@ -99,7 +99,7 @@ export class TileStats extends LitElement {
         font-size: 14px;
         height: 15px;
         color: #2c2c2c;
-        line-height: 15px;
+        line-height: 20px;
         margin: auto;
         display: block;
         text-align: center;
