@@ -83,23 +83,26 @@ export class TileStats extends LitElement {
         padding-bottom: 5px;
       }
 
+      .col {
+        width: 25%;
+        height: 25px;
+      }
+
       svg {
         height: 10px;
         width: 10px;
+        display: block;
+        margin: auto;
       }
 
       .status-text {
         font-size: 14px;
+        height: 15px;
         color: #2c2c2c;
         line-height: 15px;
         margin: auto;
         display: block;
         text-align: center;
-      }
-
-      .col {
-        width: 25%;
-        height: 25px;
       }
     `;
   }
