@@ -76,6 +76,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  @property({ type: String }) fullQuery?: string;
+
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object })
@@ -83,11 +85,6 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
-
-  /**
-   * If item management UI active
-   */
-  @property({ type: Boolean }) showMoreContent = true;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -368,19 +365,23 @@ export class CollectionFacets extends LitElement {
 
   async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
     const config = new ModalConfig();
-    config.headline = html`<span style="display:block;text-align:left;font-size:2rem;padding-left:1rem;">${facetTitles[facetGroup.key]}</span><hr>`;
     config.closeOnBackdropClick = true;
+    config.headline = html`<span style="display:block;text-align:left;font-size:2rem;padding-left:1rem;">
+      ${facetTitles[facetGroup.key]}
+    </span><hr>`;
 
-    // not used
-    // await this.fetchSpecificFacets(facetGroup.key as unknown as string);
+    const facetAggrKey = Object.keys(aggregationToFacetOption).find((value) => 
+      aggregationToFacetOption[value] === facetGroup.key
+    );
 
     config.message = html`
       <facets-more-content
-        .query=${facetGroup.key}
+        .facetKey=${facetGroup.key}
+        .facetAggregationKey=${facetAggrKey}
+        .fullQuery=${this.fullQuery}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
-        .selectedFacets=${this.selectedFacets}
-        ?showMoreContent=${this.showMoreContent}>
+        .selectedFacets=${this.selectedFacets}>
       </facets-more-content>
     `;
     this.modalManager.showModal({config});
@@ -556,6 +557,7 @@ export class CollectionFacets extends LitElement {
       modal-manager {
         display: none;
         --modalWidth: 85rem;
+        --modalBackGroundColor: red;
       }
   
       modal-manager[mode='open'] {

@@ -11,12 +11,13 @@ import { LanguageCodeHandlerInterface } from '../language-code-handler/language-
 
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
-  @property({ type: String }) content?: string;
-  @property({ type: String }) query?: string;
-  @property({ type: Boolean }) showMoreContent = false;
-  @property({ type: Object }) selectedFacets?: SelectedFacets;
+  @property({ type: String }) facetKey?: string;
+  @property({ type: String }) facetAggregationKey?: string;
+  @property({ type: String }) fullQuery?: string;
   @property({ type: Object }) modalManager?: any;
   @property({ type: Object }) searchService?: any;
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
+
   @property({ type: Object }) aggr = [];
   @property({ type: Object }) castedBuckets?: Bucket[] = [];
   @property({ type: Object }) selectedFacet?: String;
@@ -29,9 +30,9 @@ export class FacetsMoreContent extends LitElement {
   private facetsPerPage = 25;
 
   async updated(changed: PropertyValues) {
-    if (changed.has('query')) {
+    if (changed.has('facetAggregationKey')) {
       this.loading = 1;
-      await this.fetchSpecificFacets(this.query as unknown as string);
+      await this.fetchSpecificFacets(this.facetAggregationKey as unknown as string);
       this.loading = 0;
     }
 
@@ -40,21 +41,21 @@ export class FacetsMoreContent extends LitElement {
     }
   }
 
-  async fetchSpecificFacets(specificFacet: string) {
+  async fetchSpecificFacets(facetAggregationKey: string) {
     const aggregations = {
       advancedParams: [
         {
-          field: specificFacet,
-          size: 2500,
+          field: facetAggregationKey,
+          size: 1000, // todo - ?
         },
       ],
     };
 
     const params: SearchParams = {
-      query: 'title:hello',
+      query: this.fullQuery as string,
       fields: ['identifier'],
       aggregations,
-      rows: 1,
+      rows: 1, // todo - ?
     };
 
     const results = await this.searchService?.search(params);
@@ -65,9 +66,6 @@ export class FacetsMoreContent extends LitElement {
      Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
       if (key === 'year_histogram') return;
 
-      const parts = key.split('__');
-      const fieldNamePart = parts[2];
-      this.selectedFacet = fieldNamePart.split(':')[1];
       this.castedBuckets = buckets['buckets'] as Bucket[];
     });
   }
@@ -76,7 +74,7 @@ export class FacetsMoreContent extends LitElement {
     const paging = []
 
     const lenght = Object.keys(this.castedBuckets as []).length
-    const numberOfPages = lenght / this.facetsPerPage
+    const numberOfPages = Math.ceil(lenght / this.facetsPerPage)
 
     const onClickEvent = (e: Event) => {
       this.pageClick(e);
@@ -118,7 +116,7 @@ export class FacetsMoreContent extends LitElement {
                 type="checkbox"
                 class="selected-facets"
                 value="${option.key}"
-                data-facet="${this.selectedFacet}"
+                data-facet="${this.facetKey}"
                 @click=${(e: Event) => {
                   this.facetClicked(e);
                 }}
@@ -158,8 +156,8 @@ export class FacetsMoreContent extends LitElement {
       delete newFacets[facetKey as keyof typeof newFacets][value];
     }
 
-    this.selectedFacets = newFacets;
     console.log(newFacets)
+    this.selectedFacets = newFacets;
   }
 
   private get loaderTemplate() {

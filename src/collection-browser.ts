@@ -412,6 +412,7 @@ export class CollectionBrowser
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
+        .fullQuery=${this.fullQuery}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
@@ -479,9 +480,9 @@ export class CollectionBrowser
     config.message = html`Hi, Doctor Nick!`;
     config.closeOnBackdropClick = true;
 
-    await Promise.all([
-      this.fetchSpecificFacets(query as string),
-    ]);
+    // await Promise.all([
+    //   this.fetchSpecificFacets(query as string),
+    // ]);
 
     config.message = html`
       <facets-more-content
@@ -776,32 +777,6 @@ export class CollectionBrowser
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
-  }
-
-  // not used
-  private async fetchSpecificFacets(specificFacet: string) {
-    console.log('this.fullQuery', this.fullQuery);
-    console.log('specificFacet', specificFacet);
-    if (!this.fullQuery || !specificFacet) return;
-
-    const aggregations = {
-      advancedParams: [
-        {
-          field: specificFacet,
-          size: 100,
-        },
-      ],
-    };
-
-    const params: SearchParams = {
-      query: this.fullQuery,
-      fields: ['identifier'],
-      aggregations,
-      rows: 1,
-    };
-
-    const results = await this.searchService?.search(params);
-    this.aggr = results?.success?.response.aggregations;
   }
 
   private async fetchFacets() {
