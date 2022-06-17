@@ -2647,13 +2647,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           ${this.getMoreLink(e)}
         </div>
       </div>
-    `}getMoreLink(e){return Object.keys(e.buckets).length<5?p``:p`<a
+    `}getMoreLink(e){return Object.keys(e.buckets).length<5?p``:p`<button
       href="javascript:void(0)"
       class="more-link"
       @click=${()=>{this.emitMoreLinkClickedEvent(e)}}
     >
       More...
-    </a>`}async emitMoreLinkClickedEvent(e){const t=new ma;t.closeOnBackdropClick=!0,t.headline=p`<span style="display:block;text-align:left;font-size:2rem;padding-left:1rem;">
+    </button>`}async emitMoreLinkClickedEvent(e){const t=new ma;t.closeOnBackdropClick=!0,t.headline=p`<span style="display:block;text-align:left;font-size:2rem;padding-left:1rem;">
       ${$i[e.key]}
     </span><hr>`;const i=Object.keys(Si).find(r=>Si[r]===e.key);t.message=p`
       <facets-more-content
@@ -2840,7 +2840,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       .more-link {
         font-size: 1.2rem;
         text-decoration: navajowhite;
-        padding: 0 0.4rem;
+        padding: 0px 0.4rem;
+        background: white;
+        border: 0;
+        color: blue;
+        cursor: pointer;
       }
     `}};n([u({type:Object})],V.prototype,"aggregations",void 0);n([u({type:Object})],V.prototype,"fullYearsHistogramAggregation",void 0);n([u({type:String})],V.prototype,"minSelectedDate",void 0);n([u({type:String})],V.prototype,"maxSelectedDate",void 0);n([u({type:Boolean})],V.prototype,"facetsLoading",void 0);n([u({type:Boolean})],V.prototype,"fullYearAggregationLoading",void 0);n([u({type:Object})],V.prototype,"selectedFacets",void 0);n([u({type:Boolean})],V.prototype,"collapsableFacets",void 0);n([u({type:Boolean})],V.prototype,"showHistogramDatePicker",void 0);n([u({type:String})],V.prototype,"fullQuery",void 0);n([u({type:Object})],V.prototype,"searchService",void 0);n([u({type:Object})],V.prototype,"languageCodeHandler",void 0);n([u({type:Object})],V.prototype,"collectionNameCache",void 0);n([M()],V.prototype,"openFacets",void 0);n([Z("modal-manager")],V.prototype,"modalManager",void 0);V=n([I("collection-facets")],V);let jr=class extends O{render(){return p`
       <div class="lds-ring">
