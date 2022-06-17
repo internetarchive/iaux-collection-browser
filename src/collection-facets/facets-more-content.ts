@@ -12,19 +12,29 @@ import { LanguageCodeHandlerInterface } from '../language-code-handler/language-
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
   @property({ type: String }) facetKey?: string;
+
   @property({ type: String }) facetAggregationKey?: string;
+
   @property({ type: String }) fullQuery?: string;
+
   @property({ type: Object }) modalManager?: any;
+
   @property({ type: Object }) searchService?: any;
+
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   @property({ type: Object }) aggr = [];
+
   @property({ type: Object }) castedBuckets?: Bucket[] = [];
+
   @property({ type: Object }) selectedFacet?: String;
+
   @property({ type: Object }) languageCodeHandler?: LanguageCodeHandlerInterface;
+
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
   @state() pageNumber = 1;
+
   @state() loading = 1;
 
   private facetsPerPage = 25;

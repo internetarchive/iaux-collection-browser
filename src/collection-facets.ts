@@ -349,7 +349,7 @@ export class CollectionFacets extends LitElement {
     if (Object.keys(facetGroup.buckets).length < 5)
       return html``;
 
-    return html`<a
+    return html`<button
       href="javascript:void(0)"
       class="more-link"
       @click=${() => {
@@ -357,7 +357,7 @@ export class CollectionFacets extends LitElement {
       }}
     >
       More...
-    </a>`
+    </button>`
   }  
 
   async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
@@ -665,7 +665,11 @@ export class CollectionFacets extends LitElement {
       .more-link {
         font-size: 1.2rem;
         text-decoration: navajowhite;
-        padding: 0 0.4rem;
+        padding: 0px 0.4rem;
+        background: white;
+        border: 0;
+        color: blue;
+        cursor: pointer;
       }
     `;
   }
