@@ -27,13 +27,10 @@ import {
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import '@internetarchive/modal-manager';
-import { ModalConfig } from '@internetarchive/modal-manager';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
-import './collection-facets/facets-more-content';
 import './circular-activity-indicator';
 import './sort-filter-bar/sort-filter-bar';
 import {
@@ -141,7 +138,6 @@ export class CollectionBrowser
   @state() private fullYearAggregationLoading = false;
 
   @state() private aggregations?: Record<string, Aggregation>;
-  @state() private aggr?: {};
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
@@ -152,7 +148,6 @@ export class CollectionBrowser
   @state() private mobileFacetsVisible = false;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
-  @query('modal-manager') private modalManager!: any;
 
   private languageCodeHandler = new LanguageCodeHandler();
 
@@ -402,7 +397,6 @@ export class CollectionBrowser
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-        @moreLinkClicked=${this.moreLinkClicked}
         .searchService=${this.searchService}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
@@ -465,32 +459,6 @@ export class CollectionBrowser
   ) {
     const { minDate, maxDate } = e.detail;
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
-  }
-
-  // not used
-  private async moreLinkClicked(
-    e: CustomEvent<{
-      key: unknown; facetGroup: Object 
-    }>
-  ) {
-    const query = e.detail.key;
-
-    const config = new ModalConfig();
-    config.headline = html`Hi, Everybody!`;
-    config.message = html`Hi, Doctor Nick!`;
-    config.closeOnBackdropClick = true;
-
-    // await Promise.all([
-    //   this.fetchSpecificFacets(query as string),
-    // ]);
-
-    config.message = html`
-      <facets-more-content
-        .query=${query}
-        .aggr=${this.aggr}>
-      </facets-more-content>
-    `;
-    this.modalManager.showModal({config});
   }
 
   firstUpdated(): void {

@@ -124,10 +124,6 @@ export type SelectedFacetState = 'selected' | 'hidden';
 
 export type FacetState = SelectedFacetState | 'none';
 
-// export interface Bucket {
-//   key: string | number;
-//   doc_count: number;
-// }
 export interface FacetBucket {
   // for some facets, we augment the key with a display value
   displayText?: string;
@@ -136,14 +132,6 @@ export interface FacetBucket {
   state: FacetState;
 }
 
-// export interface Bucket1 {
-//   key: string | number;
-//   doc_count: number;
-// }
-
-// export interface Bucket {
-//   buckets: Bucket1[]
-// }
 export interface FacetGroup {
   title: string;
   key: FacetOption;

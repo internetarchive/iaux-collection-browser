@@ -9,7 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Aggregation, Bucket, SearchParams, SearchServiceInterface } from '@internetarchive/search-service';
+import { Aggregation, Bucket, SearchServiceInterface } from '@internetarchive/search-service';
 // import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
@@ -97,8 +97,6 @@ export class CollectionFacets extends LitElement {
 
   @query('modal-manager') private modalManager!: any;
 
-  @state() private aggr?: {};
-
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -137,7 +135,6 @@ export class CollectionFacets extends LitElement {
 
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
-    return html``;
     return html`
       <histogram-date-range
         .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
@@ -355,7 +352,7 @@ export class CollectionFacets extends LitElement {
     return html`<a
       href="javascript:void(0)"
       class="more-link"
-      @click=${(e: Event) => {
+      @click=${() => {
         this.emitMoreLinkClickedEvent(facetGroup);
       }}
     >
@@ -553,17 +550,14 @@ export class CollectionFacets extends LitElement {
       body.modal-manager-open {
         overflow: hidden;
       }
-  
       modal-manager {
         display: none;
         --modalWidth: 85rem;
         --modalBackGroundColor: red;
       }
-  
       modal-manager[mode='open'] {
         display: block;
       }
-  
       #content-container {
         display: flex;
       }

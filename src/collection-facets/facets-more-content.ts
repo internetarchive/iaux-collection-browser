@@ -1,5 +1,5 @@
-import { css, CSSResultGroup, html, LitElement, nothing, PropertyValues, render, TemplateResult } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { css, CSSResultGroup, html, LitElement, PropertyValues} from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import { Bucket, SearchParams } from '@internetarchive/search-service';
 
 import {
@@ -151,7 +151,7 @@ export class FacetsMoreContent extends LitElement {
     }
 
     if (checked) {
-      newFacets[facetKey as keyof typeof newFacets][value] = false ? 'hidden' : 'selected';
+      newFacets[facetKey as keyof typeof newFacets][value] = 'selected';
     } else {
       delete newFacets[facetKey as keyof typeof newFacets][value];
     }
