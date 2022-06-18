@@ -675,9 +675,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
 
           <div class="image-wrapper">
             <div id="item-image-container">
-              <item-image
-                .model=${this.model}
-                .baseImageUrl=${this.baseImageUrl}>
+              <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
               </item-image>
             </div>
             <div class="item-creator">
