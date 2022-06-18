@@ -597,10 +597,8 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
     />
     <title>Eye icon</title>
   </svg>
-`;function wo(a,e){let t=1;return a>=1e9?t=1e9:a>=1e6?t=1e6:a>=1e3&&e==="short"&&(t=1e3),t}function So(a=0,e){const t=a/e,i=t<10;let r=0;return i?r=Math.round((t+Number.EPSILON)*10)/10:r=Math.round(t),r}function $o(a,e,t,i){switch(e){case 1e9:return Ve(t==="short"?ot`${a}B`:ot`${a} billion`);case 1e6:return Ve(t==="short"?ot`${a}M`:ot`${a} million`);case 1e3:return Ve(t==="short"?ot`${a}K`:ot`${a} thousand`);default:return new Intl.NumberFormat(i).format(a)}}function Nt(a,e="long",t="short",i="en-US"){const r=a!=null?a:-1;if(r<0)return"";const s=wo(r,e),o=So(r,s);return $o(o,s,t,i)}let Ke=class extends B{render(){return m`
+`;function wo(a,e){let t=1;return a>=1e9?t=1e9:a>=1e6?t=1e6:a>=1e3&&e==="short"&&(t=1e3),t}function So(a=0,e){const t=a/e,i=t<10;let r=0;return i?r=Math.round((t+Number.EPSILON)*10)/10:r=Math.round(t),r}function $o(a,e,t,i){switch(e){case 1e9:return Ve(t==="short"?ot`${a}B`:ot`${a} billion`);case 1e6:return Ve(t==="short"?ot`${a}M`:ot`${a} million`);case 1e3:return Ve(t==="short"?ot`${a}K`:ot`${a} thousand`);default:return new Intl.NumberFormat(i).format(a)}}function Nt(a,e="long",t="short",i="en-US"){const r=a!=null?a:-1;if(r<0)return"";const s=wo(r,e),o=So(r,s);return $o(o,s,t,i)}let Ke=class extends B{render(){return console.log("tile-stats here"),m`
       <div class="stats-wrapper">
-        <div class="hr"></div>
-
         <div id="stats-holder">
           <div class="col">
             <mediatype-icon
@@ -635,39 +633,38 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         flex-shrink: 0;
       }
 
-      .hr {
-        display: block;
-        border-top: 1px solid #bbb;
-      }
-
       #stats-holder {
+        border-top: 1px solid #bbb;
         align-items: center;
         display: flex;
         flex: 1;
         justify-content: space-evenly;
         text-align: center;
         width: 100%;
-        padding-top: 4px;
+        padding-top: 5px;
         padding-bottom: 5px;
-      }
-
-      svg {
-        height: 10px;
-        width: 10px;
-      }
-
-      .status-text {
-        font-size: 14px;
-        color: #2c2c2c;
-        line-height: 15px;
-        margin: auto;
-        display: block;
-        text-align: center;
       }
 
       .col {
         width: 25%;
         height: 25px;
+      }
+
+      svg {
+        height: 10px;
+        width: 10px;
+        display: block;
+        margin: auto;
+      }
+
+      .status-text {
+        font-size: 14px;
+        height: 15px;
+        color: #2c2c2c;
+        line-height: 20px;
+        margin: auto;
+        display: block;
+        text-align: center;
       }
     `}};n([u({type:String})],Ke.prototype,"mediatype",void 0);n([u({type:Number})],Ke.prototype,"itemCount",void 0);n([u({type:Number})],Ke.prototype,"viewCount",void 0);n([u({type:Number})],Ke.prototype,"favCount",void 0);n([u({type:Number})],Ke.prototype,"commentCount",void 0);Ke=n([Q("tile-stats")],Ke);let ni=class extends B{render(){var e,t,i,r,s,o;const l=(e=this.model)===null||e===void 0?void 0:e.title,d=(t=this.model)===null||t===void 0?void 0:t.creator;return m`
       <div id="container">
@@ -1547,6 +1544,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="grid-button"
             @click=${()=>{this.displayMode="grid"}}
             class=${this.displayMode==="grid"?"active":""}
+            title="Tile view"
           >
             ${Xo}
           </button>
@@ -1556,6 +1554,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="grid-button"
             @click=${()=>{this.displayMode="list-detail"}}
             class=${this.displayMode==="list-detail"?"active":""}
+            title="Extended list view"
           >
             ${Zo}
           </button>
@@ -1565,6 +1564,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="list-button"
             @click=${()=>{this.displayMode="list-compact"}}
             class=${this.displayMode==="list-compact"?"active":""}
+            title="Compact list view"
           >
             ${Jo}
           </button>
