@@ -68,7 +68,7 @@ export class MediatypeIcon extends LitElement {
       }
 
       .fill-color {
-        fill: var(--iconCustomFillColor, var(--iconFillColor, '#000000'));
+        fill: var(--iconFillColor, '#000000');
       }
     `;
   }
