@@ -45,7 +45,6 @@ export class TileListCompact extends LitElement {
           <mediatype-icon
             .mediatype=${this.model?.mediatype}
             .collections=${this.model?.collections}
-            style="--iconCustomFillColor: ${ifDefined(this.collectionColor)}"
           >
           </mediatype-icon>
         </div>
@@ -54,14 +53,6 @@ export class TileListCompact extends LitElement {
         </div>
       </div>
     `;
-  }
-
-  // Only in list, not tile
-  private get collectionColor() {
-    if (this.model?.mediatype !== 'collection') {
-      return undefined;
-    }
-    return '#4666FF';
   }
 
   private get imageTemplate() {

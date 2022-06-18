@@ -19,12 +19,12 @@ export const mediatypeConfig: { [key: string]: any } = {
     text: 'Account',
   },
   audio: {
-    color: '#8fdaef',
+    color: '#00adef',
     icon: audioIcon,
     text: 'Audio',
   },
   collection: {
-    color: '#000000',
+    color: '#4666ff',
     icon: collectionIcon,
     text: 'Collection',
   },
@@ -34,7 +34,7 @@ export const mediatypeConfig: { [key: string]: any } = {
     text: 'Data',
   },
   etree: {
-    color: '#3871c1',
+    color: '#00adef',
     icon: etreeIcon,
     text: 'E-tree',
   },
@@ -44,12 +44,12 @@ export const mediatypeConfig: { [key: string]: any } = {
     text: 'Film',
   },
   image: {
-    color: '#62c4a9',
+    color: '#aa99c9',
     icon: imagesIcon,
     text: 'Image',
   },
   movies: {
-    color: '#bf1b2c',
+    color: '#f1644b',
     icon: filmIcon,
     text: 'Movie',
   },
@@ -59,27 +59,27 @@ export const mediatypeConfig: { [key: string]: any } = {
     text: 'Radio',
   },
   software: {
-    color: '#80cc28',
+    color: '#9ecc4f',
     icon: softwareIcon,
     text: 'Software',
   },
   texts: {
-    color: '#f9a72b',
+    color: '#faab3c',
     icon: textsIcon,
     text: 'Text',
   },
   tv: {
-    color: '#f25d54',
+    color: '#f1644b',
     icon: tvIcon,
     text: 'TV',
   },
   video: {
-    color: '#bf1b2c',
+    color: '#f1644b',
     icon: videoIcon,
     text: 'Video',
   },
   web: {
-    color: '#fddd10',
+    color: '#ffcd27',
     icon: webIcon,
     text: 'Web',
   },
