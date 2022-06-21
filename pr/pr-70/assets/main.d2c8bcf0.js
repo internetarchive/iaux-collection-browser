@@ -787,7 +787,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         text-align: center;
       }
     `}};n([u({type:Object})],ni.prototype,"model",void 0);n([u({type:String})],ni.prototype,"baseImageUrl",void 0);ni=n([Q("item-tile")],ni);let Ji=class extends B{render(){var e,t,i,r,s,o,l,d;return m`
-      <div class="outer-holder">
+      <div class="account-tile-main">
         <div id="title">
           <h1 class="truncated">${(e=this.model)===null||e===void 0?void 0:e.identifier}</h1>
         </div>
@@ -827,7 +827,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         margin: 0px;
       }
 
-      .outer-holder {
+      .account-tile-main {
         background-color: #fcf5e6;
         border: 1px #2c2c2c;
         border-radius: 4px;
