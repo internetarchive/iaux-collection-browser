@@ -63,7 +63,6 @@ export class TileStats extends LitElement {
 
       .item-stats {
         height: 35px;
-        flex-shrink: 0;
       }
 
       #stats-row {
