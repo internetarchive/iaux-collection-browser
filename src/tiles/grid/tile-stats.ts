@@ -21,10 +21,9 @@ export class TileStats extends LitElement {
   @property({ type: Number }) commentCount?: number;
 
   render() {
-    console.log('tile-stats here');
     return html`
-      <div class="stats-wrapper">
-        <div id="stats-holder">
+      <div class="item-stats">
+        <div id="stats-row">
           <div class="col">
             <mediatype-icon
               .mediatype=${this.mediatype}
@@ -61,12 +60,12 @@ export class TileStats extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      .stats-wrapper {
+      .item-stats {
         height: 35px;
         flex-shrink: 0;
       }
 
-      #stats-holder {
+      #stats-row {
         border-top: 1px solid #bbb;
         align-items: center;
         display: flex;

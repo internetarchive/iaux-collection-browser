@@ -27,19 +27,17 @@ export class ItemTile extends LitElement {
 
           <div class="image-wrapper">
             <div id="item-image-container">
-              <item-image .model=${this.model} .baseImageUrl=${
-      this.baseImageUrl
-    }>
+              <item-image
+                .model=${this.model}
+                .baseImageUrl=${this.baseImageUrl}>
               </item-image>
             </div>
-            <div class="item-creator">
-              <div class="truncated">
-                ${
-                  itemCreator
-                    ? html`<span>by&nbsp;${itemCreator}</span>`
-                    : nothing
-                }
-              </div>
+            <div class="created-by truncated">
+              ${
+                itemCreator
+                  ? html`<span>by&nbsp;${itemCreator}</span>`
+                  : nothing
+              }
             </div>
           </div>
         </div>
@@ -122,7 +120,7 @@ export class ItemTile extends LitElement {
         background-color: #fcfcfc;
       }
 
-      .item-creator {
+      .created-by {
         display: flex;
         justify-content: center;
         align-items: flex-end; /* Important to start text from bottom */
