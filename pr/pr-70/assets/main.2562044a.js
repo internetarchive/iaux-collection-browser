@@ -597,9 +597,9 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
     />
     <title>Eye icon</title>
   </svg>
-`;function wo(a,e){let t=1;return a>=1e9?t=1e9:a>=1e6?t=1e6:a>=1e3&&e==="short"&&(t=1e3),t}function So(a=0,e){const t=a/e,i=t<10;let r=0;return i?r=Math.round((t+Number.EPSILON)*10)/10:r=Math.round(t),r}function $o(a,e,t,i){switch(e){case 1e9:return Ve(t==="short"?ot`${a}B`:ot`${a} billion`);case 1e6:return Ve(t==="short"?ot`${a}M`:ot`${a} million`);case 1e3:return Ve(t==="short"?ot`${a}K`:ot`${a} thousand`);default:return new Intl.NumberFormat(i).format(a)}}function Nt(a,e="long",t="short",i="en-US"){const r=a!=null?a:-1;if(r<0)return"";const s=wo(r,e),o=So(r,s);return $o(o,s,t,i)}let Ke=class extends B{render(){return console.log("tile-stats here"),m`
-      <div class="stats-wrapper">
-        <div id="stats-holder">
+`;function wo(a,e){let t=1;return a>=1e9?t=1e9:a>=1e6?t=1e6:a>=1e3&&e==="short"&&(t=1e3),t}function So(a=0,e){const t=a/e,i=t<10;let r=0;return i?r=Math.round((t+Number.EPSILON)*10)/10:r=Math.round(t),r}function $o(a,e,t,i){switch(e){case 1e9:return Ve(t==="short"?ot`${a}B`:ot`${a} billion`);case 1e6:return Ve(t==="short"?ot`${a}M`:ot`${a} million`);case 1e3:return Ve(t==="short"?ot`${a}K`:ot`${a} thousand`);default:return new Intl.NumberFormat(i).format(a)}}function Nt(a,e="long",t="short",i="en-US"){const r=a!=null?a:-1;if(r<0)return"";const s=wo(r,e),o=So(r,s);return $o(o,s,t,i)}let Ke=class extends B{render(){return m`
+      <div class="item-stats">
+        <div id="stats-row">
           <div class="col">
             <mediatype-icon
               .mediatype=${this.mediatype}
@@ -628,12 +628,12 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         </div>
       </div>
     `}static get styles(){return b`
-      .stats-wrapper {
+      .item-stats {
         height: 35px;
         flex-shrink: 0;
       }
 
-      #stats-holder {
+      #stats-row {
         border-top: 1px solid #bbb;
         align-items: center;
         display: flex;
@@ -675,13 +675,13 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
 
           <div class="image-wrapper">
             <div id="item-image-container">
-              <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
+              <item-image
+                .model=${this.model}
+                .baseImageUrl=${this.baseImageUrl}>
               </item-image>
             </div>
-            <div class="item-creator">
-              <div class="truncated">
-                ${d?m`<span>by&nbsp;${d}</span>`:_}
-              </div>
+            <div class="created-by truncated">
+              ${d?m`<span>by&nbsp;${d}</span>`:_}
             </div>
           </div>
         </div>
@@ -760,7 +760,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         background-color: #fcfcfc;
       }
 
-      .item-creator {
+      .created-by {
         display: flex;
         justify-content: center;
         align-items: flex-end; /* Important to start text from bottom */
@@ -788,10 +788,8 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
       }
     `}};n([u({type:Object})],ni.prototype,"model",void 0);n([u({type:String})],ni.prototype,"baseImageUrl",void 0);ni=n([Q("item-tile")],ni);let Ji=class extends B{render(){var e,t,i,r,s,o,l,d;return m`
       <div class="outer-holder">
-        <div id="header-holder">
-          <div id="title-holder">
-            <h1 class="truncated">${(e=this.model)===null||e===void 0?void 0:e.identifier}</h1>
-          </div>
+        <div id="title">
+          <h1 class="truncated">${(e=this.model)===null||e===void 0?void 0:e.identifier}</h1>
         </div>
 
         <div class="inner-holder">
@@ -803,13 +801,9 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
             />
           </div>
 
-          <div id="year-holder">
-            <div id="archivist-since">
-              <span>
-                Archivist since ${(r=(i=this.model)===null||i===void 0?void 0:i.dateAdded)===null||r===void 0?void 0:r.getFullYear()}
-              </span>
-            </div>
-          </div>
+          <span id="archivist-since">
+            Archivist since ${(r=(i=this.model)===null||i===void 0?void 0:i.dateAdded)===null||r===void 0?void 0:r.getFullYear()}
+          </span>
         </div>
 
         <tile-stats
@@ -849,7 +843,10 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         flex-grow: 1;
       }
 
-      #title-holder {
+      #title {
+        padding-top: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
         flex-shrink: 0;
         height: 40px;
       }
@@ -870,7 +867,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         box-shadow: 1px 1px 2px #888888;
       }
 
-      #year-holder {
+      #archivist-since {
         margin-bottom: 5px;
         height: 40px;
       }
