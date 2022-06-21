@@ -601,11 +601,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
       <div class="item-stats">
         <div id="stats-row">
           <div class="col">
-            <mediatype-icon
-              .mediatype=${this.mediatype}
-              style="--iconHeight:25px; --iconWidth:25px;"
-            >
-            </mediatype-icon>
+            <mediatype-icon .mediatype=${this.mediatype}> </mediatype-icon>
           </div>
           <div class="col">
             ${this.mediatype==="account"?bo:yo}
@@ -628,6 +624,11 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         </div>
       </div>
     `}static get styles(){return b`
+      mediatype-icon {
+        --iconHeight: 25px;
+        --iconWidth: 25px;
+      }
+
       .item-stats {
         height: 35px;
         flex-shrink: 0;
