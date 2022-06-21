@@ -10,11 +10,9 @@ export class AccountTile extends LitElement {
 
   render() {
     return html`
-      <div class="outer-holder">
-        <div id="header-holder">
-          <div id="title-holder">
-            <h1 class="truncated">${this.model?.identifier}</h1>
-          </div>
+      <div class="account-tile-main">
+        <div id="title">
+          <h1 class="truncated">${this.model?.identifier}</h1>
         </div>
 
         <div class="inner-holder">
@@ -26,13 +24,9 @@ export class AccountTile extends LitElement {
             />
           </div>
 
-          <div id="year-holder">
-            <div id="archivist-since">
-              <span>
-                Archivist since ${this.model?.dateAdded?.getFullYear()}
-              </span>
-            </div>
-          </div>
+          <span id="archivist-since">
+            Archivist since ${this.model?.dateAdded?.getFullYear()}
+          </span>
         </div>
 
         <tile-stats
@@ -60,7 +54,7 @@ export class AccountTile extends LitElement {
         margin: 0px;
       }
 
-      .outer-holder {
+      .account-tile-main {
         background-color: #fcf5e6;
         border: 1px #2c2c2c;
         border-radius: 4px;
@@ -76,7 +70,10 @@ export class AccountTile extends LitElement {
         flex-grow: 1;
       }
 
-      #title-holder {
+      #title {
+        padding-top: 5px;
+        padding-left: 5px;
+        padding-right: 5px;
         flex-shrink: 0;
         height: 40px;
       }
@@ -97,7 +94,7 @@ export class AccountTile extends LitElement {
         box-shadow: 1px 1px 2px #888888;
       }
 
-      #year-holder {
+      #archivist-since {
         margin-bottom: 5px;
         height: 40px;
       }
