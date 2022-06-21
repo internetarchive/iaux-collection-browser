@@ -25,11 +25,7 @@ export class TileStats extends LitElement {
       <div class="item-stats">
         <div id="stats-row">
           <div class="col">
-            <mediatype-icon
-              .mediatype=${this.mediatype}
-              style="--iconHeight:25px; --iconWidth:25px;"
-            >
-            </mediatype-icon>
+            <mediatype-icon .mediatype=${this.mediatype}> </mediatype-icon>
           </div>
           <div class="col">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
@@ -60,6 +56,11 @@ export class TileStats extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      mediatype-icon {
+        --iconHeight: 25px;
+        --iconWidth: 25px;
+      }
+
       .item-stats {
         height: 35px;
         flex-shrink: 0;
