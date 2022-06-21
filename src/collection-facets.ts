@@ -9,7 +9,11 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Aggregation, Bucket, SearchServiceInterface } from '@internetarchive/search-service';
+import {
+  Aggregation,
+  Bucket,
+  SearchServiceInterface,
+} from '@internetarchive/search-service';
 // import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
@@ -331,8 +335,7 @@ export class CollectionFacets extends LitElement {
           ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
         </h1>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
-          ${this.getFacetTemplate(facetGroup)}
-          ${this.getMoreLink(facetGroup)}
+          ${this.getFacetTemplate(facetGroup)} ${this.getMoreLink(facetGroup)}
         </div>
       </div>
     `;
@@ -341,13 +344,9 @@ export class CollectionFacets extends LitElement {
   /**
    * Generate the More... link button just below the facets group
    */
-  private getMoreLink(
-    facetGroup: FacetGroup
-  ): TemplateResult | typeof nothing {
-
+  private getMoreLink(facetGroup: FacetGroup): TemplateResult | typeof nothing {
     // don't render More... link if you facets is < 5
-    if (Object.keys(facetGroup.buckets).length < 5)
-      return html``;
+    if (Object.keys(facetGroup.buckets).length < 5) return html``;
 
     return html`<button
       href="javascript:void(0)"
@@ -357,18 +356,21 @@ export class CollectionFacets extends LitElement {
       }}
     >
       More...
-    </button>`
-  }  
+    </button>`;
+  }
 
   async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
     const config = new ModalConfig();
     config.closeOnBackdropClick = true;
-    config.headline = html`<span style="display:block;text-align:left;font-size:2rem;padding-left:1rem;">
-      ${facetTitles[facetGroup.key]}
-    </span><hr>`;
+    config.headline = html`<span
+        style="display:block;text-align:left;font-size:2rem;padding-left:1rem;"
+      >
+        ${facetTitles[facetGroup.key]}
+      </span>
+      <hr />`;
 
-    const facetAggrKey = Object.keys(aggregationToFacetOption).find((value) => 
-      aggregationToFacetOption[value] === facetGroup.key
+    const facetAggrKey = Object.keys(aggregationToFacetOption).find(
+      value => aggregationToFacetOption[value] === facetGroup.key
     );
 
     config.message = html`
@@ -378,10 +380,11 @@ export class CollectionFacets extends LitElement {
         .fullQuery=${this.fullQuery}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
-        .selectedFacets=${this.selectedFacets}>
+        .selectedFacets=${this.selectedFacets}
+      >
       </facets-more-content>
     `;
-    this.modalManager.showModal({config});
+    this.modalManager.showModal({ config });
   }
 
   /**

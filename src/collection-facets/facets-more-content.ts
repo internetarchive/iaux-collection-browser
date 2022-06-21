@@ -1,12 +1,9 @@
-import { css, CSSResultGroup, html, LitElement, PropertyValues} from 'lit';
+/* eslint-disable dot-notation */
+import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Bucket, SearchParams } from '@internetarchive/search-service';
 
-import {
-  SelectedFacets,
-  FacetGroup,
-  defaultSelectedFacets,
-} from '../models';
+import { SelectedFacets, FacetGroup, defaultSelectedFacets } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 
 @customElement('facets-more-content')
@@ -29,7 +26,8 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Object }) selectedFacet?: String;
 
-  @property({ type: Object }) languageCodeHandler?: LanguageCodeHandlerInterface;
+  @property({ type: Object })
+  languageCodeHandler?: LanguageCodeHandlerInterface;
 
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
@@ -40,9 +38,13 @@ export class FacetsMoreContent extends LitElement {
   private facetsPerPage = 25;
 
   async updated(changed: PropertyValues) {
-    if (changed.has('facetAggregationKey')) {
+    if (changed.has('facetKey')) {
       this.loading = 1;
-      await this.fetchSpecificFacets(this.facetAggregationKey as unknown as string);
+      this.pageNumber = 1;
+
+      await this.fetchSpecificFacets(
+        this.facetAggregationKey as unknown as string
+      );
       this.loading = 0;
     }
 
@@ -73,7 +75,7 @@ export class FacetsMoreContent extends LitElement {
   }
 
   async filterFacets() {
-     Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+    Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
       if (key === 'year_histogram') return;
 
       this.castedBuckets = buckets['buckets'] as Bucket[];
@@ -81,21 +83,32 @@ export class FacetsMoreContent extends LitElement {
   }
 
   private get renderPaginations() {
-    const paging = []
+    const paging = [];
 
-    const lenght = Object.keys(this.castedBuckets as []).length
-    const numberOfPages = Math.ceil(lenght / this.facetsPerPage)
+    const lenght = Object.keys(this.castedBuckets as []).length;
+    const numberOfPages = Math.ceil(lenght / this.facetsPerPage);
 
     const onClickEvent = (e: Event) => {
       this.pageClick(e);
-    }
+    };
 
-    let page = 1
-    for (page = 1; page <= numberOfPages; page++) {
+    let page = 1;
+    for (page = 1; page <= numberOfPages; page += 1) {
       if (this.pageNumber === page) {
-        paging.push(html`<a class="page-number current-page">${page}</a>`)
+        paging.push(
+          html`<button
+            class="page-number current-page"
+            @click="${onClickEvent}"
+          >
+            ${page}
+          </button>`
+        );
       } else {
-        paging.push(html`<a class="page-number" href="#${page}" @click="${onClickEvent}">${page}</a>`)
+        paging.push(
+          html`<button class="page-number" @click="${onClickEvent}">
+            ${page}
+          </button>`
+        );
       }
     }
 
@@ -103,45 +116,42 @@ export class FacetsMoreContent extends LitElement {
   }
 
   private pageClick(e: Event) {
-    e.stopPropagation() 
-    e.preventDefault()
+    e.stopPropagation();
+    e.preventDefault();
 
     const target = e.target as HTMLElement;
-    const { textContent, dataset } = target;
+    const { textContent } = target;
 
-    if (textContent) this.pageNumber = parseInt(textContent)
+    if (textContent) this.pageNumber = Number(textContent);
   }
 
   private get renderMoreFacets() {
     const min = (this.pageNumber - 1) * this.facetsPerPage;
-    const max = (min + this.facetsPerPage) - 1;
+    const max = min + this.facetsPerPage - 1;
     this.loading = 0;
     return html`<ul class="facet-list">
       ${this.castedBuckets?.map((option, n) => {
-        const optionWrapperClass = (n >= min && n <= max) ? 'farow' : 'farow hidden'
-        return html`
-          <li class=${optionWrapperClass}>
-            <div class="facet-row">
+        const optionWrapperClass =
+          n >= min && n <= max ? 'farow' : 'farow hidden';
+        return html` <li class=${optionWrapperClass}>
+          <div class="facet-row">
+            <label class="facet-info-display" title=${option.key}>
               <input
                 type="checkbox"
                 class="selected-facets"
-                value="${option.key}"
+                .value="${option.key}"
                 data-facet="${this.facetKey}"
                 @click=${(e: Event) => {
                   this.facetClicked(e);
                 }}
               />
-              <label
-                class="facet-info-display"
-                title=${option.key}
-              >
-                <div class="facet-title">${option.key}</div>
-                <div class="facet-count">${option.doc_count}</div>
-              </label>
-            </div>
-          </li>`;
-        }
-    )}`
+              <div class="facet-title">${option.key}</div>
+              <div class="facet-count">${option.doc_count}</div>
+            </label>
+          </div>
+        </li>`;
+      })}
+    </ul>`;
   }
 
   private facetClicked(e: Event) {
@@ -166,13 +176,15 @@ export class FacetsMoreContent extends LitElement {
       delete newFacets[facetKey as keyof typeof newFacets][value];
     }
 
-    console.log(newFacets)
     this.selectedFacets = newFacets;
   }
 
   private get loaderTemplate() {
     return this.loading
-      ? html`<div class="loading">loading facets... <img alt="" src="https://archive.org/images/loading.gif"/></div>`
+      ? html`<div class="loading">
+          loading facets...
+          <img alt="" src="https://archive.org/images/loading.gif" />
+        </div>`
       : '';
   }
 
@@ -180,28 +192,28 @@ export class FacetsMoreContent extends LitElement {
     return html`<div id="morf-page">
       <form>
         ${this.loaderTemplate}
-        <div class="facets-content">
-          ${this.renderMoreFacets}
-        </div>
-        <div class="facets-paging">
-          ${this.renderPaginations}
-        </div>
+        <div class="facets-content">${this.renderMoreFacets}</div>
+        <div class="facets-paging">${this.renderPaginations}</div>
         <center>
-          <input class="btn btn-archive}" type="button"
-            value="Apply your filters" @click=${this.submitClick} />
+          <input
+            class="btn btn-archive}"
+            type="button"
+            value="Apply your filters"
+            @click=${this.submitClick}
+          />
         </center>
       </form>
     </div>`;
   }
 
-  private submitClick(e: Event) {
+  private submitClick() {
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
       bubbles: true,
-      composed: true
+      composed: true,
     });
     this.dispatchEvent(event);
-    this.modalManager?.closeModal()
+    this.modalManager?.closeModal();
   }
 
   static get styles(): CSSResultGroup {
@@ -273,6 +285,8 @@ export class FacetsMoreContent extends LitElement {
       .page-number {
         padding: 0.5rem;
         color: blue;
+        border: 0;
+        cursor: pointer;
       }
       .current-page {
         background: white;
