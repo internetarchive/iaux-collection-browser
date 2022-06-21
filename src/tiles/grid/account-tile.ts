@@ -15,8 +15,8 @@ export class AccountTile extends LitElement {
           <h1 class="truncated">${this.model?.identifier}</h1>
         </div>
 
-        <div class="inner-holder">
-          <div id="avatar-holder">
+        <div class="account-info">
+          <div id="avatar-info">
             <img
               id="avatar"
               alt="patron-avatar"
@@ -66,19 +66,26 @@ export class AccountTile extends LitElement {
         width: 100%;
       }
 
-      .inner-holder {
+      .account-info {
         flex-grow: 1;
       }
 
       #title {
-        padding-top: 5px;
-        padding-left: 5px;
-        padding-right: 5px;
+        padding: 5px 5px 0px 5px;
         flex-shrink: 0;
         height: 40px;
       }
 
-      #avatar-holder {
+      .account-tile-main:hover > #title > .truncated {
+        text-decoration: underline;
+      }
+
+      /** this is a workaround for Safari 15 where the hover effects are not working */
+      #title:hover > .truncated {
+        text-decoration: underline;
+      }
+
+      #avatar-info {
         margin-top: 5px;
         margin-bottom: 5px;
         display: flex;

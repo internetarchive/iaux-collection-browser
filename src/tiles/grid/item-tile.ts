@@ -19,26 +19,22 @@ export class ItemTile extends LitElement {
     const itemTitle = this.model?.title;
     const itemCreator = this.model?.creator;
     return html`
-      <div id="container">
-        <div id="inner-wrapper">
-          <div class="title-wrapper">
-            <h1 id="item-title" title=${ifDefined(itemTitle)}>${itemTitle}</h1>
+      <div class="container">
+        <div class="item-info">
+          <div id="title">
+            <h1 class="truncated" title=${ifDefined(
+              itemTitle
+            )}>${itemTitle}</h1>
           </div>
 
-          <div class="image-wrapper">
-            <div id="item-image-container">
-              <item-image
-                .model=${this.model}
-                .baseImageUrl=${this.baseImageUrl}>
-              </item-image>
-            </div>
-            <div class="created-by truncated">
-              ${
-                itemCreator
-                  ? html`<span>by&nbsp;${itemCreator}</span>`
-                  : nothing
-              }
-            </div>
+          <div id="image">
+            <item-image
+              .model=${this.model}
+              .baseImageUrl=${this.baseImageUrl}>
+            </item-image>
+          </div>
+          <div class="created-by truncated">
+            ${itemCreator ? html`<span>by&nbsp;${itemCreator}</span>` : nothing}
           </div>
         </div>
 
@@ -55,7 +51,7 @@ export class ItemTile extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      #container {
+      .container {
         background-color: #ffffff;
         border-radius: var(--collectionTileCornerRadius, 4px);
         box-shadow: 1px 1px 2px 0px;
@@ -64,39 +60,16 @@ export class ItemTile extends LitElement {
         height: 100%;
       }
 
-      #inner-wrapper {
-        padding-top: 5px;
-        padding-left: 5px;
-        padding-right: 5px;
-      }
-
-      .title-wrapper {
-        flex-shrink: 0;
-      }
-
-      .image-wrapper {
+      .item-info {
+        padding: 5px 5px 0 5px;
         flex-grow: 1;
       }
 
-      #item-title {
-        flex: 1;
-        color: #2c2c2c;
-        min-width: 0; /* Important for long words! */
-        font-size: 1.6rem;
-        text-align: center;
-        margin-top: 0rem;
-        margin-bottom: 0.5rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        word-wrap: break-word;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        line-height: 2rem;
-        height: 4rem;
+      #title {
+        flex-shrink: 0;
       }
 
-      #item-image-container {
+      #image {
         display: flex;
         justify-content: center;
         flex: 1;
@@ -107,17 +80,13 @@ export class ItemTile extends LitElement {
         display: none;
       }
 
-      #container:hover > #title-image-container > .item-title {
+      .container:hover > .item-info > #title > .truncated {
         text-decoration: underline;
       }
 
       /** this is a workaround for Safari 15 where the hover effects are not working */
-      #title-image-container:hover > #item-title {
+      #title:hover > .truncated {
         text-decoration: underline;
-      }
-
-      #container:hover > #item-title {
-        background-color: #fcfcfc;
       }
 
       .created-by {
@@ -131,20 +100,28 @@ export class ItemTile extends LitElement {
 
       .truncated {
         flex: 1;
+        color: #2c2c2c;
         min-width: 0; /* Important for long words! */
+        text-align: center;
+        line-height: 2rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        word-wrap: break-word;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
 
       .truncated span {
         font-size: 1.4rem;
-        color: #2c2c2c;
-        -webkit-line-clamp: 2;
-        text-overflow: ellipsis;
-        overflow: hidden;
         display: -webkit-box;
-        -webkit-box-orient: vertical;
-        word-wrap: break-word;
-        line-height: 2rem;
-        text-align: center;
+      }
+
+      h1.truncated {
+        margin-top: 0rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.6rem;
+        height: 4rem;
+        display: -webkit-box;
       }
     `;
   }
