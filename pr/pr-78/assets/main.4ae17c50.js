@@ -428,10 +428,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         style="--iconFillColor: ${e.color}"
       >
         ${e.icon}
-        <p class="status-text">
-          <span class="sr-only">${e.text} icon</span>
-          ${e.text}
-        </p>
+        <p class="status-text">${e.text}</p>
       </div>
     `:m``}static get styles(){return b`
       #icon {
@@ -457,17 +454,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
 
       .fill-color {
         fill: var(--iconFillColor, '#000000');
-      }
-
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
       }
     `}};n([u({type:String})],Vt.prototype,"mediatype",void 0);n([u({type:Array})],Vt.prototype,"collections",void 0);n([u({type:Boolean})],Vt.prototype,"showText",void 0);Vt=n([Q("mediatype-icon")],Vt);/**
  * @license
@@ -614,17 +600,18 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
 `;function wo(a,e){let t=1;return a>=1e9?t=1e9:a>=1e6?t=1e6:a>=1e3&&e==="short"&&(t=1e3),t}function So(a=0,e){const t=a/e,i=t<10;let r=0;return i?r=Math.round((t+Number.EPSILON)*10)/10:r=Math.round(t),r}function $o(a,e,t,i){switch(e){case 1e9:return Ve(t==="short"?ot`${a}B`:ot`${a} billion`);case 1e6:return Ve(t==="short"?ot`${a}M`:ot`${a} million`);case 1e3:return Ve(t==="short"?ot`${a}K`:ot`${a} thousand`);default:return new Intl.NumberFormat(i).format(a)}}function Rt(a,e="long",t="short",i="en-US"){const r=a!=null?a:-1;if(r<0)return"";const s=wo(r,e),o=So(r,s);return $o(o,s,t,i)}let Ke=class extends B{render(){return m`
       <div class="item-stats">
         <p class="sr-only">
-          ${this.mediatype==="account"?"Account":"Item"} Stats:
+          ${this.mediatype==="account"?"Account Stats":"Item Stats"}
         </p>
         <ul id="stats-row">
           <li class="col">
+            <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
           <li class="col">
             ${this.mediatype==="account"?bo:yo}
             <p class="status-text">
               <span class="sr-only">
-                ${this.mediatype==="account"?"Uploads":"Views"} count:
+                ${this.mediatype==="account"?"Uploads:":"Views:"}
               </span>
               ${Rt(this.mediatype==="account"?this.itemCount:this.viewCount,"short","short")}
             </p>
@@ -632,14 +619,14 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
           <li class="col">
             ${go}
             <p class="status-text">
-              <span class="sr-only">Favorites count:</span>
+              <span class="sr-only">Favorites:</span>
               ${Rt(this.favCount,"short","short")}
             </p>
           </li>
           <li class="col">
             ${fo}
             <p class="status-text">
-              <span class="sr-only">Reviews count:</span>
+              <span class="sr-only">Reviews:</span>
               ${Rt(this.commentCount,"short","short")}
             </p>
           </li>
