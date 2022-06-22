@@ -371,7 +371,7 @@ export class SortFilterBar
               this.displayMode = 'list-detail';
             }}
             class=${this.displayMode === 'list-detail' ? 'active' : ''}
-            title="Extended list view"
+            title="List view"
           >
             ${listIcon}
           </button>
