@@ -23,33 +23,41 @@ export class TileStats extends LitElement {
   render() {
     return html`
       <div class="item-stats">
-        <div id="stats-row">
-          <div class="col">
-            <mediatype-icon .mediatype=${this.mediatype}> </mediatype-icon>
-          </div>
-          <div class="col">
+        <p class="sr-only">
+          ${this.mediatype === 'account' ? 'Account' : 'Item'} Stats:
+        </p>
+        <ul id="stats-row">
+          <li class="col">
+            <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
+          </li>
+          <li class="col">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
             <p class="status-text">
+              <span class="sr-only">
+                ${this.mediatype === 'account' ? 'Uploads' : 'Views'} count:
+              </span>
               ${formatCount(
                 this.mediatype === 'account' ? this.itemCount : this.viewCount,
                 'short',
                 'short'
               )}
             </p>
-          </div>
-          <div class="col">
+          </li>
+          <li class="col">
             ${favoriteFilledIcon}
             <p class="status-text">
+              <span class="sr-only">Favorites count:</span>
               ${formatCount(this.favCount, 'short', 'short')}
             </p>
-          </div>
-          <div class="col">
+          </li>
+          <li class="col">
             ${reviewsIcon}
             <p class="status-text">
+              <span class="sr-only">Reviews count:</span>
               ${formatCount(this.commentCount, 'short', 'short')}
             </p>
-          </div>
-        </div>
+          </li>
+        </ul>
       </div>
     `;
   }
@@ -59,6 +67,15 @@ export class TileStats extends LitElement {
       mediatype-icon {
         --iconHeight: 25px;
         --iconWidth: 25px;
+      }
+
+      ul {
+        all: unset; // unset all property values
+        list-style-type: none; // remove default list-style
+      }
+
+      li {
+        list-style-type: none; // remove default list-style
       }
 
       .item-stats {
@@ -75,6 +92,17 @@ export class TileStats extends LitElement {
         width: 100%;
         padding-top: 5px;
         padding-bottom: 5px;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
       }
 
       .col {
