@@ -43,10 +43,7 @@ export class MediatypeIcon extends LitElement {
         style="--iconFillColor: ${config.color}"
       >
         ${config.icon}
-        <p class="status-text">
-          <span class="sr-only">${config.text} icon</span>
-          ${config.text}
-        </p>
+        <p class="status-text">${config.text}</p>
       </div>
     `;
   }
@@ -76,17 +73,6 @@ export class MediatypeIcon extends LitElement {
 
       .fill-color {
         fill: var(--iconFillColor, '#000000');
-      }
-
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
       }
     `;
   }

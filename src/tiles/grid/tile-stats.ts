@@ -24,17 +24,18 @@ export class TileStats extends LitElement {
     return html`
       <div class="item-stats">
         <p class="sr-only">
-          ${this.mediatype === 'account' ? 'Account' : 'Item'} Stats:
+          ${this.mediatype === 'account' ? 'Account Stats' : 'Item Stats'}
         </p>
         <ul id="stats-row">
           <li class="col">
+            <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
           <li class="col">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
             <p class="status-text">
               <span class="sr-only">
-                ${this.mediatype === 'account' ? 'Uploads' : 'Views'} count:
+                ${this.mediatype === 'account' ? 'Uploads:' : 'Views:'}
               </span>
               ${formatCount(
                 this.mediatype === 'account' ? this.itemCount : this.viewCount,
@@ -46,14 +47,14 @@ export class TileStats extends LitElement {
           <li class="col">
             ${favoriteFilledIcon}
             <p class="status-text">
-              <span class="sr-only">Favorites count:</span>
+              <span class="sr-only">Favorites:</span>
               ${formatCount(this.favCount, 'short', 'short')}
             </p>
           </li>
           <li class="col">
             ${reviewsIcon}
             <p class="status-text">
-              <span class="sr-only">Reviews count:</span>
+              <span class="sr-only">Reviews:</span>
               ${formatCount(this.commentCount, 'short', 'short')}
             </p>
           </li>
