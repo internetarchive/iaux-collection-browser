@@ -631,7 +631,6 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
 
       .item-stats {
         height: 35px;
-        flex-shrink: 0;
       }
 
       #stats-row {
