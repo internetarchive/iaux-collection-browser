@@ -199,10 +199,10 @@
   dependencies:
     idb-keyval "^6.1.0"
 
-"@internetarchive/modal-manager@0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.3.tgz#420373dcf0695c254d510b87fd1938f7168e3e1f"
-  integrity sha512-d4+lPeNimJhCoFkkUZtpjx8MRovRakHCQjr0XcB8jbtNkWOUvCfqhSrl1CwWI5N3guZPW4biv4lcaxWxT/rCsg==
+"@internetarchive/modal-manager@0.2.4":
+  version "0.2.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.4.tgz#ab0a10e317b5a8b8875f5104ab3141a8edc97b08"
+  integrity sha512-mZX+VwBrdrn1s7YFWKgtBrey81ISxFBw/wEkhd0OsIRZYPEDqdyFEEuIMmHNwlz2mgwREAtx8K1dtbABqKqJ1g==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.3"
     "@internetarchive/icon-close" "^1.3.2"

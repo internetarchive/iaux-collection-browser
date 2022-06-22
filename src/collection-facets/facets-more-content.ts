@@ -3,6 +3,7 @@ import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { Bucket, SearchParams } from '@internetarchive/search-service';
 
+import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SelectedFacets, FacetGroup, defaultSelectedFacets } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 
@@ -20,7 +21,7 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: Object }) aggr = [];
+  @property({ type: Object, attribute: false }) aggr = [];
 
   @property({ type: Object }) castedBuckets?: Bucket[] = [];
 
@@ -34,6 +35,9 @@ export class FacetsMoreContent extends LitElement {
   @state() pageNumber = 1;
 
   @state() loading = 1;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   private facetsPerPage = 25;
 
@@ -133,6 +137,7 @@ export class FacetsMoreContent extends LitElement {
       ${this.castedBuckets?.map((option, n) => {
         const optionWrapperClass =
           n >= min && n <= max ? 'farow' : 'farow hidden';
+
         return html` <li class=${optionWrapperClass}>
           <div class="facet-row">
             <label class="facet-info-display" title=${option.key}>
@@ -191,17 +196,18 @@ export class FacetsMoreContent extends LitElement {
   render() {
     return html`<div id="morf-page">
       <form>
-        ${this.loaderTemplate}
-        <div class="facets-content">${this.renderMoreFacets}</div>
-        <div class="facets-paging">${this.renderPaginations}</div>
-        <center>
-          <input
-            class="btn btn-archive}"
-            type="button"
-            value="Apply your filters"
-            @click=${this.submitClick}
-          />
-        </center>
+        ${this.loading
+          ? this.loaderTemplate
+          : html`<div class="facets-content">${this.renderMoreFacets}</div>
+              <div class="facets-paging">${this.renderPaginations}</div>
+              <center>
+                <input
+                  class="btn btn-archive}"
+                  type="button"
+                  value="Apply your filters"
+                  @click=${this.submitClick}
+                />
+              </center>`}
       </form>
     </div>`;
   }
@@ -238,7 +244,7 @@ export class FacetsMoreContent extends LitElement {
         margin: 1.5rem;
         background-color: #efefef;
         text-align: right;
-        padding: 1rem;
+        padding: 1rem 0;
         font-size: 1.2rem;
       }
 
@@ -294,7 +300,6 @@ export class FacetsMoreContent extends LitElement {
         color: initial;
       }
       .loading {
-        font-style: italic;
         text-align: center;
       }
       .loading img {
