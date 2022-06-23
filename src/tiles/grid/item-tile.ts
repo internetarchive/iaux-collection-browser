@@ -4,6 +4,9 @@ import { customElement, property } from 'lit/decorators.js';
 
 import { TileModel } from '../../models';
 import { formatCount } from '../../utils/format-count';
+import { formatDate } from '../../utils/format-date';
+
+import { SortParam } from '@internetarchive/search-service';
 
 import { favoriteFilledIcon } from './icons/favorite-filled';
 import { reviewsIcon } from './icons/reviews';
@@ -18,9 +21,33 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Object }) sortParam: SortParam | null = null;
+
+  private get getSortedValue() {
+    let sortedValue = '' as any;
+
+    switch (this.sortParam?.field) {
+      case 'date':
+        sortedValue = { field : 'published', value: this.model?.datePublished };
+      case 'reviewdate':
+        sortedValue = { field : 'reviewed', value: this.model?.dateReviewed };
+      case 'addeddate':
+        sortedValue = { field : 'added', value: this.model?.dateAdded };
+      case 'publicdate':
+        sortedValue = { field : 'archived', value: this.model?.dateArchived };
+
+      return html`<span>${sortedValue.field as string} ${formatDate(sortedValue.value, 'long')}</span>`;
+    }
+  }
+
+  private get getCreator() {
+    return this.model?.creator
+      ? html`<span>by&nbsp;${this.model?.creator}</span>`
+      : nothing;
+  }
+
   render() {
     const itemTitle = this.model?.title || nothing;
-    const itemCreator = this.model?.creator;
     return html`
       <div id="container">
         <div id="title-image-container">
@@ -31,9 +58,9 @@ export class ItemTile extends LitElement {
           </div>
           <div class="item-creator">
             <div class="truncated">
-              ${itemCreator
-                ? html`<span>by&nbsp;${itemCreator}</span>`
-                : nothing}
+              ${this.sortParam 
+                ? this.getSortedValue
+                : this.getCreator}
             </div>
           </div>
         </div>
