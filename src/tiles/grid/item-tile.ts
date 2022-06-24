@@ -2,7 +2,9 @@
 import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { SortParam } from '@internetarchive/search-service';
 
+import { formatDate } from '../../utils/format-date';
 import { TileModel } from '../../models';
 
 import '../mediatype-icon';
@@ -17,32 +19,9 @@ export class ItemTile extends LitElement {
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  private get getSortedValue() {
-    let sortedValue = '' as any;
-
-    switch (this.sortParam?.field) {
-      case 'date':
-        sortedValue = { field : 'published', value: this.model?.datePublished };
-      case 'reviewdate':
-        sortedValue = { field : 'reviewed', value: this.model?.dateReviewed };
-      case 'addeddate':
-        sortedValue = { field : 'added', value: this.model?.dateAdded };
-      case 'publicdate':
-        sortedValue = { field : 'archived', value: this.model?.dateArchived };
-
-      return html`<span>${sortedValue.field as string} ${formatDate(sortedValue.value, 'long')}</span>`;
-    }
-  }
-
-  private get getCreator() {
-    return this.model?.creator
-      ? html`<span>by&nbsp;${this.model?.creator}</span>`
-      : nothing;
-  }
-
   render() {
     const itemTitle = this.model?.title;
-    const itemCreator = this.model?.creator;
+
     return html`
       <div class="container">
         <div class="item-info">
@@ -59,7 +38,11 @@ export class ItemTile extends LitElement {
             </item-image>
           </div>
           <div class="created-by truncated">
-            ${itemCreator ? html`<span>by&nbsp;${itemCreator}</span>` : nothing}
+            ${
+              this.sortParam
+                ? this.sortedDateInfoTemplate
+                : this.creatorTemplate
+            }
           </div>
         </div>
 
@@ -72,6 +55,38 @@ export class ItemTile extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private get sortedDateInfoTemplate() {
+    let sortedValue = '' as any;
+
+    switch (this.sortParam?.field) {
+      case 'date':
+        sortedValue = { field: 'published', value: this.model?.datePublished };
+        break;
+      case 'reviewdate':
+        sortedValue = { field: 'reviewed', value: this.model?.dateReviewed };
+        break;
+      case 'addeddate':
+        sortedValue = { field: 'added', value: this.model?.dateAdded };
+        break;
+      case 'publicdate':
+        sortedValue = { field: 'archived', value: this.model?.dateArchived };
+        break;
+      default:
+        return this.creatorTemplate;
+    }
+
+    return html`<span
+      >${sortedValue.field as string}
+      ${formatDate(sortedValue.value, 'long')}</span
+    >`;
+  }
+
+  private get creatorTemplate() {
+    return this.model?.creator
+      ? html`<span>by&nbsp;${this.model?.creator}</span>`
+      : nothing;
   }
 
   static get styles(): CSSResultGroup {
