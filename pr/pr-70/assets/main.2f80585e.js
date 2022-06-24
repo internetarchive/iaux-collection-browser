@@ -1535,7 +1535,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             id="grid-button"
             @click=${()=>{this.displayMode="list-detail"}}
             class=${this.displayMode==="list-detail"?"active":""}
-            title="Extended list view"
+            title="List view"
           >
             ${Zo}
           </button>
