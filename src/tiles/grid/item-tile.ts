@@ -58,7 +58,7 @@ export class ItemTile extends LitElement {
   }
 
   private get sortedDateInfoTemplate() {
-    let sortedValue = '' as any;
+    let sortedValue = {} as any;
 
     switch (this.sortParam?.field) {
       case 'date':
