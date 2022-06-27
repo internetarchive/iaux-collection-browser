@@ -325,7 +325,6 @@ export class CollectionBrowser
       </div>`;
   }
 
-
   private get infiniteScrollerTilesTemplate() {
     return html`<infinite-scroller
       class="${ifDefined(this.displayMode)}"
@@ -511,7 +510,7 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl')
     ) {
-      if (this.totalResults) this.infiniteScroller?.reload();
+      this.infiniteScroller?.reload();
     }
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
@@ -892,14 +891,14 @@ export class CollectionBrowser
     // then scrolls to the cell
     setTimeout(() => {
       this.isScrollingToCell = true;
-      this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
+      this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
       // This timeout is to give the scroll animation time to finish
       // then updating the infinite scroller once we're done scrolling
       // There's no scroll animation completion callback so we're
       // giving it 0.5s to finish.
       setTimeout(() => {
         this.isScrollingToCell = false;
-        this.infiniteScroller?.reload();
+        this.infiniteScroller.reload();
       }, 500);
     }, 0);
   }
@@ -1002,7 +1001,7 @@ export class CollectionBrowser
       this.preloadCollectionNames(docs);
       this.updateDataSource(pageNumber, docs);
     }
-    if (docs.length < this.pageSize && this.totalResults) {
+    if (docs.length < this.pageSize) {
       this.endOfDataReached = true;
       // this updates the infinite scroller to show the actual size
       this.infiniteScroller.itemCount = this.actualTileCount;
@@ -1101,7 +1100,7 @@ export class CollectionBrowser
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.infiniteScroller?.reload();
+      this.infiniteScroller.reload();
     }
   }
 
