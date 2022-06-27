@@ -1058,6 +1058,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${!0}
+        .loggedIn=${this.loggedIn}
         style="--imgHeight: 100%; --imgWidth: 100%"
       >
       </item-image>
