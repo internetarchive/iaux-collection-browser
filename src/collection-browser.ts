@@ -41,6 +41,7 @@ import {
   defaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
+  EmptyPlaceholderType,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -149,6 +150,8 @@ export class CollectionBrowser
 
   @state() private mobileFacetsVisible = false;
 
+  @state() private emptyPlaceholder?: EmptyPlaceholderType;
+
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
   private languageCodeHandler = new LanguageCodeHandler();
@@ -247,23 +250,44 @@ export class CollectionBrowser
   }
 
   render() {
+    this.doesHaveSearchTermOrResult();
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        ${this.ifNoSearchTerm
-          ? this.noSearchTermTemplate
-          : this.ifNoSearchResult
-          ? this.noResultsTemplate
+        ${this.emptyPlaceholder
+          ? this.emptyPlaceholderTemplate
           : this.collectionBrowserTemplate}
       </div>
     `;
   }
 
-  private get ifNoSearchTerm() {
-    return !this.fullQuery || !this.baseQuery;
+  private get emptyPlaceholderTemplate() {
+    return html`${this.emptyPlaceholder === 'no-search-result'
+      ? this.noSearchResultTemplate
+      : this.noSearchTermTemplate}`;
   }
 
-  private get ifNoSearchResult() {
-    return !this.searchResultsLoading && this.totalResults === 0;
+  private doesHaveSearchTermOrResult() {
+    this.emptyPlaceholder = '';
+
+    if (!this.fullQuery || !this.baseQuery) {
+      this.emptyPlaceholder = 'no-search-term';
+    }
+
+    if (!this.searchResultsLoading && this.totalResults === 0) {
+      this.emptyPlaceholder = 'no-search-result';
+    }
+  }
+
+  private get noSearchResultTemplate() {
+    return html`<div class="no-search-term"><h2>Your search did not match any items in the Archive. Try different keywords or a more general search.</h2>
+        <div>${noSearchResult}</div></div>
+    </div>`;
+  }
+
+  private get noSearchTermTemplate() {
+    return html`<div class="no-search-term"><h2>To being searching, enter a search term in the box above and hit "Go".</h2>
+        <div>${noSearchTerm}</div></div>
+    </div>`;
   }
 
   private get collectionBrowserTemplate() {
@@ -301,17 +325,6 @@ export class CollectionBrowser
       </div>`;
   }
 
-  private get noResultsTemplate() {
-    return html`<div class="no-search-term"><h2>Your search did not match any items in the Archive. Try different keywords or a more general search.</h2>
-        <div>${noSearchResult}</div></div>
-    </div>`;
-  }
-
-  private get noSearchTermTemplate() {
-    return html`<div class="no-search-term"><h2>To being searching, enter a search term in the box above and hit "Go".</h2>
-        <div>${noSearchTerm}</div></div>
-    </div>`;
-  }
 
   private get infiniteScrollerTilesTemplate() {
     return html`<infinite-scroller
@@ -528,7 +541,8 @@ export class CollectionBrowser
     }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached) {
-        this.infiniteScroller.itemCount = this.estimatedTileCount;
+        if (this.infiniteScroller)
+          this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
     if (changed.has('resizeObserver')) {
@@ -1010,7 +1024,7 @@ export class CollectionBrowser
    * page are visible, but if the page is not currenlty visible, we don't need to reload
    */
   private get currentVisiblePageNumbers(): number[] {
-    const visibleCells = this.infiniteScroller?.getVisibleCellIndices();
+    const visibleCells = this.infiniteScroller.getVisibleCellIndices();
     const visiblePages = new Set<number>();
     visibleCells.forEach(cellIndex => {
       const visiblePage = Math.floor(cellIndex / this.pageSize) + 1;
