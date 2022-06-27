@@ -10,12 +10,6 @@ export class TextOverlay extends LitElement {
   @property({ type: Boolean }) contentWarning = false;
 
   render() {
-    console.log(
-      'loginRequired: ',
-      this.loginRequired,
-      ' isLoggedIn: ',
-      this.loggedIn
-    );
     if (this.loginRequired && !this.loggedIn) {
       return html` ${this.loginRequiredTemplate} `;
     }
@@ -24,7 +18,7 @@ export class TextOverlay extends LitElement {
 
   private get loginRequiredTemplate() {
     return html`
-      <div class="tile-action no-preview">Log in to view this item</div>
+      <div class="tile-action no-preview">Log in<br />to view this item</div>
     `;
   }
 
@@ -37,14 +31,15 @@ export class TextOverlay extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .tile-action {
-        border: 1px solid currentColor;
+        border: 1px solid #2c2c2c;
         border-radius: 1px;
-        padding: 5px;
-        font-weight: 500;
-        width: auto;
         position: absolute;
-        z-index: 2;
-        display: flex;
+        right: 0;
+        left: 0;
+        top: 35%;
+        margin: auto;
+        width: auto;
+        padding: 5px;
       }
 
       .no-preview {

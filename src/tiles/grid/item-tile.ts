@@ -33,7 +33,7 @@ export class ItemTile extends LitElement {
             )}>${itemTitle}</h1>
           </div>
 
-          <div id="image" style="position: relative;">
+          <div id="image">
             <item-image
               .model=${this.model}
               .baseImageUrl=${this.baseImageUrl}>
@@ -98,6 +98,7 @@ export class ItemTile extends LitElement {
         justify-content: center;
         flex: 1;
         height: 16rem;
+        position: relative;
       }
 
       .hidden {
