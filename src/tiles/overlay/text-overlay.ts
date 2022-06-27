@@ -1,12 +1,8 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { restrictedIcon } from '../assets/img/icons/restricted';
-import { LoginRequiredIcon } from '../assets/img/icons/login-required';
 
-@customElement('item-image-overlay')
-export class ItemImageOverlay extends LitElement {
-  @property({ type: Boolean }) isListTile = false;
-
+@customElement('text-overlay')
+export class TextOverlay extends LitElement {
   @property({ type: Boolean }) loggedIn = false;
 
   @property({ type: Boolean }) loginRequired = false;
@@ -14,6 +10,12 @@ export class ItemImageOverlay extends LitElement {
   @property({ type: Boolean }) contentWarning = false;
 
   render() {
+    console.log(
+      'loginRequired: ',
+      this.loginRequired,
+      ' isLoggedIn: ',
+      this.loggedIn
+    );
     if (this.loginRequired && !this.loggedIn) {
       return html` ${this.loginRequiredTemplate} `;
     }
@@ -21,22 +23,12 @@ export class ItemImageOverlay extends LitElement {
   }
 
   private get loginRequiredTemplate() {
-    if (this.isListTile) {
-      // List views
-      return html` ${LoginRequiredIcon} `;
-    }
-    // Tile view
     return html`
       <div class="tile-action no-preview">Log in to view this item</div>
     `;
   }
 
   private get contentWarningTemplate() {
-    if (this.isListTile) {
-      // List views
-      return html` ${restrictedIcon} `;
-    }
-    // Tile view
     return html`
       <div class="tile-action no-preview">Content may be inappropriate</div>
     `;
@@ -44,17 +36,6 @@ export class ItemImageOverlay extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      :host {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        z-index: 2;
-      }
-
-      svg {
-        padding: 25%;
-      }
-
       .tile-action {
         border: 1px solid currentColor;
         border-radius: 1px;

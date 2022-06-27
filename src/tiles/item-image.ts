@@ -9,7 +9,7 @@ import {
   waveformGradientStyles,
 } from '../styles/item-image-styles';
 
-import './item-tile-overlay';
+import './overlay/icon-overlay';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -36,7 +36,7 @@ export class ItemImage extends LitElement {
           alt=""
           @load=${this.onLoad}
         />
-        ${this.itemImageOverlayTemplate}
+        ${this.iconOverlayTemplate}
       </div>
     `;
   }
@@ -44,17 +44,16 @@ export class ItemImage extends LitElement {
   /**
    * Templates
    */
-  private get itemImageOverlayTemplate() {
+  private get iconOverlayTemplate() {
     if (!this.model?.loginRequired && !this.model?.contentWarning) {
       return nothing;
     }
     return html`
-      <item-image-overlay
-        .isListTile=${this.isListTile}
+      <icon-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
         .contentWarning=${this.model?.contentWarning}
-      ></item-image-overlay>
+      ></icon-overlay>
     `;
   }
 

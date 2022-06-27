@@ -10,6 +10,7 @@ import { TileModel } from '../../models';
 import '../mediatype-icon';
 import '../item-image';
 import './tile-stats';
+import '../overlay/text-overlay';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
@@ -32,17 +33,17 @@ export class ItemTile extends LitElement {
             )}>${itemTitle}</h1>
           </div>
 
-          <div id="image">
+          <div id="image" style="position: relative;">
             <item-image
               .model=${this.model}
               .baseImageUrl=${this.baseImageUrl}>
             </item-image>
+            ${this.textOverlayTemplate}
           </div>
-          ${
-            this.doesSortedByDate
-              ? this.sortedDateInfoTemplate
-              : this.creatorTemplate
-          }
+
+          <div class="created-by truncated">
+            ${itemCreator ? html`<span>by&nbsp;${itemCreator}</span>` : nothing}
+          </div>
         </div>
 
         <tile-stats 
@@ -56,48 +57,19 @@ export class ItemTile extends LitElement {
     `;
   }
 
-  private get doesSortedByDate() {
-    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
-      this.sortParam?.field as string
-    );
-  }
-
-  private get sortedDateInfoTemplate() {
-    let sortedValue;
-
-    switch (this.sortParam?.field) {
-      case 'date':
-        sortedValue = { field: 'published', value: this.model?.datePublished };
-        break;
-      case 'reviewdate':
-        sortedValue = { field: 'reviewed', value: this.model?.dateReviewed };
-        break;
-      case 'addeddate':
-        sortedValue = { field: 'added', value: this.model?.dateAdded };
-        break;
-      case 'publicdate':
-        sortedValue = { field: 'archived', value: this.model?.dateArchived };
-        break;
-      default:
-        break;
+  /**
+   * Templates
+   */
+  private get textOverlayTemplate() {
+    if (!this.model?.loginRequired && !this.model?.contentWarning) {
+      return nothing;
     }
-
     return html`
-      <div class="date-sorted-by truncated">
-        <span>
-          ${sortedValue?.field} ${formatDate(sortedValue?.value, 'long')}
-        </span>
-      </div>
-    `;
-  }
-
-  private get creatorTemplate() {
-    return html`
-      <div class="created-by truncated">
-        ${this.model?.creator
-          ? html`<span>by&nbsp;${this.model?.creator}</span>`
-          : nothing}
-      </div>
+      <text-overlay
+        .loggedIn=${false}
+        .loginRequired=${this.model?.loginRequired}
+        .contentWarning=${this.model?.contentWarning}
+      ></text-overlay>
     `;
   }
 
