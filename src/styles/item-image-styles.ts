@@ -32,12 +32,6 @@ export const baseItemImageStyles = css`
     width: 100%;
     transform: scale(1.1);
   }
-
-  // br class=clearfix
-  .clearfix {
-    clear: both;
-    height: 0px;
-  }
 `;
 
 /**
