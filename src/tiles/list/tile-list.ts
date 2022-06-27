@@ -149,6 +149,7 @@ export class TileList extends LitElement {
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
+        .loggedIn=${this.loggedIn}
         style="--imgHeight: 100%; --imgWidth: 100%"
       >
       </item-image>
