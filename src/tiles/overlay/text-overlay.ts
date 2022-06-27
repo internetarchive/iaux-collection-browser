@@ -10,27 +10,18 @@ export class TextOverlay extends LitElement {
   @property({ type: Boolean }) contentWarning = false;
 
   render() {
-    if (this.loginRequired && !this.loggedIn) {
-      return html` ${this.loginRequiredTemplate} `;
-    }
-    return html` ${this.contentWarningTemplate} `;
+    return html` <div class="overlay no-preview">${this.textDisplay}</div> `;
   }
 
-  private get loginRequiredTemplate() {
-    return html`
-      <div class="tile-action no-preview">Log in<br />to view this item</div>
-    `;
-  }
-
-  private get contentWarningTemplate() {
-    return html`
-      <div class="tile-action no-preview">Content may be inappropriate</div>
-    `;
+  private get textDisplay() {
+    return this.loginRequired && !this.loggedIn
+      ? 'Log in\nto view this item'
+      : 'Content may be inappropriate';
   }
 
   static get styles(): CSSResultGroup {
     return css`
-      .tile-action {
+      .overlay {
         border: 1px solid #2c2c2c;
         border-radius: 1px;
         position: absolute;
@@ -48,6 +39,7 @@ export class TextOverlay extends LitElement {
         font-size: 1.4rem;
         line-height: 2rem;
         text-align: center;
+        white-space: pre-wrap; // for the newline character
       }
     `;
   }

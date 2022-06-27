@@ -28,6 +28,8 @@ export class TileListCompact extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Boolean }) loggedIn = false;
+
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
@@ -65,7 +67,7 @@ export class TileListCompact extends LitElement {
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
         .isCompactTile=${true}
-        style="--imgHeight: 100%; --imgWidth: 100%"
+        .loggedIn=${this.loggedIn}
       >
       </item-image>
     `;
@@ -204,6 +206,11 @@ export class TileListCompact extends LitElement {
       .desktop #icon {
         --iconHeight: 20px;
         --iconWidth: 20px;
+      }
+
+      item-image {
+        --imgHeight: 100%;
+        --imgWidth: 100%;
       }
     `;
   }

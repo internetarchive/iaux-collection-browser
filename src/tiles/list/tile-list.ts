@@ -45,6 +45,8 @@ export class TileList extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Boolean }) loggedIn = false;
+
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
       this.fetchCollectionNames();

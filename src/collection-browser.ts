@@ -428,6 +428,7 @@ export class CollectionBrowser
           .resizeObserver=${this.resizeObserver}
           .sortParam=${this.sortParam}
           .mobileBreakpoint=${this.mobileBreakpoint}
+          .loggedIn=${this.loggedIn}
         >
         </tile-dispatcher>
       </div>

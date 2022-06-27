@@ -14,6 +14,8 @@ import '../overlay/text-overlay';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
+  @property({ type: Boolean }) loggedIn = false;
+
   @property({ type: Object }) model?: TileModel;
 
   @property({ type: String }) baseImageUrl?: string;
@@ -66,7 +68,7 @@ export class ItemTile extends LitElement {
     }
     return html`
       <text-overlay
-        .loggedIn=${false}
+        .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
         .contentWarning=${this.model?.contentWarning}
       ></text-overlay>
