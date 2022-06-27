@@ -48,8 +48,8 @@ import {
   RestorationState,
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
-import noSearchTerm from './assets/img/icons/search-no-term';
-import noSearchResult from './assets/img/icons/search-no-result';
+import noSearchTerm from './assets/img/icons/no-search-term';
+import noSearchResult from './assets/img/icons/no-search-result';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 
 @customElement('collection-browser')
@@ -249,13 +249,21 @@ export class CollectionBrowser
   render() {
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        ${!this.fullQuery || !this.baseQuery
+        ${this.ifNoSearchTerm
           ? this.noSearchTermTemplate
-          : (!this.searchResultsLoading && this.totalResults === 0)
+          : this.ifNoSearchResult
           ? this.noResultsTemplate
           : this.collectionBrowserTemplate}
       </div>
     `;
+  }
+
+  private get ifNoSearchTerm() {
+    return !this.fullQuery || !this.baseQuery;
+  }
+
+  private get ifNoSearchResult() {
+    return !this.searchResultsLoading && this.totalResults === 0;
   }
 
   private get collectionBrowserTemplate() {
@@ -285,63 +293,27 @@ export class CollectionBrowser
       </div>
       <div id="right-column" class="column">
         ${this.searchResultsLoading ? this.loadingTemplate : nothing}
-        <sort-filter-bar
-          .selectedSort=${this.selectedSort}
-          .sortDirection=${this.sortDirection}
-          .displayMode=${this.displayMode}
-          .selectedTitleFilter=${this.selectedTitleFilter}
-          .selectedCreatorFilter=${this.selectedCreatorFilter}
-          .resizeObserver=${this.resizeObserver}
-          @sortChanged=${this.userChangedSort}
-          @displayModeChanged=${this.displayModeChanged}
-          @titleLetterChanged=${this.titleLetterSelected}
-          @creatorLetterChanged=${this.creatorLetterSelected}
-        ></sort-filter-bar>
-
+        ${this.sortFilterBarTemplate}
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
-        ${!this.searchResultsLoading && this.totalResults === 0
-          ? html`
-              <h2>
-                Your search did not match any items in the Archive. Try
-                different keywords or a more general search.
-              </h2>
-            `
-          : nothing}
-
-        <infinite-scroller
-          class="${ifDefined(this.displayMode)}"
-          .cellProvider=${this}
-          .placeholderCellTemplate=${this.placeholderCellTemplate}
-          @scrollThresholdReached=${this.scrollThresholdReached}
-          @visibleCellsChanged=${this.visibleCellsChanged}
-        >
-        </infinite-scroller>
+        ${this.infiniteScrollerTilesTemplate}
       </div>`;
   }
 
   private get noResultsTemplate() {
-    return html`<div class="no-search-term">${!this.searchResultsLoading && this.totalResults === 0
-      ? html`<h2>Your search did not match any items in the Archive. Try different keywords or a more general search.</h2>
-        <div>${noSearchResult}</div></div>`
-      : nothing}`;
+    return html`<div class="no-search-term"><h2>Your search did not match any items in the Archive. Try different keywords or a more general search.</h2>
+        <div>${noSearchResult}</div></div>
+    </div>`;
   }
 
   private get noSearchTermTemplate() {
-    return html`<div class="no-search-term">${!this.fullQuery
-      ? html`<h2>To being searching, enter a search term in the box above and hit "Go".</h2>
-        <div>${noSearchTerm}</div></div>`
-      : nothing}`;
+    return html`<div class="no-search-term"><h2>To being searching, enter a search term in the box above and hit "Go".</h2>
+        <div>${noSearchTerm}</div></div>
+    </div>`;
   }
 
   private get infiniteScrollerTilesTemplate() {
-    // this.sortFilterBarTemplate
-
-    // this.displayMode === `list-compact`
-    //         ? this.listHeaderTemplate
-    //         : nothing;
-
     return html`<infinite-scroller
       class="${ifDefined(this.displayMode)}"
       .cellProvider=${this}
@@ -526,7 +498,7 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl')
     ) {
-      this.infiniteScroller.reload();
+      if (this.totalResults) this.infiniteScroller?.reload();
     }
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
@@ -906,14 +878,14 @@ export class CollectionBrowser
     // then scrolls to the cell
     setTimeout(() => {
       this.isScrollingToCell = true;
-      this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+      this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
       // This timeout is to give the scroll animation time to finish
       // then updating the infinite scroller once we're done scrolling
       // There's no scroll animation completion callback so we're
       // giving it 0.5s to finish.
       setTimeout(() => {
         this.isScrollingToCell = false;
-        this.infiniteScroller.reload();
+        this.infiniteScroller?.reload();
       }, 500);
     }, 0);
   }
@@ -1016,7 +988,7 @@ export class CollectionBrowser
       this.preloadCollectionNames(docs);
       this.updateDataSource(pageNumber, docs);
     }
-    if (docs.length < this.pageSize) {
+    if (docs.length < this.pageSize && this.totalResults) {
       this.endOfDataReached = true;
       // this updates the infinite scroller to show the actual size
       this.infiniteScroller.itemCount = this.actualTileCount;
@@ -1038,7 +1010,7 @@ export class CollectionBrowser
    * page are visible, but if the page is not currenlty visible, we don't need to reload
    */
   private get currentVisiblePageNumbers(): number[] {
-    const visibleCells = this.infiniteScroller.getVisibleCellIndices();
+    const visibleCells = this.infiniteScroller?.getVisibleCellIndices();
     const visiblePages = new Set<number>();
     visibleCells.forEach(cellIndex => {
       const visiblePage = Math.floor(cellIndex / this.pageSize) + 1;
@@ -1115,7 +1087,7 @@ export class CollectionBrowser
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.infiniteScroller.reload();
+      this.infiniteScroller?.reload();
     }
   }
 
