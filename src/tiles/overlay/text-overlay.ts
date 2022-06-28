@@ -7,8 +7,6 @@ export class TextOverlay extends LitElement {
 
   @property({ type: Boolean }) loginRequired = false;
 
-  @property({ type: Boolean }) contentWarning = false;
-
   render() {
     return html` <div class="overlay no-preview">${this.textDisplay}</div> `;
   }
