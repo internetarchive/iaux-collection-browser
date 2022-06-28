@@ -70,6 +70,7 @@ export class ItemTile extends LitElement {
       <text-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
+        .contentWarning=${this.model?.contentWarning}
       ></text-overlay>
     `;
   }

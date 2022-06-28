@@ -1090,16 +1090,20 @@ export class CollectionBrowser
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
 
-    return html` <tile-dispatcher
-      .baseNavigationUrl=${this.baseNavigationUrl}
-      .baseImageUrl=${this.baseImageUrl}
-      .model=${model}
-      .tileDisplayMode=${this.displayMode}
-      .resizeObserver=${this.resizeObserver}
-      .collectionNameCache=${this.collectionNameCache}
-      .sortParam=${this.sortParam}
-      .mobileBreakpoint=${this.mobileBreakpoint}
-    ></tile-dispatcher>`;
+    return html`
+      <tile-dispatcher
+        .baseNavigationUrl=${this.baseNavigationUrl}
+        .baseImageUrl=${this.baseImageUrl}
+        .model=${model}
+        .tileDisplayMode=${this.displayMode}
+        .resizeObserver=${this.resizeObserver}
+        .collectionNameCache=${this.collectionNameCache}
+        .sortParam=${this.sortParam}
+        .mobileBreakpoint=${this.mobileBreakpoint}
+        .loggedIn=${this.loggedIn}
+      >
+      </tile-dispatcher>
+    `;
   }
 
   /**
