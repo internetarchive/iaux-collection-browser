@@ -279,14 +279,21 @@ export class CollectionBrowser
   }
 
   private get noSearchResultTemplate() {
-    return html`<div class="no-search-term"><h2>Your search did not match any items in the Archive. Try different keywords or a more general search.</h2>
-        <div>${noSearchResult}</div></div>
+    return html`<div class="no-search-term">
+      <h2>
+        Your search did not match any items in the Archive. Try different
+        keywords or a more general search.
+      </h2>
+      <div>${noSearchResult}</div>
     </div>`;
   }
 
   private get noSearchTermTemplate() {
-    return html`<div class="no-search-term"><h2>To being searching, enter a search term in the box above and hit "Go".</h2>
-        <div>${noSearchTerm}</div></div>
+    return html`<div class="no-search-term">
+      <h2>
+        To being searching, enter a search term in the box above and hit "Go".
+      </h2>
+      <div>${noSearchTerm}</div>
     </div>`;
   }
 
@@ -298,11 +305,11 @@ export class CollectionBrowser
         <div id="mobile-header-container">
           ${this.mobileView ? this.mobileFacetsTemplate : nothing}
           <div id="results-total">
-            <span id="big-results-count"
-              >${this.totalResults !== undefined
+            <span id="big-results-count">
+              ${this.totalResults !== undefined
                 ? this.totalResults.toLocaleString()
-                : '-'}</span
-            >
+                : '-'}
+            </span>
             <span id="big-results-label">Results</span>
           </div>
         </div>
@@ -332,8 +339,7 @@ export class CollectionBrowser
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
-    >
-    </infinite-scroller>`;
+    ></infinite-scroller>`;
   }
 
   private get sortFilterBarTemplate() {
@@ -1004,7 +1010,8 @@ export class CollectionBrowser
     if (docs.length < this.pageSize) {
       this.endOfDataReached = true;
       // this updates the infinite scroller to show the actual size
-      this.infiniteScroller.itemCount = this.actualTileCount;
+      if (this.infiniteScroller)
+        this.infiniteScroller.itemCount = this.actualTileCount;
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
