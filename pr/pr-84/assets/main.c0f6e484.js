@@ -2736,7 +2736,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <div id="content-container" class=${this.mobileView?"mobile":""}>
         ${this.emptyPlaceholder?this.emptyPlaceholderTemplate:this.collectionBrowserTemplate}
       </div>
-    `}get emptyPlaceholderTemplate(){return f`${this.emptyPlaceholder==="no-search-result"?this.noSearchResultTemplate:this.noSearchTermTemplate}`}doesHaveSearchTermOrResult(){this.emptyPlaceholder="",(!this.fullQuery||!this.baseQuery)&&(this.emptyPlaceholder="no-search-term"),!this.searchResultsLoading&&this.totalResults===0&&(this.emptyPlaceholder="no-search-result")}get noSearchResultTemplate(){return f`<div class="no-search-term">
+    `}get emptyPlaceholderTemplate(){return f`${this.emptyPlaceholder==="no-search-result"?this.noSearchResultTemplate:this.noSearchTermTemplate}`}doesHaveSearchTermOrResult(){this.emptyPlaceholder="",this.baseQuery||(this.emptyPlaceholder="no-search-term"),!this.searchResultsLoading&&this.totalResults===0&&(this.emptyPlaceholder="no-search-result")}get noSearchResultTemplate(){return f`<div class="no-search-result">
       <h2>
         Your search did not match any items in the Archive. Try different
         keywords or a more general search.
