@@ -269,7 +269,7 @@ export class CollectionBrowser
   private doesHaveSearchTermOrResult() {
     this.emptyPlaceholder = '';
 
-    if (!this.fullQuery || !this.baseQuery) {
+    if (!this.baseQuery) {
       this.emptyPlaceholder = 'no-search-term';
     }
 
@@ -279,7 +279,7 @@ export class CollectionBrowser
   }
 
   private get noSearchResultTemplate() {
-    return html`<div class="no-search-term">
+    return html`<div class="no-search-result">
       <h2>
         Your search did not match any items in the Archive. Try different
         keywords or a more general search.
