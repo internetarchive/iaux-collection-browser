@@ -695,7 +695,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         display: block;
         text-align: center;
       }
-    `}};n([u({type:String})],Ke.prototype,"mediatype",void 0);n([u({type:Number})],Ke.prototype,"itemCount",void 0);n([u({type:Number})],Ke.prototype,"viewCount",void 0);n([u({type:Number})],Ke.prototype,"favCount",void 0);n([u({type:Number})],Ke.prototype,"commentCount",void 0);Ke=n([Q("tile-stats")],Ke);let Wt=class extends B{constructor(){super(...arguments),this.sortParam=null}render(){var e,t,i,r,s;const o=(e=this.model)===null||e===void 0?void 0:e.title;return m`
+    `}};n([u({type:String})],Ke.prototype,"mediatype",void 0);n([u({type:Number})],Ke.prototype,"itemCount",void 0);n([u({type:Number})],Ke.prototype,"viewCount",void 0);n([u({type:Number})],Ke.prototype,"favCount",void 0);n([u({type:Number})],Ke.prototype,"commentCount",void 0);Ke=n([Q("tile-stats")],Ke);let Wt=class extends B{render(){var e,t,i,r,s;const o=(e=this.model)===null||e===void 0?void 0:e.title;return m`
       <div class="container">
         <div class="item-info">
           <div id="title">
@@ -708,7 +708,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
               .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
-          <div class="created-by truncated">
+          <div class="truncated ${this.sortParam?"date-sorted-by":"created-by"}">
             ${this.sortParam?this.sortedDateInfoTemplate:this.creatorTemplate}
           </div>
         </div>
@@ -721,10 +721,11 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         </tile-stats>
         </div>
       </div>
-    `}get sortedDateInfoTemplate(){var e,t,i,r,s;let o={};switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":o={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":o={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":o={field:"added",value:(r=this.model)===null||r===void 0?void 0:r.dateAdded};break;case"publicdate":o={field:"archived",value:(s=this.model)===null||s===void 0?void 0:s.dateArchived};break;default:return this.creatorTemplate}return m`<span
-      >${o.field}
-      ${li(o.value,"long")}</span
-    >`}get creatorTemplate(){var e,t;return!((e=this.model)===null||e===void 0)&&e.creator?m`<span>by&nbsp;${(t=this.model)===null||t===void 0?void 0:t.creator}</span>`:_}static get styles(){return b`
+    `}get sortedDateInfoTemplate(){var e,t,i,r,s;let o;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":o={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":o={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":o={field:"added",value:(r=this.model)===null||r===void 0?void 0:r.dateAdded};break;case"publicdate":o={field:"archived",value:(s=this.model)===null||s===void 0?void 0:s.dateArchived};break;default:return this.creatorTemplate}return m`
+      <span>
+        ${o.field} ${li(o.value,"long")}
+      </span>
+    `}get creatorTemplate(){var e,t;return!((e=this.model)===null||e===void 0)&&e.creator?m`<span>by&nbsp;${(t=this.model)===null||t===void 0?void 0:t.creator}</span>`:_}static get styles(){return b`
       .container {
         background-color: #ffffff;
         border-radius: var(--collectionTileCornerRadius, 4px);
@@ -763,7 +764,8 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         text-decoration: underline;
       }
 
-      .created-by {
+      .created-by,
+      .date-sorted-by {
         display: flex;
         justify-content: center;
         align-items: flex-end; /* Important to start text from bottom */
