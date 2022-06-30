@@ -708,9 +708,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
               .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
-          <div class="truncated ${this.sortParam?"date-sorted-by":"created-by"}">
-            ${this.sortParam?this.sortedDateInfoTemplate:this.creatorTemplate}
-          </div>
+          ${this.doesSortedByDate?this.sortedDateInfoTemplate:this.creatorTemplate}
         </div>
 
         <tile-stats 
@@ -721,11 +719,17 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         </tile-stats>
         </div>
       </div>
-    `}get sortedDateInfoTemplate(){var e,t,i,r,s;let o;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":o={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":o={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":o={field:"added",value:(r=this.model)===null||r===void 0?void 0:r.dateAdded};break;case"publicdate":o={field:"archived",value:(s=this.model)===null||s===void 0?void 0:s.dateArchived};break;default:return this.creatorTemplate}return m`
-      <span>
-        ${o.field} ${li(o.value,"long")}
-      </span>
-    `}get creatorTemplate(){var e,t;return!((e=this.model)===null||e===void 0)&&e.creator?m`<span>by&nbsp;${(t=this.model)===null||t===void 0?void 0:t.creator}</span>`:_}static get styles(){return b`
+    `}get doesSortedByDate(){var e;return["date","reviewdate","addeddate","publicdate"].includes((e=this.sortParam)===null||e===void 0?void 0:e.field)}get sortedDateInfoTemplate(){var e,t,i,r,s;let o;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":o={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":o={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":o={field:"added",value:(r=this.model)===null||r===void 0?void 0:r.dateAdded};break;case"publicdate":o={field:"archived",value:(s=this.model)===null||s===void 0?void 0:s.dateArchived};break}return m`
+      <div class="truncated date-sorted-by">
+        <span>
+          ${o==null?void 0:o.field} ${li(o==null?void 0:o.value,"long")}
+        </span>
+      </div>
+    `}get creatorTemplate(){var e,t;return m`
+      <div class="created-by truncated">
+        ${!((e=this.model)===null||e===void 0)&&e.creator?m`<span>by&nbsp;${(t=this.model)===null||t===void 0?void 0:t.creator}</span>`:_}
+      </div>
+    `}static get styles(){return b`
       .container {
         background-color: #ffffff;
         border-radius: var(--collectionTileCornerRadius, 4px);
