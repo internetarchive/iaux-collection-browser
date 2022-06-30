@@ -36,15 +36,11 @@ export class ItemTile extends LitElement {
               .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
-          <div class="truncated ${
-            this.sortParam ? 'date-sorted-by' : 'created-by'
-          }">
-            ${
-              this.sortParam
-                ? this.sortedDateInfoTemplate
-                : this.creatorTemplate
-            }
-          </div>
+          ${
+            this.doesSortedByDate
+              ? this.sortedDateInfoTemplate
+              : this.creatorTemplate
+          }
         </div>
 
         <tile-stats 
@@ -56,6 +52,12 @@ export class ItemTile extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private get doesSortedByDate() {
+    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
+      this.sortParam?.field as string
+    );
   }
 
   private get sortedDateInfoTemplate() {
@@ -75,20 +77,26 @@ export class ItemTile extends LitElement {
         sortedValue = { field: 'archived', value: this.model?.dateArchived };
         break;
       default:
-        return this.creatorTemplate;
+        break;
     }
 
     return html`
-      <span>
-        ${sortedValue.field} ${formatDate(sortedValue.value, 'long')}
-      </span>
+      <div class="truncated date-sorted-by">
+        <span>
+          ${sortedValue?.field} ${formatDate(sortedValue?.value, 'long')}
+        </span>
+      </div>
     `;
   }
 
   private get creatorTemplate() {
-    return this.model?.creator
-      ? html`<span>by&nbsp;${this.model?.creator}</span>`
-      : nothing;
+    return html`
+      <div class="created-by truncated">
+        ${this.model?.creator
+          ? html`<span>by&nbsp;${this.model?.creator}</span>`
+          : nothing}
+      </div>
+    `;
   }
 
   static get styles(): CSSResultGroup {
