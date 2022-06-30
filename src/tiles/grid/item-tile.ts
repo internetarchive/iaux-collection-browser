@@ -17,11 +17,10 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
-  @property({ type: Object }) sortParam: SortParam | null = null;
+  @property({ type: Object }) sortParam?: SortParam;
 
   render() {
     const itemTitle = this.model?.title;
-
     return html`
       <div class="container">
         <div class="item-info">
@@ -37,7 +36,9 @@ export class ItemTile extends LitElement {
               .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
-          <div class="created-by truncated">
+          <div class="truncated ${
+            this.sortParam ? 'date-sorted-by' : 'created-by'
+          }">
             ${
               this.sortParam
                 ? this.sortedDateInfoTemplate
@@ -58,7 +59,7 @@ export class ItemTile extends LitElement {
   }
 
   private get sortedDateInfoTemplate() {
-    let sortedValue = {} as any;
+    let sortedValue;
 
     switch (this.sortParam?.field) {
       case 'date':
@@ -77,10 +78,11 @@ export class ItemTile extends LitElement {
         return this.creatorTemplate;
     }
 
-    return html`<span
-      >${sortedValue.field as string}
-      ${formatDate(sortedValue.value, 'long')}</span
-    >`;
+    return html`
+      <span>
+        ${sortedValue.field} ${formatDate(sortedValue.value, 'long')}
+      </span>
+    `;
   }
 
   private get creatorTemplate() {
@@ -129,7 +131,8 @@ export class ItemTile extends LitElement {
         text-decoration: underline;
       }
 
-      .created-by {
+      .created-by,
+      .date-sorted-by {
         display: flex;
         justify-content: center;
         align-items: flex-end; /* Important to start text from bottom */
