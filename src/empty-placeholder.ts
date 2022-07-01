@@ -20,7 +20,7 @@ export class EmptyPlaceholder extends LitElement {
 
   private get noSearchResultTemplate() {
     return html`<div
-      class="placeholder ${this.mobileView ? 'mobile' : 'desktop'}"
+      class="placeholder no-result ${this.mobileView ? 'mobile' : 'desktop'}"
     >
       <h2 class="title">
         Your search did not match any items in the Archive. Try different
@@ -32,7 +32,7 @@ export class EmptyPlaceholder extends LitElement {
 
   private get noSearchTermTemplate() {
     return html`<div
-      class="placeholder ${this.mobileView ? 'mobile' : 'desktop'}"
+      class="placeholder no-term ${this.mobileView ? 'mobile' : 'desktop'}"
     >
       <h2 class="title">
         To being searching, enter a search term in the box above and hit "Go".

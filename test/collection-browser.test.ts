@@ -7,19 +7,6 @@ import { MockSearchService } from './mocks/mock-search-service';
 import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 
 describe('Collection Browser', () => {
-  it('should render with no-search-term placeholder', async () => {
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
-    );
-    await el.updateComplete;
-
-    expect(el.shadowRoot?.querySelector('.no-search-term')).to.exist;
-
-    expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('sort-filter-bar')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('infinite-scroller')).to.not.exist;
-  });
-
   it('should render with a sort bar, facets, and infinite scroller', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
