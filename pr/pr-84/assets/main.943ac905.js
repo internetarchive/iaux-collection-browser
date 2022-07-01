@@ -2735,7 +2735,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 `;let pi=class extends P{render(){return f`
       ${this.placeholderType==="no-search-term"?this.noSearchTermTemplate:this.noSearchResultTemplate}
     `}get noSearchResultTemplate(){return f`<div
-      class="placeholder ${this.mobileView?"mobile":"desktop"}"
+      class="placeholder no-result ${this.mobileView?"mobile":"desktop"}"
     >
       <h2 class="title">
         Your search did not match any items in the Archive. Try different
@@ -2743,7 +2743,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       </h2>
       <div>${a1}</div>
     </div>`}get noSearchTermTemplate(){return f`<div
-      class="placeholder ${this.mobileView?"mobile":"desktop"}"
+      class="placeholder no-term ${this.mobileView?"mobile":"desktop"}"
     >
       <h2 class="title">
         To being searching, enter a search term in the box above and hit "Go".
