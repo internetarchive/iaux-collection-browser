@@ -153,5 +153,3 @@ export const defaultSelectedFacets: SelectedFacets = {
   collection: {},
   year: {},
 };
-
-export type EmptyPlaceholderType = 'no-search-term' | 'no-search-result' | '';

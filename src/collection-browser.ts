@@ -32,6 +32,7 @@ import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
+import './empty-placeholder';
 import './sort-filter-bar/sort-filter-bar';
 import {
   SelectedFacets,
@@ -41,7 +42,6 @@ import {
   defaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
-  EmptyPlaceholderType,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -49,8 +49,6 @@ import {
   RestorationState,
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
-import noSearchTerm from './assets/img/icons/no-search-term';
-import noSearchResult from './assets/img/icons/no-search-result';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 
 @customElement('collection-browser')
@@ -150,7 +148,7 @@ export class CollectionBrowser
 
   @state() private mobileFacetsVisible = false;
 
-  @state() private emptyPlaceholder?: EmptyPlaceholderType;
+  @state() private emptyPlaceholder?: string;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -250,7 +248,7 @@ export class CollectionBrowser
   }
 
   render() {
-    this.doesHaveSearchTermOrResult();
+    this.setEmptyPlaceholder();
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
         ${this.emptyPlaceholder
@@ -260,13 +258,7 @@ export class CollectionBrowser
     `;
   }
 
-  private get emptyPlaceholderTemplate() {
-    return html`${this.emptyPlaceholder === 'no-search-result'
-      ? this.noSearchResultTemplate
-      : this.noSearchTermTemplate}`;
-  }
-
-  private doesHaveSearchTermOrResult() {
+  private setEmptyPlaceholder() {
     this.emptyPlaceholder = '';
 
     if (!this.baseQuery) {
@@ -278,23 +270,13 @@ export class CollectionBrowser
     }
   }
 
-  private get noSearchResultTemplate() {
-    return html`<div class="no-search-result">
-      <h2>
-        Your search did not match any items in the Archive. Try different
-        keywords or a more general search.
-      </h2>
-      <div>${noSearchResult}</div>
-    </div>`;
-  }
-
-  private get noSearchTermTemplate() {
-    return html`<div class="no-search-term">
-      <h2>
-        To being searching, enter a search term in the box above and hit "Go".
-      </h2>
-      <div>${noSearchTerm}</div>
-    </div>`;
+  private get emptyPlaceholderTemplate() {
+    return html`
+      <empty-placeholder
+        .placeholderType=${this.emptyPlaceholder}
+        .mobileView=${this.mobileView}
+      ></empty-placeholder>
+    `;
   }
 
   private get collectionBrowserTemplate() {
@@ -328,11 +310,11 @@ export class CollectionBrowser
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
-        ${this.infiniteScrollerTilesTemplate}
+        ${this.infiniteScrollerTemplate}
       </div>`;
   }
 
-  private get infiniteScrollerTilesTemplate() {
+  private get infiniteScrollerTemplate() {
     return html`<infinite-scroller
       class="${ifDefined(this.displayMode)}"
       .cellProvider=${this}
@@ -545,9 +527,8 @@ export class CollectionBrowser
       this.selectedCreatorLetterChanged();
     }
     if (changed.has('pagesToRender')) {
-      if (!this.endOfDataReached) {
-        if (this.infiniteScroller)
-          this.infiniteScroller.itemCount = this.estimatedTileCount;
+      if (!this.endOfDataReached && this.infiniteScroller) {
+        this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
     if (changed.has('resizeObserver')) {
@@ -1010,8 +991,9 @@ export class CollectionBrowser
     if (docs.length < this.pageSize) {
       this.endOfDataReached = true;
       // this updates the infinite scroller to show the actual size
-      if (this.infiniteScroller)
+      if (this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.actualTileCount;
+      }
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
