@@ -1209,6 +1209,10 @@ export class CollectionBrowser
       width: 18rem;
       padding-right: 12px;
       padding-right: 1rem;
+      max-height: 120vh;
+      position: sticky;
+      top: 0;
+      overflow-y: auto;
     }
 
     .mobile #left-column {
