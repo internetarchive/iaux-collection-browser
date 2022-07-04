@@ -2909,7 +2909,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       width: 18rem;
       padding-right: 12px;
       padding-right: 1rem;
-      max-height: 120vh;
+      max-height: 100vh;
       position: sticky;
       top: 0;
       overflow-y: auto;
