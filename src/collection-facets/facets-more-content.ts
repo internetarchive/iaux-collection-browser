@@ -1,11 +1,12 @@
 /* eslint-disable dot-notation */
 import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { Bucket, SearchParams } from '@internetarchive/search-service';
 
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SelectedFacets, FacetGroup, defaultSelectedFacets } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
+import './more-facets-pagination';
 
 @customElement('facets-more-content')
 export class FacetsMoreContent extends LitElement {
@@ -30,16 +31,20 @@ export class FacetsMoreContent extends LitElement {
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
+
   @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
 
   @state() pageNumber = 1;
 
   @state() loading = 1;
 
-  @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  @state() paginationSize = 1;
 
-  private facetsPerPage = 25;
+  @query('#pagination') private pagination!: HTMLElement;
+
+  private facetsPerPage = 60;
 
   async updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
@@ -62,7 +67,7 @@ export class FacetsMoreContent extends LitElement {
       advancedParams: [
         {
           field: facetAggregationKey,
-          size: 1000, // todo - ?
+          size: 1000000, // todo - ?
         },
       ],
     };
@@ -71,7 +76,7 @@ export class FacetsMoreContent extends LitElement {
       query: this.fullQuery as string,
       fields: ['identifier'],
       aggregations,
-      rows: 1, // todo - ?
+      rows: 1,
     };
 
     const results = await this.searchService?.search(params);
@@ -84,49 +89,16 @@ export class FacetsMoreContent extends LitElement {
 
       this.castedBuckets = buckets['buckets'] as Bucket[];
     });
-  }
-
-  private get renderPaginations() {
-    const paging = [];
 
     const lenght = Object.keys(this.castedBuckets as []).length;
-    const numberOfPages = Math.ceil(lenght / this.facetsPerPage);
-
-    const onClickEvent = (e: Event) => {
-      this.pageClick(e);
-    };
-
-    let page = 1;
-    for (page = 1; page <= numberOfPages; page += 1) {
-      if (this.pageNumber === page) {
-        paging.push(
-          html`<button
-            class="page-number current-page"
-            @click="${onClickEvent}"
-          >
-            ${page}
-          </button>`
-        );
-      } else {
-        paging.push(
-          html`<button class="page-number" @click="${onClickEvent}">
-            ${page}
-          </button>`
-        );
-      }
-    }
-
-    return paging;
+    this.paginationSize = Math.ceil(lenght / this.facetsPerPage);
   }
 
-  private pageClick(e: Event) {
-    e.stopPropagation();
-    e.preventDefault();
-
-    const target = e.target as HTMLElement;
-    const { textContent } = target;
-
-    if (textContent) this.pageNumber = Number(textContent);
+  private pageNumberClicked(e: CustomEvent<{ page: string }>) {
+    const page = e?.detail?.page;
+    if (page) {
+      this.pageNumber = Number(page);
+    }
   }
 
   private get renderMoreFacets() {
@@ -186,7 +158,7 @@ export class FacetsMoreContent extends LitElement {
 
   private get loaderTemplate() {
     return this.loading
-      ? html`<div class="loading">
+      ? html`<div class="loader-facets">
           loading facets...
           <img alt="" src="https://archive.org/images/loading.gif" />
         </div>`
@@ -199,12 +171,22 @@ export class FacetsMoreContent extends LitElement {
         ${this.loading
           ? this.loaderTemplate
           : html`<div class="facets-content">${this.renderMoreFacets}</div>
-              <div class="facets-paging">${this.renderPaginations}</div>
+              <more-facets-pagination
+                .paginationSize=${this.paginationSize}
+                .step=${Number(2)}
+                @pageNumberClicked=${this.pageNumberClicked}
+              ></more-facets-pagination>
               <center>
                 <input
-                  class="btn btn-archive}"
+                  class="btn btn-cancel"
                   type="button"
-                  value="Apply your filters"
+                  value="Cancel"
+                  @click=${this.submitClick}
+                />
+                <input
+                  class="btn btn-submit"
+                  type="button"
+                  value="Apply filters"
                   @click=${this.submitClick}
                 />
               </center>`}
@@ -240,14 +222,6 @@ export class FacetsMoreContent extends LitElement {
         padding: 0 1rem;
       }
 
-      .facets-paging {
-        margin: 1.5rem;
-        background-color: #efefef;
-        text-align: right;
-        padding: 1rem 0;
-        font-size: 1.2rem;
-      }
-
       .farow {
         width: 100%;
         display: inline-block;
@@ -266,6 +240,7 @@ export class FacetsMoreContent extends LitElement {
       ul.facet-list li {
         margin-bottom: 0.2rem;
       }
+
       .facet-row {
         text-align: left;
       }
@@ -275,35 +250,59 @@ export class FacetsMoreContent extends LitElement {
         font-weight: 500;
         font-size: 1.2rem;
       }
-
+      .facet-row input {
+        margin: 0.1rem 0.5rem 0.1rem 0;
+      }
       .facet-info-display {
         display: flex;
         flex: 1;
         cursor: pointer;
       }
-
       .facet-title {
         flex: 1;
       }
       .facet-count {
         margin-left: 0.5rem;
       }
+
       .page-number {
-        padding: 0.5rem;
-        color: blue;
+        background: none;
         border: 0;
         cursor: pointer;
+        border-radius: 100%;
+        width: 25px;
+        height: 25px;
+        margin: 1rem;
+        font-size: 1.4rem;
+        vertical-align: middle;
       }
       .current-page {
-        background: white;
-        padding: 0.5rem;
-        color: initial;
+        background: black;
+        color: white;
       }
-      .loading {
+      .loader-facets {
         text-align: center;
+        margin-bottom: 2rem;
       }
-      .loading img {
+      .loader-facets img {
         width: 2.5rem;
+      }
+
+      .btn {
+        border: none;
+        padding: 1rem;
+        margin-bottom: 10px;
+        width: auto;
+        border-radius: 0.4rem;
+        cursor: pointer;
+      }
+      .btn-cancel {
+        background-color: #000;
+        color: white;
+      }
+      .btn-submit {
+        background-color: #194880;
+        color: white;
       }
     `;
   }

@@ -363,15 +363,17 @@ export class CollectionFacets extends LitElement {
     const config = new ModalConfig();
     config.closeOnBackdropClick = true;
     config.headline = html`<span
-        style="display:block;text-align:left;font-size:2rem;padding-left:1rem;"
+        style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
       >
         ${facetTitles[facetGroup.key]}
-      </span>
-      <hr />`;
+      </span>`;
 
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
     );
+    config.headerColor = '#194880';
+    config.bodyColor = '#fff';
+    config.title = html`Select filters`;
 
     config.message = html`
       <facets-more-content
@@ -556,7 +558,13 @@ export class CollectionFacets extends LitElement {
       modal-manager {
         display: none;
         --modalWidth: 85rem;
-        --modalBackGroundColor: red;
+        --modalBorder: 2px solid #194880;
+        --modalTitleLineHeight: 4rem;
+        --modalTitleFontSize: 1.8rem;
+        --modalCornerRadius: 0;
+        --modalBottomPadding: 0;
+        --modalScrollOffset: 0;
+        --modalCornerRadius: 0.5rem;
       }
       modal-manager[mode='open'] {
         display: block;
