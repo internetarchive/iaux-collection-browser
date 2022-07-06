@@ -81,7 +81,7 @@ export class ItemTile extends LitElement {
     }
 
     return html`
-      <div class="truncated date-sorted-by">
+      <div class="date-sorted-by truncated">
         <span>
           ${sortedValue?.field} ${formatDate(sortedValue?.value, 'long')}
         </span>
