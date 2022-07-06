@@ -720,7 +720,7 @@ var ds=Object.defineProperty,cs=Object.defineProperties;var hs=Object.getOwnProp
         </div>
       </div>
     `}get doesSortedByDate(){var e;return["date","reviewdate","addeddate","publicdate"].includes((e=this.sortParam)===null||e===void 0?void 0:e.field)}get sortedDateInfoTemplate(){var e,t,i,r,s;let o;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":o={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":o={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":o={field:"added",value:(r=this.model)===null||r===void 0?void 0:r.dateAdded};break;case"publicdate":o={field:"archived",value:(s=this.model)===null||s===void 0?void 0:s.dateArchived};break}return m`
-      <div class="truncated date-sorted-by">
+      <div class="date-sorted-by truncated">
         <span>
           ${o==null?void 0:o.field} ${li(o==null?void 0:o.value,"long")}
         </span>
