@@ -2746,7 +2746,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       class="placeholder no-term ${this.mobileView?"mobile":"desktop"}"
     >
       <h2 class="title">
-        To being searching, enter a search term in the box above and hit "Go".
+        To begin searching, enter a search term in the box above and hit "Go".
       </h2>
       <div>${i1}</div>
     </div>`}static get styles(){return y`
