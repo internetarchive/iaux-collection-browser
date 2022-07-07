@@ -35,7 +35,7 @@ export class EmptyPlaceholder extends LitElement {
       class="placeholder no-term ${this.mobileView ? 'mobile' : 'desktop'}"
     >
       <h2 class="title">
-        To being searching, enter a search term in the box above and hit "Go".
+        To begin searching, enter a search term in the box above and hit "Go".
       </h2>
       <div>${noSearchTermIcon}</div>
     </div>`;
