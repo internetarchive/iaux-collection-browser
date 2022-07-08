@@ -45,6 +45,8 @@ export class ItemImage extends LitElement {
    * Templates
    */
   private get iconOverlayTemplate() {
+    if (!this.isListTile) return nothing;
+
     if (!this.model?.loginRequired && !this.model?.contentWarning) {
       return nothing;
     }
