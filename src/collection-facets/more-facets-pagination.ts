@@ -22,84 +22,104 @@ export class MoreFacetsPagination extends LitElement {
       <a>&#9668;</a>
       <div class="page-numbers"></div>
       <a>&#9658;</a>
-    `)
+    `);
 
-    const pageNumberElement = pageNumberFragment.querySelector(`.page-numbers`) as any
+    const pageNumberElement = pageNumberFragment.querySelector(
+      `.page-numbers`
+    ) as any;
 
     // Calculate the startPage and endPage.
-    let startPage = this.page - this.step
-    let endPage = this.page + this.step
+    let startPage = this.page - this.step;
+    let endPage = this.page + this.step;
 
     if (startPage <= 0) {
-      endPage += -startPage + 1
-      startPage = 1
+      endPage += -startPage + 1;
+      startPage = 1;
     }
 
     if (endPage >= this.paginationSize) {
-      startPage = Math.max(startPage - (endPage - this.paginationSize), 1)
-      endPage = this.paginationSize
+      startPage = Math.max(startPage - (endPage - this.paginationSize), 1);
+      endPage = this.paginationSize;
     }
 
     // create first node
     if (startPage > 1) {
-      pageNumberElement.appendChild(document.createRange().createContextualFragment(
-        `<a ${this.page === 1 ? 'class="current"' : ''}>1</a><i>...</i>`)
-      )
+      pageNumberElement.appendChild(
+        document
+          .createRange()
+          .createContextualFragment(
+            `<a ${this.page === 1 ? 'class="current"' : ''}>1</a><i>...</i>`
+          )
+      );
     }
 
     // create middle nodes
-    for (let page = startPage; page <= endPage; ++page) {
-      pageNumberElement.appendChild(document.createRange().createContextualFragment(
-        `<a ${this.page === page ? 'class="current"' : ''}>${page}</a>`
-      ))
+    for (let page = startPage; page <= endPage; page += 1) {
+      pageNumberElement.appendChild(
+        document
+          .createRange()
+          .createContextualFragment(
+            `<a ${this.page === page ? 'class="current"' : ''}>${page}</a>`
+          )
+      );
     }
 
     // create last node
     if (endPage < this.paginationSize) {
-      pageNumberElement.appendChild(document.createRange().createContextualFragment(
-        `<i>...</i><a ${this.page === this.paginationSize ? 'class="current"' : ''}>${this.paginationSize}</a>`
-      ))
+      pageNumberElement.appendChild(
+        document
+          .createRange()
+          .createContextualFragment(
+            `<i>...</i><a ${
+              this.page === this.paginationSize ? 'class="current"' : ''
+            }>${this.paginationSize}</a>`
+          )
+      );
     }
 
     // click action on middle "a" elements
     pageNumberFragment.querySelectorAll(`.page-numbers a`).forEach(aElem => {
-      aElem.addEventListener('click', (e) => {
-        const input = e.target as HTMLInputElement;;
-        this.page = +input.innerText
-        this.buildPagination()
+      aElem.addEventListener('click', e => {
+        const input = e.target as HTMLInputElement;
+        this.page = +input.innerText;
+        this.buildPagination();
         this.emitPageNumberClick();
-      })
-    })
+      });
+    });
 
     // click action on previous and next button
-    const [aPrev, ...others] = pageNumberFragment.querySelectorAll<HTMLElement>(`a`) as any;
+    const [aPrev, ...others] = pageNumberFragment.querySelectorAll<HTMLElement>(
+      `a`
+    ) as any;
     aPrev.addEventListener(`click`, () => {
-      this.page--
+      this.page -= this.page;
       if (this.page < 1) {
-        this.page = 1
+        this.page = 1;
       }
-      this.buildPagination()
+      this.buildPagination();
       this.emitPageNumberClick();
-    })
+    });
 
     // click action on next button
     others.at(-1).addEventListener(`click`, () => {
-      ++this.page
+      this.page += this.page;
       if (this.page > this.paginationSize) {
-        this.page = this.paginationSize
+        this.page = this.paginationSize;
       }
-      this.buildPagination()
+      this.buildPagination();
       this.emitPageNumberClick();
-    })
+    });
 
-    this.pagination.innerHTML = ""
-    this.pagination.append(pageNumberFragment)
+    this.pagination.innerHTML = '';
+    this.pagination.append(pageNumberFragment);
   }
 
   private emitPageNumberClick() {
-    this.dispatchEvent(new CustomEvent('pageNumberClicked', {
-      detail: { page: this.page },
-    }));
+    this.dispatchEvent(
+      new CustomEvent('pageNumberClicked', {
+        detail: { page: this.page },
+      })
+    );
   }
 
   render() {
@@ -116,7 +136,8 @@ export class MoreFacetsPagination extends LitElement {
         font-size: 3.2rem;
       }
 
-      .facets-paging a, .facets-paging i {
+      .facets-paging a,
+      .facets-paging i {
         background: none;
         border: 0;
         cursor: pointer;
@@ -125,7 +146,7 @@ export class MoreFacetsPagination extends LitElement {
         font-size: 1.4rem;
         vertical-align: middle;
         display: inline-block;
-        width: 1.5rem;
+        min-width: 1.5rem;
         padding: 0.5rem;
       }
 

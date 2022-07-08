@@ -6,9 +6,11 @@ import { Bucket, SearchParams } from '@internetarchive/search-service';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SelectedFacets, FacetGroup, defaultSelectedFacets } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
+import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
+
 import './more-facets-pagination';
 
-@customElement('facets-more-content')
+@customElement('more-facets-content')
 export class FacetsMoreContent extends LitElement {
   @property({ type: String }) facetKey?: string;
 
@@ -88,6 +90,16 @@ export class FacetsMoreContent extends LitElement {
       if (key === 'year_histogram') return;
 
       this.castedBuckets = buckets['buckets'] as Bucket[];
+
+      if (this.facetKey === 'collection') {
+        // for collections, we need to asynchronously load the collection name
+        // so we use the `async-collection-name` widget and for the rest, we have a static value to use
+        const collectionIds = this.castedBuckets?.map(option => option.key);
+        const collectionIdsArray = Array.from(
+          new Set(collectionIds)
+        ) as string[];
+        this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
+      }
     });
 
     const lenght = Object.keys(this.castedBuckets as []).length;
@@ -110,6 +122,14 @@ export class FacetsMoreContent extends LitElement {
         const optionWrapperClass =
           n >= min && n <= max ? 'farow' : 'farow hidden';
 
+        let displayText = option.key;
+        if (this.facetKey === 'language') {
+          displayText =
+            this.languageCodeHandler?.getLanguageNameFromCodeString(
+              displayText as string
+            ) ?? displayText;
+        }
+
         return html` <li class=${optionWrapperClass}>
           <div class="facet-row">
             <label class="facet-info-display" title=${option.key}>
@@ -122,7 +142,15 @@ export class FacetsMoreContent extends LitElement {
                   this.facetClicked(e);
                 }}
               />
-              <div class="facet-title">${option.key}</div>
+              <div class="facet-title">
+                ${this.facetKey !== 'collection'
+                  ? html`${displayText}`
+                  : html`<async-collection-name
+                      .collectionNameCache=${this.collectionNameCache}
+                      .identifier=${displayText}
+                      placeholder="-"
+                    ></async-collection-name>`}
+              </div>
               <div class="facet-count">${option.doc_count}</div>
             </label>
           </div>
@@ -159,8 +187,7 @@ export class FacetsMoreContent extends LitElement {
   private get loaderTemplate() {
     return this.loading
       ? html`<div class="loader-facets">
-          loading facets...
-          <img alt="" src="https://archive.org/images/loading.gif" />
+          <ia-activity-indicator .mode="processing"></ia-activity-indicator>
         </div>`
       : '';
   }
@@ -283,9 +310,9 @@ export class FacetsMoreContent extends LitElement {
       .loader-facets {
         text-align: center;
         margin-bottom: 2rem;
-      }
-      .loader-facets img {
-        width: 2.5rem;
+        height: 7rem;
+        width: 7rem;
+        display: inline-block;
       }
 
       .btn {

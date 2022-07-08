@@ -31,7 +31,7 @@ import {
   defaultSelectedFacets,
 } from './models';
 import { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
-import './collection-facets/facets-more-content';
+import './collection-facets/more-facets-content';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -363,10 +363,10 @@ export class CollectionFacets extends LitElement {
     const config = new ModalConfig();
     config.closeOnBackdropClick = true;
     config.headline = html`<span
-        style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
-      >
-        ${facetTitles[facetGroup.key]}
-      </span>`;
+      style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
+    >
+      ${facetTitles[facetGroup.key]}
+    </span>`;
 
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
@@ -374,17 +374,20 @@ export class CollectionFacets extends LitElement {
     config.headerColor = '#194880';
     config.bodyColor = '#fff';
     config.title = html`Select filters`;
+    config.showHeaderLogo = false;
 
     config.message = html`
-      <facets-more-content
+      <more-facets-content
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
         .fullQuery=${this.fullQuery}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
+        .collectionNameCache=${this.collectionNameCache}
+        .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}
       >
-      </facets-more-content>
+      </more-facets-content>
     `;
     this.modalManager.showModal({ config });
   }
