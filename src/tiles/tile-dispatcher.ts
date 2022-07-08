@@ -154,6 +154,7 @@ export class TileDispatcher
               .currentHeight=${this.currentHeight}
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
+              .sortParam=${sortParam}
             ></item-tile>`;
         }
       case 'list-compact':
