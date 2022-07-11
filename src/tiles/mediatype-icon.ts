@@ -50,6 +50,10 @@ export class MediatypeIcon extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      #icon {
+        height: var(--iconHeight, 25px);
+      }
+
       .status-text {
         font-size: 14px;
         color: #2c2c2c;
@@ -68,7 +72,7 @@ export class MediatypeIcon extends LitElement {
       }
 
       .fill-color {
-        fill: var(--iconCustomFillColor, var(--iconFillColor, '#000000'));
+        fill: var(--iconFillColor, '#000000');
       }
     `;
   }

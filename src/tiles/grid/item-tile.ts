@@ -1,16 +1,15 @@
 /* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { SortParam } from '@internetarchive/search-service';
 
+import { formatDate } from '../../utils/format-date';
 import { TileModel } from '../../models';
-import { formatCount } from '../../utils/format-count';
-
-import { favoriteFilledIcon } from './icons/favorite-filled';
-import { reviewsIcon } from './icons/reviews';
-import viewsIcon from './icons/views';
 
 import '../mediatype-icon';
 import '../item-image';
+import './tile-stats';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
@@ -18,183 +17,162 @@ export class ItemTile extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Object }) sortParam?: SortParam;
+
   render() {
-    const itemTitle = this.model?.title || nothing;
-    const itemCreator = this.model?.creator;
+    const itemTitle = this.model?.title;
     return html`
-      <div id="container">
-        <div id="title-image-container">
-          <h1 id="item-title" title=${itemTitle}>${itemTitle}</h1>
-          <div id="item-image-container">
-            <item-image .model=${this.model} .baseImageUrl=${this.baseImageUrl}>
+      <div class="container">
+        <div class="item-info">
+          <div id="title">
+            <h1 class="truncated" title=${ifDefined(
+              itemTitle
+            )}>${itemTitle}</h1>
+          </div>
+
+          <div id="image">
+            <item-image
+              .model=${this.model}
+              .baseImageUrl=${this.baseImageUrl}>
             </item-image>
           </div>
-          <div class="item-creator">
-            <div class="truncated">
-              ${itemCreator
-                ? html`<span>by&nbsp;${itemCreator}</span>`
-                : nothing}
-            </div>
-          </div>
+          ${
+            this.doesSortedByDate
+              ? this.sortedDateInfoTemplate
+              : this.creatorTemplate
+          }
         </div>
 
-        <div class="hr"></div>
-
-        <div id="item-stats-container">
-          <div id="stats-holder">
-            <div class="col">
-              <mediatype-icon
-                .mediatype=${this.model?.mediatype}
-                .collection=${this.model?.collections}
-                style="--iconHeight:25px; --iconWidth:25px;"
-              >
-              </mediatype-icon>
-            </div>
-            <div class="col">
-              ${viewsIcon}
-              <p class="status-text">
-                ${formatCount(this.model?.viewCount, 'short', 'short')}
-              </p>
-            </div>
-            <div class="col">
-              ${favoriteFilledIcon}
-              <p class="status-text">
-                ${formatCount(this.model?.itemCount, 'short', 'short')}
-              </p>
-            </div>
-            <div class="col">
-              ${reviewsIcon}
-              <p class="status-text">
-                ${formatCount(this.model?.favCount, 'short', 'short')}
-              </p>
-            </div>
-          </div>
+        <tile-stats 
+          .mediatype=${this.model?.mediatype}
+          .viewCount=${this.model?.viewCount}
+          .favCount=${this.model?.favCount}
+          .commentCount=${this.model?.commentCount}>
+        </tile-stats>
         </div>
       </div>
     `;
   }
 
-  static get styles(): CSSResultGroup {
-    const cornerRadiusCss = css`var(--collectionTileCornerRadius, 4px)`;
+  private get doesSortedByDate() {
+    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
+      this.sortParam?.field as string
+    );
+  }
 
+  private get sortedDateInfoTemplate() {
+    let sortedValue;
+
+    switch (this.sortParam?.field) {
+      case 'date':
+        sortedValue = { field: 'published', value: this.model?.datePublished };
+        break;
+      case 'reviewdate':
+        sortedValue = { field: 'reviewed', value: this.model?.dateReviewed };
+        break;
+      case 'addeddate':
+        sortedValue = { field: 'added', value: this.model?.dateAdded };
+        break;
+      case 'publicdate':
+        sortedValue = { field: 'archived', value: this.model?.dateArchived };
+        break;
+      default:
+        break;
+    }
+
+    return html`
+      <div class="date-sorted-by truncated">
+        <span>
+          ${sortedValue?.field} ${formatDate(sortedValue?.value, 'long')}
+        </span>
+      </div>
+    `;
+  }
+
+  private get creatorTemplate() {
+    return html`
+      <div class="created-by truncated">
+        ${this.model?.creator
+          ? html`<span>by&nbsp;${this.model?.creator}</span>`
+          : nothing}
+      </div>
+    `;
+  }
+
+  static get styles(): CSSResultGroup {
     return css`
-      #container {
+      .container {
         background-color: #ffffff;
-        border-radius: ${cornerRadiusCss};
+        border-radius: var(--collectionTileCornerRadius, 4px);
         box-shadow: 1px 1px 2px 0px;
         display: flex;
         flex-direction: column;
         height: 100%;
-        position: relative;
       }
 
-      #title-image-container {
-        display: flex;
-        flex: 1;
-        flex-direction: column;
-        padding: 0.5rem 0.5rem 0 0.5rem;
+      .item-info {
+        padding: 5px 5px 0 5px;
+        flex-grow: 1;
       }
 
-      #item-title {
-        color: #2c2c2c;
-        font-size: 1.6rem;
-        text-align: center;
-        margin-top: 0rem;
-        margin-bottom: 0.5rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        line-height: 2rem;
-        height: 4rem;
+      #title {
+        flex-shrink: 0;
       }
 
-      #item-image-container {
+      #image {
         display: flex;
         justify-content: center;
         flex: 1;
+        height: 16rem;
       }
 
       .hidden {
         display: none;
       }
 
-      #container:hover > #title-image-container > .item-title {
+      .container:hover > .item-info > #title > .truncated {
         text-decoration: underline;
       }
 
       /** this is a workaround for Safari 15 where the hover effects are not working */
-      #title-image-container:hover > #item-title {
+      #title:hover > .truncated {
         text-decoration: underline;
       }
 
-      #container:hover > #item-title {
-        background-color: #fcfcfc;
-      }
-
-      .item-creator {
+      .created-by,
+      .date-sorted-by {
         display: flex;
         justify-content: center;
         align-items: flex-end; /* Important to start text from bottom */
         height: 3rem;
         padding-top: 1rem;
+        margin-top: 5px;
       }
 
       .truncated {
         flex: 1;
+        color: #2c2c2c;
         min-width: 0; /* Important for long words! */
+        text-align: center;
+        line-height: 2rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        word-wrap: break-word;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
       }
 
       .truncated span {
         font-size: 1.4rem;
-        color: #2c2c2c;
-        -webkit-line-clamp: 2;
-        text-overflow: ellipsis;
-        overflow: hidden;
         display: -webkit-box;
-        -webkit-box-orient: vertical;
-        word-wrap: break-word;
-        line-height: 2rem;
-        text-align: center;
       }
 
-      .hr {
-        border: 0.5px solid #ccc;
-      }
-
-      #item-stats-container {
-        align-items: center;
-        display: flex;
-        height: 5.5rem;
-        padding-left: 1rem;
-        padding-right: 0.5rem;
-      }
-
-      #stats-holder {
-        align-items: center;
-        display: flex;
-        flex: 1;
-        justify-content: space-evenly;
-        text-align: center;
-        width: 100%;
-      }
-
-      svg {
-        height: 10px;
-        width: 10px;
-      }
-
-      .status-text {
-        font-size: 14px;
-        color: #2c2c2c;
-        margin: auto;
-        display: block;
-        text-align: center;
-      }
-
-      .col {
-        width: 25%;
+      h1.truncated {
+        margin-top: 0rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.6rem;
+        height: 4rem;
+        display: -webkit-box;
       }
     `;
   }
