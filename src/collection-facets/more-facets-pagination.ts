@@ -92,7 +92,7 @@ export class MoreFacetsPagination extends LitElement {
       `a`
     ) as any;
     aPrev.addEventListener(`click`, () => {
-      this.page -= this.page;
+      this.page -= 1;
       if (this.page < 1) {
         this.page = 1;
       }
@@ -102,7 +102,7 @@ export class MoreFacetsPagination extends LitElement {
 
     // click action on next button
     others.at(-1).addEventListener(`click`, () => {
-      this.page += this.page;
+      this.page += 1;
       if (this.page > this.paginationSize) {
         this.page = this.paginationSize;
       }

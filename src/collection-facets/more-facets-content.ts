@@ -44,8 +44,6 @@ export class FacetsMoreContent extends LitElement {
 
   @state() paginationSize = 1;
 
-  @query('#pagination') private pagination!: HTMLElement;
-
   private facetsPerPage = 60;
 
   async updated(changed: PropertyValues) {
