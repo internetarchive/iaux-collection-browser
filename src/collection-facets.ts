@@ -401,7 +401,7 @@ export class CollectionFacets extends LitElement {
                     />
                     <label
                       for=${negativeCheckboxId}
-                      class="hide-facet-icon ${facetHidden ? 'active' : ''}"
+                      class="hide-facet-icon${facetHidden ? ' active' : ''}"
                       title=${showHideText}
                     >
                       <span class="eye">${eyeIcon}</span>
