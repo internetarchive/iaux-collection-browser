@@ -11,12 +11,12 @@ export const baseItemImageStyles = css`
   }
 
   .list-box {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
     display: flex;
     position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    width: fit-content;
+    margin: auto;
   }
 
   .contain {
@@ -28,9 +28,12 @@ export const baseItemImageStyles = css`
   }
 
   .blur {
-    filter: blur(15px);
-    width: 100%;
     transform: scale(1.1);
+    width: 100%;
+    filter: blur(15px);
+  }
+  .list-box .blur {
+    height: 100%;
   }
 `;
 

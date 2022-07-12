@@ -150,7 +150,6 @@ export class TileList extends LitElement {
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${true}
         .loggedIn=${this.loggedIn}
-        style="--imgHeight: 100%; --imgWidth: 100%"
       >
       </item-image>
     `;
@@ -426,8 +425,6 @@ export class TileList extends LitElement {
       .desktop #thumb {
         width: 100px;
         height: 100px;
-        display: flex;
-        justify-content: center;
       }
 
       #thumb.collection {
