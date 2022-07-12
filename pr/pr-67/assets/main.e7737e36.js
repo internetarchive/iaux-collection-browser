@@ -467,12 +467,12 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
   }
 
   .list-box {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
     display: flex;
     position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+    width: fit-content;
+    margin: auto;
   }
 
   .contain {
@@ -484,9 +484,12 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
   }
 
   .blur {
-    filter: blur(15px);
-    width: 100%;
     transform: scale(1.1);
+    width: 100%;
+    filter: blur(15px);
+  }
+  .list-box .blur {
+    height: 100%;
   }
 `,fs=b`
   .waveform {
@@ -1073,7 +1076,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         .baseImageUrl=${this.baseImageUrl}
         .isListTile=${!0}
         .loggedIn=${this.loggedIn}
-        style="--imgHeight: 100%; --imgWidth: 100%"
       >
       </item-image>
     `:_}get iconRightTemplate(){var e,t;return m`
@@ -1159,8 +1161,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       .desktop #thumb {
         width: 100px;
         height: 100px;
-        display: flex;
-        justify-content: center;
       }
 
       #thumb.collection {
