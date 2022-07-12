@@ -609,6 +609,8 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
         width: 100%;
         height: 100%;
         z-index: 2;
+        display: flex;
+        align-content: center;
       }
 
       svg {
@@ -1157,6 +1159,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       .desktop #thumb {
         width: 100px;
         height: 100px;
+        display: flex;
+        justify-content: center;
       }
 
       #thumb.collection {
