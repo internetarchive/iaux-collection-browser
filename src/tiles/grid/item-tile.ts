@@ -30,9 +30,9 @@ export class ItemTile extends LitElement {
       <div class="container">
         <div class="item-info">
           <div id="title">
-            <h1 class="truncated" title=${ifDefined(
-              itemTitle
-            )}>${itemTitle}</h1>
+            <h1 class="truncated" title=${ifDefined(itemTitle)}>
+              ${itemTitle}
+            </h1>
           </div>
 
           <div id="image">
@@ -71,7 +71,8 @@ export class ItemTile extends LitElement {
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
         .contentWarning=${this.model?.contentWarning}
-      ></text-overlay>
+      >
+      </text-overlay>
     `;
   }
 

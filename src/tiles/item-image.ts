@@ -54,7 +54,8 @@ export class ItemImage extends LitElement {
       <icon-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
-      ></icon-overlay>
+      >
+      </icon-overlay>
     `;
   }
 
