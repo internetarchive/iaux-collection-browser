@@ -140,13 +140,15 @@ export class TileDispatcher
             return html`<collection-tile
               .model=${model}
               .currentWidth=${currentWidth}
-              .currentHeight=${currentHeight}>
+              .currentHeight=${currentHeight}
+            >
             </collection-tile>`;
           case 'account':
             return html`<account-tile
               .model=${model}
               .currentWidth=${currentWidth}
-              .currentHeight=${currentHeight}>
+              .currentHeight=${currentHeight}
+            >
             </account-tile>`;
           default:
             return html`<item-tile
@@ -155,7 +157,9 @@ export class TileDispatcher
               .currentHeight=${this.currentHeight}
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
-              .loggedIn=${this.loggedIn}>
+              .sortParam=${sortParam}
+              .loggedIn=${this.loggedIn}
+            >
             </item-tile>`;
         }
       case 'list-compact':
@@ -167,7 +171,8 @@ export class TileDispatcher
           .sortParam=${sortParam}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
-          .loggedIn=${this.loggedIn}>
+          .loggedIn=${this.loggedIn}
+        >
         </tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list
@@ -179,7 +184,8 @@ export class TileDispatcher
           .sortParam=${sortParam}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
-          .loggedIn=${this.loggedIn}>
+          .loggedIn=${this.loggedIn}
+        >
         </tile-list>`;
       default:
         return nothing;

@@ -24,7 +24,6 @@ export class ItemTile extends LitElement {
 
   render() {
     const itemTitle = this.model?.title;
-    const itemCreator = this.model?.creator;
 
     return html`
       <div class="container">
@@ -43,9 +42,11 @@ export class ItemTile extends LitElement {
             ${this.textOverlayTemplate}
           </div>
 
-          <div class="created-by truncated">
-            ${itemCreator ? html`<span>by&nbsp;${itemCreator}</span>` : nothing}
-          </div>
+          ${
+            this.doesSortedByDate
+              ? this.sortedDateInfoTemplate
+              : this.creatorTemplate
+          }
         </div>
 
         <tile-stats 
@@ -73,6 +74,51 @@ export class ItemTile extends LitElement {
         .contentWarning=${this.model?.contentWarning}
       >
       </text-overlay>
+    `;
+  }
+
+  private get doesSortedByDate() {
+    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
+      this.sortParam?.field as string
+    );
+  }
+
+  private get sortedDateInfoTemplate() {
+    let sortedValue;
+
+    switch (this.sortParam?.field) {
+      case 'date':
+        sortedValue = { field: 'published', value: this.model?.datePublished };
+        break;
+      case 'reviewdate':
+        sortedValue = { field: 'reviewed', value: this.model?.dateReviewed };
+        break;
+      case 'addeddate':
+        sortedValue = { field: 'added', value: this.model?.dateAdded };
+        break;
+      case 'publicdate':
+        sortedValue = { field: 'archived', value: this.model?.dateArchived };
+        break;
+      default:
+        break;
+    }
+
+    return html`
+      <div class="date-sorted-by truncated">
+        <span>
+          ${sortedValue?.field} ${formatDate(sortedValue?.value, 'long')}
+        </span>
+      </div>
+    `;
+  }
+
+  private get creatorTemplate() {
+    return html`
+      <div class="created-by truncated">
+        ${this.model?.creator
+          ? html`<span>by&nbsp;${this.model?.creator}</span>`
+          : nothing}
+      </div>
     `;
   }
 
