@@ -2567,7 +2567,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     />
                     <label
                       for=${d}
-                      class="hide-facet-icon ${p?"active":""}"
+                      class="hide-facet-icon${p?" active":""}"
                       title=${E}
                     >
                       <span class="eye">${Xn}</span>
