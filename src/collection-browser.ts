@@ -32,7 +32,6 @@ import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
 import './collection-facets';
 import './circular-activity-indicator';
-import './empty-placeholder';
 import './sort-filter-bar/sort-filter-bar';
 import {
   SelectedFacets,
@@ -50,6 +49,8 @@ import {
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
+import { emptyPlaceholderType } from './empty-placeholder';
+import './empty-placeholder';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -148,7 +149,7 @@ export class CollectionBrowser
 
   @state() private mobileFacetsVisible = false;
 
-  @state() private emptyPlaceholder?: string;
+  @state() private emptyPlaceholder: emptyPlaceholderType = null;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -259,7 +260,7 @@ export class CollectionBrowser
   }
 
   private setEmptyPlaceholder() {
-    this.emptyPlaceholder = '';
+    this.emptyPlaceholder = null;
 
     if (!this.baseQuery) {
       this.emptyPlaceholder = 'no-search-term';

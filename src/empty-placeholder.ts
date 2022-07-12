@@ -1,44 +1,52 @@
-import { css, html, LitElement, CSSResultGroup } from 'lit';
+import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import noSearchTermIcon from './assets/img/icons/no-search-term';
 import noSearchResultIcon from './assets/img/icons/no-search-result';
 
+export type emptyPlaceholderType = null | 'no-search-term' | 'no-search-result';
+
 @customElement('empty-placeholder')
 export class EmptyPlaceholder extends LitElement {
-  @property({ type: String }) placeholderType?: string;
+  @property({ type: String }) placeholderType: emptyPlaceholderType = null;
 
   @property({ type: Boolean }) mobileView?: false;
 
+  /**
+   * Error message to show when user have entered search term
+   */
+  private noSearchTermMessage =
+    'To begin searching, enter a search term in the box above and hit "Go".';
+
+  /**
+   * Error message to show when user search did not match any items
+   */
+  private noSearchResultMessage =
+    'Your search did not match any items in the Archive. Try different keywords or a more general search.';
+
   render() {
     return html`
-      ${this.placeholderType === 'no-search-term'
-        ? this.noSearchTermTemplate
-        : this.noSearchResultTemplate}
+      ${this.placeholderType === null ? nothing : this.emptyPlaceholderTemplate}
     `;
   }
 
-  private get noSearchResultTemplate() {
+  private get emptyPlaceholderTemplate() {
     return html`<div
-      class="placeholder no-result ${this.mobileView ? 'mobile' : 'desktop'}"
+      class="placeholder ${this.placeholderType} ${this.mobileView
+        ? 'mobile'
+        : 'desktop'}"
     >
       <h2 class="title">
-        Your search did not match any items in the Archive. Try different
-        keywords or a more general search.
+        ${this.placeholderType === 'no-search-term'
+          ? this.noSearchTermMessage
+          : this.noSearchResultMessage}
       </h2>
-      <div>${noSearchResultIcon}</div>
-    </div>`;
-  }
-
-  private get noSearchTermTemplate() {
-    return html`<div
-      class="placeholder no-term ${this.mobileView ? 'mobile' : 'desktop'}"
-    >
-      <h2 class="title">
-        To begin searching, enter a search term in the box above and hit "Go".
-      </h2>
-      <div>${noSearchTermIcon}</div>
-    </div>`;
+      <div>
+        ${this.placeholderType === 'no-search-term'
+          ? noSearchTermIcon
+          : noSearchResultIcon}
+      </div>
+    </div> `;
   }
 
   static get styles(): CSSResultGroup {
