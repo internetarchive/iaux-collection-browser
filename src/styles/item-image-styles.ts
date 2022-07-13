@@ -28,10 +28,11 @@ export const baseItemImageStyles = css`
   }
 
   .blur {
-    transform: scale(1.1);
-    width: 100%;
     filter: blur(15px);
+    overflow: hidden;
+    width: 100%;
   }
+
   .list-box .blur {
     height: 100%;
   }
