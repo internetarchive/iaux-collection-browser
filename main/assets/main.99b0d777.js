@@ -2567,10 +2567,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     />
                     <label
                       for=${d}
-                      class="hide-facet-icon"
+                      class="hide-facet-icon${p?" active":""}"
                       title=${E}
                     >
-                      ${p?Zn:Xn}
+                      <span class="eye">${Xn}</span>
+                      <span class="eye-closed">${Zn}</span>
                     </label>
                   </div>
 
@@ -2689,6 +2690,22 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         width: 15px;
         height: 15px;
         cursor: pointer;
+        opacity: 0.3;
+      }
+      .hide-facet-icon:hover,
+      .active {
+        opacity: 1;
+      }
+      .hide-facet-icon:hover .eye,
+      .hide-facet-icon .eye-closed {
+        display: none;
+      }
+      .hide-facet-icon:hover .eye-closed,
+      .hide-facet-icon.active .eye-closed {
+        display: inline;
+      }
+      .hide-facet-icon.active .eye {
+        display: none;
       }
     `}};n([u({type:Object})],ae.prototype,"aggregations",void 0);n([u({type:Object})],ae.prototype,"fullYearsHistogramAggregation",void 0);n([u({type:String})],ae.prototype,"minSelectedDate",void 0);n([u({type:String})],ae.prototype,"maxSelectedDate",void 0);n([u({type:Boolean})],ae.prototype,"facetsLoading",void 0);n([u({type:Boolean})],ae.prototype,"fullYearAggregationLoading",void 0);n([u({type:Object})],ae.prototype,"selectedFacets",void 0);n([u({type:Boolean})],ae.prototype,"collapsableFacets",void 0);n([u({type:Boolean})],ae.prototype,"showHistogramDatePicker",void 0);n([u({type:Object})],ae.prototype,"languageCodeHandler",void 0);n([u({type:Object})],ae.prototype,"collectionNameCache",void 0);n([D()],ae.prototype,"openFacets",void 0);ae=n([Q("collection-facets")],ae);let xa=class extends B{render(){return m`
       <div class="lds-ring">
