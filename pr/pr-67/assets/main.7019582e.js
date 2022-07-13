@@ -484,10 +484,11 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
   }
 
   .blur {
-    transform: scale(1.1);
-    width: 100%;
     filter: blur(15px);
+    overflow: hidden;
+    width: 100%;
   }
+
   .list-box .blur {
     height: 100%;
   }
@@ -609,15 +610,12 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
 `;let di=class extends z{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1}render(){return this.loginRequired&&!this.loggedIn?m`${ys} `:m`${bs}`}static get styles(){return b`
       :host {
         position: absolute;
-        width: 100%;
-        height: 100%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        -ms-transform: translate(-50%, -50%);
+        width: 50%;
         z-index: 2;
-        display: flex;
-        align-content: center;
-      }
-
-      svg {
-        padding: 25%;
       }
     `}};n([u({type:Boolean})],di.prototype,"loggedIn",void 0);n([u({type:Boolean})],di.prototype,"loginRequired",void 0);di=n([V("icon-overlay")],di);let _e=class extends z{constructor(){super(...arguments),this.isListTile=!1,this.isCompactTile=!1,this.loggedIn=!1,this.isWaveform=!1}render(){return m`
       <div class=${ia(this.itemBaseClass)}>
@@ -2689,10 +2687,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     />
                     <label
                       for=${d}
-                      class="hide-facet-icon"
+                      class="hide-facet-icon${p?" active":""}"
                       title=${E}
                     >
-                      ${p?il:tl}
+                      <span class="eye">${tl}</span>
+                      <span class="eye-closed">${il}</span>
                     </label>
                   </div>
 
@@ -2811,6 +2810,22 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         width: 15px;
         height: 15px;
         cursor: pointer;
+        opacity: 0.3;
+      }
+      .hide-facet-icon:hover,
+      .active {
+        opacity: 1;
+      }
+      .hide-facet-icon:hover .eye,
+      .hide-facet-icon .eye-closed {
+        display: none;
+      }
+      .hide-facet-icon:hover .eye-closed,
+      .hide-facet-icon.active .eye-closed {
+        display: inline;
+      }
+      .hide-facet-icon.active .eye {
+        display: none;
       }
     `}};n([u({type:Object})],oe.prototype,"aggregations",void 0);n([u({type:Object})],oe.prototype,"fullYearsHistogramAggregation",void 0);n([u({type:String})],oe.prototype,"minSelectedDate",void 0);n([u({type:String})],oe.prototype,"maxSelectedDate",void 0);n([u({type:Boolean})],oe.prototype,"facetsLoading",void 0);n([u({type:Boolean})],oe.prototype,"fullYearAggregationLoading",void 0);n([u({type:Object})],oe.prototype,"selectedFacets",void 0);n([u({type:Boolean})],oe.prototype,"collapsableFacets",void 0);n([u({type:Boolean})],oe.prototype,"showHistogramDatePicker",void 0);n([u({type:Object})],oe.prototype,"languageCodeHandler",void 0);n([u({type:Object})],oe.prototype,"collectionNameCache",void 0);n([D()],oe.prototype,"openFacets",void 0);oe=n([V("collection-facets")],oe);let _a=class extends z{render(){return m`
       <div class="lds-ring">
