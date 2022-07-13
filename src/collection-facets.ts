@@ -401,10 +401,11 @@ export class CollectionFacets extends LitElement {
                     />
                     <label
                       for=${negativeCheckboxId}
-                      class="hide-facet-icon"
+                      class="hide-facet-icon${facetHidden ? ' active' : ''}"
                       title=${showHideText}
                     >
-                      ${facetHidden ? eyeClosedIcon : eyeIcon}
+                      <span class="eye">${eyeIcon}</span>
+                      <span class="eye-closed">${eyeClosedIcon}</span>
                     </label>
                   </div>
 
@@ -587,6 +588,22 @@ export class CollectionFacets extends LitElement {
         width: 15px;
         height: 15px;
         cursor: pointer;
+        opacity: 0.3;
+      }
+      .hide-facet-icon:hover,
+      .active {
+        opacity: 1;
+      }
+      .hide-facet-icon:hover .eye,
+      .hide-facet-icon .eye-closed {
+        display: none;
+      }
+      .hide-facet-icon:hover .eye-closed,
+      .hide-facet-icon.active .eye-closed {
+        display: inline;
+      }
+      .hide-facet-icon.active .eye {
+        display: none;
       }
     `;
   }
