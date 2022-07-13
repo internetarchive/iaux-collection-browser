@@ -13,7 +13,7 @@ describe('Empty Placeholder', () => {
     el.placeholderType = 'no-search-term';
     await el.updateComplete;
 
-    const notSearchTerm = el.shadowRoot?.querySelector('.no-term');
+    const notSearchTerm = el.shadowRoot?.querySelector('.no-search-term');
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
 
     expect(notSearchTerm).to.exist;
@@ -28,8 +28,21 @@ describe('Empty Placeholder', () => {
     el.placeholderType = 'no-search-result';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.no-result')).to.exist;
-    expect(el.shadowRoot?.querySelector('.no-term')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.no-search-result')).to.exist;
+    expect(el.shadowRoot?.querySelector('.no-search-term')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
+  });
+
+  it('should not render any empty placeholder', async () => {
+    const el = await fixture<EmptyPlaceholder>(
+      html`<empty-placeholder></empty-placeholder>`
+    );
+
+    el.placeholderType = null;
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.no-search-result')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.no-search.term')).to.not.exist;
     expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
   });
 });

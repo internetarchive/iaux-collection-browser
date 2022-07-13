@@ -24,29 +24,31 @@ export class EmptyPlaceholder extends LitElement {
   private noSearchResultMessage =
     'Your search did not match any items in the Archive. Try different keywords or a more general search.';
 
+  private get emptyPlaceholderTemplate() {
+    return html`
+      <div
+        class="placeholder ${this.placeholderType} ${this.mobileView
+          ? 'mobile'
+          : 'desktop'}"
+      >
+        <h2 class="title">
+          ${this.placeholderType === 'no-search-term'
+            ? this.noSearchTermMessage
+            : this.noSearchResultMessage}
+        </h2>
+        <div>
+          ${this.placeholderType === 'no-search-term'
+            ? noSearchTermIcon
+            : noSearchResultIcon}
+        </div>
+      </div>
+    `;
+  }
+
   render() {
     return html`
       ${this.placeholderType === null ? nothing : this.emptyPlaceholderTemplate}
     `;
-  }
-
-  private get emptyPlaceholderTemplate() {
-    return html`<div
-      class="placeholder ${this.placeholderType} ${this.mobileView
-        ? 'mobile'
-        : 'desktop'}"
-    >
-      <h2 class="title">
-        ${this.placeholderType === 'no-search-term'
-          ? this.noSearchTermMessage
-          : this.noSearchResultMessage}
-      </h2>
-      <div>
-        ${this.placeholderType === 'no-search-term'
-          ? noSearchTermIcon
-          : noSearchResultIcon}
-      </div>
-    </div> `;
   }
 
   static get styles(): CSSResultGroup {

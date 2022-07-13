@@ -1162,18 +1162,6 @@ export class CollectionBrowser
       display: flex;
     }
 
-    .no-search-term {
-      text-align: center;
-      display: block;
-      width: 100%;
-    }
-    .no-search-term h2 {
-      margin: 40px;
-    }
-    .no-search-term svg {
-      height: 400px;
-    }
-
     .collapser {
       display: inline-block;
     }
