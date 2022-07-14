@@ -1,7 +1,12 @@
 /* eslint-disable dot-notation */
 import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { Bucket, SearchParams } from '@internetarchive/search-service';
+import {
+  Aggregation,
+  Bucket,
+  SearchServiceInterface,
+  SearchParams,
+} from '@internetarchive/search-service';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SelectedFacets, defaultSelectedFacets } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
@@ -18,7 +23,7 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Object }) modalManager?: any;
 
-  @property({ type: Object }) searchService?: any;
+  @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
@@ -28,7 +33,7 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @state() aggregations = [];
+  @state() aggregations?: Record<string, Aggregation>;
 
   @state() castedBuckets?: Bucket[] = [];
 
@@ -41,7 +46,7 @@ export class FacetsMoreContent extends LitElement {
 
   @state() paginationSize = 1;
 
-  private facetsPerPage = 60;
+  private facetsPerPage = 60; // Q. how many items we want to have on popup view
 
   async updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
@@ -77,7 +82,7 @@ export class FacetsMoreContent extends LitElement {
     };
 
     const results = await this.searchService?.search(params);
-    this.aggregations = results?.success?.response.aggregations;
+    this.aggregations = results?.success?.response.aggregations as any;
   }
 
   async filterFacets() {

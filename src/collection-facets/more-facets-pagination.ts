@@ -17,9 +17,9 @@ export class MoreFacetsPagination extends LitElement {
 
   private buildPagination() {
     const pageNumberFragment = document.createRange().createContextualFragment(`
-      <a>&#9668;</a>
+      <a>&#706;</a>
       <div class="page-numbers"></div>
-      <a>&#9658;</a>
+      <a>&#707;</a>
     `);
 
     const pageNumberElement = pageNumberFragment.querySelector(
