@@ -1,13 +1,11 @@
 /* eslint-disable dot-notation */
 import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { Bucket, SearchParams } from '@internetarchive/search-service';
-
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import { SelectedFacets, FacetGroup, defaultSelectedFacets } from '../models';
+import { SelectedFacets, defaultSelectedFacets } from '../models';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
-
 import './more-facets-pagination';
 
 @customElement('more-facets-content')
@@ -22,25 +20,21 @@ export class FacetsMoreContent extends LitElement {
 
   @property({ type: Object }) searchService?: any;
 
-  @property({ type: Object }) selectedFacets?: SelectedFacets;
-
-  @property({ type: Object, attribute: false }) aggr = [];
-
-  @property({ type: Object }) castedBuckets?: Bucket[] = [];
-
-  @property({ type: Object }) selectedFacet?: String;
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
-  @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: Object }) allFacetGroups?: FacetGroup[] = [];
+  @state() aggregations = [];
+
+  @state() castedBuckets?: Bucket[] = [];
 
   @state() pageNumber = 1;
 
-  /****
+  /**
    * Facets are loading on popup
    */
   @state() facetsLoading = true;
@@ -60,7 +54,7 @@ export class FacetsMoreContent extends LitElement {
       this.facetsLoading = false;
     }
 
-    if (changed.has('aggr')) {
+    if (changed.has('aggregations')) {
       this.filterFacets();
     }
   }
@@ -83,11 +77,11 @@ export class FacetsMoreContent extends LitElement {
     };
 
     const results = await this.searchService?.search(params);
-    this.aggr = results?.success?.response.aggregations;
+    this.aggregations = results?.success?.response.aggregations;
   }
 
   async filterFacets() {
-    Object.entries(this.aggr ?? []).forEach(([key, buckets]) => {
+    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       if (key === 'year_histogram') return;
 
       this.castedBuckets = buckets['buckets'] as Bucket[];
@@ -103,7 +97,7 @@ export class FacetsMoreContent extends LitElement {
       }
     });
 
-    const length = Object.keys(this.castedBuckets as []).length;
+    const { length } = Object.keys(this.castedBuckets as []);
     this.paginationSize = Math.ceil(length / this.facetsPerPage);
   }
 
@@ -115,9 +109,10 @@ export class FacetsMoreContent extends LitElement {
   }
 
   private get renderMoreFacets() {
+    this.facetsLoading = false;
     const min = (this.pageNumber - 1) * this.facetsPerPage;
     const max = min + this.facetsPerPage - 1;
-    this.facetsLoading = false;
+
     return html`<ul class="facet-list">
       ${this.castedBuckets?.map((option, n) => {
         const optionWrapperClass =
@@ -186,7 +181,7 @@ export class FacetsMoreContent extends LitElement {
 
   private get loaderTemplate() {
     return this.facetsLoading
-      ? html`<div class="loader-facets">
+      ? html`<div class="facets-loader">
           <ia-activity-indicator .mode="processing"></ia-activity-indicator>
         </div>`
       : '';
@@ -311,7 +306,7 @@ export class FacetsMoreContent extends LitElement {
         background: black;
         color: white;
       }
-      .loader-facets {
+      .facets-loader {
         text-align: center;
         margin-bottom: 2rem;
         height: 7rem;

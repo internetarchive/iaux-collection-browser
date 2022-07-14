@@ -3,15 +3,13 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 
 @customElement('more-facets-pagination')
 export class MoreFacetsPagination extends LitElement {
-  @property({ type: Number }) startPage?: number;
+  @property({ type: Number }) paginationSize?: any | undefined;
 
   @property({ type: Number }) step?: any | undefined;
 
-  @property({ type: Number }) paginationSize?: any | undefined;
+  @query('.facets-pagination') private pagination!: HTMLElement;
 
-  @query('.facets-paging') private pagination!: HTMLElement;
-
-  @state() page = 1;
+  @state() currentPage = 1;
 
   firstUpdated() {
     this.buildPagination();
@@ -29,8 +27,8 @@ export class MoreFacetsPagination extends LitElement {
     ) as any;
 
     // Calculate the startPage and endPage.
-    let startPage = this.page - this.step;
-    let endPage = this.page + this.step;
+    let startPage = this.currentPage - this.step;
+    let endPage = this.currentPage + this.step;
 
     if (startPage <= 0) {
       endPage += -startPage + 1;
@@ -48,7 +46,9 @@ export class MoreFacetsPagination extends LitElement {
         document
           .createRange()
           .createContextualFragment(
-            `<a ${this.page === 1 ? 'class="current"' : ''}>1</a><i>...</i>`
+            `<a ${
+              this.currentPage === 1 ? 'class="current"' : ''
+            }>1</a><i>...</i>`
           )
       );
     }
@@ -59,7 +59,9 @@ export class MoreFacetsPagination extends LitElement {
         document
           .createRange()
           .createContextualFragment(
-            `<a ${this.page === page ? 'class="current"' : ''}>${page}</a>`
+            `<a ${
+              this.currentPage === page ? 'class="current"' : ''
+            }>${page}</a>`
           )
       );
     }
@@ -71,7 +73,7 @@ export class MoreFacetsPagination extends LitElement {
           .createRange()
           .createContextualFragment(
             `<i>...</i><a ${
-              this.page === this.paginationSize ? 'class="current"' : ''
+              this.currentPage === this.paginationSize ? 'class="current"' : ''
             }>${this.paginationSize}</a>`
           )
       );
@@ -81,7 +83,7 @@ export class MoreFacetsPagination extends LitElement {
     pageNumberFragment.querySelectorAll(`.page-numbers a`).forEach(aElem => {
       aElem.addEventListener('click', e => {
         const input = e.target as HTMLInputElement;
-        this.page = +input.innerText;
+        this.currentPage = +input.innerText;
         this.buildPagination();
         this.emitPageNumberClick();
       });
@@ -92,9 +94,9 @@ export class MoreFacetsPagination extends LitElement {
       `a`
     ) as any;
     aPrev.addEventListener(`click`, () => {
-      this.page -= 1;
-      if (this.page < 1) {
-        this.page = 1;
+      this.currentPage -= 1;
+      if (this.currentPage < 1) {
+        this.currentPage = 1;
       }
       this.buildPagination();
       this.emitPageNumberClick();
@@ -102,9 +104,9 @@ export class MoreFacetsPagination extends LitElement {
 
     // click action on next button
     others.at(-1).addEventListener(`click`, () => {
-      this.page += 1;
-      if (this.page > this.paginationSize) {
-        this.page = this.paginationSize;
+      this.currentPage += 1;
+      if (this.currentPage > this.paginationSize) {
+        this.currentPage = this.paginationSize;
       }
       this.buildPagination();
       this.emitPageNumberClick();
@@ -117,18 +119,18 @@ export class MoreFacetsPagination extends LitElement {
   private emitPageNumberClick() {
     this.dispatchEvent(
       new CustomEvent('pageNumberClicked', {
-        detail: { page: this.page },
+        detail: { page: this.currentPage },
       })
     );
   }
 
   render() {
-    return html`<div class="facets-paging"></div>`;
+    return html`<div class="facets-pagination"></div>`;
   }
 
   static get styles(): CSSResultGroup {
     return css`
-      .facets-paging {
+      .facets-pagination {
         user-select: none;
         margin: 1rem 0px;
         background-color: rgb(239, 239, 239);
@@ -136,8 +138,8 @@ export class MoreFacetsPagination extends LitElement {
         font-size: 3.2rem;
       }
 
-      .facets-paging a,
-      .facets-paging i {
+      .facets-pagination a,
+      .facets-pagination i {
         background: none;
         border: 0;
         cursor: pointer;
@@ -149,14 +151,13 @@ export class MoreFacetsPagination extends LitElement {
         min-width: 1.5rem;
         padding: 0.5rem;
       }
+      .facets-pagination a.current {
+        background: black;
+        color: white;
+      }
 
       .page-numbers {
         display: inline-block;
-      }
-
-      .facets-paging a.current {
-        background: black;
-        color: white;
       }
     `;
   }

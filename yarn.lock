@@ -143,38 +143,10 @@
     dayjs "^1.10.7"
     lit "^2.1.1"
 
-"@internetarchive/ia-activity-indicator@0.0.3", "@internetarchive/ia-activity-indicator@^0.0.3":
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/ia-activity-indicator/-/ia-activity-indicator-0.0.3.tgz#25e75e1e93b10f84878a22d34eab2bb873c27290"
-  integrity sha512-82Otj9Qs6uXQkfl+r2hsrnZd8R0hcpGK6FJ7hPbnZKwcHGuuvF6EJYnR2soN7P8S7OUUtmygUgx5G4lV7gwh9w==
-  dependencies:
-    lit "^2.2.2"
-
 "@internetarchive/ia-activity-indicator@^0.0.2":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@internetarchive/ia-activity-indicator/-/ia-activity-indicator-0.0.2.tgz#6e02670d52a9f1b673f322252b6e649453ea2ef0"
   integrity sha512-PHSTn8LJyozrVcMj6eMQKqBJD+029YhxffbW+oLKGAfmS5tAkpl2LfHlFcLCozT5e9e+KECCq2m2UeUyPYPjcw==
-  dependencies:
-    lit "^2.0.2"
-
-"@internetarchive/icon-close@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/icon-close/-/icon-close-1.3.2.tgz#391b025241fe4c065263414870d21034823aebdf"
-  integrity sha512-4QhM/MDC1IsWQZoE3lt7A4l3/VOopJta+xVnDLqsbA3OW2sT+ilm/mUiP4l4Lm/NzdbQQwhnQMOZPcQvllxkzA==
-  dependencies:
-    lit "^2.0.2"
-
-"@internetarchive/icon-ia-logo@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/icon-ia-logo/-/icon-ia-logo-1.3.2.tgz#0ec0f5b537ea6b8c46ba6410e5d925d806141c03"
-  integrity sha512-lDZdaqj7A6nv5dJPaes6UZwDqlr3yMgaKJZSuMTqMUpjaZ0bcfDIoDFO4y2YjQ2uUHoRIgRNqyZVMSNJMowXzQ==
-  dependencies:
-    lit "^2.0.2"
-
-"@internetarchive/icon-user@^1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/icon-user/-/icon-user-1.3.2.tgz#727b9be48889c9abc089f16ff5cf0632c20d4fba"
-  integrity sha512-A5fCby40AEWWbrSSgGzhcSVDfL9M+S/Zl1oPTid/+mBuZPik0KPS5xoMBkT/952/ujbnLLR9URemzfPdSeBx+Q==
   dependencies:
     lit "^2.0.2"
 
@@ -198,18 +170,6 @@
   integrity sha512-8FFAvEEoazktWsIEod2NVYp0r+Fk3OxM8woe42mNlXHbht3Je98yQjooIFiA3/sJYB7xsZB2RHzUzh+GmBHFgw==
   dependencies:
     idb-keyval "^6.1.0"
-
-"@internetarchive/modal-manager@0.2.5":
-  version "0.2.5"
-  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.5.tgz#e85e6bed6ae72bd3beec53c93ca13749ce01c7b7"
-  integrity sha512-G7MMOawLH9CIW/0kt9wQtaqLtHXmwEqGpMTmsujHUeOLr9jva/HHerFuN+5AugzOD8gUXhBVUE64HZbQHkw2eQ==
-  dependencies:
-    "@internetarchive/ia-activity-indicator" "^0.0.3"
-    "@internetarchive/icon-close" "^1.3.2"
-    "@internetarchive/icon-ia-logo" "^1.3.2"
-    "@internetarchive/icon-user" "^1.3.2"
-    lit "^2.2.2"
-    throttle-debounce "^2.2.1"
 
 "@internetarchive/recaptcha-manager@^0.1.1":
   version "0.1.1"
@@ -3244,15 +3204,6 @@ lit-html@^2.0.0, lit-html@^2.2.0:
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
-lit@2.2.1:
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/lit/-/lit-2.2.1.tgz#4b679e1d8cb6c7977b64921b1ea3eca7850ca1dd"
-  integrity sha512-dSe++R50JqrvNGXmI9OE13de1z5U/Y3J2dTm/9GC86vedI8ILoR8ZGnxfThFpvQ9m0lR0qRnIR4IiKj/jDCfYw==
-  dependencies:
-    "@lit/reactive-element" "^1.3.0"
-    lit-element "^3.2.0"
-    lit-html "^2.2.0"
-
 lit@^2.0.0, lit@^2.0.2, lit@^2.1.1, lit@^2.2.2:
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/lit/-/lit-2.2.4.tgz#4907d071a427620b83653e39a1664dbdacbfb982"
@@ -4384,11 +4335,6 @@ text-table@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=
-
-throttle-debounce@^2.2.1:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-2.3.0.tgz#fd31865e66502071e411817e241465b3e9c372e2"
-  integrity sha512-H7oLPV0P7+jgvrk+6mwwwBDmxTaxnu9HMXmloNLXwnNO0ZxZ31Orah2n8lU1eMPvsaowP2CX+USCgyovXfdOFQ==
 
 through@^2.3.8:
   version "2.3.8"

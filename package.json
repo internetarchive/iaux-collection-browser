@@ -33,7 +33,7 @@
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.11.2",
     "dompurify": "^2.3.6",
-    "lit": "2.2.1",
+    "lit": "^2.2.2",
     "typescript-cookie": "^1.0.3"
   },
   "devDependencies": {
@@ -99,6 +99,10 @@
     "arrowParens": "avoid"
   },
   "lint-staged": {
-    "*.ts": []
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
   }
 }

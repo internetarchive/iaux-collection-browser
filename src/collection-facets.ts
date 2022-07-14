@@ -364,7 +364,8 @@ export class CollectionFacets extends LitElement {
       value => aggregationToFacetOption[value] === facetGroup.key
     );
 
-    const headline = html`<span
+    const headline = html`
+      <span
         style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
       >
         ${facetTitles[facetGroup.key]}
