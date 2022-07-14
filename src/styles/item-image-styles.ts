@@ -11,16 +11,18 @@ export const baseItemImageStyles = css`
   }
 
   .list-box {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    box-sizing: border-box;
     display: flex;
     position: relative;
-    box-sizing: border-box;
-    overflow: hidden;
-    width: fit-content;
-    margin: auto;
   }
 
   .contain {
     object-fit: contain;
+    height: 100%;
+    width: 100%;
   }
 
   .cover {
@@ -29,12 +31,20 @@ export const baseItemImageStyles = css`
 
   .blur {
     filter: blur(15px);
-    overflow: hidden;
     width: 100%;
+    /* margin: -5px -10px -10px -5px; */
+
+    -webkit-filter: blur(15px);
+    -moz-filter: blur(15px);
+    -o-filter: blur(15px);
+    -ms-filter: blur(15px);
+    /* position: absolute; */
+    clip: rect(5px, 0px, 0px, 5px);
   }
 
   .list-box .blur {
     height: 100%;
+    overflow: hidden;
   }
 `;
 
