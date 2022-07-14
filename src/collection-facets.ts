@@ -352,31 +352,26 @@ export class CollectionFacets extends LitElement {
       href="javascript:void(0)"
       class="more-link"
       @click=${() => {
-        this.emitMoreLinkClickedEvent(facetGroup);
+        this.showMoreFacets(facetGroup);
       }}
     >
       More...
     </button>`;
   }
 
-  async emitMoreLinkClickedEvent(facetGroup: FacetGroup) {
-    const config = new ModalConfig();
-    config.closeOnBackdropClick = true;
-    config.headline = html`<span
-      style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
-    >
-      ${facetTitles[facetGroup.key]}
-    </span>`;
-
+  async showMoreFacets(facetGroup: FacetGroup) {
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
     );
-    config.headerColor = '#194880';
-    config.bodyColor = '#fff';
-    config.title = html`Select filters`;
-    config.showHeaderLogo = false;
 
-    config.message = html`
+    const headline = html`<span
+        style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
+      >
+        ${facetTitles[facetGroup.key]}
+      </span>
+    `;
+
+    const message = html`
       <more-facets-content
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
@@ -389,6 +384,17 @@ export class CollectionFacets extends LitElement {
       >
       </more-facets-content>
     `;
+
+    const config = new ModalConfig({
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true, // TODO: want to fire analytics
+      title: html`Select filters`,
+      headline,
+      message,
+    });
+
     this.modalManager.showModal({ config });
   }
 
@@ -678,7 +684,7 @@ export class CollectionFacets extends LitElement {
 
       .more-link {
         font-size: 1.2rem;
-        text-decoration: navajowhite;
+        text-decoration: none;
         padding: 0px 0.4rem;
         background: white;
         border: 0;

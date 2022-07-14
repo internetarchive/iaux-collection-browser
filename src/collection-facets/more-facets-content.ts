@@ -40,7 +40,10 @@ export class FacetsMoreContent extends LitElement {
 
   @state() pageNumber = 1;
 
-  @state() loading = 1;
+  /****
+   * Facets are loading on popup
+   */
+  @state() facetsLoading = true;
 
   @state() paginationSize = 1;
 
@@ -48,13 +51,13 @@ export class FacetsMoreContent extends LitElement {
 
   async updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
-      this.loading = 1;
+      this.facetsLoading = true;
       this.pageNumber = 1;
 
       await this.fetchSpecificFacets(
         this.facetAggregationKey as unknown as string
       );
-      this.loading = 0;
+      this.facetsLoading = false;
     }
 
     if (changed.has('aggr')) {
@@ -67,7 +70,7 @@ export class FacetsMoreContent extends LitElement {
       advancedParams: [
         {
           field: facetAggregationKey,
-          size: 1000000, // todo - ?
+          size: 1000000, // todo - do we want to have all the records at once?
         },
       ],
     };
@@ -76,7 +79,7 @@ export class FacetsMoreContent extends LitElement {
       query: this.fullQuery as string,
       fields: ['identifier'],
       aggregations,
-      rows: 1,
+      rows: 1, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
     const results = await this.searchService?.search(params);
@@ -100,8 +103,8 @@ export class FacetsMoreContent extends LitElement {
       }
     });
 
-    const lenght = Object.keys(this.castedBuckets as []).length;
-    this.paginationSize = Math.ceil(lenght / this.facetsPerPage);
+    const length = Object.keys(this.castedBuckets as []).length;
+    this.paginationSize = Math.ceil(length / this.facetsPerPage);
   }
 
   private pageNumberClicked(e: CustomEvent<{ page: string }>) {
@@ -114,7 +117,7 @@ export class FacetsMoreContent extends LitElement {
   private get renderMoreFacets() {
     const min = (this.pageNumber - 1) * this.facetsPerPage;
     const max = min + this.facetsPerPage - 1;
-    this.loading = 0;
+    this.facetsLoading = false;
     return html`<ul class="facet-list">
       ${this.castedBuckets?.map((option, n) => {
         const optionWrapperClass =
@@ -161,8 +164,7 @@ export class FacetsMoreContent extends LitElement {
     const { selectedFacets } = this;
 
     const target = e.target as HTMLInputElement;
-    const { checked, value, dataset } = target;
-    const facetKey = dataset.facet as string;
+    const { checked, value } = target;
 
     let newFacets: SelectedFacets;
     if (selectedFacets) {
@@ -174,16 +176,16 @@ export class FacetsMoreContent extends LitElement {
     }
 
     if (checked) {
-      newFacets[facetKey as keyof typeof newFacets][value] = 'selected';
+      newFacets[this.facetKey as keyof typeof newFacets][value] = 'selected';
     } else {
-      delete newFacets[facetKey as keyof typeof newFacets][value];
+      delete newFacets[this.facetKey as keyof typeof newFacets][value];
     }
 
     this.selectedFacets = newFacets;
   }
 
   private get loaderTemplate() {
-    return this.loading
+    return this.facetsLoading
       ? html`<div class="loader-facets">
           <ia-activity-indicator .mode="processing"></ia-activity-indicator>
         </div>`
@@ -193,7 +195,7 @@ export class FacetsMoreContent extends LitElement {
   render() {
     return html`<div id="morf-page">
       <form>
-        ${this.loading
+        ${this.facetsLoading
           ? this.loaderTemplate
           : html`<div class="facets-content">${this.renderMoreFacets}</div>
               <more-facets-pagination
@@ -206,7 +208,7 @@ export class FacetsMoreContent extends LitElement {
                   class="btn btn-cancel"
                   type="button"
                   value="Cancel"
-                  @click=${this.submitClick}
+                  @click=${this.cancelClick}
                 />
                 <input
                   class="btn btn-submit"
@@ -226,6 +228,10 @@ export class FacetsMoreContent extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event);
+    this.modalManager?.closeModal();
+  }
+
+  private cancelClick() {
     this.modalManager?.closeModal();
   }
 
