@@ -1,5 +1,12 @@
 /* eslint-disable dot-notation */
-import { css, CSSResultGroup, html, LitElement, PropertyValues } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import {
   Aggregation,
@@ -192,33 +199,47 @@ export class FacetsMoreContent extends LitElement {
       : '';
   }
 
+  private get facetsPaginationTemplate() {
+    return html`
+      <more-facets-pagination
+        .paginationSize=${this.paginationSize}
+        .step=${Number(2)}
+        @pageNumberClicked=${this.pageNumberClicked}
+      ></more-facets-pagination>
+    `;
+  }
+
+  private get facetsContentTemplate() {
+    return html`
+      <div class="facets-content">${this.renderMoreFacets}</div>
+      ${this.paginationSize > 1 ? this.facetsPaginationTemplate : nothing}
+      <div class="footer">
+        <input
+          class="btn btn-cancel"
+          type="button"
+          value="Cancel"
+          @click=${this.cancelClick}
+        />
+        <input
+          class="btn btn-submit"
+          type="button"
+          value="Apply filters"
+          @click=${this.submitClick}
+        />
+      </div>
+    `;
+  }
+
   render() {
-    return html`<div id="morf-page">
-      <form>
-        ${this.facetsLoading
-          ? this.loaderTemplate
-          : html`<div class="facets-content">${this.renderMoreFacets}</div>
-              <more-facets-pagination
-                .paginationSize=${this.paginationSize}
-                .step=${Number(2)}
-                @pageNumberClicked=${this.pageNumberClicked}
-              ></more-facets-pagination>
-              <center>
-                <input
-                  class="btn btn-cancel"
-                  type="button"
-                  value="Cancel"
-                  @click=${this.cancelClick}
-                />
-                <input
-                  class="btn btn-submit"
-                  type="button"
-                  value="Apply filters"
-                  @click=${this.submitClick}
-                />
-              </center>`}
-      </form>
-    </div>`;
+    return html`
+      <div id="morf-page">
+        <form>
+          ${this.facetsLoading
+            ? this.loaderTemplate
+            : this.facetsContentTemplate}
+        </form>
+      </div>
+    `;
   }
 
   private submitClick() {
@@ -334,6 +355,10 @@ export class FacetsMoreContent extends LitElement {
       .btn-submit {
         background-color: #194880;
         color: white;
+      }
+
+      .footer {
+        margin-top: 1rem;
       }
     `;
   }

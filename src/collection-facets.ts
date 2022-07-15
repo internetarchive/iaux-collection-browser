@@ -359,6 +359,11 @@ export class CollectionFacets extends LitElement {
     </button>`;
   }
 
+  private emitSortingFacets() {
+    // console.log('emitSortingFacets')
+    // TODO: applying sorting on current HTML of need to fetch using search call.
+  }
+
   async showMoreFacets(facetGroup: FacetGroup) {
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
@@ -369,6 +374,11 @@ export class CollectionFacets extends LitElement {
         style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
       >
         ${facetTitles[facetGroup.key]}
+        <img
+          src="https://archive.org/images/filter-count.png"
+          style="height: 1.5rem;vertical-align: baseline;"
+          alt=""
+        />
       </span>
     `;
 
@@ -396,7 +406,7 @@ export class CollectionFacets extends LitElement {
       message,
     });
 
-    this.modalManager.showModal({ config });
+    this.modalManager?.showModal({ config });
   }
 
   /**
@@ -707,6 +717,9 @@ export class CollectionFacets extends LitElement {
         background: white;
         border: 0;
         color: blue;
+        cursor: pointer;
+      }
+      .sorting-icon {
         cursor: pointer;
       }
     `;
