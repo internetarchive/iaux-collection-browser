@@ -19,15 +19,19 @@ export class TextOverlay extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      :host {
+        align-items: center;
+        display: flex;
+      }
+
       .overlay {
         border: 1px solid #2c2c2c;
         border-radius: 1px;
         position: absolute;
         right: 0;
         left: 0;
-        top: 35%;
-        margin: auto;
         width: auto;
+        height: auto;
         padding: 5px;
       }
 
