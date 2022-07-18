@@ -26,6 +26,7 @@ export class IconOverlay extends LitElement {
         transform: translate(-50%, -50%);
         -ms-transform: translate(-50%, -50%);
         width: 50%;
+        height: 50%;
         z-index: 2;
       }
     `;
