@@ -625,6 +625,7 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
         transform: translate(-50%, -50%);
         -ms-transform: translate(-50%, -50%);
         width: 50%;
+        height: 50%;
         z-index: 2;
       }
     `}};n([u({type:Boolean})],di.prototype,"loggedIn",void 0);n([u({type:Boolean})],di.prototype,"loginRequired",void 0);di=n([V("icon-overlay")],di);let _e=class extends z{constructor(){super(...arguments),this.isListTile=!1,this.isCompactTile=!1,this.loggedIn=!1,this.isWaveform=!1}render(){return m`
