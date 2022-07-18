@@ -782,15 +782,19 @@ var uo=Object.defineProperty,po=Object.defineProperties;var vo=Object.getOwnProp
       }
     `}};n([u({type:String})],Ke.prototype,"mediatype",void 0);n([u({type:Number})],Ke.prototype,"itemCount",void 0);n([u({type:Number})],Ke.prototype,"viewCount",void 0);n([u({type:Number})],Ke.prototype,"favCount",void 0);n([u({type:Number})],Ke.prototype,"commentCount",void 0);Ke=n([V("tile-stats")],Ke);let ci=class extends z{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1}render(){return m` <div class="overlay no-preview">${this.textDisplay}</div> `}get textDisplay(){return this.loginRequired&&!this.loggedIn?`Log in
 to view this item`:"Content may be inappropriate"}static get styles(){return b`
+      :host {
+        align-items: center;
+        display: flex;
+      }
+
       .overlay {
         border: 1px solid #2c2c2c;
         border-radius: 1px;
         position: absolute;
         right: 0;
         left: 0;
-        top: 35%;
-        margin: auto;
         width: auto;
+        height: auto;
         padding: 5px;
       }
 
