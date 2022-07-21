@@ -49,7 +49,7 @@ import {
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
-import { emptyPlaceholderType } from './empty-placeholder';
+import { placeholderType } from './empty-placeholder';
 import './empty-placeholder';
 
 @customElement('collection-browser')
@@ -149,7 +149,7 @@ export class CollectionBrowser
 
   @state() private mobileFacetsVisible = false;
 
-  @state() private emptyPlaceholder: emptyPlaceholderType = null;
+  @state() private placeholderType: placeholderType = null;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -249,33 +249,32 @@ export class CollectionBrowser
   }
 
   render() {
-    this.setEmptyPlaceholder();
+    this.setPlaceholderType();
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        ${this.emptyPlaceholder
+        ${this.placeholderType
           ? this.emptyPlaceholderTemplate
           : this.collectionBrowserTemplate}
       </div>
     `;
   }
 
-  private setEmptyPlaceholder() {
-    this.emptyPlaceholder = null;
-
+  private setPlaceholderType() {
+    this.placeholderType = null;
     if (!this.baseQuery) {
-      this.emptyPlaceholder = 'no-search-term';
+      this.placeholderType = 'empty-query';
     }
 
     if (!this.searchResultsLoading && this.totalResults === 0) {
-      this.emptyPlaceholder = 'no-search-result';
+      this.placeholderType = 'null-result';
     }
   }
 
   private get emptyPlaceholderTemplate() {
     return html`
       <empty-placeholder
-        .placeholderType=${this.emptyPlaceholder}
-        .mobileView=${this.mobileView}
+        .placeholderType=${this.placeholderType}
+        ?isMobileView=${this.mobileView}
       ></empty-placeholder>
     `;
   }

@@ -1,53 +1,54 @@
 import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { choose } from 'lit/directives/choose.js';
 
-import noSearchTermIcon from './assets/img/icons/no-search-term';
-import noSearchResultIcon from './assets/img/icons/no-search-result';
+import emptyQueryIcon from './assets/img/icons/empty-query';
+import nullResultIcon from './assets/img/icons/null-result';
 
-export type emptyPlaceholderType = null | 'no-search-term' | 'no-search-result';
-
+export type placeholderType = 'empty-query' | 'null-result' | null;
 @customElement('empty-placeholder')
 export class EmptyPlaceholder extends LitElement {
-  @property({ type: String }) placeholderType: emptyPlaceholderType = null;
+  @property({ type: String }) placeholderType: placeholderType = null;
 
-  @property({ type: Boolean }) mobileView?: false;
+  @property({ type: Boolean }) isMobileView?: false;
 
-  /**
-   * Error message to show when user have entered search term
-   */
-  private noSearchTermMessage =
-    'To begin searching, enter a search term in the box above and hit "Go".';
+  render() {
+    return this.placeholderType
+      ? html`${this.getPlaceholderTemplate}`
+      : nothing;
+  }
 
-  /**
-   * Error message to show when user search did not match any items
-   */
-  private noSearchResultMessage =
-    'Your search did not match any items in the Archive. Try different keywords or a more general search.';
-
-  private get emptyPlaceholderTemplate() {
+  private get getPlaceholderTemplate() {
     return html`
       <div
-        class="placeholder ${this.placeholderType} ${this.mobileView
+        class="placeholder ${this.placeholderType} ${this.isMobileView
           ? 'mobile'
           : 'desktop'}"
       >
-        <h2 class="title">
-          ${this.placeholderType === 'no-search-term'
-            ? this.noSearchTermMessage
-            : this.noSearchResultMessage}
-        </h2>
-        <div>
-          ${this.placeholderType === 'no-search-term'
-            ? noSearchTermIcon
-            : noSearchResultIcon}
-        </div>
+        ${choose(this.placeholderType, [
+          ['empty-query', () => this.emptyQueryTemplate],
+          ['null-result', () => this.nullResultTemplate],
+        ])}
       </div>
     `;
   }
 
-  render() {
+  private get emptyQueryTemplate() {
     return html`
-      ${this.placeholderType === null ? nothing : this.emptyPlaceholderTemplate}
+      <h2 class="title">
+        To begin searching, enter a search term in the box above and hit "Go".
+      </h2>
+      <div>${emptyQueryIcon}</div>
+    `;
+  }
+
+  private get nullResultTemplate() {
+    return html`
+      <h2 class="title">
+        Your search did not match any items in the Archive. Try different
+        keywords or a more general search.
+      </h2>
+      <div>${nullResultIcon}</div>
     `;
   }
 

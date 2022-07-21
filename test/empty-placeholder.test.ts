@@ -5,31 +5,29 @@ import { EmptyPlaceholder } from '../src/empty-placeholder';
 import '../src/empty-placeholder';
 
 describe('Empty Placeholder', () => {
-  it('should render with no-search-term placeholder', async () => {
+  it('should render with empty-query placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
       html`<empty-placeholder></empty-placeholder>`
     );
 
-    el.placeholderType = 'no-search-term';
+    el.placeholderType = 'empty-query';
     await el.updateComplete;
 
-    const notSearchTerm = el.shadowRoot?.querySelector('.no-search-term');
-    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
-
-    expect(notSearchTerm).to.exist;
-    expect(infiniteScroller).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.empty-query')).to.exist;
+    expect(el.shadowRoot?.querySelector('.null-result')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('infinite-scroller')).to.not.exist;
   });
 
-  it('should render with no-search-result placeholder', async () => {
+  it('should render with null-result placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
       html`<empty-placeholder></empty-placeholder>`
     );
 
-    el.placeholderType = 'no-search-result';
+    el.placeholderType = 'null-result';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.no-search-result')).to.exist;
-    expect(el.shadowRoot?.querySelector('.no-search-term')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.null-result')).to.exist;
+    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
     expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
   });
 
@@ -41,8 +39,8 @@ describe('Empty Placeholder', () => {
     el.placeholderType = null;
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.no-search-result')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.no-search.term')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.null-result')).to.not.exist;
     expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
   });
 });
