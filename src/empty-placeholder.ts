@@ -5,10 +5,10 @@ import { choose } from 'lit/directives/choose.js';
 import emptyQueryIcon from './assets/img/icons/empty-query';
 import nullResultIcon from './assets/img/icons/null-result';
 
-export type placeholderType = 'empty-query' | 'null-result' | null;
+export type PlaceholderType = 'empty-query' | 'null-result' | null;
 @customElement('empty-placeholder')
 export class EmptyPlaceholder extends LitElement {
-  @property({ type: String }) placeholderType: placeholderType = null;
+  @property({ type: String }) placeholderType: PlaceholderType = null;
 
   @property({ type: Boolean }) isMobileView?: false;
 

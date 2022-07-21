@@ -49,7 +49,7 @@ import {
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
-import { placeholderType } from './empty-placeholder';
+import { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
 
 @customElement('collection-browser')
@@ -149,7 +149,7 @@ export class CollectionBrowser
 
   @state() private mobileFacetsVisible = false;
 
-  @state() private placeholderType: placeholderType = null;
+  @state() private placeholderType: PlaceholderType = null;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
