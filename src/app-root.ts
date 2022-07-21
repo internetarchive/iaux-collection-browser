@@ -4,6 +4,7 @@ import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 
@@ -39,6 +40,8 @@ export class AppRoot extends LitElement {
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
+
+  @query('modal-manager') private modalManager!: ModalManagerInterface;
 
   private searchPressed(e: Event) {
     e.preventDefault();
@@ -167,6 +170,7 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
+          .modalManager=${this.modalManager}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
@@ -176,6 +180,7 @@ export class AppRoot extends LitElement {
         >
         </collection-browser>
       </div>
+      <modal-manager class="more-search-facets"></modal-manager>
     `;
   }
 
@@ -254,6 +259,25 @@ export class AppRoot extends LitElement {
 
   static styles = css`
     :host {
+      display: block;
+    }
+
+    /* add the following styles to ensure proper modal visibility */
+    body.modal-manager-open {
+      overflow: hidden;
+    }
+    modal-manager.more-search-facets {
+      display: none;
+      --modalWidth: 85rem;
+      --modalBorder: 2px solid #194880;
+      --modalTitleLineHeight: 4rem;
+      --modalTitleFontSize: 1.8rem;
+      --modalCornerRadius: 0;
+      --modalBottomPadding: 0;
+      --modalScrollOffset: 0;
+      --modalCornerRadius: 0.5rem;
+    }
+    modal-manager[mode='open'].more-search-facets {
       display: block;
     }
 

@@ -63,6 +63,8 @@ export class CollectionBrowser
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
+  @property({ type: Object }) modalManager?: any = undefined;
+
   @property({ type: String }) baseQuery?: string;
 
   @property({ type: String }) displayMode?: CollectionDisplayMode;
@@ -151,6 +153,7 @@ export class CollectionBrowser
 
   private languageCodeHandler = new LanguageCodeHandler();
 
+  // private modalManager = this.modalManager;
   /**
    * When we're animated scrolling to the page, we don't want to fetch
    * all of the pages as it scrolls so this lets us know if we're scrolling
@@ -398,6 +401,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .searchService=${this.searchService}
+        .modalManager=${this.modalManager}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -744,6 +748,7 @@ export class CollectionBrowser
   }
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
+    console.log(e);
     this.selectedFacets = e.detail;
   }
 

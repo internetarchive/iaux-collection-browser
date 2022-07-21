@@ -16,6 +16,7 @@ import {
 } from '@internetarchive/search-service';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SelectedFacets, defaultSelectedFacets } from '../models';
+// import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
@@ -244,10 +245,11 @@ export class FacetsMoreContent extends LitElement {
 
   private submitClick() {
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
-      detail: this.selectedFacets,
       bubbles: true,
       composed: true,
+      detail: this.selectedFacets,
     });
+    console.log(event);
     this.dispatchEvent(event);
     this.modalManager?.closeModal();
   }

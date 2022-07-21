@@ -18,7 +18,8 @@ import {
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import '@internetarchive/modal-manager';
+// import { ModalManagerInterface } from '@internetarchive/modal-manager';
+// import '@internetarchive/modal-manager';
 import { ModalConfig } from '@internetarchive/modal-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
@@ -84,6 +85,9 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
+  // @property({ type: Object }) modalManager?: ModalManagerInterface;
+  @property({ type: Object }) modalManager?: any;
+
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
@@ -99,12 +103,15 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
-  @query('modal-manager') private modalManager!: any;
+  // @query('modal-manager') private modalManager!: any;
+
+  // connectedCallback() {
+  //   super.connectedCallback();
+  // }
 
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
-        <modal-manager></modal-manager>
         ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
           ? html`
               <div class="facet-group">
@@ -129,6 +136,8 @@ export class CollectionFacets extends LitElement {
   private dispatchFacetsChangedEvent() {
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
+      bubbles: true,
+      composed: true,
     });
     this.dispatchEvent(event);
   }
@@ -359,11 +368,6 @@ export class CollectionFacets extends LitElement {
     </button>`;
   }
 
-  private emitSortingFacets() {
-    // console.log('emitSortingFacets')
-    // TODO: applying sorting on current HTML of need to fetch using search call.
-  }
-
   async showMoreFacets(facetGroup: FacetGroup) {
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
@@ -376,7 +380,7 @@ export class CollectionFacets extends LitElement {
         ${facetTitles[facetGroup.key]}
         <img
           src="https://archive.org/images/filter-count.png"
-          style="height: 1.5rem;vertical-align: baseline;"
+          style="height:1.5rem;vertical-align: baseline;cursor:pointer;"
           alt=""
         />
       </span>
@@ -576,7 +580,7 @@ export class CollectionFacets extends LitElement {
       body.modal-manager-open {
         overflow: hidden;
       }
-      modal-manager {
+      modal-manager.more-search-facets {
         display: none;
         --modalWidth: 85rem;
         --modalBorder: 2px solid #194880;
@@ -587,11 +591,8 @@ export class CollectionFacets extends LitElement {
         --modalScrollOffset: 0;
         --modalCornerRadius: 0.5rem;
       }
-      modal-manager[mode='open'] {
+      modal-manager[mode='open'].more-search-facets {
         display: block;
-      }
-      #content-container {
-        display: flex;
       }
 
       .collapser {
