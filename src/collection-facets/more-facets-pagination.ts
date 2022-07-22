@@ -53,7 +53,7 @@ export class MoreFacetsPagination extends LitElement {
   }
 
   private addPageNumber(page?: number) {
-    const pageElement = document.createElement('a');
+    const pageElement = document.createElement('button');
     pageElement.innerText = page as any;
     if (this.currentPage === page) {
       pageElement.classList.add('current');
@@ -104,13 +104,13 @@ export class MoreFacetsPagination extends LitElement {
   render() {
     return html`
       <div class="facets-pagination">
-        <a class="arrow-icon" @click=${this.previousPageClicked}
-          >${arrowLeftIcon}</a
-        >
+        <button class="arrow-icon" @click=${this.previousPageClicked}>
+          ${arrowLeftIcon}
+        </button>
         <div class="page-numbers"></div>
-        <a class="arrow-icon" @click=${this.nextPageClicked}
-          >${arrowRightIcon}</a
-        >
+        <button class="arrow-icon" @click=${this.nextPageClicked}>
+          ${arrowRightIcon}
+        </button>
       </div>
     `;
   }
@@ -124,27 +124,33 @@ export class MoreFacetsPagination extends LitElement {
         text-align: center;
         font-size: 3.2rem;
       }
+      .facets-pagination button {
+        border: none;
+        background: none;
+      }
       .facets-pagination .arrow-icon {
-        width: 1.5rem;
+        width: 2.5rem;
+        vertical-align: initial;
       }
 
-      .facets-pagination a,
+      .facets-pagination button,
       .facets-pagination i {
         background: none;
         border: 0;
         cursor: pointer;
         border-radius: 100%;
         margin: 1rem;
+        padding: 0.5rem;
         font-size: 1.4rem;
         vertical-align: middle;
         display: inline-block;
-        min-width: 1.5rem;
-        padding: 0.5rem;
+        min-width: 2.5rem;
       }
       .facets-pagination i {
         cursor: auto;
+        display: inline;
       }
-      .facets-pagination a.current {
+      .facets-pagination button.current {
         background: black;
         color: white;
       }

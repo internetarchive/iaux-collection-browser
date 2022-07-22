@@ -27,6 +27,7 @@ import {
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -112,6 +113,8 @@ export class CollectionBrowser
   @property({ type: Number }) mobileBreakpoint = 600;
 
   @property({ type: Boolean }) loggedIn = false;
+
+  @property({ type: Object }) modalManager?: ModalManagerInterface = undefined;
 
   /**
    * If item management UI active
@@ -407,6 +410,7 @@ export class CollectionBrowser
         .languageCodeHandler=${this.languageCodeHandler}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .fullQuery=${this.fullQuery}
+        .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}

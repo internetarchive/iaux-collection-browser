@@ -7,7 +7,7 @@ import {
   nothing,
   TemplateResult,
 } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import {
   Aggregation,
@@ -20,6 +20,7 @@ import '@internetarchive/collection-name-cache';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import '@internetarchive/modal-manager';
 import { ModalConfig } from '@internetarchive/modal-manager';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -82,6 +83,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) fullQuery?: string;
 
+  @property({ type: Object }) modalManager?: ModalManagerInterface;
+
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object })
@@ -99,12 +102,9 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
-  @query('modal-manager') private modalManager!: any;
-
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
-        <modal-manager></modal-manager>
         ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
           ? html`
               <div class="facet-group">
@@ -384,6 +384,14 @@ export class CollectionFacets extends LitElement {
 
     const message = html`
       <more-facets-content
+        @facetsChanged=${(e: CustomEvent) => {
+          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+            detail: e.detail,
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+        }}
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
         .fullQuery=${this.fullQuery}
@@ -405,7 +413,7 @@ export class CollectionFacets extends LitElement {
       headline,
       message,
     });
-
+    this.modalManager?.classList.add('more-search-facets');
     this.modalManager?.showModal({ config });
   }
 
