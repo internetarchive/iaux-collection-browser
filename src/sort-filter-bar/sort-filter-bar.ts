@@ -48,6 +48,8 @@ export class SortFilterBar
 
   @state() dateSortSelectorVisible = false;
 
+  @state() viewSortSelectorVisible = false;
+
   @state() desktopSelectorBarWidth = 0;
 
   @state() selectorBarContainerWidth = 0;
@@ -61,6 +63,7 @@ export class SortFilterBar
   private sortSelectorContainer!: HTMLDivElement;
 
   render() {
+    console.log(this.viewSortSelectorVisible);
     return html`
       <div id="container">
         <div id="sort-bar">
@@ -79,6 +82,7 @@ export class SortFilterBar
         ${this.dateSortSelectorVisible && !this.mobileSelectorVisible
           ? this.dateSortSelector
           : nothing}
+        ${this.viewSortSelectorVisible ? this.viewSortSelector : nothing}
         ${this.alphaBarTemplate}
 
         <div id="bottom-shadow"></div>
@@ -103,7 +107,10 @@ export class SortFilterBar
       this.alphaSelectorVisible = 'creator';
     }
 
-    if (changed.has('dateSortSelectorVisible')) {
+    if (
+      changed.has('dateSortSelectorVisible') ||
+      changed.has('viewSortSelectorVisible')
+    ) {
       this.setupEscapeListeners();
     }
 
@@ -117,22 +124,17 @@ export class SortFilterBar
   }
 
   private setupEscapeListeners() {
-    if (this.dateSortSelectorVisible) {
-      document.addEventListener(
-        'keydown',
-        this.boundDateSelectorEscapeListener
-      );
+    if (this.dateSortSelectorVisible || this.viewSortSelectorVisible) {
+      document.addEventListener('keydown', this.boundSelectorEscapeListener);
     } else {
-      document.removeEventListener(
-        'keydown',
-        this.boundDateSelectorEscapeListener
-      );
+      document.removeEventListener('keydown', this.boundSelectorEscapeListener);
     }
   }
 
-  private boundDateSelectorEscapeListener = (e: KeyboardEvent) => {
+  private boundSelectorEscapeListener = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
       this.dateSortSelectorVisible = false;
+      this.viewSortSelectorVisible = false;
     }
   };
 
@@ -235,13 +237,30 @@ export class SortFilterBar
             ? this.getSortDisplayOption(SortField.relevance)
             : nothing}
         </li>
-        <li>${this.getSortDisplayOption(SortField.views)}</li>
+        <li>
+          ${this.getSortDisplayOption(SortField.week, {
+            clickEvent: () => {
+              if (!this.viewOptionSelected)
+                this.setSelectedSort(SortField.week);
+              this.viewSortSelectorVisible = !this.viewSortSelectorVisible;
+              this.dateSortSelectorVisible = false;
+              this.alphaSelectorVisible = null;
+              this.selectedTitleFilter = null;
+              this.selectedCreatorFilter = null;
+              this.emitTitleLetterChangedEvent();
+              this.emitCreatorLetterChangedEvent();
+            },
+            displayName: html`${this.viewSortField}`,
+            isSelected: () => this.viewOptionSelected,
+          })}
+        </li>
         <li>
           ${this.getSortDisplayOption(SortField.title, {
             clickEvent: () => {
               this.alphaSelectorVisible = 'title';
               this.selectedCreatorFilter = null;
               this.dateSortSelectorVisible = false;
+              this.viewSortSelectorVisible = false;
               this.setSelectedSort(SortField.title);
               this.emitCreatorLetterChangedEvent();
             },
@@ -253,6 +272,7 @@ export class SortFilterBar
               if (!this.dateOptionSelected)
                 this.setSelectedSort(SortField.date);
               this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
+              this.viewSortSelectorVisible = false;
               this.alphaSelectorVisible = null;
               this.selectedTitleFilter = null;
               this.selectedCreatorFilter = null;
@@ -414,6 +434,26 @@ export class SortFilterBar
     `;
   }
 
+  private get viewSortSelector() {
+    return html`
+      <div
+        id="view-sort-selector-backdrop"
+        @keyup=${() => {
+          this.viewSortSelectorVisible = false;
+        }}
+        @click=${() => {
+          this.viewSortSelectorVisible = false;
+        }}
+      ></div>
+      <div id="view-sort-selector">
+        <ul>
+          <li>${this.getDateSortButton(SortField.alltime)}</li>
+          <li>${this.getDateSortButton(SortField.week)}</li>
+        </ul>
+      </div>
+    `;
+  }
+
   private getDateSortButton(sortField: SortField) {
     return html`
       <button
@@ -429,6 +469,7 @@ export class SortFilterBar
 
   private selectDateSort(sortField: SortField) {
     this.dateSortSelectorVisible = false;
+    this.viewSortSelectorVisible = false;
     this.setSelectedSort(sortField);
   }
 
@@ -463,6 +504,21 @@ export class SortFilterBar
   }
 
   /**
+   * There are two view sort options.
+   *
+   * This checks to see if the current sort is one of them.
+   *
+   * @readonly
+   * @private
+   * @type {boolean}
+   * @memberof SortFilterBar
+   */
+  private get viewOptionSelected(): boolean {
+    const viewSortFields: SortField[] = [SortField.alltime, SortField.week];
+    return viewSortFields.includes(this.selectedSort);
+  }
+
+  /**
    * The display name of the current date field
    *
    * @readonly
@@ -473,6 +529,22 @@ export class SortFilterBar
   private get dateSortField(): string {
     const defaultSort = SortFieldDisplayName[SortField.date];
     const name = this.dateOptionSelected
+      ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
+      : defaultSort;
+    return name;
+  }
+
+  /**
+   * The display name of the current view field
+   *
+   * @readonly
+   * @private
+   * @type {string}
+   * @memberof SortFilterBar
+   */
+  private get viewSortField(): string {
+    const defaultSort = SortFieldDisplayName[SortField.week];
+    const name = this.viewOptionSelected
       ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
       : defaultSort;
     return name;
@@ -607,7 +679,8 @@ export class SortFilterBar
       cursor: default;
     }
 
-    #date-sort-selector {
+    #date-sort-selector,
+    #view-sort-selector {
       position: absolute;
       left: 150px;
       top: 45px;
@@ -619,7 +692,8 @@ export class SortFilterBar
       border: 1px solid #404142;
     }
 
-    #date-sort-selector button {
+    #date-sort-selector button,
+    #view-sort-selector button {
       background: none;
       border-radius: 15px;
       color: #404142;
@@ -632,7 +706,8 @@ export class SortFilterBar
       padding: 0.5rem 1.2rem;
     }
 
-    #date-sort-selector button.selected {
+    #date-sort-selector button.selected,
+    #view-sort-selector button.selected {
       background-color: #404142;
       color: white;
     }
@@ -679,7 +754,8 @@ export class SortFilterBar
       display: none;
     }
 
-    #date-sort-selector-backdrop {
+    #date-sort-selector-backdrop,
+    #view-sort-selector-backdrop {
       position: fixed;
       top: 0;
       left: 0;
