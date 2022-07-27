@@ -1,5 +1,4 @@
-import { css, html, LitElement, nothing } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
@@ -30,11 +29,6 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
-  /**
-   * <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-          ${this.imageTemplate}
-        </div>
-   */
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
@@ -43,7 +37,8 @@ export class TileListCompact extends LitElement {
           .baseImageUrl=${this.baseImageUrl}
           .isCompactTile=${true}
           .isListTile=${true}
-          .viewSize=${this.classSize}>
+          .viewSize=${this.classSize}
+        >
         </image-block>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
         <div id="creator">
@@ -122,6 +117,8 @@ export class TileListCompact extends LitElement {
         border-top: 1px solid #ddd;
         align-items: center;
         line-height: 20px;
+        padding-top: 5px;
+        padding-bottom: 5px;
       }
 
       #list-line.mobile {
@@ -135,40 +132,6 @@ export class TileListCompact extends LitElement {
       #list-line:hover #title {
         text-decoration: underline;
       }
-
-      /* fields */
-      /* #thumb {
-        object-fit: cover;
-        display: block;
-        position: relative;
-      }
-
-      .mobile #thumb {
-        width: 30px;
-        height: 30px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        padding-left: 4px;
-      }
-
-      .desktop #thumb {
-        width: 45px;
-        height: 45px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-      }
-
-      #thumb.collection {
-        --border-radius: 8px;
-      }
-
-      .mobile #thumb.account {
-        --border-radius: 15px;
-      }
-
-      .desktop #thumb.account {
-        --border-radius: 22.5px;
-      } */
 
       #title {
         color: #4b64ff;

@@ -3,22 +3,9 @@ import { customElement, property } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
 import { TileModel } from '../models';
-/***
- * Isolate logic of restricted layer of the item-image
- * - view mode: grid, list, compact
- * - model.loginRequired (attrs)
- * - model.contentWarning (attrs)
- * - 
- * 
- * render: 
- * - display flex CSS parent container
- * - item-image
- * - overlay
- * 
- */
 
 import './overlay/icon-overlay';
-import './/overlay/text-overlay';
+import './overlay/text-overlay';
 
 @customElement('image-block')
 export class ImageBlock extends LitElement {
@@ -44,28 +31,27 @@ export class ImageBlock extends LitElement {
           .model=${this.model}
           .baseImageUrl=${this.baseImageUrl}
           .isListTile=${this.isListTile}
+          .isCompactTile=${this.isCompactTile}
           .loggedIn=${this.loggedIn}
+          style="--imgHeight: 100%; --imgWidth: 100%"
         >
         </item-image>
-        ${this.textOverlayTemplate}
-        ${this.iconOverlayTemplate}
+        ${this.textOverlayTemplate} ${this.iconOverlayTemplate}
       </div>
     `;
   }
 
   private get baseClass(): ClassInfo {
-    console.log('this.viewSize!!: ', this.viewSize)
     return {
-      view: true,
-      'thumb': this.isListTile && !this.isCompactTile,
-      'compact': this.isListTile && this.isCompactTile,
+      list: this.isListTile && !this.isCompactTile,
+      'list-compact': this.isListTile && this.isCompactTile,
       [this.viewSize]: true,
     };
   }
 
   private get iconOverlayTemplate() {
     if (!this.isListTile) return nothing;
-    
+
     if (!this.model?.loginRequired && !this.model?.contentWarning) {
       return nothing;
     }
@@ -85,7 +71,7 @@ export class ImageBlock extends LitElement {
 
     if (!this.model?.loginRequired && !this.model?.contentWarning) {
       return nothing;
-    } 
+    }
     return html`
       <text-overlay
         .loggedIn=${this.loggedIn}
@@ -97,86 +83,42 @@ export class ImageBlock extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      .view {
+      div {
         display: flex;
         justify-content: center;
-        flex: 1;
         position: relative;
       }
 
       .grid {
         height: 16rem;
+        flex: 1;
       }
 
-      // list tile
-      .view .thumb {
+      /** tile-list view */
+      .list.desktop {
         width: 100px;
         height: 100px;
       }
 
-      .thumb img {
-        object-fit: cover;
-        display: block;
-      }
-
-      .mobile .thumb {
+      .list.mobile {
         width: 90px;
         height: 90px;
       }
 
-      .desktop .thumb {
-        width: 100px;
-        height: 100px;
-      }
-
-      .thumb.collection {
-        --border-radius: 8px;
-      }
-
-      .mobile .thumb.account {
-        --border-radius: 45px;
-      }
-
-      .desktop .thumb.account {
-        --border-radius: 50px;
-      }
-
-
-      // compact tile
-      .compact {
-        object-fit: cover;
+      /** tile-list-compact view */
+      .list-compact {
         display: block;
-        position: relative;
       }
 
-      .mobile .compact {
-        width: 30px;
-        height: 30px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        padding-left: 4px;
-      }
-
-      .desktop .compact {
+      .list-compact.desktop {
         width: 45px;
         height: 45px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        /* padding-left: 6px; */
       }
 
-      .compact.collection {
-        --border-radius: 8px;
+      .list-compact.mobile {
+        width: 30px;
+        height: 30px;
       }
-
-      .mobile .compact.account {
-        --border-radius: 15px;
-      }
-
-      .desktop .compact.account {
-        --border-radius: 22.5px;
-      }
-
     `;
   }
 }

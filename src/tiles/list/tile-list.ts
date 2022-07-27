@@ -92,15 +92,7 @@ export class TileList extends LitElement {
   private get mobileTemplate() {
     return html`
       <div id="list-line-top">
-        <div id="list-line-left">
-          <image-block 
-            .model=${this.model}
-            .baseImageUrl=${this.baseImageUrl}
-            .isCompactTile=${false}
-            .isListTile=${true}
-            .viewSize=${this.classSize}>
-          </image-block>
-        </div>
+        <div id="list-line-left">${this.imageBlockTemplate}</div>
         <div id="list-line-right">
           <div id="title-line">
             <div id="title">${this.titleTemplate}</div>
@@ -112,22 +104,9 @@ export class TileList extends LitElement {
     `;
   }
 
-  /**
-   * 
-    <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-      ${this.imgTemplate}
-    </div>
-   */
   private get desktopTemplate() {
     return html`
-      <div id="list-line-left">
-        <image-block
-          .model=${this.model}
-          .baseImageUrl=${this.baseImageUrl} 
-          .isCompactTile=${false}
-          .isListTile=${true}>>
-        </image-block>
-      </div>
+      <div id="list-line-left">${this.imageBlockTemplate}</div>
       <div id="list-line-right">
         <div id="title-line">
           <div id="title">${this.titleTemplate}</div>
@@ -135,6 +114,19 @@ export class TileList extends LitElement {
         </div>
         ${this.detailsTemplate}
       </div>
+    `;
+  }
+
+  private get imageBlockTemplate() {
+    return html`
+      <image-block
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .isCompactTile=${false}
+        .isListTile=${true}
+        .viewSize=${this.classSize}
+      >
+      </image-block>
     `;
   }
 
@@ -409,8 +401,6 @@ export class TileList extends LitElement {
       }
 
       /* fields */
-      
-
       #icon-right {
         width: 20px;
         padding-top: 5px;

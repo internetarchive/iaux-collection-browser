@@ -1,4 +1,4 @@
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
@@ -8,8 +8,6 @@ import {
   baseItemImageStyles,
   waveformGradientStyles,
 } from '../styles/item-image-styles';
-
-import './overlay/icon-overlay';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -39,26 +37,6 @@ export class ItemImage extends LitElement {
       </div>
     `;
   }
-
-  /**
-   * Templates
-   */
-  // private get iconOverlayTemplate() {
-  //   if (!this.isListTile) return nothing;
-
-  //   if (!this.model?.loginRequired && !this.model?.contentWarning) {
-  //     return nothing;
-  //   }
-  //   return html`
-  //     <icon-overlay
-  //       .loggedIn=${this.loggedIn}
-  //       .loginRequired=${this.model?.loginRequired}
-  //       .isListTile=${this.isListTile}
-  //       .isCompactTile=${this.isCompactTile}
-  //     >
-  //     </icon-overlay>
-  //   `;
-  // }
 
   /**
    * Helpers
