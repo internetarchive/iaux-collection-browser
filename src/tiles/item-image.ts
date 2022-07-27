@@ -36,7 +36,6 @@ export class ItemImage extends LitElement {
           alt=""
           @load=${this.onLoad}
         />
-        ${this.iconOverlayTemplate}
       </div>
     `;
   }
@@ -44,20 +43,22 @@ export class ItemImage extends LitElement {
   /**
    * Templates
    */
-  private get iconOverlayTemplate() {
-    if (!this.isListTile) return nothing;
+  // private get iconOverlayTemplate() {
+  //   if (!this.isListTile) return nothing;
 
-    if (!this.model?.loginRequired && !this.model?.contentWarning) {
-      return nothing;
-    }
-    return html`
-      <icon-overlay
-        .loggedIn=${this.loggedIn}
-        .loginRequired=${this.model?.loginRequired}
-      >
-      </icon-overlay>
-    `;
-  }
+  //   if (!this.model?.loginRequired && !this.model?.contentWarning) {
+  //     return nothing;
+  //   }
+  //   return html`
+  //     <icon-overlay
+  //       .loggedIn=${this.loggedIn}
+  //       .loginRequired=${this.model?.loginRequired}
+  //       .isListTile=${this.isListTile}
+  //       .isCompactTile=${this.isCompactTile}
+  //     >
+  //     </icon-overlay>
+  //   `;
+  // }
 
   /**
    * Helpers

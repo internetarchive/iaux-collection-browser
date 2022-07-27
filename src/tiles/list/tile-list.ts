@@ -21,7 +21,7 @@ import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 
-import '../item-image';
+import '../image-block';
 import '../mediatype-icon';
 
 @customElement('tile-list')
@@ -93,9 +93,13 @@ export class TileList extends LitElement {
     return html`
       <div id="list-line-top">
         <div id="list-line-left">
-          <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-            ${this.imgTemplate}
-          </div>
+          <image-block 
+            .model=${this.model}
+            .baseImageUrl=${this.baseImageUrl}
+            .isCompactTile=${false}
+            .isListTile=${true}
+            .viewSize=${this.classSize}>
+          </image-block>
         </div>
         <div id="list-line-right">
           <div id="title-line">
@@ -108,12 +112,21 @@ export class TileList extends LitElement {
     `;
   }
 
+  /**
+   * 
+    <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
+      ${this.imgTemplate}
+    </div>
+   */
   private get desktopTemplate() {
     return html`
       <div id="list-line-left">
-        <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-          ${this.imgTemplate}
-        </div>
+        <image-block
+          .model=${this.model}
+          .baseImageUrl=${this.baseImageUrl} 
+          .isCompactTile=${false}
+          .isListTile=${true}>>
+        </image-block>
       </div>
       <div id="list-line-right">
         <div id="title-line">
@@ -140,21 +153,6 @@ export class TileList extends LitElement {
   }
 
   // Data templates
-  private get imgTemplate() {
-    if (!this.model?.identifier) {
-      return nothing;
-    }
-    return html`
-      <item-image
-        .model=${this.model}
-        .baseImageUrl=${this.baseImageUrl}
-        .isListTile=${true}
-        .loggedIn=${this.loggedIn}
-      >
-      </item-image>
-    `;
-  }
-
   private get iconRightTemplate() {
     return html`
       <div id="icon-right">
@@ -411,33 +409,7 @@ export class TileList extends LitElement {
       }
 
       /* fields */
-
-      #thumb img {
-        object-fit: cover;
-        display: block;
-      }
-
-      .mobile #thumb {
-        width: 90px;
-        height: 90px;
-      }
-
-      .desktop #thumb {
-        width: 100px;
-        height: 100px;
-      }
-
-      #thumb.collection {
-        --border-radius: 8px;
-      }
-
-      .mobile #thumb.account {
-        --border-radius: 45px;
-      }
-
-      .desktop #thumb.account {
-        --border-radius: 50px;
-      }
+      
 
       #icon-right {
         width: 20px;

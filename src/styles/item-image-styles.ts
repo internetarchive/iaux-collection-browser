@@ -17,6 +17,7 @@ export const baseItemImageStyles = css`
     box-sizing: border-box;
     display: flex;
     position: relative;
+    max-width: 100px;
   }
 
   .contain {
@@ -31,20 +32,6 @@ export const baseItemImageStyles = css`
 
   .blur {
     filter: blur(15px);
-    width: 100%;
-    /* margin: -5px -10px -10px -5px; */
-
-    -webkit-filter: blur(15px);
-    -moz-filter: blur(15px);
-    -o-filter: blur(15px);
-    -ms-filter: blur(15px);
-    /* position: absolute; */
-    clip: rect(5px, 0px, 0px, 5px);
-  }
-
-  .list-box .blur {
-    height: 100%;
-    overflow: hidden;
   }
 `;
 

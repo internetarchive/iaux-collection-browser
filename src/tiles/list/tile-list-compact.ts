@@ -9,7 +9,7 @@ import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { accountLabel } from './account-label';
 
-import '../item-image';
+import '../image-block';
 import '../mediatype-icon';
 
 @customElement('tile-list-compact')
@@ -30,12 +30,21 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  /**
+   * <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
+          ${this.imageTemplate}
+        </div>
+   */
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
-        <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-          ${this.imageTemplate}
-        </div>
+        <image-block
+          .model=${this.model}
+          .baseImageUrl=${this.baseImageUrl}
+          .isCompactTile=${true}
+          .isListTile=${true}
+          .viewSize=${this.classSize}>
+        </image-block>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
         <div id="creator">
           ${this.model?.mediatype === 'account'
@@ -54,22 +63,6 @@ export class TileListCompact extends LitElement {
           ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
         </div>
       </div>
-    `;
-  }
-
-  private get imageTemplate() {
-    if (!this.model?.identifier) {
-      return nothing;
-    }
-    return html`
-      <item-image
-        .model=${this.model}
-        .baseImageUrl=${this.baseImageUrl}
-        .isListTile=${true}
-        .isCompactTile=${true}
-        .loggedIn=${this.loggedIn}
-      >
-      </item-image>
     `;
   }
 
@@ -144,9 +137,10 @@ export class TileListCompact extends LitElement {
       }
 
       /* fields */
-      #thumb {
+      /* #thumb {
         object-fit: cover;
         display: block;
+        position: relative;
       }
 
       .mobile #thumb {
@@ -162,7 +156,6 @@ export class TileListCompact extends LitElement {
         height: 45px;
         padding-top: 5px;
         padding-bottom: 5px;
-        padding-left: 6px;
       }
 
       #thumb.collection {
@@ -175,7 +168,7 @@ export class TileListCompact extends LitElement {
 
       .desktop #thumb.account {
         --border-radius: 22.5px;
-      }
+      } */
 
       #title {
         color: #4b64ff;
