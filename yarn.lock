@@ -119,15 +119,15 @@
     "@internetarchive/search-service" "^0.3.4"
     lit "^2.0.2"
 
-"@internetarchive/feature-feedback@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.npmjs.org/@internetarchive/feature-feedback/-/feature-feedback-0.1.2.tgz"
-  integrity sha512-dEi5n+fCEsZz/oxON2dFGwZkWZbLtRDTtUWTL+Zage6f32HLWPZMpMp6dxLPse3R1vYIrwwnpLt6e9UvNAlwZw==
+"@internetarchive/feature-feedback@^0.1.3":
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/feature-feedback/-/feature-feedback-0.1.3.tgz#5ec7099d0945a1f83b79e1acbf816b7831a84311"
+  integrity sha512-8l+sMWLE2Ssw7KLhieamtOyXn0isDHW7l3iLC7Xa+bxvd+JSnHW0JHobMOVaXRqj8imlNcf7yatmGydGXXsV0w==
   dependencies:
     "@internetarchive/recaptcha-manager" "^0.1.1"
     "@internetarchive/result-type" "^0.0.1"
     "@internetarchive/shared-resize-observer" "^0.2.0"
-    lit "^2.0.2"
+    lit "^2.2.8"
 
 "@internetarchive/field-parsers@^0.1.3":
   version "0.1.3"
@@ -3213,9 +3213,9 @@ lit@^2.0.0, lit@^2.0.2, lit@^2.2.2:
     lit-element "^3.2.0"
     lit-html "^2.2.0"
 
-lit@^2.2.7:
+lit@^2.2.7, lit@^2.2.8:
   version "2.2.8"
-  resolved "https://registry.npmjs.org/lit/-/lit-2.2.8.tgz"
+  resolved "https://registry.yarnpkg.com/lit/-/lit-2.2.8.tgz#26bdf560042aa3ec9b788f5d48119f7138b2dcc1"
   integrity sha512-QjeNbi/H9LVIHR+u0OqsL+hs62a16m02JlJHYN48HcBuXyiPYR8JvzsTp5dYYS81l+b9Emp3UaGo82EheV0pog==
   dependencies:
     "@lit/reactive-element" "^1.3.0"
