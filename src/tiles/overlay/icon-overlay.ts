@@ -17,7 +17,6 @@ export class IconOverlay extends LitElement {
     return html`${restrictedIcon}`;
   }
 
-
   static get styles(): CSSResultGroup {
     return css`
       :host {
