@@ -1,26 +1,30 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import arrowLeftIcon from '../assets/img/icons/arrow-left';
 import arrowRightIcon from '../assets/img/icons/arrow-right';
 
 @customElement('more-facets-pagination')
 export class MoreFacetsPagination extends LitElement {
-  @property({ type: Number }) paginationSize?: any | undefined;
+  /**
+   * Total number of pages
+   */
+  @property({ type: Number }) size?: any | undefined;
 
-  @property({ type: Number }) step?: any | undefined;
+  /**
+   * Number of pages can be moved in back/forward
+   */
+  @property({ type: Number }) step = 2;
 
-  @query('.page-numbers') private pageNumberElement!: HTMLElement;
+  @state() pages?: number[] = [];
 
   @state() currentPage = 1;
 
   firstUpdated() {
-    this.buildPagination();
+    this.observePageCount();
   }
 
-  private buildPagination() {
-    this.pageNumberElement.innerHTML = '';
-
-    // Calculate the startPage and endPage.
+  observePageCount() {
+    this.pages = [];
     let startPage = this.currentPage - this.step;
     let endPage = this.currentPage + this.step;
 
@@ -29,53 +33,46 @@ export class MoreFacetsPagination extends LitElement {
       startPage = 1;
     }
 
-    if (endPage >= this.paginationSize) {
-      startPage = Math.max(startPage - (endPage - this.paginationSize), 1);
-      endPage = this.paginationSize;
+    if (endPage >= this.size) {
+      startPage = Math.max(startPage - (endPage - this.size), 1);
+      endPage = this.size;
     }
 
-    // create first number node
+    // create first page node
+    this.createFirstNode(startPage);
+
+    // create middle pages node
+    this.createMiddelNode(startPage, endPage);
+
+    // create last page node
+    this.createLastNode(endPage);
+  }
+
+  private createFirstNode(startPage: number) {
     if (startPage > 1) {
-      this.addPageNumber(1);
-      this.addEllipsis();
+      this.pages?.push(1);
+      this.pages?.push(0); // let's asssume 0 is for ellipsis template
     }
+  }
 
-    // create middle numbers node
+  private createMiddelNode(startPage: number, endPage: number) {
     for (let page = startPage; page <= endPage; page += 1) {
-      this.addPageNumber(page);
-    }
-
-    // create last number node
-    if (endPage < this.paginationSize) {
-      this.addEllipsis();
-      this.addPageNumber(this.paginationSize);
+      this.pages?.push(page);
     }
   }
 
-  private addPageNumber(page?: number) {
-    const pageElement = document.createElement('button');
-    pageElement.innerText = page as any;
-    if (this.currentPage === page) {
-      pageElement.classList.add('current');
+  private createLastNode(endPage: number) {
+    if (endPage < this.size) {
+      this.pages?.push(0); // let's asssume 0 is for ellipsis template
+      this.pages?.push(this.size);
     }
-
-    // TODO: google analytics???
-    pageElement.addEventListener('click', () => {
-      this.currentPage = page as any;
-      this.buildPagination();
-      this.emitPageNumberClick();
-    });
-
-    this.pageNumberElement.appendChild(pageElement);
   }
 
-  private addEllipsis() {
-    const ellipsisElement = document.createElement('i');
-    ellipsisElement.innerText = '...';
-    this.pageNumberElement.appendChild(ellipsisElement);
+  private get getEllipsisTemplate() {
+    return html`<i>...</i>`;
   }
 
-  private emitPageNumberClick() {
+  private emitPageClick() {
     this.dispatchEvent(
       new CustomEvent('pageNumberClicked', {
         detail: { page: this.currentPage },
@@ -83,32 +80,62 @@ export class MoreFacetsPagination extends LitElement {
     );
   }
 
-  private previousPageClicked() {
+  private onRewind() {
     this.currentPage -= 1;
     if (this.currentPage < 1) {
       this.currentPage = 1;
     }
-    this.buildPagination();
-    this.emitPageNumberClick();
+    this.observePageCount();
+    this.emitPageClick();
   }
 
-  private nextPageClicked() {
+  private onForward() {
     this.currentPage += 1;
-    if (this.currentPage > this.paginationSize) {
-      this.currentPage = this.paginationSize;
+    if (this.currentPage > this.size) {
+      this.currentPage = this.size;
     }
-    this.buildPagination();
-    this.emitPageNumberClick();
+    this.observePageCount();
+    this.emitPageClick();
+  }
+
+  private onChange(page: number) {
+    this.currentPage = page;
+    this.observePageCount();
+    this.emitPageClick();
+  }
+
+  private getPageTemplate(page: number) {
+    return html`
+      <button
+        @click="${() => this.onChange(page)}"
+        class="${this.currentPage === page ? 'current' : nothing}"
+      >
+        ${page}
+      </button>
+    `;
+  }
+
+  private get getPagesTemplate() {
+    return html`
+      ${this.pages?.map(
+        page =>
+          html`${page !== 0
+            ? this.getPageTemplate(page)
+            : this.getEllipsisTemplate}`
+      )}
+    `;
   }
 
   render() {
     return html`
       <div class="facets-pagination">
-        <button class="arrow-icon" @click=${this.previousPageClicked}>
+        <button class="arrow-icon" @click=${this.onRewind}>
+          <span class="sr-only">Rewinnd pagination:</span>
           ${arrowLeftIcon}
         </button>
-        <div class="page-numbers"></div>
-        <button class="arrow-icon" @click=${this.nextPageClicked}>
+        <div class="page-numbers">${this.getPagesTemplate}</div>
+        <button class="arrow-icon" @click=${this.onForward}>
+          <span class="sr-only">Forward pagination:</span>
           ${arrowRightIcon}
         </button>
       </div>
@@ -119,7 +146,7 @@ export class MoreFacetsPagination extends LitElement {
     return css`
       .facets-pagination {
         user-select: none;
-        margin-top: 1rem;
+        margin-top: 10px;
         background-color: rgb(239, 239, 239);
         text-align: center;
         font-size: 3.2rem;
@@ -139,8 +166,8 @@ export class MoreFacetsPagination extends LitElement {
         border: 0;
         cursor: pointer;
         border-radius: 100%;
-        margin: 1rem;
-        padding: 0.5rem;
+        margin: 10px;
+        padding: 5px;
         font-size: 1.4rem;
         vertical-align: middle;
         display: inline-block;
@@ -157,6 +184,17 @@ export class MoreFacetsPagination extends LitElement {
 
       .page-numbers {
         display: inline-block;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
       }
     `;
   }

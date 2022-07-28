@@ -346,10 +346,9 @@ export class CollectionFacets extends LitElement {
    */
   private getMoreLink(facetGroup: FacetGroup): TemplateResult | typeof nothing {
     // don't render More... link if you facets is < 5
-    if (Object.keys(facetGroup.buckets).length < 5) return html``;
+    if (Object.keys(facetGroup.buckets).length < 5) return nothing;
 
     return html`<button
-      href="javascript:void(0)"
       class="more-link"
       @click=${() => {
         this.showMoreFacets(facetGroup);
@@ -357,11 +356,6 @@ export class CollectionFacets extends LitElement {
     >
       More...
     </button>`;
-  }
-
-  private emitSortingFacets() {
-    // console.log('emitSortingFacets')
-    // TODO: applying sorting on current HTML of need to fetch using search call.
   }
 
   async showMoreFacets(facetGroup: FacetGroup) {
@@ -578,28 +572,6 @@ export class CollectionFacets extends LitElement {
     return css`
       #container.loading {
         opacity: 0.5;
-      }
-
-      /* add the following styles to ensure proper modal visibility */
-      body.modal-manager-open {
-        overflow: hidden;
-      }
-      modal-manager {
-        display: none;
-        --modalWidth: 85rem;
-        --modalBorder: 2px solid #194880;
-        --modalTitleLineHeight: 4rem;
-        --modalTitleFontSize: 1.8rem;
-        --modalCornerRadius: 0;
-        --modalBottomPadding: 0;
-        --modalScrollOffset: 0;
-        --modalCornerRadius: 0.5rem;
-      }
-      modal-manager[mode='open'] {
-        display: block;
-      }
-      #content-container {
-        display: flex;
       }
 
       .collapser {

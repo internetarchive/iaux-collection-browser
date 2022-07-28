@@ -266,14 +266,14 @@ export class AppRoot extends LitElement {
     body.modal-manager-open {
       overflow: hidden;
     }
-    modal-manager {
+    modal-manager[mode='closed'] {
       display: none;
     }
     modal-manager[mode='open'] {
       display: block;
     }
 
-    .more-search-facets {
+    modal-manager.more-search-facets {
       --modalWidth: 85rem;
       --modalBorder: 2px solid #194880;
       --modalTitleLineHeight: 4rem;
@@ -290,7 +290,7 @@ export class AppRoot extends LitElement {
     }
 
     collection-browser {
-      margin-top: 30rem;
+      margin-top: 20rem;
     }
 
     #base-query-field {

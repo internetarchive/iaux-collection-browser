@@ -202,8 +202,7 @@ export class FacetsMoreContent extends LitElement {
   private get facetsPaginationTemplate() {
     return html`
       <more-facets-pagination
-        .paginationSize=${this.paginationSize}
-        .step=${Number(2)}
+        .size=${this.paginationSize}
         @pageNumberClicked=${this.pageNumberClicked}
       ></more-facets-pagination>
     `;
@@ -214,18 +213,16 @@ export class FacetsMoreContent extends LitElement {
       <div class="facets-content">${this.renderMoreFacets}</div>
       ${this.paginationSize > 1 ? this.facetsPaginationTemplate : nothing}
       <div class="footer">
-        <input
-          class="btn btn-cancel"
-          type="button"
-          value="Cancel"
-          @click=${this.cancelClick}
-        />
-        <input
+        <button class="btn btn-cancel" type="button" @click=${this.cancelClick}>
+          Cancel
+        </button>
+        <button
           class="btn btn-submit"
           type="button"
-          value="Apply filters"
-          @click=${this.submitClick}
-        />
+          @click=${this.applySearchFacetsClicked}
+        >
+          Apply filters
+        </button>
       </div>
     `;
   }
@@ -242,7 +239,7 @@ export class FacetsMoreContent extends LitElement {
     `;
   }
 
-  private submitClick() {
+  private applySearchFacetsClicked() {
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
       bubbles: true,
@@ -261,7 +258,7 @@ export class FacetsMoreContent extends LitElement {
       .modal-content {
         background-color: #fefefe;
         margin: auto;
-        padding: 0rem;
+        padding: 0;
         border: 1px solid #888;
         width: 80%;
       }
@@ -271,7 +268,7 @@ export class FacetsMoreContent extends LitElement {
         -moz-column-width: 25rem;
         column-width: 25rem;
         font-size: 1.2rem;
-        padding: 0 1rem;
+        padding: 0 10px;
       }
 
       .farow {
@@ -290,7 +287,7 @@ export class FacetsMoreContent extends LitElement {
         padding: 0;
       }
       ul.facet-list li {
-        margin-bottom: 0.2rem;
+        margin-bottom: 2px;
       }
 
       .facet-row {
@@ -303,7 +300,7 @@ export class FacetsMoreContent extends LitElement {
         font-size: 1.2rem;
       }
       .facet-row input {
-        margin: 0.1rem 0.5rem 0.1rem 0;
+        margin: 1px 5px 1px 0;
       }
       .facet-info-display {
         display: flex;
@@ -314,7 +311,7 @@ export class FacetsMoreContent extends LitElement {
         flex: 1;
       }
       .facet-count {
-        margin-left: 0.5rem;
+        margin-left: 5px;
       }
 
       .page-number {
@@ -324,7 +321,7 @@ export class FacetsMoreContent extends LitElement {
         border-radius: 100%;
         width: 25px;
         height: 25px;
-        margin: 1rem;
+        margin: 10px;
         font-size: 1.4rem;
         vertical-align: middle;
       }
@@ -342,7 +339,7 @@ export class FacetsMoreContent extends LitElement {
 
       .btn {
         border: none;
-        padding: 1rem;
+        padding: 10px;
         margin-bottom: 10px;
         width: auto;
         border-radius: 0.4rem;
@@ -358,7 +355,7 @@ export class FacetsMoreContent extends LitElement {
       }
 
       .footer {
-        margin-top: 1rem;
+        margin-top: 10px;
       }
     `;
   }
