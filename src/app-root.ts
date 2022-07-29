@@ -4,7 +4,7 @@ import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
-import type { ModalManagerInterface } from '@internetarchive/modal-manager';
+import { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 
@@ -266,13 +266,12 @@ export class AppRoot extends LitElement {
     body.modal-manager-open {
       overflow: hidden;
     }
-    modal-manager[mode='closed'] {
+    modal-manager {
       display: none;
     }
     modal-manager[mode='open'] {
       display: block;
     }
-
     modal-manager.more-search-facets {
       --modalWidth: 85rem;
       --modalBorder: 2px solid #194880;

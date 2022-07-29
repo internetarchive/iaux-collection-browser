@@ -14,13 +14,12 @@ import {
   Bucket,
   SearchServiceInterface,
 } from '@internetarchive/search-service';
-// import '@internetarchive/histogram-date-range';
+import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import '@internetarchive/modal-manager';
 import { ModalConfig } from '@internetarchive/modal-manager';
-import type { ModalManagerInterface } from '@internetarchive/modal-manager';
+import { ModalManagerInterface } from '@internetarchive/modal-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -63,6 +62,8 @@ const facetTitles: Record<FacetOption, string> = {
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
+  @property({ type: Object }) searchService?: SearchServiceInterface;
+
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
@@ -84,8 +85,6 @@ export class CollectionFacets extends LitElement {
   @property({ type: String }) fullQuery?: string;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface;
-
-  @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
@@ -335,7 +334,8 @@ export class CollectionFacets extends LitElement {
           ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
         </h1>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
-          ${this.getFacetTemplate(facetGroup)} ${this.getMoreLink(facetGroup)}
+          ${this.getFacetTemplate(facetGroup)}
+          ${this.searchMoreFacetsLink(facetGroup)}
         </div>
       </div>
     `;
@@ -344,7 +344,9 @@ export class CollectionFacets extends LitElement {
   /**
    * Generate the More... link button just below the facets group
    */
-  private getMoreLink(facetGroup: FacetGroup): TemplateResult | typeof nothing {
+  private searchMoreFacetsLink(
+    facetGroup: FacetGroup
+  ): TemplateResult | typeof nothing {
     // don't render More... link if you facets is < 5
     if (Object.keys(facetGroup.buckets).length < 5) return nothing;
 
@@ -693,7 +695,7 @@ export class CollectionFacets extends LitElement {
       .more-link {
         font-size: 1.2rem;
         text-decoration: none;
-        padding: 0px 0.4rem;
+        padding: 0px 4px;
         background: white;
         border: 0;
         color: blue;

@@ -51,7 +51,7 @@ export class FacetsMoreContent extends LitElement {
    */
   @state() facetsLoading = true;
 
-  @state() paginationSize = 1;
+  @state() paginationSize = 0;
 
   private facetsPerPage = 60; // Q. how many items we want to have on popup view
 
@@ -120,17 +120,19 @@ export class FacetsMoreContent extends LitElement {
     }
   }
 
-  private get renderMoreFacets() {
+  private get getMoreFacetsTemplate() {
     this.facetsLoading = false;
-    const min = (this.pageNumber - 1) * this.facetsPerPage;
-    const max = min + this.facetsPerPage - 1;
+
+    // render only items which will be visible as per this.facetsPerPage
+    const currentPageContent = this.castedBuckets?.slice(
+      (this.pageNumber - 1) * this.facetsPerPage,
+      this.pageNumber * this.facetsPerPage
+    );
 
     return html`<ul class="facet-list">
-      ${this.castedBuckets?.map((option, n) => {
-        const optionWrapperClass =
-          n >= min && n <= max ? 'farow' : 'farow hidden';
+      ${currentPageContent?.map(facet => {
+        let displayText = facet.key;
 
-        let displayText = option.key;
         if (this.facetKey === 'language') {
           displayText =
             this.languageCodeHandler?.getLanguageNameFromCodeString(
@@ -138,30 +140,28 @@ export class FacetsMoreContent extends LitElement {
             ) ?? displayText;
         }
 
-        return html` <li class=${optionWrapperClass}>
-          <div class="facet-row">
-            <label class="facet-info-display" title=${option.key}>
-              <input
-                type="checkbox"
-                class="selected-facets"
-                .value="${option.key}"
-                data-facet="${this.facetKey}"
-                @click=${(e: Event) => {
-                  this.facetClicked(e);
-                }}
-              />
-              <div class="facet-title">
-                ${this.facetKey !== 'collection'
-                  ? html`${displayText}`
-                  : html`<async-collection-name
-                      .collectionNameCache=${this.collectionNameCache}
-                      .identifier=${displayText}
-                      placeholder="-"
-                    ></async-collection-name>`}
-              </div>
-              <div class="facet-count">${option.doc_count}</div>
-            </label>
-          </div>
+        return html` <li class="facet-row">
+          <label class="facet-info-display" title=${facet.key}>
+            <input
+              type="checkbox"
+              class="selected-facets"
+              .value="${facet.key}"
+              data-facet="${this.facetKey}"
+              @click=${(e: Event) => {
+                this.facetClicked(e);
+              }}
+            />
+            <div class="facet-title">
+              ${this.facetKey !== 'collection'
+                ? html`${displayText}`
+                : html`<async-collection-name
+                    .collectionNameCache=${this.collectionNameCache}
+                    .identifier=${displayText}
+                    placeholder="-"
+                  ></async-collection-name>`}
+            </div>
+            <div class="facet-count">${facet.doc_count}</div>
+          </label>
         </li>`;
       })}
     </ul>`;
@@ -200,36 +200,43 @@ export class FacetsMoreContent extends LitElement {
   }
 
   private get facetsPaginationTemplate() {
-    return html`
-      <more-facets-pagination
-        .size=${this.paginationSize}
-        @pageNumberClicked=${this.pageNumberClicked}
-      ></more-facets-pagination>
-    `;
+    // render pagination if more then 1 page
+    return this.paginationSize > 1
+      ? html`<more-facets-pagination
+          .size=${this.paginationSize}
+          @pageNumberClicked=${this.pageNumberClicked}
+        ></more-facets-pagination>`
+      : nothing;
   }
 
   private get facetsContentTemplate() {
     return html`
-      <div class="facets-content">${this.renderMoreFacets}</div>
-      ${this.paginationSize > 1 ? this.facetsPaginationTemplate : nothing}
-      <div class="footer">
-        <button class="btn btn-cancel" type="button" @click=${this.cancelClick}>
-          Cancel
-        </button>
-        <button
-          class="btn btn-submit"
-          type="button"
-          @click=${this.applySearchFacetsClicked}
-        >
-          Apply filters
-        </button>
-      </div>
+      <div class="facets-content">${this.getMoreFacetsTemplate}</div>
+      ${this.paginationSize > 0
+        ? html`${this.facetsPaginationTemplate}
+            <div class="footer">
+              <button
+                class="btn btn-cancel"
+                type="button"
+                @click=${this.cancelClick}
+              >
+                Cancel
+              </button>
+              <button
+                class="btn btn-submit"
+                type="button"
+                @click=${this.applySearchFacetsClicked}
+              >
+                Apply filters
+              </button>
+            </div>`
+        : html`No result found. please try again later.`}
     `;
   }
 
   render() {
     return html`
-      <div id="morf-page">
+      <div id="more-facets-page">
         <form>
           ${this.facetsLoading
             ? this.loaderTemplate
@@ -255,6 +262,9 @@ export class FacetsMoreContent extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      #more-facets-page {
+        margin-bottom: 2rem;
+      }
       .modal-content {
         background-color: #fefefe;
         margin: auto;
@@ -271,16 +281,6 @@ export class FacetsMoreContent extends LitElement {
         padding: 0 10px;
       }
 
-      .farow {
-        width: 100%;
-        display: inline-block;
-        margin-bottom: 0;
-        font-weight: 500;
-      }
-      .farow.hidden {
-        display: none;
-      }
-
       ul.facet-list {
         list-style: none;
         margin: 0;
@@ -294,7 +294,6 @@ export class FacetsMoreContent extends LitElement {
         text-align: left;
       }
       .facet-row {
-        display: flex;
         align-items: start;
         font-weight: 500;
         font-size: 1.2rem;

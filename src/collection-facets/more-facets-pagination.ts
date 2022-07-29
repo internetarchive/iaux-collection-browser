@@ -130,7 +130,7 @@ export class MoreFacetsPagination extends LitElement {
     return html`
       <div class="facets-pagination">
         <button class="arrow-icon" @click=${this.onRewind}>
-          <span class="sr-only">Rewinnd pagination:</span>
+          <span class="sr-only">Rewind pagination:</span>
           ${arrowLeftIcon}
         </button>
         <div class="page-numbers">${this.getPagesTemplate}</div>
