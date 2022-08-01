@@ -32,6 +32,8 @@ export const baseItemImageStyles = css`
 
   .blur {
     filter: blur(15px);
+    -webkit-filter: blur(7px);
+    -moz-filter: blur(7px);
   }
 `;
 
