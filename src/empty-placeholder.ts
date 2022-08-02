@@ -13,12 +13,10 @@ export class EmptyPlaceholder extends LitElement {
   @property({ type: Boolean }) isMobileView?: false;
 
   render() {
-    return this.placeholderType
-      ? html`${this.getPlaceholderTemplate}`
-      : nothing;
+    return this.placeholderType ? html`${this.placeholderTemplate}` : nothing;
   }
 
-  private get getPlaceholderTemplate() {
+  private get placeholderTemplate() {
     return html`
       <div
         class="placeholder ${this.placeholderType} ${this.isMobileView
