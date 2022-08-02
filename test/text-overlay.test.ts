@@ -41,4 +41,17 @@ describe('Text Overlay component', () => {
     expect(noPreview).to.exist;
     expect(noPreview?.textContent).to.equal('Content may be inappropriate');
   });
+
+  it('should render component if content warning', async () => {
+    const el = await fixture<TextOverlay>(html`
+      <text-overlay .loggedIn=${true} .loginRequired=${true}> </text-overlay>
+    `);
+
+    const overlay = el.shadowRoot?.querySelector('.overlay');
+    const noPreview = el.shadowRoot?.querySelector('.no-preview');
+
+    expect(overlay).to.exist;
+    expect(noPreview).to.exist;
+    expect(noPreview?.textContent).to.equal('Content may be inappropriate');
+  });
 });

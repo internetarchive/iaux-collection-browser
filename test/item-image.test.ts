@@ -1,7 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-// import sinon from 'sinon';
 
 import { TileModel } from '../src/models';
 import { ItemImage } from '../src/tiles/item-image';
@@ -59,7 +58,6 @@ describe('ItemImage component', () => {
   });
 
   it('should render component if mediatype is waveform', async () => {
-    // const onLoad = sinon.spy();
     const el = await fixture<ItemImage>(html`
       <item-image
         .isListTile=${false}
@@ -71,15 +69,14 @@ describe('ItemImage component', () => {
     `);
 
     const dropShadow = el.shadowRoot?.querySelector('.drop-shadow');
-    // const image = dropShadow?.querySelector('img');
-
+    const image = dropShadow?.querySelector('img');
     expect(dropShadow).to.exist;
-    /**
-     * TODO:
-     * - simulate image onLoad event
-     * - check if image className is waveform
-     */
-    // const imgClassName = dropShadow?.querySelector('img')?.className;
-    // expect(imgClassName).to.eql(' waveform ');
+    expect(image).to.exist;
+
+    // simulate image onLoad event check if image className is waveform
+    setTimeout(() => {
+      const imgClassName = image?.className;
+      expect(imgClassName).to.eql(' waveform ');
+    }, 1000);
   });
 });

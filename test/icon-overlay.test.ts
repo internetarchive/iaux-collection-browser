@@ -27,4 +27,15 @@ describe('Icon Overlay component', () => {
       ?.querySelector('title')?.textContent;
     expect(svgTitle).to.equal('Content may be inappropriate');
   });
+
+  it('should render component if content warning', async () => {
+    const el = await fixture<IconOverlay>(html`
+      <icon-overlay .loggedIn=${true} .loginRequired=${true}> </icon-overlay>
+    `);
+
+    const svgTitle = el.shadowRoot
+      ?.querySelector('svg')
+      ?.querySelector('title')?.textContent;
+    expect(svgTitle).to.equal('Content may be inappropriate');
+  });
 });
