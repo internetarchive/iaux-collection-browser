@@ -49,6 +49,8 @@ import {
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
+import { PlaceholderType } from './empty-placeholder';
+import './empty-placeholder';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -146,6 +148,8 @@ export class CollectionBrowser
   @state() private mobileView = false;
 
   @state() private mobileFacetsVisible = false;
+
+  @state() private placeholderType: PlaceholderType = null;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -245,70 +249,94 @@ export class CollectionBrowser
   }
 
   render() {
+    this.setPlaceholderType();
     return html`
       <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
-        <div
-          id="left-column"
-          class="column${this.isResizeToMobile ? ' preload' : ''}"
-        >
-          <div id="mobile-header-container">
-            ${this.mobileView ? this.mobileFacetsTemplate : nothing}
-            <div id="results-total">
-              <span id="big-results-count"
-                >${this.totalResults !== undefined
-                  ? this.totalResults.toLocaleString()
-                  : '-'}</span
-              >
-              <span id="big-results-label">Results</span>
-            </div>
-          </div>
-          <div
-            id="facets-container"
-            class=${!this.mobileView || this.mobileFacetsVisible
-              ? 'expanded'
-              : ''}
-          >
-            ${this.facetsTemplate}
-          </div>
-        </div>
-        <div id="right-column" class="column">
-          ${this.searchResultsLoading ? this.loadingTemplate : nothing}
-          <sort-filter-bar
-            .selectedSort=${this.selectedSort}
-            .sortDirection=${this.sortDirection}
-            .displayMode=${this.displayMode}
-            .selectedTitleFilter=${this.selectedTitleFilter}
-            .selectedCreatorFilter=${this.selectedCreatorFilter}
-            .resizeObserver=${this.resizeObserver}
-            @sortChanged=${this.userChangedSort}
-            @displayModeChanged=${this.displayModeChanged}
-            @titleLetterChanged=${this.titleLetterSelected}
-            @creatorLetterChanged=${this.creatorLetterSelected}
-          ></sort-filter-bar>
-
-          ${this.displayMode === `list-compact`
-            ? this.listHeaderTemplate
-            : nothing}
-          ${!this.searchResultsLoading && this.totalResults === 0
-            ? html`
-                <h2>
-                  Your search did not match any items in the Archive. Try
-                  different keywords or a more general search.
-                </h2>
-              `
-            : nothing}
-
-          <infinite-scroller
-            class="${ifDefined(this.displayMode)}"
-            .cellProvider=${this}
-            .placeholderCellTemplate=${this.placeholderCellTemplate}
-            @scrollThresholdReached=${this.scrollThresholdReached}
-            @visibleCellsChanged=${this.visibleCellsChanged}
-          >
-          </infinite-scroller>
-        </div>
+        ${this.placeholderType
+          ? this.emptyPlaceholderTemplate
+          : this.collectionBrowserTemplate}
       </div>
     `;
+  }
+
+  private setPlaceholderType() {
+    this.placeholderType = null;
+    if (!this.baseQuery) {
+      this.placeholderType = 'empty-query';
+    }
+
+    if (!this.searchResultsLoading && this.totalResults === 0) {
+      this.placeholderType = 'null-result';
+    }
+  }
+
+  private get emptyPlaceholderTemplate() {
+    return html`
+      <empty-placeholder
+        .placeholderType=${this.placeholderType}
+        ?isMobileView=${this.mobileView}
+      ></empty-placeholder>
+    `;
+  }
+
+  private get collectionBrowserTemplate() {
+    return html`<div
+        id="left-column"
+        class="column${this.isResizeToMobile ? ' preload' : ''}"
+      >
+        <div id="mobile-header-container">
+          ${this.mobileView ? this.mobileFacetsTemplate : nothing}
+          <div id="results-total">
+            <span id="big-results-count">
+              ${this.totalResults !== undefined
+                ? this.totalResults.toLocaleString()
+                : '-'}
+            </span>
+            <span id="big-results-label">Results</span>
+          </div>
+        </div>
+        <div
+          id="facets-container"
+          class=${!this.mobileView || this.mobileFacetsVisible
+            ? 'expanded'
+            : ''}
+        >
+          ${this.facetsTemplate}
+        </div>
+      </div>
+      <div id="right-column" class="column">
+        ${this.searchResultsLoading ? this.loadingTemplate : nothing}
+        ${this.sortFilterBarTemplate}
+        ${this.displayMode === `list-compact`
+          ? this.listHeaderTemplate
+          : nothing}
+        ${this.infiniteScrollerTemplate}
+      </div>`;
+  }
+
+  private get infiniteScrollerTemplate() {
+    return html`<infinite-scroller
+      class="${ifDefined(this.displayMode)}"
+      .cellProvider=${this}
+      .placeholderCellTemplate=${this.placeholderCellTemplate}
+      @scrollThresholdReached=${this.scrollThresholdReached}
+      @visibleCellsChanged=${this.visibleCellsChanged}
+    ></infinite-scroller>`;
+  }
+
+  private get sortFilterBarTemplate() {
+    return html`<sort-filter-bar
+      .selectedSort=${this.selectedSort}
+      .sortDirection=${this.sortDirection}
+      .displayMode=${this.displayMode}
+      .selectedTitleFilter=${this.selectedTitleFilter}
+      .selectedCreatorFilter=${this.selectedCreatorFilter}
+      .resizeObserver=${this.resizeObserver}
+      @sortChanged=${this.userChangedSort}
+      @displayModeChanged=${this.displayModeChanged}
+      @titleLetterChanged=${this.titleLetterSelected}
+      @creatorLetterChanged=${this.creatorLetterSelected}
+    ></sort-filter-bar>`;
   }
 
   private userChangedSort(
@@ -470,7 +498,7 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl')
     ) {
-      this.infiniteScroller.reload();
+      this.infiniteScroller?.reload();
     }
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
@@ -499,7 +527,7 @@ export class CollectionBrowser
       this.selectedCreatorLetterChanged();
     }
     if (changed.has('pagesToRender')) {
-      if (!this.endOfDataReached) {
+      if (!this.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
@@ -963,7 +991,9 @@ export class CollectionBrowser
     if (docs.length < this.pageSize) {
       this.endOfDataReached = true;
       // this updates the infinite scroller to show the actual size
-      this.infiniteScroller.itemCount = this.actualTileCount;
+      if (this.infiniteScroller) {
+        this.infiniteScroller.itemCount = this.actualTileCount;
+      }
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;

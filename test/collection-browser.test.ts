@@ -12,6 +12,9 @@ describe('Collection Browser', () => {
       html`<collection-browser></collection-browser>`
     );
 
+    el.baseQuery = 'hello';
+    await el.updateComplete;
+
     const facets = el.shadowRoot?.querySelector('collection-facets');
     const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
