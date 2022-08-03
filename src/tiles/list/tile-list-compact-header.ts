@@ -1,8 +1,8 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { SortParam } from '@internetarchive/search-service';
+import type { SortParam } from '@internetarchive/search-service';
 import { dateLabel } from './date-label';
-import { TileModel } from '../../models';
+import type { TileModel } from '../../models';
 
 @customElement('tile-list-compact-header')
 export class TileListCompactHeader extends LitElement {

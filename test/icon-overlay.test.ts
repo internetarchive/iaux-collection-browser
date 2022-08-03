@@ -1,7 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import { IconOverlay } from '../src/tiles/overlay/icon-overlay';
+import type { IconOverlay } from '../src/tiles/overlay/icon-overlay';
 
 import '../src/tiles/overlay/icon-overlay';
 

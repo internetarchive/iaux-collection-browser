@@ -21,7 +21,7 @@ import type {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
-import {
+import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
@@ -49,7 +49,7 @@ import {
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
-import { PlaceholderType } from './empty-placeholder';
+import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
 
 @customElement('collection-browser')

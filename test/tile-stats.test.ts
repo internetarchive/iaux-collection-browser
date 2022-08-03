@@ -1,7 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import { TileStats } from '../src/tiles/grid/tile-stats';
+import type { TileStats } from '../src/tiles/grid/tile-stats';
 
 import '../src/tiles/grid/tile-stats';
 
