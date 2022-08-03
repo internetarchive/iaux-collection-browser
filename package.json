@@ -18,7 +18,7 @@
     "deploy": "yarn run deploy:run -e $(git branch --show-current)",
     "deploy:run": "yarn run prepare:ghpages && touch ghpages/.nojekyll && yarn run deploy:gh",
     "deploy:gh": "gh-pages -t -d ghpages -m \"Build for $(git log --pretty=format:\"%h %an %ai %s\" -n1) [skip ci]\"",
-    "typecheck": "node node_modules/typescript/bin/tsc --noEmit"
+    "typecheck": "yarn tsc --noEmit"
   },
   "types": "dist/index.d.ts",
   "dependencies": {
