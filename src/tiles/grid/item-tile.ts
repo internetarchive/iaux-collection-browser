@@ -2,10 +2,10 @@
 import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { SortParam } from '@internetarchive/search-service';
+import type { SortParam } from '@internetarchive/search-service';
 
 import { formatDate } from '../../utils/format-date';
-import { TileModel } from '../../models';
+import type { TileModel } from '../../models';
 
 import '../image-block';
 import '../item-image';

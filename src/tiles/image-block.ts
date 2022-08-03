@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
-import { TileModel } from '../models';
+import type { TileModel } from '../models';
 
 import './overlay/icon-overlay';
 import './overlay/text-overlay';

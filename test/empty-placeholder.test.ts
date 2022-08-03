@@ -1,8 +1,9 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import { EmptyPlaceholder } from '../src/empty-placeholder';
 import '../src/empty-placeholder';
+
+import type { EmptyPlaceholder } from '../src/empty-placeholder';
 
 describe('Empty Placeholder', () => {
   it('should render with empty-query placeholder', async () => {

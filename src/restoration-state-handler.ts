@@ -1,4 +1,4 @@
-import { SortDirection, SortParam } from '@internetarchive/search-service';
+import type { SortDirection, SortParam } from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
 import {
   MetadataFieldToSortField,

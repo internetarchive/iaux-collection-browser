@@ -2,8 +2,8 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 
-import { TileModel } from '../src/models';
-import { ItemImage } from '../src/tiles/item-image';
+import type { TileModel } from '../src/models';
+import type { ItemImage } from '../src/tiles/item-image';
 
 import '../src/tiles/item-image';
 
