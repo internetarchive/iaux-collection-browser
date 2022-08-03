@@ -43,6 +43,8 @@ export class TileDispatcher
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Boolean }) loggedIn = false;
+
   render() {
     return html`
       <div id="container">
@@ -146,7 +148,8 @@ export class TileDispatcher
               .model=${model}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
-            ></account-tile>`;
+            >
+            </account-tile>`;
           default:
             return html`<item-tile
               .model=${model}
@@ -155,7 +158,9 @@ export class TileDispatcher
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
               .sortParam=${sortParam}
-            ></item-tile>`;
+              .loggedIn=${this.loggedIn}
+            >
+            </item-tile>`;
         }
       case 'list-compact':
         return html`<tile-list-compact
@@ -166,7 +171,9 @@ export class TileDispatcher
           .sortParam=${sortParam}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
-        ></tile-list-compact>`;
+          .loggedIn=${this.loggedIn}
+        >
+        </tile-list-compact>`;
       case 'list-detail':
         return html`<tile-list
           .model=${model}
@@ -177,7 +184,9 @@ export class TileDispatcher
           .sortParam=${sortParam}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
-        ></tile-list>`;
+          .loggedIn=${this.loggedIn}
+        >
+        </tile-list>`;
       default:
         return nothing;
     }
