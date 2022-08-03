@@ -9,11 +9,17 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Aggregation, Bucket } from '@internetarchive/search-service';
+import {
+  Aggregation,
+  Bucket,
+  SearchServiceInterface,
+} from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import { ModalConfig } from '@internetarchive/modal-manager';
+import { ModalManagerInterface } from '@internetarchive/modal-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -25,6 +31,7 @@ import {
   defaultSelectedFacets,
 } from './models';
 import { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
+import './collection-facets/more-facets-content';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -55,6 +62,8 @@ const facetTitles: Record<FacetOption, string> = {
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
+  @property({ type: Object }) searchService?: SearchServiceInterface;
+
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
@@ -72,6 +81,10 @@ export class CollectionFacets extends LitElement {
   @property({ type: Boolean }) collapsableFacets = false;
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
+
+  @property({ type: String }) fullQuery?: string;
+
+  @property({ type: Object }) modalManager?: ModalManagerInterface;
 
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
@@ -322,9 +335,82 @@ export class CollectionFacets extends LitElement {
         </h1>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.getFacetTemplate(facetGroup)}
+          ${this.searchMoreFacetsLink(facetGroup)}
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Generate the More... link button just below the facets group
+   */
+  private searchMoreFacetsLink(
+    facetGroup: FacetGroup
+  ): TemplateResult | typeof nothing {
+    // don't render More... link if you facets is < 5
+    if (Object.keys(facetGroup.buckets).length < 5) return nothing;
+
+    return html`<button
+      class="more-link"
+      @click=${() => {
+        this.showMoreFacets(facetGroup);
+      }}
+    >
+      More...
+    </button>`;
+  }
+
+  async showMoreFacets(facetGroup: FacetGroup) {
+    const facetAggrKey = Object.keys(aggregationToFacetOption).find(
+      value => aggregationToFacetOption[value] === facetGroup.key
+    );
+
+    const headline = html`
+      <span
+        style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
+      >
+        ${facetTitles[facetGroup.key]}
+        <img
+          src="https://archive.org/images/filter-count.png"
+          style="height: 1.5rem;vertical-align: baseline;"
+          alt=""
+        />
+      </span>
+    `;
+
+    const message = html`
+      <more-facets-content
+        @facetsChanged=${(e: CustomEvent) => {
+          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+            detail: e.detail,
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+        }}
+        .facetKey=${facetGroup.key}
+        .facetAggregationKey=${facetAggrKey}
+        .fullQuery=${this.fullQuery}
+        .modalManager=${this.modalManager}
+        .searchService=${this.searchService}
+        .collectionNameCache=${this.collectionNameCache}
+        .languageCodeHandler=${this.languageCodeHandler}
+        .selectedFacets=${this.selectedFacets}
+      >
+      </more-facets-content>
+    `;
+
+    const config = new ModalConfig({
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true, // TODO: want to fire analytics
+      title: html`Select filters`,
+      headline,
+      message,
+    });
+    this.modalManager?.classList.add('more-search-facets');
+    this.modalManager?.showModal({ config });
   }
 
   /**
@@ -604,6 +690,19 @@ export class CollectionFacets extends LitElement {
       }
       .hide-facet-icon.active .eye {
         display: none;
+      }
+
+      .more-link {
+        font-size: 1.2rem;
+        text-decoration: none;
+        padding: 0px 4px;
+        background: white;
+        border: 0;
+        color: blue;
+        cursor: pointer;
+      }
+      .sorting-icon {
+        cursor: pointer;
       }
     `;
   }
