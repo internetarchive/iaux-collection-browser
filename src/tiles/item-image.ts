@@ -71,10 +71,12 @@ export class ItemImage extends LitElement {
   }
 
   private get itemImageClass(): ClassInfo {
+    const toBlur = this.model?.contentWarning || this.model?.loginRequired;
+
     return {
       contain: !this.isCompactTile && !this.isWaveform,
       cover: this.isCompactTile,
-      blur: this.model?.contentWarning || false,
+      blur: toBlur || false,
       waveform: this.isWaveform,
     };
   }
