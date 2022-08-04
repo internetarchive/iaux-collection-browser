@@ -1,7 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import { ItemTile } from '../../../src/tiles/grid/item-tile';
+import type { ItemTile } from '../../../src/tiles/grid/item-tile';
 
 import '../../../src/tiles/grid/item-tile';
 
@@ -10,11 +10,11 @@ describe('Item Tile', () => {
     const el = await fixture<ItemTile>(html`<item-tile></item-tile>`);
 
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
-    const itemImage = el.shadowRoot?.querySelector('item-image');
     const itemTitle = el.shadowRoot?.querySelector('#title');
+    const imageBlock = el.shadowRoot?.querySelector('image-block');
 
     expect(itemInfo).to.exist;
-    expect(itemImage).to.exist;
+    expect(imageBlock).to.exist;
     expect(itemTitle).to.exist;
   });
 

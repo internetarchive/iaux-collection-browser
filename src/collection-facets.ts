@@ -9,11 +9,11 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { Aggregation, Bucket } from '@internetarchive/search-service';
+import type { Aggregation, Bucket } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -24,7 +24,7 @@ import {
   FacetBucket,
   defaultSelectedFacets,
 } from './models';
-import { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
+import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',

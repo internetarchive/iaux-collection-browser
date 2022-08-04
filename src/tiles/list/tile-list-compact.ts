@@ -1,15 +1,14 @@
-import { css, html, LitElement, nothing } from 'lit';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
+import type { SortParam } from '@internetarchive/search-service';
+import type { TileModel } from '../../models';
 
-import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { accountLabel } from './account-label';
 
-import '../item-image';
+import '../image-block';
 import '../mediatype-icon';
 
 @customElement('tile-list-compact')
@@ -28,12 +27,19 @@ export class TileListCompact extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Boolean }) loggedIn = false;
+
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
-        <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-          ${this.imageTemplate}
-        </div>
+        <image-block
+          .model=${this.model}
+          .baseImageUrl=${this.baseImageUrl}
+          .isCompactTile=${true}
+          .isListTile=${true}
+          .viewSize=${this.classSize}
+        >
+        </image-block>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
         <div id="creator">
           ${this.model?.mediatype === 'account'
@@ -52,22 +58,6 @@ export class TileListCompact extends LitElement {
           ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
         </div>
       </div>
-    `;
-  }
-
-  private get imageTemplate() {
-    if (!this.model?.identifier) {
-      return nothing;
-    }
-    return html`
-      <item-image
-        .model=${this.model}
-        .baseImageUrl=${this.baseImageUrl}
-        .isListTile=${true}
-        .isCompactTile=${true}
-        style="--imgHeight: 100%; --imgWidth: 100%"
-      >
-      </item-image>
     `;
   }
 
@@ -127,6 +117,8 @@ export class TileListCompact extends LitElement {
         border-top: 1px solid #ddd;
         align-items: center;
         line-height: 20px;
+        padding-top: 5px;
+        padding-bottom: 5px;
       }
 
       #list-line.mobile {
@@ -139,40 +131,6 @@ export class TileListCompact extends LitElement {
 
       #list-line:hover #title {
         text-decoration: underline;
-      }
-
-      /* fields */
-      #thumb {
-        object-fit: cover;
-        display: block;
-      }
-
-      .mobile #thumb {
-        width: 30px;
-        height: 30px;
-        padding-top: 2px;
-        padding-bottom: 2px;
-        padding-left: 4px;
-      }
-
-      .desktop #thumb {
-        width: 45px;
-        height: 45px;
-        padding-top: 5px;
-        padding-bottom: 5px;
-        padding-left: 6px;
-      }
-
-      #thumb.collection {
-        --border-radius: 8px;
-      }
-
-      .mobile #thumb.account {
-        --border-radius: 15px;
-      }
-
-      .desktop #thumb.account {
-        --border-radius: 22.5px;
       }
 
       #title {
@@ -204,6 +162,11 @@ export class TileListCompact extends LitElement {
       .desktop #icon {
         --iconHeight: 20px;
         --iconWidth: 20px;
+      }
+
+      item-image {
+        --imgHeight: 100%;
+        --imgWidth: 100%;
       }
     `;
   }

@@ -17,10 +17,13 @@ export const baseItemImageStyles = css`
     box-sizing: border-box;
     display: flex;
     position: relative;
+    max-width: 100px;
   }
 
   .contain {
     object-fit: contain;
+    height: 100%;
+    width: 100%;
   }
 
   .cover {
@@ -28,9 +31,7 @@ export const baseItemImageStyles = css`
   }
 
   .blur {
-    filter: blur(15px);
-    width: 100%;
-    transform: scale(1.1);
+    filter: blur(5px);
   }
 `;
 

@@ -2,40 +2,47 @@
 import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { SortParam } from '@internetarchive/search-service';
+import type { SortParam } from '@internetarchive/search-service';
 
 import { formatDate } from '../../utils/format-date';
-import { TileModel } from '../../models';
+import type { TileModel } from '../../models';
 
-import '../mediatype-icon';
+import '../image-block';
 import '../item-image';
+import '../mediatype-icon';
 import './tile-stats';
 
 @customElement('item-tile')
 export class ItemTile extends LitElement {
-  @property({ type: Object }) model?: TileModel;
-
   @property({ type: String }) baseImageUrl?: string;
+
+  @property({ type: Boolean }) loggedIn = false;
+
+  @property({ type: Object }) model?: TileModel;
 
   @property({ type: Object }) sortParam?: SortParam;
 
   render() {
     const itemTitle = this.model?.title;
+
     return html`
       <div class="container">
         <div class="item-info">
           <div id="title">
-            <h1 class="truncated" title=${ifDefined(
-              itemTitle
-            )}>${itemTitle}</h1>
+            <h1 class="truncated" title=${ifDefined(itemTitle)}>
+              ${itemTitle}
+            </h1>
           </div>
 
-          <div id="image">
-            <item-image
-              .model=${this.model}
-              .baseImageUrl=${this.baseImageUrl}>
-            </item-image>
-          </div>
+          <image-block 
+            .model=${this.model}
+            .baseImageUrl=${this.baseImageUrl}
+            .loggedIn=${this.loggedIn}
+            .isCompactTile=${false}
+            .isListTile=${false}
+            .viewSize=${'grid'}>
+          </image-block>
+
           ${
             this.doesSortedByDate
               ? this.sortedDateInfoTemplate
@@ -54,6 +61,9 @@ export class ItemTile extends LitElement {
     `;
   }
 
+  /**
+   * Templates
+   */
   private get doesSortedByDate() {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
       this.sortParam?.field as string
@@ -117,13 +127,6 @@ export class ItemTile extends LitElement {
 
       #title {
         flex-shrink: 0;
-      }
-
-      #image {
-        display: flex;
-        justify-content: center;
-        flex: 1;
-        height: 16rem;
       }
 
       .hidden {

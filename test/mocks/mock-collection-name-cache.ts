@@ -1,4 +1,4 @@
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 
 export class MockCollectionNameCache implements CollectionNameCacheInterface {
   collectionNamesRequested: string[] = [];
