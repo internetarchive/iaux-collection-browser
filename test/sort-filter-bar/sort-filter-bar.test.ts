@@ -7,7 +7,7 @@ import type { SortField } from '../../src/models';
 import '../../src/sort-filter-bar/sort-filter-bar';
 
 describe('Sort direction buttons', () => {
-  it('should render all display mode buttons', async () => {
+  it('should render sort direction button', async () => {
     const el = await fixture<SortFilterBar>(html`
       <sort-filter-bar> </sort-filter-bar>
     `);
@@ -53,7 +53,7 @@ describe('Sort selector default buttons', async () => {
     );
   });
 
-  it('should render default sort selector', async () => {
+  it('should render default relevance-sort selector', async () => {
     const defaultSortSelector = sortSelectorContainer?.children
       .item(1)
       ?.querySelector('a');
@@ -66,6 +66,15 @@ describe('Sort selector default buttons', async () => {
       .item(2)
       ?.querySelector('a');
     expect(defaultSortSelector?.textContent).to.contain('Weekly Views');
+  });
+
+  it('should render active view-sort selectors', async () => {
+    el.selectedSort = 'alltimeview' as SortField;
+    await el.updateComplete;
+
+    const defaultSortSelector =
+      sortSelectorContainer?.querySelector('a.selected');
+    expect(defaultSortSelector?.textContent).to.contain('All-time Views');
   });
 
   it('should render default title-sort selector', async () => {
@@ -82,22 +91,6 @@ describe('Sort selector default buttons', async () => {
     expect(defaultSortSelector?.textContent).to.contain('Date Published');
   });
 
-  it('should render default creator sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(5)
-      ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Creator');
-  });
-
-  it('should render active view-sort selectors', async () => {
-    el.selectedSort = 'alltimeview' as SortField;
-    await el.updateComplete;
-
-    const defaultSortSelector =
-      sortSelectorContainer?.querySelector('a.selected');
-    expect(defaultSortSelector?.textContent).to.contain('All-time Views');
-  });
-
   it('should render active date-sort selectors', async () => {
     el.selectedSort = 'datereviewed' as SortField;
     await el.updateComplete;
@@ -106,9 +99,52 @@ describe('Sort selector default buttons', async () => {
       sortSelectorContainer?.querySelector('a.selected');
     expect(defaultSortSelector?.textContent).to.contain('Date Reviewed');
   });
+
+  it('should render default creator-sort selector', async () => {
+    const defaultSortSelector = sortSelectorContainer?.children
+      .item(5)
+      ?.querySelector('a');
+    expect(defaultSortSelector?.textContent).to.contain('Creator');
+  });
+
+  it('click event on view-sort selector', async () => {
+    const defaultSortSelector = sortSelectorContainer?.children
+      .item(2)
+      ?.querySelector('a');
+
+    await defaultSortSelector?.click();
+    expect(el.selectedSort).to.equal('weeklyview');
+  });
+
+  it('click event on title selector', async () => {
+    const defaultSortSelector = sortSelectorContainer?.children
+      .item(3)
+      ?.querySelector('a');
+
+    await defaultSortSelector?.click();
+    expect(el.selectedSort).to.equal('title');
+  });
+
+  it('click event on date-sort selector', async () => {
+    const defaultSortSelector = sortSelectorContainer?.children
+      .item(4)
+      ?.querySelector('a');
+
+    await defaultSortSelector?.click();
+    expect(el.selectedSort).to.equal('date');
+  });
+
+  it('click event on creator selector', async () => {
+    const defaultSortSelector = sortSelectorContainer?.children
+      .item(5)
+      ?.querySelector('a');
+
+    await defaultSortSelector?.click();
+    expect(el.selectedSort).to.equal('creator');
+  });
 });
 
-describe('Display style buttons', () => {
+describe('Display mode/style buttons', () => {
   it('should render all display mode buttons', async () => {
     const el = await fixture<SortFilterBar>(html`
       <sort-filter-bar> </sort-filter-bar>
