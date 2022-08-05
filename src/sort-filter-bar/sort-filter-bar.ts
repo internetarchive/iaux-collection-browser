@@ -393,7 +393,7 @@ export class SortFilterBar
         </li>
         <li>
           <button
-            id="grid-button"
+            id="list-detail-button"
             @click=${() => {
               this.displayMode = 'list-detail';
             }}
@@ -405,7 +405,7 @@ export class SortFilterBar
         </li>
         <li>
           <button
-            id="list-button"
+            id="list-compact-button"
             @click=${() => {
               this.displayMode = 'list-compact';
             }}
