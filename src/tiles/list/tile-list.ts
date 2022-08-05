@@ -10,18 +10,18 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { customElement, property, state } from 'lit/decorators.js';
-
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import { SortParam } from '@internetarchive/search-service';
 import DOMPurify from 'dompurify';
+
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { SortParam } from '@internetarchive/search-service';
+import type { TileModel } from '../../models';
 
 import { dateLabel } from './date-label';
 import { accountLabel } from './account-label';
-import { TileModel } from '../../models';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 
-import '../item-image';
+import '../image-block';
 import '../mediatype-icon';
 
 @customElement('tile-list')
@@ -44,6 +44,8 @@ export class TileList extends LitElement {
   @state() private collectionLinks: TemplateResult[] = [];
 
   @property({ type: String }) baseImageUrl?: string;
+
+  @property({ type: Boolean }) loggedIn = false;
 
   protected updated(changed: PropertyValues): void {
     if (changed.has('model')) {
@@ -90,11 +92,7 @@ export class TileList extends LitElement {
   private get mobileTemplate() {
     return html`
       <div id="list-line-top">
-        <div id="list-line-left">
-          <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-            ${this.imgTemplate}
-          </div>
-        </div>
+        <div id="list-line-left">${this.imageBlockTemplate}</div>
         <div id="list-line-right">
           <div id="title-line">
             <div id="title">${this.titleTemplate}</div>
@@ -108,11 +106,7 @@ export class TileList extends LitElement {
 
   private get desktopTemplate() {
     return html`
-      <div id="list-line-left">
-        <div id="thumb" class="${ifDefined(this.model?.mediatype)}">
-          ${this.imgTemplate}
-        </div>
-      </div>
+      <div id="list-line-left">${this.imageBlockTemplate}</div>
       <div id="list-line-right">
         <div id="title-line">
           <div id="title">${this.titleTemplate}</div>
@@ -120,6 +114,19 @@ export class TileList extends LitElement {
         </div>
         ${this.detailsTemplate}
       </div>
+    `;
+  }
+
+  private get imageBlockTemplate() {
+    return html`
+      <image-block
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .isCompactTile=${false}
+        .isListTile=${true}
+        .viewSize=${this.classSize}
+      >
+      </image-block>
     `;
   }
 
@@ -138,21 +145,6 @@ export class TileList extends LitElement {
   }
 
   // Data templates
-  private get imgTemplate() {
-    if (!this.model?.identifier) {
-      return nothing;
-    }
-    return html`
-      <item-image
-        .model=${this.model}
-        .baseImageUrl=${this.baseImageUrl}
-        .isListTile=${true}
-        style="--imgHeight: 100%; --imgWidth: 100%"
-      >
-      </item-image>
-    `;
-  }
-
   private get iconRightTemplate() {
     return html`
       <div id="icon-right">
@@ -409,34 +401,6 @@ export class TileList extends LitElement {
       }
 
       /* fields */
-
-      #thumb img {
-        object-fit: cover;
-        display: block;
-      }
-
-      .mobile #thumb {
-        width: 90px;
-        height: 90px;
-      }
-
-      .desktop #thumb {
-        width: 100px;
-        height: 100px;
-      }
-
-      #thumb.collection {
-        --border-radius: 8px;
-      }
-
-      .mobile #thumb.account {
-        --border-radius: 45px;
-      }
-
-      .desktop #thumb.account {
-        --border-radius: 50px;
-      }
-
       #icon-right {
         width: 20px;
         padding-top: 5px;

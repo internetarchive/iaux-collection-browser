@@ -3,11 +3,11 @@
   "description": "The Internet Archive Collection Browser.",
   "license": "AGPL-3.0-only",
   "author": "Internet Archive",
-  "version": "0.2.9",
+  "version": "0.2.13",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "start": "yarn run prepare && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
+    "start": "yarn run prepare && tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
     "prepare:ghpages": "rimraf ghpages && yarn run prepare && vite build",
     "prepare": "rimraf dist && tsc && husky install",
     "lint": "eslint --ext .ts,.html . --ignore-path .gitignore && prettier \"**/*.ts\" --check --ignore-path .gitignore",
@@ -17,7 +17,8 @@
     "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
     "deploy": "yarn run deploy:run -e $(git branch --show-current)",
     "deploy:run": "yarn run prepare:ghpages && touch ghpages/.nojekyll && yarn run deploy:gh",
-    "deploy:gh": "gh-pages -t -d ghpages -m \"Build for $(git log --pretty=format:\"%h %an %ai %s\" -n1) [skip ci]\""
+    "deploy:gh": "gh-pages -t -d ghpages -m \"Build for $(git log --pretty=format:\"%h %an %ai %s\" -n1) [skip ci]\"",
+    "typecheck": "yarn tsc --noEmit"
   },
   "types": "dist/index.d.ts",
   "dependencies": {

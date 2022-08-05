@@ -4,7 +4,7 @@ import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
-import { ModalManagerInterface } from '@internetarchive/modal-manager';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 

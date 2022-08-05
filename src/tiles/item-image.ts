@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
-import { TileModel } from '../models';
+import type { TileModel } from '../models';
 
 import {
   baseItemImageStyles,
@@ -71,10 +71,12 @@ export class ItemImage extends LitElement {
   }
 
   private get itemImageClass(): ClassInfo {
+    const toBlur = this.model?.contentWarning || this.model?.loginRequired;
+
     return {
       contain: !this.isCompactTile && !this.isWaveform,
       cover: this.isCompactTile,
-      blur: this.model?.contentWarning || false,
+      blur: toBlur || false,
       waveform: this.isWaveform,
     };
   }

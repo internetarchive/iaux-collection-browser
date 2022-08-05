@@ -9,7 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import {
+import type {
   Aggregation,
   Bucket,
   SearchServiceInterface,
@@ -17,9 +17,11 @@ import {
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import { ModalConfig } from '@internetarchive/modal-manager';
-import { ModalManagerInterface } from '@internetarchive/modal-manager';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import {
+  ModalConfig,
+  ModalManagerInterface,
+} from '@internetarchive/modal-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -30,7 +32,7 @@ import {
   FacetBucket,
   defaultSelectedFacets,
 } from './models';
-import { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
+import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
 
 const facetDisplayOrder: FacetOption[] = [
@@ -101,6 +103,12 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
+  /**
+   * If listed facets on page more then this number,
+   * - show the more link button just below the facets group
+   */
+  private moreLinkEligibilityCount = 5;
+
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -125,6 +133,7 @@ export class CollectionFacets extends LitElement {
     }
   }
 
+  // TODO: want to fire analytics?
   private dispatchFacetsChangedEvent() {
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
@@ -343,32 +352,40 @@ export class CollectionFacets extends LitElement {
 
   /**
    * Generate the More... link button just below the facets group
+   *
+   * TODO: want to fire analytics?
    */
   private searchMoreFacetsLink(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    // don't render More... link if you facets is < 5
-    if (Object.keys(facetGroup.buckets).length < 5) return nothing;
+    // don't render More... link if you facets is < this.moreLinkEligibilityCount
+    if (Object.keys(facetGroup.buckets).length < this.moreLinkEligibilityCount)
+      return nothing;
 
     return html`<button
       class="more-link"
       @click=${() => {
-        this.showMoreFacets(facetGroup);
+        this.showMoreFacetsModal(facetGroup);
       }}
     >
       More...
     </button>`;
   }
 
-  async showMoreFacets(facetGroup: FacetGroup) {
+  async showMoreFacetsModal(facetGroup: FacetGroup): Promise<void> {
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
     );
 
+    // TODO - lets move sr-only style into modal-manager component as well
     const headline = html`
       <span
-        style="display:block;text-align:left;font-size:1.8rem;padding:0 1rem;"
+        style="display:block;text-align:left;font-size:1.8rem;padding:0 10px;"
       >
+        <span
+          style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip: rect(0,0,0,0);border:0;"
+          >More facets for:
+        </span>
         ${facetTitles[facetGroup.key]}
         <img
           src="https://archive.org/images/filter-count.png"

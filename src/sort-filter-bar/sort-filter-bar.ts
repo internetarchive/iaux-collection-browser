@@ -7,7 +7,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import {
+import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';

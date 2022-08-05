@@ -8,15 +8,15 @@ import {
   PropertyValues,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import {
+import type {
   Aggregation,
   Bucket,
   SearchServiceInterface,
   SearchParams,
 } from '@internetarchive/search-service';
-import { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { SelectedFacets, defaultSelectedFacets } from '../models';
-import { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
+import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 
@@ -55,23 +55,20 @@ export class FacetsMoreContent extends LitElement {
 
   private facetsPerPage = 60; // Q. how many items we want to have on popup view
 
-  async updated(changed: PropertyValues) {
+  updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
       this.facetsLoading = true;
       this.pageNumber = 1;
 
-      await this.fetchSpecificFacets(
-        this.facetAggregationKey as unknown as string
-      );
-      this.facetsLoading = false;
-    }
-
-    if (changed.has('aggregations')) {
-      this.filterFacets();
+      this.updateSpecificFacets(this.facetAggregationKey as unknown as string);
     }
   }
 
-  async fetchSpecificFacets(facetAggregationKey: string) {
+  /**
+   * Get specific facets data from search-service API based of currently query params
+   * - this.aggregations - hold result of search service and being used for further processing.
+   */
+  async updateSpecificFacets(facetAggregationKey: string): Promise<void> {
     const aggregations = {
       advancedParams: [
         {
@@ -90,9 +87,20 @@ export class FacetsMoreContent extends LitElement {
 
     const results = await this.searchService?.search(params);
     this.aggregations = results?.success?.response.aggregations as any;
+
+    // filter facets data to be rendered in modal-manager
+    await this.filterFacets();
+    this.facetsLoading = false;
   }
 
-  async filterFacets() {
+  /**
+   * Filter facets data stored in this.aggregations, eg.
+   * - we don't want to entertain year_histogram data since we using new date-picker
+   * - name of collections needs to be load inside cache using this.collectionNameCache
+   *
+   * this.castedBuckets - hold filtered facets data which will be render in modal
+   */
+  async filterFacets(): Promise<void> {
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       if (key === 'year_histogram') return;
 
@@ -140,29 +148,31 @@ export class FacetsMoreContent extends LitElement {
             ) ?? displayText;
         }
 
-        return html` <li class="facet-row">
-          <label class="facet-info-display" title=${facet.key}>
-            <input
-              type="checkbox"
-              class="selected-facets"
-              .value="${facet.key}"
-              data-facet="${this.facetKey}"
-              @click=${(e: Event) => {
-                this.facetClicked(e);
-              }}
-            />
-            <div class="facet-title">
-              ${this.facetKey !== 'collection'
-                ? html`${displayText}`
-                : html`<async-collection-name
-                    .collectionNameCache=${this.collectionNameCache}
-                    .identifier=${displayText}
-                    placeholder="-"
-                  ></async-collection-name>`}
-            </div>
-            <div class="facet-count">${facet.doc_count}</div>
-          </label>
-        </li>`;
+        return html`
+          <li class="facet-row">
+            <label class="facet-info-display" title=${facet.key}>
+              <input
+                type="checkbox"
+                class="selected-facets"
+                .value="${facet.key}"
+                data-facet="${this.facetKey}"
+                @click=${(e: Event) => {
+                  this.facetClicked(e);
+                }}
+              />
+              <div class="facet-title">
+                ${this.facetKey !== 'collection'
+                  ? html`${displayText}`
+                  : html`<async-collection-name
+                      .collectionNameCache=${this.collectionNameCache}
+                      .identifier=${displayText}
+                      placeholder="-"
+                    ></async-collection-name>`}
+              </div>
+              <div class="facet-count">${facet.doc_count}</div>
+            </label>
+          </li>
+        `;
       })}
     </ul>`;
   }

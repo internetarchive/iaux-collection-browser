@@ -1,4 +1,4 @@
-import { Result } from '@internetarchive/result-type';
+import type { Result } from '@internetarchive/result-type';
 import {
   Metadata,
   SearchResponse,
