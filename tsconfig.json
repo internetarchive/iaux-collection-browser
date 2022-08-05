@@ -17,5 +17,5 @@
     "declaration": true,
     "importsNotUsedAsValues": "error"
   },
-  "include": ["src", "test", "index.ts"],
+  "include": ["src", "test", "index.ts", "types"],
 }
