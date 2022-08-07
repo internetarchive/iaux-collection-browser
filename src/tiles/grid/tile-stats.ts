@@ -5,6 +5,7 @@ import { favoriteFilledIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
 import { viewsIcon } from '../../assets/img/icons/views';
+import { tvQuoteIcon } from '../../assets/img/icons/tv-quote';
 
 import { formatCount } from '../../utils/format-count';
 
@@ -73,7 +74,7 @@ export class TileStats extends LitElement {
         </ul>
       </div>
     `;
-  }
+  }  
 
   static get styles(): CSSResultGroup {
     return css`

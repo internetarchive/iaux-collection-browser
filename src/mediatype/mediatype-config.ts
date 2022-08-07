@@ -9,6 +9,9 @@ import { radioIcon } from '../assets/img/icons/mediatype/radio';
 import { softwareIcon } from '../assets/img/icons/mediatype/software';
 import { textsIcon } from '../assets/img/icons/mediatype/texts';
 import { tvIcon } from '../assets/img/icons/mediatype/tv';
+import { tvCommercialIcon } from '../assets/img/icons/mediatype/tv-commercial';
+import { tvFactCheckIcon } from '../assets/img/icons/mediatype/tv-fact-check';
+import { tvQuoteIcon } from '../assets/img/icons/mediatype/tv-quote';
 import { videoIcon } from '../assets/img/icons/mediatype/video';
 import { webIcon } from '../assets/img/icons/mediatype/web';
 
@@ -72,6 +75,26 @@ export const mediatypeConfig: { [key: string]: any } = {
     color: '#f1644b',
     icon: tvIcon,
     text: 'TV',
+  },
+  tvCaption: {
+    color: '#f1644b',
+    icon: tvIcon,
+    text: 'TV Caption',
+  },
+  tvCommercial: {
+    color: '#84B648',
+    icon: tvCommercialIcon,
+    text: 'TV Commercial',
+  },
+  tvFactCheck: {
+    color: '#f1644b',
+    icon: tvFactCheckIcon,
+    text: 'TV Fact-check',
+  },
+  tvQuote: {
+    color: '#fe7a5f',
+    icon: tvQuoteIcon,
+    text: 'TV Quote',
   },
   video: {
     color: '#f1644b',

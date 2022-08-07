@@ -31,6 +31,10 @@ export class ItemTile extends LitElement {
   @property({ type: Object }) sortParam?: SortParam;
 
   render() {
+    console.log('mediaType', this.model?.mediatype);
+    console.log('collectionIdentifier', this.model?.collectionIdentifier);
+    console.log('collectionName', this.model?.collectionName);
+    console.log('collections', this.model?.collections);
     const itemTitle = this.model?.title;
 
     return html`
