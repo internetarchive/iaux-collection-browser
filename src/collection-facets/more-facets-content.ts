@@ -21,7 +21,7 @@ import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 
 @customElement('more-facets-content')
-export class FacetsMoreContent extends LitElement {
+export class MoreFacetsContent extends LitElement {
   @property({ type: String }) facetKey?: string;
 
   @property({ type: String }) facetAggregationKey?: string;
@@ -60,7 +60,7 @@ export class FacetsMoreContent extends LitElement {
       this.facetsLoading = true;
       this.pageNumber = 1;
 
-      this.updateSpecificFacets(this.facetAggregationKey as unknown as string);
+      this.updateSpecificFacets();
     }
   }
 
@@ -68,11 +68,11 @@ export class FacetsMoreContent extends LitElement {
    * Get specific facets data from search-service API based of currently query params
    * - this.aggregations - hold result of search service and being used for further processing.
    */
-  async updateSpecificFacets(facetAggregationKey: string): Promise<void> {
+  async updateSpecificFacets(): Promise<void> {
     const aggregations = {
       advancedParams: [
         {
-          field: facetAggregationKey,
+          field: this.facetAggregationKey as string,
           size: 1000000, // todo - do we want to have all the records at once?
         },
       ],

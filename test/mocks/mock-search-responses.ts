@@ -21,6 +21,18 @@ export const mockSuccessResponse: Result<SearchResponse, SearchServiceError> = {
         }),
       ],
       start: 0,
+      aggregations: {
+        'user_aggs__terms__field:mediatypeSorter__size:100': {
+          buckets: [
+            { key: 'audio', doc_count: 121 },
+            { key: 'movies', doc_count: 2195 },
+            { key: 'texts', doc_count: 1392 },
+            { key: 'data', doc_count: 605 },
+            { key: 'web', doc_count: 301 },
+            { key: 'collection', doc_count: 167 },
+          ],
+        },
+      },
     },
     responseHeader: {
       status: 0,
