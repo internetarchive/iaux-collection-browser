@@ -1208,10 +1208,17 @@ export class CollectionBrowser
       width: 18rem;
       padding-right: 12px;
       padding-right: 1rem;
-      max-height: 100vh;
-      position: sticky;
+      padding-bottom: 20px;
       top: 0;
-      overflow-y: auto;
+      position: sticky;
+      max-height: 100vh;
+      overflow: scroll;
+      -ms-overflow-style: none; /* hide scrollbar IE and Edge */
+      scrollbar-width: none; /* hide scrollbar Firefox */
+    }
+
+    #left-column::-webkit-scrollbar {
+      display: none;
     }
 
     .mobile #left-column {
