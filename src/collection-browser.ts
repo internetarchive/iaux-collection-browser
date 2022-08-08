@@ -1236,6 +1236,7 @@ export class CollectionBrowser
       max-height: 0;
       transition: max-height 0.2s ease-in-out;
       z-index: 1;
+      padding-bottom: 2rem;
     }
 
     .mobile #facets-container {
