@@ -2849,12 +2849,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       ${(e=this.pages)===null||e===void 0?void 0:e.map(t=>u`${t!==0?this.getPageTemplate(t):this.getEllipsisTemplate}`)}
     `}render(){return u`
       <div class="facets-pagination">
-        <button class="arrow-icon" @click=${this.onRewind}>
+        <button class="arrow-icon" @click=${()=>this.onRewind()}>
           <span class="sr-only">Rewind pagination:</span>
           ${gl}
         </button>
         <div class="page-numbers">${this.getPagesTemplate}</div>
-        <button class="arrow-icon" @click=${this.onForward}>
+        <button class="arrow-icon" @click=${()=>this.onForward()}>
           <span class="sr-only">Forward pagination:</span>
           ${yl}
         </button>
@@ -2912,7 +2912,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         clip: rect(0, 0, 0, 0);
         border: 0;
       }
-    `}};n([p({type:Number})],xt.prototype,"size",void 0);n([p({type:Number})],xt.prototype,"step",void 0);n([k()],xt.prototype,"pages",void 0);n([k()],xt.prototype,"currentPage",void 0);xt=n([R("more-facets-pagination")],xt);let ae=class extends O{constructor(){super(...arguments),this.castedBuckets=[],this.pageNumber=1,this.facetsLoading=!0,this.paginationSize=0,this.facetsPerPage=60}updated(e){e.has("facetKey")&&(this.facetsLoading=!0,this.pageNumber=1,this.updateSpecificFacets(this.facetAggregationKey))}async updateSpecificFacets(e){var t,i;const a={advancedParams:[{field:e,size:1e6}]},o={query:this.fullQuery,fields:["identifier"],aggregations:a,rows:1},s=await((t=this.searchService)===null||t===void 0?void 0:t.search(o));this.aggregations=(i=s==null?void 0:s.success)===null||i===void 0?void 0:i.response.aggregations,await this.filterFacets(),this.facetsLoading=!1}async filterFacets(){var e;Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{var o,s;if(i!=="year_histogram"&&(this.castedBuckets=a.buckets,this.facetKey==="collection")){const l=(o=this.castedBuckets)===null||o===void 0?void 0:o.map(h=>h.key),c=Array.from(new Set(l));(s=this.collectionNameCache)===null||s===void 0||s.preloadIdentifiers(c)}});const{length:t}=Object.keys(this.castedBuckets);this.paginationSize=Math.ceil(t/this.facetsPerPage)}pageNumberClicked(e){var t;const i=(t=e==null?void 0:e.detail)===null||t===void 0?void 0:t.page;i&&(this.pageNumber=Number(i))}get getMoreFacetsTemplate(){var e;this.facetsLoading=!1;const t=(e=this.castedBuckets)===null||e===void 0?void 0:e.slice((this.pageNumber-1)*this.facetsPerPage,this.pageNumber*this.facetsPerPage);return u`<ul class="facet-list">
+    `}};n([p({type:Number})],xt.prototype,"size",void 0);n([p({type:Number})],xt.prototype,"step",void 0);n([k()],xt.prototype,"pages",void 0);n([k()],xt.prototype,"currentPage",void 0);xt=n([R("more-facets-pagination")],xt);let ae=class extends O{constructor(){super(...arguments),this.castedBuckets=[],this.pageNumber=1,this.facetsLoading=!0,this.paginationSize=0,this.facetsPerPage=60}updated(e){e.has("facetKey")&&(this.facetsLoading=!0,this.pageNumber=1,this.updateSpecificFacets())}async updateSpecificFacets(){var e,t;const i={advancedParams:[{field:this.facetAggregationKey,size:1e6}]},a={query:this.fullQuery,fields:["identifier"],aggregations:i,rows:1},o=await((e=this.searchService)===null||e===void 0?void 0:e.search(a));this.aggregations=(t=o==null?void 0:o.success)===null||t===void 0?void 0:t.response.aggregations,await this.filterFacets(),this.facetsLoading=!1}async filterFacets(){var e;Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{var o,s;if(i!=="year_histogram"&&(this.castedBuckets=a.buckets,this.facetKey==="collection")){const l=(o=this.castedBuckets)===null||o===void 0?void 0:o.map(h=>h.key),c=Array.from(new Set(l));(s=this.collectionNameCache)===null||s===void 0||s.preloadIdentifiers(c)}});const{length:t}=Object.keys(this.castedBuckets);this.paginationSize=Math.ceil(t/this.facetsPerPage)}pageNumberClicked(e){var t;const i=(t=e==null?void 0:e.detail)===null||t===void 0?void 0:t.page;i&&(this.pageNumber=Number(i))}get getMoreFacetsTemplate(){var e;this.facetsLoading=!1;const t=(e=this.castedBuckets)===null||e===void 0?void 0:e.slice((this.pageNumber-1)*this.facetsPerPage,this.pageNumber*this.facetsPerPage);return u`<ul class="facet-list">
       ${t==null?void 0:t.map(i=>{var a,o;let s=i.key;return this.facetKey==="language"&&(s=(o=(a=this.languageCodeHandler)===null||a===void 0?void 0:a.getLanguageNameFromCodeString(s))!==null&&o!==void 0?o:s),u`
           <li class="facet-row">
             <label class="facet-info-display" title=${i.key}>
