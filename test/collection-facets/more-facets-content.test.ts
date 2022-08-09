@@ -1,5 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import { expect, fixture } from '@open-wc/testing';
+import { expect, fixture, oneEvent } from '@open-wc/testing';
 import { html } from 'lit';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
@@ -90,6 +90,24 @@ describe('More facets content', () => {
 
     expect(el.paginationSize).to.equal(1);
     expect(el.shadowRoot?.querySelector('.facet-list')).to.exist;
-    expect(Object.keys(el.castedBuckets as []).length).to.equal(6);
+    expect(Object.keys(el.castedBuckets as []).length).to.equal(7);
+  });
+
+  it('page number clicked event', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+      ></more-facets-content>`
+    );
+
+    setTimeout(() =>
+      el.dispatchEvent(
+        new CustomEvent('pageNumberClicked', { detail: { page: 15 } })
+      )
+    );
+    const { detail } = await oneEvent(el, 'pageNumberClicked');
+    expect(detail?.page).to.equal(15);
   });
 });

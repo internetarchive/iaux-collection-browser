@@ -30,6 +30,7 @@ export const mockSuccessResponse: Result<SearchResponse, SearchServiceError> = {
             { key: 'data', doc_count: 605 },
             { key: 'web', doc_count: 301 },
             { key: 'collection', doc_count: 167 },
+            { key: 'account', doc_count: 167 },
           ],
         },
       },
