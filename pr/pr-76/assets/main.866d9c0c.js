@@ -2849,12 +2849,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       ${(e=this.pages)===null||e===void 0?void 0:e.map(t=>u`${t!==0?this.getPageTemplate(t):this.getEllipsisTemplate}`)}
     `}render(){return u`
       <div class="facets-pagination">
-        <button class="arrow-icon" @click=${()=>this.onRewind()}>
+        <button class="arrow-icon" @click=${this.onRewind}>
           <span class="sr-only">Rewind pagination:</span>
           ${gl}
         </button>
         <div class="page-numbers">${this.getPagesTemplate}</div>
-        <button class="arrow-icon" @click=${()=>this.onForward()}>
+        <button class="arrow-icon" @click=${this.onForward}>
           <span class="sr-only">Forward pagination:</span>
           ${yl}
         </button>
