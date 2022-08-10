@@ -497,7 +497,8 @@ export class CollectionBrowser
     if (
       changed.has('displayMode') ||
       changed.has('baseNavigationUrl') ||
-      changed.has('baseImageUrl')
+      changed.has('baseImageUrl') ||
+      changed.has('loggedIn')
     ) {
       this.infiniteScroller?.reload();
     }

@@ -1,6 +1,8 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
+import sinon from 'sinon';
+import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { MockSearchService } from './mocks/mock-search-service';
@@ -58,5 +60,46 @@ describe('Collection Browser', () => {
       'baz',
       'boop',
     ]);
+  });
+  it('refreshes when certain properties change', async () => {
+    const searchService = new MockSearchService();
+    const collectionNameCache = new MockCollectionNameCache();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .collectionNameCache=${collectionNameCache}
+      ></collection-browser>`
+    );
+    const infiniteScrollerRefreshSpy = sinon.spy();
+
+    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
+    (infiniteScroller as InfiniteScroller).reload = infiniteScrollerRefreshSpy;
+    expect(infiniteScrollerRefreshSpy.called).to.be.false;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(0);
+
+    // testing: `loggedIn`
+    el.loggedIn = true;
+    await el.updateComplete;
+    expect(infiniteScrollerRefreshSpy.called).to.be.true;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(1);
+
+    el.loggedIn = false;
+    await el.updateComplete;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(2);
+
+    // testing: `displayMode`
+    el.displayMode = 'list-compact';
+    await el.updateComplete;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(3);
+
+    // testing: `baseNavigationUrl`
+    el.baseNavigationUrl = 'https://funtestsite.com';
+    await el.updateComplete;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(4);
+
+    // testing: `baseImageUrl`
+    el.baseImageUrl = 'https://funtestsiteforimages.com';
+    await el.updateComplete;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(5);
   });
 });
