@@ -209,8 +209,8 @@ export class MoreFacetsContent extends LitElement {
       : '';
   }
 
+  // render pagination if more then 1 page
   private get facetsPaginationTemplate() {
-    // render pagination if more then 1 page
     return this.paginationSize > 1
       ? html`<more-facets-pagination
           .size=${this.paginationSize}

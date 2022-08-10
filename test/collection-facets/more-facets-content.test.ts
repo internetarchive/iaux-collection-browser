@@ -84,7 +84,7 @@ describe('More facets content', () => {
       ></more-facets-content>`
     );
 
-    el.facetKey = 'mediatype';
+    el.facetKey = 'language';
     el.facetsLoading = false;
     await el.updateComplete;
 
