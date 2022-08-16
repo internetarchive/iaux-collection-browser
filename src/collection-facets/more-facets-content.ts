@@ -15,6 +15,7 @@ import type {
   SearchParams,
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import { SelectedFacets, defaultSelectedFacets } from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
@@ -28,7 +29,7 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: String }) fullQuery?: string;
 
-  @property({ type: Object }) modalManager?: any;
+  @property({ type: Object }) modalManager?: ModalManagerInterface;
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
@@ -53,7 +54,7 @@ export class MoreFacetsContent extends LitElement {
 
   @state() paginationSize = 0;
 
-  private facetsPerPage = 60; // Q. how many items we want to have on popup view
+  private facetsPerPage = 60; // TODO: Q. how many items we want to have on popup view
 
   updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
@@ -61,6 +62,25 @@ export class MoreFacetsContent extends LitElement {
       this.pageNumber = 1;
 
       this.updateSpecificFacets();
+    }
+  }
+
+  firstUpdated() {
+    this.setupEscapeListeners();
+  }
+
+  /**
+   * Close more facets modal on Escape click
+   */
+  private setupEscapeListeners() {
+    if (this.modalManager) {
+      document.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          this.modalManager?.closeModal();
+        }
+      });
+    } else {
+      document.removeEventListener('keydown', () => {});
     }
   }
 
@@ -150,16 +170,23 @@ export class MoreFacetsContent extends LitElement {
 
         return html`
           <li class="facet-row">
-            <label class="facet-info-display" title=${facet.key}>
+            <div class="facet-checkbox">
               <input
                 type="checkbox"
                 class="selected-facets"
-                .value="${facet.key}"
+                id="${facet.key}"
                 data-facet="${this.facetKey}"
+                .value="${facet.key}"
                 @click=${(e: Event) => {
                   this.facetClicked(e);
                 }}
               />
+            </div>
+            <label
+              class="facet-info-display"
+              for="${facet.key}"
+              title=${facet.key}
+            >
               <div class="facet-title">
                 ${this.facetKey !== 'collection'
                   ? html`${displayText}`
@@ -206,7 +233,7 @@ export class MoreFacetsContent extends LitElement {
       ? html`<div class="facets-loader">
           <ia-activity-indicator .mode="processing"></ia-activity-indicator>
         </div>`
-      : '';
+      : nothing;
   }
 
   // render pagination if more then 1 page
@@ -271,16 +298,11 @@ export class MoreFacetsContent extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
+    const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
+
     return css`
       #more-facets-page {
         margin-bottom: 2rem;
-      }
-      .modal-content {
-        background-color: #fefefe;
-        margin: auto;
-        padding: 0;
-        border: 1px solid #888;
-        width: 80%;
       }
 
       .facets-content {
@@ -302,22 +324,22 @@ export class MoreFacetsContent extends LitElement {
 
       .facet-row {
         text-align: left;
-      }
-      .facet-row {
+        display: flex;
         align-items: start;
         font-weight: 500;
         font-size: 1.2rem;
       }
       .facet-row input {
         margin: 1px 5px 1px 0;
+        vertical-align: middle;
       }
       .facet-info-display {
         display: flex;
-        flex: 1;
+        flex: 1 1 0%;
         cursor: pointer;
       }
       .facet-title {
-        flex: 1;
+        flex: 1 1 0%;
       }
       .facet-count {
         margin-left: 5px;
@@ -359,7 +381,7 @@ export class MoreFacetsContent extends LitElement {
         color: white;
       }
       .btn-submit {
-        background-color: #194880;
+        background-color: ${modalSubmitButton};
         color: white;
       }
 

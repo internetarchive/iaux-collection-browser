@@ -358,7 +358,7 @@ export class CollectionFacets extends LitElement {
   private searchMoreFacetsLink(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    // don't render More... link if you facets is < this.moreLinkEligibilityCount
+    // don't render More... link if the number of facets is < this.moreLinkEligibilityCount
     if (Object.keys(facetGroup.buckets).length < this.moreLinkEligibilityCount)
       return nothing;
 
@@ -713,7 +713,7 @@ export class CollectionFacets extends LitElement {
         font-size: 1.2rem;
         text-decoration: none;
         padding: 0px 4px;
-        background: white;
+        background: inherit;
         border: 0;
         color: blue;
         cursor: pointer;

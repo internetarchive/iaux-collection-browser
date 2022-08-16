@@ -260,6 +260,7 @@ export class AppRoot extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --primaryButtonBGColor: #194880;
     }
 
     /* add the following styles to ensure proper modal visibility */
@@ -274,7 +275,7 @@ export class AppRoot extends LitElement {
     }
     modal-manager.more-search-facets {
       --modalWidth: 85rem;
-      --modalBorder: 2px solid #194880;
+      --modalBorder: 2px solid var(--primaryButtonBGColor, #194880);
       --modalTitleLineHeight: 4rem;
       --modalTitleFontSize: 1.8rem;
       --modalCornerRadius: 0;

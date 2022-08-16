@@ -147,7 +147,7 @@ export class MoreFacetsPagination extends LitElement {
       .facets-pagination {
         user-select: none;
         margin-top: 10px;
-        background-color: rgb(239, 239, 239);
+        background-color: #eee;
         text-align: center;
         font-size: 3.2rem;
       }
