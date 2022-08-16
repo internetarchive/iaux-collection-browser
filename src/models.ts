@@ -47,7 +47,8 @@ export type CollectionBrowserContext = 'collection' | 'search';
  */
 export enum SortField {
   'relevance' = 'relevance',
-  'views' = 'views',
+  'alltimeview' = 'alltimeview',
+  'weeklyview' = 'weeklyview',
   'title' = 'title',
   'datearchived' = 'datearchived',
   'date' = 'date',
@@ -60,6 +61,7 @@ export enum SortField {
  * The metadata fields we sort by that map to the SortFields above
  */
 export type MetadataSortField =
+  | 'downloads'
   | 'week'
   | 'titleSorter'
   | 'date'
@@ -72,7 +74,8 @@ export const SortFieldDisplayName: {
   [key in SortField]: string;
 } = {
   relevance: 'Relevance',
-  views: 'Views',
+  alltimeview: 'All-time Views',
+  weeklyview: 'Weekly Views',
   title: 'Title',
   datearchived: 'Date Archived',
   date: 'Date Published',
@@ -88,7 +91,8 @@ export const SortFieldToMetadataField: {
   [key in SortField]: MetadataSortField | null;
 } = {
   relevance: null,
-  views: 'week',
+  alltimeview: 'downloads',
+  weeklyview: 'week',
   title: 'titleSorter',
   datearchived: 'publicdate',
   date: 'date',
@@ -103,13 +107,14 @@ export const SortFieldToMetadataField: {
 export const MetadataFieldToSortField: {
   [key in MetadataSortField]: SortField;
 } = {
+  week: SortField.weeklyview,
+  downloads: SortField.alltimeview,
   titleSorter: SortField.title,
   date: SortField.date,
   publicdate: SortField.datearchived,
   reviewdate: SortField.datereviewed,
   addeddate: SortField.dateadded,
   creatorSorter: SortField.creator,
-  week: SortField.views,
 };
 
 export type FacetOption =

@@ -39,3 +39,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# We use yarn.lock
+package-lock.json
