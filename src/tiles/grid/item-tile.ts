@@ -8,6 +8,7 @@ import { formatDate } from '../../utils/format-date';
 import type { TileModel } from '../../models';
 
 import '../image-block';
+import '../text-snippet-block';
 import '../item-image';
 import '../mediatype-icon';
 import './tile-stats';
@@ -40,8 +41,11 @@ export class ItemTile extends LitElement {
             .loggedIn=${this.loggedIn}
             .isCompactTile=${false}
             .isListTile=${false}
+            .hasSnippets=${this.hasSnippets}
             .viewSize=${'grid'}>
           </image-block>
+
+          ${this.textSnippetsTemplate}
 
           ${
             this.doesSortedByDate
@@ -109,6 +113,19 @@ export class ItemTile extends LitElement {
     `;
   }
 
+  private get textSnippetsTemplate() {
+    if (!this.hasSnippets) return nothing;
+
+    return html`
+      <text-snippet-block .viewSize=${'grid'}></text-snippet-block>
+    `;
+  }
+
+  private get hasSnippets(): boolean {
+    // Temporarily true for testing's sake
+    return true; // !!(this.model?.snippets && this.model.snippets.length > 0);
+  }
+
   static get styles(): CSSResultGroup {
     return css`
       .container {
@@ -142,6 +159,10 @@ export class ItemTile extends LitElement {
         text-decoration: underline;
       }
 
+      image-block {
+        margin-bottom: 5px;
+      }
+
       .created-by,
       .date-sorted-by {
         display: flex;
@@ -149,7 +170,6 @@ export class ItemTile extends LitElement {
         align-items: flex-end; /* Important to start text from bottom */
         height: 3rem;
         padding-top: 1rem;
-        margin-top: 5px;
       }
 
       .truncated {
