@@ -85,12 +85,14 @@ export class TextSnippetBlock extends LitElement {
       }
 
       #separator {
-        margin: 0 -0.5rem; /* Border line should extend to the edges of the tile */
+        /* Border line should extend to the edges of the tile */
+        margin: 0 -0.5rem;
         border-bottom: 1px solid #bbb;
       }
 
       .grid {
-        margin: 0.5rem 0 0.4rem; /* Bottom margin reduced by 1px to account for the separator */
+        /* Bottom margin reduced by 1px to account for the separator */
+        margin: 0.5rem 0 0.4rem;
         font-size: 1.2rem;
         line-height: 1.5rem;
       }
@@ -104,7 +106,8 @@ export class TextSnippetBlock extends LitElement {
       }
 
       mark {
-        background-color: #0000ff33; /* blue, 20% transparency */
+        /* blue, 20% transparency */
+        background-color: #0000ff33;
         color: inherit;
       }
     `;
