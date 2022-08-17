@@ -123,7 +123,7 @@ export class ItemTile extends LitElement {
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
-    return html` <text-snippet-block viewsize="grid"></text-snippet-block> `;
+    return html`<text-snippet-block viewsize="grid"></text-snippet-block>`;
   }
 
   private get hasSnippets(): boolean {
