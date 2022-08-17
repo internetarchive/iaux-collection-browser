@@ -5,10 +5,28 @@ import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
+import { defaultSelectedFacets, SortField } from '../src/models';
 import { MockSearchService } from './mocks/mock-search-service';
 import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 
 describe('Collection Browser', () => {
+  it('clear existing filter for facets & sort-bar', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    el.selectedSort = 'title' as SortField;
+    await el.updateComplete;
+    el.clearFilters();
+
+    expect(el.selectedFacets).to.equal(defaultSelectedFacets);
+    expect(el.selectedSort).to.equal('relevance');
+    expect(el.sortDirection).to.null;
+    expect(el.sortParam).to.null;
+    expect(el.selectedCreatorFilter).to.null;
+    expect(el.selectedTitleFilter).to.null;
+  });
+
   it('should render with a sort bar, facets, and infinite scroller', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
@@ -38,6 +56,9 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+    ).to.contains('Results');
   });
 
   it('queries for collection names after a fetch', async () => {
