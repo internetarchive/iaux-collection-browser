@@ -295,7 +295,9 @@ export class CollectionBrowser
                 ? this.totalResults.toLocaleString()
                 : '-'}
             </span>
-            <span id="big-results-label">Results</span>
+            <span id="big-results-label"
+              >${this.totalResults === 1 ? 'Result' : 'Results'}</span
+            >
           </div>
         </div>
         <div
