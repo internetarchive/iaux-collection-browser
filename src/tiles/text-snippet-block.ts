@@ -1,4 +1,11 @@
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { map } from 'lit/directives/map.js';
@@ -35,39 +42,40 @@ export class TextSnippetBlock extends LitElement {
    * An array of HTML templates derived from the snippets, with ellipses inserted
    * between each pair of snippets.
    */
-  private get ellipsisJoinedSnippets() {
+  private get ellipsisJoinedSnippets(): Iterable<TemplateResult> {
     const sanitizeOptions = { ALLOWED_TAGS: ['mark'] };
 
     return join(
       map(
-        this.snippets,
-        s => html`
+        this.markedSnippets,
+        snippet => html`
           <span>
             ${unsafeHTML(
-              DOMPurify.sanitize(
-                TextSnippetBlock.markMatches(s),
-                sanitizeOptions
-              )
+              // Sanitize away any potentially-unsafe content, keeping only <mark> highlights
+              DOMPurify.sanitize(snippet, sanitizeOptions)
             )}
           </span>
         `
-      ),
+      ) as Generator<TemplateResult>,
       html` &hellip; `
     );
   }
 
   /**
-   * Replaces {{{triple-brace-delimited}}} matches with \<mark>HTML mark tags\</mark>.
+   * Returns this item's snippets with all of their `{{{triple-brace-delimited}}}`
+   * matches replaced by `<mark>HTML mark tags</mark>`.
    *
-   * Note on <em> vs. <mark>:
-   * The old search page snippets had search keywords demarcated with <em> tags.
-   * The <mark> tag is semantically more accurate for this use case than <em>,
-   * but screen-reader behavior may be different. <em> will likely be read in a
-   * different tone, while <mark> is often read no differently than ordinary text
+   * Note on `<em>` vs. `<mark>`:
+   * The old search page snippets had search keywords demarcated with `<em>` tags.
+   * The `<mark>` tag is semantically more accurate for this use case than `<em>`,
+   * but screen-reader behavior may be different. `<em>` will likely be read in a
+   * different tone, while `<mark>` is often read no differently than ordinary text
    * in many screen-readers (though there are ways to work around this if needed).
    */
-  private static markMatches(snippet: string) {
-    return snippet.replace(/{{{(.+?)}}}/g, '<mark>$1</mark>');
+  private get markedSnippets(): string[] | undefined {
+    return this.snippets?.map(s =>
+      s.replace(/{{{(.+?)}}}/g, '<mark>$1</mark>')
+    );
   }
 
   static get styles(): CSSResultGroup {
