@@ -2915,7 +2915,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin: 2rem 0.5;
       }
     `}};n([p({type:String})],vi.prototype,"placeholderType",void 0);n([p({type:Boolean})],vi.prototype,"isMobileView",void 0);vi=n([U("empty-placeholder")],vi);let k=class extends L{constructor(){super(...arguments),this.baseImageUrl="https://archive.org",this.sortParam=null,this.selectedSort=M.relevance,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.sortDirection=null,this.pageSize=50,this.showHistogramDatePicker=!1,this.pageContext="search",this.restorationStateHandler=new d1({context:this.pageContext}),this.mobileBreakpoint=600,this.loggedIn=!1,this.isManageView=!1,this.initialPageNumber=1,this.pagesToRender=this.initialPageNumber,this.searchResultsLoading=!1,this.facetsLoading=!1,this.fullYearAggregationLoading=!1,this.mobileView=!1,this.mobileFacetsVisible=!1,this.placeholderType=null,this.languageCodeHandler=new h1,this.isScrollingToCell=!1,this.endOfDataReached=!1,this.isResizeToMobile=!1,this.placeholderCellTemplate=m`<collection-browser-loading-tile></collection-browser-loading-tile>`,this.dataSource={},this.initialQueryChangeHappened=!1,this.historyPopOccurred=!1,this.pageFetchesInProgress={}}tileModelAtCellIndex(e){var t;const i=Math.floor(e/this.pageSize)+1,a=e%this.pageSize,o=(t=this.dataSource[i])===null||t===void 0?void 0:t[a];return!o&&!this.isScrollingToCell&&this.fetchPage(i),o}get sortFilterQueries(){return[this.titleQuery,this.creatorQuery].filter(t=>t).join(" AND ")}get estimatedTileCount(){return this.pagesToRender*this.pageSize}get actualTileCount(){return Object.keys(this.dataSource).reduce((e,t)=>e+this.dataSource[t].length,0)}goToPage(e){this.initialPageNumber=e,this.pagesToRender=e,this.scrollToPage(e)}clearFilters(){this.selectedFacets=pi,this.sortParam=null,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.titleQuery=void 0,this.creatorQuery=void 0,this.selectedSort=M.relevance,this.sortDirection=null}render(){return this.setPlaceholderType(),m`
-      <div id="content-container" class=${this.mobileView?"mobile":""}>
+      <div
+        id="content-container"
+        class=${this.mobileView?"mobile":"desktop"}
+      >
         ${this.placeholderType?this.emptyPlaceholderTemplate:this.collectionBrowserTemplate}
       </div>
     `}setPlaceholderType(){this.placeholderType=null,this.baseQuery||(this.placeholderType="empty-query"),!this.searchResultsLoading&&this.totalResults===0&&(this.placeholderType="null-result")}get emptyPlaceholderTemplate(){return m`
@@ -3098,9 +3101,22 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding-right: 1rem;
     }
 
+    .desktop #left-column::-webkit-scrollbar {
+      display: none;
+    }
+
     .mobile #left-column {
       width: 100%;
       padding: 0;
+    }
+
+    .desktop #left-column {
+      top: 0;
+      position: sticky;
+      max-height: 100vh;
+      overflow: scroll;
+      -ms-overflow-style: none; /* hide scrollbar IE and Edge */
+      scrollbar-width: none; /* hide scrollbar Firefox */
     }
 
     #mobile-header-container {
@@ -3113,10 +3129,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       max-height: 0;
       transition: max-height 0.2s ease-in-out;
       z-index: 1;
+      padding-bottom: 2rem;
     }
 
     .mobile #facets-container {
       overflow: hidden;
+      padding-bottom: 0;
     }
 
     #facets-container.expanded {
