@@ -1,5 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { SortParam } from '@internetarchive/search-service';
@@ -113,12 +120,10 @@ export class ItemTile extends LitElement {
     `;
   }
 
-  private get textSnippetsTemplate() {
+  private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
-    return html`
-      <text-snippet-block .viewSize=${'grid'}></text-snippet-block>
-    `;
+    return html` <text-snippet-block viewsize="grid"></text-snippet-block> `;
   }
 
   private get hasSnippets(): boolean {
