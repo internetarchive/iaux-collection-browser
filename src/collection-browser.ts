@@ -1214,7 +1214,7 @@ export class CollectionBrowser
       padding-right: 1rem;
     }
 
-    #left-column::-webkit-scrollbar {
+    .desktop #left-column::-webkit-scrollbar {
       display: none;
     }
 
