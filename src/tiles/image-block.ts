@@ -15,8 +15,6 @@ export class ImageBlock extends LitElement {
 
   @property({ type: Boolean }) isListTile = false;
 
-  @property({ type: Boolean }) hasSnippets = false;
-
   @property({ type: Boolean }) loggedIn = false;
 
   @property({ type: Object }) model?: TileModel;
@@ -47,7 +45,6 @@ export class ImageBlock extends LitElement {
     return {
       list: this.isListTile && !this.isCompactTile,
       'list-compact': this.isListTile && this.isCompactTile,
-      'has-snippets': this.hasSnippets,
       [this.viewSize]: true,
     };
   }
@@ -93,13 +90,8 @@ export class ImageBlock extends LitElement {
       }
 
       .grid {
-        height: 16rem;
+        height: var(--imgBlockHeight, 16rem);
         flex: 1;
-      }
-
-      .grid.has-snippets {
-        /* If there is a text snippet block present, the image block needs to shrink */
-        height: 11rem;
       }
 
       /** tile-list view */

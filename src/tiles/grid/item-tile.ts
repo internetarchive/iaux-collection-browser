@@ -36,12 +36,12 @@ export class ItemTile extends LitElement {
           </div>
 
           <image-block 
+            class=${this.hasSnippets ? 'has-snippets' : ''}
             .model=${this.model}
             .baseImageUrl=${this.baseImageUrl}
             .loggedIn=${this.loggedIn}
             .isCompactTile=${false}
             .isListTile=${false}
-            .hasSnippets=${this.hasSnippets}
             .viewSize=${'grid'}>
           </image-block>
 
@@ -161,6 +161,11 @@ export class ItemTile extends LitElement {
 
       image-block {
         margin-bottom: 5px;
+      }
+
+      image-block.has-snippets {
+        /* If there is a text snippet block present, the image block needs to shrink */
+        --imgBlockHeight: 11rem;
       }
 
       .created-by,
