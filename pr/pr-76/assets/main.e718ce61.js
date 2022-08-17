@@ -3449,7 +3449,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             <span id="big-results-count">
               ${this.totalResults!==void 0?this.totalResults.toLocaleString():"-"}
             </span>
-            <span id="big-results-label">Results</span>
+            <span id="big-results-label"
+              >${this.totalResults===1?"Result":"Results"}</span
+            >
           </div>
         </div>
         <div
