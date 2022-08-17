@@ -3101,7 +3101,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding-right: 1rem;
     }
 
-    #left-column::-webkit-scrollbar {
+    .desktop #left-column::-webkit-scrollbar {
       display: none;
     }
 
