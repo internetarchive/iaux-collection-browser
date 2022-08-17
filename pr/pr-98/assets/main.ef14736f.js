@@ -506,6 +506,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin: 1rem 0 0;
         padding: 0 0 0 1.5rem;
         border-left: 0.5rem solid #194880;
+        border-radius: 3px;
         font-size: 1.4rem;
         line-height: 2rem;
       }
