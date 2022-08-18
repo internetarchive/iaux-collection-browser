@@ -214,7 +214,7 @@ export class AppRoot extends LitElement {
     }
   }
 
-  private snippetsChanged(e: Event) {
+  private async snippetsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.checked) {
       // Decorate the default search service with a wrapper that adds
@@ -246,6 +246,12 @@ export class AppRoot extends LitElement {
       // Restore the default seach service
       this.searchService = SearchService.default;
     }
+
+    // Re-perform the current search to show/hide the snippets immediately
+    const oldQuery = this.searchQuery;
+    this.searchQuery = ''; // Should just reset to the placeholder
+    await this.updateComplete;
+    this.searchQuery = oldQuery; // Re-apply the original query
   }
 
   private rowGapChanged(e: Event) {
