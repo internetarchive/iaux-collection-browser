@@ -21,15 +21,10 @@ describe('TextSnippetBlock component', () => {
     ];
 
     const el = await fixture<TextSnippetBlock>(
-      html` <text-snippet-block .snippets=${snippets}> </text-snippet-block> `
+      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
     );
 
     const container = el.shadowRoot?.querySelector('#container');
-
-    // Begins and ends with ellipses
-    expect(container?.textContent?.trim()).to.satisfy(
-      (s: string) => s.startsWith('… ') && s.endsWith(' …')
-    );
 
     // Has the correct number of snippets and highlights
     expect(container?.children.length).to.equal(snippets.length);
@@ -38,7 +33,7 @@ describe('TextSnippetBlock component', () => {
 
   it('should render correctly in grid mode', async () => {
     const el = await fixture<TextSnippetBlock>(
-      html` <text-snippet-block viewsize="grid"> </text-snippet-block> `
+      html`<text-snippet-block viewsize="grid"></text-snippet-block>`
     );
 
     const container = el.shadowRoot?.querySelector('#container');
@@ -50,7 +45,7 @@ describe('TextSnippetBlock component', () => {
 
   it('should render correctly in list mode', async () => {
     const el = await fixture<TextSnippetBlock>(
-      html` <text-snippet-block viewsize="list"> </text-snippet-block> `
+      html`<text-snippet-block viewsize="list"></text-snippet-block>`
     );
 
     const container = el.shadowRoot?.querySelector('#container');
