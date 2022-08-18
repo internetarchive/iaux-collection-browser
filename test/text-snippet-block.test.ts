@@ -1,0 +1,62 @@
+/* eslint-disable import/no-duplicates */
+import { expect, fixture } from '@open-wc/testing';
+import { html } from 'lit';
+import type { TextSnippetBlock } from '../src/tiles/text-snippet-block';
+import '../src/tiles/text-snippet-block';
+
+describe('TextSnippetBlock component', () => {
+  it('should render initial component', async () => {
+    const el = await fixture<TextSnippetBlock>(
+      html`<text-snippet-block></text-snippet-block>`
+    );
+
+    const container = el.shadowRoot?.querySelector('#container');
+    expect(container).to.exist;
+  });
+
+  it('should render marked snippets', async () => {
+    const snippets = [
+      'some {{{snippet}}} text',
+      'some {{{other}}} {{{snippet}}} text',
+    ];
+
+    const el = await fixture<TextSnippetBlock>(
+      html` <text-snippet-block .snippets=${snippets}> </text-snippet-block> `
+    );
+
+    const container = el.shadowRoot?.querySelector('#container');
+
+    // Begins and ends with ellipses
+    expect(container?.textContent?.trim()).to.satisfy(
+      (s: string) => s.startsWith('… ') && s.endsWith(' …')
+    );
+
+    // Has the correct number of snippets and highlights
+    expect(container?.children.length).to.equal(snippets.length);
+    expect(container?.querySelectorAll('mark').length).to.equal(3);
+  });
+
+  it('should render correctly in grid mode', async () => {
+    const el = await fixture<TextSnippetBlock>(
+      html` <text-snippet-block viewsize="grid"> </text-snippet-block> `
+    );
+
+    const container = el.shadowRoot?.querySelector('#container');
+
+    // Applies the right container classes
+    expect(container?.classList.contains('grid')).to.be.true;
+    expect(container?.classList.contains('list')).to.be.false;
+  });
+
+  it('should render correctly in list mode', async () => {
+    const el = await fixture<TextSnippetBlock>(
+      html` <text-snippet-block viewsize="list"> </text-snippet-block> `
+    );
+
+    const container = el.shadowRoot?.querySelector('#container');
+
+    // Applies the right container classes
+    expect(container?.classList.contains('list')).to.be.true;
+    expect(container?.classList.contains('grid')).to.be.false;
+  });
+});
