@@ -37,20 +37,19 @@ export class TextSnippetBlock extends LitElement {
   private get ellipsisJoinedSnippets(): Iterable<TemplateResult> {
     const sanitizeOptions = { ALLOWED_TAGS: ['mark'] };
 
-    return join(
-      map(
-        this.markedSnippets,
-        snippet => html`
-          <span>
-            ${unsafeHTML(
-              // Sanitize away any potentially-unsafe content, keeping only <mark> highlights
-              DOMPurify.sanitize(snippet, sanitizeOptions)
-            )}
-          </span>
-        `
-      ) as Generator<TemplateResult>,
-      html` &hellip; `
-    );
+    const snippetTemplates = map(
+      this.markedSnippets,
+      snippet => html`
+        <span>
+          ${unsafeHTML(
+            // Sanitize away any potentially-unsafe content, keeping only <mark> highlights
+            DOMPurify.sanitize(snippet, sanitizeOptions)
+          )}
+        </span>
+      `
+    ) as Generator<TemplateResult>;
+
+    return join(snippetTemplates, html` &hellip; `);
   }
 
   /**
