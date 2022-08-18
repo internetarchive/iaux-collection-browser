@@ -85,7 +85,7 @@ export class TextSnippetBlock extends LitElement {
 
       #separator {
         /* Border line should extend to the edges of the tile */
-        margin: 0 5px;
+        margin: 0 -5px;
         border-bottom: 1px solid #bbb;
       }
 
