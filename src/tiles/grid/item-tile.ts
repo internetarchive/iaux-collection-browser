@@ -43,7 +43,7 @@ export class ItemTile extends LitElement {
           </div>
 
           <image-block 
-            class=${this.hasSnippets ? 'has-snippets' : ''}
+            class=${this.hasSnippets ? 'has-snippets' : nothing}
             .model=${this.model}
             .baseImageUrl=${this.baseImageUrl}
             .loggedIn=${this.loggedIn}
@@ -123,12 +123,14 @@ export class ItemTile extends LitElement {
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
-    return html`<text-snippet-block viewsize="grid"></text-snippet-block>`;
+    return html`<text-snippet-block
+      viewsize="grid"
+      .snippets=${this.model?.snippets}
+    ></text-snippet-block>`;
   }
 
   private get hasSnippets(): boolean {
-    // Temporarily true for testing's sake
-    return true; // !!(this.model?.snippets && this.model.snippets.length > 0);
+    return !!(this.model?.snippets && this.model.snippets.length > 0);
   }
 
   static get styles(): CSSResultGroup {
@@ -165,6 +167,7 @@ export class ItemTile extends LitElement {
       }
 
       image-block {
+        display: block;
         margin-bottom: 5px;
       }
 

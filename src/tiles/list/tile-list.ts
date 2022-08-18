@@ -295,12 +295,14 @@ export class TileList extends LitElement {
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
-    return html`<text-snippet-block viewsize="list"></text-snippet-block>`;
+    return html`<text-snippet-block
+      viewsize="list"
+      .snippets=${this.model?.snippets}
+    ></text-snippet-block>`;
   }
 
   private get hasSnippets(): boolean {
-    // Temporarily true for testing's sake
-    return true; // !!(this.model?.snippets && this.model.snippets.length > 0);
+    return !!(this.model?.snippets && this.model.snippets.length > 0);
   }
 
   // Utility functions

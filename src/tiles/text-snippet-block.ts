@@ -14,15 +14,7 @@ import DOMPurify from 'dompurify';
 
 @customElement('text-snippet-block')
 export class TextSnippetBlock extends LitElement {
-  // The default snippets value here is just for testing's sake; will be removed.
-  @property({ type: Array }) snippets?: string[] = [
-    'this is a text {{{snippet}}} block with potentially',
-    'multiple {{{snippets}}} and such',
-    'but the {{{snippet}}} block may be quite long perhaps',
-    'depending on how many {{{snippet}}} matches there are',
-    'there may be multiple lines of {{{snippets}}} to show',
-    'but each {{{snippet}}} should be relatively short',
-  ];
+  @property({ type: Array }) snippets?: string[] = [];
 
   @property({ type: String }) viewSize: string = 'desktop';
 
