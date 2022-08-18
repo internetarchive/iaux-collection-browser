@@ -486,7 +486,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       #separator {
         /* Border line should extend to the edges of the tile */
-        margin: 0 5px;
+        margin: 0 -5px;
         border-bottom: 1px solid #bbb;
       }
 
