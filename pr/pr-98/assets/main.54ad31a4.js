@@ -467,11 +467,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       </div>
 
       ${this.viewSize==="grid"?m`<div id="separator"></div>`:$}
-    `}get ellipsisJoinedSnippets(){const e={ALLOWED_TAGS:["mark"]};return oi(dr(this.markedSnippets,t=>m`
-          <span>
-            ${ds(gt.sanitize(t,e))}
-          </span>
-        `),m` &hellip; `)}get markedSnippets(){var e;return(e=this.snippets)===null||e===void 0?void 0:e.map(t=>t.replace(/{{{(.+?)}}}/g,"<mark>$1</mark>"))}static get styles(){return y`
+    `}get ellipsisJoinedSnippets(){const e={ALLOWED_TAGS:["mark"]},t=dr(this.markedSnippets,i=>m`
+        <span>
+          ${ds(gt.sanitize(i,e))}
+        </span>
+      `);return oi(t,m` &hellip; `)}get markedSnippets(){var e;return(e=this.snippets)===null||e===void 0?void 0:e.map(t=>t.replace(/{{{(.+?)}}}/g,"<mark>$1</mark>"))}static get styles(){return y`
       #container {
         display: -webkit-box;
         font-family: 'Times New Roman', serif;
