@@ -135,7 +135,6 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'single-result';
-    await searchService?.search({ query: 'single-result' });
     await el.updateComplete;
 
     expect(
