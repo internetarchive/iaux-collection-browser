@@ -6,7 +6,10 @@ import type {
   SearchServiceInterface,
   SearchServiceError,
 } from '@internetarchive/search-service';
-import { mockSuccessResponse } from './mock-search-responses';
+import {
+  mockSuccessSingleResult,
+  mockSuccessMultipleResults,
+} from './mock-search-responses';
 
 export class MockSearchService implements SearchServiceInterface {
   searchParams?: SearchParams;
@@ -15,7 +18,12 @@ export class MockSearchService implements SearchServiceInterface {
     params: SearchParams
   ): Promise<Result<SearchResponse, SearchServiceError>> {
     this.searchParams = params;
-    return mockSuccessResponse;
+
+    if (this.searchParams?.query === 'single-result') {
+      return mockSuccessSingleResult;
+    }
+
+    return mockSuccessMultipleResults;
   }
 
   async fetchMetadata(

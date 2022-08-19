@@ -82,6 +82,7 @@ describe('Collection Browser', () => {
       'boop',
     ]);
   });
+
   it('refreshes when certain properties change', async () => {
     const searchService = new MockSearchService();
     const collectionNameCache = new MockCollectionNameCache();
@@ -122,5 +123,23 @@ describe('Collection Browser', () => {
     el.baseImageUrl = 'https://funtestsiteforimages.com';
     await el.updateComplete;
     expect(infiniteScrollerRefreshSpy.callCount).to.equal(5);
+  });
+
+  it('query the search service for single result', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'single-result';
+    await searchService?.search({ query: 'single-result' });
+    await el.updateComplete;
+
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+    ).to.contains('Result');
   });
 });
