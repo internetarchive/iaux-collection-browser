@@ -148,6 +148,26 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
+  /**
+   * return selected facets in specific/current facetGroup
+   *
+   * @returns selectedFacet - { 'item1', 'item2' }
+   */
+  private get currentSelectedFacets() {
+    let selectedFacet = {} as object;
+
+    Object.entries(this.selectedFacets as SelectedFacets).map(
+      ([key, FacetValue]) => {
+        if (key === this.facetKey) {
+          selectedFacet = FacetValue;
+        }
+        return nothing;
+      }
+    );
+
+    return selectedFacet;
+  }
+
   private get getMoreFacetsTemplate() {
     this.facetsLoading = false;
 
@@ -180,6 +200,10 @@ export class MoreFacetsContent extends LitElement {
                 @click=${(e: Event) => {
                   this.facetClicked(e);
                 }}
+                ?checked=${Object.prototype.hasOwnProperty.call(
+                  this.currentSelectedFacets,
+                  facet.key
+                )}
               />
             </div>
             <label
