@@ -10,6 +10,12 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block></text-snippet-block>`
     );
 
+    // No content if no snippets
+    expect(el.shadowRoot?.children.length).to.equal(0);
+
+    // Content appears if there are snippets
+    el.snippets = ['text'];
+    await el.updateComplete;
     const container = el.shadowRoot?.querySelector('#container');
     expect(container).to.exist;
   });
@@ -33,7 +39,10 @@ describe('TextSnippetBlock component', () => {
 
   it('should render correctly in grid mode', async () => {
     const el = await fixture<TextSnippetBlock>(
-      html`<text-snippet-block viewsize="grid"></text-snippet-block>`
+      html`<text-snippet-block
+        viewsize="grid"
+        .snippets=${['text']}
+      ></text-snippet-block>`
     );
 
     const container = el.shadowRoot?.querySelector('#container');
@@ -45,7 +54,10 @@ describe('TextSnippetBlock component', () => {
 
   it('should render correctly in list mode', async () => {
     const el = await fixture<TextSnippetBlock>(
-      html`<text-snippet-block viewsize="list"></text-snippet-block>`
+      html`<text-snippet-block
+        viewsize="list"
+        .snippets=${['text']}
+      ></text-snippet-block>`
     );
 
     const container = el.shadowRoot?.querySelector('#container');
