@@ -254,7 +254,10 @@ export class CollectionBrowser
   render() {
     this.setPlaceholderType();
     return html`
-      <div id="content-container" class=${this.mobileView ? 'mobile' : ''}>
+      <div
+        id="content-container"
+        class=${this.mobileView ? 'mobile' : 'desktop'}
+      >
         ${this.placeholderType
           ? this.emptyPlaceholderTemplate
           : this.collectionBrowserTemplate}
@@ -295,7 +298,9 @@ export class CollectionBrowser
                 ? this.totalResults.toLocaleString()
                 : '-'}
             </span>
-            <span id="big-results-label">Results</span>
+            <span id="big-results-label">
+              ${this.totalResults === 1 ? 'Result' : 'Results'}
+            </span>
           </div>
         </div>
         <div
@@ -1217,9 +1222,22 @@ export class CollectionBrowser
       padding-right: 1rem;
     }
 
+    .desktop #left-column::-webkit-scrollbar {
+      display: none;
+    }
+
     .mobile #left-column {
       width: 100%;
       padding: 0;
+    }
+
+    .desktop #left-column {
+      top: 0;
+      position: sticky;
+      max-height: 100vh;
+      overflow: scroll;
+      -ms-overflow-style: none; /* hide scrollbar IE and Edge */
+      scrollbar-width: none; /* hide scrollbar Firefox */
     }
 
     #mobile-header-container {
@@ -1232,10 +1250,12 @@ export class CollectionBrowser
       max-height: 0;
       transition: max-height 0.2s ease-in-out;
       z-index: 1;
+      padding-bottom: 2rem;
     }
 
     .mobile #facets-container {
       overflow: hidden;
+      padding-bottom: 0;
     }
 
     #facets-container.expanded {

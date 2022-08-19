@@ -3,7 +3,7 @@
   "description": "The Internet Archive Collection Browser.",
   "license": "AGPL-3.0-only",
   "author": "Internet Archive",
-  "version": "0.2.16-alpha1",
+  "version": "0.2.19",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
