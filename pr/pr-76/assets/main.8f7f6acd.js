@@ -2931,7 +2931,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         clip: rect(0, 0, 0, 0);
         border: 0;
       }
-    `}};n([p({type:Number})],St.prototype,"size",void 0);n([p({type:Number})],St.prototype,"step",void 0);n([z()],St.prototype,"pages",void 0);n([z()],St.prototype,"currentPage",void 0);St=n([R("more-facets-pagination")],St);let ae=class extends I{constructor(){super(...arguments),this.castedBuckets=[],this.pageNumber=1,this.facetsLoading=!0,this.paginationSize=0,this.facetsPerPage=60}updated(e){e.has("facetKey")&&(this.facetsLoading=!0,this.pageNumber=1,this.updateSpecificFacets())}firstUpdated(){this.setupEscapeListeners()}setupEscapeListeners(){this.modalManager?document.addEventListener("keydown",e=>{var t;e.key==="Escape"&&((t=this.modalManager)===null||t===void 0||t.closeModal())}):document.removeEventListener("keydown",()=>{})}async updateSpecificFacets(){var e,t;const i={advancedParams:[{field:this.facetAggregationKey,size:1e6}]},a={query:this.fullQuery,fields:["identifier"],aggregations:i,rows:1},o=await((e=this.searchService)===null||e===void 0?void 0:e.search(a));this.aggregations=(t=o==null?void 0:o.success)===null||t===void 0?void 0:t.response.aggregations,await this.filterFacets(),this.facetsLoading=!1}async filterFacets(){var e;Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{var o,s;if(i!=="year_histogram"&&(this.castedBuckets=a.buckets,this.facetKey==="collection")){const l=(o=this.castedBuckets)===null||o===void 0?void 0:o.map(h=>h.key),c=Array.from(new Set(l));(s=this.collectionNameCache)===null||s===void 0||s.preloadIdentifiers(c)}});const{length:t}=Object.keys(this.castedBuckets);this.paginationSize=Math.ceil(t/this.facetsPerPage)}pageNumberClicked(e){var t;const i=(t=e==null?void 0:e.detail)===null||t===void 0?void 0:t.page;i&&(this.pageNumber=Number(i))}get getMoreFacetsTemplate(){var e;this.facetsLoading=!1;const t=(e=this.castedBuckets)===null||e===void 0?void 0:e.slice((this.pageNumber-1)*this.facetsPerPage,this.pageNumber*this.facetsPerPage);return u`<ul class="facet-list">
+    `}};n([p({type:Number})],St.prototype,"size",void 0);n([p({type:Number})],St.prototype,"step",void 0);n([z()],St.prototype,"pages",void 0);n([z()],St.prototype,"currentPage",void 0);St=n([R("more-facets-pagination")],St);let ae=class extends I{constructor(){super(...arguments),this.castedBuckets=[],this.pageNumber=1,this.facetsLoading=!0,this.paginationSize=0,this.facetsPerPage=60}updated(e){e.has("facetKey")&&(this.facetsLoading=!0,this.pageNumber=1,this.updateSpecificFacets())}firstUpdated(){this.setupEscapeListeners()}setupEscapeListeners(){this.modalManager?document.addEventListener("keydown",e=>{var t;e.key==="Escape"&&((t=this.modalManager)===null||t===void 0||t.closeModal())}):document.removeEventListener("keydown",()=>{})}async updateSpecificFacets(){var e,t;const i={advancedParams:[{field:this.facetAggregationKey,size:1e6}]},a={query:this.fullQuery,fields:["identifier"],aggregations:i,rows:1},o=await((e=this.searchService)===null||e===void 0?void 0:e.search(a));this.aggregations=(t=o==null?void 0:o.success)===null||t===void 0?void 0:t.response.aggregations,await this.filterFacets(),this.facetsLoading=!1}async filterFacets(){var e;Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{var o,s;if(i!=="year_histogram"&&(this.castedBuckets=a.buckets,this.facetKey==="collection")){const l=(o=this.castedBuckets)===null||o===void 0?void 0:o.map(h=>h.key),c=Array.from(new Set(l));(s=this.collectionNameCache)===null||s===void 0||s.preloadIdentifiers(c)}});const{length:t}=Object.keys(this.castedBuckets);this.paginationSize=Math.ceil(t/this.facetsPerPage)}pageNumberClicked(e){var t;const i=(t=e==null?void 0:e.detail)===null||t===void 0?void 0:t.page;i&&(this.pageNumber=Number(i))}get currentSelectedFacets(){let e={};return Object.entries(this.selectedFacets).map(([t,i])=>(t===this.facetKey&&(e=i),$)),e}get getMoreFacetsTemplate(){var e;this.facetsLoading=!1;const t=(e=this.castedBuckets)===null||e===void 0?void 0:e.slice((this.pageNumber-1)*this.facetsPerPage,this.pageNumber*this.facetsPerPage);return u`<ul class="facet-list">
       ${t==null?void 0:t.map(i=>{var a,o;let s=i.key;return this.facetKey==="language"&&(s=(o=(a=this.languageCodeHandler)===null||a===void 0?void 0:a.getLanguageNameFromCodeString(s))!==null&&o!==void 0?o:s),u`
           <li class="facet-row">
             <div class="facet-checkbox">
@@ -2942,6 +2942,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 data-facet="${this.facetKey}"
                 .value="${i.key}"
                 @click=${l=>{this.facetClicked(l)}}
+                ?checked=${Object.prototype.hasOwnProperty.call(this.currentSelectedFacets,i.key)}
               />
             </div>
             <label
@@ -3431,7 +3432,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin: 2rem 0.5;
       }
     `}};n([p({type:String})],wi.prototype,"placeholderType",void 0);n([p({type:Boolean})],wi.prototype,"isMobileView",void 0);wi=n([R("empty-placeholder")],wi);let D=class extends I{constructor(){super(...arguments),this.baseImageUrl="https://archive.org",this.sortParam=null,this.selectedSort=A.relevance,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.sortDirection=null,this.pageSize=50,this.showHistogramDatePicker=!1,this.pageContext="search",this.restorationStateHandler=new $l({context:this.pageContext}),this.mobileBreakpoint=600,this.loggedIn=!1,this.modalManager=void 0,this.isManageView=!1,this.initialPageNumber=1,this.pagesToRender=this.initialPageNumber,this.searchResultsLoading=!1,this.facetsLoading=!1,this.fullYearAggregationLoading=!1,this.mobileView=!1,this.mobileFacetsVisible=!1,this.placeholderType=null,this.languageCodeHandler=new Cl,this.isScrollingToCell=!1,this.endOfDataReached=!1,this.isResizeToMobile=!1,this.placeholderCellTemplate=u`<collection-browser-loading-tile></collection-browser-loading-tile>`,this.dataSource={},this.initialQueryChangeHappened=!1,this.historyPopOccurred=!1,this.pageFetchesInProgress={}}tileModelAtCellIndex(e){var t;const i=Math.floor(e/this.pageSize)+1,a=e%this.pageSize,o=(t=this.dataSource[i])===null||t===void 0?void 0:t[a];return!o&&!this.isScrollingToCell&&this.fetchPage(i),o}get sortFilterQueries(){return[this.titleQuery,this.creatorQuery].filter(t=>t).join(" AND ")}get estimatedTileCount(){return this.pagesToRender*this.pageSize}get actualTileCount(){return Object.keys(this.dataSource).reduce((e,t)=>e+this.dataSource[t].length,0)}goToPage(e){this.initialPageNumber=e,this.pagesToRender=e,this.scrollToPage(e)}clearFilters(){this.selectedFacets=Yt,this.sortParam=null,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.titleQuery=void 0,this.creatorQuery=void 0,this.selectedSort=A.relevance,this.sortDirection=null}render(){return this.setPlaceholderType(),u`
-      <div id="content-container" class=${this.mobileView?"mobile":""}>
+      <div
+        id="content-container"
+        class=${this.mobileView?"mobile":"desktop"}
+      >
         ${this.placeholderType?this.emptyPlaceholderTemplate:this.collectionBrowserTemplate}
       </div>
     `}setPlaceholderType(){this.placeholderType=null,this.baseQuery||(this.placeholderType="empty-query"),!this.searchResultsLoading&&this.totalResults===0&&(this.placeholderType="null-result")}get emptyPlaceholderTemplate(){return u`
@@ -3449,7 +3453,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             <span id="big-results-count">
               ${this.totalResults!==void 0?this.totalResults.toLocaleString():"-"}
             </span>
-            <span id="big-results-label">Results</span>
+            <span id="big-results-label">
+              ${this.totalResults===1?"Result":"Results"}
+            </span>
           </div>
         </div>
         <div
@@ -3617,9 +3623,22 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding-right: 1rem;
     }
 
+    .desktop #left-column::-webkit-scrollbar {
+      display: none;
+    }
+
     .mobile #left-column {
       width: 100%;
       padding: 0;
+    }
+
+    .desktop #left-column {
+      top: 0;
+      position: sticky;
+      max-height: 100vh;
+      overflow: scroll;
+      -ms-overflow-style: none; /* hide scrollbar IE and Edge */
+      scrollbar-width: none; /* hide scrollbar Firefox */
     }
 
     #mobile-header-container {
@@ -3632,10 +3651,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       max-height: 0;
       transition: max-height 0.2s ease-in-out;
       z-index: 1;
+      padding-bottom: 2rem;
     }
 
     .mobile #facets-container {
       overflow: hidden;
+      padding-bottom: 0;
     }
 
     #facets-container.expanded {
