@@ -7,10 +7,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { map } from 'lit/directives/map.js';
 import { join } from 'lit/directives/join.js';
-import DOMPurify from 'dompurify';
 
 @customElement('text-snippet-block')
 export class TextSnippetBlock extends LitElement {
@@ -21,9 +18,11 @@ export class TextSnippetBlock extends LitElement {
   render() {
     const viewSizeClass = this.viewSize === 'grid' ? 'grid' : 'list';
 
+    if (!this.snippets || this.snippets.length === 0) return html`${nothing}`;
+
     return html`
       <div id="container" class=${viewSizeClass}>
-        &hellip; ${this.ellipsisJoinedSnippets ?? nothing} &hellip;
+        ${this.ellipsisJoinedSnippets}
       </div>
 
       ${this.viewSize === 'grid' ? html`<div id="separator"></div>` : nothing}
@@ -32,29 +31,19 @@ export class TextSnippetBlock extends LitElement {
 
   /**
    * An array of HTML templates derived from the snippets, with ellipses inserted
-   * between each pair of snippets.
+   * at the beginning, end, and between each pair of snippets.
    */
-  private get ellipsisJoinedSnippets(): Iterable<TemplateResult> {
-    const sanitizeOptions = { ALLOWED_TAGS: ['mark'] };
-
-    const snippetTemplates = map(
-      this.markedSnippets,
-      snippet => html`
-        <span>
-          ${unsafeHTML(
-            // Sanitize away any potentially-unsafe content, keeping only <mark> highlights
-            DOMPurify.sanitize(snippet, sanitizeOptions)
-          )}
-        </span>
-      `
-    ) as Generator<TemplateResult>;
-
-    return join(snippetTemplates, html` &hellip; `);
+  private get ellipsisJoinedSnippets(): TemplateResult {
+    return html`&hellip; ${join(this.snippetTemplates, html` &hellip; `)}
+    &hellip;`;
   }
 
   /**
-   * Returns this item's snippets with all of their `{{{triple-brace-delimited}}}`
-   * matches replaced by `<mark>HTML mark tags</mark>`.
+   * Returns an array of HTML span templates containing this item's snippets with all of
+   * their `{{{triple-brace-delimited}}}` matches replaced by `<mark>HTML mark tags</mark>`.
+   *
+   * This approach safely avoids the use of `unsafeHTML` and leaves any existing HTML tags
+   * in the snippets intact (as inert text), rather than stripping them away with DOMPurify.
    *
    * Note on `<em>` vs. `<mark>`:
    * The old search page snippets had search keywords demarcated with `<em>` tags.
@@ -63,10 +52,32 @@ export class TextSnippetBlock extends LitElement {
    * different tone, while `<mark>` is often read no differently than ordinary text
    * in many screen-readers (though there are ways to work around this if needed).
    */
-  private get markedSnippets(): string[] | undefined {
-    return this.snippets?.map(s =>
-      s.replace(/{{{(.+?)}}}/g, '<mark>$1</mark>')
-    );
+  private get snippetTemplates(): TemplateResult[] | undefined {
+    return this.snippets?.map(s => {
+      const matches = s.matchAll(/{{{(.+?)}}}/g);
+      const templates: TemplateResult[] = [];
+
+      // Convert each match into an HTML template that includes:
+      //  - Everything from the end of the previous match (or the beginning of the
+      //      string) up to the current match, as raw text.
+      //  - The current match (excluding the curly braces) wrapped in a `<mark>` tag.
+      let index = 0;
+      for (const match of matches) {
+        if (match.index != null) {
+          templates.push(html`
+            ${s.slice(index, match.index)}
+            <mark>${match[1]}</mark>
+          `);
+          index = match.index + match[0].length;
+        }
+      }
+
+      // Include any text from the last match to the end
+      templates.push(html`${s.slice(index)}`);
+
+      // Squash everything into a single span template
+      return html`<span>${templates}</span>`;
+    });
   }
 
   static get styles(): CSSResultGroup {
