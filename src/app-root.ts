@@ -249,9 +249,13 @@ export class AppRoot extends LitElement {
 
     // Re-perform the current search to show/hide the snippets immediately
     const oldQuery = this.searchQuery;
+    console.log(oldQuery, this.updateComplete);
     this.searchQuery = ''; // Should just reset to the placeholder
+    console.log(this.updateComplete);
     await this.updateComplete;
     this.searchQuery = oldQuery; // Re-apply the original query
+    console.log(this.searchQuery);
+    this.requestUpdate();
   }
 
   private rowGapChanged(e: Event) {
