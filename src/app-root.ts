@@ -251,7 +251,8 @@ export class AppRoot extends LitElement {
     const oldQuery = this.searchQuery;
     this.searchQuery = ''; // Should just reset to the placeholder
     await this.updateComplete;
-    await new Promise(res => setTimeout(res, 50));
+    // For unclear reasons, Safari refuses to re-apply the old query until the next tick, hence:
+    await new Promise(res => setTimeout(res, 0));
     this.searchQuery = oldQuery; // Re-apply the original query
   }
 
