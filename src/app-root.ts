@@ -65,7 +65,6 @@ export class AppRoot extends LitElement {
   }
 
   private queryUpdated() {
-    console.log(this.searchQuery);
     this.collectionBrowser.baseQuery = this.searchQuery;
   }
 
@@ -252,6 +251,7 @@ export class AppRoot extends LitElement {
     const oldQuery = this.searchQuery;
     this.searchQuery = ''; // Should just reset to the placeholder
     await this.updateComplete;
+    await new Promise(res => setTimeout(res, 50));
     this.searchQuery = oldQuery; // Re-apply the original query
   }
 
