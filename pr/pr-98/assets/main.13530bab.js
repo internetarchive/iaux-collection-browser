@@ -451,30 +451,26 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */function*oi(r,e){const t=typeof e=="function";if(r!==void 0){let i=-1;for(const a of r)i>-1&&(yield t?e(i):e),i++,yield a}}let fi=class extends L{constructor(){super(...arguments),this.snippets=[],this.viewSize="desktop"}render(){const e=this.viewSize==="grid"?"grid":"list";return!this.snippets||this.snippets.length===0?u`${$}`:u`
-      <div id="container" class=${e}>
-        ${this.ellipsisJoinedSnippets}
-      </div>
+ */function*oi(r,e){const t=typeof e=="function";if(r!==void 0){let i=-1;for(const a of r)i>-1&&(yield t?e(i):e),i++,yield a}}let fi=class extends L{constructor(){super(...arguments),this.snippets=[],this.viewSize="desktop"}render(){var e;return!((e=this.snippets)===null||e===void 0)&&e.length?u`
+      <div class="${this.containerClasses}">${this.ellipsisJoinedSnippets}</div>
 
-      ${this.viewSize==="grid"?u`<div id="separator"></div>`:$}
-    `}get ellipsisJoinedSnippets(){return u`&hellip; ${oi(this.snippetTemplates,u` &hellip; `)}
-    &hellip;`}get snippetTemplates(){var e;return(e=this.snippets)===null||e===void 0?void 0:e.map(t=>{const i=t.matchAll(/{{{(.+?)}}}/g),a=[];let o=0;for(const s of i)s.index!=null&&(a.push(u`
+      ${this.viewSize==="grid"?u`<div class="separator"></div>`:$}
+    `:u`${$}`}get viewSizeClass(){return this.viewSize==="grid"?"grid":"list"}get containerClasses(){return`container ${this.viewSizeClass}`}get ellipsisJoinedSnippets(){return u`
+      &hellip; ${oi(this.snippetTemplates,u` &hellip; `)} &hellip;
+    `}get snippetTemplates(){var e;return(e=this.snippets)===null||e===void 0?void 0:e.map(t=>{const i=t.matchAll(/{{{(.+?)}}}/g),a=[];let o=0;for(const s of i)s.index!=null&&(a.push(u`
             ${t.slice(o,s.index)}
             <mark>${s[1]}</mark>
           `),o=s.index+s[0].length);return a.push(u`${t.slice(o)}`),u`<span>${a}</span>`})}static get styles(){return y`
-      #container {
+      .container {
         display: -webkit-box;
         font-family: 'Times New Roman', serif;
-        color: #2c2c2c;
-
-        text-overflow: ellipsis;
         overflow: hidden;
         overflow-wrap: break-word;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: var(--maxLines, 3);
         -webkit-box-orient: vertical;
       }
 
-      #separator {
+      .separator {
         /* Border line should extend to the edges of the tile */
         margin: 0 -5px;
         border-bottom: 1px solid #bbb;
@@ -947,7 +943,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
     `}get textSnippetsTemplate(){var e;return this.hasSnippets?u`<text-snippet-block
       viewsize="grid"
       .snippets=${(e=this.model)===null||e===void 0?void 0:e.snippets}
-    ></text-snippet-block>`:$}get hasSnippets(){var e;return!!(((e=this.model)===null||e===void 0?void 0:e.snippets)&&this.model.snippets.length>0)}static get styles(){return y`
+    ></text-snippet-block>`:$}get hasSnippets(){var e,t;return!!(!((t=(e=this.model)===null||e===void 0?void 0:e.snippets)===null||t===void 0)&&t.length)}static get styles(){return y`
       .container {
         background-color: #ffffff;
         border-radius: var(--collectionTileCornerRadius, 4px);
@@ -1212,7 +1208,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}get descriptionTemplate(){var e,t;return this.metadataTemplate(Bt.sanitize((t=(e=this.model)===null||e===void 0?void 0:e.description)!==null&&t!==void 0?t:""),"","description")}get textSnippetsTemplate(){var e;return this.hasSnippets?u`<text-snippet-block
       viewsize="list"
       .snippets=${(e=this.model)===null||e===void 0?void 0:e.snippets}
-    ></text-snippet-block>`:$}get hasSnippets(){var e;return!!(((e=this.model)===null||e===void 0?void 0:e.snippets)&&this.model.snippets.length>0)}metadataTemplate(e,t="",i){return e?u`
+    ></text-snippet-block>`:$}get hasSnippets(){var e,t;return!!(!((t=(e=this.model)===null||e===void 0?void 0:e.snippets)===null||t===void 0)&&t.length)}metadataTemplate(e,t="",i){return e?u`
       <div id=${Ci(i)} class="metadata">
         ${this.labelTemplate(t)} ${e}
       </div>
