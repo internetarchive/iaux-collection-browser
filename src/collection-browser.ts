@@ -630,6 +630,12 @@ export class CollectionBrowser
   private previousQueryKey?: string;
 
   private async handleQueryChange() {
+    console.log(
+      !this.searchService,
+      this.pageFetchQueryKey,
+      this.previousQueryKey,
+      this.initialQueryChangeHappened
+    );
     // only reset if the query has actually changed
     if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
       return;
