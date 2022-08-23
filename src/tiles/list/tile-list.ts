@@ -302,7 +302,7 @@ export class TileList extends LitElement {
   }
 
   private get hasSnippets(): boolean {
-    return !!(this.model?.snippets && this.model.snippets.length > 0);
+    return !!this.model?.snippets?.length;
   }
 
   // Utility functions

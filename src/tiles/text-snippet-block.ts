@@ -16,17 +16,23 @@ export class TextSnippetBlock extends LitElement {
   @property({ type: String }) viewSize: string = 'desktop';
 
   render() {
-    const viewSizeClass = this.viewSize === 'grid' ? 'grid' : 'list';
-
-    if (!this.snippets || this.snippets.length === 0) return html`${nothing}`;
+    if (!this.snippets?.length) return html`${nothing}`;
 
     return html`
-      <div id="container" class=${viewSizeClass}>
-        ${this.ellipsisJoinedSnippets}
-      </div>
+      <div class="${this.containerClasses}">${this.ellipsisJoinedSnippets}</div>
 
-      ${this.viewSize === 'grid' ? html`<div id="separator"></div>` : nothing}
+      ${this.viewSize === 'grid'
+        ? html`<div class="separator"></div>`
+        : nothing}
     `;
+  }
+
+  private get viewSizeClass() {
+    return this.viewSize === 'grid' ? 'grid' : 'list';
+  }
+
+  private get containerClasses() {
+    return `container ${this.viewSizeClass}`;
   }
 
   /**
@@ -34,8 +40,9 @@ export class TextSnippetBlock extends LitElement {
    * at the beginning, end, and between each pair of snippets.
    */
   private get ellipsisJoinedSnippets(): TemplateResult {
-    return html`&hellip; ${join(this.snippetTemplates, html` &hellip; `)}
-    &hellip;`;
+    return html`
+      &hellip; ${join(this.snippetTemplates, html` &hellip; `)} &hellip;
+    `;
   }
 
   /**
@@ -82,19 +89,16 @@ export class TextSnippetBlock extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      #container {
+      .container {
         display: -webkit-box;
         font-family: 'Times New Roman', serif;
-        color: #2c2c2c;
-
-        text-overflow: ellipsis;
         overflow: hidden;
         overflow-wrap: break-word;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: var(--maxLines, 3);
         -webkit-box-orient: vertical;
       }
 
-      #separator {
+      .separator {
         /* Border line should extend to the edges of the tile */
         margin: 0 -5px;
         border-bottom: 1px solid #bbb;
