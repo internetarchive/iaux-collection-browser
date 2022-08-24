@@ -1078,6 +1078,7 @@ export class CollectionBrowser
         issue: doc.issue?.value,
         itemCount: doc.item_count?.value ?? 0,
         mediatype: doc.mediatype?.value ?? 'data',
+        snippets: doc.snippets?.values ?? [],
         source: doc.source?.value,
         subjects: doc.subject?.values ?? [],
         title: this.etreeTitle(

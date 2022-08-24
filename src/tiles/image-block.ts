@@ -90,7 +90,7 @@ export class ImageBlock extends LitElement {
       }
 
       .grid {
-        height: 16rem;
+        height: var(--imgBlockHeight, 16rem);
         flex: 1;
       }
 

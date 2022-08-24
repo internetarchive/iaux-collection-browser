@@ -140,7 +140,7 @@ export class TileList extends LitElement {
         ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
       </div>
       ${this.topicsTemplate} ${this.collectionsTemplate}
-      ${this.descriptionTemplate}
+      ${this.descriptionTemplate} ${this.textSnippetsTemplate}
     `;
   }
 
@@ -290,6 +290,19 @@ export class TileList extends LitElement {
       '',
       'description'
     );
+  }
+
+  private get textSnippetsTemplate(): TemplateResult | typeof nothing {
+    if (!this.hasSnippets) return nothing;
+
+    return html`<text-snippet-block
+      viewsize="list"
+      .snippets=${this.model?.snippets}
+    ></text-snippet-block>`;
+  }
+
+  private get hasSnippets(): boolean {
+    return !!this.model?.snippets?.length;
   }
 
   // Utility functions

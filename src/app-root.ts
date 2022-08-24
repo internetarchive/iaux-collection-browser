@@ -130,6 +130,14 @@ export class AppRoot extends LitElement {
                 @click=${this.loginChanged}
               />
             </div>
+            <div>
+              <label for="show-dummy-snippets">Show dummy snippets:</label>
+              <input
+                type="checkbox"
+                id="show-dummy-snippets"
+                @click=${this.snippetsChanged}
+              />
+            </div>
           </div>
           <div id="cell-gap-control">
             <div>
@@ -204,6 +212,48 @@ export class AppRoot extends LitElement {
         '--infiniteScrollerCellOutline'
       );
     }
+  }
+
+  private async snippetsChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.checked) {
+      // Decorate the default search service with a wrapper that adds
+      // dummy snippets to any successful searches
+      this.searchService = {
+        ...SearchService.default,
+        async search(params) {
+          const result = await SearchService.default.search(params);
+          result.success?.response.docs.forEach(doc => {
+            const metadata = doc.rawMetadata;
+            if (metadata) {
+              metadata.snippets = [
+                'this is a text {{{snippet}}} block with potentially',
+                'multiple {{{snippets}}} and such',
+                'but the {{{snippet}}} block may be quite long perhaps',
+                'depending on how many {{{snippet}}} matches there are',
+                'there may be multiple lines of {{{snippets}}} to show',
+                'but each {{{snippet}}} should be relatively short',
+                'and {{{snippets}}} are each a {{{snippet}}} of text',
+                'but every {{{snippet}}} might have multiple matches',
+                'the {{{snippets}}} should be separated and surrounded by ellipses',
+              ];
+            }
+          });
+          return result;
+        },
+      };
+    } else {
+      // Restore the default seach service
+      this.searchService = SearchService.default;
+    }
+
+    // Re-perform the current search to show/hide the snippets immediately
+    const oldQuery = this.searchQuery;
+    this.searchQuery = ''; // Should just reset to the placeholder
+    await this.updateComplete;
+    // For unclear reasons, Safari refuses to re-apply the old query until the next tick, hence:
+    await new Promise(res => setTimeout(res, 0));
+    this.searchQuery = oldQuery; // Re-apply the original query
   }
 
   private rowGapChanged(e: Event) {
