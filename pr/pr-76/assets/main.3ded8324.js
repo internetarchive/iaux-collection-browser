@@ -2802,7 +2802,29 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18),
           0 4px 4px 0 rgba(0, 0, 0, 0.08);
       }
-    `}};n([p({type:Object})],va.prototype,"config",void 0);va=n([R("modal-template")],va);function ul(r,e,t){var i=t||{},a=i.noTrailing,o=a===void 0?!1:a,s=i.noLeading,l=s===void 0?!1:s,c=i.debounceMode,h=c===void 0?void 0:c,m,f=!1,g=0;function b(){m&&clearTimeout(m)}function x(M){var T=M||{},E=T.upcomingOnly,F=E===void 0?!1:E;b(),f=!F}function k(){for(var M=arguments.length,T=new Array(M),E=0;E<M;E++)T[E]=arguments[E];var F=this,P=Date.now()-g;if(f)return;function W(){g=Date.now(),e.apply(F,T)}function X(){m=void 0}!l&&h&&!m&&W(),b(),h===void 0&&P>r?l?(g=Date.now(),o||(m=setTimeout(h?X:W,r))):W():o!==!0&&(m=setTimeout(h?X:W,h===void 0?r-P:r))}return k.cancel=x,k}var qe;(function(r){r.Open="open",r.Closed="closed"})(qe||(qe={}));class ml{constructor(e){this.windowResizeThrottler=ul(100,this.updateModalContainerHeight,{noLeading:!1,noTrailing:!1}).bind(this),this.modalManager=e}handleModeChange(e){switch(e){case qe.Open:this.startResizeListener(),this.stopDocumentScroll();break;case qe.Closed:this.stopResizeListener(),this.resumeDocumentScroll();break}}updateModalContainerHeight(){this.modalManager.style.setProperty("--containerHeight",`${window.innerHeight}px`)}stopDocumentScroll(){document.body.classList.add("modal-manager-open")}resumeDocumentScroll(){document.body.classList.remove("modal-manager-open")}startResizeListener(){window.addEventListener("resize",this.windowResizeThrottler)}stopResizeListener(){window.removeEventListener("resize",this.windowResizeThrottler)}}let xt=class extends I{constructor(){super(...arguments),this.mode=qe.Closed,this.hostBridge=new ml(this),this.closeOnBackdropClick=!0}render(){return u`
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+
+      slot::slotted(.sr-only) {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+    `}};n([p({type:Object})],va.prototype,"config",void 0);va=n([R("modal-template")],va);function ul(r,e,t){var i=t||{},a=i.noTrailing,o=a===void 0?!1:a,s=i.noLeading,l=s===void 0?!1:s,c=i.debounceMode,h=c===void 0?void 0:c,m,f=!1,g=0;function b(){m&&clearTimeout(m)}function x(M){var T=M||{},E=T.upcomingOnly,F=E===void 0?!1:E;b(),f=!F}function k(){for(var M=arguments.length,T=new Array(M),E=0;E<M;E++)T[E]=arguments[E];var F=this,P=Date.now()-g;if(f)return;function W(){g=Date.now(),e.apply(F,T)}function X(){m=void 0}!l&&h&&!m&&W(),b(),h===void 0&&P>r?l?(g=Date.now(),o||(m=setTimeout(h?X:W,r))):W():o!==!0&&(m=setTimeout(h?X:W,h===void 0?r-P:r))}return k.cancel=x,k}var qe;(function(r){r.Open="open",r.Closed="closed"})(qe||(qe={}));class ml{constructor(e){this.windowResizeThrottler=ul(100,this.updateModalContainerHeight).bind(this),this.modalManager=e}handleModeChange(e){switch(e){case qe.Open:this.startResizeListener(),this.stopDocumentScroll();break;case qe.Closed:this.stopResizeListener(),this.resumeDocumentScroll();break}}updateModalContainerHeight(){this.modalManager.style.setProperty("--containerHeight",`${window.innerHeight}px`)}stopDocumentScroll(){document.body.classList.add("modal-manager-open")}resumeDocumentScroll(){document.body.classList.remove("modal-manager-open")}startResizeListener(){window.addEventListener("resize",this.windowResizeThrottler)}stopResizeListener(){window.removeEventListener("resize",this.windowResizeThrottler)}}let xt=class extends I{constructor(){super(...arguments),this.mode=qe.Closed,this.hostBridge=new ml(this),this.closeOnBackdropClick=!0}render(){return u`
       <div class="container">
         <div class="backdrop" @click=${this.backdropClicked}></div>
         <modal-template
@@ -2857,7 +2879,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     />
     <title>Go right icon</title>
   </svg>
-`;let St=class extends I{constructor(){super(...arguments),this.step=2,this.pages=[],this.currentPage=1}firstUpdated(){this.observePageCount()}observePageCount(){this.pages=[];let e=this.currentPage-this.step,t=this.currentPage+this.step;e<=0&&(t+=-e+1,e=1),t>=this.size&&(e=Math.max(e-(t-this.size),1),t=this.size),this.createFirstNode(e),this.createMiddelNode(e,t),this.createLastNode(t)}createFirstNode(e){var t,i;e>1&&((t=this.pages)===null||t===void 0||t.push(1),(i=this.pages)===null||i===void 0||i.push(0))}createMiddelNode(e,t){var i;for(let a=e;a<=t;a+=1)(i=this.pages)===null||i===void 0||i.push(a)}createLastNode(e){var t,i;e<this.size&&((t=this.pages)===null||t===void 0||t.push(0),(i=this.pages)===null||i===void 0||i.push(this.size))}get getEllipsisTemplate(){return u`<i>...</i>`}emitPageClick(){this.dispatchEvent(new CustomEvent("pageNumberClicked",{detail:{page:this.currentPage}}))}onRewind(){this.currentPage-=1,this.currentPage<1&&(this.currentPage=1),this.observePageCount(),this.emitPageClick()}onForward(){this.currentPage+=1,this.currentPage>this.size&&(this.currentPage=this.size),this.observePageCount(),this.emitPageClick()}onChange(e){this.currentPage=e,this.observePageCount(),this.emitPageClick()}getPageTemplate(e){return u`
+`;let St=class extends I{constructor(){super(...arguments),this.step=2,this.pages=[],this.currentPage=1}firstUpdated(){this.observePageCount()}observePageCount(){this.pages=[];let e=this.currentPage-this.step,t=this.currentPage+this.step;e<=0&&(t+=-e+1,e=1),t>=this.size&&(e=Math.max(e-(t-this.size),1),t=this.size),e===2&&(t-=1),t===this.size-1&&(e+=1),this.createFirstNode(e),this.createMiddelNode(e,t),this.createLastNode(t)}createFirstNode(e){var t,i;e>1&&((t=this.pages)===null||t===void 0||t.push(1)),e>2&&((i=this.pages)===null||i===void 0||i.push(0))}createMiddelNode(e,t){var i;for(let a=e;a<=t;a+=1)(i=this.pages)===null||i===void 0||i.push(a)}createLastNode(e){var t,i;e<this.size-1&&((t=this.pages)===null||t===void 0||t.push(0)),e<this.size&&((i=this.pages)===null||i===void 0||i.push(this.size))}get getEllipsisTemplate(){return u`<i>...</i>`}emitPageClick(){this.dispatchEvent(new CustomEvent("pageNumberClicked",{detail:{page:this.currentPage}}))}onRewind(){this.currentPage-=1,this.currentPage<1&&(this.currentPage=1),this.observePageCount(),this.emitPageClick()}onForward(){this.currentPage+=1,this.currentPage>this.size&&(this.currentPage=this.size),this.observePageCount(),this.emitPageClick()}onChange(e){this.currentPage=e,this.observePageCount(),this.emitPageClick()}getPageTemplate(e){return u`
       <button
         @click="${()=>this.onChange(e)}"
         class="${this.currentPage===e?"current":$}"
@@ -3009,16 +3031,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin: 0;
         padding: 0;
       }
-      ul.facet-list li {
-        margin-bottom: 2px;
-      }
-
       .facet-row {
         text-align: left;
         display: flex;
         align-items: start;
         font-weight: 500;
         font-size: 1.2rem;
+        margin-bottom: 2px;
+      }
+      .facet-row .facet-checkbox {
+        margin-bottom: 2x;
       }
       .facet-row input {
         margin: 1px 5px 1px 0;
@@ -3031,6 +3053,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       .facet-title {
         flex: 1 1 0%;
+        display: grid;
       }
       .facet-count {
         margin-left: 5px;
@@ -3125,10 +3148,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <span
         style="display:block;text-align:left;font-size:1.8rem;padding:0 10px;"
       >
-        <span
-          style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip: rect(0,0,0,0);border:0;"
-          >More facets for:
-        </span>
+        <span class="sr-only">More facets for:</span>
         ${ta[e.key]}
         <img
           src="https://archive.org/images/filter-count.png"
