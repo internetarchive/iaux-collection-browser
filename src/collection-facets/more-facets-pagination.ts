@@ -38,6 +38,14 @@ export class MoreFacetsPagination extends LitElement {
       endPage = this.size;
     }
 
+    if (startPage === 2) {
+      endPage -= 1;
+    }
+
+    if (endPage === this.size - 1) {
+      startPage += 1;
+    }
+
     // create first page node
     this.createFirstNode(startPage);
 
@@ -51,6 +59,8 @@ export class MoreFacetsPagination extends LitElement {
   private createFirstNode(startPage: number) {
     if (startPage > 1) {
       this.pages?.push(1);
+    }
+    if (startPage > 2) {
       this.pages?.push(0); // let's asssume 0 is for ellipsis template
     }
   }
@@ -62,8 +72,10 @@ export class MoreFacetsPagination extends LitElement {
   }
 
   private createLastNode(endPage: number) {
-    if (endPage < this.size) {
+    if (endPage < this.size - 1) {
       this.pages?.push(0); // let's asssume 0 is for ellipsis template
+    }
+    if (endPage < this.size) {
       this.pages?.push(this.size);
     }
   }

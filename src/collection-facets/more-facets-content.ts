@@ -342,16 +342,16 @@ export class MoreFacetsContent extends LitElement {
         margin: 0;
         padding: 0;
       }
-      ul.facet-list li {
-        margin-bottom: 2px;
-      }
-
       .facet-row {
         text-align: left;
         display: flex;
         align-items: start;
         font-weight: 500;
         font-size: 1.2rem;
+        margin-bottom: 2px;
+      }
+      .facet-row .facet-checkbox {
+        margin-bottom: 2x;
       }
       .facet-row input {
         margin: 1px 5px 1px 0;
@@ -364,6 +364,7 @@ export class MoreFacetsContent extends LitElement {
       }
       .facet-title {
         flex: 1 1 0%;
+        display: grid;
       }
       .facet-count {
         margin-left: 5px;

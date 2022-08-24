@@ -382,10 +382,7 @@ export class CollectionFacets extends LitElement {
       <span
         style="display:block;text-align:left;font-size:1.8rem;padding:0 10px;"
       >
-        <span
-          style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip: rect(0,0,0,0);border:0;"
-          >More facets for:
-        </span>
+        <span class="sr-only">More facets for:</span>
         ${facetTitles[facetGroup.key]}
         <img
           src="https://archive.org/images/filter-count.png"
