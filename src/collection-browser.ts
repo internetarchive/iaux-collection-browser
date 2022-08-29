@@ -52,7 +52,10 @@ import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
-
+import {
+  mockSuccessSingleResult,
+  mockSuccessMultipleResults,
+} from './../test/mocks/mock-search-responses';
 @customElement('collection-browser')
 export class CollectionBrowser
   extends LitElement
@@ -783,6 +786,9 @@ export class CollectionBrowser
   }
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
+
+    console.log(this.selectedFacets);
+    console.log(e);
     this.selectedFacets = e.detail;
   }
 
@@ -826,9 +832,10 @@ export class CollectionBrowser
     };
     this.facetsLoading = true;
     const results = await this.searchService?.search(params);
+    this.aggregations = results?.success?.response.aggregations;
     this.facetsLoading = false;
 
-    this.aggregations = results?.success?.response.aggregations;
+    // this.aggregations = mockSuccessMultipleResults?.success?.response?.aggregations;
   }
 
   /**

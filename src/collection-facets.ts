@@ -31,36 +31,14 @@ import {
   FacetGroup,
   FacetBucket,
   defaultSelectedFacets,
+  facetDisplayOrder,
+  facetTitles,
+  aggregationToFacetOption,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
-
-const facetDisplayOrder: FacetOption[] = [
-  'mediatype',
-  'year',
-  'subject',
-  'collection',
-  'creator',
-  'language',
-];
-
-const aggregationToFacetOption: Record<string, FacetOption> = {
-  subjectSorter: 'subject',
-  mediatypeSorter: 'mediatype',
-  languageSorter: 'language',
-  creatorSorter: 'creator',
-  collection: 'collection',
-  year: 'year',
-};
-
-const facetTitles: Record<FacetOption, string> = {
-  subject: 'Subject',
-  mediatype: 'Media Type',
-  language: 'Language',
-  creator: 'Creator',
-  collection: 'Collection',
-  year: 'Year',
-};
+import './collection-facets/facets-template';
+import { getFacetOptionFromKey } from './collection-facets/facets-util';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -226,6 +204,7 @@ export class CollectionFacets extends LitElement {
       facetGroups.push(facetGroup);
     });
 
+    console.log(facetGroups)
     return facetGroups;
   }
 
@@ -280,7 +259,7 @@ export class CollectionFacets extends LitElement {
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
-      const option = this.getFacetOptionFromKey(key);
+      const option = getFacetOptionFromKey(key);
       const title = facetTitles[option];
       const castedBuckets = buckets.buckets as Bucket[];
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
@@ -392,7 +371,7 @@ export class CollectionFacets extends LitElement {
       </span>
     `;
 
-    const message = html`
+    const someContent = html`
       <more-facets-content
         @facetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
@@ -421,10 +400,12 @@ export class CollectionFacets extends LitElement {
       closeOnBackdropClick: true, // TODO: want to fire analytics
       title: html`Select filters`,
       headline,
-      message,
     });
     this.modalManager?.classList.add('more-search-facets');
-    this.modalManager?.showModal({ config });
+    this.modalManager?.showModal({ 
+      config,
+      customModalContent: someContent
+    });
   }
 
   /**
@@ -436,6 +417,25 @@ export class CollectionFacets extends LitElement {
     );
     const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
 
+    return html`
+      <facets-template
+        .facetKey=${facetGroup?.key}
+        .facetTitle=${facetGroup?.title}
+        .facetBucket=${bucketsMaxSix}
+        .facetGroup=${facetGroup}
+        .type='page'
+        .selectedFacets=${this.selectedFacets}
+        @selectedFacetsChanged=${(e: CustomEvent) => {
+          console.log(e.detail)
+          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+            detail: e.detail,
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+        }}
+      ></facets-template>
+    `
     return html`
       <ul class="facet-list">
         ${repeat(
@@ -562,26 +562,6 @@ export class CollectionFacets extends LitElement {
     }
     delete newFacets[key][value];
     this.selectedFacets = newFacets;
-  }
-
-  /**
-   * Parse the aggregate key title into the human readable title
-   *
-   * Example: user_aggs__terms__field:mediatypeSorter__size:6 => Media Type
-   *
-   * @param key
-   * @returns
-   */
-  private getFacetOptionFromKey(key: string): FacetOption {
-    const parts = key.split('__');
-    const fieldNamePart = parts[2];
-    const fieldName = fieldNamePart.split(':')[1];
-    const facetMatch = Object.entries(aggregationToFacetOption).find(([key2]) =>
-      fieldName.includes(key2)
-    );
-    const option = facetMatch?.[1];
-    if (!option) throw new Error(`Could not find facet option for key: ${key}`);
-    return option;
   }
 
   static get styles() {
