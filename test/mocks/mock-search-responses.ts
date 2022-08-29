@@ -286,7 +286,6 @@ export const mockSuccessMultipleResults: Result<
   },
 };
 
-
 export const mockSuccessMultipleResults1: Result<
   SearchResponse,
   SearchServiceError

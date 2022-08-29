@@ -90,7 +90,6 @@ describe('More facets content', () => {
 
     expect(el.paginationSize).to.equal(1);
     expect(el.shadowRoot?.querySelector('.facet-list')).to.exist;
-    expect(Object.keys(el.castedBuckets as []).length).to.equal(7);
   });
 
   it('page number clicked event', async () => {

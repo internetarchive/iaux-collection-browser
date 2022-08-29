@@ -159,8 +159,6 @@ export const defaultSelectedFacets: SelectedFacets = {
   year: {},
 };
 
-
-
 // new entries
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',

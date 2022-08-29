@@ -17,20 +17,19 @@ import type {
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
-import { SelectedFacets, defaultSelectedFacets, FacetGroup, FacetBucket, FacetOption, aggregationToFacetOption, facetTitles } from '../models';
+import {
+  SelectedFacets,
+  defaultSelectedFacets,
+  FacetGroup,
+  FacetBucket,
+  FacetOption,
+  facetTitles,
+} from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
+import { getFacetOptionFromKey } from '../collection-facets/facets-util';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
-import {
-  mockSuccessSingleResult,
-  mockSuccessMultipleResults,
-  mockSuccessMultipleResults1,
-} from './../../test/mocks/mock-search-responses';
-import { getFacetOptionFromKey } from './../collection-facets/facets-util';
-// import { FacetGroup } from '../../dist/src/models';
-
-
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -54,7 +53,6 @@ export class MoreFacetsContent extends LitElement {
 
   @state() aggregations?: Record<string, Aggregation>;
 
-  @state() castedBuckets?: FacetGroup[] = [];
   @state() facetGroup?: FacetGroup[] = [];
 
   @state() pageNumber = 1;
@@ -79,7 +77,7 @@ export class MoreFacetsContent extends LitElement {
     }
 
     if (changed.has('pageNumber')) {
-      this.facetGroup = this.aggregationFacetGroups
+      this.facetGroup = this.aggregationFacetGroups;
     }
   }
 
@@ -125,113 +123,9 @@ export class MoreFacetsContent extends LitElement {
 
     const results = await this.searchService?.search(params);
     this.aggregations = results?.success?.response.aggregations as any;
-    // this.aggregations = mockSuccessMultipleResults1?.success?.response?.aggregations;
 
-
-    // filter facets data to be rendered in modal-manager
-    // await this.filterFacets();
-    this.facetGroup = this.aggregationFacetGroups
+    this.facetGroup = this.aggregationFacetGroups;
     this.facetsLoading = false;
-  }
-
-  /**
-   * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
-   */
-  private aggregationFacetGroups1(): FacetGroup[] {
-    const facetGroups: FacetGroup[] = [];
-    // console.log(this.aggregations)
-    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
-      // the year_histogram data is in a different format so can't be handled here
-      // console.log(key, buckets)
-      if (key === 'year_histogram') return;
-      const option = getFacetOptionFromKey(key);
-
-      // if (option === 'collection') {
-      //   // for collections, we need to asynchronously load the collection name
-      //   // so we use the `async-collection-name` widget and for the rest, we have a static value to use
-      //   const collectionIds = this.castedBuckets?.map(option => option.key);
-      //   const collectionIdsArray = Array.from(
-      //     new Set(collectionIds)
-      //   ) as string[];
-      //   this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
-      // }
-
-
-      const title = facetTitles[option];
-      const castedBuckets = buckets.buckets as Bucket[];
-
-      const { length } = Object.keys(castedBuckets as []);
-      this.paginationSize = Math.ceil(length / this.facetsPerPage);
-
-      // render only items which will be visible as per this.facetsPerPage
-      const bucketsMaxSix = castedBuckets?.slice(
-        (this.pageNumber - 1) * this.facetsPerPage,
-        this.pageNumber * this.facetsPerPage
-      );
-
-      // console.log('total', length, 'current', bucketsMaxSix.length)
-
-      const facetBuckets: FacetBucket[] = bucketsMaxSix.map(bucket => {
-        let bucketKey = bucket.key;
-        // for languages, we need to search by language code instead of the
-        // display name, which is what we get from the search engine result
-        if (option === 'language') {
-          // const languageCodeKey = languageToCodeMap[bucket.key];
-          bucketKey =
-            this.languageCodeHandler?.getCodeStringFromLanguageName(
-              `${bucket.key}`
-            ) ?? bucket.key;
-          // bucketKey = languageCodeKey ?? bucket.key;
-        }
-        return {
-          displayText: `${bucket.key}`,
-          key: `${bucketKey}`,
-          count: bucket.doc_count,
-          state: 'none',
-        };
-      });
-      const group: FacetGroup = {
-        title,
-        key: option,
-        buckets: facetBuckets,
-      };
-
-      
-
-      facetGroups.push(group);
-    });
-
-    // this.facetGroup = facetGroups;
-    // console.log(facetGroups)
-    return facetGroups;
-  }
-  
-  /**
-   * Filter facets data stored in this.aggregations, eg.
-   * - we don't want to entertain year_histogram data since we using new date-picker
-   * - name of collections needs to be load inside cache using this.collectionNameCache
-   *
-   * this.castedBuckets - hold filtered facets data which will be render in modal
-   */
-  async filterFacets(): Promise<void> {
-    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
-      if (key === 'year_histogram') return;
-
-      // this.castedBuckets = buckets['buckets'] as Bucket[];
-
-      if (this.facetKey === 'collection') {
-        // for collections, we need to asynchronously load the collection name
-        // so we use the `async-collection-name` widget and for the rest, we have a static value to use
-        const collectionIds = this.castedBuckets?.map(option => option.key);
-        const collectionIdsArray = Array.from(
-          new Set(collectionIds)
-        ) as string[];
-        this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
-      }
-    });
-
-    const { length } = Object.keys(this.castedBuckets as []);
-    this.paginationSize = Math.ceil(length / this.facetsPerPage);
   }
 
   private pageNumberClicked(e: CustomEvent<{ page: string }>) {
@@ -242,82 +136,53 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
-   * return selected facets in specific/current facetGroup
-   *
-   * @returns selectedFacet - { 'item1', 'item2' }
-   */
-  private get currentSelectedFacets() {
-    let selectedFacet = {} as object;
-
-    Object.entries(this.selectedFacets as SelectedFacets).map(
-      ([key, FacetValue]) => {
-        if (key === this.facetKey) {
-          selectedFacet = FacetValue;
-        }
-        return nothing;
-      }
-    );
-
-    return selectedFacet;
-  }
-
-  selectedFacetsChanged(e: CustomEvent<SelectedFacets>) {
-    this.selectedFacets = e.detail;
-  }
-
-
-  /**
    * Combines the selected facets with the aggregations to create a single list of facets
    */
   private get mergedFacets(): FacetGroup[] | void {
     const facetGroups: FacetGroup[] = [];
 
-    // facetDisplayOrder.forEach(facetKey => {
-      const selectedFacetGroup = this.selectedFacetGroups.find(
-        group => group.key === this.facetKey
-      );
-      const aggregateFacetGroup = this.aggregationFacetGroups.find(
-        group => group.key === this.facetKey
-      );
+    const selectedFacetGroup = this.selectedFacetGroups.find(
+      group => group.key === this.facetKey
+    );
+    const aggregateFacetGroup = this.aggregationFacetGroups.find(
+      group => group.key === this.facetKey
+    );
 
-      // if the user selected a facet, but it's not in the aggregation, we add it as-is
-      if (selectedFacetGroup && !aggregateFacetGroup) {
-        facetGroups.push(selectedFacetGroup);
-        return;
-      }
+    // if the user selected a facet, but it's not in the aggregation, we add it as-is
+    if (selectedFacetGroup && !aggregateFacetGroup) {
+      facetGroups.push(selectedFacetGroup);
+      return;
+    }
 
-      // if we don't have an aggregate facet group, don't add this to the list
-      if (!aggregateFacetGroup) return;
+    // if we don't have an aggregate facet group, don't add this to the list
+    if (!aggregateFacetGroup) return;
 
-      // start with either the selected group if we have one, or the aggregate group
-      const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
+    // start with either the selected group if we have one, or the aggregate group
+    const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
 
-      // attach the counts to the selected buckets
-      const bucketsWithCount =
-        selectedFacetGroup?.buckets.map(bucket => {
-          const selectedBucket = aggregateFacetGroup.buckets.find(
-            b => b.key === bucket.key
-          );
-          return selectedBucket
-            ? {
-                ...bucket,
-                count: selectedBucket.count,
-              }
-            : bucket;
-        }) ?? [];
+    // attach the counts to the selected buckets
+    const bucketsWithCount =
+      selectedFacetGroup?.buckets.map(bucket => {
+        const selectedBucket = aggregateFacetGroup.buckets.find(
+          b => b.key === bucket.key
+        );
+        return selectedBucket
+          ? {
+              ...bucket,
+              count: selectedBucket.count,
+            }
+          : bucket;
+      }) ?? [];
 
-      // append any additional buckets that were not selected
-      aggregateFacetGroup.buckets.forEach(bucket => {
-        const existingBucket = bucketsWithCount.find(b => b.key === bucket.key);
-        if (existingBucket) return;
-        bucketsWithCount.push(bucket);
-      });
-      facetGroup.buckets = bucketsWithCount;
+    // append any additional buckets that were not selected
+    aggregateFacetGroup.buckets.forEach(bucket => {
+      const existingBucket = bucketsWithCount.find(b => b.key === bucket.key);
+      if (existingBucket) return;
+      bucketsWithCount.push(bucket);
+    });
+    facetGroup.buckets = bucketsWithCount;
 
-      facetGroups.push(facetGroup);
-    // });
-
-    console.log(facetGroups)
+    facetGroups.push(facetGroup);
     return facetGroups;
   }
 
@@ -364,6 +229,22 @@ export class MoreFacetsContent extends LitElement {
     return facetGroups;
   }
 
+
+  /**
+   * for collections, we need to asynchronously load the collection name
+   * so we use the `async-collection-name` widget and for the rest, we have a static value to use
+   *
+   * @param castedBuckets 
+   */
+  private preloadCollectionNames(castedBuckets: any[]) {
+    const collectionIds = castedBuckets?.map(option => option.key);
+    const collectionIdsArray = Array.from(
+      new Set(collectionIds)
+    ) as string[];
+
+    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
+  }
+
   /**
    * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
    */
@@ -372,13 +253,17 @@ export class MoreFacetsContent extends LitElement {
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
+
       const option = getFacetOptionFromKey(key);
       const title = facetTitles[option];
       const castedBuckets = buckets.buckets as Bucket[];
 
-
       const { length } = Object.keys(castedBuckets as []);
       this.paginationSize = Math.ceil(length / this.facetsPerPage);
+
+      if (option === 'collection') {
+        this.preloadCollectionNames(castedBuckets);
+      }
 
       // render only items which will be visible as per this.facetsPerPage
       const bucketsMaxSix = castedBuckets?.slice(
@@ -391,12 +276,10 @@ export class MoreFacetsContent extends LitElement {
         // for languages, we need to search by language code instead of the
         // display name, which is what we get from the search engine result
         if (option === 'language') {
-          // const languageCodeKey = languageToCodeMap[bucket.key];
           bucketKey =
             this.languageCodeHandler?.getCodeStringFromLanguageName(
               `${bucket.key}`
             ) ?? bucket.key;
-          // bucketKey = languageCodeKey ?? bucket.key;
         }
         return {
           displayText: `${bucket.key}`,
@@ -412,17 +295,12 @@ export class MoreFacetsContent extends LitElement {
       };
       facetGroups.push(group);
     });
+
     return facetGroups;
   }
 
   private getMoreFacetsTemplate(facetGroup: FacetGroup): TemplateResult {
-    // console.log(this.facetGroup)
-    // console.log(facetGroup)
-
-    // const bucketsNoFavorites = facetGroup?.buckets?.filter(
-    //   bucket => bucket.key.startsWith('fav-') === false
-    // );
-    // const filteredFacetGroup = bucketsNoFavorites.slice(0, 6);
+    this.facetsLoading = false;
 
     // render only items which will be visible as per this.facetsPerPage
     const bucketsMaxSix = facetGroup?.buckets?.slice(
@@ -430,105 +308,17 @@ export class MoreFacetsContent extends LitElement {
       this.pageNumber * this.facetsPerPage
     );
 
-    this.facetsLoading = false;
-    // console.log(bucketsMaxSix)
-
-    // this.mergedFacets.map(facetGroup =>
-    //   this.getFacetGroupTemplate(facetGroup)
-    // )
     return html`
       <facets-template
-        .facetKey=${facetGroup?.key}
-        .facetTitle=${facetGroup?.title}
-        .facetBucket=${bucketsMaxSix}
         .facetGroup=${this.mergedFacets?.shift()}
-        .type='${this.facetsType}'
         .selectedFacets=${this.selectedFacets}
-        @selectedFacetsChanged=${this.selectedFacetsChanged}
+        .type="${this.facetsType}"
+        .collectionNameCache=${this.collectionNameCache}
+        @selectedFacetsChanged=${(e: CustomEvent) => {
+          this.selectedFacets = e.detail;
+        }}
       ></facets-template>
     `;
-
-
-    // // render only items which will be visible as per this.facetsPerPage
-    // const currentPageContent = this.castedBuckets?.slice(
-    //   (this.pageNumber - 1) * this.facetsPerPage,
-    //   this.pageNumber * this.facetsPerPage
-    // );
-
-    // console.log(currentPageContent)
-    // return html`<ul class="facet-list">
-    //   ${currentPageContent?.map(facet => {
-    //     let displayText = facet.key;
-
-    //     if (this.facetKey === 'language') {
-    //       displayText =
-    //         this.languageCodeHandler?.getLanguageNameFromCodeString(
-    //           displayText as string
-    //         ) ?? displayText;
-    //     }
-
-    //     return html`
-    //       <li class="facet-row">
-    //         <div class="facet-checkbox">
-    //           <input
-    //             type="checkbox"
-    //             class="selected-facets"
-    //             id="${facet.key}"
-    //             data-facet="${this.facetKey}"
-    //             .value="${facet.key}"
-    //             @click=${(e: Event) => {
-    //               this.facetClicked(e);
-    //             }}
-    //             ?checked=${Object.prototype.hasOwnProperty.call(
-    //               this.currentSelectedFacets,
-    //               facet.key
-    //             )}
-    //           />
-    //         </div>
-    //         <label
-    //           class="facet-info-display"
-    //           for="${facet.key}"
-    //           title=${facet.key}
-    //         >
-    //           <div class="facet-title">
-    //             ${this.facetKey !== 'collection'
-    //               ? html`${displayText}`
-    //               : html`<async-collection-name
-    //                   .collectionNameCache=${this.collectionNameCache}
-    //                   .identifier=${displayText}
-    //                   placeholder="-"
-    //                 ></async-collection-name>`}
-    //           </div>
-    //           <div class="facet-count">${facet.doc_count}</div>
-    //         </label>
-    //       </li>
-    //     `;
-    //   })}
-    // </ul>`;
-  }
-
-  private facetClicked(e: Event) {
-    const { selectedFacets } = this;
-
-    const target = e.target as HTMLInputElement;
-    const { checked, value } = target;
-
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-
-    if (checked) {
-      newFacets[this.facetKey as keyof typeof newFacets][value] = 'selected';
-    } else {
-      delete newFacets[this.facetKey as keyof typeof newFacets][value];
-    }
-
-    this.selectedFacets = newFacets;
   }
 
   private get loaderTemplate() {
@@ -553,7 +343,9 @@ export class MoreFacetsContent extends LitElement {
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
     return html`
-      <div class="facets-content">${this.getMoreFacetsTemplate(facetGroup)}</div>
+      <div class="facets-content">
+        ${this.getMoreFacetsTemplate(facetGroup)}
+      </div>
       ${this.paginationSize > 0
         ? html`${this.facetsPaginationTemplate}
             <div class="footer">
@@ -611,40 +403,6 @@ export class MoreFacetsContent extends LitElement {
         font-size: 1.2rem;
         padding: 0 10px;
       }
-
-      ul.facet-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-      .facet-row {
-        text-align: left;
-        display: flex;
-        align-items: start;
-        font-weight: 500;
-        font-size: 1.2rem;
-        margin-bottom: 2px;
-      }
-      .facet-row .facet-checkbox {
-        margin-bottom: 2x;
-      }
-      .facet-row input {
-        margin: 1px 5px 1px 0;
-        vertical-align: middle;
-      }
-      .facet-info-display {
-        display: flex;
-        flex: 1 1 0%;
-        cursor: pointer;
-      }
-      .facet-title {
-        flex: 1 1 0%;
-        display: grid;
-      }
-      .facet-count {
-        margin-left: 5px;
-      }
-
       .page-number {
         background: none;
         border: 0;
@@ -667,7 +425,6 @@ export class MoreFacetsContent extends LitElement {
         width: 7rem;
         display: inline-block;
       }
-
       .btn {
         border: none;
         padding: 10px;
@@ -684,7 +441,6 @@ export class MoreFacetsContent extends LitElement {
         background-color: ${modalSubmitButton};
         color: white;
       }
-
       .footer {
         text-align: center;
         margin-top: 10px;

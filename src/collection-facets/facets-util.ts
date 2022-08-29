@@ -1,4 +1,4 @@
-import { aggregationToFacetOption, FacetOption } from "../models";
+import { aggregationToFacetOption, FacetOption } from '../models';
 
 /**
  * Parse the aggregate key title into the human readable title

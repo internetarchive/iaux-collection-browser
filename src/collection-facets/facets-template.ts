@@ -1,78 +1,84 @@
-/* eslint-disable import/no-duplicates */
-import {
-  css,
-  html,
-  LitElement,
-  PropertyValues,
-  nothing,
-  TemplateResult,
-  CSSResultGroup,
-} from 'lit';
+import { css, html, LitElement, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import type {
-  Aggregation,
-} from '@internetarchive/search-service';
-import eyeIcon from './../assets/img/icons/eye';
-import eyeClosedIcon from './../assets/img/icons/eye-closed';
+import type { Aggregation } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import { FacetGroup, FacetBucket, FacetOption, SelectedFacets, defaultSelectedFacets } from '../models';
-// import type { FacetBucket } from '../../dist/src/models';
+import eyeIcon from '../assets/img/icons/eye';
+import eyeClosedIcon from '../assets/img/icons/eye-closed';
+import {
+  FacetGroup,
+  FacetOption,
+  SelectedFacets,
+  defaultSelectedFacets,
+} from '../models';
 
 @customElement('facets-template')
 export class FacetsTemplate extends LitElement {
   @property({ type: Object }) facetGroup?: any;
-  
-  @property({ type: String }) facetKey?: any;
-  @property({ type: String }) facetTitle?: any;
-  @property({ type: Object }) facetBucket?: any;
-  // @property({ type: Object }) selectedFacets?: any;
+
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
- 
   @property({ type: String }) type = 'page';
-  @property({ type: Number }) pageNumber = 1;
-  @property({ type: Number }) facetsPerPage = 60;
 
-  @property({ type: Object }) collectionNameCache?: CollectionNameCacheInterface;
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
 
-  @state() aggregations?: Record<string, Aggregation>;
-
-  render() {
-    // console.log(this.facetGroup)
-    console.log(this.selectedFacets);
-    return html`<div>${this.getFacetsTemplate(this.facetGroup)}</div>`;
+  private facetClicked(e: Event, negative: boolean) {
+    const target = e.target as HTMLInputElement;
+    const { checked, name, value } = target;
+    if (checked) {
+      this.facetChecked(name as FacetOption, value, negative);
+    } else {
+      this.facetUnchecked(name as FacetOption, value);
+    }
   }
 
+  private facetChecked(key: FacetOption, value: string, negative: boolean) {
+    const { selectedFacets } = this;
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+    newFacets[key][value] = negative ? 'hidden' : 'selected';
 
-  /**
-   * return selected facets in specific/current facetGroup
-   *
-   * @returns selectedFacet - { 'item1', 'item2' }
-   */
-  private get currentSelectedFacets() {
-    let selectedFacet = {} as object;
-
-    Object.entries(this.selectedFacets as SelectedFacets).map(
-      ([key, FacetValue]) => {
-        if (key === this.facetKey) {
-          selectedFacet = FacetValue;
-        }
-        return nothing;
-      }
-    );
-
-    return selectedFacet;
+    this.selectedFacets = newFacets;
+    this.dispatchSelectedFacetsChanged();
   }
 
+  private facetUnchecked(key: FacetOption, value: string) {
+    const { selectedFacets } = this;
+    let newFacets: SelectedFacets;
+    if (selectedFacets) {
+      newFacets = {
+        ...selectedFacets,
+      };
+    } else {
+      newFacets = defaultSelectedFacets;
+    }
+    delete newFacets[key][value];
+
+    this.selectedFacets = newFacets;
+    this.dispatchSelectedFacetsChanged();
+  }
+
+  private dispatchSelectedFacetsChanged() {
+    const event = new CustomEvent<SelectedFacets>('selectedFacetsChanged', {
+      detail: this.selectedFacets,
+      bubbles: true,
+      composed: true,
+    });
+    this.dispatchEvent(event);
+  }
 
   private getFacetsTemplate(facetGroup: FacetGroup): TemplateResult {
-    let facetsBucket = facetGroup?.buckets?.filter(
+    const facetsBucket = facetGroup?.buckets?.filter(
       bucket => bucket.key.startsWith('fav-') === false
     );
 
-    // console.log(this.selectedFacets[facetGroup.key])
-    // window.value = this.selectedFacets;
     return html`
       <ul class="facet-list">
         ${repeat(
@@ -96,28 +102,9 @@ export class FacetsTemplate extends LitElement {
                     ></async-collection-name>
                   `;
 
-            // 
-            // this.currentSelectedFacets;
-
-            // let selectedFacet = {} as object
-            // Object.entries(this.selectedFacets as SelectedFacets).map(
-            //   ([key, selectedFacets]) => {
-            //     if (key === facetGroup.key) {
-            //       // selectedFacet = selectedFacets;
-            //       const buckets = Object.entries(selectedFacets).map(
-            //         ([value, facetState]) => {
-            //           let displayText = value;
-            //         }
-            //       );
-            //     }
-            //   }
-            // );
-            
-
             const facetHidden = bucket.state === 'hidden';
             const facetSelected = bucket.state === 'selected';
 
-            console.log(facetHidden, facetSelected)
             const titleText = `${facetGroup.key}: ${
               bucket.displayText ?? bucket.key
             }`;
@@ -137,7 +124,7 @@ export class FacetsTemplate extends LitElement {
                       .name=${facetGroup.key}
                       .value=${bucket.key}
                       @click=${(e: Event) => {
-                        this.facetClicked(e, bucket, false);
+                        this.facetClicked(e, false);
                       }}
                       .checked=${facetSelected}
                       class="select-facet-checkbox"
@@ -150,7 +137,7 @@ export class FacetsTemplate extends LitElement {
                       .name=${facetGroup.key}
                       .value=${bucket.key}
                       @click=${(e: Event) => {
-                        this.facetClicked(e, bucket, true);
+                        this.facetClicked(e, true);
                       }}
                       .checked=${facetHidden}
                       class="hide-facet-checkbox"
@@ -182,63 +169,11 @@ export class FacetsTemplate extends LitElement {
     `;
   }
 
-  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean) {
-    const target = e.target as HTMLInputElement;
-    const { checked, name, value } = target;
-    if (checked) {
-      this.facetChecked(name as FacetOption, value, negative);
-    } else {
-      this.facetUnchecked(name as FacetOption, value);
-    }
-  }
-
-  private facetChecked(key: FacetOption, value: string, negative: boolean) {
-    const { selectedFacets } = this;
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-    newFacets[key][value] = negative ? 'hidden' : 'selected';
-    console.log('facetChecked', this.selectedFacets)
-
-
-    this.selectedFacets = newFacets;
-    this.dispatchSelectedFacetsChanged();
-  }
-
-  private facetUnchecked(key: FacetOption, value: string) {
-    const { selectedFacets } = this;
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-    delete newFacets[key][value];
-    console.log('facetUnchecked', this.selectedFacets)
-
-    this.selectedFacets = newFacets;
-    this.dispatchSelectedFacetsChanged();
-  }
-
-  private dispatchSelectedFacetsChanged() {
-    const event = new CustomEvent<SelectedFacets>('selectedFacetsChanged', {
-      detail: this.selectedFacets,
-      bubbles: true,
-      composed: true,
-    });
-    this.dispatchEvent(event);
+  render() {
+    return html`<div>${this.getFacetsTemplate(this.facetGroup)}</div>`;
   }
 
   static get styles(): CSSResultGroup {
-    const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
-
     return css`
       .facets-content {
         -webkit-column-width: 25rem;
@@ -246,6 +181,7 @@ export class FacetsTemplate extends LitElement {
         column-width: 25rem;
         font-size: 1.2rem;
         padding: 0 10px;
+        margin-top: 10px;
       }
 
       ul.facet-list {
