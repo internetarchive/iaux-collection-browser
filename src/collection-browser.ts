@@ -1,12 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import {
-  html,
-  css,
-  LitElement,
-  PropertyValues,
-  TemplateResult,
-  nothing,
-} from 'lit';
+import { html, css, PropertyValues, TemplateResult, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
@@ -51,10 +44,12 @@ import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
+import ActionsHandler from './analytics/actions-handler';
+import type { DetailEvent } from './analytics/analytics-event-and-category';
 
 @customElement('collection-browser')
 export class CollectionBrowser
-  extends LitElement
+  extends ActionsHandler
   implements
     InfiniteScrollerCellProviderInterface,
     SharedResizeObserverResizeHandlerInterface
@@ -368,12 +363,34 @@ export class CollectionBrowser
     const sortField = SortFieldToMetadataField[this.selectedSort];
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
+
+    const category = this.analyticsCategories.sorting;
+
+    this.dispatchEvent(
+      new CustomEvent<DetailEvent>('selectedSortParamChanged', {
+        detail: {
+          category,
+          action: this.analyticsActions.selectedSortParamChanged,
+          value: `${sortField} - ${this.sortDirection}`,
+        },
+      })
+    );
   }
 
   private displayModeChanged(
     e: CustomEvent<{ displayMode: CollectionDisplayMode }>
   ) {
     this.displayMode = e.detail.displayMode;
+
+    this.dispatchEvent(
+      new CustomEvent<DetailEvent>('displayModeChanged', {
+        detail: {
+          category: this.analyticsCategories.displayMode,
+          action: this.analyticsActions.displayModeChanged,
+          value: this.displayMode,
+        },
+      })
+    );
   }
 
   private selectedTitleLetterChanged() {
@@ -491,6 +508,16 @@ export class CollectionBrowser
   ) {
     const { minDate, maxDate } = e.detail;
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
+
+    this.dispatchEvent(
+      new CustomEvent<DetailEvent>('histogramDateRangeUpdated', {
+        detail: {
+          category: this.analyticsCategories.sorting,
+          action: this.analyticsActions.histogramDateRangeUpdated,
+          value: this.dateRangeQueryClause,
+        },
+      })
+    );
   }
 
   firstUpdated(): void {
@@ -614,12 +641,6 @@ export class CollectionBrowser
     if (this.currentPage !== lastVisibleCellPage) {
       this.currentPage = lastVisibleCellPage;
     }
-    const event = new CustomEvent('visiblePageChanged', {
-      detail: {
-        pageNumber: lastVisibleCellPage,
-      },
-    });
-    this.dispatchEvent(event);
   }
 
   // we only want to scroll on the very first query change

@@ -1,12 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import {
-  css,
-  html,
-  LitElement,
-  PropertyValues,
-  nothing,
-  TemplateResult,
-} from 'lit';
+import { css, html, PropertyValues, nothing, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import type { Aggregation, Bucket } from '@internetarchive/search-service';
@@ -25,6 +18,8 @@ import {
   defaultSelectedFacets,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
+import ActionsHandler from './analytics/actions-handler';
+import type { DetailEvent } from './analytics/analytics-event-and-category';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -54,7 +49,7 @@ const facetTitles: Record<FacetOption, string> = {
 };
 
 @customElement('collection-facets')
-export class CollectionFacets extends LitElement {
+export class CollectionFacets extends ActionsHandler {
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
@@ -434,6 +429,26 @@ export class CollectionFacets extends LitElement {
     } else {
       this.facetUnchecked(name as FacetOption, value);
     }
+
+    this.dispatchEvent(
+      new CustomEvent<DetailEvent>('selectedFacetsChanged', {
+        detail: {
+          category: this.analyticsCategories.browsing,
+          action: this.analyticsActions.selectedFacetsChanged,
+          value: checked ? value : null,
+        },
+      })
+    );
+
+    this.dispatchEvent(
+      new CustomEvent<DetailEvent>('selectedFacetsGroupChanged', {
+        detail: {
+          category: this.analyticsCategories.browsing,
+          action: this.analyticsActions.selectedFacetsGroupChanged,
+          value: checked ? name : null,
+        },
+      })
+    );
   }
 
   private facetChecked(key: FacetOption, value: string, negative: boolean) {
