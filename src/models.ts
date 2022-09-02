@@ -19,6 +19,7 @@ export interface TileModel {
   itemCount: number;
   mediatype: MediaType;
   source?: string;
+  snippets?: string[];
   subjects: string[];
   title: string;
   viewCount: number;

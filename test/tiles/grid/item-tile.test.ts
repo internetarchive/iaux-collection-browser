@@ -113,4 +113,23 @@ describe('Item Tile', () => {
     expect(dateSortedBy).to.not.exist; // it should be exist because this is not related to date sort
     expect(createdBy).to.exist;
   });
+
+  it('should render with snippet block when it has snippets', async () => {
+    const el = await fixture<ItemTile>(html`
+      <item-tile .model=${{ snippets: ['some {{{snippet}}} text'] }}>
+      </item-tile>
+    `);
+
+    const snippetBlock = el.shadowRoot?.querySelector('text-snippet-block');
+
+    expect(snippetBlock).to.exist;
+  });
+
+  it('should not render snippet block when no snippets are present', async () => {
+    const el = await fixture<ItemTile>(html`<item-tile></item-tile>`);
+
+    const snippetBlock = el.shadowRoot?.querySelector('text-snippet-block');
+
+    expect(snippetBlock).to.not.exist;
+  });
 });

@@ -1,5 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { SortParam } from '@internetarchive/search-service';
@@ -8,6 +15,7 @@ import { formatDate } from '../../utils/format-date';
 import type { TileModel } from '../../models';
 
 import '../image-block';
+import '../text-snippet-block';
 import '../item-image';
 import '../mediatype-icon';
 import './tile-stats';
@@ -35,6 +43,7 @@ export class ItemTile extends LitElement {
           </div>
 
           <image-block 
+            class=${this.hasSnippets ? 'has-snippets' : nothing}
             .model=${this.model}
             .baseImageUrl=${this.baseImageUrl}
             .loggedIn=${this.loggedIn}
@@ -42,6 +51,8 @@ export class ItemTile extends LitElement {
             .isListTile=${false}
             .viewSize=${'grid'}>
           </image-block>
+
+          ${this.textSnippetsTemplate}
 
           ${
             this.doesSortedByDate
@@ -109,6 +120,19 @@ export class ItemTile extends LitElement {
     `;
   }
 
+  private get textSnippetsTemplate(): TemplateResult | typeof nothing {
+    if (!this.hasSnippets) return nothing;
+
+    return html`<text-snippet-block
+      viewsize="grid"
+      .snippets=${this.model?.snippets}
+    ></text-snippet-block>`;
+  }
+
+  private get hasSnippets(): boolean {
+    return !!this.model?.snippets?.length;
+  }
+
   static get styles(): CSSResultGroup {
     return css`
       .container {
@@ -142,6 +166,16 @@ export class ItemTile extends LitElement {
         text-decoration: underline;
       }
 
+      image-block {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      image-block.has-snippets {
+        /* If there is a text snippet block present, the image block needs to shrink */
+        --imgBlockHeight: 11rem;
+      }
+
       .created-by,
       .date-sorted-by {
         display: flex;
@@ -149,7 +183,6 @@ export class ItemTile extends LitElement {
         align-items: flex-end; /* Important to start text from bottom */
         height: 3rem;
         padding-top: 1rem;
-        margin-top: 5px;
       }
 
       .truncated {
