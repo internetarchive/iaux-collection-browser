@@ -1,4 +1,7 @@
-import { AnalyticsEvent, AnalyticsManager } from '@internetarchive/analytics-manager';
+import {
+  AnalyticsEvent,
+  AnalyticsManager,
+} from '@internetarchive/analytics-manager';
 import { SearchService } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
@@ -51,7 +54,7 @@ export class AppRoot extends LitElement {
   private analyticsHandler: AnalyticsHandlerInterface = {
     sendPing: this.sendAnalytics,
     sendEvent: this.sendAnalytics,
-    sendEventNoSampling: this.sendAnalytics
+    sendEventNoSampling: this.sendAnalytics,
   };
 
   private sendAnalytics(ae: AnalyticsEvent) {
@@ -106,7 +109,7 @@ export class AppRoot extends LitElement {
           <input type="submit" value="Go" />
         </form>
 
-        <div>Event actions: ${this.actionBlob}</div>
+        <h3>Last Event Captured:: ${this.actionBlob}</h3>
 
         <div id="cell-controls">
           <div id="cell-size-control">
@@ -160,7 +163,6 @@ export class AppRoot extends LitElement {
                 @click=${this.snippetsChanged}
               />
             </div>
-            
           </div>
           <div id="cell-gap-control">
             <div>

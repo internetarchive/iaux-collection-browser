@@ -54,8 +54,10 @@ import { LanguageCodeHandler } from './language-code-handler/language-code-handl
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
 
-import { analyticsActions, analyticsCategories } from './utils/analytics-category-event';
-
+import {
+  analyticsActions,
+  analyticsCategories,
+} from './utils/analytics-category-event';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -160,7 +162,7 @@ export class CollectionBrowser
 
   private languageCodeHandler = new LanguageCodeHandler();
 
-  @property({type: Object, attribute: false})
+  @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
 
   /**
@@ -234,9 +236,9 @@ export class CollectionBrowser
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
-  public analyticsCategories = analyticsCategories;
+  private analyticsCategories = analyticsCategories;
 
-  public analyticsActions = analyticsActions;
+  private analyticsActions = analyticsActions;
 
   /**
    * Go to the given page of results
@@ -353,7 +355,8 @@ export class CollectionBrowser
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
         @titleLetterChanged=${this.titleLetterSelected}
-        @creatorLetterChanged=${this.creatorLetterSelected}>
+        @creatorLetterChanged=${this.creatorLetterSelected}
+      >
       </sort-filter-bar>
     `;
   }
@@ -387,7 +390,7 @@ export class CollectionBrowser
       category: this.analyticsCategories.default,
       action: this.analyticsActions.sortBy,
       label: `${sortField} - ${this.sortDirection}`,
-    })
+    });
   }
 
   private displayModeChanged(
@@ -395,12 +398,11 @@ export class CollectionBrowser
   ) {
     this.displayMode = e.detail.displayMode;
 
-    console.log('analyticshandler: ', this.analyticsHandler)
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.displayMode,
       label: this.displayMode,
-    })
+    });
   }
 
   private selectedTitleLetterChanged() {
@@ -411,8 +413,8 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.sortByTitle,
-      label: `${this.titleQuery}`
-    })
+      label: `${this.titleQuery}`,
+    });
   }
 
   private selectedCreatorLetterChanged() {
@@ -423,8 +425,8 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.sortByCreator,
-      label: `${this.creatorQuery}`
-    })
+      label: `${this.creatorQuery}`,
+    });
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
@@ -480,7 +482,10 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
-        .analyticsHandler=${this.analyticsHandler}>
+        .analyticsHandler=${this.analyticsHandler}
+        .analyticsCategories=${this.analyticsCategories}
+        .analyticsActions=${this.analyticsActions}
+      >
       </collection-facets>
     `;
   }
@@ -536,7 +541,7 @@ export class CollectionBrowser
       category: this.analyticsCategories.default,
       action: this.analyticsActions.histogramChanged,
       label: this.dateRangeQueryClause,
-    })
+    });
   }
 
   firstUpdated(): void {

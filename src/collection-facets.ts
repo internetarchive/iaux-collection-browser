@@ -14,6 +14,7 @@ import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -25,7 +26,11 @@ import {
   defaultSelectedFacets,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
-import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
+
+import {
+  analyticsActions,
+  analyticsCategories,
+} from './utils/analytics-category-event';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -89,8 +94,12 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
-  @property({type: Object, attribute: false})
+  @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
+
+  private analyticsCategories = analyticsCategories;
+
+  private analyticsActions = analyticsActions;
 
   render() {
     return html`
@@ -121,11 +130,6 @@ export class CollectionFacets extends LitElement {
       detail: this.selectedFacets,
     });
     this.dispatchEvent(event);
-
-    this.analyticsHandler?.sendEventNoSampling({
-      category: 'collection-browser',
-      action: 'facetsChanged'
-    })
   }
 
   private get currentYearsHistogramAggregation(): Aggregation | undefined {
@@ -443,6 +447,12 @@ export class CollectionFacets extends LitElement {
     } else {
       this.facetUnchecked(name as FacetOption, value);
     }
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories?.default,
+      action: this.analyticsActions?.facetsChanged,
+      label: `${name} - ${value}`,
+    });
   }
 
   private facetChecked(key: FacetOption, value: string, negative: boolean) {
