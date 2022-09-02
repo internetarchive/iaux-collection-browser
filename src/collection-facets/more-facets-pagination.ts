@@ -88,6 +88,8 @@ export class MoreFacetsPagination extends LitElement {
     this.dispatchEvent(
       new CustomEvent('pageNumberClicked', {
         detail: { page: this.currentPage },
+        bubbles: true,
+        composed: true,
       })
     );
   }

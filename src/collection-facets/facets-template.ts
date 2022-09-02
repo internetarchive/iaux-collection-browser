@@ -1,7 +1,6 @@
 import { css, html, LitElement, TemplateResult, CSSResultGroup } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import type { Aggregation } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import eyeIcon from '../assets/img/icons/eye';
 import eyeClosedIcon from '../assets/img/icons/eye-closed';
@@ -14,14 +13,17 @@ import {
 
 @customElement('facets-template')
 export class FacetsTemplate extends LitElement {
-  @property({ type: Object }) facetGroup?: any;
+  @property({ type: Object }) facetGroup?: FacetGroup;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: String }) type = 'page';
-
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
+
+  /**
+   * place where facets needs to be rendered
+   */
+  @property({ type: String }) renderOn = 'page';
 
   private facetClicked(e: Event, negative: boolean) {
     const target = e.target as HTMLInputElement;
@@ -170,20 +172,11 @@ export class FacetsTemplate extends LitElement {
   }
 
   render() {
-    return html`<div>${this.getFacetsTemplate(this.facetGroup)}</div>`;
+    return html`${this.getFacetsTemplate(this.facetGroup as FacetGroup)}`;
   }
 
   static get styles(): CSSResultGroup {
     return css`
-      .facets-content {
-        -webkit-column-width: 25rem;
-        -moz-column-width: 25rem;
-        column-width: 25rem;
-        font-size: 1.2rem;
-        padding: 0 10px;
-        margin-top: 10px;
-      }
-
       ul.facet-list {
         list-style: none;
         margin: 0;
@@ -192,23 +185,24 @@ export class FacetsTemplate extends LitElement {
 
       ul.facet-list li {
         margin-bottom: 0.2rem;
+        display: grid;
       }
 
       .facet-checkbox {
         margin-right: 0.5rem;
         display: flex;
-        align-items: center;
+        align-items: baseline;
       }
 
       .facet-row {
         display: flex;
-        align-items: start;
         font-weight: 500;
         font-size: 1.2rem;
       }
 
       .facet-info-display {
         display: flex;
+        align-items: center;
         flex: 1;
         cursor: pointer;
       }

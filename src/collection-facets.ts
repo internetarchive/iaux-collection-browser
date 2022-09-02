@@ -262,10 +262,12 @@ export class CollectionFacets extends LitElement {
         // for languages, we need to search by language code instead of the
         // display name, which is what we get from the search engine result
         if (option === 'language') {
+          // const languageCodeKey = languageToCodeMap[bucket.key];
           bucketKey =
             this.languageCodeHandler?.getCodeStringFromLanguageName(
               `${bucket.key}`
             ) ?? bucket.key;
+          // bucketKey = languageCodeKey ?? bucket.key;
         }
         return {
           displayText: `${bucket.key}`,
@@ -349,7 +351,6 @@ export class CollectionFacets extends LitElement {
       value => aggregationToFacetOption[value] === facetGroup.key
     );
 
-    // TODO - lets move sr-only style into modal-manager component as well
     const headline = html`
       <span
         style="display:block;text-align:left;font-size:1.8rem;padding:0 10px;"
@@ -366,14 +367,6 @@ export class CollectionFacets extends LitElement {
 
     const someContent = html`
       <more-facets-content
-        @facetsChanged=${(e: CustomEvent) => {
-          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
-            detail: e.detail,
-            bubbles: true,
-            composed: true,
-          });
-          this.dispatchEvent(event);
-        }}
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
         .fullQuery=${this.fullQuery}
@@ -382,6 +375,14 @@ export class CollectionFacets extends LitElement {
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}
+        @facetsChanged=${(e: CustomEvent) => {
+          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+            detail: e.detail,
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+        }}
       >
       </more-facets-content>
     `;
@@ -405,19 +406,12 @@ export class CollectionFacets extends LitElement {
    * Generate the list template for each bucket in a facet group
    */
   private getFacetTemplate(facetGroup: FacetGroup): TemplateResult {
-    const bucketsNoFavorites = facetGroup.buckets.filter(
-      bucket => bucket.key.startsWith('fav-') === false
-    );
-    const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
-
     return html`
       <facets-template
-        .facetKey=${facetGroup?.key}
-        .facetTitle=${facetGroup?.title}
-        .facetBucket=${bucketsMaxSix}
         .facetGroup=${facetGroup}
-        .type="page"
         .selectedFacets=${this.selectedFacets}
+        .collectionNameCache=${this.collectionNameCache}
+        .renderOn="page"
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,
@@ -484,9 +478,6 @@ export class CollectionFacets extends LitElement {
         margin: 0;
       }
 
-      more-facets-content {
-        
-      } 
       .more-link {
         font-size: 1.2rem;
         text-decoration: none;

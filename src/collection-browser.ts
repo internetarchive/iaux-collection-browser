@@ -52,6 +52,7 @@ import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
+
 @customElement('collection-browser')
 export class CollectionBrowser
   extends LitElement

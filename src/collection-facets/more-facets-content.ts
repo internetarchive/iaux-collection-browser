@@ -19,14 +19,13 @@ import type { CollectionNameCacheInterface } from '@internetarchive/collection-n
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import {
   SelectedFacets,
-  defaultSelectedFacets,
   FacetGroup,
   FacetBucket,
   FacetOption,
   facetTitles,
 } from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
-import { getFacetOptionFromKey } from '../collection-facets/facets-util';
+import { getFacetOptionFromKey } from './facets-util';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -128,7 +127,7 @@ export class MoreFacetsContent extends LitElement {
     this.facetsLoading = false;
   }
 
-  private pageNumberClicked(e: CustomEvent<{ page: string }>) {
+  private pageNumberClicked(e: CustomEvent<{ page: number }>) {
     const page = e?.detail?.page;
     if (page) {
       this.pageNumber = Number(page);
@@ -151,11 +150,11 @@ export class MoreFacetsContent extends LitElement {
     // if the user selected a facet, but it's not in the aggregation, we add it as-is
     if (selectedFacetGroup && !aggregateFacetGroup) {
       facetGroups.push(selectedFacetGroup);
-      return;
+      return facetGroups;
     }
 
     // if we don't have an aggregate facet group, don't add this to the list
-    if (!aggregateFacetGroup) return;
+    if (!aggregateFacetGroup) return facetGroups;
 
     // start with either the selected group if we have one, or the aggregate group
     const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
@@ -229,18 +228,15 @@ export class MoreFacetsContent extends LitElement {
     return facetGroups;
   }
 
-
   /**
    * for collections, we need to asynchronously load the collection name
    * so we use the `async-collection-name` widget and for the rest, we have a static value to use
    *
-   * @param castedBuckets 
+   * @param castedBuckets
    */
   private preloadCollectionNames(castedBuckets: any[]) {
     const collectionIds = castedBuckets?.map(option => option.key);
-    const collectionIdsArray = Array.from(
-      new Set(collectionIds)
-    ) as string[];
+    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
 
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
   }
@@ -258,9 +254,11 @@ export class MoreFacetsContent extends LitElement {
       const title = facetTitles[option];
       const castedBuckets = buckets.buckets as Bucket[];
 
+      // find length and pagination size for modal pagination
       const { length } = Object.keys(castedBuckets as []);
       this.paginationSize = Math.ceil(length / this.facetsPerPage);
 
+      // asynchronously load the collection name
       if (option === 'collection') {
         this.preloadCollectionNames(castedBuckets);
       }
@@ -299,21 +297,13 @@ export class MoreFacetsContent extends LitElement {
     return facetGroups;
   }
 
-  private getMoreFacetsTemplate(facetGroup: FacetGroup): TemplateResult {
-    this.facetsLoading = false;
-
-    // render only items which will be visible as per this.facetsPerPage
-    const bucketsMaxSix = facetGroup?.buckets?.slice(
-      (this.pageNumber - 1) * this.facetsPerPage,
-      this.pageNumber * this.facetsPerPage
-    );
-
+  private get getMoreFacetsTemplate(): TemplateResult {
     return html`
       <facets-template
         .facetGroup=${this.mergedFacets?.shift()}
         .selectedFacets=${this.selectedFacets}
-        .type="${this.facetsType}"
         .collectionNameCache=${this.collectionNameCache}
+        .renderOn="modal"
         @selectedFacetsChanged=${(e: CustomEvent) => {
           this.selectedFacets = e.detail;
         }}
@@ -321,12 +311,10 @@ export class MoreFacetsContent extends LitElement {
     `;
   }
 
-  private get loaderTemplate() {
-    return this.facetsLoading
-      ? html`<div class="facets-loader">
-          <ia-activity-indicator .mode="processing"></ia-activity-indicator>
-        </div>`
-      : nothing;
+  private get loaderTemplate(): TemplateResult {
+    return html`<div class="facets-loader">
+      <ia-activity-indicator .mode="processing"></ia-activity-indicator>
+    </div> `;
   }
 
   // render pagination if more then 1 page
@@ -339,42 +327,38 @@ export class MoreFacetsContent extends LitElement {
       : nothing;
   }
 
-  private facetsContentTemplate(
-    facetGroup: FacetGroup
-  ): TemplateResult | typeof nothing {
-    return html`
-      <div class="facets-content">
-        ${this.getMoreFacetsTemplate(facetGroup)}
-      </div>
-      ${this.paginationSize > 0
-        ? html`${this.facetsPaginationTemplate}
-            <div class="footer">
-              <button
-                class="btn btn-cancel"
-                type="button"
-                @click=${this.cancelClick}
-              >
-                Cancel
-              </button>
-              <button
-                class="btn btn-submit"
-                type="button"
-                @click=${this.applySearchFacetsClicked}
-              >
-                Apply filters
-              </button>
-            </div>`
-        : html`No result found. please try again later.`}
-    `;
+  private get footerTemplate() {
+    if (this.paginationSize > 0) {
+      return html`${this.facetsPaginationTemplate}
+        <div class="footer">
+          <button
+            class="btn btn-cancel"
+            type="button"
+            @click=${this.cancelClick}
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-submit"
+            type="button"
+            @click=${this.applySearchFacetsClicked}
+          >
+            Apply filters
+          </button>
+        </div> `;
+    }
+
+    return nothing;
   }
 
   render() {
     return html`
-      <form>
-        ${this.facetsLoading
-          ? this.loaderTemplate
-          : this.facetsContentTemplate(this.facetGroup?.shift() as any)}
-      </form>
+      ${this.facetsLoading
+        ? this.loaderTemplate
+        : html`
+            <div class="facets-content">${this.getMoreFacetsTemplate}</div>
+            ${this.footerTemplate}
+          `}
     `;
   }
 
@@ -401,7 +385,7 @@ export class MoreFacetsContent extends LitElement {
         -moz-column-width: 25rem;
         column-width: 25rem;
         font-size: 1.2rem;
-        padding: 0 10px;
+        margin: 10px;
       }
       .page-number {
         background: none;
@@ -419,18 +403,18 @@ export class MoreFacetsContent extends LitElement {
         color: white;
       }
       .facets-loader {
-        text-align: center;
-        margin-bottom: 2rem;
-        height: 7rem;
-        width: 7rem;
-        display: inline-block;
+        margin-bottom: 20px;
+        width: 70px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
       }
       .btn {
         border: none;
         padding: 10px;
         margin-bottom: 10px;
         width: auto;
-        border-radius: 0.4rem;
+        border-radius: 4px;
         cursor: pointer;
       }
       .btn-cancel {
