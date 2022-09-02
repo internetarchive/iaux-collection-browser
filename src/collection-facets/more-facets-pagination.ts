@@ -163,7 +163,6 @@ export class MoreFacetsPagination extends LitElement {
         margin-top: 10px;
         background-color: #eee;
         text-align: center;
-        font-size: 3.2rem;
       }
       .facets-pagination button {
         border: none;
@@ -171,7 +170,10 @@ export class MoreFacetsPagination extends LitElement {
       }
       .facets-pagination .arrow-icon {
         width: 2.5rem;
-        vertical-align: initial;
+        vertical-align: middle;
+      }
+      .facets-pagination .arrow-icon svg {
+        height: 14px;
       }
       .facets-pagination button,
       .facets-pagination i {

@@ -356,7 +356,9 @@ export class MoreFacetsContent extends LitElement {
       ${this.facetsLoading
         ? this.loaderTemplate
         : html`
-            <div class="facets-content">${this.getMoreFacetsTemplate}</div>
+            <div class="scrollable-content">
+              <div class="facets-content">${this.getMoreFacetsTemplate}</div>
+            </div>
             ${this.footerTemplate}
           `}
     `;
@@ -380,9 +382,15 @@ export class MoreFacetsContent extends LitElement {
     const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
 
     return css`
+      .scrollable-content {
+        overflow-y: scroll;
+        max-height: 65vh;
+      }
       .facets-content {
-        -webkit-column-width: 25rem;
-        -moz-column-width: 25rem;
+        /* For Chrome, Safari, Opera browsers */
+        -webkit-column-width: 100px;
+        /* For Firefox browser */
+        -moz-column-width: 100px;
         column-width: 25rem;
         font-size: 1.2rem;
         margin: 10px;

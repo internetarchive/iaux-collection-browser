@@ -30,7 +30,6 @@ import {
   facetDisplayOrder,
   facetTitles,
   aggregationToFacetOption,
-  defaultSelectedFacets,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import { getFacetOptionFromKey } from './collection-facets/facets-util';
@@ -351,6 +350,7 @@ export class CollectionFacets extends LitElement {
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
     );
+
     const headline = html`
       <span
         style="display:block;text-align:left;font-size:1.8rem;padding:0 10px;"
@@ -422,44 +422,6 @@ export class CollectionFacets extends LitElement {
         }}
       ></facets-template>
     `;
-  }
-
-  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean) {
-    const target = e.target as HTMLInputElement;
-    const { checked, name, value } = target;
-    if (checked) {
-      this.facetChecked(name as FacetOption, value, negative);
-    } else {
-      this.facetUnchecked(name as FacetOption, value);
-    }
-  }
-
-  private facetChecked(key: FacetOption, value: string, negative: boolean) {
-    const { selectedFacets } = this;
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-    newFacets[key][value] = negative ? 'hidden' : 'selected';
-    this.selectedFacets = newFacets;
-  }
-
-  private facetUnchecked(key: FacetOption, value: string) {
-    const { selectedFacets } = this;
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-    delete newFacets[key][value];
-    this.selectedFacets = newFacets;
   }
 
   /**
