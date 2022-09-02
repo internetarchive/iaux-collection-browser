@@ -1,10 +1,12 @@
-import { AnalyticsEvent, AnalyticsHelpers, AnalyticsManager } from '@internetarchive/analytics-manager';
+import { AnalyticsEvent, AnalyticsManager } from '@internetarchive/analytics-manager';
 import { SearchService } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
+
+import type { AnalyticsHandlerInterface } from './analytics/analytics-handler-interface';
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
@@ -36,20 +38,26 @@ export class AppRoot extends LitElement {
 
   @state() private loggedIn: boolean = false;
 
+  @state() private actionBlob?: string;
+
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
 
-
   private analyticsManager = new AnalyticsManager();
 
-  private analyticsHandler = new AnalyticsHelpers(this.analyticsManager);
+  private analyticsHandler: AnalyticsHandlerInterface = {
+    sendPing: this.sendAnalytics,
+    sendEvent: this.sendAnalytics,
+    sendEventNoSampling: this.sendAnalytics
+  };
 
-  private sendPing(ae: AnalyticsEvent) {
-    console.log(`category: ${ae.category}, action: ${ae.action}, label: ${ae.label}`)
-
+  private sendAnalytics(ae: AnalyticsEvent) {
+    this.actionBlob = `{category: ${ae.category}, action: ${ae.action}, label: ${ae.label}}`;
+    console.log('actionBlob: ', this.actionBlob);
+    this.analyticsManager?.sendEventNoSampling(ae);
   }
 
   private searchPressed(e: Event) {
@@ -81,7 +89,6 @@ export class AppRoot extends LitElement {
   }
 
   render() {
-    console.log('analyticsHandler approot: ', this.analyticsHandler)
     return html`
       <div id="dev-tools">
         <form @submit=${this.searchPressed}>
@@ -98,6 +105,8 @@ export class AppRoot extends LitElement {
           Page: <input type="number" value="1" id="page-number-input" />
           <input type="submit" value="Go" />
         </form>
+
+        <div>Event actions: ${this.actionBlob}</div>
 
         <div id="cell-controls">
           <div id="cell-size-control">
@@ -151,6 +160,7 @@ export class AppRoot extends LitElement {
                 @click=${this.snippetsChanged}
               />
             </div>
+            
           </div>
           <div id="cell-gap-control">
             <div>
