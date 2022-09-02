@@ -159,3 +159,30 @@ export const defaultSelectedFacets: SelectedFacets = {
   collection: {},
   year: {},
 };
+
+export const facetDisplayOrder: FacetOption[] = [
+  'mediatype',
+  'year',
+  'subject',
+  'collection',
+  'creator',
+  'language',
+];
+
+export const aggregationToFacetOption: Record<string, FacetOption> = {
+  subjectSorter: 'subject',
+  mediatypeSorter: 'mediatype',
+  languageSorter: 'language',
+  creatorSorter: 'creator',
+  collection: 'collection',
+  year: 'year',
+};
+
+export const facetTitles: Record<FacetOption, string> = {
+  subject: 'Subject',
+  mediatype: 'Media Type',
+  language: 'Language',
+  creator: 'Creator',
+  collection: 'Collection',
+  year: 'Year',
+};

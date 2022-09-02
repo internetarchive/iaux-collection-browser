@@ -4,6 +4,7 @@ import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 
@@ -39,6 +40,8 @@ export class AppRoot extends LitElement {
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
+
+  @query('modal-manager') private modalManager!: ModalManagerInterface;
 
   private searchPressed(e: Event) {
     e.preventDefault();
@@ -179,11 +182,13 @@ export class AppRoot extends LitElement {
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
           .loggedIn=${this.loggedIn}
+          .modalManager=${this.modalManager}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >
         </collection-browser>
       </div>
+      <modal-manager></modal-manager>
     `;
   }
 
@@ -305,6 +310,29 @@ export class AppRoot extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --primaryButtonBGColor: #194880;
+    }
+
+    /* add the following styles to ensure proper modal visibility */
+    body.modal-manager-open {
+      overflow: hidden;
+    }
+    modal-manager {
+      display: none;
+    }
+    modal-manager[mode='open'] {
+      display: block;
+    }
+    modal-manager.more-search-facets {
+      --modalWidth: 85rem;
+      --modalBorder: 2px solid var(--primaryButtonBGColor, #194880);
+      --modalTitleLineHeight: 4rem;
+      --modalTitleFontSize: 1.8rem;
+      --modalCornerRadius: 0;
+      --modalBottomPadding: 0;
+      --modalBottomMargin: 0;
+      --modalScrollOffset: 0;
+      --modalCornerRadius: 0.5rem;
     }
 
     input,
@@ -313,7 +341,7 @@ export class AppRoot extends LitElement {
     }
 
     collection-browser {
-      margin-top: 30rem;
+      margin-top: 20rem;
     }
 
     #base-query-field {
@@ -324,7 +352,7 @@ export class AppRoot extends LitElement {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 10;
+      z-index: 1;
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;
