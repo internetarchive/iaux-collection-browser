@@ -25,6 +25,7 @@ import {
   defaultSelectedFacets,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -88,6 +89,9 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
+  @property({type: Object, attribute: false})
+  private analyticsHandler?: AnalyticsManagerInterface;
+
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -117,6 +121,11 @@ export class CollectionFacets extends LitElement {
       detail: this.selectedFacets,
     });
     this.dispatchEvent(event);
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: 'collection-browser',
+      action: 'facetsChanged'
+    })
   }
 
   private get currentYearsHistogramAggregation(): Aggregation | undefined {

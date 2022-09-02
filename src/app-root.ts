@@ -1,3 +1,4 @@
+import { AnalyticsEvent, AnalyticsHelpers, AnalyticsManager } from '@internetarchive/analytics-manager';
 import { SearchService } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
@@ -5,6 +6,7 @@ import { customElement, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
 import type { CollectionBrowser } from '../src/collection-browser';
+
 import '../src/collection-browser';
 
 @customElement('app-root')
@@ -40,6 +42,16 @@ export class AppRoot extends LitElement {
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
 
+
+  private analyticsManager = new AnalyticsManager();
+
+  private analyticsHandler = new AnalyticsHelpers(this.analyticsManager);
+
+  private sendPing(ae: AnalyticsEvent) {
+    console.log(`category: ${ae.category}, action: ${ae.action}, label: ${ae.label}`)
+
+  }
+
   private searchPressed(e: Event) {
     e.preventDefault();
     this.searchQuery = this.baseQueryField.value;
@@ -69,6 +81,7 @@ export class AppRoot extends LitElement {
   }
 
   render() {
+    console.log('analyticsHandler approot: ', this.analyticsHandler)
     return html`
       <div id="dev-tools">
         <form @submit=${this.searchPressed}>
@@ -179,6 +192,7 @@ export class AppRoot extends LitElement {
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
           .loggedIn=${this.loggedIn}
+          .analyticsHandler=${this.analyticsHandler}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >

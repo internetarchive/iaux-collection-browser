@@ -9,6 +9,8 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type {
   InfiniteScroller,
   InfiniteScrollerCellProviderInterface,
@@ -51,6 +53,9 @@ import chevronIcon from './assets/img/icons/chevron';
 import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
+
+import { analyticsActions, analyticsCategories } from './utils/analytics-category-event';
+
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -155,6 +160,9 @@ export class CollectionBrowser
 
   private languageCodeHandler = new LanguageCodeHandler();
 
+  @property({type: Object, attribute: false})
+  private analyticsHandler?: AnalyticsManagerInterface;
+
   /**
    * When we're animated scrolling to the page, we don't want to fetch
    * all of the pages as it scrolls so this lets us know if we're scrolling
@@ -225,6 +233,10 @@ export class CollectionBrowser
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
+
+  public analyticsCategories = analyticsCategories;
+
+  public analyticsActions = analyticsActions;
 
   /**
    * Go to the given page of results
@@ -330,18 +342,20 @@ export class CollectionBrowser
   }
 
   private get sortFilterBarTemplate() {
-    return html`<sort-filter-bar
-      .selectedSort=${this.selectedSort}
-      .sortDirection=${this.sortDirection}
-      .displayMode=${this.displayMode}
-      .selectedTitleFilter=${this.selectedTitleFilter}
-      .selectedCreatorFilter=${this.selectedCreatorFilter}
-      .resizeObserver=${this.resizeObserver}
-      @sortChanged=${this.userChangedSort}
-      @displayModeChanged=${this.displayModeChanged}
-      @titleLetterChanged=${this.titleLetterSelected}
-      @creatorLetterChanged=${this.creatorLetterSelected}
-    ></sort-filter-bar>`;
+    return html`
+      <sort-filter-bar
+        .selectedSort=${this.selectedSort}
+        .sortDirection=${this.sortDirection}
+        .displayMode=${this.displayMode}
+        .selectedTitleFilter=${this.selectedTitleFilter}
+        .selectedCreatorFilter=${this.selectedCreatorFilter}
+        .resizeObserver=${this.resizeObserver}
+        @sortChanged=${this.userChangedSort}
+        @displayModeChanged=${this.displayModeChanged}
+        @titleLetterChanged=${this.titleLetterSelected}
+        @creatorLetterChanged=${this.creatorLetterSelected}>
+      </sort-filter-bar>
+    `;
   }
 
   private userChangedSort(
@@ -368,24 +382,49 @@ export class CollectionBrowser
     const sortField = SortFieldToMetadataField[this.selectedSort];
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.sortBy,
+      label: `${sortField} - ${this.sortDirection}`,
+    })
   }
 
   private displayModeChanged(
     e: CustomEvent<{ displayMode: CollectionDisplayMode }>
   ) {
     this.displayMode = e.detail.displayMode;
+
+    console.log('analyticshandler: ', this.analyticsHandler)
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.displayMode,
+      label: this.displayMode,
+    })
   }
 
   private selectedTitleLetterChanged() {
     this.titleQuery = this.selectedTitleFilter
       ? `firstTitle:${this.selectedTitleFilter}`
       : undefined;
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.sortByTitle,
+      label: `${this.titleQuery}`
+    })
   }
 
   private selectedCreatorLetterChanged() {
     this.creatorQuery = this.selectedCreatorFilter
       ? `firstCreator:${this.selectedCreatorFilter}`
       : undefined;
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.sortByCreator,
+      label: `${this.creatorQuery}`
+    })
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
@@ -441,7 +480,8 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
-      ></collection-facets>
+        .analyticsHandler=${this.analyticsHandler}>
+      </collection-facets>
     `;
   }
 
@@ -491,6 +531,12 @@ export class CollectionBrowser
   ) {
     const { minDate, maxDate } = e.detail;
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.histogramChanged,
+      label: this.dateRangeQueryClause,
+    })
   }
 
   firstUpdated(): void {
