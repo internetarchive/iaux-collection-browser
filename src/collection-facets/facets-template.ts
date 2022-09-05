@@ -20,11 +20,6 @@ export class FacetsTemplate extends LitElement {
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  /**
-   * place where facets needs to be rendered
-   */
-  @property({ type: String }) renderOn = 'page';
-
   private facetClicked(e: Event, negative: boolean) {
     const target = e.target as HTMLInputElement;
     const { checked, name, value } = target;

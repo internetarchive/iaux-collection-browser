@@ -1,0 +1,84 @@
+import { expect, fixture } from '@open-wc/testing';
+import { html } from 'lit';
+import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
+import '../../src/collection-facets/facets-template';
+
+const facetGroup = {
+  title: 'Media Type',
+  key: 'mediatype',
+  buckets: [
+    { displayText: 'audio', key: 'audio', count: 1001, state: 'none' },
+    { displayText: 'movies', key: 'movies', count: 901, state: 'none' },
+    { displayText: 'texts', key: 'texts', count: 2101, state: 'none' },
+    { displayText: 'data', key: 'data', count: 230, state: 'none' },
+    { displayText: 'web', key: 'web', count: 453, state: 'none' },
+  ],
+};
+
+describe('Render facets', () => {
+  it('should render more facets template', async () => {
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template .facetGroup=${facetGroup}></facets-template>`
+    );
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.facet-list')).to.exist;
+  });
+
+  it('find facet-title and facet-count for perticular facet group', async () => {
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template .facetGroup=${facetGroup}></facets-template>`
+    );
+    await el.updateComplete;
+
+    const facetInfo = el.shadowRoot
+      ?.querySelector('.facet-list')
+      ?.querySelector('.facet-info-display');
+    expect(facetInfo?.querySelector('.facet-title')?.textContent).equal(
+      'audio'
+    );
+    expect(facetInfo?.querySelector('.facet-count')?.textContent).equal('1001');
+  });
+
+  it('find the hidden facet item', async () => {
+    const selectedFacets = { ...facetGroup };
+    selectedFacets.buckets[2].state = 'hidden'; // hide 'texts' mediatype
+
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template
+        .facetGroup=${facetGroup}
+        .selectedFacets=${selectedFacets}
+      ></facets-template>`
+    );
+    await el.updateComplete;
+
+    const hiddenFacet = el.shadowRoot
+      ?.querySelector('.facet-list')
+      ?.querySelectorAll('.hide-facet-icon')[2];
+
+    // check title attribute for 'texts' mediatype
+    expect(hiddenFacet?.getAttribute('title')).equal('Unhide mediatype: texts');
+  });
+
+  it('find the selected facet item', async () => {
+    const selectedFacets = { ...facetGroup };
+    selectedFacets.buckets[1].state = 'selected'; // select 'movies' mediatype
+
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template
+        .facetGroup=${facetGroup}
+        .selectedFacets=${selectedFacets}
+      ></facets-template>`
+    );
+    await el.updateComplete;
+
+    const selectedFacet = el.shadowRoot
+      ?.querySelector('.facet-list')
+      ?.querySelectorAll('.hide-facet-icon')[1];
+
+    // check title attribute for 'movies' mediatype
+    expect(selectedFacet?.getAttribute('title')).equal(
+      'Hide mediatype: movies'
+    );
+  });
+});

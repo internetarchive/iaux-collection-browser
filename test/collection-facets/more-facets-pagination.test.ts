@@ -75,23 +75,6 @@ describe('More facets content', () => {
     expect(searchService.searchParams?.query).to.equal('title:hello');
   });
 
-  it('query for specific facets data', async () => {
-    const searchService = new MockSearchService();
-
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content
-        .searchService=${searchService}
-      ></more-facets-content>`
-    );
-
-    el.facetKey = 'language';
-    el.facetsLoading = false;
-    await el.updateComplete;
-
-    expect(el.paginationSize).to.equal(1);
-    expect(el.shadowRoot?.querySelector('.facet-list')).to.exist;
-  });
-
   it('page number clicked event', async () => {
     const searchService = new MockSearchService();
 

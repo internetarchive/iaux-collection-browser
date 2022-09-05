@@ -195,6 +195,8 @@ export class CollectionFacets extends LitElement {
         if (existingBucket) return;
         bucketsWithCount.push(bucket);
       });
+
+      // render only 6 items in each facet group on page
       facetGroup.buckets = bucketsWithCount.splice(0, 5);
 
       facetGroups.push(facetGroup);
@@ -411,7 +413,6 @@ export class CollectionFacets extends LitElement {
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
-        .renderOn="page"
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,
