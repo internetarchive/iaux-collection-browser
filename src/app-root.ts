@@ -305,6 +305,7 @@ export class AppRoot extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --ia-theme-link-color: #4b64ff;
     }
 
     input,
