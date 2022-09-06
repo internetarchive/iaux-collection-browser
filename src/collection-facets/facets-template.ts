@@ -72,9 +72,25 @@ export class FacetsTemplate extends LitElement {
   }
 
   private getFacetsTemplate(facetGroup: FacetGroup): TemplateResult {
-    const facetsBucket = facetGroup?.buckets?.filter(
+    let facetsBucket = facetGroup?.buckets?.filter(
       bucket => bucket.key.startsWith('fav-') === false
     );
+
+    /**
+     * sorting FacetBucket before render page / modal
+     * - first, selected items should be at top having sorted
+     * - second, suppressed/hidden items should be after selected having sorted
+     * - and then no-selected / not suppressed items should render having sorted
+     */
+    facetsBucket = [
+      ...facetsBucket
+        .filter(x => x.state === 'selected')
+        .sort((a, b) => (a.count < b.count ? 1 : -1)),
+      ...facetsBucket
+        .filter(x => x.state === 'hidden')
+        .sort((a, b) => (a.count < b.count ? 1 : -1)),
+      ...facetsBucket.filter(x => x.state === 'none'),
+    ];
 
     return html`
       <ul class="facet-list">

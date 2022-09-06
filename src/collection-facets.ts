@@ -78,10 +78,9 @@ export class CollectionFacets extends LitElement {
   };
 
   /**
-   * If listed facets on page more then this number,
-   * - show the more link button just below the facets group
+   * render number of facet items in each group on page
    */
-  private moreLinkEligibilityCount = 5;
+  private allowedFacetCount = 6;
 
   render() {
     return html`
@@ -196,8 +195,14 @@ export class CollectionFacets extends LitElement {
         bucketsWithCount.push(bucket);
       });
 
-      // render only 6 items in each facet group on page
-      facetGroup.buckets = bucketsWithCount.splice(0, 5);
+      // render limited facet items on page in each group
+      let allowedFacetCount = Object.keys(
+        selectedFacetGroup?.buckets as []
+      )?.length;
+      if (allowedFacetCount < this.allowedFacetCount) {
+        allowedFacetCount = this.allowedFacetCount - 1;
+      }
+      facetGroup.buckets = bucketsWithCount.splice(0, allowedFacetCount);
 
       facetGroups.push(facetGroup);
     });
@@ -334,8 +339,8 @@ export class CollectionFacets extends LitElement {
   private searchMoreFacetsLink(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    // don't render More... link if the number of facets is < this.moreLinkEligibilityCount
-    if (Object.keys(facetGroup.buckets).length < this.moreLinkEligibilityCount)
+    // don't render More... link if the number of facets < this.allowedFacetCount-1
+    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount - 1)
       return nothing;
 
     return html`<button
