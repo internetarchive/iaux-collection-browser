@@ -352,7 +352,11 @@ export class CollectionFacets extends LitElement {
               facetGroup.key !== 'collection'
                 ? html`${bucket.displayText ?? bucket.key}`
                 : html`
-                    <a href="/details/${bucket.key}" title="">
+                    <a
+                      href="/details/${bucket.key}"
+                      title="Open collection in new tab"
+                      target="_blank"
+                    >
                       <async-collection-name
                         .collectionNameCache=${this.collectionNameCache}
                         .identifier=${bucket.key}
