@@ -2712,7 +2712,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}getFacetTemplate(e){const i=e.buckets.filter(a=>a.key.startsWith("fav-")===!1).slice(0,6);return u`
       <ul class="facet-list">
         ${Wr(i,a=>`${e.key}:${a.key}`,a=>{var o,s;const l=`${e.key}:${a.key}-show-only`,c=`${e.key}:${a.key}-negative`,h=e.key!=="collection"?u`${(o=a.displayText)!==null&&o!==void 0?o:a.key}`:u`
-                    <a href="/details/${a.key}" title="">
+                    <a
+                      href="/details/${a.key}"
+                      title="Open collection in new tab"
+                      target="_blank"
+                    >
                       <async-collection-name
                         .collectionNameCache=${this.collectionNameCache}
                         .identifier=${a.key}
