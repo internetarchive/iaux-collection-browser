@@ -417,6 +417,7 @@ export class CollectionFacets extends LitElement {
       <facets-template
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
+        .renderOn=${'page'}
         .collectionNameCache=${this.collectionNameCache}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {

@@ -17,6 +17,8 @@ export class FacetsTemplate extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
+  @property({ type: String }) renderOn?: string;
+
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
@@ -93,7 +95,7 @@ export class FacetsTemplate extends LitElement {
     ];
 
     return html`
-      <ul class="facet-list">
+      <div class="content-on-${this.renderOn}">
         ${repeat(
           facetsBucket,
           bucket => `${facetGroup.key}:${bucket.key}`,
@@ -125,55 +127,53 @@ export class FacetsTemplate extends LitElement {
             const unhideText = `Unhide ${titleText}`;
             const showHideText = facetHidden ? unhideText : hideText;
             return html`
-              <li>
-                <div class="facet-row">
-                  <div class="facet-checkbox">
-                    <input
-                      type="checkbox"
-                      .name=${facetGroup.key}
-                      .value=${bucket.key}
-                      @click=${(e: Event) => {
-                        this.facetClicked(e, false);
-                      }}
-                      .checked=${facetSelected}
-                      class="select-facet-checkbox"
-                      title=${onlyShowText}
-                      id=${showOnlyCheckboxId}
-                    />
-                    <input
-                      type="checkbox"
-                      id=${negativeCheckboxId}
-                      .name=${facetGroup.key}
-                      .value=${bucket.key}
-                      @click=${(e: Event) => {
-                        this.facetClicked(e, true);
-                      }}
-                      .checked=${facetHidden}
-                      class="hide-facet-checkbox"
-                    />
-                    <label
-                      for=${negativeCheckboxId}
-                      class="hide-facet-icon${facetHidden ? ' active' : ''}"
-                      title=${showHideText}
-                    >
-                      <span class="eye">${eyeIcon}</span>
-                      <span class="eye-closed">${eyeClosedIcon}</span>
-                    </label>
-                  </div>
-                  <label
-                    for=${showOnlyCheckboxId}
-                    class="facet-info-display"
+              <div class="facet-row">
+                <div class="facet-checkbox">
+                  <input
+                    type="checkbox"
+                    .name=${facetGroup.key}
+                    .value=${bucket.key}
+                    @click=${(e: Event) => {
+                      this.facetClicked(e, false);
+                    }}
+                    .checked=${facetSelected}
+                    class="select-facet-checkbox"
                     title=${onlyShowText}
+                    id=${showOnlyCheckboxId}
+                  />
+                  <input
+                    type="checkbox"
+                    id=${negativeCheckboxId}
+                    .name=${facetGroup.key}
+                    .value=${bucket.key}
+                    @click=${(e: Event) => {
+                      this.facetClicked(e, true);
+                    }}
+                    .checked=${facetHidden}
+                    class="hide-facet-checkbox"
+                  />
+                  <label
+                    for=${negativeCheckboxId}
+                    class="hide-facet-icon${facetHidden ? ' active' : ''}"
+                    title=${showHideText}
                   >
-                    <div class="facet-title">${bucketTextDisplay}</div>
-                    <div class="facet-count">${bucket.count}</div>
+                    <span class="eye">${eyeIcon}</span>
+                    <span class="eye-closed">${eyeClosedIcon}</span>
                   </label>
                 </div>
-              </li>
+                <div
+                  for=${showOnlyCheckboxId}
+                  class="facet-info-display"
+                  title=${onlyShowText}
+                >
+                  <div class="facet-title">${bucketTextDisplay}</div>
+                  <div class="facet-count">${bucket.count}</div>
+                </div>
+              </div>
             `;
           }
         )}
-      </ul>
+      </div>
     `;
   }
 
@@ -183,6 +183,13 @@ export class FacetsTemplate extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      .content-on-modal {
+        /* For Chrome, Safari, Opera browsers */
+        -webkit-column-width: 100px;
+        /* For Firefox browser */
+        -moz-column-width: 100px;
+        column-width: 25rem;
+      }
       ul.facet-list {
         list-style: none;
         margin: 0;
@@ -201,6 +208,7 @@ export class FacetsTemplate extends LitElement {
         display: flex;
         font-weight: 500;
         font-size: 1.2rem;
+        align-items: flex-start;
       }
       .facet-info-display {
         display: flex;

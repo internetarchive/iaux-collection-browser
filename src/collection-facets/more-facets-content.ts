@@ -302,8 +302,8 @@ export class MoreFacetsContent extends LitElement {
       <facets-template
         .facetGroup=${this.mergedFacets?.shift()}
         .selectedFacets=${this.selectedFacets}
+        .renderOn=${'modal'}
         .collectionNameCache=${this.collectionNameCache}
-        .renderOn="modal"
         @selectedFacetsChanged=${(e: CustomEvent) => {
           this.selectedFacets = e.detail;
         }}
@@ -383,15 +383,10 @@ export class MoreFacetsContent extends LitElement {
 
     return css`
       .scrollable-content {
-        overflow-y: scroll;
+        overflow-y: auto;
         max-height: 65vh;
       }
       .facets-content {
-        /* For Chrome, Safari, Opera browsers */
-        -webkit-column-width: 100px;
-        /* For Firefox browser */
-        -moz-column-width: 100px;
-        column-width: 25rem;
         font-size: 1.2rem;
         margin: 10px;
       }
