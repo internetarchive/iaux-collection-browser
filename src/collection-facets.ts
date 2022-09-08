@@ -78,7 +78,7 @@ export class CollectionFacets extends LitElement {
   };
 
   /**
-   * render number of facet items in each group on page
+   * render number of facet items
    */
   private allowedFacetCount = 6;
 
@@ -195,13 +195,20 @@ export class CollectionFacets extends LitElement {
         bucketsWithCount.push(bucket);
       });
 
-      // render limited facet items on page in each group
+      /**
+       * render limited facet items on page facet area
+       *
+       * - by-default we are showing 6 items
+       * - additionally want to show all items (selected/suppressed) in page facet area
+       */
       let allowedFacetCount = Object.keys(
         selectedFacetGroup?.buckets as []
       )?.length;
       if (allowedFacetCount < this.allowedFacetCount) {
-        allowedFacetCount = this.allowedFacetCount - 1;
+        allowedFacetCount = this.allowedFacetCount; // splice start index from 0th
       }
+
+      // splice how many items we want to show in page facet area
       facetGroup.buckets = bucketsWithCount.splice(0, allowedFacetCount);
 
       facetGroups.push(facetGroup);
@@ -339,8 +346,8 @@ export class CollectionFacets extends LitElement {
   private searchMoreFacetsLink(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    // don't render More... link if the number of facets < this.allowedFacetCount-1
-    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount - 1)
+    // don't render More... link if the number of facets < this.allowedFacetCount
+    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount)
       return nothing;
 
     return html`<button
@@ -372,7 +379,7 @@ export class CollectionFacets extends LitElement {
       </span>
     `;
 
-    const someContent = html`
+    const customModalContent = html`
       <more-facets-content
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
@@ -405,7 +412,7 @@ export class CollectionFacets extends LitElement {
     this.modalManager?.classList.add('more-search-facets');
     this.modalManager?.showModal({
       config,
-      customModalContent: someContent,
+      customModalContent,
     });
   }
 
