@@ -252,7 +252,12 @@ export class MoreFacetsContent extends LitElement {
 
       const option = getFacetOptionFromKey(key);
       const title = facetTitles[option];
-      const castedBuckets = buckets.buckets as Bucket[];
+      let castedBuckets = buckets.buckets as Bucket[];
+
+      // we are not showing fav- items in facets
+      castedBuckets = castedBuckets?.filter(
+        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
+      );
 
       // find length and pagination size for modal pagination
       const { length } = Object.keys(castedBuckets as []);

@@ -22,7 +22,31 @@ describe('Render facets', () => {
     );
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.facet-list')).to.exist;
+    expect(el.shadowRoot?.querySelector('.facet-row')).to.exist;
+  });
+
+  it('facets render on page', async () => {
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template
+        .facetGroup=${facetGroup}
+        .renderOn=${'page'}
+      ></facets-template>`
+    );
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.facets-on-page')).to.exist;
+  });
+
+  it('facets render on modal', async () => {
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template
+        .facetGroup=${facetGroup}
+        .renderOn=${'modal'}
+      ></facets-template>`
+    );
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.facets-on-modal')).to.exist;
   });
 
   it('find facet-title and facet-count for perticular facet group', async () => {
@@ -31,9 +55,7 @@ describe('Render facets', () => {
     );
     await el.updateComplete;
 
-    const facetInfo = el.shadowRoot
-      ?.querySelector('.facet-list')
-      ?.querySelector('.facet-info-display');
+    const facetInfo = el.shadowRoot?.querySelector('.facet-info-display');
     expect(facetInfo?.querySelector('.facet-title')?.textContent).equal(
       'audio'
     );
@@ -52,10 +74,8 @@ describe('Render facets', () => {
     );
     await el.updateComplete;
 
-    const hiddenFacet = el.shadowRoot
-      ?.querySelector('.facet-list')
-      ?.querySelectorAll('.hide-facet-icon')[2];
-
+    const hiddenFacet = el.shadowRoot?.querySelectorAll('.hide-facet-icon')[0];
+    console.log(hiddenFacet);
     // check title attribute for 'texts' mediatype
     expect(hiddenFacet?.getAttribute('title')).equal('Unhide mediatype: texts');
   });
@@ -72,9 +92,8 @@ describe('Render facets', () => {
     );
     await el.updateComplete;
 
-    const selectedFacet = el.shadowRoot
-      ?.querySelector('.facet-list')
-      ?.querySelectorAll('.hide-facet-icon')[1];
+    const selectedFacet =
+      el.shadowRoot?.querySelectorAll('.hide-facet-icon')[0];
 
     // check title attribute for 'movies' mediatype
     expect(selectedFacet?.getAttribute('title')).equal(

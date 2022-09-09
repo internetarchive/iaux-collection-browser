@@ -271,6 +271,12 @@ export class CollectionFacets extends LitElement {
       const option = getFacetOptionFromKey(key);
       const title = facetTitles[option];
       const castedBuckets = buckets.buckets as Bucket[];
+
+      // we are not showing fav- items in facets
+      castedBuckets?.filter(
+        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
+      );
+
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
         let bucketKey = bucket.key;
         // for languages, we need to search by language code instead of the

@@ -7,6 +7,7 @@ import eyeClosedIcon from '../assets/img/icons/eye-closed';
 import {
   FacetGroup,
   FacetOption,
+  FacetBucket,
   SelectedFacets,
   defaultSelectedFacets,
 } from '../models';
@@ -74,9 +75,7 @@ export class FacetsTemplate extends LitElement {
   }
 
   private getFacetsTemplate(facetGroup: FacetGroup): TemplateResult {
-    let facetsBucket = facetGroup?.buckets?.filter(
-      bucket => bucket.key.startsWith('fav-') === false
-    );
+    let facetsBucket = facetGroup?.buckets as FacetBucket[];
 
     /**
      * sorting FacetBucket before render page / modal
@@ -95,7 +94,7 @@ export class FacetsTemplate extends LitElement {
     ];
 
     return html`
-      <div class="content-on-${this.renderOn}">
+      <div class="facets-on-${this.renderOn}">
         ${repeat(
           facetsBucket,
           bucket => `${facetGroup.key}:${bucket.key}`,
@@ -183,7 +182,7 @@ export class FacetsTemplate extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
-      .content-on-modal {
+      .facets-on-modal {
         /* For Chrome, Safari, Opera browsers */
         -webkit-column-width: 100px;
         /* For Firefox browser */
@@ -201,30 +200,32 @@ export class FacetsTemplate extends LitElement {
       }
       .facet-checkbox {
         margin-right: 0.5rem;
-        display: flex;
+        display: inline-block;
         align-items: baseline;
       }
       .facet-row {
         display: flex;
         font-weight: 500;
         font-size: 1.2rem;
-        align-items: flex-start;
       }
       .facet-info-display {
-        display: flex;
-        align-items: center;
-        flex: 1;
+        display: grid;
+        flex: 1 1 0%;
         cursor: pointer;
+        grid-template-columns: auto auto;
       }
       .facet-title {
-        flex: 1;
+        word-break: break-word;
+        display: inline-block;
+        flex: 1 1 0%;
       }
       .facet-count {
-        margin-left: 0.5rem;
+        text-align: right;
       }
       .select-facet-checkbox {
         cursor: pointer;
         margin-right: 5px;
+        display: inline-block;
       }
       .hide-facet-checkbox {
         display: none;
@@ -234,6 +235,7 @@ export class FacetsTemplate extends LitElement {
         height: 15px;
         cursor: pointer;
         opacity: 0.3;
+        display: inline-block;
       }
       .hide-facet-icon:hover,
       .active {
