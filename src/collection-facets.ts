@@ -352,11 +352,17 @@ export class CollectionFacets extends LitElement {
               facetGroup.key !== 'collection'
                 ? html`${bucket.displayText ?? bucket.key}`
                 : html`
-                    <async-collection-name
-                      .collectionNameCache=${this.collectionNameCache}
-                      .identifier=${bucket.key}
-                      placeholder="-"
-                    ></async-collection-name>
+                    <a
+                      href="/details/${bucket.key}"
+                      title="Open collection in new tab"
+                      target="_blank"
+                    >
+                      <async-collection-name
+                        .collectionNameCache=${this.collectionNameCache}
+                        .identifier=${bucket.key}
+                        placeholder="-"
+                      ></async-collection-name>
+                    </a>
                   `;
 
             const facetHidden = bucket.state === 'hidden';
@@ -604,6 +610,16 @@ export class CollectionFacets extends LitElement {
       }
       .hide-facet-icon.active .eye {
         display: none;
+      }
+
+      a:link,
+      a:visited {
+        text-decoration: none;
+        color: var(--ia-theme-link-color);
+      }
+
+      a:hover {
+        text-decoration: underline;
       }
     `;
   }
