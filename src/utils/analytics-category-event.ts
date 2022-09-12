@@ -12,6 +12,7 @@ export const analyticsActions = {
   displayMode: 'displayMode',
   facetSelected: 'facetSelected',
   facetDeselected: 'facetDeselected',
-  negativeFacetSelected: 'negativeFacetSelected',
+  facetNegativeSelected: 'facetNegativeSelected',
+  facetNegativeDeselected: 'facetNegativeDeselected',
   histogramChanged: 'histogramChanged',
 };

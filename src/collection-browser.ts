@@ -889,7 +889,9 @@ export class CollectionBrowser
     if (negative) {
       this.analyticsHandler?.sendEventNoSampling({
         category: this.analyticsCategories?.default,
-        action: this.analyticsActions.negativeFacetSelected,
+        action: facetSelected
+          ? this.analyticsActions.facetNegativeSelected
+          : this.analyticsActions.facetNegativeDeselected,
         label: name,
       });
     } else {
