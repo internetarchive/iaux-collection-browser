@@ -7,7 +7,7 @@ export const analyticsCategories = {
 
 export const analyticsActions = {
   sortBy: 'sortBy',
-  sortByCreator: 'sortByCreator',
+  filterByCreator: 'filterByCreator',
   filterByTitle: 'filterByTitle',
   displayMode: 'displayMode',
   facetsChanged: 'facetsChanged', // group + value

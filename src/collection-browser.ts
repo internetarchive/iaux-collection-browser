@@ -444,18 +444,27 @@ export class CollectionBrowser
       : undefined;
   }
 
+  private sendSelectedCreatorFilterAnalytics(
+    prevSelectedLetter: string | null
+  ): void {
+    if (!prevSelectedLetter && !this.selectedCreatorFilter) {
+      return;
+    }
+    const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.filterByCreator,
+      label: cleared
+        ? `clear-${prevSelectedLetter}`
+        : `${prevSelectedLetter || 'start'}-${this.selectedCreatorFilter}`,
+    });
+  }
+
   private selectedCreatorLetterChanged(): void {
     this.creatorQuery = this.selectedCreatorFilter
       ? `firstCreator:${this.selectedCreatorFilter}`
       : undefined;
-
-    if (this.creatorQuery) {
-      this.analyticsHandler?.sendEventNoSampling({
-        category: this.analyticsCategories.default,
-        action: this.analyticsActions.sortByCreator,
-        label: this.creatorQuery,
-      });
-    }
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
@@ -620,6 +629,9 @@ export class CollectionBrowser
       this.selectedTitleLetterChanged();
     }
     if (changed.has('selectedCreatorFilter')) {
+      this.sendSelectedCreatorFilterAnalytics(
+        changed.get('selectedCreatorFilter') as string
+      );
       this.selectedCreatorLetterChanged();
     }
     if (changed.has('pagesToRender')) {
