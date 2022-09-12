@@ -2712,11 +2712,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}getFacetTemplate(e){const i=e.buckets.filter(a=>a.key.startsWith("fav-")===!1).slice(0,6);return u`
       <ul class="facet-list">
         ${Wr(i,a=>`${e.key}:${a.key}`,a=>{var o,s;const l=`${e.key}:${a.key}-show-only`,c=`${e.key}:${a.key}-negative`,h=e.key!=="collection"?u`${(o=a.displayText)!==null&&o!==void 0?o:a.key}`:u`
-                    <async-collection-name
-                      .collectionNameCache=${this.collectionNameCache}
-                      .identifier=${a.key}
-                      placeholder="-"
-                    ></async-collection-name>
+                    <a
+                      href="/details/${a.key}"
+                      title="Open collection in new tab"
+                      target="_blank"
+                    >
+                      <async-collection-name
+                        .collectionNameCache=${this.collectionNameCache}
+                        .identifier=${a.key}
+                        placeholder="-"
+                      ></async-collection-name>
+                    </a>
                   `,m=a.state==="hidden",f=a.state==="selected",g=`${e.key}: ${(s=a.displayText)!==null&&s!==void 0?s:a.key}`,b=f?`Show all ${e.key}s`:`Only show ${g}`,S=`Hide ${g}`,z=`Unhide ${g}`,E=m?z:S;return u`
               <li>
                 <div class="facet-row">
@@ -2881,6 +2887,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       .hide-facet-icon.active .eye {
         display: none;
+      }
+
+      a:link,
+      a:visited {
+        text-decoration: none;
+        color: var(--ia-theme-link-color);
+      }
+
+      a:hover {
+        text-decoration: underline;
       }
     `}};n([p({type:Object})],oe.prototype,"aggregations",void 0);n([p({type:Object})],oe.prototype,"fullYearsHistogramAggregation",void 0);n([p({type:String})],oe.prototype,"minSelectedDate",void 0);n([p({type:String})],oe.prototype,"maxSelectedDate",void 0);n([p({type:Boolean})],oe.prototype,"facetsLoading",void 0);n([p({type:Boolean})],oe.prototype,"fullYearAggregationLoading",void 0);n([p({type:Object})],oe.prototype,"selectedFacets",void 0);n([p({type:Boolean})],oe.prototype,"collapsableFacets",void 0);n([p({type:Boolean})],oe.prototype,"showHistogramDatePicker",void 0);n([p({type:Object})],oe.prototype,"languageCodeHandler",void 0);n([p({type:Object})],oe.prototype,"collectionNameCache",void 0);n([T()],oe.prototype,"openFacets",void 0);oe=n([U("collection-facets")],oe);let Tr=class extends L{render(){return u`
       <div class="lds-ring">
@@ -3425,6 +3441,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}async snippetsChanged(e){e.target.checked?this.searchService=lt(pe({},ht.default),{async search(a){var o;const s=await ht.default.search(a);return(o=s.success)===null||o===void 0||o.response.docs.forEach(l=>{const c=l.rawMetadata;c&&(c.snippets=["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])}),s}}):this.searchService=ht.default;const i=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(a=>setTimeout(a,0)),this.searchQuery=i}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};ne.styles=y`
     :host {
       display: block;
+      --ia-theme-link-color: #4b64ff;
     }
 
     input,
