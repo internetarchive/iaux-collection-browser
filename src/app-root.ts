@@ -59,7 +59,6 @@ export class AppRoot extends LitElement {
 
   private sendAnalytics(ae: AnalyticsEvent) {
     this.latestAction = ae;
-    console.log('latestAction: ', this.latestAction);
     this.analyticsManager?.sendEventNoSampling(ae);
   }
 
@@ -79,8 +78,10 @@ export class AppRoot extends LitElement {
 
   protected override updated(changed: PropertyValues): void {
     if (changed.has('latestAction')) {
-      console.log('UPDATED: latestAction: ', this.latestAction);
+      console.log('UPDATED: OLD latestAction: ', changed.get('latestAction'));
+      console.log('UPDATED: NEW latestAction: ', this.latestAction);
     }
+
     if (changed.has('currentPage') && this.currentPage) {
       this.pageNumberInput.value = this.currentPage.toString();
     }
