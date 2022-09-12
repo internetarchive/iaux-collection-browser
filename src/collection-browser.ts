@@ -520,7 +520,7 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
-        @onFacetClick=${this.facetClickHandler}
+        .onFacetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
         .analyticsCategories=${this.analyticsCategories}
         .analyticsActions=${this.analyticsActions}
@@ -881,13 +881,26 @@ export class CollectionBrowser
     this.selectedFacets = e.detail;
   }
 
-  facetClickHandler(name: FacetOption, negative: boolean): void {
-    const negativeFacetActivated = negative ? '-negative' : '';
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories?.default,
-      action: this.analyticsActions?.facetsChanged,
-      label: `${name}${negativeFacetActivated}`,
-    });
+  facetClickHandler(
+    name: FacetOption,
+    facetSelected: boolean,
+    negative: boolean
+  ): void {
+    if (negative) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories?.default,
+        action: this.analyticsActions.negativeFacetSelected,
+        label: name,
+      });
+    } else {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories?.default,
+        action: facetSelected
+          ? this.analyticsActions?.facetSelected
+          : this.analyticsActions?.facetDeselected,
+        label: name,
+      });
+    }
   }
 
   private async fetchFacets() {

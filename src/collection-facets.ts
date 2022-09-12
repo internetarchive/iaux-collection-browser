@@ -82,6 +82,7 @@ export class CollectionFacets extends LitElement {
   /** Fires when a facet is clicked */
   @property({ type: Function }) onFacetClick?: (
     name: FacetOption,
+    facetChecked: boolean,
     negative: boolean
   ) => void;
 
@@ -443,7 +444,7 @@ export class CollectionFacets extends LitElement {
     }
 
     if (this.onFacetClick) {
-      this.onFacetClick(name as FacetOption, negative);
+      this.onFacetClick(name as FacetOption, checked, negative);
     }
   }
 

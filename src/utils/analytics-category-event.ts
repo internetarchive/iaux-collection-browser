@@ -10,6 +10,8 @@ export const analyticsActions = {
   filterByCreator: 'filterByCreator',
   filterByTitle: 'filterByTitle',
   displayMode: 'displayMode',
-  facetsChanged: 'facetsChanged', // group + value
+  facetSelected: 'facetSelected',
+  facetDeselected: 'facetDeselected',
+  negativeFacetSelected: 'negativeFacetSelected',
   histogramChanged: 'histogramChanged',
 };
