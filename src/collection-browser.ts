@@ -378,20 +378,30 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
-  private selectedSortChanged() {
+  private sendSortFieldAnalytics(
+    prevSelectedSort: SortField,
+    prevSortDirection: SortDirection | null
+  ): void {
+    const directionCleared = prevSortDirection && !this.sortDirection;
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.sortBy,
+      label: `${this.selectedSort}${
+        this.sortDirection || directionCleared ? `-${this.sortDirection}` : ''
+      }`,
+    });
+  }
+
+  private selectedSortChanged(): void {
     if (this.selectedSort === 'relevance' || this.sortDirection === null) {
       this.sortParam = null;
       return;
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
+
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
-
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortBy,
-      label: `${sortField}-${this.sortDirection}`,
-    });
   }
 
   private displayModeChanged(
@@ -399,35 +409,53 @@ export class CollectionBrowser
   ) {
     this.displayMode = e.detail.displayMode;
 
+    if (this.displayMode) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories.default,
+        action: this.analyticsActions.displayMode,
+        label: this.displayMode,
+      });
+    }
+  }
+
+  /** Send Analytics when sorting by title
+   * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
+   * */
+  private sendSelectedTitleLetterChangedAnalytics(
+    prevSelectedLetter: string | null
+  ): void {
+    if (!prevSelectedLetter && !this.selectedTitleFilter) {
+      return;
+    }
+    const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
+
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
-      action: this.analyticsActions.displayMode,
-      label: this.displayMode || '',
+      action: this.analyticsActions.filterByTitle,
+      label: cleared
+        ? `clear-${prevSelectedLetter}`
+        : `${prevSelectedLetter || 'start'}-${this.selectedTitleFilter}`,
     });
   }
 
-  private selectedTitleLetterChanged() {
+  private selectedTitleLetterChanged(): void {
     this.titleQuery = this.selectedTitleFilter
       ? `firstTitle:${this.selectedTitleFilter}`
       : undefined;
-
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortByTitle,
-      label: this.titleQuery || '',
-    });
   }
 
-  private selectedCreatorLetterChanged() {
+  private selectedCreatorLetterChanged(): void {
     this.creatorQuery = this.selectedCreatorFilter
       ? `firstCreator:${this.selectedCreatorFilter}`
       : undefined;
 
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortByCreator,
-      label: this.creatorQuery || '',
-    });
+    if (this.creatorQuery) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories.default,
+        action: this.analyticsActions.sortByCreator,
+        label: this.creatorQuery,
+      });
+    }
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
@@ -539,11 +567,13 @@ export class CollectionBrowser
     const { minDate, maxDate } = e.detail;
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
 
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.histogramChanged,
-      label: this.dateRangeQueryClause || '',
-    });
+    if (this.dateRangeQueryClause) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories.default,
+        action: this.analyticsActions.histogramChanged,
+        label: this.dateRangeQueryClause,
+      });
+    }
   }
 
   firstUpdated(): void {
@@ -578,9 +608,15 @@ export class CollectionBrowser
       this.handleQueryChange();
     }
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
+      const prevSelectedSort = changed.get('selectedSort') as SortField;
+      const prevSortDirection = changed.get('sortDirection') as SortDirection;
+      this.sendSortFieldAnalytics(prevSelectedSort, prevSortDirection);
       this.selectedSortChanged();
     }
     if (changed.has('selectedTitleFilter')) {
+      this.sendSelectedTitleLetterChangedAnalytics(
+        changed.get('selectedTitleFilter') as string
+      );
       this.selectedTitleLetterChanged();
     }
     if (changed.has('selectedCreatorFilter')) {
