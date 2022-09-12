@@ -43,6 +43,7 @@ import {
   defaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
+  FacetOption,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -389,7 +390,7 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.sortBy,
-      label: `${sortField} - ${this.sortDirection}`,
+      label: `${sortField}-${this.sortDirection}`,
     });
   }
 
@@ -401,7 +402,7 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.displayMode,
-      label: this.displayMode,
+      label: this.displayMode || '',
     });
   }
 
@@ -413,7 +414,7 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.sortByTitle,
-      label: `${this.titleQuery}`,
+      label: this.titleQuery || '',
     });
   }
 
@@ -425,7 +426,7 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.sortByCreator,
-      label: `${this.creatorQuery}`,
+      label: this.creatorQuery || '',
     });
   }
 
@@ -482,6 +483,7 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
+        @onFacetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
         .analyticsCategories=${this.analyticsCategories}
         .analyticsActions=${this.analyticsActions}
@@ -540,7 +542,7 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
       action: this.analyticsActions.histogramChanged,
-      label: this.dateRangeQueryClause,
+      label: this.dateRangeQueryClause || '',
     });
   }
 
@@ -829,6 +831,15 @@ export class CollectionBrowser
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
+  }
+
+  facetClickHandler(name: FacetOption, negative: boolean): void {
+    const negativeFacetActivated = negative ? '-negative' : '';
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories?.default,
+      action: this.analyticsActions?.facetsChanged,
+      label: `${name}${negativeFacetActivated}`,
+    });
   }
 
   private async fetchFacets() {
