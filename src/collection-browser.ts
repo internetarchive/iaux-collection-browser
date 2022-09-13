@@ -43,6 +43,7 @@ import {
   defaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
+  FacetOption,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -377,20 +378,27 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
-  private selectedSortChanged() {
+  private sendSortByAnaltyics(prevSortDirection: SortDirection | null): void {
+    const directionCleared = prevSortDirection && !this.sortDirection;
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.sortBy,
+      label: `${this.selectedSort}${
+        this.sortDirection || directionCleared ? `-${this.sortDirection}` : ''
+      }`,
+    });
+  }
+
+  private selectedSortChanged(): void {
     if (this.selectedSort === 'relevance' || this.sortDirection === null) {
       this.sortParam = null;
       return;
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
+
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
-
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortBy,
-      label: `${sortField} - ${this.sortDirection}`,
-    });
   }
 
   private displayModeChanged(
@@ -398,35 +406,63 @@ export class CollectionBrowser
   ) {
     this.displayMode = e.detail.displayMode;
 
+    if (this.displayMode) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories.default,
+        action: this.analyticsActions.displayMode,
+        label: this.displayMode,
+      });
+    }
+  }
+
+  /** Send Analytics when sorting by title's first letter
+   * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
+   * */
+  private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
+    if (!prevSelectedLetter && !this.selectedTitleFilter) {
+      return;
+    }
+    const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
+
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
-      action: this.analyticsActions.displayMode,
-      label: this.displayMode,
+      action: this.analyticsActions.filterByTitle,
+      label: cleared
+        ? `clear-${prevSelectedLetter}`
+        : `${prevSelectedLetter || 'start'}-${this.selectedTitleFilter}`,
     });
   }
 
-  private selectedTitleLetterChanged() {
+  private selectedTitleLetterChanged(): void {
     this.titleQuery = this.selectedTitleFilter
       ? `firstTitle:${this.selectedTitleFilter}`
       : undefined;
+  }
+
+  /** Send Analytics when filtering by creator's first letter
+   * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
+   * */
+  private sendFilterByCreatorAnalytics(
+    prevSelectedLetter: string | null
+  ): void {
+    if (!prevSelectedLetter && !this.selectedCreatorFilter) {
+      return;
+    }
+    const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
 
     this.analyticsHandler?.sendEventNoSampling({
       category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortByTitle,
-      label: `${this.titleQuery}`,
+      action: this.analyticsActions.filterByCreator,
+      label: cleared
+        ? `clear-${prevSelectedLetter}`
+        : `${prevSelectedLetter || 'start'}-${this.selectedCreatorFilter}`,
     });
   }
 
-  private selectedCreatorLetterChanged() {
+  private selectedCreatorLetterChanged(): void {
     this.creatorQuery = this.selectedCreatorFilter
       ? `firstCreator:${this.selectedCreatorFilter}`
       : undefined;
-
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortByCreator,
-      label: `${this.creatorQuery}`,
-    });
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
@@ -482,6 +518,7 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
+        .onFacetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
         .analyticsCategories=${this.analyticsCategories}
         .analyticsActions=${this.analyticsActions}
@@ -537,11 +574,13 @@ export class CollectionBrowser
     const { minDate, maxDate } = e.detail;
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
 
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.histogramChanged,
-      label: this.dateRangeQueryClause,
-    });
+    if (this.dateRangeQueryClause) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories.default,
+        action: this.analyticsActions.histogramChanged,
+        label: this.dateRangeQueryClause,
+      });
+    }
   }
 
   firstUpdated(): void {
@@ -576,12 +615,20 @@ export class CollectionBrowser
       this.handleQueryChange();
     }
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
+      const prevSortDirection = changed.get('sortDirection') as SortDirection;
+      this.sendSortByAnaltyics(prevSortDirection);
       this.selectedSortChanged();
     }
     if (changed.has('selectedTitleFilter')) {
+      this.sendFilterByTitleAnalytics(
+        changed.get('selectedTitleFilter') as string
+      );
       this.selectedTitleLetterChanged();
     }
     if (changed.has('selectedCreatorFilter')) {
+      this.sendFilterByCreatorAnalytics(
+        changed.get('selectedCreatorFilter') as string
+      );
       this.selectedCreatorLetterChanged();
     }
     if (changed.has('pagesToRender')) {
@@ -829,6 +876,30 @@ export class CollectionBrowser
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
+  }
+
+  facetClickHandler(
+    name: FacetOption,
+    facetSelected: boolean,
+    negative: boolean
+  ): void {
+    if (negative) {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories?.default,
+        action: facetSelected
+          ? this.analyticsActions.facetNegativeSelected
+          : this.analyticsActions.facetNegativeDeselected,
+        label: name,
+      });
+    } else {
+      this.analyticsHandler?.sendEventNoSampling({
+        category: this.analyticsCategories?.default,
+        action: facetSelected
+          ? this.analyticsActions?.facetSelected
+          : this.analyticsActions?.facetDeselected,
+        label: name,
+      });
+    }
   }
 
   private async fetchFacets() {
@@ -1174,6 +1245,21 @@ export class CollectionBrowser
     return title ?? '';
   }
 
+  /** callback when a result is selected */
+  resultSelected(event: CustomEvent<TileModel>): void {
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.resultSelected,
+      label: event.detail.mediatype === 'collection' ? 'collection' : 'item',
+    });
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.resultSelected,
+      label: `page-${this.currentPage}`,
+    });
+  }
+
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
@@ -1189,6 +1275,7 @@ export class CollectionBrowser
         .sortParam=${this.sortParam}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >
       </tile-dispatcher>
     `;

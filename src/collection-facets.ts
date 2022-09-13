@@ -14,7 +14,6 @@ import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import eyeIcon from './assets/img/icons/eye';
 import eyeClosedIcon from './assets/img/icons/eye-closed';
 import chevronIcon from './assets/img/icons/chevron';
@@ -26,11 +25,6 @@ import {
   defaultSelectedFacets,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
-
-import {
-  analyticsActions,
-  analyticsCategories,
-} from './utils/analytics-category-event';
 
 const facetDisplayOrder: FacetOption[] = [
   'mediatype',
@@ -85,6 +79,13 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
+  /** Fires when a facet is clicked */
+  @property({ type: Function }) onFacetClick?: (
+    name: FacetOption,
+    facetChecked: boolean,
+    negative: boolean
+  ) => void;
+
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
     mediatype: false,
@@ -95,12 +96,6 @@ export class CollectionFacets extends LitElement {
   };
 
   @property({ type: Object, attribute: false })
-  private analyticsHandler?: AnalyticsManagerInterface;
-
-  private analyticsCategories = analyticsCategories;
-
-  private analyticsActions = analyticsActions;
-
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -439,7 +434,7 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
-  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean) {
+  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean): void {
     const target = e.target as HTMLInputElement;
     const { checked, name, value } = target;
     if (checked) {
@@ -448,11 +443,9 @@ export class CollectionFacets extends LitElement {
       this.facetUnchecked(name as FacetOption, value);
     }
 
-    this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories?.default,
-      action: this.analyticsActions?.facetsChanged,
-      label: `${name} - ${value}`,
-    });
+    if (this.onFacetClick) {
+      this.onFacetClick(name as FacetOption, checked, negative);
+    }
   }
 
   private facetChecked(key: FacetOption, value: string, negative: boolean) {
