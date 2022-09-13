@@ -202,7 +202,7 @@ export class CollectionFacets extends LitElement {
        * - additionally want to show all items (selected/suppressed) in page facet area
        */
       let allowedFacetCount = Object.keys(
-        selectedFacetGroup?.buckets as []
+        (selectedFacetGroup?.buckets as []) || []
       )?.length;
       if (allowedFacetCount < this.allowedFacetCount) {
         allowedFacetCount = this.allowedFacetCount; // splice start index from 0th
@@ -524,7 +524,7 @@ export class CollectionFacets extends LitElement {
       .more-link {
         font-size: 1.2rem;
         text-decoration: none;
-        padding: 0px 4px;
+        padding: 0px 5px 0 0;
         background: inherit;
         border: 0;
         color: blue;
@@ -532,16 +532,6 @@ export class CollectionFacets extends LitElement {
       }
       .sorting-icon {
         cursor: pointer;
-      }
-
-      a:link,
-      a:visited {
-        text-decoration: none;
-        color: var(--ia-theme-link-color);
-      }
-
-      a:hover {
-        text-decoration: underline;
       }
     `;
   }

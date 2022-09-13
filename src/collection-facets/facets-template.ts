@@ -107,13 +107,13 @@ export class FacetsTemplate extends LitElement {
             const bucketTextDisplay =
               facetGroup.key !== 'collection'
                 ? html`${bucket.displayText ?? bucket.key}`
-                : html`
+                : html`<a href="/details/${bucket.key}">
                     <async-collection-name
                       .collectionNameCache=${this.collectionNameCache}
                       .identifier=${bucket.key}
                       placeholder="-"
                     ></async-collection-name>
-                  `;
+                  </a> `;
             const facetHidden = bucket.state === 'hidden';
             const facetSelected = bucket.state === 'selected';
             const titleText = `${facetGroup.key}: ${
@@ -188,6 +188,10 @@ export class FacetsTemplate extends LitElement {
         /* For Firefox browser */
         -moz-column-width: 100px;
         column-width: 25rem;
+        column-gap: 15px;
+      }
+      async-collection-name {
+        display: block;
       }
       ul.facet-list {
         list-style: none;
@@ -199,7 +203,7 @@ export class FacetsTemplate extends LitElement {
         display: grid;
       }
       .facet-checkbox {
-        margin-right: 0.5rem;
+        margin: 0 5px 0 0;
         display: inline-block;
         align-items: baseline;
       }
@@ -209,10 +213,11 @@ export class FacetsTemplate extends LitElement {
         font-size: 1.2rem;
       }
       .facet-info-display {
-        display: grid;
+        display: flex;
         flex: 1 1 0%;
         cursor: pointer;
-        grid-template-columns: auto auto;
+        flex-wrap: wrap;
+        align-content: center;
       }
       .facet-title {
         word-break: break-word;
@@ -224,7 +229,7 @@ export class FacetsTemplate extends LitElement {
       }
       .select-facet-checkbox {
         cursor: pointer;
-        margin-right: 5px;
+        margin: 0 5px;
         display: inline-block;
       }
       .hide-facet-checkbox {
@@ -254,6 +259,15 @@ export class FacetsTemplate extends LitElement {
       }
       .sorting-icon {
         cursor: pointer;
+      }
+
+      a:link,
+      a:visited {
+        text-decoration: none;
+        color: var(--ia-theme-link-color, #4b64ff);
+      }
+      a:hover {
+        text-decoration: underline;
       }
     `;
   }

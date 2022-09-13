@@ -75,7 +75,7 @@ describe('Render facets', () => {
     await el.updateComplete;
 
     const hiddenFacet = el.shadowRoot?.querySelectorAll('.hide-facet-icon')[0];
-    console.log(hiddenFacet);
+
     // check title attribute for 'texts' mediatype
     expect(hiddenFacet?.getAttribute('title')).equal('Unhide mediatype: texts');
   });
