@@ -7,7 +7,7 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
   defaultSelectedFacets,
-  mockedSelectedFacets,
+  SelectedFacets,
   SortField,
 } from '../src/models';
 import { MockSearchService } from './mocks/mock-search-service';
@@ -30,6 +30,29 @@ describe('Collection Browser', () => {
     expect(el.sortParam).to.null;
     expect(el.selectedCreatorFilter).to.null;
     expect(el.selectedTitleFilter).to.null;
+  });
+
+  it('filterBy creator with analytics', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
+      </collection-browser>`
+    );
+
+    el.selectedCreatorFilter = 'A';
+    await el.updateComplete;
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
+    expect(mockAnalyticsHandler.callLabel).to.equal('start-A');
+
+    el.clearFilters();
+    await el.updateComplete;
+
+    expect(el.selectedTitleFilter).to.null;
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
+    expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
   });
 
   it('filterBy title with analytics', async () => {
@@ -58,6 +81,15 @@ describe('Collection Browser', () => {
 
   it('selected facets with analytics - not negative facets', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const mockedSelectedFacets: SelectedFacets = {
+      subject: {},
+      mediatype: { data: 'selected' },
+      language: {},
+      creator: {},
+      collection: {},
+      year: {},
+    };
+
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
       </collection-browser>`
@@ -80,6 +112,15 @@ describe('Collection Browser', () => {
 
   it('selected facets with analytics - negative facets', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const mockedSelectedFacets: SelectedFacets = {
+      subject: {},
+      mediatype: { data: 'selected' },
+      language: {},
+      creator: {},
+      collection: {},
+      year: {},
+    };
+
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
       </collection-browser>`
@@ -120,9 +161,8 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-      ></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     el.baseQuery = 'collection:foo';
@@ -217,9 +257,8 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-      ></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     el.baseQuery = 'single-result';

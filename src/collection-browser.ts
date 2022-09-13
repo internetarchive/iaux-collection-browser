@@ -374,7 +374,7 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
-  private sendSortByAnaltyics(prevSortDirection: SortDirection | null): void {
+  private sendSortByAnalytics(prevSortDirection: SortDirection | null): void {
     const directionCleared = prevSortDirection && !this.sortDirection;
 
     this.analyticsHandler?.sendEventNoSampling({
@@ -610,7 +610,7 @@ export class CollectionBrowser
     }
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
       const prevSortDirection = changed.get('sortDirection') as SortDirection;
-      this.sendSortByAnaltyics(prevSortDirection);
+      this.sendSortByAnalytics(prevSortDirection);
       this.selectedSortChanged();
     }
     if (changed.has('selectedTitleFilter')) {
@@ -842,7 +842,6 @@ export class CollectionBrowser
   private get facetQuery(): string | undefined {
     if (!this.selectedFacets) return undefined;
     const facetQuery = [];
-    // console.log('selectedFacets: ', this.selectedFacets);
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets
     )) {
@@ -1240,12 +1239,14 @@ export class CollectionBrowser
     return title ?? '';
   }
 
-  /** callback when a result is selected */
+  /**
+   * Callback when a result is selected
+   */
   resultSelected(event: CustomEvent<TileModel>): void {
     this.analyticsHandler?.sendEventNoSampling({
       category: analyticsCategories.default,
       action: analyticsActions.resultSelected,
-      label: event.detail.mediatype === 'collection' ? 'collection' : 'item',
+      label: event.detail.mediatype,
     });
 
     this.analyticsHandler?.sendEventNoSampling({
