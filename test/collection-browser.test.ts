@@ -157,11 +157,13 @@ describe('Collection Browser', () => {
     ]);
   });
 
-  it('refreshes when certain properties change', async () => {
+  it('refreshes when certain properties change - with some analytics event sampling', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();
     const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
+        .analyticsHandler=${mockAnalyticsHandler}
         .searchService=${searchService}
         .collectionNameCache=${collectionNameCache}
       ></collection-browser>`
@@ -188,15 +190,27 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(infiniteScrollerRefreshSpy.callCount).to.equal(3);
 
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
+    expect(mockAnalyticsHandler.callLabel).to.equal('list-compact');
+
+    el.displayMode = 'list-detail';
+    await el.updateComplete;
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(4);
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
+    expect(mockAnalyticsHandler.callLabel).to.equal('list-detail');
+
     // testing: `baseNavigationUrl`
     el.baseNavigationUrl = 'https://funtestsite.com';
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(4);
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(5);
 
     // testing: `baseImageUrl`
     el.baseImageUrl = 'https://funtestsiteforimages.com';
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(5);
+    expect(infiniteScrollerRefreshSpy.callCount).to.equal(6);
   });
 
   it('query the search service for single result', async () => {
