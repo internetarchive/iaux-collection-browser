@@ -58,7 +58,7 @@ import './empty-placeholder';
 import {
   analyticsActions,
   analyticsCategories,
-} from './utils/analytics-category-event';
+} from './utils/analytics-events';
 
 @customElement('collection-browser')
 export class CollectionBrowser
