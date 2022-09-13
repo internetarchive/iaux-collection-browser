@@ -42,26 +42,40 @@ export class MoreFacetsPagination extends LitElement {
     this.pages = []; /* `0` is elipses marker */
 
     const paginatorMaxPagesToShow = 7;
-    const atMinThreshold = this.size === paginatorMaxPagesToShow;
+    const atMinThreshold = this.size <= paginatorMaxPagesToShow;
 
     /** Display outliers  */
+    if (this.size < 5) {
+      // display all pages
+      this.pages = [...Array(this.size).keys()].map(i => i + 1);
+      return;
+    }
+
     if (this.currentPage === 1) {
+      // first page
       this.pages = [1, 2, 3, 0, this.size];
       return;
     }
 
-    if (this.currentPage === 2) {
+    if (this.currentPage === this.size) {
+      // last page
+      this.pages = [1, 0, this.size - 2, this.size - 1, this.size];
+      return;
+    }
+
+    if (this.currentPage === 2 && this.size === paginatorMaxPagesToShow) {
       this.pages = [1, 2, 3, 4, 0, this.size];
       return;
     }
 
-    if (this.currentPage === this.size) {
-      this.pages = [1, 0, this.size - 2, this.size - 1, this.size];
+    if (this.currentPage === 6 && this.size === paginatorMaxPagesToShow) {
+      this.pages = [1, 0, 4, 5, this.size - 1, this.size];
       return;
     }
+
     if (
       atMinThreshold &&
-      this.currentPage > 2 &&
+      this.currentPage > 1 &&
       this.currentPage < paginatorMaxPagesToShow
     ) {
       this.pages = [...Array(this.size).keys()].map(i => i + 1);
