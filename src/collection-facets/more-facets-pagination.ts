@@ -1,4 +1,11 @@
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import arrowLeftIcon from '../assets/img/icons/arrow-left';
 import arrowRightIcon from '../assets/img/icons/arrow-right';
@@ -23,8 +30,45 @@ export class MoreFacetsPagination extends LitElement {
     this.observePageCount();
   }
 
+  /** creates `this.pages` array that notes which pages to draw
+   * - `0` is elipses marker
+   * - rule: selected page is centered between -2/+2 pages
+   * - outlier: first page selected, show _1_ 2 3 ... N
+   * - outlier: second page selected, show 1 _2_ 3 4 ... N
+   * - outlier: last page selected, show 1 ... N-2 N-1 _N_
+   * - outlier: if page count = 7, & selected is either [2, 3, 4, 5, 6], show all pages
+   */
   observePageCount() {
-    this.pages = [];
+    this.pages = []; /* `0` is elipses marker */
+
+    const paginatorMaxPagesToShow = 7;
+    const atMinThreshold = this.size === paginatorMaxPagesToShow;
+
+    /** Display outliers  */
+    if (this.currentPage === 1) {
+      this.pages = [1, 2, 3, 0, this.size];
+      return;
+    }
+
+    if (this.currentPage === 2) {
+      this.pages = [1, 2, 3, 4, 0, this.size];
+      return;
+    }
+
+    if (this.currentPage === this.size) {
+      this.pages = [1, 0, this.size - 2, this.size - 1, this.size];
+      return;
+    }
+    if (
+      atMinThreshold &&
+      this.currentPage > 2 &&
+      this.currentPage < paginatorMaxPagesToShow
+    ) {
+      this.pages = [...Array(this.size).keys()].map(i => i + 1);
+      return;
+    }
+
+    /* The rest here calculates the range to display in "page window" */
     let startPage = this.currentPage - this.step;
     let endPage = this.currentPage + this.step;
 
@@ -129,7 +173,11 @@ export class MoreFacetsPagination extends LitElement {
     `;
   }
 
-  private get getPagesTemplate() {
+  private get getPagesTemplate(): TemplateResult | typeof nothing {
+    if (!this.pages || !this.pages.length) {
+      return nothing;
+    }
+
     return html`
       ${this.pages?.map(
         page =>
