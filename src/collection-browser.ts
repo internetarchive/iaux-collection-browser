@@ -415,7 +415,7 @@ export class CollectionBrowser
     }
   }
 
-  /** Send Analytics when sorting by title
+  /** Send Analytics when sorting by title's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
   private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
@@ -439,6 +439,9 @@ export class CollectionBrowser
       : undefined;
   }
 
+  /** Send Analytics when filtering by creator's first letter
+   * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
+   * */
   private sendFilterByCreatorAnalytics(
     prevSelectedLetter: string | null
   ): void {
