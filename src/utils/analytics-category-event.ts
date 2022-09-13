@@ -15,4 +15,5 @@ export const analyticsActions = {
   facetNegativeSelected: 'facetNegativeSelected',
   facetNegativeDeselected: 'facetNegativeDeselected',
   histogramChanged: 'histogramChanged',
+  resultSelected: 'resultSelected',
 };

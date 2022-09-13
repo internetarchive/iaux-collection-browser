@@ -1248,6 +1248,21 @@ export class CollectionBrowser
     return title ?? '';
   }
 
+  /** callback when a result is selected */
+  resultSelected(event: CustomEvent<TileModel>): void {
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.resultSelected,
+      label: event.detail.mediatype === 'collection' ? 'collection' : 'item',
+    });
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: this.analyticsCategories.default,
+      action: this.analyticsActions.resultSelected,
+      label: `page-${this.currentPage}`,
+    });
+  }
+
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
@@ -1263,6 +1278,7 @@ export class CollectionBrowser
         .sortParam=${this.sortParam}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >
       </tile-dispatcher>
     `;
