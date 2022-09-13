@@ -520,8 +520,6 @@ export class CollectionBrowser
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
         .onFacetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
-        .analyticsCategories=${this.analyticsCategories}
-        .analyticsActions=${this.analyticsActions}
       >
       </collection-facets>
     `;
