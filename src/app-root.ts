@@ -311,6 +311,7 @@ export class AppRoot extends LitElement {
     :host {
       display: block;
       --primaryButtonBGColor: #194880;
+      --ia-theme-link-color: #4b64ff;
     }
 
     /* add the following styles to ensure proper modal visibility */

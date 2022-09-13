@@ -533,6 +533,16 @@ export class CollectionFacets extends LitElement {
       .sorting-icon {
         cursor: pointer;
       }
+
+      a:link,
+      a:visited {
+        text-decoration: none;
+        color: var(--ia-theme-link-color);
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
     `;
   }
 }
