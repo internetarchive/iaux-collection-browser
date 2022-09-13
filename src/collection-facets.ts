@@ -360,6 +360,9 @@ export class CollectionFacets extends LitElement {
       class="more-link"
       @click=${() => {
         this.showMoreFacetsModal(facetGroup);
+        this.dispatchEvent(
+          new CustomEvent('showMoreFacets', { detail: facetGroup.key })
+        );
       }}
     >
       More...
