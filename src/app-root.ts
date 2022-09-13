@@ -9,7 +9,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
 
-import type { AnalyticsHandlerInterface } from './analytics/analytics-handler-interface';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
@@ -51,7 +51,7 @@ export class AppRoot extends LitElement {
 
   private analyticsManager = new AnalyticsManager();
 
-  private analyticsHandler: AnalyticsHandlerInterface = {
+  private analyticsHandler: AnalyticsManagerInterface = {
     sendPing: this.sendAnalytics.bind(this),
     sendEvent: this.sendAnalytics.bind(this),
     sendEventNoSampling: this.sendAnalytics.bind(this),
@@ -121,7 +121,8 @@ export class AppRoot extends LitElement {
             Last Event Captured
           </button>
           <pre id="latest-event-details">
-${JSON.stringify(this.latestAction, null, 2)}</pre
+            ${JSON.stringify(this.latestAction, null, 2)}
+          </pre
           >
         </div>
 
