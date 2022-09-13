@@ -159,3 +159,12 @@ export const defaultSelectedFacets: SelectedFacets = {
   collection: {},
   year: {},
 };
+
+export const mockedSelectedFacets: SelectedFacets = {
+  subject: {},
+  mediatype: { data: 'selected' },
+  language: {},
+  creator: {},
+  collection: {},
+  year: {},
+};

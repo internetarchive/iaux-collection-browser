@@ -58,7 +58,7 @@ export class AppRoot extends LitElement {
   };
 
   private sendAnalytics(ae: AnalyticsEvent) {
-    console.log('Analytics Recieved ----', ae);
+    console.log('Analytics Received ----', ae);
     this.latestAction = ae;
     this.analyticsManager?.sendEventNoSampling(ae);
   }

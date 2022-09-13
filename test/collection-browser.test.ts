@@ -5,17 +5,19 @@ import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
-import { defaultSelectedFacets, SortField } from '../src/models';
+import {
+  defaultSelectedFacets,
+  mockedSelectedFacets,
+  SortField,
+} from '../src/models';
 import { MockSearchService } from './mocks/mock-search-service';
 import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 
 describe('Collection Browser', () => {
   it('clear existing filter for facets & sort-bar', async () => {
-    const mockAnalyticsHandler = new MockAnalyticsHandler();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
-      </collection-browser>`
+      html`<collection-browser></collection-browser>`
     );
 
     el.selectedSort = 'title' as SortField;
@@ -28,17 +30,79 @@ describe('Collection Browser', () => {
     expect(el.sortParam).to.null;
     expect(el.selectedCreatorFilter).to.null;
     expect(el.selectedTitleFilter).to.null;
+  });
+
+  it('filterBy title with analytics', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
+      </collection-browser>`
+    );
+
+    el.selectedSort = 'title' as SortField;
+    el.selectedTitleFilter = 'A';
+    await el.updateComplete;
 
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
-    console.log('analytics: ', mockAnalyticsHandler.callAction);
+    expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
+    expect(mockAnalyticsHandler.callLabel).to.equal('start-A');
+
+    el.clearFilters();
+    await el.updateComplete;
+
+    expect(el.selectedTitleFilter).to.null;
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
+    expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
+  });
+
+  it('selected facets with analytics - not negative facets', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
+      </collection-browser>`
+    );
+
+    el.selectedFacets = mockedSelectedFacets;
+    await el.updateComplete;
+
+    el.facetClickHandler('mediatype', true, false);
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('facetSelected');
+    expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
+
+    el.facetClickHandler('mediatype', false, false);
+    expect(el.selectedFacets).to.equal(mockedSelectedFacets);
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('facetDeselected');
+    expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
+  });
+
+  it('selected facets with analytics - negative facets', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
+      </collection-browser>`
+    );
+
+    el.selectedFacets = mockedSelectedFacets;
+    await el.updateComplete;
+
+    el.facetClickHandler('mediatype', true, true);
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeSelected');
+    expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
+
+    el.facetClickHandler('mediatype', false, true);
+    expect(el.selectedFacets).to.equal(mockedSelectedFacets);
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeDeselected');
+    expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
   });
 
   it('should render with a sort bar, facets, and infinite scroller', async () => {
-    const mockAnalyticsHandler = new MockAnalyticsHandler();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .analyticsHandler=${mockAnalyticsHandler}
-      ></collection-browser>`
+      html`<collection-browser></collection-browser>`
     );
 
     el.baseQuery = 'hello';
@@ -50,34 +114,13 @@ describe('Collection Browser', () => {
     expect(facets).to.exist;
     expect(sortBar).to.exist;
     expect(infiniteScroller).to.exist;
-
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
-    // expect(mockAnalyticsHandler.callAction, 'displayMode');
-    // console.log(
-    //   'analyticsCallAction callAction: ',
-    //   mockAnalyticsHandler.callAction
-    // );
-    // console.log(
-    //   'analyticsCallAction callCategory: ',
-    //   mockAnalyticsHandler.callCategory
-    // );
-    // console.log(
-    //   'analyticsCallAction callEventConfiguration: ',
-    //   mockAnalyticsHandler.callEventConfiguration
-    // );
-    // console.log(
-    //   'analyticsCallAction callLabel: ',
-    //   mockAnalyticsHandler.callLabel
-    // );
   });
 
   it('queries the search service when given a base query', async () => {
-    const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
-        .analyticsHandler=${mockAnalyticsHandler}
         .searchService=${searchService}
       ></collection-browser>`
     );
@@ -89,29 +132,18 @@ describe('Collection Browser', () => {
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
     ).to.contains('Results');
-
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
-    // console.log(
-    //   'analyticsCallAction callLabel: ',
-    //   mockAnalyticsHandler.callLabel,
-    //   ' action: ',
-    //   mockAnalyticsHandler.callAction,
-    //   ' categ: ',
-    //   mockAnalyticsHandler.callCategory
-    // );
   });
 
   it('queries for collection names after a fetch', async () => {
-    const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();
     const collectionNameCache = new MockCollectionNameCache();
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
-        .analyticsHandler=${mockAnalyticsHandler}
         .searchService=${searchService}
         .collectionNameCache=${collectionNameCache}
-      ></collection-browser>`
+      >
+      </collection-browser>`
     );
 
     el.baseQuery = 'blahblah';
@@ -123,16 +155,6 @@ describe('Collection Browser', () => {
       'baz',
       'boop',
     ]);
-
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
-    console.log(
-      'analyticsCallAction callLabel: ',
-      mockAnalyticsHandler.callLabel,
-      ' action: ',
-      mockAnalyticsHandler.callAction,
-      ' categ: ',
-      mockAnalyticsHandler.callCategory
-    );
   });
 
   it('refreshes when certain properties change', async () => {

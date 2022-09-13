@@ -1,9 +1,9 @@
 /**
  * Analytics categories and events. Used when building actions in
  */
-export const analyticsCategories = {
-  default: 'collection-browser',
-};
+export enum analyticsCategories {
+  default = 'collection-browser',
+}
 
 export enum analyticsActions {
   sortBy = 'sortBy',

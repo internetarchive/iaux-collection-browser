@@ -237,10 +237,6 @@ export class CollectionBrowser
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
-  private analyticsCategories = analyticsCategories;
-
-  private analyticsActions = analyticsActions;
-
   /**
    * Go to the given page of results
    *
@@ -382,8 +378,8 @@ export class CollectionBrowser
     const directionCleared = prevSortDirection && !this.sortDirection;
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.sortBy,
+      category: analyticsCategories.default,
+      action: analyticsActions.sortBy,
       label: `${this.selectedSort}${
         this.sortDirection || directionCleared ? `-${this.sortDirection}` : ''
       }`,
@@ -408,8 +404,8 @@ export class CollectionBrowser
 
     if (this.displayMode) {
       this.analyticsHandler?.sendEventNoSampling({
-        category: this.analyticsCategories.default,
-        action: this.analyticsActions.displayMode,
+        category: analyticsCategories.default,
+        action: analyticsActions.displayMode,
         label: this.displayMode,
       });
     }
@@ -425,8 +421,8 @@ export class CollectionBrowser
     const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.filterByTitle,
+      category: analyticsCategories.default,
+      action: analyticsActions.filterByTitle,
       label: cleared
         ? `clear-${prevSelectedLetter}`
         : `${prevSelectedLetter || 'start'}-${this.selectedTitleFilter}`,
@@ -451,8 +447,8 @@ export class CollectionBrowser
     const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.filterByCreator,
+      category: analyticsCategories.default,
+      action: analyticsActions.filterByCreator,
       label: cleared
         ? `clear-${prevSelectedLetter}`
         : `${prevSelectedLetter || 'start'}-${this.selectedCreatorFilter}`,
@@ -574,8 +570,8 @@ export class CollectionBrowser
 
     if (this.dateRangeQueryClause) {
       this.analyticsHandler?.sendEventNoSampling({
-        category: this.analyticsCategories.default,
-        action: this.analyticsActions.histogramChanged,
+        category: analyticsCategories.default,
+        action: analyticsActions.histogramChanged,
         label: this.dateRangeQueryClause,
       });
     }
@@ -846,6 +842,7 @@ export class CollectionBrowser
   private get facetQuery(): string | undefined {
     if (!this.selectedFacets) return undefined;
     const facetQuery = [];
+    // console.log('selectedFacets: ', this.selectedFacets);
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets
     )) {
@@ -883,18 +880,18 @@ export class CollectionBrowser
   ): void {
     if (negative) {
       this.analyticsHandler?.sendEventNoSampling({
-        category: this.analyticsCategories?.default,
+        category: analyticsCategories.default,
         action: facetSelected
-          ? this.analyticsActions.facetNegativeSelected
-          : this.analyticsActions.facetNegativeDeselected,
+          ? analyticsActions.facetNegativeSelected
+          : analyticsActions.facetNegativeDeselected,
         label: name,
       });
     } else {
       this.analyticsHandler?.sendEventNoSampling({
-        category: this.analyticsCategories?.default,
+        category: analyticsCategories.default,
         action: facetSelected
-          ? this.analyticsActions?.facetSelected
-          : this.analyticsActions?.facetDeselected,
+          ? analyticsActions.facetSelected
+          : analyticsActions.facetDeselected,
         label: name,
       });
     }
@@ -1246,14 +1243,14 @@ export class CollectionBrowser
   /** callback when a result is selected */
   resultSelected(event: CustomEvent<TileModel>): void {
     this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.resultSelected,
+      category: analyticsCategories.default,
+      action: analyticsActions.resultSelected,
       label: event.detail.mediatype === 'collection' ? 'collection' : 'item',
     });
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: this.analyticsCategories.default,
-      action: this.analyticsActions.resultSelected,
+      category: analyticsCategories.default,
+      action: analyticsActions.resultSelected,
       label: `page-${this.currentPage}`,
     });
   }
