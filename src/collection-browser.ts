@@ -378,10 +378,7 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
-  private sendSortFieldAnalytics(
-    prevSelectedSort: SortField,
-    prevSortDirection: SortDirection | null
-  ): void {
+  private sendSortByAnaltyics(prevSortDirection: SortDirection | null): void {
     const directionCleared = prevSortDirection && !this.sortDirection;
 
     this.analyticsHandler?.sendEventNoSampling({
@@ -421,9 +418,7 @@ export class CollectionBrowser
   /** Send Analytics when sorting by title
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
-  private sendSelectedTitleLetterChangedAnalytics(
-    prevSelectedLetter: string | null
-  ): void {
+  private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
     }
@@ -444,7 +439,7 @@ export class CollectionBrowser
       : undefined;
   }
 
-  private sendSelectedCreatorFilterAnalytics(
+  private sendFilterByCreatorAnalytics(
     prevSelectedLetter: string | null
   ): void {
     if (!prevSelectedLetter && !this.selectedCreatorFilter) {
@@ -617,19 +612,18 @@ export class CollectionBrowser
       this.handleQueryChange();
     }
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
-      const prevSelectedSort = changed.get('selectedSort') as SortField;
       const prevSortDirection = changed.get('sortDirection') as SortDirection;
-      this.sendSortFieldAnalytics(prevSelectedSort, prevSortDirection);
+      this.sendSortByAnaltyics(prevSortDirection);
       this.selectedSortChanged();
     }
     if (changed.has('selectedTitleFilter')) {
-      this.sendSelectedTitleLetterChangedAnalytics(
+      this.sendFilterByTitleAnalytics(
         changed.get('selectedTitleFilter') as string
       );
       this.selectedTitleLetterChanged();
     }
     if (changed.has('selectedCreatorFilter')) {
-      this.sendSelectedCreatorFilterAnalytics(
+      this.sendFilterByCreatorAnalytics(
         changed.get('selectedCreatorFilter') as string
       );
       this.selectedCreatorLetterChanged();
