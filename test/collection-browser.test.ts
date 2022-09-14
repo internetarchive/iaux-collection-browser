@@ -244,7 +244,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(infiniteScrollerRefreshSpy.callCount).to.equal(4);
 
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
     expect(mockAnalyticsHandler.callLabel).to.equal('list-detail');
 
