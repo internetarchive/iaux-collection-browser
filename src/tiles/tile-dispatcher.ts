@@ -81,6 +81,10 @@ export class TileDispatcher
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
         title=${ifDefined(this.model?.title)}
+        @click=${() =>
+          this.dispatchEvent(
+            new CustomEvent('resultSelected', { detail: this.model })
+          )}
       >
         ${this.tile}
       </a>

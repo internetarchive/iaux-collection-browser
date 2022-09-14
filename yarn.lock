@@ -110,6 +110,11 @@
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
+"@internetarchive/analytics-manager@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz#a2442715f13270815c3770651e043a00fbe6f7a5"
+  integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
+
 "@internetarchive/collection-name-cache@^0.1.5":
   version "0.1.5"
   resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.1.5.tgz#6a49cb38af36a05bd027bf29d13f23d66b670672"

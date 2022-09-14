@@ -79,6 +79,13 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
+  /** Fires when a facet is clicked */
+  @property({ type: Function }) onFacetClick?: (
+    name: FacetOption,
+    facetChecked: boolean,
+    negative: boolean
+  ) => void;
+
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
     mediatype: false,
@@ -88,6 +95,7 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
+  @property({ type: Object, attribute: false })
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -432,13 +440,17 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
-  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean) {
+  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean): void {
     const target = e.target as HTMLInputElement;
     const { checked, name, value } = target;
     if (checked) {
       this.facetChecked(name as FacetOption, value, negative);
     } else {
       this.facetUnchecked(name as FacetOption, value);
+    }
+
+    if (this.onFacetClick) {
+      this.onFacetClick(name as FacetOption, checked, negative);
     }
   }
 

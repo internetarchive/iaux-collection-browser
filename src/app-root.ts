@@ -1,10 +1,17 @@
+import {
+  AnalyticsEvent,
+  AnalyticsManager,
+} from '@internetarchive/analytics-manager';
 import { SearchService } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
-import { customElement, query, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
+
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
+
 import '../src/collection-browser';
 
 @customElement('app-root')
@@ -34,11 +41,27 @@ export class AppRoot extends LitElement {
 
   @state() private loggedIn: boolean = false;
 
+  @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
+
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
+
+  private analyticsManager = new AnalyticsManager();
+
+  private analyticsHandler: AnalyticsManagerInterface = {
+    sendPing: this.sendAnalytics.bind(this),
+    sendEvent: this.sendAnalytics.bind(this),
+    sendEventNoSampling: this.sendAnalytics.bind(this),
+  };
+
+  private sendAnalytics(ae: AnalyticsEvent) {
+    console.log('Analytics Received ----', ae);
+    this.latestAction = ae;
+    this.analyticsManager?.sendEventNoSampling(ae);
+  }
 
   private searchPressed(e: Event) {
     e.preventDefault();
@@ -54,7 +77,7 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.goToPage(this.currentPage);
   }
 
-  protected updated(changed: PropertyValues): void {
+  protected override updated(changed: PropertyValues): void {
     if (changed.has('currentPage') && this.currentPage) {
       this.pageNumberInput.value = this.currentPage.toString();
     }
@@ -85,6 +108,23 @@ export class AppRoot extends LitElement {
           Page: <input type="number" value="1" id="page-number-input" />
           <input type="submit" value="Go" />
         </form>
+
+        <div id="last-event">
+          <button
+            @click=${() => {
+              const details = this.shadowRoot?.getElementById(
+                'latest-event-details'
+              );
+              details?.classList.toggle('hidden');
+            }}
+          >
+            Last Event Captured
+          </button>
+          <pre id="latest-event-details">
+            ${JSON.stringify(this.latestAction, null, 2)}
+          </pre
+          >
+        </div>
 
         <div id="cell-controls">
           <div id="cell-size-control">
@@ -179,6 +219,7 @@ export class AppRoot extends LitElement {
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
           .loggedIn=${this.loggedIn}
+          .analyticsHandler=${this.analyticsHandler}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >
@@ -343,6 +384,16 @@ export class AppRoot extends LitElement {
 
     #cell-gap-control {
       margin-left: 1rem;
+    }
+
+    #last-event {
+      background-color: aliceblue;
+      padding: 5px;
+      margin: 5px auto;
+    }
+
+    .hidden {
+      display: none;
     }
   `;
 }
