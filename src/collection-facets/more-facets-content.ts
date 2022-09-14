@@ -1,4 +1,5 @@
 /* eslint-disable dot-notation */
+/* eslint-disable lit-a11y/click-events-have-key-events */
 import {
   css,
   CSSResultGroup,
@@ -54,6 +55,8 @@ export class MoreFacetsContent extends LitElement {
 
   @state() facetGroup?: FacetGroup[] = [];
 
+  @state() facetGroupTitle?: String = '';
+
   @state() pageNumber = 1;
 
   /**
@@ -64,6 +67,8 @@ export class MoreFacetsContent extends LitElement {
   @state() paginationSize = 0;
 
   @state() facetsType = 'modal';
+
+  @state() sortedBy = 'frequency'; // frequence | alphabetic
 
   private facetsPerPage = 60; // TODO: Q. how many items we want to have on popup view
 
@@ -241,6 +246,21 @@ export class MoreFacetsContent extends LitElement {
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
   }
 
+  private sortedFacets(facetBucket: FacetBucket[]) {
+    let sortedFacetBucket = facetBucket;
+    if (this.sortedBy === 'alphabetic') {
+      // sort by alphabetic order
+      sortedFacetBucket = facetBucket?.sort((a, b) => (a.key > b.key ? 1 : -1));
+    } else {
+      // sort by frequency order
+      sortedFacetBucket = facetBucket?.sort((a, b) =>
+        a.count < b.count ? 1 : -1
+      );
+    }
+
+    return sortedFacetBucket;
+  }
+
   /**
    * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
    */
@@ -251,7 +271,7 @@ export class MoreFacetsContent extends LitElement {
       if (key === 'year_histogram') return;
 
       const option = getFacetOptionFromKey(key);
-      const title = facetTitles[option];
+      this.facetGroupTitle = facetTitles[option];
       let castedBuckets = buckets.buckets as Bucket[];
 
       // we are not showing fav- items in facets
@@ -274,7 +294,7 @@ export class MoreFacetsContent extends LitElement {
         this.pageNumber * this.facetsPerPage
       );
 
-      const facetBuckets: FacetBucket[] = bucketsMaxSix.map(bucket => {
+      const facetBucket: FacetBucket[] = bucketsMaxSix.map(bucket => {
         let bucketKey = bucket.key;
         // for languages, we need to search by language code instead of the
         // display name, which is what we get from the search engine result
@@ -292,9 +312,9 @@ export class MoreFacetsContent extends LitElement {
         };
       });
       const group: FacetGroup = {
-        title,
+        title: this.facetGroupTitle as string,
         key: option,
-        buckets: facetBuckets,
+        buckets: this.sortedFacets(facetBucket),
       };
       facetGroups.push(group);
     });
@@ -356,11 +376,38 @@ export class MoreFacetsContent extends LitElement {
     return nothing;
   }
 
+  private sortFacetAggregation() {
+    this.sortedBy = this.sortedBy === 'frequency' ? 'alphabetic' : 'frequency';
+    this.dispatchEvent(
+      new CustomEvent('sortedFacets', { detail: this.sortedBy })
+    );
+  }
+
+  private get getModalHeaderTemplate(): TemplateResult {
+    const title =
+      this.sortedBy === 'alphabetic'
+        ? 'Sort by count'
+        : 'Sort by alphabetically';
+
+    return html`<span class="sr-only">More facets for:</span>
+      <span class="title">
+        ${this.facetGroupTitle}
+        <img
+          class="sorting-icon"
+          src="https://archive.org/images/filter-count.png"
+          @click=${() => this.sortFacetAggregation()}
+          title=${title}
+          alt="sort facets"
+        />
+      </span> `;
+  }
+
   render() {
     return html`
       ${this.facetsLoading
         ? this.loaderTemplate
         : html`
+            <div class="header-content">${this.getModalHeaderTemplate}</div>
             <div class="scrollable-content">
               <div class="facets-content">${this.getMoreFacetsTemplate}</div>
             </div>
@@ -387,6 +434,13 @@ export class MoreFacetsContent extends LitElement {
     const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
 
     return css`
+      .header-content .title {
+        display: block;
+        text-align: left;
+        font-size: 1.8rem;
+        padding: 0 10px;
+        font-weight: bold;
+      }
       .scrollable-content {
         overflow-y: auto;
         max-height: 65vh;
@@ -436,6 +490,22 @@ export class MoreFacetsContent extends LitElement {
       .footer {
         text-align: center;
         margin-top: 10px;
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+      .sorting-icon {
+        height: 15px;
+        vertical-align: baseline;
+        cursor: pointer;
       }
     `;
   }

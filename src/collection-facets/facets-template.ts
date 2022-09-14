@@ -190,6 +190,9 @@ export class FacetsTemplate extends LitElement {
         column-width: 25rem;
         column-gap: 15px;
       }
+      .facets-on-page .select-facet-checkbox {
+        margin-left: 0;
+      }
       async-collection-name {
         display: block;
       }
@@ -229,7 +232,7 @@ export class FacetsTemplate extends LitElement {
       }
       .select-facet-checkbox {
         cursor: pointer;
-        margin: 0 5px;
+        margin: 0;
         display: inline-block;
       }
       .hide-facet-checkbox {

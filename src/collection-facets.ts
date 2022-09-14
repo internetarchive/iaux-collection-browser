@@ -374,20 +374,6 @@ export class CollectionFacets extends LitElement {
       value => aggregationToFacetOption[value] === facetGroup.key
     );
 
-    const headline = html`
-      <span
-        style="display:block;text-align:left;font-size:1.8rem;padding:0 10px;"
-      >
-        <span class="sr-only">More facets for:</span>
-        ${facetTitles[facetGroup.key]}
-        <img
-          src="https://archive.org/images/filter-count.png"
-          style="height: 1.5rem;vertical-align: baseline;"
-          alt=""
-        />
-      </span>
-    `;
-
     const customModalContent = html`
       <more-facets-content
         .facetKey=${facetGroup.key}
@@ -416,7 +402,6 @@ export class CollectionFacets extends LitElement {
       showHeaderLogo: false,
       closeOnBackdropClick: true, // TODO: want to fire analytics
       title: html`Select filters`,
-      headline,
     });
     this.modalManager?.classList.add('more-search-facets');
     this.modalManager?.showModal({
@@ -524,7 +509,7 @@ export class CollectionFacets extends LitElement {
       .more-link {
         font-size: 1.2rem;
         text-decoration: none;
-        padding: 0px 5px 0 0;
+        padding: 0;
         background: inherit;
         border: 0;
         color: blue;
