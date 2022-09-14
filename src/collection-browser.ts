@@ -107,6 +107,10 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  /** describes where this component is being used */
+  @property({ type: String, reflect: true }) searchContext: string =
+    analyticsCategories.default;
+
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
@@ -378,7 +382,7 @@ export class CollectionBrowser
     const directionCleared = prevSortDirection && !this.sortDirection;
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: analyticsCategories.default,
+      category: this.searchContext,
       action: analyticsActions.sortBy,
       label: `${this.selectedSort}${
         this.sortDirection || directionCleared ? `-${this.sortDirection}` : ''
@@ -404,7 +408,7 @@ export class CollectionBrowser
 
     if (this.displayMode) {
       this.analyticsHandler?.sendEventNoSampling({
-        category: analyticsCategories.default,
+        category: this.searchContext,
         action: analyticsActions.displayMode,
         label: this.displayMode,
       });
@@ -421,7 +425,7 @@ export class CollectionBrowser
     const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: analyticsCategories.default,
+      category: this.searchContext,
       action: analyticsActions.filterByTitle,
       label: cleared
         ? `clear-${prevSelectedLetter}`
@@ -447,7 +451,7 @@ export class CollectionBrowser
     const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: analyticsCategories.default,
+      category: this.searchContext,
       action: analyticsActions.filterByCreator,
       label: cleared
         ? `clear-${prevSelectedLetter}`
@@ -570,7 +574,7 @@ export class CollectionBrowser
 
     if (this.dateRangeQueryClause) {
       this.analyticsHandler?.sendEventNoSampling({
-        category: analyticsCategories.default,
+        category: this.searchContext,
         action: analyticsActions.histogramChanged,
         label: this.dateRangeQueryClause,
       });
@@ -879,7 +883,7 @@ export class CollectionBrowser
   ): void {
     if (negative) {
       this.analyticsHandler?.sendEventNoSampling({
-        category: analyticsCategories.default,
+        category: this.searchContext,
         action: facetSelected
           ? analyticsActions.facetNegativeSelected
           : analyticsActions.facetNegativeDeselected,
@@ -887,7 +891,7 @@ export class CollectionBrowser
       });
     } else {
       this.analyticsHandler?.sendEventNoSampling({
-        category: analyticsCategories.default,
+        category: this.searchContext,
         action: facetSelected
           ? analyticsActions.facetSelected
           : analyticsActions.facetDeselected,
@@ -1244,13 +1248,13 @@ export class CollectionBrowser
    */
   resultSelected(event: CustomEvent<TileModel>): void {
     this.analyticsHandler?.sendEventNoSampling({
-      category: analyticsCategories.default,
+      category: this.searchContext,
       action: analyticsActions.resultSelected,
       label: event.detail.mediatype,
     });
 
     this.analyticsHandler?.sendEventNoSampling({
-      category: analyticsCategories.default,
+      category: this.searchContext,
       action: analyticsActions.resultSelected,
       label: `page-${this.currentPage}`,
     });
