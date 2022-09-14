@@ -13,6 +13,7 @@ import {
 import { MockSearchService } from './mocks/mock-search-service';
 import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
+import { analyticsCategories } from '../src/utils/analytics-events';
 
 describe('Collection Browser', () => {
   it('clear existing filter for facets & sort-bar', async () => {
@@ -267,5 +268,21 @@ describe('Collection Browser', () => {
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
     ).to.contains('Result');
+  });
+
+  it('`searchContext` prop helps describe where component is being used', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    expect(el.searchContext).to.equal(analyticsCategories.default);
+
+    el.searchContext = 'unicorn-search';
+    await el.updateComplete;
+
+    expect(el.searchContext).to.equal('unicorn-search');
+
+    // property is reflected as attribute
+    expect(el.getAttribute('searchcontext')).to.equal('unicorn-search');
   });
 });
