@@ -40,10 +40,11 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
+    el.searchContext = 'betaSearchService';
     el.selectedCreatorFilter = 'A';
     await el.updateComplete;
 
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('betaSearchService');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
     expect(mockAnalyticsHandler.callLabel).to.equal('start-A');
 
@@ -51,7 +52,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     expect(el.selectedTitleFilter).to.null;
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('betaSearchService');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
   });
@@ -63,11 +64,12 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
+    el.searchContext = 'beta-search-service';
     el.selectedSort = 'title' as SortField;
     el.selectedTitleFilter = 'A';
     await el.updateComplete;
 
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
     expect(mockAnalyticsHandler.callLabel).to.equal('start-A');
 
@@ -75,7 +77,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     expect(el.selectedTitleFilter).to.null;
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
   });
@@ -96,17 +98,18 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
+    el.searchContext = 'search-service';
     el.selectedFacets = mockedSelectedFacets;
     await el.updateComplete;
 
     el.facetClickHandler('mediatype', true, false);
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetSelected');
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
 
     el.facetClickHandler('mediatype', false, false);
     expect(el.selectedFacets).to.equal(mockedSelectedFacets);
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetDeselected');
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
   });
@@ -127,17 +130,18 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
+    el.searchContext = 'beta-search-service';
     el.selectedFacets = mockedSelectedFacets;
     await el.updateComplete;
 
     el.facetClickHandler('mediatype', true, true);
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeSelected');
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
 
     el.facetClickHandler('mediatype', false, true);
     expect(el.selectedFacets).to.equal(mockedSelectedFacets);
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeDeselected');
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
   });
@@ -228,10 +232,11 @@ describe('Collection Browser', () => {
 
     // testing: `displayMode`
     el.displayMode = 'list-compact';
+    el.searchContext = 'beta-search';
     await el.updateComplete;
     expect(infiniteScrollerRefreshSpy.callCount).to.equal(3);
 
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
     expect(mockAnalyticsHandler.callLabel).to.equal('list-compact');
 
@@ -239,7 +244,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(infiniteScrollerRefreshSpy.callCount).to.equal(4);
 
-    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
     expect(mockAnalyticsHandler.callLabel).to.equal('list-detail');
 
