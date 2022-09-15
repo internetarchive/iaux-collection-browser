@@ -15,11 +15,8 @@ export class CollectionBrowserLoadingTile extends LitElement {
       }
 
       #container {
-        background: linear-gradient(
-          to right,
-          rgba(25, 69, 154, 0.1),
-          rgb(105, 161, 234, 0.2)
-        );
+        background: linear-gradient(to right bottom, #dddddd, #d8d8d8);
+        border-radius: var(--collectionTileCornerRadius, 4px);
         background-size: 100% 100%;
         display: block;
         height: 100%;
