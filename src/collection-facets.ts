@@ -68,6 +68,13 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
+  /** Fires when a facet is clicked */
+  @property({ type: Function }) onFacetClick?: (
+    name: FacetOption,
+    facetChecked: boolean,
+    negative: boolean
+  ) => void;
+
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
     mediatype: false,
@@ -76,6 +83,8 @@ export class CollectionFacets extends LitElement {
     collection: false,
     year: false,
   };
+
+  @property({ type: Object, attribute: false })
 
   /**
    * render number of facet items
