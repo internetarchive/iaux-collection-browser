@@ -146,9 +146,15 @@ export interface FacetGroup {
 
 export type FacetValue = string;
 
+// store count and state in selectedFacets
+export type SelectedFacetValue = {
+  count: number;
+  state: FacetState;
+};
+
 export type SelectedFacets = Record<
   FacetOption,
-  Record<FacetValue, SelectedFacetState>
+  Record<FacetValue, SelectedFacetValue>
 >;
 
 export const defaultSelectedFacets: SelectedFacets = {

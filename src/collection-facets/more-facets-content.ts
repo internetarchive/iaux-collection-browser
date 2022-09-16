@@ -51,6 +51,8 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
+  @property({ type: String }) sortedBy = 'count'; // count | alpha
+
   @state() aggregations?: Record<string, Aggregation>;
 
   @state() facetGroup?: FacetGroup[] = [];
@@ -67,8 +69,6 @@ export class MoreFacetsContent extends LitElement {
   @state() paginationSize = 0;
 
   @state() facetsType = 'modal';
-
-  @state() sortedBy = 'frequency'; // frequence | alphabetic
 
   private facetsPerPage = 60; // TODO: Q. how many items we want to have on popup view
 
@@ -203,7 +203,7 @@ export class MoreFacetsContent extends LitElement {
         const title = facetTitles[option];
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
-          ([value, facetState]) => {
+          ([value, data]) => {
             let displayText = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
@@ -216,8 +216,8 @@ export class MoreFacetsContent extends LitElement {
             return {
               displayText,
               key: value,
-              count: 0,
-              state: facetState,
+              count: data?.count,
+              state: data?.state,
             };
           }
         );
@@ -231,34 +231,6 @@ export class MoreFacetsContent extends LitElement {
     );
 
     return facetGroups;
-  }
-
-  /**
-   * for collections, we need to asynchronously load the collection name
-   * so we use the `async-collection-name` widget and for the rest, we have a static value to use
-   *
-   * @param castedBuckets
-   */
-  private preloadCollectionNames(castedBuckets: any[]) {
-    const collectionIds = castedBuckets?.map(option => option.key);
-    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
-
-    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
-  }
-
-  private sortedFacets(facetBucket: FacetBucket[]) {
-    let sortedFacetBucket = facetBucket;
-    if (this.sortedBy === 'alphabetic') {
-      // sort by alphabetic order
-      sortedFacetBucket = facetBucket?.sort((a, b) => (a.key > b.key ? 1 : -1));
-    } else {
-      // sort by frequency order
-      sortedFacetBucket = facetBucket?.sort((a, b) =>
-        a.count < b.count ? 1 : -1
-      );
-    }
-
-    return sortedFacetBucket;
   }
 
   /**
@@ -278,6 +250,9 @@ export class MoreFacetsContent extends LitElement {
       castedBuckets = castedBuckets?.filter(
         bucket => bucket?.key?.toString()?.startsWith('fav-') === false
       );
+
+      // sort facets in specific order
+      castedBuckets = this.sortedFacets(castedBuckets) as Bucket[];
 
       // find length and pagination size for modal pagination
       const { length } = Object.keys(castedBuckets as []);
@@ -314,12 +289,49 @@ export class MoreFacetsContent extends LitElement {
       const group: FacetGroup = {
         title: this.facetGroupTitle as string,
         key: option,
-        buckets: this.sortedFacets(facetBucket),
+        buckets: facetBucket,
       };
       facetGroups.push(group);
     });
 
     return facetGroups;
+  }
+
+  /**
+   * for collections, we need to asynchronously load the collection name
+   * so we use the `async-collection-name` widget and for the rest, we have a static value to use
+   *
+   * @param castedBuckets
+   */
+  private preloadCollectionNames(castedBuckets: any[]) {
+    const collectionIds = castedBuckets?.map(option => option.key);
+    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
+
+    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
+  }
+
+  /**
+   * sort the facets on modal
+   * - alpha sort perform in ascending order
+   * - count/frequency sort perform in descending order
+   *
+   * @param facetBucket as Bucket[]
+   *
+   * @return sortedFacetBucket as Bucket
+   */
+  private sortedFacets(facetBucket: Bucket[]) {
+    let sortedFacetBucket = facetBucket;
+    if (this.sortedBy === 'alpha') {
+      // sort by alphabetic in ascending order. eg. a,b,c,...
+      sortedFacetBucket = facetBucket?.sort((a, b) => (a.key > b.key ? 1 : -1));
+    } else {
+      // sort by frequency/count in descending order. eg 100,99,98,...
+      sortedFacetBucket = facetBucket?.sort((a, b) =>
+        a.doc_count < b.doc_count ? 1 : -1
+      );
+    }
+
+    return sortedFacetBucket;
   }
 
   private get getMoreFacetsTemplate(): TemplateResult {
@@ -377,7 +389,7 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private sortFacetAggregation() {
-    this.sortedBy = this.sortedBy === 'frequency' ? 'alphabetic' : 'frequency';
+    this.sortedBy = this.sortedBy === 'count' ? 'alpha' : 'count';
     this.dispatchEvent(
       new CustomEvent('sortedFacets', { detail: this.sortedBy })
     );
@@ -385,17 +397,21 @@ export class MoreFacetsContent extends LitElement {
 
   private get getModalHeaderTemplate(): TemplateResult {
     const title =
-      this.sortedBy === 'alphabetic'
-        ? 'Sort by count'
-        : 'Sort by alphabetically';
+      this.sortedBy === 'alpha' ? 'Sort by count' : 'Sort by alphabetically';
+
+    const image =
+      this.sortedBy === 'alpha'
+        ? 'https://archive.org/images/filter-alpha.png'
+        : 'https://archive.org/images/filter-count.png';
 
     return html`<span class="sr-only">More facets for:</span>
       <span class="title">
         ${this.facetGroupTitle}
-        <img
+        <input
           class="sorting-icon"
-          src="https://archive.org/images/filter-count.png"
+          type="image"
           @click=${() => this.sortFacetAggregation()}
+          src="${image}"
           title=${title}
           alt="sort facets"
         />

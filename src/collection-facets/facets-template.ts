@@ -23,17 +23,22 @@ export class FacetsTemplate extends LitElement {
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  private facetClicked(e: Event, negative: boolean) {
+  private facetClicked(e: Event, count: number, negative: boolean) {
     const target = e.target as HTMLInputElement;
     const { checked, name, value } = target;
     if (checked) {
-      this.facetChecked(name as FacetOption, value, negative);
+      this.facetChecked(name as FacetOption, value, count, negative);
     } else {
       this.facetUnchecked(name as FacetOption, value);
     }
   }
 
-  private facetChecked(key: FacetOption, value: string, negative: boolean) {
+  private facetChecked(
+    key: FacetOption,
+    value: string,
+    count: number,
+    negative: boolean
+  ) {
     const { selectedFacets } = this;
     let newFacets: SelectedFacets;
     if (selectedFacets) {
@@ -43,7 +48,10 @@ export class FacetsTemplate extends LitElement {
     } else {
       newFacets = defaultSelectedFacets;
     }
-    newFacets[key][value] = negative ? 'hidden' : 'selected';
+    newFacets[key][value] = {
+      state: negative ? 'hidden' : 'selected',
+      count,
+    };
 
     this.selectedFacets = newFacets;
     this.dispatchSelectedFacetsChanged();
@@ -133,7 +141,7 @@ export class FacetsTemplate extends LitElement {
                     .name=${facetGroup.key}
                     .value=${bucket.key}
                     @click=${(e: Event) => {
-                      this.facetClicked(e, false);
+                      this.facetClicked(e, bucket.count, false);
                     }}
                     .checked=${facetSelected}
                     class="select-facet-checkbox"
@@ -146,7 +154,7 @@ export class FacetsTemplate extends LitElement {
                     .name=${facetGroup.key}
                     .value=${bucket.key}
                     @click=${(e: Event) => {
-                      this.facetClicked(e, true);
+                      this.facetClicked(e, bucket.count, true);
                     }}
                     .checked=${facetHidden}
                     class="hide-facet-checkbox"
@@ -194,7 +202,7 @@ export class FacetsTemplate extends LitElement {
         margin-left: 0;
       }
       async-collection-name {
-        display: block;
+        display: contents;
       }
       ul.facet-list {
         list-style: none;

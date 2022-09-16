@@ -763,8 +763,8 @@ export class CollectionBrowser
       // eslint-disable-next-line no-continue
       if (facetEntries.length === 0) continue;
       const facetValuesArray: string[] = [];
-      for (const [key, facetState] of facetEntries) {
-        const plusMinusPrefix = facetState === 'hidden' ? '-' : '';
+      for (const [key, facetData] of facetEntries) {
+        const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
 
         if (facetName === 'language') {
           const languages =

@@ -230,7 +230,7 @@ export class CollectionFacets extends LitElement {
         const title = facetTitles[option];
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
-          ([value, facetState]) => {
+          ([value, facetData]) => {
             let displayText = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
@@ -243,8 +243,8 @@ export class CollectionFacets extends LitElement {
             return {
               displayText,
               key: value,
-              count: 0,
-              state: facetState,
+              count: facetData.count,
+              state: facetData.state,
             };
           }
         );
@@ -322,20 +322,29 @@ export class CollectionFacets extends LitElement {
 
     return html`
       <div class="facet-group ${this.collapsableFacets ? 'mobile' : ''}">
-        <h1
-          @click=${() => {
-            const newOpenFacets = { ...this.openFacets };
-            newOpenFacets[key] = !isOpen;
-            this.openFacets = newOpenFacets;
-          }}
-          @keyup=${() => {
-            const newOpenFacets = { ...this.openFacets };
-            newOpenFacets[key] = !isOpen;
-            this.openFacets = newOpenFacets;
-          }}
-        >
-          ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
-        </h1>
+        <div class="facet-group-header">
+          <h1
+            @click=${() => {
+              const newOpenFacets = { ...this.openFacets };
+              newOpenFacets[key] = !isOpen;
+              this.openFacets = newOpenFacets;
+            }}
+            @keyup=${() => {
+              const newOpenFacets = { ...this.openFacets };
+              newOpenFacets[key] = !isOpen;
+              this.openFacets = newOpenFacets;
+            }}
+          >
+            ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
+          </h1>
+          <input
+            class="sorting-icon"
+            type="image"
+            @click=${() => this.showMoreFacetsModal(facetGroup, 'alpha')}
+            src="https://archive.org/images/filter-count.png"
+            alt="Sort by alphabetically"
+          />
+        </div>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.getFacetTemplate(facetGroup)}
           ${this.searchMoreFacetsLink(facetGroup)}
@@ -359,7 +368,7 @@ export class CollectionFacets extends LitElement {
     return html`<button
       class="more-link"
       @click=${() => {
-        this.showMoreFacetsModal(facetGroup);
+        this.showMoreFacetsModal(facetGroup, 'count');
         this.dispatchEvent(
           new CustomEvent('showMoreFacets', { detail: facetGroup.key })
         );
@@ -369,7 +378,10 @@ export class CollectionFacets extends LitElement {
     </button>`;
   }
 
-  async showMoreFacetsModal(facetGroup: FacetGroup): Promise<void> {
+  async showMoreFacetsModal(
+    facetGroup: FacetGroup,
+    sortedBy: string
+  ): Promise<void> {
     const facetAggrKey = Object.keys(aggregationToFacetOption).find(
       value => aggregationToFacetOption[value] === facetGroup.key
     );
@@ -384,6 +396,7 @@ export class CollectionFacets extends LitElement {
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}
+        .sortedBy=${sortedBy}
         @facetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,
@@ -485,6 +498,13 @@ export class CollectionFacets extends LitElement {
         cursor: pointer;
       }
 
+      .facet-group-header {
+        display: flex;
+        margin-bottom: 0.7rem;
+        justify-content: space-between;
+        border-bottom: 1px solid rgb(232, 232, 232);
+      }
+
       .facet-group-content {
         transition: max-height 0.2s ease-in-out;
       }
@@ -500,8 +520,7 @@ export class CollectionFacets extends LitElement {
 
       h1 {
         font-size: 1.4rem;
-        font-weight: 200;
-        border-bottom: 1px solid rgb(232, 232, 232);
+        font-weight: 200
         padding-bottom: 3px;
         margin: 0;
       }
@@ -516,6 +535,7 @@ export class CollectionFacets extends LitElement {
         cursor: pointer;
       }
       .sorting-icon {
+        height: 15px;
         cursor: pointer;
       }
     `;
