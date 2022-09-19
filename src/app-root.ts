@@ -9,6 +9,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
 
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { CollectionBrowser } from '../src/collection-browser';
 
@@ -48,6 +49,8 @@ export class AppRoot extends LitElement {
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
   @query('collection-browser') private collectionBrowser!: CollectionBrowser;
+
+  @query('modal-manager') private modalManager!: ModalManagerInterface;
 
   private analyticsManager = new AnalyticsManager();
 
@@ -120,7 +123,7 @@ export class AppRoot extends LitElement {
           >
             Last Event Captured
           </button>
-          <pre id="latest-event-details">
+          <pre id="latest-event-details" class="hidden">
             ${JSON.stringify(this.latestAction, null, 2)}
           </pre
           >
@@ -219,12 +222,14 @@ export class AppRoot extends LitElement {
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
           .loggedIn=${this.loggedIn}
+          .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
         >
         </collection-browser>
       </div>
+      <modal-manager></modal-manager>
     `;
   }
 
@@ -293,7 +298,9 @@ export class AppRoot extends LitElement {
     this.searchQuery = ''; // Should just reset to the placeholder
     await this.updateComplete;
     // For unclear reasons, Safari refuses to re-apply the old query until the next tick, hence:
-    await new Promise(res => setTimeout(res, 0));
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
     this.searchQuery = oldQuery; // Re-apply the original query
   }
 
@@ -346,7 +353,30 @@ export class AppRoot extends LitElement {
   static styles = css`
     :host {
       display: block;
+      --primaryButtonBGColor: #194880;
       --ia-theme-link-color: #4b64ff;
+    }
+
+    /* add the following styles to ensure proper modal visibility */
+    body.modal-manager-open {
+      overflow: hidden;
+    }
+    modal-manager {
+      display: none;
+    }
+    modal-manager[mode='open'] {
+      display: block;
+    }
+    modal-manager.more-search-facets {
+      --modalWidth: 85rem;
+      --modalBorder: 2px solid var(--primaryButtonBGColor, #194880);
+      --modalTitleLineHeight: 4rem;
+      --modalTitleFontSize: 1.8rem;
+      --modalCornerRadius: 0;
+      --modalBottomPadding: 0;
+      --modalBottomMargin: 0;
+      --modalScrollOffset: 0;
+      --modalCornerRadius: 0.5rem;
     }
 
     input,
@@ -355,7 +385,7 @@ export class AppRoot extends LitElement {
     }
 
     collection-browser {
-      margin-top: 30rem;
+      margin-top: 20rem;
     }
 
     #base-query-field {
@@ -366,7 +396,7 @@ export class AppRoot extends LitElement {
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 10;
+      z-index: 1;
       -webkit-backdrop-filter: blur(10px);
       backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;

@@ -8,53 +8,38 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { repeat } from 'lit/directives/repeat.js';
-import type { Aggregation, Bucket } from '@internetarchive/search-service';
+import type {
+  Aggregation,
+  Bucket,
+  SearchServiceInterface,
+} from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
 import '@internetarchive/collection-name-cache';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import eyeIcon from './assets/img/icons/eye';
-import eyeClosedIcon from './assets/img/icons/eye-closed';
+import {
+  ModalConfig,
+  ModalManagerInterface,
+} from '@internetarchive/modal-manager';
 import chevronIcon from './assets/img/icons/chevron';
 import {
   FacetOption,
   SelectedFacets,
   FacetGroup,
   FacetBucket,
-  defaultSelectedFacets,
+  facetDisplayOrder,
+  facetTitles,
+  aggregationToFacetOption,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
-
-const facetDisplayOrder: FacetOption[] = [
-  'mediatype',
-  'year',
-  'subject',
-  'collection',
-  'creator',
-  'language',
-];
-
-const aggregationToFacetOption: Record<string, FacetOption> = {
-  subjectSorter: 'subject',
-  mediatypeSorter: 'mediatype',
-  languageSorter: 'language',
-  creatorSorter: 'creator',
-  collection: 'collection',
-  year: 'year',
-};
-
-const facetTitles: Record<FacetOption, string> = {
-  subject: 'Subject',
-  mediatype: 'Media Type',
-  language: 'Language',
-  creator: 'Creator',
-  collection: 'Collection',
-  year: 'Year',
-};
+import { getFacetOptionFromKey } from './collection-facets/facets-util';
+import './collection-facets/more-facets-content';
+import './collection-facets/facets-template';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
+  @property({ type: Object }) searchService?: SearchServiceInterface;
+
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
@@ -72,6 +57,10 @@ export class CollectionFacets extends LitElement {
   @property({ type: Boolean }) collapsableFacets = false;
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
+
+  @property({ type: String }) fullQuery?: string;
+
+  @property({ type: Object }) modalManager?: ModalManagerInterface;
 
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
@@ -96,6 +85,12 @@ export class CollectionFacets extends LitElement {
   };
 
   @property({ type: Object, attribute: false })
+
+  /**
+   * render number of facet items
+   */
+  private allowedFacetCount = 6;
+
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
@@ -120,6 +115,7 @@ export class CollectionFacets extends LitElement {
     }
   }
 
+  // TODO: want to fire analytics?
   private dispatchFacetsChangedEvent() {
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
       detail: this.selectedFacets,
@@ -207,7 +203,22 @@ export class CollectionFacets extends LitElement {
         if (existingBucket) return;
         bucketsWithCount.push(bucket);
       });
-      facetGroup.buckets = bucketsWithCount.splice(0, 5);
+
+      /**
+       * render limited facet items on page facet area
+       *
+       * - by-default we are showing 6 items
+       * - additionally want to show all items (selected/suppressed) in page facet area
+       */
+      let allowedFacetCount = Object.keys(
+        (selectedFacetGroup?.buckets as []) || []
+      )?.length;
+      if (allowedFacetCount < this.allowedFacetCount) {
+        allowedFacetCount = this.allowedFacetCount; // splice start index from 0th
+      }
+
+      // splice how many items we want to show in page facet area
+      facetGroup.buckets = bucketsWithCount.splice(0, allowedFacetCount);
 
       facetGroups.push(facetGroup);
     });
@@ -228,7 +239,7 @@ export class CollectionFacets extends LitElement {
         const title = facetTitles[option];
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
-          ([value, facetState]) => {
+          ([value, facetData]) => {
             let displayText = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
@@ -241,8 +252,8 @@ export class CollectionFacets extends LitElement {
             return {
               displayText,
               key: value,
-              count: 0,
-              state: facetState,
+              count: facetData.count,
+              state: facetData.state,
             };
           }
         );
@@ -266,9 +277,15 @@ export class CollectionFacets extends LitElement {
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
-      const option = this.getFacetOptionFromKey(key);
+      const option = getFacetOptionFromKey(key);
       const title = facetTitles[option];
       const castedBuckets = buckets.buckets as Bucket[];
+
+      // we are not showing fav- items in facets
+      castedBuckets?.filter(
+        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
+      );
+
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
         let bucketKey = bucket.key;
         // for languages, we need to search by language code instead of the
@@ -314,172 +331,127 @@ export class CollectionFacets extends LitElement {
 
     return html`
       <div class="facet-group ${this.collapsableFacets ? 'mobile' : ''}">
-        <h1
-          @click=${() => {
-            const newOpenFacets = { ...this.openFacets };
-            newOpenFacets[key] = !isOpen;
-            this.openFacets = newOpenFacets;
-          }}
-          @keyup=${() => {
-            const newOpenFacets = { ...this.openFacets };
-            newOpenFacets[key] = !isOpen;
-            this.openFacets = newOpenFacets;
-          }}
-        >
-          ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
-        </h1>
+        <div class="facet-group-header">
+          <h1
+            @click=${() => {
+              const newOpenFacets = { ...this.openFacets };
+              newOpenFacets[key] = !isOpen;
+              this.openFacets = newOpenFacets;
+            }}
+            @keyup=${() => {
+              const newOpenFacets = { ...this.openFacets };
+              newOpenFacets[key] = !isOpen;
+              this.openFacets = newOpenFacets;
+            }}
+          >
+            ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
+          </h1>
+          <input
+            class="sorting-icon"
+            type="image"
+            @click=${() => this.showMoreFacetsModal(facetGroup, 'alpha')}
+            src="https://archive.org/images/filter-count.png"
+            alt="Sort by alphabetically"
+          />
+        </div>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.getFacetTemplate(facetGroup)}
+          ${this.searchMoreFacetsLink(facetGroup)}
         </div>
       </div>
     `;
   }
 
   /**
+   * Generate the More... link button just below the facets group
+   *
+   * TODO: want to fire analytics?
+   */
+  private searchMoreFacetsLink(
+    facetGroup: FacetGroup
+  ): TemplateResult | typeof nothing {
+    // don't render More... link if the number of facets < this.allowedFacetCount
+    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount)
+      return nothing;
+
+    return html`<button
+      class="more-link"
+      @click=${() => {
+        this.showMoreFacetsModal(facetGroup, 'count');
+        this.dispatchEvent(
+          new CustomEvent('showMoreFacets', { detail: facetGroup.key })
+        );
+      }}
+    >
+      More...
+    </button>`;
+  }
+
+  async showMoreFacetsModal(
+    facetGroup: FacetGroup,
+    sortedBy: string
+  ): Promise<void> {
+    const facetAggrKey = Object.keys(aggregationToFacetOption).find(
+      value => aggregationToFacetOption[value] === facetGroup.key
+    );
+
+    const customModalContent = html`
+      <more-facets-content
+        .facetKey=${facetGroup.key}
+        .facetAggregationKey=${facetAggrKey}
+        .fullQuery=${this.fullQuery}
+        .modalManager=${this.modalManager}
+        .searchService=${this.searchService}
+        .collectionNameCache=${this.collectionNameCache}
+        .languageCodeHandler=${this.languageCodeHandler}
+        .selectedFacets=${this.selectedFacets}
+        .sortedBy=${sortedBy}
+        @facetsChanged=${(e: CustomEvent) => {
+          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+            detail: e.detail,
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+        }}
+      >
+      </more-facets-content>
+    `;
+
+    const config = new ModalConfig({
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true, // TODO: want to fire analytics
+      title: html`Select filters`,
+    });
+    this.modalManager?.classList.add('more-search-facets');
+    this.modalManager?.showModal({
+      config,
+      customModalContent,
+    });
+  }
+
+  /**
    * Generate the list template for each bucket in a facet group
    */
   private getFacetTemplate(facetGroup: FacetGroup): TemplateResult {
-    const bucketsNoFavorites = facetGroup.buckets.filter(
-      bucket => bucket.key.startsWith('fav-') === false
-    );
-    const bucketsMaxSix = bucketsNoFavorites.slice(0, 6);
-
     return html`
-      <ul class="facet-list">
-        ${repeat(
-          bucketsMaxSix,
-          bucket => `${facetGroup.key}:${bucket.key}`,
-          bucket => {
-            const showOnlyCheckboxId = `${facetGroup.key}:${bucket.key}-show-only`;
-            const negativeCheckboxId = `${facetGroup.key}:${bucket.key}-negative`;
-
-            // for collections, we need to asynchronously load the collection name
-            // so we use the `async-collection-name` widget and for the rest, we have
-            // a static value to use
-            const bucketTextDisplay =
-              facetGroup.key !== 'collection'
-                ? html`${bucket.displayText ?? bucket.key}`
-                : html`
-                    <a
-                      href="/details/${bucket.key}"
-                      title="Open collection in new tab"
-                      target="_blank"
-                    >
-                      <async-collection-name
-                        .collectionNameCache=${this.collectionNameCache}
-                        .identifier=${bucket.key}
-                        placeholder="-"
-                      ></async-collection-name>
-                    </a>
-                  `;
-
-            const facetHidden = bucket.state === 'hidden';
-            const facetSelected = bucket.state === 'selected';
-
-            const titleText = `${facetGroup.key}: ${
-              bucket.displayText ?? bucket.key
-            }`;
-            const onlyShowText = facetSelected
-              ? `Show all ${facetGroup.key}s`
-              : `Only show ${titleText}`;
-            const hideText = `Hide ${titleText}`;
-            const unhideText = `Unhide ${titleText}`;
-            const showHideText = facetHidden ? unhideText : hideText;
-
-            return html`
-              <li>
-                <div class="facet-row">
-                  <div class="facet-checkbox">
-                    <input
-                      type="checkbox"
-                      .name=${facetGroup.key}
-                      .value=${bucket.key}
-                      @click=${(e: Event) => {
-                        this.facetClicked(e, bucket, false);
-                      }}
-                      .checked=${facetSelected}
-                      class="select-facet-checkbox"
-                      title=${onlyShowText}
-                      id=${showOnlyCheckboxId}
-                    />
-                    <input
-                      type="checkbox"
-                      id=${negativeCheckboxId}
-                      .name=${facetGroup.key}
-                      .value=${bucket.key}
-                      @click=${(e: Event) => {
-                        this.facetClicked(e, bucket, true);
-                      }}
-                      .checked=${facetHidden}
-                      class="hide-facet-checkbox"
-                    />
-                    <label
-                      for=${negativeCheckboxId}
-                      class="hide-facet-icon${facetHidden ? ' active' : ''}"
-                      title=${showHideText}
-                    >
-                      <span class="eye">${eyeIcon}</span>
-                      <span class="eye-closed">${eyeClosedIcon}</span>
-                    </label>
-                  </div>
-
-                  <label
-                    for=${showOnlyCheckboxId}
-                    class="facet-info-display"
-                    title=${onlyShowText}
-                  >
-                    <div class="facet-title">${bucketTextDisplay}</div>
-                    <div class="facet-count">${bucket.count}</div>
-                  </label>
-                </div>
-              </li>
-            `;
-          }
-        )}
-      </ul>
+      <facets-template
+        .facetGroup=${facetGroup}
+        .selectedFacets=${this.selectedFacets}
+        .renderOn=${'page'}
+        .collectionNameCache=${this.collectionNameCache}
+        @selectedFacetsChanged=${(e: CustomEvent) => {
+          const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+            detail: e.detail,
+            bubbles: true,
+            composed: true,
+          });
+          this.dispatchEvent(event);
+        }}
+      ></facets-template>
     `;
-  }
-
-  private facetClicked(e: Event, bucket: FacetBucket, negative: boolean): void {
-    const target = e.target as HTMLInputElement;
-    const { checked, name, value } = target;
-    if (checked) {
-      this.facetChecked(name as FacetOption, value, negative);
-    } else {
-      this.facetUnchecked(name as FacetOption, value);
-    }
-
-    if (this.onFacetClick) {
-      this.onFacetClick(name as FacetOption, checked, negative);
-    }
-  }
-
-  private facetChecked(key: FacetOption, value: string, negative: boolean) {
-    const { selectedFacets } = this;
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-    newFacets[key][value] = negative ? 'hidden' : 'selected';
-    this.selectedFacets = newFacets;
-  }
-
-  private facetUnchecked(key: FacetOption, value: string) {
-    const { selectedFacets } = this;
-    let newFacets: SelectedFacets;
-    if (selectedFacets) {
-      newFacets = {
-        ...selectedFacets,
-      };
-    } else {
-      newFacets = defaultSelectedFacets;
-    }
-    delete newFacets[key][value];
-    this.selectedFacets = newFacets;
   }
 
   /**
@@ -535,6 +507,13 @@ export class CollectionFacets extends LitElement {
         cursor: pointer;
       }
 
+      .facet-group-header {
+        display: flex;
+        margin-bottom: 0.7rem;
+        justify-content: space-between;
+        border-bottom: 1px solid rgb(232, 232, 232);
+      }
+
       .facet-group-content {
         transition: max-height 0.2s ease-in-out;
       }
@@ -550,88 +529,23 @@ export class CollectionFacets extends LitElement {
 
       h1 {
         font-size: 1.4rem;
-        font-weight: 200;
-        border-bottom: 1px solid rgb(232, 232, 232);
+        font-weight: 200
         padding-bottom: 3px;
         margin: 0;
       }
 
-      ul.facet-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
-
-      ul.facet-list li {
-        margin-bottom: 0.2rem;
-      }
-
-      .facet-checkbox {
-        margin-right: 0.5rem;
-        display: flex;
-        align-items: center;
-      }
-
-      .facet-row {
-        display: flex;
-        align-items: start;
-        font-weight: 500;
+      .more-link {
         font-size: 1.2rem;
-      }
-
-      .facet-info-display {
-        display: flex;
-        flex: 1;
+        text-decoration: none;
+        padding: 0;
+        background: inherit;
+        border: 0;
+        color: blue;
         cursor: pointer;
       }
-
-      .facet-title {
-        flex: 1;
-      }
-
-      .facet-count {
-        margin-left: 0.5rem;
-      }
-
-      .select-facet-checkbox {
-        cursor: pointer;
-        margin-right: 5px;
-      }
-
-      .hide-facet-checkbox {
-        display: none;
-      }
-
-      .hide-facet-icon {
-        width: 15px;
+      .sorting-icon {
         height: 15px;
         cursor: pointer;
-        opacity: 0.3;
-      }
-      .hide-facet-icon:hover,
-      .active {
-        opacity: 1;
-      }
-      .hide-facet-icon:hover .eye,
-      .hide-facet-icon .eye-closed {
-        display: none;
-      }
-      .hide-facet-icon:hover .eye-closed,
-      .hide-facet-icon.active .eye-closed {
-        display: inline;
-      }
-      .hide-facet-icon.active .eye {
-        display: none;
-      }
-
-      a:link,
-      a:visited {
-        text-decoration: none;
-        color: var(--ia-theme-link-color);
-      }
-
-      a:hover {
-        text-decoration: underline;
       }
     `;
   }

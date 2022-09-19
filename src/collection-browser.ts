@@ -29,6 +29,7 @@ import type {
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -126,6 +127,8 @@ export class CollectionBrowser
   @property({ type: Number }) mobileBreakpoint = 600;
 
   @property({ type: Boolean }) loggedIn = false;
+
+  @property({ type: Object }) modalManager?: ModalManagerInterface = undefined;
 
   /**
    * If item management UI active
@@ -507,6 +510,7 @@ export class CollectionBrowser
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+        .searchService=${this.searchService}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -515,6 +519,8 @@ export class CollectionBrowser
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
+        .fullQuery=${this.fullQuery}
+        .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
         ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
@@ -853,8 +859,8 @@ export class CollectionBrowser
       // eslint-disable-next-line no-continue
       if (facetEntries.length === 0) continue;
       const facetValuesArray: string[] = [];
-      for (const [key, facetState] of facetEntries) {
-        const plusMinusPrefix = facetState === 'hidden' ? '-' : '';
+      for (const [key, facetData] of facetEntries) {
+        const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
 
         if (facetName === 'language') {
           const languages =
@@ -1351,6 +1357,7 @@ export class CollectionBrowser
 
     #left-column {
       width: 18rem;
+      min-width: 18rem; /* Prevents Safari from shrinking col at first draw */
       padding-right: 12px;
       padding-right: 1rem;
     }

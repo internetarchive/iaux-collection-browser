@@ -115,8 +115,8 @@ export class RestorationStateHandler
         const facetEntries = Object.entries(facetValues);
         // eslint-disable-next-line no-continue
         if (facetEntries.length === 0) continue;
-        for (const [key, facetState] of facetEntries) {
-          const notValue = facetState === 'hidden';
+        for (const [key, data] of facetEntries) {
+          const notValue = data.state === 'hidden';
           const paramValue = `${facetName}:"${key}"`;
           if (notValue) {
             searchParams.append('not[]', paramValue);
@@ -228,7 +228,7 @@ export class RestorationStateHandler
             } else {
               restorationState.selectedFacets[field as FacetOption][
                 unQuotedValue
-              ] = 'selected';
+              ].state = 'selected';
             }
             break;
           }
@@ -241,7 +241,7 @@ export class RestorationStateHandler
           default:
             restorationState.selectedFacets[field as FacetOption][
               unQuotedValue
-            ] = 'selected';
+            ].state = 'selected';
         }
       });
     }
@@ -249,8 +249,9 @@ export class RestorationStateHandler
       facetNots.forEach(not => {
         const [field, value] = not.split(':');
         const unQuotedValue = this.stripQuotes(value);
-        restorationState.selectedFacets[field as FacetOption][unQuotedValue] =
-          'hidden';
+        restorationState.selectedFacets[field as FacetOption][
+          unQuotedValue
+        ].state = 'hidden';
       });
     }
     return restorationState;
