@@ -266,7 +266,7 @@ export class MoreFacetsPagination extends LitElement {
         border: 0;
         cursor: pointer;
         border-radius: 100%;
-        margin: 10px;
+        margin: 10px 5px;
         padding: 5px;
         font-size: 1.4rem;
         vertical-align: middle;

@@ -350,7 +350,7 @@ export class MoreFacetsContent extends LitElement {
 
   private get loaderTemplate(): TemplateResult {
     return html`<div class="facets-loader">
-      <ia-activity-indicator .mode="processing"></ia-activity-indicator>
+      <ia-activity-indicator .mode=${'processing'}></ia-activity-indicator>
     </div> `;
   }
 
