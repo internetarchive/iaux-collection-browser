@@ -5,7 +5,26 @@ import '../../src/collection-facets/more-facets-pagination';
 import type { MoreFacetsPagination } from '../../src/collection-facets/more-facets-pagination';
 
 describe('More facets pagination', () => {
-  it('shoudl render pagination template', async () => {
+  describe('5 pages or less', () => {
+    it('shows all pages', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination .size=${5}></more-facets-pagination>`
+      );
+
+      await el.updateComplete;
+
+      const pageButtons = el.shadowRoot?.querySelectorAll(
+        'button[data-page]'
+      ) as NodeList;
+      expect(pageButtons.length).to.greaterThan(0);
+
+      pageButtons.forEach((button, index) => {
+        expect(button.textContent).to.contain(index + 1);
+      });
+    });
+  });
+
+  it('should render pagination template', async () => {
     const el = await fixture<MoreFacetsPagination>(
       html`<more-facets-pagination .size=${10}></more-facets-pagination>`
     );

@@ -15,7 +15,7 @@ export class MoreFacetsPagination extends LitElement {
   /**
    * Total number of pages
    */
-  @property({ type: Number }) size?: any | undefined;
+  @property({ type: Number }) size!: number;
 
   /**
    * Number of pages can be moved in back/forward
@@ -28,6 +28,12 @@ export class MoreFacetsPagination extends LitElement {
 
   firstUpdated() {
     this.observePageCount();
+  }
+
+  override updated(changed: Map<string, any>) {
+    if (changed.has('size')) {
+      this.observePageCount();
+    }
   }
 
   /** creates `this.pages` array that notes which pages to draw
@@ -45,10 +51,23 @@ export class MoreFacetsPagination extends LitElement {
     const atMinThreshold = this.size <= paginatorMaxPagesToShow;
 
     /** Display outliers  */
-    if (this.size < 5) {
+    if (this.size <= 5) {
       // display all pages
       this.pages = [...Array(this.size).keys()].map(i => i + 1);
       return;
+    }
+
+    if (this.size === paginatorMaxPagesToShow) {
+      // edge: 7 pages
+      if (this.currentPage === 2) {
+        this.pages = [1, 2, 3, 4, 0, this.size];
+        return;
+      }
+
+      if (this.currentPage === this.size - 1) {
+        this.pages = [1, 0, 4, 5, this.size - 1, this.size];
+        return;
+      }
     }
 
     if (this.currentPage === 1) {
@@ -63,13 +82,16 @@ export class MoreFacetsPagination extends LitElement {
       return;
     }
 
-    if (this.currentPage === 2 && this.size === paginatorMaxPagesToShow) {
-      this.pages = [1, 2, 3, 4, 0, this.size];
-      return;
-    }
-
-    if (this.currentPage === 6 && this.size === paginatorMaxPagesToShow) {
-      this.pages = [1, 0, 4, 5, this.size - 1, this.size];
+    if (this.currentPage === this.size - 1) {
+      // second last page
+      this.pages = [
+        1,
+        0,
+        this.size - 3,
+        this.size - 2,
+        this.size - 1,
+        this.size,
+      ];
       return;
     }
 
@@ -139,7 +161,7 @@ export class MoreFacetsPagination extends LitElement {
   }
 
   private get getEllipsisTemplate() {
-    return html`<i>...</i>`;
+    return html`<i class="ellipses">...</i>`;
   }
 
   private emitPageClick() {
@@ -179,8 +201,9 @@ export class MoreFacetsPagination extends LitElement {
   private getPageTemplate(page: number) {
     return html`
       <button
-        @click="${() => this.onChange(page)}"
-        class="${this.currentPage === page ? 'current' : nothing}"
+        @click=${() => this.onChange(page)}
+        class=${this.currentPage === page ? 'current' : ''}
+        data-page=${page}
       >
         ${page}
       </button>
