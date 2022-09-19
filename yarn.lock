@@ -112,12 +112,12 @@
 
 "@internetarchive/analytics-manager@^0.1.2":
   version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz#a2442715f13270815c3770651e043a00fbe6f7a5"
+  resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
 "@internetarchive/collection-name-cache@^0.1.5":
   version "0.1.5"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.1.5.tgz#6a49cb38af36a05bd027bf29d13f23d66b670672"
+  resolved "https://registry.npmjs.org/@internetarchive/collection-name-cache/-/collection-name-cache-0.1.5.tgz"
   integrity sha512-MGJlHxzUhWA1tq8R7HtlOhMo0e4XdmD9wJaXywjPoahliHlkb6CelXaOVUd72bj0xjDb6NVOx9tAfNKNlG+3/Q==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
@@ -157,21 +157,21 @@
 
 "@internetarchive/icon-close@^1.3.2":
   version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/icon-close/-/icon-close-1.3.2.tgz#391b025241fe4c065263414870d21034823aebdf"
+  resolved "https://registry.npmjs.org/@internetarchive/icon-close/-/icon-close-1.3.2.tgz"
   integrity sha512-4QhM/MDC1IsWQZoE3lt7A4l3/VOopJta+xVnDLqsbA3OW2sT+ilm/mUiP4l4Lm/NzdbQQwhnQMOZPcQvllxkzA==
   dependencies:
     lit "^2.0.2"
 
 "@internetarchive/icon-ia-logo@^1.3.2":
   version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/icon-ia-logo/-/icon-ia-logo-1.3.2.tgz#0ec0f5b537ea6b8c46ba6410e5d925d806141c03"
+  resolved "https://registry.npmjs.org/@internetarchive/icon-ia-logo/-/icon-ia-logo-1.3.2.tgz"
   integrity sha512-lDZdaqj7A6nv5dJPaes6UZwDqlr3yMgaKJZSuMTqMUpjaZ0bcfDIoDFO4y2YjQ2uUHoRIgRNqyZVMSNJMowXzQ==
   dependencies:
     lit "^2.0.2"
 
 "@internetarchive/icon-user@^1.3.2":
   version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/icon-user/-/icon-user-1.3.2.tgz#727b9be48889c9abc089f16ff5cf0632c20d4fba"
+  resolved "https://registry.npmjs.org/@internetarchive/icon-user/-/icon-user-1.3.2.tgz"
   integrity sha512-A5fCby40AEWWbrSSgGzhcSVDfL9M+S/Zl1oPTid/+mBuZPik0KPS5xoMBkT/952/ujbnLLR9URemzfPdSeBx+Q==
   dependencies:
     lit "^2.0.2"
@@ -199,7 +199,7 @@
 
 "@internetarchive/modal-manager@^0.2.7":
   version "0.2.7"
-  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.7.tgz#dac87aeb7fb45d73a8753a76815dfb6d8c0fa507"
+  resolved "https://registry.npmjs.org/@internetarchive/modal-manager/-/modal-manager-0.2.7.tgz"
   integrity sha512-nWYeblm0/pQxTLLqjC/UCViQVTpJuRtyUFkNaB0Sm0OkNhcm8VbPh/A9rqJNYGd5xYjecboZeQdNFD21dW8pQQ==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.3"
@@ -224,7 +224,7 @@
 
 "@internetarchive/search-service@^0.3.5":
   version "0.3.5"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.3.5.tgz#8e2af1975d223afbfad43fbb4119428a0bcb0c08"
+  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-0.3.5.tgz"
   integrity sha512-+v9RGRDEqyLoxrtpA9ZwhIyH/pZzJf/PE40ItUNYQkR/g974ip9L6iyfiCqx5mhxdX6E1nFoCvaDWSjQqklfwA==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.3"
@@ -4385,7 +4385,7 @@ text-table@^0.2.0:
 
 throttle-debounce@^5.0.0:
   version "5.0.0"
-  resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-5.0.0.tgz#a17a4039e82a2ed38a5e7268e4132d6960d41933"
+  resolved "https://registry.npmjs.org/throttle-debounce/-/throttle-debounce-5.0.0.tgz"
   integrity sha512-2iQTSgkkc1Zyk0MeVrt/3BvuOXYPl/R8Z0U2xxo9rjwNciaHDG3R+Lm6dh4EeUci49DanvBnuqI6jshoQQRGEg==
 
 through@^2.3.8:
