@@ -13,6 +13,22 @@ import '../src/collection-facets';
 import type { FacetOption } from '../src/models';
 
 describe('Collection Facets', () => {
+  it('has loader', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets ?facetsLoading=${true}></collection-facets>`
+    );
+
+    expect(
+      el.shadowRoot?.querySelector('#container')?.classList.contains('loading')
+    ).to.be.true;
+
+    el.facetsLoading = false;
+    await el.updateComplete;
+
+    expect(
+      el.shadowRoot?.querySelector('#container')?.classList.contains('loading')
+    ).to.be.false;
+  });
   it('renders aggregations as facets', async () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets></collection-facets>`
