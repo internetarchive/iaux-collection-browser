@@ -1,8 +1,14 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
+import sinon from 'sinon';
 import { html } from 'lit';
 import type { Aggregation } from '@internetarchive/search-service';
+import {
+  ModalManager,
+  ModalManagerInterface,
+} from '@internetarchive/modal-manager';
 import type { CollectionFacets } from '../src/collection-facets';
+import '@internetarchive/modal-manager';
 import '../src/collection-facets';
 
 describe('Collection Facets', () => {
@@ -123,5 +129,92 @@ describe('Collection Facets', () => {
     expect(collectionName?.parentElement).to.not.be.instanceOf(
       HTMLAnchorElement
     );
+  });
+
+  describe('More Facets', () => {
+    it('Does not render < allowedFacetCount', async () => {
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets></collection-facets>`
+      );
+
+      const aggs: Record<string, Aggregation> = {
+        'user_aggs__terms__field:subjectSorter__size:1': {
+          buckets: [
+            {
+              key: 'foo',
+              doc_count: 5,
+            },
+          ],
+        },
+      };
+
+      el.aggregations = aggs;
+      await el.updateComplete;
+
+      const moreLink = el.shadowRoot?.querySelector('.more-link');
+      expect(moreLink).to.be.null;
+    });
+    it('Render More Facets', async () => {
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets
+          .modalManager=${new ModalManager()}
+        ></collection-facets>`
+      );
+
+      const aggs: Record<string, Aggregation> = {
+        'user_aggs__terms__field:subjectSorter__size:1': {
+          buckets: [
+            {
+              key: 'foo',
+              doc_count: 5,
+            },
+            {
+              key: 'fi',
+              doc_count: 5,
+            },
+            {
+              key: 'fum',
+              doc_count: 5,
+            },
+            {
+              key: 'flee',
+              doc_count: 5,
+            },
+            {
+              key: 'wheee',
+              doc_count: 5,
+            },
+            {
+              key: 'whooo',
+              doc_count: 5,
+            },
+            {
+              key: 'boop',
+              doc_count: 5,
+            },
+          ],
+        },
+      };
+
+      el.aggregations = aggs;
+      await el.updateComplete;
+
+      const moreLink = el.shadowRoot?.querySelector(
+        '.more-link'
+      ) as HTMLButtonElement;
+      expect(moreLink).to.exist; // has link
+
+      const showModalSpy = sinon.spy(
+        el.modalManager as ModalManagerInterface,
+        'showModal'
+      );
+      // let's pop up modal
+      moreLink?.click();
+      await el.updateComplete;
+
+      expect(showModalSpy.callCount).to.equal(1);
+      expect(el.modalManager?.classList.contains('more-search-facets')).to.be
+        .true;
+    });
   });
 });
