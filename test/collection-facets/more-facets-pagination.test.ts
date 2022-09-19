@@ -5,6 +5,10 @@ import sinon from 'sinon';
 import '../../src/collection-facets/more-facets-pagination';
 import type { MoreFacetsPagination } from '../../src/collection-facets/more-facets-pagination';
 
+afterEach(() => {
+  sinon.restore();
+});
+
 describe('More facets pagination', () => {
   describe('5 pages or less', () => {
     it('shows all pages', async () => {
@@ -81,7 +85,7 @@ describe('More facets pagination', () => {
     expect(el.pages?.length).to.equal(4);
   });
 
-  describe('Clicking a page', () => {
+  describe('Selecting a page', () => {
     it('fires event', async () => {
       const el = await fixture<MoreFacetsPagination>(
         html`<more-facets-pagination></more-facets-pagination>`
@@ -99,17 +103,18 @@ describe('More facets pagination', () => {
     });
     it('sets off side effects with `onChange`', async () => {
       const el = await fixture<MoreFacetsPagination>(
-        html`<more-facets-pagination .size=${'10'}></more-facets-pagination>`
+        html`<more-facets-pagination
+          .size=${'10'}
+          .currentPage=${2}
+        ></more-facets-pagination>`
       );
+
+      expect(el.currentPage).to.equal(2); // confirm current page
 
       const fake1 = sinon.fake();
       const fake2 = sinon.fake();
       el.observePageCount = fake1;
       el.emitPageClick = fake2;
-
-      el.currentPage = 2;
-      await el.updateComplete;
-      expect(el.currentPage).to.equal(2); // move current page up
 
       // select first page button
       const pageButton = el.shadowRoot?.querySelector(
@@ -126,6 +131,72 @@ describe('More facets pagination', () => {
       expect(el.currentPage).to.equal(1); // brings us back to currentPage
       // confirm button is selected
       expect(pageButton.classList.contains('current')).to.be.true;
+    });
+  });
+
+  describe('Using Arrows', () => {
+    it('going backwards', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${'10'}
+          .currentPage=${2}
+        ></more-facets-pagination>`
+      );
+
+      expect(el.currentPage).to.equal(2); // confirm current page
+
+      const fake1 = sinon.fake();
+      const fake2 = sinon.fake();
+      el.observePageCount = fake1;
+      el.emitPageClick = fake2;
+
+      // select first page button
+      const rewindButton = el.shadowRoot?.querySelector(
+        '.facets-pagination > button.rewind'
+      ) as HTMLButtonElement;
+      rewindButton.click();
+
+      await el.updateComplete;
+
+      expect(fake1.callCount).to.equal(1);
+      expect(fake2.callCount).to.equal(1);
+      expect(el.currentPage).to.equal(1); // brings us back 1 page
+      // confirm button is selected
+      expect(
+        (
+          el.shadowRoot?.querySelector(
+            '.page-numbers > button[data-page="1"]'
+          ) as HTMLButtonElement
+        ).classList.contains('current')
+      ).to.be.true;
+    });
+
+    it('going forwards', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${'10'}
+          .currentPage=${5}
+        ></more-facets-pagination>`
+      );
+
+      expect(el.currentPage).to.equal(5); // confirm current page
+
+      const fake1 = sinon.fake();
+      const fake2 = sinon.fake();
+      el.observePageCount = fake1;
+      el.emitPageClick = fake2;
+
+      // select first page button
+      const forwardButton = el.shadowRoot?.querySelector(
+        '.facets-pagination > button.forward'
+      ) as HTMLButtonElement;
+      forwardButton.click();
+
+      await el.updateComplete;
+
+      expect(fake1.callCount).to.equal(1);
+      expect(fake2.callCount).to.equal(1);
+      expect(el.currentPage).to.equal(6); // brings us forward 1 page
     });
   });
 });

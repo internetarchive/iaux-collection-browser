@@ -34,6 +34,10 @@ export class MoreFacetsPagination extends LitElement {
     if (changed.has('size')) {
       this.observePageCount();
     }
+    if (changed.has('currentPage')) {
+      this.observePageCount();
+      this.emitPageClick();
+    }
   }
 
   /** creates `this.pages` array that notes which pages to draw
@@ -179,8 +183,6 @@ export class MoreFacetsPagination extends LitElement {
     if (this.currentPage < 1) {
       this.currentPage = 1;
     }
-    this.observePageCount();
-    this.emitPageClick();
   }
 
   private onForward() {
@@ -188,14 +190,10 @@ export class MoreFacetsPagination extends LitElement {
     if (this.currentPage > this.size) {
       this.currentPage = this.size;
     }
-    this.observePageCount();
-    this.emitPageClick();
   }
 
   private onChange(page: number) {
     this.currentPage = page;
-    this.observePageCount();
-    this.emitPageClick();
   }
 
   private getPageTemplate(page: number) {
@@ -228,12 +226,12 @@ export class MoreFacetsPagination extends LitElement {
   render() {
     return html`
       <div class="facets-pagination">
-        <button class="arrow-icon" @click=${this.onRewind}>
+        <button class="arrow-icon rewind" @click=${this.onRewind}>
           <span class="sr-only">Rewind pagination:</span>
           ${arrowLeftIcon}
         </button>
         <div class="page-numbers">${this.getPagesTemplate}</div>
-        <button class="arrow-icon" @click=${this.onForward}>
+        <button class="arrow-icon forward" @click=${this.onForward}>
           <span class="sr-only">Forward pagination:</span>
           ${arrowRightIcon}
         </button>
