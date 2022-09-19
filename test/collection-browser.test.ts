@@ -7,6 +7,7 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
   defaultSelectedFacets,
+  FacetBucket,
   SelectedFacets,
   SortField,
 } from '../src/models';
@@ -84,9 +85,10 @@ describe('Collection Browser', () => {
 
   it('selected facets with analytics - not negative facets', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const mediaTypeBucket = { count: 123, state: 'selected' } as FacetBucket;
     const mockedSelectedFacets: SelectedFacets = {
       subject: {},
-      mediatype: { data: { count: 123, state: 'selected' } },
+      mediatype: { data: mediaTypeBucket },
       language: {},
       creator: {},
       collection: {},
@@ -116,9 +118,10 @@ describe('Collection Browser', () => {
 
   it('selected facets with analytics - negative facets', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const mediaTypeBucket = { count: 123, state: 'selected' } as FacetBucket;
     const mockedSelectedFacets: SelectedFacets = {
       subject: {},
-      mediatype: { data: { count: 123, state: 'selected' } },
+      mediatype: { data: mediaTypeBucket },
       language: {},
       creator: {},
       collection: {},

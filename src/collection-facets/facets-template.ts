@@ -51,7 +51,7 @@ export class FacetsTemplate extends LitElement {
     newFacets[key][value] = {
       state: negative ? 'hidden' : 'selected',
       count,
-    };
+    } as FacetBucket;
 
     this.selectedFacets = newFacets;
     this.dispatchSelectedFacetsChanged();
