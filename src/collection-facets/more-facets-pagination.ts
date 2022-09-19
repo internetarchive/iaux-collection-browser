@@ -164,7 +164,7 @@ export class MoreFacetsPagination extends LitElement {
     return html`<i class="ellipses">...</i>`;
   }
 
-  private emitPageClick() {
+  emitPageClick() {
     this.dispatchEvent(
       new CustomEvent('pageNumberClicked', {
         detail: { page: this.currentPage },
