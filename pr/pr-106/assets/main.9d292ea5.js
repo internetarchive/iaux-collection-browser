@@ -2983,7 +2983,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         border: 0;
         cursor: pointer;
         border-radius: 100%;
-        margin: 10px;
+        margin: 10px 5px;
         padding: 5px;
         font-size: 1.4rem;
         vertical-align: middle;
@@ -3164,7 +3164,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         @selectedFacetsChanged=${t=>{this.selectedFacets=t.detail}}
       ></facets-template>
     `}get loaderTemplate(){return m`<div class="facets-loader">
-      <ia-activity-indicator .mode="processing"></ia-activity-indicator>
+      <ia-activity-indicator .mode=${"processing"}></ia-activity-indicator>
     </div> `}get facetsPaginationTemplate(){return this.paginationSize>1?m`<more-facets-pagination
           .size=${this.paginationSize}
           .currentPage=${1}
@@ -3882,7 +3882,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           >
             Last Event Captured
           </button>
-          <pre id="latest-event-details">
+          <pre id="latest-event-details" class="hidden">
             ${JSON.stringify(this.latestAction,null,2)}
           </pre
           >
@@ -3989,7 +3989,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
-    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}async snippetsChanged(e){e.target.checked?this.searchService=je(ce({},mt.default),{async search(a){var o;const s=await mt.default.search(a);return(o=s.success)===null||o===void 0||o.response.docs.forEach(l=>{const d=l.rawMetadata;d&&(d.snippets=["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])}),s}}):this.searchService=mt.default;const i=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(a=>setTimeout(a,0)),this.searchQuery=i}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};re.styles=g`
+    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}async snippetsChanged(e){e.target.checked?this.searchService=je(ce({},mt.default),{async search(a){var o;const s=await mt.default.search(a);return(o=s.success)===null||o===void 0||o.response.docs.forEach(l=>{const d=l.rawMetadata;d&&(d.snippets=["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])}),s}}):this.searchService=mt.default;const i=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(a=>{setTimeout(a,0)}),this.searchQuery=i}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};re.styles=g`
     :host {
       display: block;
       --primaryButtonBGColor: #194880;
