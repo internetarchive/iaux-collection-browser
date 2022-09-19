@@ -1,88 +1,72 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture, oneEvent } from '@open-wc/testing';
 import { html } from 'lit';
-import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
-import '../../src/collection-facets/more-facets-content';
-import { MockSearchService } from '../mocks/mock-search-service';
+import '../../src/collection-facets/more-facets-pagination';
+import type { MoreFacetsPagination } from '../../src/collection-facets/more-facets-pagination';
 
-describe('More facets content', () => {
-  it('should render more facets template', async () => {
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content></more-facets-content>`
+describe('More facets pagination', () => {
+  it('shoudl render pagination template', async () => {
+    const el = await fixture<MoreFacetsPagination>(
+      html`<more-facets-pagination .size=${10}></more-facets-pagination>`
     );
 
-    el.facetsLoading = false;
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.facets-content')).to.exist;
+    expect(el.shadowRoot?.querySelector('.facets-pagination')).to.exist;
+    expect(el.shadowRoot?.querySelector('.arrow-icon')).to.exist;
   });
 
-  it('should render more facets loader template', async () => {
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content></more-facets-content>`
+  it('should render page numbers', async () => {
+    const el = await fixture<MoreFacetsPagination>(
+      html`<more-facets-pagination .size=${3}></more-facets-pagination>`
     );
 
-    el.facetsLoading = true;
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.facets-loader')).to.exist;
+    const pageNumberElement = el.shadowRoot?.querySelector('.page-numbers');
+    expect(pageNumberElement).to.exist;
+    expect(pageNumberElement?.querySelectorAll('button').length).to.equal(3);
   });
 
-  it('should render more facets empty template', async () => {
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content></more-facets-content>`
+  it('check current page and total pages', async () => {
+    const el = await fixture<MoreFacetsPagination>(
+      html`<more-facets-pagination
+        .size=${4}
+        .currentPage=${2}
+      ></more-facets-pagination>`
     );
 
-    el.facetsLoading = false;
-    el.paginationSize = 0;
     await el.updateComplete;
 
-    // expect(
-    //   el.shadowRoot?.querySelector('#more-facets-page')?.textContent
-    // ).to.contains('No result found. please try again later.');
+    const pageNumberElement = el.shadowRoot?.querySelector('.page-numbers');
+    expect(pageNumberElement).to.exist;
+    expect(
+      pageNumberElement
+        ?.querySelectorAll('button')[1]
+        .classList.contains('current')
+    ).to.be.true;
+    expect(el.pages?.length).to.equal(4);
   });
 
-  it('should render pagination for more facets', async () => {
-    const searchService = new MockSearchService();
-
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content
-        .searchService=${searchService}
-      ></more-facets-content>`
+  it('get page numbers based of size and currentPage', async () => {
+    const el = await fixture<MoreFacetsPagination>(
+      html`<more-facets-pagination
+        .size=${4}
+        .currentPage=${2}
+      ></more-facets-pagination>`
     );
 
-    el.facetKey = 'mediatype';
-    el.facetsLoading = false;
-    el.paginationSize = 6;
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelectorAll('more-facets-pagination')).to.exist;
-  });
-
-  it('query for more facets content using search service', async () => {
-    const searchService = new MockSearchService();
-
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content
-        .searchService=${searchService}
-      ></more-facets-content>`
-    );
-
-    el.facetKey = 'collection';
-    el.fullQuery = 'title:hello';
-    await el.updateComplete;
-
-    expect(searchService.searchParams?.query).to.equal('title:hello');
+    expect(el.pages?.length).to.equal(4);
   });
 
   it('page number clicked event', async () => {
-    const searchService = new MockSearchService();
-
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content
-        .searchService=${searchService}
-      ></more-facets-content>`
+    const el = await fixture<MoreFacetsPagination>(
+      html`<more-facets-pagination></more-facets-pagination>`
     );
+
+    await el.updateComplete;
 
     setTimeout(() =>
       el.dispatchEvent(

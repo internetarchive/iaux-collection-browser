@@ -22,9 +22,9 @@ export class MoreFacetsPagination extends LitElement {
    */
   @property({ type: Number }) step = 2;
 
-  @state() pages?: number[] = [];
+  @property({ type: Number }) currentPage: number = 1;
 
-  @state() currentPage = 1;
+  @state() pages?: number[] = [];
 
   firstUpdated() {
     this.observePageCount();

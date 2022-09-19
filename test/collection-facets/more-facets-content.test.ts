@@ -18,8 +18,8 @@ const selectedFacetsGroup = {
   ],
 };
 
-const aggs: Record<string, Aggregation> = {
-  'user_aggs__terms__field:subjectSorter__size:1': {
+const aggregation: Record<string, Aggregation> = {
+  'user_aggs__terms__field:collectionSorter__size:1': {
     buckets: [
       {
         key: 'foo',
@@ -109,17 +109,19 @@ describe('More facets content', () => {
       html`<more-facets-content
         .searchService=${searchService}
         .selectedFacets=${selectedFacetsGroup}
-        .aggregations=${aggs}
+        .aggregations=${aggregation}
       ></more-facets-content>`
     );
 
     await el.updateComplete;
 
-    const facetGroup = el.facetGroup?.shift();
-    const bucket = facetGroup?.buckets[0];
+    expect(el.facetGroupTitle).to.equal('Collection');
 
-    expect(facetGroup?.key).to.equal('subject');
-    expect(facetGroup?.title).to.equal('Subject');
+    const facetGroup = el.facetGroup?.shift();
+    expect(facetGroup?.key).to.equal('collection');
+    expect(facetGroup?.title).to.equal('Collection');
+
+    const bucket = facetGroup?.buckets[0];
     expect(bucket?.key).to.equal('foo');
     expect(bucket?.count).to.equal(5);
   });

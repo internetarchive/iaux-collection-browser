@@ -359,6 +359,7 @@ export class MoreFacetsContent extends LitElement {
     return this.paginationSize > 1
       ? html`<more-facets-pagination
           .size=${this.paginationSize}
+          .currentPage=${1}
           @pageNumberClicked=${this.pageNumberClicked}
         ></more-facets-pagination>`
       : nothing;
