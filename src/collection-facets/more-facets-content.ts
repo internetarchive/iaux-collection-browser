@@ -113,7 +113,7 @@ export class MoreFacetsContent extends LitElement {
       advancedParams: [
         {
           field: this.facetAggregationKey as string,
-          size: 400, // todo - do we want to have all the records at once?
+          size: 65535, // todo - do we want to have all the records at once?
         },
       ],
     };

@@ -240,7 +240,6 @@ export class FacetsTemplate extends LitElement {
       }
       .select-facet-checkbox {
         cursor: pointer;
-        margin: 0;
         display: inline-block;
       }
       .hide-facet-checkbox {
