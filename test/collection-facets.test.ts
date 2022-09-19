@@ -10,6 +10,7 @@ import {
 import type { CollectionFacets } from '../src/collection-facets';
 import '@internetarchive/modal-manager';
 import '../src/collection-facets';
+import type { FacetOption } from '../src/models';
 
 describe('Collection Facets', () => {
   it('renders aggregations as facets', async () => {
@@ -199,6 +200,13 @@ describe('Collection Facets', () => {
       el.aggregations = aggs;
       await el.updateComplete;
 
+      let eventCaught = false;
+      let eventFacet = '';
+      el.addEventListener('showMoreFacets', e => {
+        eventFacet = (e as CustomEvent).detail;
+        eventCaught = true;
+      });
+
       const moreLink = el.shadowRoot?.querySelector(
         '.more-link'
       ) as HTMLButtonElement;
@@ -215,6 +223,8 @@ describe('Collection Facets', () => {
       expect(showModalSpy.callCount).to.equal(1);
       expect(el.modalManager?.classList.contains('more-search-facets')).to.be
         .true;
+      expect(eventCaught).to.be.true;
+      expect(eventFacet).to.equal('subject' as FacetOption);
     });
   });
 });
