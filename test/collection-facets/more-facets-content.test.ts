@@ -1,9 +1,33 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture, oneEvent } from '@open-wc/testing';
 import { html } from 'lit';
+import type { Aggregation } from '@internetarchive/search-service';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
+
+const selectedFacetsGroup = {
+  title: 'Media Type',
+  key: 'mediatype',
+  buckets: [
+    { displayText: 'audio', key: 'audio', count: 1001, state: 'none' },
+    { displayText: 'movies', key: 'movies', count: 901, state: 'none' },
+    { displayText: 'texts', key: 'texts', count: 2101, state: 'none' },
+    { displayText: 'data', key: 'data', count: 230, state: 'none' },
+    { displayText: 'web', key: 'web', count: 453, state: 'none' },
+  ],
+};
+
+const aggs: Record<string, Aggregation> = {
+  'user_aggs__terms__field:subjectSorter__size:1': {
+    buckets: [
+      {
+        key: 'foo',
+        doc_count: 5,
+      },
+    ],
+  },
+};
 
 describe('More facets content', () => {
   it('should render more facets template', async () => {
@@ -26,20 +50,6 @@ describe('More facets content', () => {
     await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector('.facets-loader')).to.exist;
-  });
-
-  it('should render more facets empty template', async () => {
-    const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content></more-facets-content>`
-    );
-
-    el.facetsLoading = false;
-    el.paginationSize = 0;
-    await el.updateComplete;
-
-    // expect(
-    //   el.shadowRoot?.querySelector('#more-facets-page')?.textContent
-    // ).to.contains('No result found. please try again later.');
   });
 
   it('should render pagination for more facets', async () => {
@@ -73,6 +83,45 @@ describe('More facets content', () => {
     await el.updateComplete;
 
     expect(searchService.searchParams?.query).to.equal('title:hello');
+  });
+
+  it('filter raw selectedFacets object', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+        .selectedFacets=${selectedFacetsGroup}
+      ></more-facets-content>`
+    );
+
+    el.facetKey = 'collection';
+    el.fullQuery = 'title:hello';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('title:hello');
+  });
+
+  it('combine selectedFacets and aggregationFacets and render on modal', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+        .selectedFacets=${selectedFacetsGroup}
+        .aggregations=${aggs}
+      ></more-facets-content>`
+    );
+
+    await el.updateComplete;
+
+    const facetGroup = el.facetGroup?.shift();
+    const bucket = facetGroup?.buckets[0];
+
+    expect(facetGroup?.key).to.equal('subject');
+    expect(facetGroup?.title).to.equal('Subject');
+    expect(bucket?.key).to.equal('foo');
+    expect(bucket?.count).to.equal(5);
   });
 
   it('page number clicked event', async () => {
