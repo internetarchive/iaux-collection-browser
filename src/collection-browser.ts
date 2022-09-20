@@ -828,7 +828,6 @@ export class CollectionBrowser
   }
 
   private get searchType(): SearchType {
-    console.log(this.searchTarget);
     return this.searchTarget === 'fulltext'
       ? SearchType.FULLTEXT
       : SearchType.METADATA;
