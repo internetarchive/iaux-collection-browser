@@ -18,6 +18,7 @@ import type {
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
+import { AggregationSortType } from '@internetarchive/search-service/dist/src/models/aggregation';
 import {
   SelectedFacets,
   FacetGroup,
@@ -121,7 +122,7 @@ export class MoreFacetsContent extends LitElement {
     };
 
     const results = await this.searchService?.search(params);
-    this.aggregations = results?.success?.response.aggregations as any;
+    this.aggregations = results?.success?.response.aggregations;
 
     this.facetGroup = this.aggregationFacetGroups;
     this.facetsLoading = false;
@@ -199,7 +200,7 @@ export class MoreFacetsContent extends LitElement {
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, data]) => {
-            let displayText = value;
+            let displayText: string = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
             if (option === 'language') {
@@ -233,30 +234,33 @@ export class MoreFacetsContent extends LitElement {
    */
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
-    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
+    Object.entries(this.aggregations ?? []).forEach(([key, aggregation]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
 
       const option = key as FacetOption;
       this.facetGroupTitle = facetTitles[option];
-      let castedBuckets = buckets.buckets as Bucket[];
-
-      // we are not showing fav- items in facets
-      castedBuckets = castedBuckets?.filter(
-        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
-      );
 
       // sort facets in specific order
-      castedBuckets = this.sortedFacets(castedBuckets) as Bucket[];
+      let castedBuckets = aggregation.getSortedBuckets(
+        this.sortedBy === 'alpha'
+          ? AggregationSortType.ALPHABETICAL
+          : AggregationSortType.COUNT
+      ) as Bucket[];
+
+      if (option === 'collection') {
+        // we are not showing fav- collection items in facets
+        castedBuckets = castedBuckets?.filter(
+          bucket => bucket?.key?.toString().startsWith('fav-') === false
+        );
+
+        // asynchronously load the collection name
+        this.preloadCollectionNames(castedBuckets);
+      }
 
       // find length and pagination size for modal pagination
       const { length } = Object.keys(castedBuckets as []);
       this.paginationSize = Math.ceil(length / this.facetsPerPage);
-
-      // asynchronously load the collection name
-      if (option === 'collection') {
-        this.preloadCollectionNames(castedBuckets);
-      }
 
       // render only items which will be visible as per this.facetsPerPage
       const bucketsMaxSix = castedBuckets?.slice(
