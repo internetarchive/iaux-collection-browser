@@ -268,24 +268,26 @@ export class AppRoot extends LitElement {
       this.searchService = {
         ...SearchService.default,
         async search(params) {
-          const result = await SearchService.default.search(params);
-          result.success?.response.docs.forEach(doc => {
-            const metadata = doc.rawMetadata;
+          const searchResponse = await SearchService.default.search(params);
+          searchResponse.success?.response.results.forEach(result => {
+            const metadata = result.rawMetadata;
             if (metadata) {
-              metadata.snippets = [
-                'this is a text {{{snippet}}} block with potentially',
-                'multiple {{{snippets}}} and such',
-                'but the {{{snippet}}} block may be quite long perhaps',
-                'depending on how many {{{snippet}}} matches there are',
-                'there may be multiple lines of {{{snippets}}} to show',
-                'but each {{{snippet}}} should be relatively short',
-                'and {{{snippets}}} are each a {{{snippet}}} of text',
-                'but every {{{snippet}}} might have multiple matches',
-                'the {{{snippets}}} should be separated and surrounded by ellipses',
-              ];
+              metadata.highlight = {
+                text: [
+                  'this is a text {{{snippet}}} block with potentially',
+                  'multiple {{{snippets}}} and such',
+                  'but the {{{snippet}}} block may be quite long perhaps',
+                  'depending on how many {{{snippet}}} matches there are',
+                  'there may be multiple lines of {{{snippets}}} to show',
+                  'but each {{{snippet}}} should be relatively short',
+                  'and {{{snippets}}} are each a {{{snippet}}} of text',
+                  'but every {{{snippet}}} might have multiple matches',
+                  'the {{{snippets}}} should be separated and surrounded by ellipses',
+                ],
+              };
             }
           });
-          return result;
+          return searchResponse;
         },
       };
     } else {

@@ -17,8 +17,8 @@ import type {
 } from '@internetarchive/infinite-scroller';
 import type {
   Aggregation,
-  Metadata,
   SearchParams,
+  SearchResult,
   SearchServiceInterface,
   SortDirection,
   SortParam,
@@ -909,7 +909,7 @@ export class CollectionBrowser
   private async fetchFacets() {
     if (!this.fullQuery) return;
 
-    const aggregations = {
+    /* const aggregations = {
       advancedParams: [
         {
           field: 'subjectSorter',
@@ -936,14 +936,15 @@ export class CollectionBrowser
           size: 50,
         },
       ],
-    };
+    }; */
 
     const params: SearchParams = {
       query: this.fullQuery,
       fields: ['identifier'],
-      aggregations,
-      rows: 1,
+      // aggregations, // get default aggregations
+      rows: 0,
     };
+
     this.facetsLoading = true;
     const results = await this.searchService?.search(params);
     this.facetsLoading = false;
@@ -994,7 +995,7 @@ export class CollectionBrowser
       query: this.fullQueryWithoutDate,
       fields: ['identifier'],
       aggregations,
-      rows: 1,
+      rows: 0,
     };
 
     this.fullYearAggregationLoading = true;
@@ -1053,7 +1054,7 @@ export class CollectionBrowser
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
-    const params = {
+    const params: SearchParams = {
       query: this.fullQuery,
       fields: [
         'addeddate',
@@ -1079,19 +1080,20 @@ export class CollectionBrowser
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
+      aggregations: { omit: true },
     };
-    const results = await this.searchService?.search(params);
-    const success = results?.success;
+    const searchResponse = await this.searchService?.search(params);
+    const success = searchResponse?.success;
 
     if (!success) return;
 
-    this.totalResults = success.response.numFound;
+    this.totalResults = success.response.totalResults;
 
     // this is checking to see if the query has changed since the data was fetched
     // if so, we just want to discard the data since there should be a new query
     // right behind it
-    const searchQuery = success.responseHeader.params.qin;
-    const searchSort = success.responseHeader.params.sort;
+    const searchQuery = success.request.clientParameters.user_query;
+    const searchSort = success.request.clientParameters.sort;
     let sortChanged = false;
     if (!searchSort) {
       // if we went from no sort to sort, the sort has changed
@@ -1100,15 +1102,14 @@ export class CollectionBrowser
       }
     } else {
       // check if the sort has changed
-      const split = searchSort.split(' ');
-      if (split.length > 1) {
-        const field = searchSort.split(' ')[0];
-        const direction = searchSort.split(' ')[1];
+      for (const sortType of searchSort) {
+        const [field, direction] = sortType.split(':');
         if (
           field !== this.sortParam?.field ||
           direction !== this.sortParam?.direction
         ) {
           sortChanged = true;
+          break;
         }
       }
     }
@@ -1116,12 +1117,12 @@ export class CollectionBrowser
       searchQuery !== this.fullQuery || sortChanged;
     if (queryChangedSinceFetch) return;
 
-    const { docs } = success.response;
-    if (docs && docs.length > 0) {
-      this.preloadCollectionNames(docs);
-      this.updateDataSource(pageNumber, docs);
+    const { results } = success.response;
+    if (results && results.length > 0) {
+      this.preloadCollectionNames(results);
+      this.updateDataSource(pageNumber, results);
     }
-    if (docs.length < this.pageSize) {
+    if (results.length < this.pageSize) {
       this.endOfDataReached = true;
       // this updates the infinite scroller to show the actual size
       if (this.infiniteScroller) {
@@ -1132,8 +1133,10 @@ export class CollectionBrowser
     this.searchResultsLoading = false;
   }
 
-  private preloadCollectionNames(docs: Metadata[]) {
-    const collectionIds = docs.map(doc => doc.collections_raw?.values).flat();
+  private preloadCollectionNames(results: SearchResult[]) {
+    const collectionIds = results
+      .map(result => result.collection?.values)
+      .flat();
     const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
   }
@@ -1158,25 +1161,25 @@ export class CollectionBrowser
    * Update the datasource from the fetch response
    *
    * @param pageNumber
-   * @param docs
+   * @param results
    */
-  private updateDataSource(pageNumber: number, docs: Metadata[]) {
+  private updateDataSource(pageNumber: number, results: SearchResult[]) {
     // copy our existing datasource so when we set it below, it gets set
     // instead of modifying the existing dataSource since object changes
     // don't trigger a re-render
     const datasource = { ...this.dataSource };
     const tiles: TileModel[] = [];
-    docs?.forEach(doc => {
-      if (!doc.identifier) return;
+    results?.forEach(result => {
+      if (!result.identifier) return;
 
       let loginRequired = false;
       let contentWarning = false;
       // Check if item and item in "modifying" collection, setting above flags
       if (
-        doc.collections_raw?.values.length &&
-        doc.mediatype?.value !== 'collection'
+        result.collection?.values.length &&
+        result.mediatype?.value !== 'collection'
       ) {
-        for (const collection of doc.collections_raw?.values) {
+        for (const collection of result.collection?.values) {
           if (collection === 'loggedin') {
             loginRequired = true;
             if (contentWarning) break;
@@ -1189,31 +1192,31 @@ export class CollectionBrowser
       }
 
       tiles.push({
-        averageRating: doc.avg_rating?.value,
-        collections: doc.collections_raw?.values ?? [],
-        commentCount: doc.num_reviews?.value ?? 0,
-        creator: doc.creator?.value,
-        creators: doc.creator?.values ?? [],
-        dateAdded: doc.addeddate?.value,
-        dateArchived: doc.publicdate?.value,
-        datePublished: doc.date?.value,
-        dateReviewed: doc.reviewdate?.value,
-        description: doc.description?.value,
-        favCount: doc.num_favorites?.value ?? 0,
-        identifier: doc.identifier,
-        issue: doc.issue?.value,
-        itemCount: doc.item_count?.value ?? 0,
-        mediatype: doc.mediatype?.value ?? 'data',
-        snippets: doc.snippets?.values ?? [],
-        source: doc.source?.value,
-        subjects: doc.subject?.values ?? [],
+        // averageRating: result.avg_rating?.value,
+        collections: result.collection?.values ?? [],
+        commentCount: result.num_reviews?.value ?? 0,
+        creator: result.creator?.value,
+        creators: result.creator?.values ?? [],
+        // dateAdded: result.addeddate?.value,
+        dateArchived: result.publicdate?.value,
+        datePublished: result.date?.value,
+        dateReviewed: result.reviewdate?.value,
+        description: result.description?.value,
+        favCount: result.num_favorites?.value ?? 0,
+        identifier: result.identifier,
+        // issue: result.issue?.value,
+        itemCount: 0, // result.item_count?.value ?? 0,
+        mediatype: result.mediatype?.value ?? 'data',
+        snippets: result.highlight?.values ?? [],
+        // source: result.source?.value,
+        subjects: result.subject?.values ?? [],
         title: this.etreeTitle(
-          doc.title?.value,
-          doc.mediatype?.value,
-          doc.collection?.values
+          result.title?.value,
+          result.mediatype?.value,
+          result.collection?.values
         ),
-        volume: doc.volume?.value,
-        viewCount: doc.downloads?.value ?? 0,
+        volume: result.volume?.value,
+        viewCount: result.downloads?.value ?? 0,
         loginRequired,
         contentWarning,
       });

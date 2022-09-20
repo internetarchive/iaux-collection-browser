@@ -2,7 +2,7 @@
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
-import type { Aggregation } from '@internetarchive/search-service';
+import { Aggregation } from '@internetarchive/search-service';
 import {
   ModalManager,
   ModalManagerInterface,
@@ -35,14 +35,14 @@ describe('Collection Facets', () => {
     );
 
     const aggs: Record<string, Aggregation> = {
-      'user_aggs__terms__field:subjectSorter__size:1': {
+      subject: new Aggregation({
         buckets: [
           {
             key: 'foo',
             doc_count: 5,
           },
         ],
-      },
+      }),
     };
 
     el.aggregations = aggs;
@@ -68,22 +68,22 @@ describe('Collection Facets', () => {
     );
 
     const aggs: Record<string, Aggregation> = {
-      'user_aggs__terms__field:subjectSorter__size:1': {
+      subject: new Aggregation({
         buckets: [
           {
             key: 'foo',
             doc_count: 5,
           },
         ],
-      },
-      'user_aggs__terms__field:mediatypeSorter__size:1': {
+      }),
+      mediatype: new Aggregation({
         buckets: [
           {
             key: 'bar',
             doc_count: 10,
           },
         ],
-      },
+      }),
     };
 
     el.aggregations = aggs;
@@ -99,14 +99,14 @@ describe('Collection Facets', () => {
     );
 
     const aggs: Record<string, Aggregation> = {
-      'user_aggs__terms__field:collection__size:1': {
+      collection: new Aggregation({
         buckets: [
           {
             key: 'foo',
             doc_count: 5,
           },
         ],
-      },
+      }),
     };
 
     el.aggregations = aggs;
@@ -127,14 +127,14 @@ describe('Collection Facets', () => {
     );
 
     const aggs: Record<string, Aggregation> = {
-      'user_aggs__terms__field:subjectSorter__size:1': {
+      subject: new Aggregation({
         buckets: [
           {
             key: 'foo',
             doc_count: 5,
           },
         ],
-      },
+      }),
     };
 
     el.aggregations = aggs;
@@ -154,6 +154,7 @@ describe('Collection Facets', () => {
         html`<collection-facets></collection-facets>`
       );
 
+<<<<<<< HEAD
       const aggs: Record<string, Aggregation> = {
         'user_aggs__terms__field:subjectSorter__size:1': {
           buckets: [
@@ -164,6 +165,18 @@ describe('Collection Facets', () => {
           ],
         },
       };
+=======
+    const aggs: Record<string, Aggregation> = {
+      subject: new Aggregation({
+        buckets: [
+          {
+            key: 'foo',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+>>>>>>> 578963b (Initial migration to new search service)
 
       el.aggregations = aggs;
       await el.updateComplete;

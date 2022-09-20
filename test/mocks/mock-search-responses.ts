@@ -1,6 +1,6 @@
 import type { Result } from '@internetarchive/result-type';
 import {
-  Metadata,
+  ItemHit,
   SearchResponse,
   SearchServiceError,
 } from '@internetarchive/search-service';
@@ -10,27 +10,32 @@ export const mockSuccessSingleResult: Result<
   SearchServiceError
 > = {
   success: {
+    request: {
+      clientParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+    },
     rawResponse: {},
     response: {
-      numFound: 1,
-      docs: [
-        new Metadata({
-          identifier: 'foo',
-          collections_raw: ['foo', 'bar'],
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            collection: ['foo', 'bar'],
+          },
         }),
       ],
-      start: 0,
     },
     responseHeader: {
-      status: 0,
-      QTime: 0,
-      params: {
-        query: 'collection:foo',
-        qin: 'collection:foo',
-        fields: 'identifier, collections_raw',
-        wt: 'foo',
-        start: 0,
-      },
+      succeeded: true,
+      query_time: 0,
     },
   },
 };
@@ -40,31 +45,38 @@ export const mockSuccessMultipleResults: Result<
   SearchServiceError
 > = {
   success: {
+    request: {
+      clientParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+    },
     rawResponse: {},
     response: {
-      numFound: 2,
-      docs: [
-        new Metadata({
-          identifier: 'foo',
-          collections_raw: ['foo', 'bar'],
+      totalResults: 2,
+      returnedCount: 2,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            collection: ['foo', 'bar'],
+          },
         }),
-        new Metadata({
-          identifier: 'bar',
-          collections_raw: ['baz', 'boop'],
+        new ItemHit({
+          fields: {
+            identifier: 'bar',
+            collection: ['baz', 'boop'],
+          },
         }),
       ],
-      start: 0,
     },
     responseHeader: {
-      status: 0,
-      QTime: 0,
-      params: {
-        query: 'collection:foo',
-        qin: 'collection:foo',
-        fields: 'identifier, collections_raw',
-        wt: 'foo',
-        start: 0,
-      },
+      succeeded: true,
+      query_time: 0,
     },
   },
 };

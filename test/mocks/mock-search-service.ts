@@ -1,6 +1,5 @@
 import type { Result } from '@internetarchive/result-type';
 import type {
-  MetadataResponse,
   SearchParams,
   SearchResponse,
   SearchServiceInterface,
@@ -24,20 +23,5 @@ export class MockSearchService implements SearchServiceInterface {
     }
 
     return mockSuccessMultipleResults;
-  }
-
-  async fetchMetadata(
-    identifier: string
-  ): Promise<Result<MetadataResponse, SearchServiceError>> {
-    console.debug('fetchMetadata', identifier);
-    throw new Error('Method not implemented.');
-  }
-
-  async fetchMetadataValue<T>(
-    identifier: string,
-    keypath: string
-  ): Promise<Result<T, SearchServiceError>> {
-    console.debug('fetchMetadataValue', identifier, keypath);
-    throw new Error('Method not implemented.');
   }
 }
