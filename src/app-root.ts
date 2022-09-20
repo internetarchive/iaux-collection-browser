@@ -14,6 +14,7 @@ import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manag
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
+import type { SearchTarget } from './models';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -41,6 +42,8 @@ export class AppRoot extends LitElement {
   @state() private colGap: number = 1.7;
 
   @state() private loggedIn: boolean = false;
+
+  @state() private searchTarget: SearchTarget = 'metadata';
 
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
@@ -127,6 +130,27 @@ export class AppRoot extends LitElement {
             ${JSON.stringify(this.latestAction, null, 2)}
           </pre
           >
+        </div>
+
+        <div id="search-targets">
+          Search target:
+          <input
+            type="radio"
+            id="metadata-search"
+            name="search-target"
+            value="metadata"
+            checked
+            @click=${this.searchTargetChanged}
+          />
+          <label for="metadata-search">Metadata</label>
+          <input
+            type="radio"
+            id="fulltext-search"
+            name="search-target"
+            value="fulltext"
+            @click=${this.searchTargetChanged}
+          />
+          <label for="fulltext-search">Full text</label>
         </div>
 
         <div id="cell-controls">
@@ -218,6 +242,7 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
+          .searchTarget=${this.searchTarget}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
@@ -235,6 +260,11 @@ export class AppRoot extends LitElement {
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>) {
     this.searchQuery = e.detail.baseQuery;
+  }
+
+  private searchTargetChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.searchTarget = target.value as SearchTarget;
   }
 
   private loginChanged(e: Event) {
