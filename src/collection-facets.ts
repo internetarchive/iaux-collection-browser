@@ -29,7 +29,6 @@ import {
   FacetBucket,
   facetDisplayOrder,
   facetTitles,
-  aggregationToFacetOption,
   SearchTarget,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
@@ -396,9 +395,7 @@ export class CollectionFacets extends LitElement {
     facetGroup: FacetGroup,
     sortedBy: string
   ): Promise<void> {
-    const facetAggrKey = Object.keys(aggregationToFacetOption).find(
-      value => aggregationToFacetOption[value] === facetGroup.key
-    );
+    const facetAggrKey = facetGroup.key;
 
     const customModalContent = html`
       <more-facets-content
