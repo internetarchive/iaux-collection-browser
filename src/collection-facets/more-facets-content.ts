@@ -26,7 +26,6 @@ import {
   facetTitles,
 } from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
-import { getFacetOptionFromKey } from './facets-util';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -242,7 +241,7 @@ export class MoreFacetsContent extends LitElement {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
 
-      const option = getFacetOptionFromKey(key);
+      const option = key as FacetOption;
       this.facetGroupTitle = facetTitles[option];
       let castedBuckets = buckets.buckets as Bucket[];
 
