@@ -1190,6 +1190,9 @@ export class CollectionBrowser
       }
 
       tiles.push({
+        // TODO the commented items are not currently being returned by the PPS and
+        // we will need to have them added to the PPS hit schemas where appropriate
+
         // averageRating: result.avg_rating?.value,
         collections: result.collection?.values ?? [],
         commentCount: result.num_reviews?.value ?? 0,
