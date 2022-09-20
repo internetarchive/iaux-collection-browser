@@ -2,7 +2,7 @@ import {
   AnalyticsEvent,
   AnalyticsManager,
 } from '@internetarchive/analytics-manager';
-import { SearchService } from '@internetarchive/search-service';
+import { SearchService, StringField } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -296,26 +296,25 @@ export class AppRoot extends LitElement {
       // Decorate the default search service with a wrapper that adds
       // dummy snippets to any successful searches
       this.searchService = {
-        ...SearchService.default,
-        async search(params) {
-          const searchResponse = await SearchService.default.search(params);
+        async search(params, searchType) {
+          const searchResponse = await SearchService.default.search(
+            params,
+            searchType
+          );
           searchResponse.success?.response.results.forEach(result => {
-            const metadata = result.rawMetadata;
-            if (metadata) {
-              metadata.highlight = {
-                text: [
-                  'this is a text {{{snippet}}} block with potentially',
-                  'multiple {{{snippets}}} and such',
-                  'but the {{{snippet}}} block may be quite long perhaps',
-                  'depending on how many {{{snippet}}} matches there are',
-                  'there may be multiple lines of {{{snippets}}} to show',
-                  'but each {{{snippet}}} should be relatively short',
-                  'and {{{snippets}}} are each a {{{snippet}}} of text',
-                  'but every {{{snippet}}} might have multiple matches',
-                  'the {{{snippets}}} should be separated and surrounded by ellipses',
-                ],
-              };
-            }
+            Object.defineProperty(result, 'highlight', {
+              value: new StringField([
+                'this is a text {{{snippet}}} block with potentially',
+                'multiple {{{snippets}}} and such',
+                'but the {{{snippet}}} block may be quite long perhaps',
+                'depending on how many {{{snippet}}} matches there are',
+                'there may be multiple lines of {{{snippets}}} to show',
+                'but each {{{snippet}}} should be relatively short',
+                'and {{{snippets}}} are each a {{{snippet}}} of text',
+                'but every {{{snippet}}} might have multiple matches',
+                'the {{{snippets}}} should be separated and surrounded by ellipses',
+              ]),
+            });
           });
           return searchResponse;
         },
