@@ -3,6 +3,7 @@ import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
+import { SearchType } from '@internetarchive/search-service';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
@@ -177,6 +178,48 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+    ).to.contains('Results');
+  });
+
+  it('queries the search service with a metadata search', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser
+        .searchService=${searchService}
+        searchTarget="metadata"
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchType).to.equal(SearchType.METADATA);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+    ).to.contains('Results');
+  });
+
+  it('queries the search service with a fulltext search', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser
+        .searchService=${searchService}
+        searchTarget="fulltext"
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
     ).to.contains('Results');
