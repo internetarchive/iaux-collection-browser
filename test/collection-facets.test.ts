@@ -154,29 +154,16 @@ describe('Collection Facets', () => {
         html`<collection-facets></collection-facets>`
       );
 
-<<<<<<< HEAD
       const aggs: Record<string, Aggregation> = {
-        'user_aggs__terms__field:subjectSorter__size:1': {
+        subject: new Aggregation({
           buckets: [
             {
               key: 'foo',
               doc_count: 5,
             },
           ],
-        },
+        }),
       };
-=======
-    const aggs: Record<string, Aggregation> = {
-      subject: new Aggregation({
-        buckets: [
-          {
-            key: 'foo',
-            doc_count: 5,
-          },
-        ],
-      }),
-    };
->>>>>>> 578963b (Initial migration to new search service)
 
       el.aggregations = aggs;
       await el.updateComplete;
@@ -184,6 +171,7 @@ describe('Collection Facets', () => {
       const moreLink = el.shadowRoot?.querySelector('.more-link');
       expect(moreLink).to.be.null;
     });
+
     it('Render More Facets', async () => {
       const el = await fixture<CollectionFacets>(
         html`<collection-facets
@@ -192,7 +180,7 @@ describe('Collection Facets', () => {
       );
 
       const aggs: Record<string, Aggregation> = {
-        'user_aggs__terms__field:subjectSorter__size:1': {
+        subject: new Aggregation({
           buckets: [
             {
               key: 'foo',
@@ -223,7 +211,7 @@ describe('Collection Facets', () => {
               doc_count: 5,
             },
           ],
-        },
+        }),
       };
 
       el.aggregations = aggs;

@@ -29,6 +29,8 @@ import {
   FacetBucket,
   facetTitles,
   aggregationToFacetOption,
+  facetDisplayOrder,
+  defaultSelectedFacets,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';

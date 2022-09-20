@@ -1179,7 +1179,7 @@ export class CollectionBrowser
         result.collection?.values.length &&
         result.mediatype?.value !== 'collection'
       ) {
-        for (const collection of result.collection?.values) {
+        for (const collection of result.collection?.values ?? []) {
           if (collection === 'loggedin') {
             loginRequired = true;
             if (contentWarning) break;
