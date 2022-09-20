@@ -940,7 +940,6 @@ export class CollectionBrowser
 
     const params: SearchParams = {
       query: this.fullQuery,
-      fields: ['identifier'],
       // aggregations, // get default aggregations
       rows: 0,
     };
@@ -993,7 +992,6 @@ export class CollectionBrowser
 
     const params = {
       query: this.fullQueryWithoutDate,
-      fields: ['identifier'],
       aggregations,
       rows: 0,
     };

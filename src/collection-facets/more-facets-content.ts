@@ -109,19 +109,15 @@ export class MoreFacetsContent extends LitElement {
    */
   async updateSpecificFacets(): Promise<void> {
     const aggregations = {
-      advancedParams: [
-        {
-          field: this.facetAggregationKey as string,
-          size: 65535, // todo - do we want to have all the records at once?
-        },
-      ],
+      simpleParams: [this.facetAggregationKey as string],
     };
+    const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
     const params: SearchParams = {
       query: this.fullQuery as string,
-      fields: ['identifier'],
       aggregations,
-      rows: 1, // todo - do we want server-side pagination with offset/page/limit flag?
+      aggregationsSize,
+      rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
     const results = await this.searchService?.search(params);
