@@ -30,6 +30,7 @@ import {
   facetDisplayOrder,
   facetTitles,
   aggregationToFacetOption,
+  SearchTarget,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
@@ -38,6 +39,8 @@ import './collection-facets/facets-template';
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
+
+  @property({ type: String }) searchTarget?: SearchTarget;
 
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
@@ -404,6 +407,7 @@ export class CollectionFacets extends LitElement {
         .fullQuery=${this.fullQuery}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
+        .searchTarget=${this.searchTarget}
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}

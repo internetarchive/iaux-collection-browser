@@ -15,11 +15,12 @@ import type {
   InfiniteScroller,
   InfiniteScrollerCellProviderInterface,
 } from '@internetarchive/infinite-scroller';
-import type {
+import {
   Aggregation,
   SearchParams,
   SearchResult,
   SearchServiceInterface,
+  SearchType,
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
@@ -45,6 +46,7 @@ import {
   TileModel,
   CollectionDisplayMode,
   FacetOption,
+  SearchTarget,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -73,6 +75,8 @@ export class CollectionBrowser
   @property({ type: String }) baseImageUrl: string = 'https://archive.org';
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
+
+  @property({ type: String }) searchTarget: SearchTarget = 'metadata';
 
   @property({ type: String }) baseQuery?: string;
 
@@ -511,6 +515,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .searchService=${this.searchService}
+        .searchTarget=${this.searchTarget}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -822,6 +827,13 @@ export class CollectionBrowser
     this.searchResultsLoading = false;
   }
 
+  private get searchType(): SearchType {
+    console.log(this.searchTarget);
+    return this.searchTarget === 'fulltext'
+      ? SearchType.FULLTEXT
+      : SearchType.METADATA;
+  }
+
   private get fullQuery(): string | undefined {
     let { fullQueryWithoutDate } = this;
     const { dateRangeQueryClause } = this;
@@ -945,7 +957,7 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
-    const results = await this.searchService?.search(params);
+    const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
     this.aggregations = results?.success?.response.aggregations;
@@ -997,7 +1009,7 @@ export class CollectionBrowser
     };
 
     this.fullYearAggregationLoading = true;
-    const results = await this.searchService?.search(params);
+    const results = await this.searchService?.search(params, this.searchType);
     this.fullYearAggregationLoading = false;
 
     this.fullYearsHistogramAggregation =
@@ -1080,7 +1092,10 @@ export class CollectionBrowser
       sort: sortParams,
       aggregations: { omit: true },
     };
-    const searchResponse = await this.searchService?.search(params);
+    const searchResponse = await this.searchService?.search(
+      params,
+      this.searchType
+    );
     const success = searchResponse?.success;
 
     if (!success) return;

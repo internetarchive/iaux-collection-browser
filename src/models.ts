@@ -151,6 +151,8 @@ export type SelectedFacets = Record<
   Record<FacetValue, FacetBucket>
 >;
 
+export type SearchTarget = 'metadata' | 'fulltext';
+
 export const defaultSelectedFacets: SelectedFacets = {
   subject: {},
   mediatype: {},
