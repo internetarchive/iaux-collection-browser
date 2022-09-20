@@ -265,6 +265,9 @@ export class AppRoot extends LitElement {
   private searchTargetChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.searchTarget = target.value as SearchTarget;
+
+    // Re-perform the current search with the new search target
+    this.reperformCurrentSearch();
   }
 
   private loginChanged(e: Event) {
@@ -325,6 +328,10 @@ export class AppRoot extends LitElement {
     }
 
     // Re-perform the current search to show/hide the snippets immediately
+    this.reperformCurrentSearch();
+  }
+
+  private async reperformCurrentSearch(): Promise<void> {
     const oldQuery = this.searchQuery;
     this.searchQuery = ''; // Should just reset to the placeholder
     await this.updateComplete;
