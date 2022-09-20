@@ -923,7 +923,8 @@ export class CollectionBrowser
     const params: SearchParams = {
       query: this.fullQuery,
       rows: 0,
-      // Note: we don't need an aggregations param to fetch the default aggregations from the PPS
+      // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
+      // The default aggregations for the search_results page type should be what we need here.
     };
 
     this.facetsLoading = true;
