@@ -1107,7 +1107,7 @@ export class CollectionBrowser
     const searchQuery = success.request.clientParameters.user_query;
     const searchSort = success.request.clientParameters.sort;
     let sortChanged = false;
-    if (!searchSort) {
+    if (!searchSort || searchSort.length === 0) {
       // if we went from no sort to sort, the sort has changed
       if (this.sortParam) {
         sortChanged = true;
