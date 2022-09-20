@@ -920,39 +920,10 @@ export class CollectionBrowser
   private async fetchFacets() {
     if (!this.fullQuery) return;
 
-    /* const aggregations = {
-      advancedParams: [
-        {
-          field: 'subjectSorter',
-          size: 6,
-        },
-        {
-          field: 'mediatypeSorter',
-          size: 6,
-        },
-        {
-          field: 'languageSorter',
-          size: 6,
-        },
-        {
-          field: 'creatorSorter',
-          size: 6,
-        },
-        {
-          field: 'collection',
-          size: 12,
-        },
-        {
-          field: 'year',
-          size: 50,
-        },
-      ],
-    }; */
-
     const params: SearchParams = {
       query: this.fullQuery,
-      // aggregations, // get default aggregations
       rows: 0,
+      // Note: we don't need an aggregations param to fetch the default aggregations from the PPS
     };
 
     this.facetsLoading = true;
