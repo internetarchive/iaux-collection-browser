@@ -16,10 +16,10 @@ import {
   SearchServiceInterface,
   SearchParams,
   SearchType,
+  AggregationSortType,
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
-import { AggregationSortType } from '@internetarchive/search-service/dist/src/models/aggregation';
 import {
   SelectedFacets,
   FacetGroup,
