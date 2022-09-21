@@ -248,6 +248,81 @@ describe('Collection Browser', () => {
     ]);
   });
 
+  it('discards obsolete search results if sort params changed before arrival', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser
+        .searchService=${searchService}
+        .sortParam=${{ field: 'foo', direction: 'asc' }}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'with-sort';
+    await el.updateComplete;
+
+    const fetchPromise = el.fetchPage(2);
+    el.sortParam = { field: 'foo', direction: 'desc' };
+    await fetchPromise;
+
+    // If the different sort param causes the results to be discarded,
+    // the results array should never be read.
+    expect(resultsSpy.callCount).to.equal(0);
+  });
+
+  it('discards obsolete search results if sort param added before arrival', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'single-result';
+    await el.updateComplete;
+
+    const fetchPromise = el.fetchPage(2);
+    el.sortParam = { field: 'foo', direction: 'asc' };
+    await fetchPromise;
+
+    // If the different sort param causes the results to be discarded,
+    // the results array should never be read.
+    expect(resultsSpy.callCount).to.equal(0);
+  });
+
+  it('discards obsolete search results if sort param cleared before arrival', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'with-sort';
+    await el.updateComplete;
+
+    const fetchPromise = el.fetchPage(2);
+    el.sortParam = null;
+    await fetchPromise;
+
+    // If the different sort param causes the results to be discarded,
+    // the results array should never be read.
+    expect(resultsSpy.callCount).to.equal(0);
+  });
+
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();

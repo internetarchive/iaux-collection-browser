@@ -40,6 +40,43 @@ export const mockSuccessSingleResult: Result<
   },
 };
 
+export const getMockSuccessSingleResultWithSort: (
+  resultsSpy: Function
+) => Result<SearchResponse, SearchServiceError> = (resultsSpy: Function) => ({
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'with-sort',
+        sort: ['foo:asc'],
+      },
+      finalizedParameters: {
+        user_query: 'with-sort',
+        sort: ['foo:asc'],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      get results() {
+        resultsSpy();
+        return [
+          new ItemHit({
+            fields: {
+              identifier: 'foo',
+              collection: ['foo', 'bar'],
+            },
+          }),
+        ];
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const mockSuccessMultipleResults: Result<
   SearchResponse,
   SearchServiceError
