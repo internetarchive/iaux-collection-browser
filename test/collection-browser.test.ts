@@ -256,7 +256,7 @@ describe('Collection Browser', () => {
     });
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser .searchService=${searchService}>
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -279,7 +279,7 @@ describe('Collection Browser', () => {
     });
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser .searchService=${searchService}>
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -304,7 +304,7 @@ describe('Collection Browser', () => {
     });
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser .searchService=${searchService}>
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -328,7 +328,7 @@ describe('Collection Browser', () => {
     });
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser .searchService=${searchService}>
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -342,6 +342,59 @@ describe('Collection Browser', () => {
     // If the different sort param causes the results to be discarded,
     // the results array should never be read.
     expect(resultsSpy.callCount).to.equal(0);
+  });
+
+  it('sets sort properties when user changes sort', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    expect(el.selectedSort).to.equal(SortField.relevance);
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+
+    const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
+    const sortSelector = sortBar?.shadowRoot?.querySelector(
+      '#desktop-sort-selector'
+    );
+    expect(sortSelector).to.exist;
+
+    // Click the title sorter
+    [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
+      .find(child => child.textContent?.trim() === 'Title')
+      ?.querySelector('a[href]')
+      ?.click();
+
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal(SortField.title);
+  });
+
+  it('scrolls to page', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    const infiniteScroller = el.shadowRoot?.querySelector(
+      'infinite-scroller'
+    ) as InfiniteScroller;
+    expect(infiniteScroller).to.exist;
+
+    const oldScrollToCell = infiniteScroller.scrollToCell;
+    const spy = sinon.spy();
+    infiniteScroller.scrollToCell = spy;
+
+    el.goToPage(1);
+
+    // Give it a second to scroll
+    await new Promise(res => {
+      setTimeout(res, 1000);
+    });
+
+    expect(spy.callCount).to.equal(1);
+
+    infiniteScroller.scrollToCell = oldScrollToCell;
   });
 
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
