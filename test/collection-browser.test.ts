@@ -248,6 +248,29 @@ describe('Collection Browser', () => {
     ]);
   });
 
+  it('keeps search results from fetch if no change to query or sort param', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'with-sort';
+    el.sortParam = { field: 'foo', direction: 'asc' };
+    await el.updateComplete;
+
+    await el.fetchPage(2);
+
+    // If there is no change to the query or sort param during the fetch, the results
+    // should be read.
+    expect(resultsSpy.callCount).to.be.greaterThanOrEqual(1);
+  });
+
   it('discards obsolete search results if sort params changed before arrival', async () => {
     const resultsSpy = sinon.spy();
     const searchService = new MockSearchService({
@@ -256,14 +279,12 @@ describe('Collection Browser', () => {
     });
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser
-        .searchService=${searchService}
-        .sortParam=${{ field: 'foo', direction: 'asc' }}
-      >
+      html` <collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
     el.baseQuery = 'with-sort';
+    el.sortParam = { field: 'foo', direction: 'asc' };
     await el.updateComplete;
 
     const fetchPromise = el.fetchPage(2);
