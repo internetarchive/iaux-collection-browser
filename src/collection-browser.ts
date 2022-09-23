@@ -46,7 +46,6 @@ import {
   TileModel,
   CollectionDisplayMode,
   FacetOption,
-  SearchTarget,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -76,7 +75,7 @@ export class CollectionBrowser
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
-  @property({ type: String }) searchTarget: SearchTarget = 'metadata';
+  @property({ type: String }) searchType: SearchType = SearchType.METADATA;
 
   @property({ type: String }) baseQuery?: string;
 
@@ -515,7 +514,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .searchService=${this.searchService}
-        .searchTarget=${this.searchTarget}
+        .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
@@ -825,12 +824,6 @@ export class CollectionBrowser
     this.searchResultsLoading = true;
     await this.fetchPage(this.initialPageNumber);
     this.searchResultsLoading = false;
-  }
-
-  private get searchType(): SearchType {
-    return this.searchTarget === 'fulltext'
-      ? SearchType.FULLTEXT
-      : SearchType.METADATA;
   }
 
   private get fullQuery(): string | undefined {

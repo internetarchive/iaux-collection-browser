@@ -189,7 +189,7 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html` <collection-browser
         .searchService=${searchService}
-        searchTarget="metadata"
+        .searchType=${SearchType.METADATA}
       >
       </collection-browser>`
     );
@@ -210,7 +210,7 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html` <collection-browser
         .searchService=${searchService}
-        searchTarget="fulltext"
+        .searchType=${SearchType.FULLTEXT}
       >
       </collection-browser>`
     );

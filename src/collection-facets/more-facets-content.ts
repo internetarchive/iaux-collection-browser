@@ -26,7 +26,6 @@ import {
   FacetBucket,
   FacetOption,
   facetTitles,
-  SearchTarget,
 } from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
@@ -45,7 +44,7 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
-  @property({ type: String }) searchTarget?: SearchTarget;
+  @property({ type: String }) searchType?: SearchType;
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
@@ -125,12 +124,7 @@ export class MoreFacetsContent extends LitElement {
       rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
-    const results = await this.searchService?.search(
-      params,
-      this.searchTarget === 'fulltext'
-        ? SearchType.FULLTEXT
-        : SearchType.METADATA
-    );
+    const results = await this.searchService?.search(params, this.searchType);
     this.aggregations = results?.success?.response.aggregations;
 
     this.facetGroup = this.aggregationFacetGroups;

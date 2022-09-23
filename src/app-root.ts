@@ -2,7 +2,11 @@ import {
   AnalyticsEvent,
   AnalyticsManager,
 } from '@internetarchive/analytics-manager';
-import { SearchService, StringField } from '@internetarchive/search-service';
+import {
+  SearchService,
+  SearchType,
+  StringField,
+} from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -14,7 +18,6 @@ import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manag
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
-import type { SearchTarget } from './models';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -43,7 +46,7 @@ export class AppRoot extends LitElement {
 
   @state() private loggedIn: boolean = false;
 
-  @state() private searchTarget: SearchTarget = 'metadata';
+  @state() private searchType: SearchType = SearchType.METADATA;
 
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
@@ -132,23 +135,23 @@ export class AppRoot extends LitElement {
           >
         </div>
 
-        <div id="search-targets">
-          Search target:
+        <div id="search-types">
+          Search type:
           <input
             type="radio"
             id="metadata-search"
-            name="search-target"
+            name="search-type"
             value="metadata"
             checked
-            @click=${this.searchTargetChanged}
+            @click=${this.searchTypeChanged}
           />
           <label for="metadata-search">Metadata</label>
           <input
             type="radio"
             id="fulltext-search"
-            name="search-target"
+            name="search-type"
             value="fulltext"
-            @click=${this.searchTargetChanged}
+            @click=${this.searchTypeChanged}
           />
           <label for="fulltext-search">Full text</label>
         </div>
@@ -242,7 +245,7 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
-          .searchTarget=${this.searchTarget}
+          .searchType=${this.searchType}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
@@ -262,9 +265,10 @@ export class AppRoot extends LitElement {
     this.searchQuery = e.detail.baseQuery;
   }
 
-  private searchTargetChanged(e: Event) {
+  private searchTypeChanged(e: Event) {
     const target = e.target as HTMLInputElement;
-    this.searchTarget = target.value as SearchTarget;
+    this.searchType =
+      target.value === 'fulltext' ? SearchType.FULLTEXT : SearchType.METADATA;
 
     // Re-perform the current search with the new search target
     this.reperformCurrentSearch();

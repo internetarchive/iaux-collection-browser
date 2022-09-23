@@ -12,6 +12,7 @@ import type {
   Aggregation,
   Bucket,
   SearchServiceInterface,
+  SearchType,
 } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
@@ -29,7 +30,6 @@ import {
   FacetBucket,
   facetDisplayOrder,
   facetTitles,
-  SearchTarget,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
@@ -39,7 +39,7 @@ import './collection-facets/facets-template';
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
-  @property({ type: String }) searchTarget?: SearchTarget;
+  @property({ type: String }) searchType?: SearchType;
 
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
@@ -404,7 +404,7 @@ export class CollectionFacets extends LitElement {
         .fullQuery=${this.fullQuery}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
-        .searchTarget=${this.searchTarget}
+        .searchType=${this.searchType}
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}
