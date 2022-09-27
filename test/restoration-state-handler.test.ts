@@ -2,8 +2,6 @@
 import { expect } from '@open-wc/testing';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 
-import '../src/tiles/grid/tile-stats';
-
 describe('Restoration state handler', () => {
   it('should restore query from URL', async () => {
     const handler = new RestorationStateHandler({ context: 'search' });
