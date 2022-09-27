@@ -218,7 +218,7 @@ export class FacetsTemplate extends LitElement {
         margin-right: 5px;
       }
       .facet-checkbox input {
-        height: 15px;
+        height: inherit;
         width: 15px;
         margin: 0;
       }
@@ -227,6 +227,12 @@ export class FacetsTemplate extends LitElement {
         font-weight: 500;
         font-size: 1.2rem;
         margin: 2.5px auto;
+        height: 15px;
+        border-top: var(--facet-row-border-top, none);
+        border-bottom: var(--facet-row-border-bottom, none);
+      }
+      .facet-row > * {
+        height: inherit;
       }
       .facet-info-display {
         display: flex;
@@ -251,10 +257,11 @@ export class FacetsTemplate extends LitElement {
       }
       .hide-facet-icon {
         width: 15px;
-        height: 15px;
+        height: inherit;
         cursor: pointer;
         opacity: 0.3;
         display: inline-block;
+        margin-top: -1px;
       }
       .hide-facet-icon:hover,
       .active {
