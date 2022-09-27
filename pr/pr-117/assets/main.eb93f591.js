@@ -3095,7 +3095,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin-right: 5px;
       }
       .facet-checkbox input {
-        height: inherit;
+        height: 15px;
         width: 15px;
         margin: 0;
       }
@@ -3131,11 +3131,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       .hide-facet-icon {
         width: 15px;
-        height: inherit;
+        height: 15px;
         cursor: pointer;
         opacity: 0.3;
         display: inline-block;
-        margin-top: -1px;
       }
       .hide-facet-icon:hover,
       .active {
@@ -3223,7 +3222,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       .scrollable-content {
         overflow-y: auto;
-        max-height: 65vh;
+        max-height: 60vh;
       }
       .facets-content {
         font-size: 1.2rem;
