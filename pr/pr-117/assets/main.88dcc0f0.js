@@ -3089,7 +3089,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       .facet-checkbox {
         margin: 0 5px 0 0;
         display: flex;
-        align-items: center;
       }
       .facet-checkbox input:first-child {
         margin-right: 5px;
