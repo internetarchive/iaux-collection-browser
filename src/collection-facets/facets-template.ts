@@ -213,6 +213,7 @@ export class FacetsTemplate extends LitElement {
       .facet-checkbox {
         margin: 0 5px 0 0;
         display: flex;
+        height: 15px;
       }
       .facet-checkbox input:first-child {
         margin-right: 5px;
@@ -227,12 +228,9 @@ export class FacetsTemplate extends LitElement {
         font-weight: 500;
         font-size: 1.2rem;
         margin: 2.5px auto;
-        height: 15px;
+        height: auto;
         border-top: var(--facet-row-border-top, none);
         border-bottom: var(--facet-row-border-bottom, none);
-      }
-      .facet-row > * {
-        height: inherit;
       }
       .facet-info-display {
         display: flex;
