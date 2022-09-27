@@ -426,8 +426,7 @@ export class AppRoot extends LitElement {
 
     modal-manager.showFacetGroupOutlines,
     collection-browser.showFacetGroupOutlines {
-      --facet-row-border-top: 1px solid red;
-      --facet-row-border-bottom: 1px solid blue;
+      --facet-row-border-bottom: 1px solid lightgray;
     }
 
     #base-query-field {
