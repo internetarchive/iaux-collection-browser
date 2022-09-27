@@ -198,9 +198,6 @@ export class FacetsTemplate extends LitElement {
         column-width: 25rem;
         column-gap: 15px;
       }
-      .facets-on-page .select-facet-checkbox {
-        margin-left: 0;
-      }
       async-collection-name {
         display: contents;
       }
@@ -215,20 +212,28 @@ export class FacetsTemplate extends LitElement {
       }
       .facet-checkbox {
         margin: 0 5px 0 0;
-        display: inline-block;
-        align-items: baseline;
+        display: flex;
+        align-items: center;
+      }
+      .facet-checkbox input:first-child {
+        margin-right: 5px;
+      }
+      .facet-checkbox input {
+        height: 15px;
+        width: 15px;
+        margin: 0;
       }
       .facet-row {
         display: flex;
         font-weight: 500;
         font-size: 1.2rem;
+        margin: 2.5px auto;
       }
       .facet-info-display {
         display: flex;
         flex: 1 1 0%;
         cursor: pointer;
         flex-wrap: wrap;
-        align-content: center;
       }
       .facet-title {
         word-break: break-word;
