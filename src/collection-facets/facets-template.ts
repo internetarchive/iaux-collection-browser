@@ -213,7 +213,6 @@ export class FacetsTemplate extends LitElement {
       .facet-checkbox {
         margin: 0 5px 0 0;
         display: flex;
-        align-items: center;
       }
       .facet-checkbox input:first-child {
         margin-right: 5px;
