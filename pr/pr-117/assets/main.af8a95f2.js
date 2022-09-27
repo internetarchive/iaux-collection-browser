@@ -3094,7 +3094,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin-right: 5px;
       }
       .facet-checkbox input {
-        height: 15px;
+        height: inherit;
         width: 15px;
         margin: 0;
       }
@@ -3103,6 +3103,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         font-weight: 500;
         font-size: 1.2rem;
         margin: 2.5px auto;
+        height: 15px;
+        border-top: var(--facet-row-border-top, none);
+        border-bottom: var(--facet-row-border-bottom, none);
+      }
+      .facet-row > * {
+        height: inherit;
       }
       .facet-info-display {
         display: flex;
@@ -3127,10 +3133,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       .hide-facet-icon {
         width: 15px;
-        height: 15px;
+        height: inherit;
         cursor: pointer;
         opacity: 0.3;
         display: inline-block;
+        margin-top: -1px;
       }
       .hide-facet-icon:hover,
       .active {
@@ -3865,34 +3872,42 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
   `;n([p({type:String})],M.prototype,"baseNavigationUrl",void 0);n([p({type:String})],M.prototype,"baseImageUrl",void 0);n([p({type:Object})],M.prototype,"searchService",void 0);n([p({type:String})],M.prototype,"baseQuery",void 0);n([p({type:String})],M.prototype,"displayMode",void 0);n([p({type:Object})],M.prototype,"sortParam",void 0);n([p({type:String})],M.prototype,"selectedSort",void 0);n([p({type:String})],M.prototype,"selectedTitleFilter",void 0);n([p({type:String})],M.prototype,"selectedCreatorFilter",void 0);n([p({type:String})],M.prototype,"sortDirection",void 0);n([p({type:String})],M.prototype,"dateRangeQueryClause",void 0);n([p({type:Number})],M.prototype,"pageSize",void 0);n([p({type:Object})],M.prototype,"resizeObserver",void 0);n([p({type:String})],M.prototype,"titleQuery",void 0);n([p({type:String})],M.prototype,"creatorQuery",void 0);n([p({type:Number})],M.prototype,"currentPage",void 0);n([p({type:String})],M.prototype,"minSelectedDate",void 0);n([p({type:String})],M.prototype,"maxSelectedDate",void 0);n([p({type:Object})],M.prototype,"selectedFacets",void 0);n([p({type:Boolean})],M.prototype,"showHistogramDatePicker",void 0);n([p({type:String,reflect:!0})],M.prototype,"searchContext",void 0);n([p({type:Object})],M.prototype,"collectionNameCache",void 0);n([p({type:String})],M.prototype,"pageContext",void 0);n([p({type:Object})],M.prototype,"restorationStateHandler",void 0);n([p({type:Number})],M.prototype,"mobileBreakpoint",void 0);n([p({type:Boolean})],M.prototype,"loggedIn",void 0);n([p({type:Object})],M.prototype,"modalManager",void 0);n([p({type:Boolean})],M.prototype,"isManageView",void 0);n([z()],M.prototype,"pagesToRender",void 0);n([z()],M.prototype,"searchResultsLoading",void 0);n([z()],M.prototype,"facetsLoading",void 0);n([z()],M.prototype,"fullYearAggregationLoading",void 0);n([z()],M.prototype,"aggregations",void 0);n([z()],M.prototype,"fullYearsHistogramAggregation",void 0);n([z()],M.prototype,"totalResults",void 0);n([z()],M.prototype,"mobileView",void 0);n([z()],M.prototype,"mobileFacetsVisible",void 0);n([z()],M.prototype,"placeholderType",void 0);n([oe("#content-container")],M.prototype,"contentContainer",void 0);n([p({type:Object,attribute:!1})],M.prototype,"analyticsHandler",void 0);n([oe("infinite-scroller")],M.prototype,"infiniteScroller",void 0);M=n([P("collection-browser")],M);let re=class extends O{constructor(){super(...arguments),this.searchService=mt.default,this.resizeObserver=new ls,this.localCache=new Jo,this.collectionNameCache=new ds({searchService:this.searchService,localCache:this.localCache}),this.cellWidth=18,this.cellHeight=29,this.rowGap=1.7,this.colGap=1.7,this.loggedIn=!1,this.analyticsManager=new Lo,this.analyticsHandler={sendPing:this.sendAnalytics.bind(this),sendEvent:this.sendAnalytics.bind(this),sendEventNoSampling:this.sendAnalytics.bind(this)}}sendAnalytics(e){var t;console.log("Analytics Received ----",e),this.latestAction=e,(t=this.analyticsManager)===null||t===void 0||t.sendEventNoSampling(e)}searchPressed(e){var t,i;e.preventDefault(),this.searchQuery=this.baseQueryField.value,((t=this.currentPage)!==null&&t!==void 0?t:1)>1&&this.collectionBrowser.goToPage((i=this.currentPage)!==null&&i!==void 0?i:1)}changePagePressed(e){e.preventDefault(),this.currentPage=this.pageNumberInput.valueAsNumber,this.collectionBrowser.goToPage(this.currentPage)}updated(e){e.has("currentPage")&&this.currentPage&&(this.pageNumberInput.value=this.currentPage.toString()),e.has("searchQuery")&&this.queryUpdated()}queryUpdated(){this.collectionBrowser.baseQuery=this.searchQuery}render(){var e;return m`
       <div id="dev-tools">
-        <form @submit=${this.searchPressed}>
-          Query:
-          <input
-            type="text"
-            id="base-query-field"
-            .value=${(e=this.searchQuery)!==null&&e!==void 0?e:""}
-          />
-          <input type="submit" value="Search" />
-        </form>
-
-        <form @submit=${this.changePagePressed}>
-          Page: <input type="number" value="1" id="page-number-input" />
-          <input type="submit" value="Go" />
-        </form>
-
-        <div id="last-event">
+        <div id="search-and-page-inputs">
+          <form @submit=${this.searchPressed}>
+            Query:
+            <input
+              type="text"
+              id="base-query-field"
+              .value=${(e=this.searchQuery)!==null&&e!==void 0?e:""}
+            />
+            <input type="submit" value="Search" />
+          </form>
+          <form @submit=${this.changePagePressed}>
+            Page: <input type="number" value="1" id="page-number-input" />
+            <input type="submit" value="Go" />
+          </form>
+        </div>
+        <div id="toggle-controls">
+          <button
+            @click=${()=>{var t,i;const a=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("cell-size-control");a==null||a.classList.toggle("hidden");const o=(i=this.shadowRoot)===null||i===void 0?void 0:i.getElementById("cell-gap-control");o==null||o.classList.toggle("hidden")}}
+          >
+            Toggle Cell Controls
+          </button>
           <button
             @click=${()=>{var t;const i=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("latest-event-details");i==null||i.classList.toggle("hidden")}}
           >
             Last Event Captured
           </button>
+        </div>
+
+        <div id="last-event">
           <pre id="latest-event-details" class="hidden">
             ${JSON.stringify(this.latestAction,null,2)}
           </pre
           >
         </div>
 
-        <div id="cell-controls">
+        <div id="cell-controls" class="hidden">
           <div id="cell-size-control">
             <div>
               <label for="cell-width-slider">Minimum cell width:</label>
@@ -3926,6 +3941,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 type="checkbox"
                 id="show-outline-check"
                 @click=${this.outlineChanged}
+              />
+            </div>
+            <div>
+              <label for="show-facet-group-outline-check"
+                >Show Facet Group Outlines:</label
+              >
+              <input
+                type="checkbox"
+                id="show-facet-group-outline-check"
+                @click=${this.toggleFacetGroupOutline}
               />
             </div>
             <div>
@@ -3993,7 +4018,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
-    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}async snippetsChanged(e){e.target.checked?this.searchService=je(ce({},mt.default),{async search(a){var o;const s=await mt.default.search(a);return(o=s.success)===null||o===void 0||o.response.docs.forEach(l=>{const d=l.rawMetadata;d&&(d.snippets=["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])}),s}}):this.searchService=mt.default;const i=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(a=>{setTimeout(a,0)}),this.searchQuery=i}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};re.styles=g`
+    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}toggleFacetGroupOutline(e){e.target.checked?(this.collectionBrowser.classList.add("showFacetGroupOutlines"),this.modalManager.classList.add("showFacetGroupOutlines")):(this.collectionBrowser.classList.remove("showFacetGroupOutlines"),this.modalManager.classList.remove("showFacetGroupOutlines"))}async snippetsChanged(e){e.target.checked?this.searchService=je(ce({},mt.default),{async search(a){var o;const s=await mt.default.search(a);return(o=s.success)===null||o===void 0||o.response.docs.forEach(l=>{const d=l.rawMetadata;d&&(d.snippets=["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])}),s}}):this.searchService=mt.default;const i=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(a=>{setTimeout(a,0)}),this.searchQuery=i}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};re.styles=g`
     :host {
       display: block;
       --primaryButtonBGColor: #194880;
@@ -4031,6 +4056,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       margin-top: 20rem;
     }
 
+    modal-manager.showFacetGroupOutlines,
+    collection-browser.showFacetGroupOutlines {
+      --facet-row-border-top: 1px solid red;
+      --facet-row-border-bottom: 1px solid blue;
+    }
+
     #base-query-field {
       width: 300px;
     }
@@ -4044,6 +4075,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;
       border: 1px solid black;
+      font-size: 1.4rem;
+    }
+
+    #dev-tools > * {
+      display: flex;
     }
 
     #cell-controls {
@@ -4067,5 +4103,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
     .hidden {
       display: none;
+    }
+
+    #toggle-controls {
+      background-color: lightskyblue;
+      padding: 5px;
+      margin: 5px auto;
     }
   `;n([z()],re.prototype,"currentPage",void 0);n([z()],re.prototype,"searchQuery",void 0);n([z()],re.prototype,"cellWidth",void 0);n([z()],re.prototype,"cellHeight",void 0);n([z()],re.prototype,"rowGap",void 0);n([z()],re.prototype,"colGap",void 0);n([z()],re.prototype,"loggedIn",void 0);n([p({type:Object,reflect:!1})],re.prototype,"latestAction",void 0);n([oe("#base-query-field")],re.prototype,"baseQueryField",void 0);n([oe("#page-number-input")],re.prototype,"pageNumberInput",void 0);n([oe("collection-browser")],re.prototype,"collectionBrowser",void 0);n([oe("modal-manager")],re.prototype,"modalManager",void 0);re=n([P("app-root")],re);
