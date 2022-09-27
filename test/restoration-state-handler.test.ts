@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect } from '@open-wc/testing';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 
