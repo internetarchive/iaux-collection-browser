@@ -119,7 +119,7 @@ export class AppRoot extends LitElement {
             <input type="submit" value="Go" />
           </form>
         </div>
-        
+
         <div id="search-types">
           Search type:
           <input
@@ -140,7 +140,7 @@ export class AppRoot extends LitElement {
           />
           <label for="fulltext-search">Full text</label>
         </div>
-        
+
         <div id="toggle-controls">
           <button
             @click=${() => {
@@ -522,7 +522,7 @@ export class AppRoot extends LitElement {
       padding: 5px;
       margin: 5px auto;
     }
-    
+
     #search-types {
       margin: 5px auto;
       background-color: aliceblue;
