@@ -8,6 +8,8 @@ import {
   CollectionDisplayMode,
   SelectedFacets,
   SortField,
+  FacetBucket,
+  FacetState,
 } from './models';
 
 export interface RestorationState {
@@ -206,7 +208,6 @@ export class RestorationStateHandler
     if (facetAnds) {
       facetAnds.forEach(and => {
         const [field, value] = and.split(':');
-        const unQuotedValue = this.stripQuotes(value);
 
         switch (field) {
           case 'year': {
@@ -226,9 +227,12 @@ export class RestorationStateHandler
               );
               restorationState.dateRangeQueryClause = `year:${value}`;
             } else {
-              restorationState.selectedFacets[field as FacetOption][
-                unQuotedValue
-              ].state = 'selected';
+              this.setSelectedFacetState(
+                restorationState.selectedFacets,
+                field as FacetOption,
+                value,
+                'selected'
+              );
             }
             break;
           }
@@ -239,19 +243,24 @@ export class RestorationStateHandler
             restorationState.selectedCreatorFilter = value;
             break;
           default:
-            restorationState.selectedFacets[field as FacetOption][
-              unQuotedValue
-            ].state = 'selected';
+            this.setSelectedFacetState(
+              restorationState.selectedFacets,
+              field as FacetOption,
+              value,
+              'selected'
+            );
         }
       });
     }
     if (facetNots) {
       facetNots.forEach(not => {
         const [field, value] = not.split(':');
-        const unQuotedValue = this.stripQuotes(value);
-        restorationState.selectedFacets[field as FacetOption][
-          unQuotedValue
-        ].state = 'hidden';
+        this.setSelectedFacetState(
+          restorationState.selectedFacets,
+          field as FacetOption,
+          value,
+          'hidden'
+        );
       });
     }
     return restorationState;
@@ -263,5 +272,30 @@ export class RestorationStateHandler
       return value.substring(1, value.length - 1);
     }
     return value;
+  }
+
+  /**
+   * Sets the facet state for the given field & value to the given state,
+   * creating any previously-undefined buckets as needed.
+   */
+  private setSelectedFacetState(
+    selectedFacets: SelectedFacets,
+    field: FacetOption,
+    value: string,
+    state: FacetState
+  ): void {
+    const facet = selectedFacets[field];
+    const unQuotedValue = this.stripQuotes(value);
+    facet[unQuotedValue] ??= this.getDefaultBucket(value);
+    facet[unQuotedValue].state = state;
+  }
+
+  /** Returns a default bucket with the given key, count of 0, and state 'none'. */
+  private getDefaultBucket(key: string): FacetBucket {
+    return {
+      key,
+      count: 0,
+      state: 'none',
+    };
   }
 }
