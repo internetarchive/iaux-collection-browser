@@ -438,7 +438,7 @@ export class MoreFacetsContent extends LitElement {
       }
       .scrollable-content {
         overflow-y: auto;
-        max-height: 65vh;
+        max-height: 60vh;
       }
       .facets-content {
         font-size: 1.2rem;
