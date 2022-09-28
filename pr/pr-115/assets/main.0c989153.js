@@ -3886,7 +3886,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             <input type="submit" value="Go" />
           </form>
         </div>
-        
+
         <div id="search-types">
           Search type:
           <input
@@ -3907,7 +3907,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           />
           <label for="fulltext-search">Full text</label>
         </div>
-        
+
         <div id="toggle-controls">
           <button
             @click=${()=>{var t,i;const a=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("cell-size-control");a==null||a.classList.toggle("hidden");const o=(i=this.shadowRoot)===null||i===void 0?void 0:i.getElementById("cell-gap-control");o==null||o.classList.toggle("hidden")}}
@@ -4132,7 +4132,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding: 5px;
       margin: 5px auto;
     }
-    
+
     #search-types {
       margin: 5px auto;
       background-color: aliceblue;
