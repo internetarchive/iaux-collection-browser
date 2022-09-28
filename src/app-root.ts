@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   AnalyticsEvent,
   AnalyticsManager,
@@ -97,22 +98,34 @@ export class AppRoot extends LitElement {
   render() {
     return html`
       <div id="dev-tools">
-        <form @submit=${this.searchPressed}>
-          Query:
-          <input
-            type="text"
-            id="base-query-field"
-            .value=${this.searchQuery ?? ''}
-          />
-          <input type="submit" value="Search" />
-        </form>
-
-        <form @submit=${this.changePagePressed}>
-          Page: <input type="number" value="1" id="page-number-input" />
-          <input type="submit" value="Go" />
-        </form>
-
-        <div id="last-event">
+        <div id="search-and-page-inputs">
+          <form @submit=${this.searchPressed}>
+            Query:
+            <input
+              type="text"
+              id="base-query-field"
+              .value=${this.searchQuery ?? ''}
+            />
+            <input type="submit" value="Search" />
+          </form>
+          <form @submit=${this.changePagePressed}>
+            Page: <input type="number" value="1" id="page-number-input" />
+            <input type="submit" value="Go" />
+          </form>
+        </div>
+        <div id="toggle-controls">
+          <button
+            @click=${() => {
+              const details =
+                this.shadowRoot?.getElementById('cell-size-control');
+              details?.classList.toggle('hidden');
+              const rowGapControls =
+                this.shadowRoot?.getElementById('cell-gap-control');
+              rowGapControls?.classList.toggle('hidden');
+            }}
+          >
+            Toggle Cell Controls
+          </button>
           <button
             @click=${() => {
               const details = this.shadowRoot?.getElementById(
@@ -123,13 +136,16 @@ export class AppRoot extends LitElement {
           >
             Last Event Captured
           </button>
+        </div>
+
+        <div id="last-event">
           <pre id="latest-event-details" class="hidden">
             ${JSON.stringify(this.latestAction, null, 2)}
           </pre
           >
         </div>
 
-        <div id="cell-controls">
+        <div id="cell-controls" class="hidden">
           <div id="cell-size-control">
             <div>
               <label for="cell-width-slider">Minimum cell width:</label>
@@ -163,6 +179,16 @@ export class AppRoot extends LitElement {
                 type="checkbox"
                 id="show-outline-check"
                 @click=${this.outlineChanged}
+              />
+            </div>
+            <div>
+              <label for="show-facet-group-outline-check"
+                >Show Facet Group Outlines:</label
+              >
+              <input
+                type="checkbox"
+                id="show-facet-group-outline-check"
+                @click=${this.toggleFacetGroupOutline}
               />
             </div>
             <div>
@@ -257,6 +283,17 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.style.removeProperty(
         '--infiniteScrollerCellOutline'
       );
+    }
+  }
+
+  private toggleFacetGroupOutline(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.checked) {
+      this.collectionBrowser.classList.add('showFacetGroupOutlines');
+      this.modalManager.classList.add('showFacetGroupOutlines');
+    } else {
+      this.collectionBrowser.classList.remove('showFacetGroupOutlines');
+      this.modalManager.classList.remove('showFacetGroupOutlines');
     }
   }
 
@@ -388,6 +425,12 @@ export class AppRoot extends LitElement {
       margin-top: 20rem;
     }
 
+    modal-manager.showFacetGroupOutlines,
+    collection-browser.showFacetGroupOutlines {
+      --facet-row-border-top: 1px solid red;
+      --facet-row-border-bottom: 1px solid blue;
+    }
+
     #base-query-field {
       width: 300px;
     }
@@ -401,6 +444,11 @@ export class AppRoot extends LitElement {
       backdrop-filter: blur(10px);
       padding: 0.5rem 1rem;
       border: 1px solid black;
+      font-size: 1.4rem;
+    }
+
+    #dev-tools > * {
+      display: flex;
     }
 
     #cell-controls {
@@ -424,6 +472,12 @@ export class AppRoot extends LitElement {
 
     .hidden {
       display: none;
+    }
+
+    #toggle-controls {
+      background-color: lightskyblue;
+      padding: 5px;
+      margin: 5px auto;
     }
   `;
 }
