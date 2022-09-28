@@ -8,7 +8,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type {
+import {
   Aggregation,
   Bucket,
   SearchServiceInterface,
@@ -374,9 +374,15 @@ export class CollectionFacets extends LitElement {
   private searchMoreFacetsLink(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    // don't render More... link if the number of facets < this.allowedFacetCount
-    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount)
+    // Don't render More... links for FTS searches
+    if (this.searchType === SearchType.FULLTEXT) {
       return nothing;
+    }
+
+    // Don't render More... link if the number of facets < this.allowedFacetCount
+    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount) {
+      return nothing;
+    }
 
     return html`<button
       class="more-link"
