@@ -119,6 +119,7 @@ export class AppRoot extends LitElement {
             <input type="submit" value="Go" />
           </form>
         </div>
+        
         <div id="search-types">
           Search type:
           <input
@@ -139,6 +140,7 @@ export class AppRoot extends LitElement {
           />
           <label for="fulltext-search">Full text</label>
         </div>
+        
         <div id="toggle-controls">
           <button
             @click=${() => {
@@ -171,97 +173,95 @@ export class AppRoot extends LitElement {
           >
         </div>
 
-        <div id="cell-controls">
-          <div id="cell-controls" class="hidden">
-            <div id="cell-size-control">
-              <div>
-                <label for="cell-width-slider">Minimum cell width:</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="18"
-                  step="0.1"
-                  id="cell-width-slider"
-                  @input=${this.widthChanged}
-                />
-                <span>${this.cellWidth}rem</span>
-              </div>
-              <div>
-                <label for="cell-height-slider">Cell height:</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="29"
-                  step="0.1"
-                  id="cell-height-slider"
-                  @input=${this.heightChanged}
-                />
-                <span>${this.cellHeight}rem</span>
-              </div>
-              <div>
-                <label for="show-outline-check">Show outlines:</label>
-                <input
-                  type="checkbox"
-                  id="show-outline-check"
-                  @click=${this.outlineChanged}
-                />
-              </div>
-              <div>
-                <label for="show-facet-group-outline-check"
-                  >Show Facet Group Outlines:</label
-                >
-                <input
-                  type="checkbox"
-                  id="show-facet-group-outline-check"
-                  @click=${this.toggleFacetGroupOutline}
-                />
-              </div>
-              <div>
-                <label for="simulate-login">Simulate Login:</label>
-                <input
-                  type="checkbox"
-                  id="simulate-login"
-                  @click=${this.loginChanged}
-                />
-              </div>
-              <div>
-                <label for="show-dummy-snippets">Show dummy snippets:</label>
-                <input
-                  type="checkbox"
-                  id="show-dummy-snippets"
-                  @click=${this.snippetsChanged}
-                />
-              </div>
+        <div id="cell-controls" class="hidden">
+          <div id="cell-size-control">
+            <div>
+              <label for="cell-width-slider">Minimum cell width:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="18"
+                step="0.1"
+                id="cell-width-slider"
+                @input=${this.widthChanged}
+              />
+              <span>${this.cellWidth}rem</span>
             </div>
-            <div id="cell-gap-control">
-              <div>
-                <label for="cell-row-gap-slider">Row gap:</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-row-gap-slider"
-                  @input=${this.rowGapChanged}
-                />
-                <span>${this.rowGap}rem</span>
-              </div>
-              <div>
-                <label for="cell-col-gap-slider">Col gap:</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-col-gap-slider"
-                  @input=${this.colGapChanged}
-                />
-                <span>${this.colGap}rem</span>
-              </div>
+            <div>
+              <label for="cell-height-slider">Cell height:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="29"
+                step="0.1"
+                id="cell-height-slider"
+                @input=${this.heightChanged}
+              />
+              <span>${this.cellHeight}rem</span>
+            </div>
+            <div>
+              <label for="show-outline-check">Show outlines:</label>
+              <input
+                type="checkbox"
+                id="show-outline-check"
+                @click=${this.outlineChanged}
+              />
+            </div>
+            <div>
+              <label for="show-facet-group-outline-check"
+                >Show Facet Group Outlines:</label
+              >
+              <input
+                type="checkbox"
+                id="show-facet-group-outline-check"
+                @click=${this.toggleFacetGroupOutline}
+              />
+            </div>
+            <div>
+              <label for="simulate-login">Simulate Login:</label>
+              <input
+                type="checkbox"
+                id="simulate-login"
+                @click=${this.loginChanged}
+              />
+            </div>
+            <div>
+              <label for="show-dummy-snippets">Show dummy snippets:</label>
+              <input
+                type="checkbox"
+                id="show-dummy-snippets"
+                @click=${this.snippetsChanged}
+              />
+            </div>
+          </div>
+          <div id="cell-gap-control">
+            <div>
+              <label for="cell-row-gap-slider">Row gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-row-gap-slider"
+                @input=${this.rowGapChanged}
+              />
+              <span>${this.rowGap}rem</span>
+            </div>
+            <div>
+              <label for="cell-col-gap-slider">Col gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-col-gap-slider"
+                @input=${this.colGapChanged}
+              />
+              <span>${this.colGap}rem</span>
             </div>
           </div>
         </div>
@@ -522,7 +522,7 @@ export class AppRoot extends LitElement {
       padding: 5px;
       margin: 5px auto;
     }
-
+    
     #search-types {
       margin: 5px auto;
       background-color: aliceblue;
