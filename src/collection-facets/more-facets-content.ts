@@ -312,30 +312,6 @@ export class MoreFacetsContent extends LitElement {
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
   }
 
-  /**
-   * sort the facets on modal
-   * - alpha sort perform in ascending order
-   * - count/frequency sort perform in descending order
-   *
-   * @param facetBucket as Bucket[]
-   *
-   * @return sortedFacetBucket as Bucket
-   */
-  private sortedFacets(facetBucket: Bucket[]) {
-    let sortedFacetBucket = facetBucket;
-    if (this.sortedBy === 'alpha') {
-      // sort by alphabetic in ascending order. eg. a,b,c,...
-      sortedFacetBucket = facetBucket?.sort((a, b) => (a.key > b.key ? 1 : -1));
-    } else {
-      // sort by frequency/count in descending order. eg 100,99,98,...
-      sortedFacetBucket = facetBucket?.sort((a, b) =>
-        a.doc_count < b.doc_count ? 1 : -1
-      );
-    }
-
-    return sortedFacetBucket;
-  }
-
   private get getMoreFacetsTemplate(): TemplateResult {
     return html`
       <facets-template
