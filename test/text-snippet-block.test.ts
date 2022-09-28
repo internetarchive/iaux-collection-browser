@@ -37,6 +37,23 @@ describe('TextSnippetBlock component', () => {
     expect(container?.querySelectorAll('mark').length).to.equal(3);
   });
 
+  it('should render marked snippets containing newlines', async () => {
+    const snippets = [
+      'some {{{snippet}}} text',
+      'some {{{other}}} {{{snippet\n text}}}',
+    ];
+
+    const el = await fixture<TextSnippetBlock>(
+      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
+    );
+
+    const container = el.shadowRoot?.querySelector('.container');
+
+    // Has the correct number of snippets and highlights
+    expect(container?.children.length).to.equal(snippets.length);
+    expect(container?.querySelectorAll('mark').length).to.equal(3);
+  });
+
   it('should render correctly in grid mode', async () => {
     const el = await fixture<TextSnippetBlock>(
       html`<text-snippet-block

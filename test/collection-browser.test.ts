@@ -3,6 +3,7 @@ import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
+import { SearchType } from '@internetarchive/search-service';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
@@ -182,6 +183,48 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
+  it('queries the search service with a metadata search', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser
+        .searchService=${searchService}
+        .searchType=${SearchType.METADATA}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchType).to.equal(SearchType.METADATA);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+    ).to.contains('Results');
+  });
+
+  it('queries the search service with a fulltext search', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser
+        .searchService=${searchService}
+        .searchType=${SearchType.FULLTEXT}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+    ).to.contains('Results');
+  });
+
   it('queries for collection names after a fetch', async () => {
     const searchService = new MockSearchService();
     const collectionNameCache = new MockCollectionNameCache();
@@ -203,6 +246,155 @@ describe('Collection Browser', () => {
       'baz',
       'boop',
     ]);
+  });
+
+  it('keeps search results from fetch if no change to query or sort param', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'with-sort';
+    el.sortParam = { field: 'foo', direction: 'asc' };
+    await el.updateComplete;
+
+    await el.fetchPage(2);
+
+    // If there is no change to the query or sort param during the fetch, the results
+    // should be read.
+    expect(resultsSpy.callCount).to.be.greaterThanOrEqual(1);
+  });
+
+  it('discards obsolete search results if sort params changed before arrival', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'with-sort';
+    el.sortParam = { field: 'foo', direction: 'asc' };
+    await el.updateComplete;
+
+    const fetchPromise = el.fetchPage(2);
+    el.sortParam = { field: 'foo', direction: 'desc' };
+    await fetchPromise;
+
+    // If the different sort param causes the results to be discarded,
+    // the results array should never be read.
+    expect(resultsSpy.callCount).to.equal(0);
+  });
+
+  it('discards obsolete search results if sort param added before arrival', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'single-result';
+    await el.updateComplete;
+
+    const fetchPromise = el.fetchPage(2);
+    el.sortParam = { field: 'foo', direction: 'asc' };
+    await fetchPromise;
+
+    // If the different sort param causes the results to be discarded,
+    // the results array should never be read.
+    expect(resultsSpy.callCount).to.equal(0);
+  });
+
+  it('discards obsolete search results if sort param cleared before arrival', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'with-sort';
+    await el.updateComplete;
+
+    const fetchPromise = el.fetchPage(2);
+    el.sortParam = null;
+    await fetchPromise;
+
+    // If the different sort param causes the results to be discarded,
+    // the results array should never be read.
+    expect(resultsSpy.callCount).to.equal(0);
+  });
+
+  it('sets sort properties when user changes sort', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    expect(el.selectedSort).to.equal(SortField.relevance);
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+
+    const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
+    const sortSelector = sortBar?.shadowRoot?.querySelector(
+      '#desktop-sort-selector'
+    );
+    expect(sortSelector).to.exist;
+
+    // Click the title sorter
+    [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
+      .find(child => child.textContent?.trim() === 'Title')
+      ?.querySelector('a[href]')
+      ?.click();
+
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal(SortField.title);
+  });
+
+  it('scrolls to page', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    const infiniteScroller = el.shadowRoot?.querySelector(
+      'infinite-scroller'
+    ) as InfiniteScroller;
+    expect(infiniteScroller).to.exist;
+
+    const oldScrollToCell = infiniteScroller.scrollToCell;
+    const spy = sinon.spy();
+    infiniteScroller.scrollToCell = spy;
+
+    el.goToPage(1);
+
+    // Give it a second to scroll
+    await new Promise(res => {
+      setTimeout(res, 1000);
+    });
+
+    expect(spy.callCount).to.equal(1);
+
+    infiniteScroller.scrollToCell = oldScrollToCell;
   });
 
   it('refreshes when certain properties change - with some analytics event sampling', async () => {

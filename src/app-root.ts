@@ -3,7 +3,11 @@ import {
   AnalyticsEvent,
   AnalyticsManager,
 } from '@internetarchive/analytics-manager';
-import { SearchService } from '@internetarchive/search-service';
+import {
+  SearchService,
+  SearchType,
+  StringField,
+} from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -42,6 +46,8 @@ export class AppRoot extends LitElement {
   @state() private colGap: number = 1.7;
 
   @state() private loggedIn: boolean = false;
+
+  @state() private searchType: SearchType = SearchType.METADATA;
 
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
@@ -113,6 +119,28 @@ export class AppRoot extends LitElement {
             <input type="submit" value="Go" />
           </form>
         </div>
+
+        <div id="search-types">
+          Search type:
+          <input
+            type="radio"
+            id="metadata-search"
+            name="search-type"
+            value="metadata"
+            checked
+            @click=${this.searchTypeChanged}
+          />
+          <label for="metadata-search">Metadata</label>
+          <input
+            type="radio"
+            id="fulltext-search"
+            name="search-type"
+            value="fulltext"
+            @click=${this.searchTypeChanged}
+          />
+          <label for="fulltext-search">Full text</label>
+        </div>
+
         <div id="toggle-controls">
           <button
             @click=${() => {
@@ -244,6 +272,7 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
+          .searchType=${this.searchType}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
@@ -261,6 +290,15 @@ export class AppRoot extends LitElement {
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>) {
     this.searchQuery = e.detail.baseQuery;
+  }
+
+  private searchTypeChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.searchType =
+      target.value === 'fulltext' ? SearchType.FULLTEXT : SearchType.METADATA;
+
+    // Re-perform the current search with the new search target
+    this.reperformCurrentSearch();
   }
 
   private loginChanged(e: Event) {
@@ -303,13 +341,14 @@ export class AppRoot extends LitElement {
       // Decorate the default search service with a wrapper that adds
       // dummy snippets to any successful searches
       this.searchService = {
-        ...SearchService.default,
-        async search(params) {
-          const result = await SearchService.default.search(params);
-          result.success?.response.docs.forEach(doc => {
-            const metadata = doc.rawMetadata;
-            if (metadata) {
-              metadata.snippets = [
+        async search(params, searchType) {
+          const searchResponse = await SearchService.default.search(
+            params,
+            searchType
+          );
+          searchResponse.success?.response.results.forEach(result => {
+            Object.defineProperty(result, 'highlight', {
+              value: new StringField([
                 'this is a text {{{snippet}}} block with potentially',
                 'multiple {{{snippets}}} and such',
                 'but the {{{snippet}}} block may be quite long perhaps',
@@ -319,10 +358,10 @@ export class AppRoot extends LitElement {
                 'and {{{snippets}}} are each a {{{snippet}}} of text',
                 'but every {{{snippet}}} might have multiple matches',
                 'the {{{snippets}}} should be separated and surrounded by ellipses',
-              ];
-            }
+              ]),
+            });
           });
-          return result;
+          return searchResponse;
         },
       };
     } else {
@@ -331,6 +370,10 @@ export class AppRoot extends LitElement {
     }
 
     // Re-perform the current search to show/hide the snippets immediately
+    this.reperformCurrentSearch();
+  }
+
+  private async reperformCurrentSearch(): Promise<void> {
     const oldQuery = this.searchQuery;
     this.searchQuery = ''; // Should just reset to the placeholder
     await this.updateComplete;
@@ -478,6 +521,12 @@ export class AppRoot extends LitElement {
       background-color: lightskyblue;
       padding: 5px;
       margin: 5px auto;
+    }
+
+    #search-types {
+      margin: 5px auto;
+      background-color: aliceblue;
+      font-size: 1.6rem;
     }
   `;
 }

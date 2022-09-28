@@ -10,11 +10,13 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type {
+import {
   Aggregation,
   Bucket,
   SearchServiceInterface,
   SearchParams,
+  SearchType,
+  AggregationSortType,
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
@@ -26,7 +28,6 @@ import {
   facetTitles,
 } from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
-import { getFacetOptionFromKey } from './facets-util';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -42,6 +43,8 @@ export class MoreFacetsContent extends LitElement {
   @property({ type: Object }) modalManager?: ModalManagerInterface;
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
+
+  @property({ type: String }) searchType?: SearchType;
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
@@ -110,23 +113,19 @@ export class MoreFacetsContent extends LitElement {
    */
   async updateSpecificFacets(): Promise<void> {
     const aggregations = {
-      advancedParams: [
-        {
-          field: this.facetAggregationKey as string,
-          size: 65535, // todo - do we want to have all the records at once?
-        },
-      ],
+      simpleParams: [this.facetAggregationKey as string],
     };
+    const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
     const params: SearchParams = {
       query: this.fullQuery as string,
-      fields: ['identifier'],
       aggregations,
-      rows: 1, // todo - do we want server-side pagination with offset/page/limit flag?
+      aggregationsSize,
+      rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
-    const results = await this.searchService?.search(params);
-    this.aggregations = results?.success?.response.aggregations as any;
+    const results = await this.searchService?.search(params, this.searchType);
+    this.aggregations = results?.success?.response.aggregations;
 
     this.facetGroup = this.aggregationFacetGroups;
     this.facetsLoading = false;
@@ -204,7 +203,7 @@ export class MoreFacetsContent extends LitElement {
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, data]) => {
-            let displayText = value;
+            let displayText: string = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
             if (option === 'language') {
@@ -238,30 +237,33 @@ export class MoreFacetsContent extends LitElement {
    */
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
-    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
+    Object.entries(this.aggregations ?? []).forEach(([key, aggregation]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
 
-      const option = getFacetOptionFromKey(key);
+      const option = key as FacetOption;
       this.facetGroupTitle = facetTitles[option];
-      let castedBuckets = buckets.buckets as Bucket[];
-
-      // we are not showing fav- items in facets
-      castedBuckets = castedBuckets?.filter(
-        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
-      );
 
       // sort facets in specific order
-      castedBuckets = this.sortedFacets(castedBuckets) as Bucket[];
+      let castedBuckets = aggregation.getSortedBuckets(
+        this.sortedBy === 'alpha'
+          ? AggregationSortType.ALPHABETICAL
+          : AggregationSortType.COUNT
+      ) as Bucket[];
+
+      if (option === 'collection') {
+        // we are not showing fav- collection items in facets
+        castedBuckets = castedBuckets?.filter(
+          bucket => bucket?.key?.toString().startsWith('fav-') === false
+        );
+
+        // asynchronously load the collection name
+        this.preloadCollectionNames(castedBuckets);
+      }
 
       // find length and pagination size for modal pagination
       const { length } = Object.keys(castedBuckets as []);
       this.paginationSize = Math.ceil(length / this.facetsPerPage);
-
-      // asynchronously load the collection name
-      if (option === 'collection') {
-        this.preloadCollectionNames(castedBuckets);
-      }
 
       // render only items which will be visible as per this.facetsPerPage
       const bucketsMaxSix = castedBuckets?.slice(
@@ -308,30 +310,6 @@ export class MoreFacetsContent extends LitElement {
     const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
 
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
-  }
-
-  /**
-   * sort the facets on modal
-   * - alpha sort perform in ascending order
-   * - count/frequency sort perform in descending order
-   *
-   * @param facetBucket as Bucket[]
-   *
-   * @return sortedFacetBucket as Bucket
-   */
-  private sortedFacets(facetBucket: Bucket[]) {
-    let sortedFacetBucket = facetBucket;
-    if (this.sortedBy === 'alpha') {
-      // sort by alphabetic in ascending order. eg. a,b,c,...
-      sortedFacetBucket = facetBucket?.sort((a, b) => (a.key > b.key ? 1 : -1));
-    } else {
-      // sort by frequency/count in descending order. eg 100,99,98,...
-      sortedFacetBucket = facetBucket?.sort((a, b) =>
-        a.doc_count < b.doc_count ? 1 : -1
-      );
-    }
-
-    return sortedFacetBucket;
   }
 
   private get getMoreFacetsTemplate(): TemplateResult {

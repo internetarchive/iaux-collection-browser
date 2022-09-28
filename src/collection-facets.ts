@@ -8,10 +8,11 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import type {
+import {
   Aggregation,
   Bucket,
   SearchServiceInterface,
+  SearchType,
 } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
@@ -29,16 +30,16 @@ import {
   FacetBucket,
   facetDisplayOrder,
   facetTitles,
-  aggregationToFacetOption,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
-import { getFacetOptionFromKey } from './collection-facets/facets-util';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
+
+  @property({ type: String }) searchType?: SearchType;
 
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
@@ -277,8 +278,11 @@ export class CollectionFacets extends LitElement {
     Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
-      const option = getFacetOptionFromKey(key);
+
+      const option = key as FacetOption;
       const title = facetTitles[option];
+      if (!title) return;
+
       const castedBuckets = buckets.buckets as Bucket[];
 
       // we are not showing fav- items in facets
@@ -370,9 +374,15 @@ export class CollectionFacets extends LitElement {
   private searchMoreFacetsLink(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    // don't render More... link if the number of facets < this.allowedFacetCount
-    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount)
+    // Don't render More... links for FTS searches
+    if (this.searchType === SearchType.FULLTEXT) {
       return nothing;
+    }
+
+    // Don't render More... link if the number of facets < this.allowedFacetCount
+    if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount) {
+      return nothing;
+    }
 
     return html`<button
       class="more-link"
@@ -391,9 +401,7 @@ export class CollectionFacets extends LitElement {
     facetGroup: FacetGroup,
     sortedBy: string
   ): Promise<void> {
-    const facetAggrKey = Object.keys(aggregationToFacetOption).find(
-      value => aggregationToFacetOption[value] === facetGroup.key
-    );
+    const facetAggrKey = facetGroup.key;
 
     const customModalContent = html`
       <more-facets-content
@@ -402,6 +410,7 @@ export class CollectionFacets extends LitElement {
         .fullQuery=${this.fullQuery}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
+        .searchType=${this.searchType}
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}
@@ -452,26 +461,6 @@ export class CollectionFacets extends LitElement {
         }}
       ></facets-template>
     `;
-  }
-
-  /**
-   * Parse the aggregate key title into the human readable title
-   *
-   * Example: user_aggs__terms__field:mediatypeSorter__size:6 => Media Type
-   *
-   * @param key
-   * @returns
-   */
-  private getFacetOptionFromKey(key: string): FacetOption {
-    const parts = key.split('__');
-    const fieldNamePart = parts[2];
-    const fieldName = fieldNamePart.split(':')[1];
-    const facetMatch = Object.entries(aggregationToFacetOption).find(([key2]) =>
-      fieldName.includes(key2)
-    );
-    const option = facetMatch?.[1];
-    if (!option) throw new Error(`Could not find facet option for key: ${key}`);
-    return option;
   }
 
   static get styles() {

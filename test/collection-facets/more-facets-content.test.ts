@@ -1,7 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture, oneEvent } from '@open-wc/testing';
 import { html } from 'lit';
-import type { Aggregation } from '@internetarchive/search-service';
+import { Aggregation } from '@internetarchive/search-service';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
@@ -18,15 +18,15 @@ const selectedFacetsGroup = {
   ],
 };
 
-const aggregation: Record<string, Aggregation> = {
-  'user_aggs__terms__field:collectionSorter__size:1': {
+const aggregations: Record<string, Aggregation> = {
+  collection: new Aggregation({
     buckets: [
       {
         key: 'foo',
         doc_count: 5,
       },
     ],
-  },
+  }),
 };
 
 describe('More facets content', () => {
@@ -109,7 +109,7 @@ describe('More facets content', () => {
       html`<more-facets-content
         .searchService=${searchService}
         .selectedFacets=${selectedFacetsGroup}
-        .aggregations=${aggregation}
+        .aggregations=${aggregations}
       ></more-facets-content>`
     );
 

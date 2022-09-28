@@ -61,7 +61,7 @@ export class TextSnippetBlock extends LitElement {
    */
   private get snippetTemplates(): TemplateResult[] | undefined {
     return this.snippets?.map(s => {
-      const matches = s.matchAll(/{{{(.+?)}}}/g);
+      const matches = s.matchAll(/{{{(.+?)}}}/gs);
       const templates: TemplateResult[] = [];
 
       // Convert each match into an HTML template that includes:
