@@ -182,7 +182,16 @@ export const facetTitles: Record<FacetOption, string> = {
   year: 'Year',
 };
 
-export const lendingFacetKeysVisibility: Record<string, boolean> = {
+export type LendingFacetKey =
+  | 'is_lendable'
+  | 'is_borrowable'
+  | 'available_to_borrow'
+  | 'is_browsable'
+  | 'available_to_browse'
+  | 'is_readable'
+  | 'available_to_waitlist';
+
+export const lendingFacetKeysVisibility: Record<LendingFacetKey, boolean> = {
   is_lendable: true,
   is_borrowable: false,
   available_to_borrow: true,
@@ -192,7 +201,9 @@ export const lendingFacetKeysVisibility: Record<string, boolean> = {
   available_to_waitlist: false,
 };
 
-export const lendingFacetDisplayNames: Record<string, string> = {
+export const lendingFacetDisplayNames: Partial<
+  Record<LendingFacetKey, string>
+> = {
   is_lendable: 'Lending Library',
   available_to_borrow: 'Borrow 14 Days',
   is_readable: 'Always Available',

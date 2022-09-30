@@ -32,6 +32,7 @@ import {
   facetTitles,
   lendingFacetDisplayNames,
   lendingFacetKeysVisibility,
+  LendingFacetKey,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
@@ -211,7 +212,7 @@ export class CollectionFacets extends LitElement {
       // For lending facets, only include a specific subset of buckets
       if (facetKey === 'lending') {
         bucketsWithCount = bucketsWithCount.filter(
-          bucket => lendingFacetKeysVisibility[bucket.key]
+          bucket => lendingFacetKeysVisibility[bucket.key as LendingFacetKey]
         );
       }
 
@@ -262,7 +263,8 @@ export class CollectionFacets extends LitElement {
             }
             // for lending facets, convert the key to a readable format
             if (option === 'lending') {
-              displayText = lendingFacetDisplayNames[value] ?? value;
+              displayText =
+                lendingFacetDisplayNames[value as LendingFacetKey] ?? value;
             }
             return {
               displayText,
@@ -319,7 +321,9 @@ export class CollectionFacets extends LitElement {
         }
         // for lending facets, convert the bucket key to a readable format
         if (option === 'lending') {
-          displayText = lendingFacetDisplayNames[bucket.key] ?? bucket.key;
+          displayText =
+            lendingFacetDisplayNames[bucket.key as LendingFacetKey] ??
+            `${bucket.key}`;
         }
         return {
           displayText,
