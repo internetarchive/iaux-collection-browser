@@ -764,6 +764,11 @@ export class CollectionBrowser
       this.historyPopOccurred = false;
     }
 
+    // Ensure lending aggregations don't carry over to non-metadata searches
+    if (this.searchType !== SearchType.METADATA) {
+      delete this.aggregations?.lending;
+    }
+
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
