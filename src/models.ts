@@ -120,6 +120,7 @@ export const MetadataFieldToSortField: {
 
 export type FacetOption =
   | 'subject'
+  | 'availability'
   | 'mediatype'
   | 'language'
   | 'creator'
@@ -153,6 +154,7 @@ export type SelectedFacets = Record<
 
 export const defaultSelectedFacets: SelectedFacets = {
   subject: {},
+  availability: {},
   mediatype: {},
   language: {},
   creator: {},
@@ -162,6 +164,7 @@ export const defaultSelectedFacets: SelectedFacets = {
 
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',
+  'availability',
   'year',
   'subject',
   'collection',
@@ -169,17 +172,9 @@ export const facetDisplayOrder: FacetOption[] = [
   'language',
 ];
 
-export const aggregationToFacetOption: Record<string, FacetOption> = {
-  subjectSorter: 'subject',
-  mediatypeSorter: 'mediatype',
-  languageSorter: 'language',
-  creatorSorter: 'creator',
-  collection: 'collection',
-  year: 'year',
-};
-
 export const facetTitles: Record<FacetOption, string> = {
   subject: 'Subject',
+  availability: 'Availability',
   mediatype: 'Media Type',
   language: 'Language',
   creator: 'Creator',

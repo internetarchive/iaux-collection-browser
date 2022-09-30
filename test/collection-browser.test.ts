@@ -89,6 +89,7 @@ describe('Collection Browser', () => {
     const mediaTypeBucket = { count: 123, state: 'selected' } as FacetBucket;
     const mockedSelectedFacets: SelectedFacets = {
       subject: {},
+      availability: {},
       mediatype: { data: mediaTypeBucket },
       language: {},
       creator: {},
@@ -122,6 +123,7 @@ describe('Collection Browser', () => {
     const mediaTypeBucket = { count: 123, state: 'selected' } as FacetBucket;
     const mockedSelectedFacets: SelectedFacets = {
       subject: {},
+      availability: {},
       mediatype: { data: mediaTypeBucket },
       language: {},
       creator: {},
