@@ -30,6 +30,7 @@ import {
   FacetBucket,
   facetDisplayOrder,
   facetTitles,
+  lendingFacetDisplayNames,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
@@ -186,7 +187,7 @@ export class CollectionFacets extends LitElement {
       const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
 
       // attach the counts to the selected buckets
-      const bucketsWithCount =
+      let bucketsWithCount =
         selectedFacetGroup?.buckets.map(bucket => {
           const selectedBucket = aggregateFacetGroup.buckets.find(
             b => b.key === bucket.key
@@ -205,6 +206,13 @@ export class CollectionFacets extends LitElement {
         if (existingBucket) return;
         bucketsWithCount.push(bucket);
       });
+
+      // For lending facets, only include a specific subset of buckets
+      if (facetKey === 'lending') {
+        bucketsWithCount = bucketsWithCount.filter(
+          bucket => !!lendingFacetDisplayNames[bucket.key]
+        );
+      }
 
       /**
        * render limited facet items on page facet area
@@ -251,6 +259,10 @@ export class CollectionFacets extends LitElement {
                   value
                 ) ?? value;
             }
+            // for lending facets, convert the key to a readable format
+            if (option === 'lending') {
+              displayText = lendingFacetDisplayNames[value] ?? value;
+            }
             return {
               displayText,
               key: value,
@@ -293,6 +305,7 @@ export class CollectionFacets extends LitElement {
 
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
         let bucketKey = bucket.key;
+        let displayText = `${bucket.key}`;
         // for languages, we need to search by language code instead of the
         // display name, which is what we get from the search engine result
         if (option === 'language') {
@@ -303,8 +316,12 @@ export class CollectionFacets extends LitElement {
             ) ?? bucket.key;
           // bucketKey = languageCodeKey ?? bucket.key;
         }
+        // for lending facets, convert the bucket key to a readable format
+        if (option === 'lending') {
+          displayText = lendingFacetDisplayNames[bucket.key] ?? bucket.key;
+        }
         return {
-          displayText: `${bucket.key}`,
+          displayText,
           key: `${bucketKey}`,
           count: bucket.doc_count,
           state: 'none',

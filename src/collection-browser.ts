@@ -155,6 +155,8 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
+  @state() private lendingFacetLoading = false;
+
   @state() private fullYearAggregationLoading = false;
 
   @state() private aggregations?: Record<string, Aggregation>;
@@ -482,7 +484,11 @@ export class CollectionBrowser
   }
 
   private get facetDataLoading(): boolean {
-    return this.facetsLoading || this.fullYearAggregationLoading;
+    return (
+      this.facetsLoading ||
+      this.lendingFacetLoading ||
+      this.fullYearAggregationLoading
+    );
   }
 
   private get mobileFacetsTemplate() {
@@ -761,6 +767,7 @@ export class CollectionBrowser
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
+      this.fetchLendingFacet(),
       this.fetchFullYearHistogram(),
     ]);
   }
@@ -918,28 +925,40 @@ export class CollectionBrowser
       rows: 0,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
-      aggregations: {
-        simpleParams: [
-          'mediatype',
-          'year',
-          'subject',
-          'collection',
-          'creator',
-          'language',
-        ],
-      },
     };
-
-    // Include lending facets for metadata searches
-    if (this.searchType === SearchType.METADATA) {
-      params.aggregations?.simpleParams?.push('lending___status');
-    }
 
     this.facetsLoading = true;
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
-    this.aggregations = results?.success?.response.aggregations;
+    this.aggregations = {
+      ...this.aggregations,
+      ...results?.success?.response.aggregations,
+    };
+  }
+
+  private async fetchLendingFacet() {
+    // Only retrieve lending facet for metadata searches
+    if (this.searchType !== SearchType.METADATA) return;
+    if (!this.fullQuery) return;
+
+    const params: SearchParams = {
+      query: this.fullQuery,
+      rows: 0,
+      aggregations: {
+        simpleParams: ['lending___status'],
+      },
+      aggregationsSize: 10,
+    };
+
+    this.lendingFacetLoading = true;
+    const results = await this.searchService?.search(params, this.searchType);
+    this.lendingFacetLoading = false;
+
+    this.aggregations = {
+      ...this.aggregations,
+      ...results?.success?.response.aggregations,
+    };
   }
 
   /**

@@ -181,3 +181,9 @@ export const facetTitles: Record<FacetOption, string> = {
   collection: 'Collection',
   year: 'Year',
 };
+
+export const lendingFacetDisplayNames: Record<string, string> = {
+  is_lendable: 'Lending Library',
+  available_to_borrow: 'Borrow 14 Days',
+  is_readable: 'Always Available',
+};
