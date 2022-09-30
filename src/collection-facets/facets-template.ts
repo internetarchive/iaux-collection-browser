@@ -190,13 +190,14 @@ export class FacetsTemplate extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      @media (max-width: 560px) {
+        .facets-on-modal {
+          column-count: 1 !important;
+        }
+      }
       .facets-on-modal {
-        /* For Chrome, Safari, Opera browsers */
-        -webkit-column-width: 100px;
-        /* For Firefox browser */
-        -moz-column-width: 100px;
-        column-width: 25rem;
         column-gap: 15px;
+        column-count: 3;
       }
       async-collection-name {
         display: contents;

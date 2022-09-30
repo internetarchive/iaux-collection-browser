@@ -73,7 +73,7 @@ export class MoreFacetsContent extends LitElement {
 
   @state() facetsType = 'modal';
 
-  private facetsPerPage = 60; // TODO: Q. how many items we want to have on popup view
+  private facetsPerPage = 50; // TODO: Q. how many items we want to have on popup view
 
   updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
@@ -403,9 +403,7 @@ export class MoreFacetsContent extends LitElement {
         ? this.loaderTemplate
         : html`
             <div class="header-content">${this.getModalHeaderTemplate}</div>
-            <div class="scrollable-content">
-              <div class="facets-content">${this.getMoreFacetsTemplate}</div>
-            </div>
+            <div class="facets-content">${this.getMoreFacetsTemplate}</div>
             ${this.footerTemplate}
           `}
     `;
@@ -429,16 +427,18 @@ export class MoreFacetsContent extends LitElement {
     const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
 
     return css`
+      @media (max-width: 560px) {
+        .facets-content {
+          overflow-y: auto;
+          height: 300px;
+        }
+      }
       .header-content .title {
         display: block;
         text-align: left;
         font-size: 1.8rem;
         padding: 0 10px;
         font-weight: bold;
-      }
-      .scrollable-content {
-        overflow-y: auto;
-        max-height: 60vh;
       }
       .facets-content {
         font-size: 1.2rem;
