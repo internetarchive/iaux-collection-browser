@@ -78,7 +78,7 @@ export class CollectionFacets extends LitElement {
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
-    availability: false,
+    lending: false,
     mediatype: false,
     language: false,
     creator: false,

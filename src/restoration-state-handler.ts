@@ -164,7 +164,7 @@ export class RestorationStateHandler
     const restorationState: RestorationState = {
       selectedFacets: {
         subject: {},
-        availability: {},
+        lending: {},
         creator: {},
         mediatype: {},
         language: {},
