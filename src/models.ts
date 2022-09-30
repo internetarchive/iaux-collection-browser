@@ -191,6 +191,9 @@ export type LendingFacetKey =
   | 'is_readable'
   | 'available_to_waitlist';
 
+/**
+ * Maps valid lending keys to whether they should be visible in the facet sidebar
+ */
 export const lendingFacetKeysVisibility: Record<LendingFacetKey, boolean> = {
   is_lendable: true,
   is_borrowable: false,
@@ -201,6 +204,9 @@ export const lendingFacetKeysVisibility: Record<LendingFacetKey, boolean> = {
   available_to_waitlist: false,
 };
 
+/**
+ * Maps valid, visible lending keys to their facet sidebar display text
+ */
 export const lendingFacetDisplayNames: Partial<
   Record<LendingFacetKey, string>
 > = {
