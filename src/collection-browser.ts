@@ -918,7 +918,22 @@ export class CollectionBrowser
       rows: 0,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
+      aggregations: {
+        simpleParams: [
+          'mediatype',
+          'year',
+          'subject',
+          'collection',
+          'creator',
+          'language',
+        ],
+      },
     };
+
+    // Include lending facets for metadata searches
+    if (this.searchType === SearchType.METADATA) {
+      params.aggregations?.simpleParams?.push('lending___status');
+    }
 
     this.facetsLoading = true;
     const results = await this.searchService?.search(params, this.searchType);
