@@ -182,6 +182,16 @@ export const facetTitles: Record<FacetOption, string> = {
   year: 'Year',
 };
 
+export const lendingFacetKeysVisibility: Record<string, boolean> = {
+  is_lendable: true,
+  is_borrowable: false,
+  available_to_borrow: true,
+  is_browsable: false,
+  available_to_browse: false,
+  is_readable: true,
+  available_to_waitlist: false,
+};
+
 export const lendingFacetDisplayNames: Record<string, string> = {
   is_lendable: 'Lending Library',
   available_to_borrow: 'Borrow 14 Days',

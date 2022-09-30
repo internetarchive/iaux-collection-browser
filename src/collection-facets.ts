@@ -31,6 +31,7 @@ import {
   facetDisplayOrder,
   facetTitles,
   lendingFacetDisplayNames,
+  lendingFacetKeysVisibility,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
@@ -210,7 +211,7 @@ export class CollectionFacets extends LitElement {
       // For lending facets, only include a specific subset of buckets
       if (facetKey === 'lending') {
         bucketsWithCount = bucketsWithCount.filter(
-          bucket => !!lendingFacetDisplayNames[bucket.key]
+          bucket => lendingFacetKeysVisibility[bucket.key]
         );
       }
 
