@@ -3164,7 +3164,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       a:hover {
         text-decoration: underline;
       }
-    `}};n([p({type:Object})],zt.prototype,"facetGroup",void 0);n([p({type:Object})],zt.prototype,"selectedFacets",void 0);n([p({type:String})],zt.prototype,"renderOn",void 0);n([p({type:Object})],zt.prototype,"collectionNameCache",void 0);zt=n([N("facets-template")],zt);let J=class extends F{constructor(){super(...arguments),this.sortedBy="count",this.facetGroup=[],this.facetGroupTitle="",this.pageNumber=1,this.facetsLoading=!0,this.paginationSize=0,this.facetsType="modal",this.facetsPerPage=50}updated(e){e.has("facetKey")&&(this.facetsLoading=!0,this.pageNumber=1,this.updateSpecificFacets()),e.has("pageNumber")&&(this.facetGroup=this.aggregationFacetGroups)}firstUpdated(){this.setupEscapeListeners()}setupEscapeListeners(){this.modalManager?document.addEventListener("keydown",e=>{var t;e.key==="Escape"&&((t=this.modalManager)===null||t===void 0||t.closeModal())}):document.removeEventListener("keydown",()=>{})}async updateSpecificFacets(){var e,t;const i={simpleParams:[this.facetAggregationKey]},a=65535,o={query:this.fullQuery,aggregations:i,aggregationsSize:a,rows:0},s=await((e=this.searchService)===null||e===void 0?void 0:e.search(o,this.searchType));this.aggregations=(t=s==null?void 0:s.success)===null||t===void 0?void 0:t.response.aggregations,this.facetGroup=this.aggregationFacetGroups,this.facetsLoading=!1}pageNumberClicked(e){var t;const i=(t=e==null?void 0:e.detail)===null||t===void 0?void 0:t.page;i&&(this.pageNumber=Number(i))}get mergedFacets(){var e;const t=[],i=this.selectedFacetGroups.find(l=>l.key===this.facetKey),a=this.aggregationFacetGroups.find(l=>l.key===this.facetKey);if(i&&!a)return t.push(i),t;if(!a)return t;const o=i!=null?i:a,s=(e=i==null?void 0:i.buckets.map(l=>{const d=a.buckets.find(c=>c.key===l.key);return d?ht(ve({},l),{count:d.count}):l}))!==null&&e!==void 0?e:[];return a.buckets.forEach(l=>{s.find(c=>c.key===l.key)||s.push(l)}),o.buckets=s,t.push(o),t}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const a=t,o=Si[a],s=Object.entries(i).map(([l,d])=>{var c,u;let v=l;return a==="language"&&(v=(u=(c=this.languageCodeHandler)===null||c===void 0?void 0:c.getLanguageNameFromCodeString(l))!==null&&u!==void 0?u:l),{displayText:v,key:l,count:d==null?void 0:d.count,state:d==null?void 0:d.state}});return{title:o,key:a,buckets:s}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{if(i==="year_histogram")return;const o=i;this.facetGroupTitle=Si[o];let s=a.getSortedBuckets(this.sortedBy==="alpha"?Ze.ALPHABETICAL:Ze.COUNT);o==="collection"&&(s=s==null?void 0:s.filter(v=>{var f;return((f=v==null?void 0:v.key)===null||f===void 0?void 0:f.toString().startsWith("fav-"))===!1}),this.preloadCollectionNames(s));const{length:l}=Object.keys(s);this.paginationSize=Math.ceil(l/this.facetsPerPage);const c=(s==null?void 0:s.slice((this.pageNumber-1)*this.facetsPerPage,this.pageNumber*this.facetsPerPage)).map(v=>{var f,w;let x=v.key;return o==="language"&&(x=(w=(f=this.languageCodeHandler)===null||f===void 0?void 0:f.getCodeStringFromLanguageName(`${v.key}`))!==null&&w!==void 0?w:v.key),{displayText:`${v.key}`,key:`${x}`,count:v.doc_count,state:"none"}}),u={title:this.facetGroupTitle,key:o,buckets:c};t.push(u)}),t}preloadCollectionNames(e){var t;const i=e==null?void 0:e.map(o=>o.key),a=Array.from(new Set(i));(t=this.collectionNameCache)===null||t===void 0||t.preloadIdentifiers(a)}get getMoreFacetsTemplate(){var e;return m`
+    `}};n([p({type:Object})],zt.prototype,"facetGroup",void 0);n([p({type:Object})],zt.prototype,"selectedFacets",void 0);n([p({type:String})],zt.prototype,"renderOn",void 0);n([p({type:Object})],zt.prototype,"collectionNameCache",void 0);zt=n([N("facets-template")],zt);let J=class extends F{constructor(){super(...arguments),this.sortedBy="count",this.facetGroup=[],this.facetGroupTitle="",this.pageNumber=1,this.facetsLoading=!0,this.paginationSize=0,this.facetsType="modal",this.facetsPerPage=35}updated(e){e.has("facetKey")&&(this.facetsLoading=!0,this.pageNumber=1,this.updateSpecificFacets()),e.has("pageNumber")&&(this.facetGroup=this.aggregationFacetGroups)}firstUpdated(){this.setupEscapeListeners()}setupEscapeListeners(){this.modalManager?document.addEventListener("keydown",e=>{var t;e.key==="Escape"&&((t=this.modalManager)===null||t===void 0||t.closeModal())}):document.removeEventListener("keydown",()=>{})}async updateSpecificFacets(){var e,t;const i={simpleParams:[this.facetAggregationKey]},a=65535,o={query:this.fullQuery,aggregations:i,aggregationsSize:a,rows:0},s=await((e=this.searchService)===null||e===void 0?void 0:e.search(o,this.searchType));this.aggregations=(t=s==null?void 0:s.success)===null||t===void 0?void 0:t.response.aggregations,this.facetGroup=this.aggregationFacetGroups,this.facetsLoading=!1}pageNumberClicked(e){var t;const i=(t=e==null?void 0:e.detail)===null||t===void 0?void 0:t.page;i&&(this.pageNumber=Number(i))}get mergedFacets(){var e;const t=[],i=this.selectedFacetGroups.find(l=>l.key===this.facetKey),a=this.aggregationFacetGroups.find(l=>l.key===this.facetKey);if(i&&!a)return t.push(i),t;if(!a)return t;const o=i!=null?i:a,s=(e=i==null?void 0:i.buckets.map(l=>{const d=a.buckets.find(c=>c.key===l.key);return d?ht(ve({},l),{count:d.count}):l}))!==null&&e!==void 0?e:[];return a.buckets.forEach(l=>{s.find(c=>c.key===l.key)||s.push(l)}),o.buckets=s,t.push(o),t}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const a=t,o=Si[a],s=Object.entries(i).map(([l,d])=>{var c,u;let v=l;return a==="language"&&(v=(u=(c=this.languageCodeHandler)===null||c===void 0?void 0:c.getLanguageNameFromCodeString(l))!==null&&u!==void 0?u:l),{displayText:v,key:l,count:d==null?void 0:d.count,state:d==null?void 0:d.state}});return{title:o,key:a,buckets:s}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{if(i==="year_histogram")return;const o=i;this.facetGroupTitle=Si[o];let s=a.getSortedBuckets(this.sortedBy==="alpha"?Ze.ALPHABETICAL:Ze.COUNT);o==="collection"&&(s=s==null?void 0:s.filter(v=>{var f;return((f=v==null?void 0:v.key)===null||f===void 0?void 0:f.toString().startsWith("fav-"))===!1}),this.preloadCollectionNames(s));const{length:l}=Object.keys(s);this.paginationSize=Math.ceil(l/this.facetsPerPage);const c=(s==null?void 0:s.slice((this.pageNumber-1)*this.facetsPerPage,this.pageNumber*this.facetsPerPage)).map(v=>{var f,w;let x=v.key;return o==="language"&&(x=(w=(f=this.languageCodeHandler)===null||f===void 0?void 0:f.getCodeStringFromLanguageName(`${v.key}`))!==null&&w!==void 0?w:v.key),{displayText:`${v.key}`,key:`${x}`,count:v.doc_count,state:"none"}}),u={title:this.facetGroupTitle,key:o,buckets:c};t.push(u)}),t}preloadCollectionNames(e){var t;const i=e==null?void 0:e.map(o=>o.key),a=Array.from(new Set(i));(t=this.collectionNameCache)===null||t===void 0||t.preloadIdentifiers(a)}get getMoreFacetsTemplate(){var e;return m`
       <facets-template
         .facetGroup=${(e=this.mergedFacets)===null||e===void 0?void 0:e.shift()}
         .selectedFacets=${this.selectedFacets}
@@ -3207,16 +3207,25 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         />
       </span> `}render(){return m`
       ${this.facetsLoading?this.loaderTemplate:m`
-            <div class="header-content">${this.getModalHeaderTemplate}</div>
-            <div class="facets-content">${this.getMoreFacetsTemplate}</div>
-            ${this.footerTemplate}
+            <section id="more-facets">
+              <div class="header-content">${this.getModalHeaderTemplate}</div>
+              <div class="facets-content">${this.getMoreFacetsTemplate}</div>
+              ${this.footerTemplate}
+            </section>
           `}
     `}applySearchFacetsClicked(){var e;const t=new CustomEvent("facetsChanged",{detail:this.selectedFacets,bubbles:!0,composed:!0});this.dispatchEvent(t),(e=this.modalManager)===null||e===void 0||e.closeModal()}cancelClick(){var e;(e=this.modalManager)===null||e===void 0||e.closeModal()}static get styles(){const e=y`var(--primaryButtonBGColor, #194880)`;return y`
       @media (max-width: 560px) {
+        section#more-facets {
+          max-height: 450px;
+        }
         .facets-content {
           overflow-y: auto;
           height: 300px;
         }
+      }
+      section#more-facets {
+        overflow: auto;
+        padding: 10px; // leaves room for scroll bar to appear without overlaying on content
       }
       .header-content .title {
         display: block;
@@ -3227,7 +3236,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
       .facets-content {
         font-size: 1.2rem;
-        margin: 10px;
+        max-height: 300px;
+        overflow: auto;
+        padding: 10px;
       }
       .page-number {
         background: none;
