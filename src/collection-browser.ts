@@ -948,7 +948,7 @@ export class CollectionBrowser
       aggregations: {
         simpleParams: ['lending___status'],
       },
-      aggregationsSize: 10,
+      aggregationsSize: 10, // Larger size to ensure we get all possible statuses
     };
 
     this.lendingFacetLoading = true;
