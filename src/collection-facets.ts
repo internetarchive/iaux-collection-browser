@@ -402,6 +402,11 @@ export class CollectionFacets extends LitElement {
       return nothing;
     }
 
+    // Don't render More... links for lending facets
+    if (facetGroup.key === 'lending') {
+      return nothing;
+    }
+
     // Don't render More... link if the number of facets < this.allowedFacetCount
     if (Object.keys(facetGroup.buckets).length < this.allowedFacetCount) {
       return nothing;
