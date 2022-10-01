@@ -232,6 +232,7 @@ export class FacetsTemplate extends LitElement {
         height: auto;
         border-top: var(--facet-row-border-top, 1px solid transparent);
         border-bottom: var(--facet-row-border-bottom, 1px solid transparent);
+        overflow: hidden;
       }
       .facet-info-display {
         display: flex;
