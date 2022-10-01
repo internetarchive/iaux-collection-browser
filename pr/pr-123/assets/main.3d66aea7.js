@@ -3108,6 +3108,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         height: auto;
         border-top: var(--facet-row-border-top, 1px solid transparent);
         border-bottom: var(--facet-row-border-bottom, 1px solid transparent);
+        overflow: hidden;
       }
       .facet-info-display {
         display: flex;
