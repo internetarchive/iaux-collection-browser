@@ -120,6 +120,7 @@ export const MetadataFieldToSortField: {
 
 export type FacetOption =
   | 'subject'
+  | 'lending'
   | 'mediatype'
   | 'language'
   | 'creator'
@@ -153,6 +154,7 @@ export type SelectedFacets = Record<
 
 export const defaultSelectedFacets: SelectedFacets = {
   subject: {},
+  lending: {},
   mediatype: {},
   language: {},
   creator: {},
@@ -162,6 +164,7 @@ export const defaultSelectedFacets: SelectedFacets = {
 
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',
+  'lending',
   'year',
   'subject',
   'collection',
@@ -169,20 +172,45 @@ export const facetDisplayOrder: FacetOption[] = [
   'language',
 ];
 
-export const aggregationToFacetOption: Record<string, FacetOption> = {
-  subjectSorter: 'subject',
-  mediatypeSorter: 'mediatype',
-  languageSorter: 'language',
-  creatorSorter: 'creator',
-  collection: 'collection',
-  year: 'year',
-};
-
 export const facetTitles: Record<FacetOption, string> = {
   subject: 'Subject',
+  lending: 'Availability',
   mediatype: 'Media Type',
   language: 'Language',
   creator: 'Creator',
   collection: 'Collection',
   year: 'Year',
+};
+
+export type LendingFacetKey =
+  | 'is_lendable'
+  | 'is_borrowable'
+  | 'available_to_borrow'
+  | 'is_browsable'
+  | 'available_to_browse'
+  | 'is_readable'
+  | 'available_to_waitlist';
+
+/**
+ * Maps valid lending keys to whether they should be visible in the facet sidebar
+ */
+export const lendingFacetKeysVisibility: Record<LendingFacetKey, boolean> = {
+  is_lendable: true,
+  is_borrowable: false,
+  available_to_borrow: true,
+  is_browsable: false,
+  available_to_browse: false,
+  is_readable: true,
+  available_to_waitlist: false,
+};
+
+/**
+ * Maps valid, visible lending keys to their facet sidebar display text
+ */
+export const lendingFacetDisplayNames: Partial<
+  Record<LendingFacetKey, string>
+> = {
+  is_lendable: 'Lending Library',
+  available_to_borrow: 'Borrow 14 Days',
+  is_readable: 'Always Available',
 };

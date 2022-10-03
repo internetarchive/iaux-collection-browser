@@ -10,7 +10,11 @@ import {
 import type { CollectionFacets } from '../src/collection-facets';
 import '@internetarchive/modal-manager';
 import '../src/collection-facets';
-import type { FacetOption } from '../src/models';
+import type { FacetOption, SelectedFacets } from '../src/models';
+import {
+  LanguageCodeHandler,
+  LanguageCodeHandlerInterface,
+} from '../src/language-code-handler/language-code-handler';
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -146,6 +150,265 @@ describe('Collection Facets', () => {
     expect(collectionName?.parentElement).to.not.be.instanceOf(
       HTMLAnchorElement
     );
+  });
+
+  it('renders language facets with their human-readable names', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const languageCodeHandler: LanguageCodeHandlerInterface =
+      new LanguageCodeHandler();
+
+    const aggs: Record<string, Aggregation> = {
+      language: new Aggregation({
+        buckets: [
+          {
+            key: 'English',
+            doc_count: 3,
+          },
+        ],
+      }),
+    };
+
+    el.languageCodeHandler = languageCodeHandler;
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const languageTitle =
+      facetsTemplate?.shadowRoot?.querySelector('.facet-title');
+    expect(languageTitle?.textContent?.trim()).to.equal('English');
+  });
+
+  it('renders selected/negative language facets with human-readable names', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const languageCodeHandler: LanguageCodeHandlerInterface =
+      new LanguageCodeHandler();
+
+    const selectedFacets: SelectedFacets = {
+      subject: {},
+      lending: {},
+      mediatype: {},
+      language: {
+        en: {
+          key: 'en',
+          count: 5,
+          state: 'selected',
+        },
+      },
+      creator: {},
+      collection: {},
+      year: {},
+    };
+
+    el.languageCodeHandler = languageCodeHandler;
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const languageTitle =
+      facetsTemplate?.shadowRoot?.querySelector('.facet-title');
+    expect(languageTitle?.textContent?.trim()).to.equal('English');
+  });
+
+  it('renders lending facets with human-readable names', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      lending: new Aggregation({
+        buckets: [
+          {
+            key: 'is_lendable',
+            doc_count: 3,
+          },
+          {
+            key: 'available_to_borrow',
+            doc_count: 2,
+          },
+          {
+            key: 'is_readable',
+            doc_count: 1,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const lendingTitles =
+      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
+    expect(lendingTitles?.length).to.equal(3);
+    expect(lendingTitles?.item(0).textContent?.trim()).to.equal(
+      'Lending Library'
+    );
+    expect(lendingTitles?.item(1).textContent?.trim()).to.equal(
+      'Borrow 14 Days'
+    );
+    expect(lendingTitles?.item(2).textContent?.trim()).to.equal(
+      'Always Available'
+    );
+  });
+
+  it('renders selected/negative lending facets with human-readable names', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const selectedFacets: SelectedFacets = {
+      subject: {},
+      lending: {
+        is_lendable: {
+          key: 'is_lendable',
+          count: 5,
+          state: 'selected',
+        },
+        available_to_borrow: {
+          key: 'available_to_borrow',
+          count: 4,
+          state: 'selected',
+        },
+        is_readable: {
+          key: 'is_readable',
+          count: 3,
+          state: 'hidden',
+        },
+      },
+      mediatype: {},
+      language: {},
+      creator: {},
+      collection: {},
+      year: {},
+    };
+
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const lendingTitles =
+      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
+    expect(lendingTitles?.length).to.equal(3);
+    expect(lendingTitles?.item(0).textContent?.trim()).to.equal(
+      'Lending Library'
+    );
+    expect(lendingTitles?.item(1).textContent?.trim()).to.equal(
+      'Borrow 14 Days'
+    );
+    expect(lendingTitles?.item(2).textContent?.trim()).to.equal(
+      'Always Available'
+    );
+  });
+
+  it('only renders lending facets for is_lendable, available_to_borrow, and is_readable', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      lending: new Aggregation({
+        buckets: [
+          {
+            key: 'is_lendable',
+            doc_count: 5,
+          },
+          {
+            key: 'is_borrowable',
+            doc_count: 4,
+          },
+          {
+            key: 'available_to_borrow',
+            doc_count: 5,
+          },
+          {
+            key: 'is_browsable',
+            doc_count: 4,
+          },
+          {
+            key: 'available_to_browse',
+            doc_count: 5,
+          },
+          {
+            key: 'is_readable',
+            doc_count: 4,
+          },
+          {
+            key: 'available_to_waitlist',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const lendingTitles =
+      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
+    expect(lendingTitles?.length).to.equal(3);
+    expect(lendingTitles?.item(0).textContent?.trim()).to.equal(
+      'Lending Library'
+    );
+    expect(lendingTitles?.item(1).textContent?.trim()).to.equal(
+      'Borrow 14 Days'
+    );
+    expect(lendingTitles?.item(2).textContent?.trim()).to.equal(
+      'Always Available'
+    );
+  });
+
+  it('does not render a More... link for lending facets', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      lending: new Aggregation({
+        buckets: [
+          {
+            key: 'is_lendable',
+            doc_count: 5,
+          },
+          {
+            key: 'is_borrowable',
+            doc_count: 4,
+          },
+          {
+            key: 'available_to_borrow',
+            doc_count: 5,
+          },
+          {
+            key: 'is_browsable',
+            doc_count: 4,
+          },
+          {
+            key: 'available_to_browse',
+            doc_count: 5,
+          },
+          {
+            key: 'is_readable',
+            doc_count: 4,
+          },
+          {
+            key: 'available_to_waitlist',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const moreLink = el.shadowRoot?.querySelector('.more-link');
+    expect(moreLink).not.to.exist;
   });
 
   describe('More Facets', () => {
