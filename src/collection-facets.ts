@@ -22,6 +22,7 @@ import {
   ModalConfig,
   ModalManagerInterface,
 } from '@internetarchive/modal-manager';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import chevronIcon from './assets/img/icons/chevron';
 import {
   FacetOption,
@@ -34,6 +35,10 @@ import {
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
+import {
+  analyticsActions,
+  analyticsCategories,
+} from './utils/analytics-events';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -61,7 +66,11 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) fullQuery?: string;
 
-  @property({ type: Object }) modalManager?: ModalManagerInterface;
+  @property({ type: Object, attribute: false })
+  modalManager?: ModalManagerInterface;
+
+  @property({ type: Object, attribute: false })
+  analyticsHandler?: AnalyticsManagerInterface;
 
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
@@ -388,6 +397,11 @@ export class CollectionFacets extends LitElement {
       class="more-link"
       @click=${() => {
         this.showMoreFacetsModal(facetGroup, 'count');
+        this.analyticsHandler?.sendEventNoSampling({
+          category: analyticsCategories.default,
+          action: analyticsActions.showMoreFacetsModal,
+          label: facetGroup.key,
+        });
         this.dispatchEvent(
           new CustomEvent('showMoreFacets', { detail: facetGroup.key })
         );
@@ -405,6 +419,7 @@ export class CollectionFacets extends LitElement {
 
     const customModalContent = html`
       <more-facets-content
+        .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
         .fullQuery=${this.fullQuery}
