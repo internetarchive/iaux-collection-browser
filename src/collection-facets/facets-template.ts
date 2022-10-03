@@ -211,12 +211,11 @@ export class FacetsTemplate extends LitElement {
         display: grid;
       }
       .facet-checkbox {
-        margin: 0 5px 0 0;
-        display: flex;
-        height: 15px;
+        float: left; /* had to apply float since two checkboxes always making noise in each design changes */
+        margin: 0 2px;
       }
       .facet-checkbox input:first-child {
-        margin-right: 5px;
+        margin-right: 2px;
       }
       .facet-checkbox input {
         height: 15px;
@@ -224,24 +223,23 @@ export class FacetsTemplate extends LitElement {
         margin: 0;
       }
       .facet-row {
-        display: flex;
+        width: 100%;
+        display: inline-block;
+        margin-bottom: 0;
         font-weight: 500;
         font-size: 1.2rem;
-        margin: 2.5px auto;
         height: auto;
         border-top: var(--facet-row-border-top, 1px solid transparent);
         border-bottom: var(--facet-row-border-bottom, 1px solid transparent);
       }
       .facet-info-display {
-        display: flex;
         flex: 1 1 0%;
         cursor: pointer;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: auto auto;
       }
       .facet-title {
         word-break: break-word;
-        display: inline-block;
-        flex: 1 1 0%;
       }
       .facet-count {
         text-align: right;
