@@ -20,6 +20,7 @@ import {
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import {
   SelectedFacets,
   FacetGroup,
@@ -31,12 +32,16 @@ import type { LanguageCodeHandlerInterface } from '../language-code-handler/lang
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
+import {
+  analyticsActions,
+  analyticsCategories,
+} from '../utils/analytics-events';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
-  @property({ type: String }) facetKey?: string;
+  @property({ type: String }) facetKey?: FacetOption;
 
-  @property({ type: String }) facetAggregationKey?: string;
+  @property({ type: String }) facetAggregationKey?: FacetOption;
 
   @property({ type: String }) fullQuery?: string;
 
@@ -54,7 +59,10 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: String }) sortedBy = 'count'; // count | alpha
+  @property({ type: String }) sortedBy: 'count' | 'alpha' = 'count';
+
+  @property({ type: Object, attribute: false })
+  analyticsHandler?: AnalyticsManagerInterface;
 
   @state() aggregations?: Record<string, Aggregation>;
 
@@ -136,6 +144,12 @@ export class MoreFacetsContent extends LitElement {
     if (page) {
       this.pageNumber = Number(page);
     }
+
+    this.analyticsHandler?.sendEventNoSampling({
+      category: analyticsCategories.default,
+      action: analyticsActions.moreFacetsPageChange,
+      label: `${this.pageNumber}`,
+    });
   }
 
   /**
@@ -419,10 +433,20 @@ export class MoreFacetsContent extends LitElement {
     });
     this.dispatchEvent(event);
     this.modalManager?.closeModal();
+    this.analyticsHandler?.sendEventNoSampling({
+      category: analyticsCategories.default,
+      action: `${analyticsActions.applyMoreFacetsModal}`,
+      label: `${this.facetKey}`,
+    });
   }
 
   private cancelClick() {
     this.modalManager?.closeModal();
+    this.analyticsHandler?.sendEventNoSampling({
+      category: analyticsCategories.default,
+      action: analyticsActions.closeMoreFacetsModal,
+      label: `${this.facetKey}`,
+    });
   }
 
   static get styles(): CSSResultGroup {
