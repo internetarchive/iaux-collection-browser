@@ -31,6 +31,7 @@ function magnitude(number: number, numberFormat: NumberFormat): Divisor {
  * Round a number given passed magnitude.
  * Significant digits of value less than 10 get a decimal.
  */
+// eslint-disable-next-line default-param-last
 function round(number: number = 0, divisor: Divisor): number {
   const result = number / divisor;
   const roundToOne = result < 10;
