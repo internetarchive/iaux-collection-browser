@@ -73,7 +73,7 @@ export class MoreFacetsContent extends LitElement {
 
   @state() facetsType = 'modal';
 
-  private facetsPerPage = 60; // TODO: Q. how many items we want to have on popup view
+  private facetsPerPage = 35;
 
   updated(changed: PropertyValues) {
     if (changed.has('facetKey')) {
@@ -402,11 +402,11 @@ export class MoreFacetsContent extends LitElement {
       ${this.facetsLoading
         ? this.loaderTemplate
         : html`
-            <div class="header-content">${this.getModalHeaderTemplate}</div>
-            <div class="scrollable-content">
+            <section id="more-facets">
+              <div class="header-content">${this.getModalHeaderTemplate}</div>
               <div class="facets-content">${this.getMoreFacetsTemplate}</div>
-            </div>
-            ${this.footerTemplate}
+              ${this.footerTemplate}
+            </section>
           `}
     `;
   }
@@ -429,6 +429,19 @@ export class MoreFacetsContent extends LitElement {
     const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
 
     return css`
+      @media (max-width: 560px) {
+        section#more-facets {
+          max-height: 450px;
+        }
+        .facets-content {
+          overflow-y: auto;
+          height: 300px;
+        }
+      }
+      section#more-facets {
+        overflow: auto;
+        padding: 10px; // leaves room for scroll bar to appear without overlaying on content
+      }
       .header-content .title {
         display: block;
         text-align: left;
@@ -436,13 +449,11 @@ export class MoreFacetsContent extends LitElement {
         padding: 0 10px;
         font-weight: bold;
       }
-      .scrollable-content {
-        overflow-y: auto;
-        max-height: 60vh;
-      }
       .facets-content {
         font-size: 1.2rem;
-        margin: 10px;
+        max-height: 300px;
+        overflow: auto;
+        padding: 10px;
       }
       .page-number {
         background: none;

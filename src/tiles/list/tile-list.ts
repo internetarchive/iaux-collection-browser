@@ -306,6 +306,7 @@ export class TileList extends LitElement {
   }
 
   // Utility functions
+  // eslint-disable-next-line default-param-last
   private metadataTemplate(text: any, label = '', id?: string) {
     if (!text) return nothing;
     return html`
