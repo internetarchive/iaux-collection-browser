@@ -373,13 +373,7 @@ export class CollectionFacets extends LitElement {
           >
             ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
           </h1>
-          <input
-            class="sorting-icon"
-            type="image"
-            @click=${() => this.showMoreFacetsModal(facetGroup, 'alpha')}
-            src="https://archive.org/images/filter-count.png"
-            alt="Sort by alphabetically"
-          />
+          ${this.moreFacetsSortingIcon(facetGroup)}
         </div>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.getFacetTemplate(facetGroup)}
@@ -387,6 +381,23 @@ export class CollectionFacets extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  private moreFacetsSortingIcon(
+    facetGroup: FacetGroup
+  ): TemplateResult | typeof nothing {
+    // Display the sorting icon for every facet group except lending
+    return facetGroup.key === 'lending'
+      ? nothing
+      : html`
+          <input
+            class="sorting-icon"
+            type="image"
+            @click=${() => this.showMoreFacetsModal(facetGroup, 'alpha')}
+            src="https://archive.org/images/filter-count.png"
+            alt="Sort alphabetically"
+          />
+        `;
   }
 
   /**
