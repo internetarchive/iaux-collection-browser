@@ -3332,20 +3332,22 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           >
             ${this.collapsableFacets?a:_} ${e.title}
           </h1>
-          <input
-            class="sorting-icon"
-            type="image"
-            @click=${()=>this.showMoreFacetsModal(e,"alpha")}
-            src="https://archive.org/images/filter-count.png"
-            alt="Sort by alphabetically"
-          />
+          ${this.moreFacetsSortingIcon(e)}
         </div>
         <div class="facet-group-content ${i?"open":""}">
           ${this.getFacetTemplate(e)}
           ${this.searchMoreFacetsLink(e)}
         </div>
       </div>
-    `}searchMoreFacetsLink(e){return this.searchType===ge.FULLTEXT||e.key==="lending"||Object.keys(e.buckets).length<this.allowedFacetCount?_:m`<button
+    `}moreFacetsSortingIcon(e){return e.key==="lending"?_:m`
+          <input
+            class="sorting-icon"
+            type="image"
+            @click=${()=>this.showMoreFacetsModal(e,"alpha")}
+            src="https://archive.org/images/filter-count.png"
+            alt="Sort alphabetically"
+          />
+        `}searchMoreFacetsLink(e){return this.searchType===ge.FULLTEXT||e.key==="lending"||Object.keys(e.buckets).length<this.allowedFacetCount?_:m`<button
       class="more-link"
       @click=${()=>{this.showMoreFacetsModal(e,"count"),this.dispatchEvent(new CustomEvent("showMoreFacets",{detail:e.key}))}}
     >
