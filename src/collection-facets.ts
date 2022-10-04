@@ -48,6 +48,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
 
+  @property({ type: Number }) previousSearchType?: SearchType;
+
   @property({ type: String }) minSelectedDate?: string;
 
   @property({ type: String }) maxSelectedDate?: string;
@@ -398,7 +400,7 @@ export class CollectionFacets extends LitElement {
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
     // Don't render More... links for FTS searches
-    if (this.searchType === SearchType.FULLTEXT) {
+    if (this.previousSearchType === SearchType.FULLTEXT) {
       return nothing;
     }
 

@@ -163,6 +163,13 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
+  /**
+   * The search type of the previous search (i.e., the currently displayed
+   * search results), which may differ from the one that is currently selected
+   * to be used for the next search.
+   */
+  @state() private previousSearchType?: SearchType;
+
   @state() private totalResults?: number;
 
   @state() private mobileView = false;
@@ -523,6 +530,7 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
+        .previousSearchType=${this.previousSearchType}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -935,6 +943,7 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
+    this.previousSearchType = this.searchType;
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
