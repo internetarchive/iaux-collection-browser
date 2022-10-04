@@ -538,7 +538,7 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
-        .previousSearchType=${this.previousSearchType}
+        .moreLinksVisible=${this.previousSearchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}

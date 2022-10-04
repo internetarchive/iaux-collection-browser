@@ -8,7 +8,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import {
+import type {
   Aggregation,
   Bucket,
   SearchServiceInterface,
@@ -48,11 +48,11 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
 
-  @property({ type: Number }) previousSearchType?: SearchType;
-
   @property({ type: String }) minSelectedDate?: string;
 
   @property({ type: String }) maxSelectedDate?: string;
+
+  @property({ type: Boolean }) moreLinksVisible = true;
 
   @property({ type: Boolean }) facetsLoading = false;
 
@@ -400,7 +400,7 @@ export class CollectionFacets extends LitElement {
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
     // Don't render More... links for FTS searches
-    if (this.previousSearchType === SearchType.FULLTEXT) {
+    if (!this.moreLinksVisible) {
       return nothing;
     }
 
