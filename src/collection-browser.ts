@@ -993,7 +993,7 @@ export class CollectionBrowser
    * If this doesn't change, we don't need to re-fetch the histogram date range
    */
   private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDate}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQueryWithoutDate}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   /**
