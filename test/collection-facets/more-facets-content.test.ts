@@ -1,10 +1,11 @@
 /* eslint-disable import/no-duplicates */
-import { expect, fixture, oneEvent } from '@open-wc/testing';
+import { aTimeout, expect, fixture, oneEvent } from '@open-wc/testing';
 import { html } from 'lit';
 import { Aggregation } from '@internetarchive/search-service';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
+import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -128,6 +129,7 @@ describe('More facets content', () => {
 
   it('page number clicked event', async () => {
     const searchService = new MockSearchService();
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
@@ -135,12 +137,20 @@ describe('More facets content', () => {
       ></more-facets-content>`
     );
 
-    setTimeout(() =>
-      el.dispatchEvent(
-        new CustomEvent('pageNumberClicked', { detail: { page: 15 } })
-      )
-    );
+    el.analyticsHandler = mockAnalyticsHandler;
+    el.pageNumber = 15;
     const { detail } = await oneEvent(el, 'pageNumberClicked');
+    // setTimeout(() =>
+    //   el.dispatchEvent(
+    //     new CustomEvent('pageNumberClicked', { detail: { page: 15 } })
+    //   )
+    // );
+    await aTimeout(1500);
+    await el.updateComplete;
     expect(detail?.page).to.equal(15);
+    console.log('mock category: ', mockAnalyticsHandler.callCategory);
+    // expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('moreFacetsPageChange');
+    expect(mockAnalyticsHandler.callLabel).to.equal('15');
   });
 });
