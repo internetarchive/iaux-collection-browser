@@ -1183,6 +1183,10 @@ export class CollectionBrowser
    * page are visible, but if the page is not currenlty visible, we don't need to reload
    */
   private get currentVisiblePageNumbers(): number[] {
+    if (!this.infiniteScroller) {
+      return [];
+    }
+
     const visibleCells = this.infiniteScroller.getVisibleCellIndices();
     const visiblePages = new Set<number>();
     visibleCells.forEach(cellIndex => {
