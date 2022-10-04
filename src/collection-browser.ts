@@ -1055,7 +1055,7 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.fullQuery}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQuery}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   // this maps the query to the pages being fetched for that query
