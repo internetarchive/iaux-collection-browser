@@ -125,6 +125,7 @@ export class TileList extends LitElement {
         .isCompactTile=${false}
         .isListTile=${true}
         .viewSize=${this.classSize}
+        .loggedIn=${this.loggedIn}
       >
       </image-block>
     `;
