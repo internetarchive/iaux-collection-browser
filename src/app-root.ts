@@ -5,6 +5,7 @@ import {
 } from '@internetarchive/analytics-manager';
 import {
   SearchService,
+  SearchServiceInterface,
   SearchType,
   StringField,
 } from '@internetarchive/search-service';
@@ -22,7 +23,8 @@ import '../src/collection-browser';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
-  private searchService = SearchService.default;
+  private searchService: SearchServiceInterface =
+    this.initSearchServiceFromUrlParams();
 
   private resizeObserver = new SharedResizeObserver();
 
@@ -71,6 +73,15 @@ export class AppRoot extends LitElement {
     console.log('Analytics Received ----', ae);
     this.latestAction = ae;
     this.analyticsManager?.sendEventNoSampling(ae);
+  }
+
+  private initSearchServiceFromUrlParams() {
+    const params = new URL(window.location.href).searchParams;
+    return new SearchService({
+      baseUrl: params.get('search_base_url') ?? undefined,
+      servicePath: params.get('search_service_path') ?? undefined,
+      debuggingEnabled: !!params.get('debugging') ?? undefined,
+    });
   }
 
   private searchPressed(e: Event) {
