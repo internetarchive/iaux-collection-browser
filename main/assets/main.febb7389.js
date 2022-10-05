@@ -348,7 +348,7 @@ var Do=Object.defineProperty,Lo=Object.defineProperties;var Oo=Object.getOwnProp
     </g>
     <title>Log in to view this item</title>
   </svg>
-`;let gi=class extends F{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1}render(){return this.loginRequired&&!this.loggedIn?m`${Cs} `:m`${$s}`}static get styles(){return y`
+`;let gi=class extends F{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1}render(){return this.loginRequired&&!this.loggedIn?m`${Cs}`:m`${$s}`}static get styles(){return y`
       :host {
         position: absolute;
         top: 50%;
@@ -1161,6 +1161,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         .isCompactTile=${!1}
         .isListTile=${!0}
         .viewSize=${this.classSize}
+        .loggedIn=${this.loggedIn}
       >
       </image-block>
     `}get detailsTemplate(){return m`
@@ -1342,6 +1343,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           .isCompactTile=${!0}
           .isListTile=${!0}
           .viewSize=${this.classSize}
+          .loggedIn=${this.loggedIn}
         >
         </image-block>
         <div id="title">${Gt.sanitize((t=(e=this.model)===null||e===void 0?void 0:e.title)!==null&&t!==void 0?t:"")}</div>
