@@ -775,6 +775,7 @@ export class CollectionBrowser
     this.initialQueryChangeHappened = true;
     // if the query changed as part of a window.history pop event, we don't want to
     // persist the state because it overwrites the forward history
+
     if (!this.historyPopOccurred) {
       this.persistState();
       this.historyPopOccurred = false;
@@ -810,6 +811,7 @@ export class CollectionBrowser
   private restoreState() {
     const restorationState = this.restorationStateHandler.getRestorationState();
     this.displayMode = restorationState.displayMode;
+    this.searchType = restorationState.searchType ?? SearchType.METADATA;
     this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
     this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
@@ -831,6 +833,7 @@ export class CollectionBrowser
   private persistState() {
     const restorationState: RestorationState = {
       displayMode: this.displayMode,
+      searchType: this.searchType,
       sortParam: this.sortParam ?? undefined,
       selectedSort: this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
@@ -1088,27 +1091,6 @@ export class CollectionBrowser
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: this.fullQuery,
-      fields: [
-        'addeddate',
-        'avg_rating',
-        'collections_raw',
-        'creator',
-        'date',
-        'description',
-        'downloads',
-        'identifier',
-        'issue',
-        'item_count',
-        'mediatype',
-        'num_favorites',
-        'num_reviews',
-        'publicdate',
-        'reviewdate',
-        'source',
-        'subject', // topic
-        'title',
-        'volume',
-      ],
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
