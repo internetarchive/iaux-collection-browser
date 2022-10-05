@@ -163,6 +163,13 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
+  /**
+   * The search type of the previous search (i.e., the currently displayed
+   * search results), which may differ from the one that is currently selected
+   * to be used for the next search.
+   */
+  @state() private previousSearchType?: SearchType;
+
   @state() private totalResults?: number;
 
   @state() private mobileView = false;
@@ -269,6 +276,14 @@ export class CollectionBrowser
     this.creatorQuery = undefined;
     this.selectedSort = SortField.relevance;
     this.sortDirection = null;
+  }
+
+  /**
+   * Manually requests to perform a search, which will only be executed if one of
+   * the query, the search type, or the sort has changed.
+   */
+  requestSearch() {
+    this.handleQueryChange();
   }
 
   render() {
@@ -523,6 +538,7 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
+        .moreLinksVisible=${this.previousSearchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -935,6 +951,7 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
+    this.previousSearchType = this.searchType;
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
@@ -984,7 +1001,7 @@ export class CollectionBrowser
    * If this doesn't change, we don't need to re-fetch the histogram date range
    */
   private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDate}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQueryWithoutDate}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   /**
@@ -1046,7 +1063,7 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.fullQuery}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQuery}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   // this maps the query to the pages being fetched for that query
@@ -1166,7 +1183,7 @@ export class CollectionBrowser
    * page are visible, but if the page is not currenlty visible, we don't need to reload
    */
   private get currentVisiblePageNumbers(): number[] {
-    const visibleCells = this.infiniteScroller.getVisibleCellIndices();
+    const visibleCells = this.infiniteScroller?.getVisibleCellIndices() ?? [];
     const visiblePages = new Set<number>();
     visibleCells.forEach(cellIndex => {
       const visiblePage = Math.floor(cellIndex / this.pageSize) + 1;
