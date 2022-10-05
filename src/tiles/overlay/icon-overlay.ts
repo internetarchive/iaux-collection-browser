@@ -11,10 +11,9 @@ export class IconOverlay extends LitElement {
   @property({ type: Boolean }) loginRequired = false;
 
   render() {
-    if (this.loginRequired && !this.loggedIn) {
-      return html`${loginRequiredIcon} `;
-    }
-    return html`${restrictedIcon}`;
+    return this.loginRequired && !this.loggedIn
+      ? html`${loginRequiredIcon}`
+      : html`${restrictedIcon}`;
   }
 
   static get styles(): CSSResultGroup {

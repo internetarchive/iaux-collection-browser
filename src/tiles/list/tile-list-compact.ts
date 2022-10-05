@@ -38,6 +38,7 @@ export class TileListCompact extends LitElement {
           .isCompactTile=${true}
           .isListTile=${true}
           .viewSize=${this.classSize}
+          .loggedIn=${this.loggedIn}
         >
         </image-block>
         <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
