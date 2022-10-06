@@ -1,3 +1,4 @@
+import { SearchType } from '@internetarchive/search-service';
 import { expect } from '@open-wc/testing';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 
@@ -11,6 +12,17 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.baseQuery).to.equal('boop');
+  });
+
+  it('should restore full text search type from URL', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sin=TXT';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.searchType).to.equal(SearchType.FULLTEXT);
   });
 
   it('should restore page number from URL', async () => {
