@@ -61,7 +61,7 @@ describe('Collection Facets', () => {
     const titleFacetRow = titleFacetGroup
       ?.querySelector('facets-template')
       ?.shadowRoot?.querySelector('.facet-row');
-    console.log(titleFacetGroup?.querySelector('facets-template'));
+
     expect(titleFacetRow?.textContent?.trim()).to.satisfy((text: string) =>
       /^foo\s*5$/.test(text)
     );
@@ -604,8 +604,7 @@ describe('Collection Facets', () => {
     const moreLink = el.shadowRoot?.querySelector(
       '.more-link'
     ) as HTMLButtonElement;
-    console.log(el.shadowRoot);
-    console.log(moreLink);
+
     expect(moreLink).to.exist; // has link
 
     moreLink?.click();
