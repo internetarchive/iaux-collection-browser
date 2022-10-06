@@ -139,7 +139,8 @@ export class AppRoot extends LitElement {
               id="metadata-search"
               name="search-type"
               value="metadata"
-              checked
+              ?checked=${this.collectionBrowser?.searchType ===
+              SearchType.METADATA}
               @click=${this.searchTypeChanged}
             />
             <label for="metadata-search">Metadata</label>
@@ -150,6 +151,8 @@ export class AppRoot extends LitElement {
               id="fulltext-search"
               name="search-type"
               value="fulltext"
+              ?checked=${this.collectionBrowser?.searchType ===
+              SearchType.FULLTEXT}
               @click=${this.searchTypeChanged}
             />
             <label for="fulltext-search">Full text</label>
