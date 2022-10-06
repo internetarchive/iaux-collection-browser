@@ -15,6 +15,7 @@ import {
   LanguageCodeHandler,
   LanguageCodeHandlerInterface,
 } from '../src/language-code-handler/language-code-handler';
+import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -552,5 +553,66 @@ describe('Collection Facets', () => {
       expect(eventCaught).to.be.true;
       expect(eventFacet).to.equal('subject' as FacetOption);
     });
+  });
+
+  it('fire analytics on more link', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></collection-facets>`
+    );
+    const aggs: Record<string, Aggregation> = {
+      subject: new Aggregation({
+        buckets: [
+          {
+            key: 'foo',
+            doc_count: 5,
+          },
+          {
+            key: 'fi',
+            doc_count: 5,
+          },
+          {
+            key: 'fum',
+            doc_count: 5,
+          },
+          {
+            key: 'flee',
+            doc_count: 5,
+          },
+          {
+            key: 'wheee',
+            doc_count: 5,
+          },
+          {
+            key: 'whooo',
+            doc_count: 5,
+          },
+          {
+            key: 'boop',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const moreLink = el.shadowRoot?.querySelector(
+      '.more-link'
+    ) as HTMLButtonElement;
+    console.log(el.shadowRoot);
+    console.log(moreLink);
+    expect(moreLink).to.exist; // has link
+
+    moreLink?.click();
+    await el.updateComplete;
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('showMoreFacetsModal');
+    expect(mockAnalyticsHandler.callLabel).to.equal('subject');
   });
 });
