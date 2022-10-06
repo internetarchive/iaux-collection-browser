@@ -1,5 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import { aTimeout, expect, fixture, oneEvent } from '@open-wc/testing';
+import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { Aggregation } from '@internetarchive/search-service';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
@@ -127,30 +127,52 @@ describe('More facets content', () => {
     expect(bucket?.count).to.equal(5);
   });
 
-  it('page number clicked event', async () => {
-    const searchService = new MockSearchService();
+  it('cancel button clicked event', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
-        .searchService=${searchService}
+        .analyticsHandler=${mockAnalyticsHandler}
       ></more-facets-content>`
     );
 
-    el.analyticsHandler = mockAnalyticsHandler;
-    el.pageNumber = 15;
-    const { detail } = await oneEvent(el, 'pageNumberClicked');
-    // setTimeout(() =>
-    //   el.dispatchEvent(
-    //     new CustomEvent('pageNumberClicked', { detail: { page: 15 } })
-    //   )
-    // );
-    await aTimeout(1500);
+    el.facetsLoading = false;
+    el.paginationSize = 5;
     await el.updateComplete;
-    expect(detail?.page).to.equal(15);
-    console.log('mock category: ', mockAnalyticsHandler.callCategory);
-    // expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
-    expect(mockAnalyticsHandler.callAction).to.equal('moreFacetsPageChange');
-    expect(mockAnalyticsHandler.callLabel).to.equal('15');
+
+    // select cancel button
+    const cancelButton = el.shadowRoot?.querySelector(
+      '.footer > .btn-cancel'
+    ) as HTMLButtonElement;
+    cancelButton?.click();
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('closeMoreFacetsModal');
+    expect(mockAnalyticsHandler.callLabel).to.equal('undefined');
+  });
+
+  it('facet apply button clicked event', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></more-facets-content>`
+    );
+
+    el.facetsLoading = false;
+    el.paginationSize = 5;
+    el.facetKey = 'collection';
+    await el.updateComplete;
+
+    // select submit button
+    const submitButton = el.shadowRoot?.querySelector(
+      '.footer > .btn-submit'
+    ) as HTMLButtonElement;
+    submitButton?.click();
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('applyMoreFacetsModal');
+    expect(mockAnalyticsHandler.callLabel).to.equal('collection');
   });
 });
