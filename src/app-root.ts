@@ -133,23 +133,27 @@ export class AppRoot extends LitElement {
 
         <div id="search-types">
           Search type:
-          <input
-            type="radio"
-            id="metadata-search"
-            name="search-type"
-            value="metadata"
-            checked
-            @click=${this.searchTypeChanged}
-          />
-          <label for="metadata-search">Metadata</label>
-          <input
-            type="radio"
-            id="fulltext-search"
-            name="search-type"
-            value="fulltext"
-            @click=${this.searchTypeChanged}
-          />
-          <label for="fulltext-search">Full text</label>
+          <span class="search-type">
+            <input
+              type="radio"
+              id="metadata-search"
+              name="search-type"
+              value="metadata"
+              checked
+              @click=${this.searchTypeChanged}
+            />
+            <label for="metadata-search">Metadata</label>
+          </span>
+          <span class="search-type">
+            <input
+              type="radio"
+              id="fulltext-search"
+              name="search-type"
+              value="fulltext"
+              @click=${this.searchTypeChanged}
+            />
+            <label for="fulltext-search">Full text</label>
+          </span>
         </div>
 
         <div id="toggle-controls">
@@ -187,7 +191,7 @@ export class AppRoot extends LitElement {
         <div id="cell-controls" class="hidden">
           <div id="cell-size-control">
             <div>
-              <label for="cell-width-slider">Minimum cell width:</label>
+              <label for="cell-width-slider">Min cell width:</label>
               <input
                 type="range"
                 min="10"
@@ -211,40 +215,6 @@ export class AppRoot extends LitElement {
                 @input=${this.heightChanged}
               />
               <span>${this.cellHeight}rem</span>
-            </div>
-            <div>
-              <label for="show-outline-check">Show outlines:</label>
-              <input
-                type="checkbox"
-                id="show-outline-check"
-                @click=${this.outlineChanged}
-              />
-            </div>
-            <div>
-              <label for="show-facet-group-outline-check"
-                >Show Facet Group Outlines:</label
-              >
-              <input
-                type="checkbox"
-                id="show-facet-group-outline-check"
-                @click=${this.toggleFacetGroupOutline}
-              />
-            </div>
-            <div>
-              <label for="simulate-login">Simulate Login:</label>
-              <input
-                type="checkbox"
-                id="simulate-login"
-                @click=${this.loginChanged}
-              />
-            </div>
-            <div>
-              <label for="show-dummy-snippets">Show dummy snippets:</label>
-              <input
-                type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
             </div>
           </div>
           <div id="cell-gap-control">
@@ -274,6 +244,42 @@ export class AppRoot extends LitElement {
               />
               <span>${this.colGap}rem</span>
             </div>
+          </div>
+        </div>
+        <div id="checkbox-controls">
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-outline-check"
+              @click=${this.outlineChanged}
+            />
+            <label for="show-outline-check">Show cell outlines</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-facet-group-outline-check"
+              @click=${this.toggleFacetGroupOutline}
+            />
+            <label for="show-facet-group-outline-check">
+              Show facet group outlines
+            </label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="simulate-login"
+              @click=${this.loginChanged}
+            />
+            <label for="simulate-login">Simulate login</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-dummy-snippets"
+              @click=${this.snippetsChanged}
+            />
+            <label for="show-dummy-snippets">Show dummy snippets</label>
           </div>
         </div>
       </div>
@@ -505,8 +511,17 @@ export class AppRoot extends LitElement {
       display: flex;
     }
 
+    #search-and-page-inputs > form {
+      margin-right: 1rem;
+    }
+
+    .search-type {
+      margin-right: 1rem;
+    }
+
     #cell-controls {
       display: flex;
+      flex-wrap: wrap;
     }
 
     #cell-controls label {
@@ -514,8 +529,23 @@ export class AppRoot extends LitElement {
       width: 10rem;
     }
 
+    #cell-size-control,
+    #cell-gap-control {
+      flex-basis: calc(50% - 1rem);
+      flex-grow: 1;
+    }
+
     #cell-gap-control {
       margin-left: 1rem;
+    }
+
+    #checkbox-controls {
+      padding-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-control {
+      flex-basis: 50%;
     }
 
     #last-event {
