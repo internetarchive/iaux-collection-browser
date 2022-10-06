@@ -155,11 +155,20 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
+  @state() private lendingFacetLoading = false;
+
   @state() private fullYearAggregationLoading = false;
 
   @state() private aggregations?: Record<string, Aggregation>;
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
+
+  /**
+   * The search type of the previous search (i.e., the currently displayed
+   * search results), which may differ from the one that is currently selected
+   * to be used for the next search.
+   */
+  @state() private previousSearchType?: SearchType;
 
   @state() private totalResults?: number;
 
@@ -267,6 +276,14 @@ export class CollectionBrowser
     this.creatorQuery = undefined;
     this.selectedSort = SortField.relevance;
     this.sortDirection = null;
+  }
+
+  /**
+   * Manually requests to perform a search, which will only be executed if one of
+   * the query, the search type, or the sort has changed.
+   */
+  requestSearch() {
+    this.handleQueryChange();
   }
 
   render() {
@@ -482,7 +499,11 @@ export class CollectionBrowser
   }
 
   private get facetDataLoading(): boolean {
-    return this.facetsLoading || this.fullYearAggregationLoading;
+    return (
+      this.facetsLoading ||
+      this.lendingFacetLoading ||
+      this.fullYearAggregationLoading
+    );
   }
 
   private get mobileFacetsTemplate() {
@@ -517,6 +538,7 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
+        .moreLinksVisible=${this.previousSearchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -758,9 +780,15 @@ export class CollectionBrowser
       this.historyPopOccurred = false;
     }
 
+    // Ensure lending aggregations don't carry over to non-metadata searches
+    if (this.searchType !== SearchType.METADATA) {
+      delete this.aggregations?.lending;
+    }
+
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
+      this.fetchLendingFacet(),
       this.fetchFullYearHistogram(),
     ]);
   }
@@ -860,6 +888,8 @@ export class CollectionBrowser
       this.selectedFacets
     )) {
       const facetEntries = Object.entries(facetValues);
+      const facetQueryName =
+        facetName === 'lending' ? 'lending___status' : facetName;
       // eslint-disable-next-line no-continue
       if (facetEntries.length === 0) continue;
       const facetValuesArray: string[] = [];
@@ -877,7 +907,7 @@ export class CollectionBrowser
         }
       }
       const valueQuery = facetValuesArray.join(` OR `);
-      facetQuery.push(`${facetName}:(${valueQuery})`);
+      facetQuery.push(`${facetQueryName}:(${valueQuery})`);
     }
     return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
   }
@@ -921,10 +951,38 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
+    this.previousSearchType = this.searchType;
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
-    this.aggregations = results?.success?.response.aggregations;
+    this.aggregations = {
+      ...this.aggregations,
+      ...results?.success?.response.aggregations,
+    };
+  }
+
+  private async fetchLendingFacet() {
+    // Only retrieve lending facet for metadata searches
+    if (this.searchType !== SearchType.METADATA) return;
+    if (!this.fullQuery) return;
+
+    const params: SearchParams = {
+      query: this.fullQuery,
+      rows: 0,
+      aggregations: {
+        simpleParams: ['lending___status'],
+      },
+      aggregationsSize: 10, // Larger size to ensure we get all possible statuses
+    };
+
+    this.lendingFacetLoading = true;
+    const results = await this.searchService?.search(params, this.searchType);
+    this.lendingFacetLoading = false;
+
+    this.aggregations = {
+      ...this.aggregations,
+      ...results?.success?.response.aggregations,
+    };
   }
 
   /**
@@ -943,7 +1001,7 @@ export class CollectionBrowser
    * If this doesn't change, we don't need to re-fetch the histogram date range
    */
   private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDate}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQueryWithoutDate}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   /**
@@ -1005,7 +1063,7 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey() {
-    return `${this.fullQuery}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQuery}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   // this maps the query to the pages being fetched for that query
@@ -1125,7 +1183,7 @@ export class CollectionBrowser
    * page are visible, but if the page is not currenlty visible, we don't need to reload
    */
   private get currentVisiblePageNumbers(): number[] {
-    const visibleCells = this.infiniteScroller.getVisibleCellIndices();
+    const visibleCells = this.infiniteScroller?.getVisibleCellIndices() ?? [];
     const visiblePages = new Set<number>();
     visibleCells.forEach(cellIndex => {
       const visiblePage = Math.floor(cellIndex / this.pageSize) + 1;

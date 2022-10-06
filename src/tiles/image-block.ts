@@ -22,9 +22,8 @@ export class ImageBlock extends LitElement {
   @property({ type: String }) viewSize: string = 'desktop';
 
   render() {
-    if (!this.model?.identifier) {
-      return nothing;
-    }
+    if (!this.model?.identifier) return nothing;
+
     return html`
       <div class=${classMap(this.baseClass)}>
         <item-image
@@ -52,9 +51,9 @@ export class ImageBlock extends LitElement {
   private get iconOverlayTemplate() {
     if (!this.isListTile) return nothing;
 
-    if (!this.model?.loginRequired && !this.model?.contentWarning) {
+    if (!this.model?.loginRequired && !this.model?.contentWarning)
       return nothing;
-    }
+
     return html`
       <icon-overlay
         .loggedIn=${this.loggedIn}
@@ -65,13 +64,11 @@ export class ImageBlock extends LitElement {
   }
 
   private get textOverlayTemplate() {
-    if (this.isListTile) {
-      return nothing;
-    }
+    if (this.isListTile) return nothing;
 
-    if (!this.model?.loginRequired && !this.model?.contentWarning) {
+    if (!this.model?.loginRequired && !this.model?.contentWarning)
       return nothing;
-    }
+
     return html`
       <text-overlay
         .loggedIn=${this.loggedIn}

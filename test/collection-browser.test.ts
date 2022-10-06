@@ -89,6 +89,7 @@ describe('Collection Browser', () => {
     const mediaTypeBucket = { count: 123, state: 'selected' } as FacetBucket;
     const mockedSelectedFacets: SelectedFacets = {
       subject: {},
+      lending: {},
       mediatype: { data: mediaTypeBucket },
       language: {},
       creator: {},
@@ -122,6 +123,7 @@ describe('Collection Browser', () => {
     const mediaTypeBucket = { count: 123, state: 'selected' } as FacetBucket;
     const mockedSelectedFacets: SelectedFacets = {
       subject: {},
+      lending: {},
       mediatype: { data: mediaTypeBucket },
       language: {},
       creator: {},
@@ -225,6 +227,29 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
+  it('can search on demand if only search type has changed', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .searchType=${SearchType.METADATA}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    el.searchType = SearchType.FULLTEXT;
+    await el.updateComplete;
+
+    // Haven't performed the search yet
+    expect(searchService.searchType).to.equal(SearchType.METADATA);
+
+    el.requestSearch();
+    expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
+  });
+
   it('queries for collection names after a fetch', async () => {
     const searchService = new MockSearchService();
     const collectionNameCache = new MockCollectionNameCache();
@@ -237,7 +262,7 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    el.baseQuery = 'blahblah';
+    el.baseQuery = 'collection:foo';
     await el.updateComplete;
 
     expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([

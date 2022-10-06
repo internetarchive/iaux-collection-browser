@@ -433,7 +433,6 @@ export class MoreFacetsContent extends LitElement {
     });
     this.dispatchEvent(event);
     this.modalManager?.closeModal();
-
     this.analyticsHandler?.sendEventNoSampling({
       category: analyticsCategories.default,
       action: `${analyticsActions.applyMoreFacetsModal}`,
