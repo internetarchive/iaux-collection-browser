@@ -811,7 +811,8 @@ export class CollectionBrowser
   private restoreState() {
     const restorationState = this.restorationStateHandler.getRestorationState();
     this.displayMode = restorationState.displayMode;
-    this.searchType = restorationState.searchType ?? SearchType.METADATA;
+    if (restorationState.searchType != null)
+      this.searchType = restorationState.searchType;
     this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
     this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
