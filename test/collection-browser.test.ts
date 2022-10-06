@@ -18,6 +18,21 @@ import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { analyticsCategories } from '../src/utils/analytics-events';
 
 describe('Collection Browser', () => {
+  beforeEach(async () => {
+    // Apparently query params set by one test can bleed into other tests.
+    // Since collection browser restores its state from certain query params, we need
+    // to clear these before each test to ensure they run in isolation from one another.
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.delete('sin');
+    searchParams.delete('sort');
+    searchParams.delete('query');
+    searchParams.delete('page');
+    searchParams.delete('and[]');
+    searchParams.delete('not[]');
+    window.history.replaceState({}, '', url);
+  });
+
   it('clear existing filter for facets & sort-bar', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
@@ -370,8 +385,11 @@ describe('Collection Browser', () => {
   });
 
   it('sets sort properties when user changes sort', async () => {
+    const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
     );
 
     expect(el.selectedSort).to.equal(SortField.relevance);
@@ -397,9 +415,16 @@ describe('Collection Browser', () => {
   });
 
   it('scrolls to page', async () => {
+    const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
     );
+
+    // Infinite scroller won't exist unless there's a base query
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
 
     const infiniteScroller = el.shadowRoot?.querySelector(
       'infinite-scroller'
@@ -434,6 +459,10 @@ describe('Collection Browser', () => {
       ></collection-browser>`
     );
     const infiniteScrollerRefreshSpy = sinon.spy();
+
+    // Infinite scroller won't exist unless there's a base query
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
 
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
     (infiniteScroller as InfiniteScroller).reload = infiniteScrollerRefreshSpy;
