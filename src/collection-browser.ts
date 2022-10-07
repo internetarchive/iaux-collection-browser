@@ -1088,27 +1088,6 @@ export class CollectionBrowser
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: this.fullQuery,
-      fields: [
-        'addeddate',
-        'avg_rating',
-        'collections_raw',
-        'creator',
-        'date',
-        'description',
-        'downloads',
-        'identifier',
-        'issue',
-        'item_count',
-        'mediatype',
-        'num_favorites',
-        'num_reviews',
-        'publicdate',
-        'reviewdate',
-        'source',
-        'subject', // topic
-        'title',
-        'volume',
-      ],
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
