@@ -1206,26 +1206,23 @@ export class CollectionBrowser
       }
 
       tiles.push({
-        // TODO the commented items are not currently being returned by the PPS and
-        // we will need to have them added to the PPS hit schemas where appropriate
-
-        // averageRating: result.avg_rating?.value,
+        averageRating: result.avg_rating?.value,
         collections: result.collection?.values ?? [],
         commentCount: result.num_reviews?.value ?? 0,
         creator: result.creator?.value,
         creators: result.creator?.values ?? [],
-        // dateAdded: result.addeddate?.value,
+        dateAdded: result.addeddate?.value,
         dateArchived: result.publicdate?.value,
         datePublished: result.date?.value,
         dateReviewed: result.reviewdate?.value,
         description: result.description?.value,
         favCount: result.num_favorites?.value ?? 0,
         identifier: result.identifier,
-        // issue: result.issue?.value,
-        itemCount: 0, // result.item_count?.value ?? 0,
+        issue: result.issue?.value,
+        itemCount: result.item_count?.value ?? 0,
         mediatype: result.mediatype?.value ?? 'data',
         snippets: result.highlight?.values ?? [],
-        // source: result.source?.value,
+        source: result.source?.value,
         subjects: result.subject?.values ?? [],
         title: this.etreeTitle(
           result.title?.value,
