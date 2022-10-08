@@ -34,6 +34,7 @@ import {
   lendingFacetDisplayNames,
   lendingFacetKeysVisibility,
   LendingFacetKey,
+  suppressedCollections,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
@@ -263,7 +264,7 @@ export class CollectionFacets extends LitElement {
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, facetData]) => {
-            let displayText = value;
+            let displayText: string = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
             if (option === 'language') {
@@ -310,12 +311,17 @@ export class CollectionFacets extends LitElement {
       const title = facetTitles[option];
       if (!title) return;
 
-      const castedBuckets = buckets.buckets as Bucket[];
+      let castedBuckets = buckets.buckets as Bucket[];
 
-      // we are not showing fav- items in facets
-      castedBuckets?.filter(
-        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
-      );
+      if (option === 'collection') {
+        // we are not showing fav- collections or certain deemphasized collections in facets
+        castedBuckets = castedBuckets?.filter(bucket => {
+          const bucketKey = bucket?.key?.toString();
+          return (
+            !suppressedCollections[bucketKey] && !bucketKey?.startsWith('fav-')
+          );
+        });
+      }
 
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
         let bucketKey = bucket.key;
