@@ -4,6 +4,7 @@ import { html } from 'lit';
 import type { TileList } from '../../../src/tiles/list/tile-list';
 
 import '../../../src/tiles/list/tile-list';
+import { MockCollectionNameCache } from '../../mocks/mock-collection-name-cache';
 
 describe('List Tile', () => {
   it('should render initial component', async () => {
@@ -47,5 +48,25 @@ describe('List Tile', () => {
     const snippetBlock = el.shadowRoot?.querySelector('text-snippet-block');
 
     expect(snippetBlock).to.not.exist;
+  });
+
+  it('should not render suppressed collections', async () => {
+    const collectionNameCache = new MockCollectionNameCache();
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{ collections: ['deemphasize', 'community', 'foo'] }}
+        .collectionNameCache=${collectionNameCache}
+      >
+      </tile-list>
+    `);
+
+    const collectionsRow = el.shadowRoot?.getElementById('collections');
+    expect(collectionsRow).to.exist;
+
+    const collectionLinks = collectionsRow?.querySelectorAll('a[href]');
+    expect(collectionLinks?.length).to.equal(1);
+    expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
+      '/details/foo'
+    );
   });
 });
