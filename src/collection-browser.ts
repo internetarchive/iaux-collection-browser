@@ -1376,7 +1376,7 @@ export class CollectionBrowser
       width: 18rem;
       min-width: 18rem; /* Prevents Safari from shrinking col at first draw */
       padding-right: 12px;
-      padding-right: 1rem;
+      padding-right: 2.5rem;
     }
 
     .desktop #left-column::-webkit-scrollbar {
