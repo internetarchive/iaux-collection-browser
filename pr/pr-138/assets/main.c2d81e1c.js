@@ -1229,7 +1229,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       div a {
         text-decoration: none;
-        color: #4b64ff;
+        color: var(--ia-theme-link-color, #4b64ff);
       }
 
       .label {
@@ -3444,7 +3444,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         padding: 0;
         background: inherit;
         border: 0;
-        color: #4b64ff;
+        color: var(--ia-theme-link-color, #4b64ff);
         cursor: pointer;
       }
 
