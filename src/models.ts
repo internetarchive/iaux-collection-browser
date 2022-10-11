@@ -216,10 +216,19 @@ export const lendingFacetDisplayNames: Partial<
 };
 
 /**
- * A record of which collections should be suppressed from being displayed
+ * A record of which admin-only collections should be suppressed from being displayed
  * as facets or in an item's list of collections.
  */
 export const suppressedCollections: Record<string, boolean> = {
   deemphasize: true,
   community: true,
+  stream_only: true,
+  samples_only: true,
+  test_collection: true,
+  printdisabled: true,
+  'openlibrary-ol': true,
+  nationalemergencylibrary: true,
+  china: true,
+  americana: true,
+  toronto: true,
 };
