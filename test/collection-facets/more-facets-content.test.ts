@@ -1,10 +1,11 @@
 /* eslint-disable import/no-duplicates */
-import { expect, fixture, oneEvent } from '@open-wc/testing';
+import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import { Aggregation } from '@internetarchive/search-service';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
+import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -126,21 +127,52 @@ describe('More facets content', () => {
     expect(bucket?.count).to.equal(5);
   });
 
-  it('page number clicked event', async () => {
-    const searchService = new MockSearchService();
+  it('cancel button clicked event', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
-        .searchService=${searchService}
+        .analyticsHandler=${mockAnalyticsHandler}
       ></more-facets-content>`
     );
 
-    setTimeout(() =>
-      el.dispatchEvent(
-        new CustomEvent('pageNumberClicked', { detail: { page: 15 } })
-      )
+    el.facetsLoading = false;
+    el.paginationSize = 5;
+    await el.updateComplete;
+
+    // select cancel button
+    const cancelButton = el.shadowRoot?.querySelector(
+      '.footer > .btn-cancel'
+    ) as HTMLButtonElement;
+    cancelButton?.click();
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('closeMoreFacetsModal');
+    expect(mockAnalyticsHandler.callLabel).to.equal('undefined');
+  });
+
+  it('facet apply button clicked event', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></more-facets-content>`
     );
-    const { detail } = await oneEvent(el, 'pageNumberClicked');
-    expect(detail?.page).to.equal(15);
+
+    el.facetsLoading = false;
+    el.paginationSize = 5;
+    el.facetKey = 'collection';
+    await el.updateComplete;
+
+    // select submit button
+    const submitButton = el.shadowRoot?.querySelector(
+      '.footer > .btn-submit'
+    ) as HTMLButtonElement;
+    submitButton?.click();
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('applyMoreFacetsModal');
+    expect(mockAnalyticsHandler.callLabel).to.equal('collection');
   });
 });
