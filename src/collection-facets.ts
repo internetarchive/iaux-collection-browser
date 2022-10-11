@@ -585,7 +585,7 @@ export class CollectionFacets extends LitElement {
         padding: 0;
         background: inherit;
         border: 0;
-        color: #4b64ff;
+        color: var(--ia-theme-link-color, #4b64ff);
         cursor: pointer;
       }
 
