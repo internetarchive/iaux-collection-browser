@@ -946,6 +946,8 @@ export class CollectionBrowser
     const params: SearchParams = {
       query: this.fullQuery,
       rows: 0,
+      // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
+      aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
     };
