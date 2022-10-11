@@ -399,6 +399,7 @@ export class TileList extends LitElement {
 
       div a {
         text-decoration: none;
+        color: var(--ia-theme-link-color, #4b64ff);
       }
 
       .label {
