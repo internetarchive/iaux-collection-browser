@@ -585,9 +585,10 @@ export class CollectionFacets extends LitElement {
         padding: 0;
         background: inherit;
         border: 0;
-        color: blue;
+        color: #4b64ff;
         cursor: pointer;
       }
+
       .sorting-icon {
         height: 15px;
         cursor: pointer;
