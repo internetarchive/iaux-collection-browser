@@ -27,6 +27,7 @@ import {
   FacetBucket,
   FacetOption,
   facetTitles,
+  suppressedCollections,
 } from '../models';
 import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
@@ -266,10 +267,13 @@ export class MoreFacetsContent extends LitElement {
       ) as Bucket[];
 
       if (option === 'collection') {
-        // we are not showing fav- collection items in facets
-        castedBuckets = castedBuckets?.filter(
-          bucket => bucket?.key?.toString().startsWith('fav-') === false
-        );
+        // we are not showing fav- collections or certain deemphasized collections in facets
+        castedBuckets = castedBuckets?.filter(bucket => {
+          const bucketKey = bucket?.key?.toString();
+          return (
+            !suppressedCollections[bucketKey] && !bucketKey?.startsWith('fav-')
+          );
+        });
 
         // asynchronously load the collection name
         this.preloadCollectionNames(castedBuckets);
