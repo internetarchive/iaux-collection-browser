@@ -1229,6 +1229,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       div a {
         text-decoration: none;
+        color: #4b64ff;
       }
 
       .label {
