@@ -14,7 +14,7 @@ import DOMPurify from 'dompurify';
 
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { SortParam } from '@internetarchive/search-service';
-import type { TileModel } from '../../models';
+import { suppressedCollections, TileModel } from '../../models';
 
 import { dateLabel } from './date-label';
 import { accountLabel } from './account-label';
@@ -64,19 +64,22 @@ export class TileList extends LitElement {
     // Note: quirk of Lit: need to replace collectionLinks array,
     // otherwise it will not re-render. Can't simply alter the array.
     this.collectionLinks = [];
-    const newCollellectionLinks: TemplateResult[] = [];
+    const newCollectionLinks: TemplateResult[] = [];
     const promises: Promise<void>[] = [];
     for (const collection of this.model.collections) {
-      promises.push(
-        this.collectionNameCache?.collectionNameFor(collection).then(name => {
-          newCollellectionLinks.push(
-            this.detailsLink(collection, name ?? collection)
-          );
-        })
-      );
+      // Don't include collections that are meant to be suppressed
+      if (!suppressedCollections[collection]) {
+        promises.push(
+          this.collectionNameCache?.collectionNameFor(collection).then(name => {
+            newCollectionLinks.push(
+              this.detailsLink(collection, name ?? collection)
+            );
+          })
+        );
+      }
     }
     await Promise.all(promises);
-    this.collectionLinks = newCollellectionLinks;
+    this.collectionLinks = newCollectionLinks;
   }
 
   render() {

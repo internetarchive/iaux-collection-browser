@@ -153,6 +153,45 @@ describe('Collection Facets', () => {
     );
   });
 
+  it('does not render suppressed collection facets', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      collection: new Aggregation({
+        buckets: [
+          {
+            key: 'deemphasize',
+            doc_count: 5,
+          },
+          {
+            key: 'community',
+            doc_count: 5,
+          },
+          {
+            key: 'foo',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const collectionFacets = el.shadowRoot
+      ?.querySelector('facets-template')
+      ?.shadowRoot?.querySelectorAll('.facet-row');
+    expect(collectionFacets?.length).to.equal(1);
+
+    // The first (and only) collection link should be for 'foo'
+    const collectionLink = collectionFacets
+      ?.item(0)
+      .querySelector(`a[href='/details/foo']`);
+    expect(collectionLink).to.exist;
+  });
+
   it('renders language facets with their human-readable names', async () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets></collection-facets>`
