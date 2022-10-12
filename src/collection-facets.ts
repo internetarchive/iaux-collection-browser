@@ -113,7 +113,9 @@ export class CollectionFacets extends LitElement {
   render() {
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
-        ${this.showHistogramDatePicker && this.fullYearsHistogramAggregation
+        ${(this.showHistogramDatePicker &&
+          this.fullYearsHistogramAggregation) ||
+        this.fullYearAggregationLoading
           ? html`
               <div class="facet-group">
                 <h1>Year Published <feature-feedback></feature-feedback></h1>
