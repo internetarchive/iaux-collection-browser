@@ -529,7 +529,6 @@ export class CollectionBrowser
 
   private get facetsTemplate() {
     return html`
-      ${this.facetsLoading ? this.loadingTemplate : nothing}
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
