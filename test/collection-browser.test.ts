@@ -16,6 +16,7 @@ import { MockSearchService } from './mocks/mock-search-service';
 import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { analyticsCategories } from '../src/utils/analytics-events';
+import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
 
 describe('Collection Browser', () => {
   it('clear existing filter for facets & sort-bar', async () => {
@@ -153,8 +154,11 @@ describe('Collection Browser', () => {
   });
 
   it('should render with a sort bar, facets, and infinite scroller', async () => {
+    const searchService = new MockSearchService();
+
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     el.baseQuery = 'hello';
@@ -225,6 +229,82 @@ describe('Collection Browser', () => {
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
     ).to.contains('Results');
+  });
+
+  it('fails gracefully if no search service provided', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    // This shouldn't throw an error
+    expect(el.fetchPage(2)).to.exist;
+
+    // Should continue showing the empty placeholder
+    expect(el.shadowRoot?.querySelector('empty-placeholder')).to.exist;
+  });
+
+  it('applies loggedin flag to tile models if needed', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'loggedin';
+    await el.updateComplete;
+
+    const cellTemplate = el.cellForIndex(0);
+    expect(cellTemplate).to.exist;
+
+    const cell = await fixture<TileDispatcher>(cellTemplate!);
+    expect(cell).to.exist;
+
+    expect(cell.model?.loginRequired).to.be.true;
+  });
+
+  it('applies no-preview flag to tile models if needed', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'no-preview';
+    await el.updateComplete;
+
+    const cellTemplate = el.cellForIndex(0);
+    expect(cellTemplate).to.exist;
+
+    const cell = await fixture<TileDispatcher>(cellTemplate!);
+    expect(cell).to.exist;
+
+    expect(cell.model?.contentWarning).to.be.true;
+  });
+
+  it('both loggedin and no-preview flags can be set simultaneously', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'loggedin-no-preview';
+    await el.updateComplete;
+
+    const cellTemplate = el.cellForIndex(0);
+    expect(cellTemplate).to.exist;
+
+    const cell = await fixture<TileDispatcher>(cellTemplate!);
+    expect(cell).to.exist;
+
+    expect(cell.model?.loginRequired).to.be.true;
+    expect(cell.model?.contentWarning).to.be.true;
   });
 
   it('can search on demand if only search type has changed', async () => {
@@ -370,8 +450,11 @@ describe('Collection Browser', () => {
   });
 
   it('sets sort properties when user changes sort', async () => {
+    const searchService = new MockSearchService();
+
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     expect(el.selectedSort).to.equal(SortField.relevance);
@@ -397,8 +480,11 @@ describe('Collection Browser', () => {
   });
 
   it('scrolls to page', async () => {
+    const searchService = new MockSearchService();
+
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     const infiniteScroller = el.shadowRoot?.querySelector(
