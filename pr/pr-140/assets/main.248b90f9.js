@@ -3556,7 +3556,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       >
         ${this.placeholderType?this.emptyPlaceholderTemplate:this.collectionBrowserTemplate}
       </div>
-    `}setPlaceholderType(){this.placeholderType=null,this.baseQuery||(this.placeholderType="empty-query"),!this.searchResultsLoading&&this.totalResults===0&&(this.placeholderType="null-result")}get emptyPlaceholderTemplate(){return m`
+    `}setPlaceholderType(){this.placeholderType=null,this.baseQuery||(this.placeholderType="empty-query"),(!this.searchResultsLoading&&this.totalResults===0||!this.searchService)&&(this.placeholderType="null-result")}get emptyPlaceholderTemplate(){return m`
       <empty-placeholder
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
