@@ -3336,19 +3336,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             `:_}
         ${this.mergedFacets.map(e=>this.getFacetGroupTemplate(e))}
       </div>
-    `}updated(e){e.has("selectedFacets")&&this.dispatchFacetsChangedEvent()}dispatchFacetsChangedEvent(){const e=new CustomEvent("facetsChanged",{detail:this.selectedFacets});this.dispatchEvent(e)}get currentYearsHistogramAggregation(){var e;return(e=this.aggregations)===null||e===void 0?void 0:e.year_histogram}get histogramTemplate(){const{fullYearsHistogramAggregation:e}=this;return m`
-      <histogram-date-range
-        .minDate=${e==null?void 0:e.first_bucket_key}
-        .maxDate=${e==null?void 0:e.last_bucket_key}
-        .minSelectedDate=${this.minSelectedDate}
-        .maxSelectedDate=${this.maxSelectedDate}
-        .updateDelay=${100}
-        missingDataMessage="..."
-        .width=${180}
-        .bins=${e==null?void 0:e.buckets}
-        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-      ></histogram-date-range>
-    `}histogramDateRangeUpdated(e){const{minDate:t,maxDate:i}=e.detail,a=new CustomEvent("histogramDateRangeUpdated",{detail:{minDate:t,maxDate:i}});this.dispatchEvent(a)}get mergedFacets(){const e=[];return $n.forEach(t=>{var i,a;const o=this.selectedFacetGroups.find(p=>p.key===t),n=this.aggregationFacetGroups.find(p=>p.key===t);if(o&&!n){e.push(o);return}if(!n)return;const l=o!=null?o:n;let d=(i=o==null?void 0:o.buckets.map(p=>{const v=n.buckets.find(f=>f.key===p.key);return v?ft(ve({},p),{count:v.count}):p}))!==null&&i!==void 0?i:[];n.buckets.forEach(p=>{d.find(f=>f.key===p.key)||d.push(p)}),t==="lending"&&(d=d.filter(p=>Cn[p.key]));let c=(a=Object.keys((o==null?void 0:o.buckets)||[]))===null||a===void 0?void 0:a.length;c<this.allowedFacetCount&&(c=this.allowedFacetCount),l.buckets=d.splice(0,c),e.push(l)}),e}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const a=t,o=zi[a],n=Object.entries(i).map(([l,d])=>{var c,p,v;let f=l;return a==="language"&&(f=(p=(c=this.languageCodeHandler)===null||c===void 0?void 0:c.getLanguageNameFromCodeString(l))!==null&&p!==void 0?p:l),a==="lending"&&(f=(v=zr[l])!==null&&v!==void 0?v:l),{displayText:f,key:l,count:d.count,state:d.state}});return{title:o,key:a,buckets:n}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{if(i==="year_histogram")return;const o=i,n=zi[o];if(!n)return;let l=a.buckets;o==="collection"&&(l=l==null?void 0:l.filter(p=>{var v;const f=(v=p==null?void 0:p.key)===null||v===void 0?void 0:v.toString();return!Fa[f]&&!(f!=null&&f.startsWith("fav-"))}));const d=l.map(p=>{var v,f,w;let x=p.key,$=`${p.key}`;return o==="language"&&(x=(f=(v=this.languageCodeHandler)===null||v===void 0?void 0:v.getCodeStringFromLanguageName(`${p.key}`))!==null&&f!==void 0?f:p.key),o==="lending"&&($=(w=zr[p.key])!==null&&w!==void 0?w:`${p.key}`),{displayText:$,key:`${x}`,count:p.doc_count,state:"none"}}),c={title:n,key:o,buckets:d};t.push(c)}),t}getFacetGroupTemplate(e){if(!this.facetsLoading&&e.buckets.length===0)return _;const{key:t}=e,i=this.openFacets[t],a=m`
+    `}updated(e){e.has("selectedFacets")&&this.dispatchFacetsChangedEvent()}dispatchFacetsChangedEvent(){const e=new CustomEvent("facetsChanged",{detail:this.selectedFacets});this.dispatchEvent(e)}get currentYearsHistogramAggregation(){var e;return(e=this.aggregations)===null||e===void 0?void 0:e.year_histogram}get histogramTemplate(){const{fullYearsHistogramAggregation:e}=this;return this.fullYearAggregationLoading?m`<div class="histogram-loading-indicator">&hellip;</div>`:m`
+          <histogram-date-range
+            .minDate=${e==null?void 0:e.first_bucket_key}
+            .maxDate=${e==null?void 0:e.last_bucket_key}
+            .minSelectedDate=${this.minSelectedDate}
+            .maxSelectedDate=${this.maxSelectedDate}
+            .updateDelay=${100}
+            missingDataMessage="..."
+            .width=${180}
+            .bins=${e==null?void 0:e.buckets}
+            @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+          ></histogram-date-range>
+        `}histogramDateRangeUpdated(e){const{minDate:t,maxDate:i}=e.detail,a=new CustomEvent("histogramDateRangeUpdated",{detail:{minDate:t,maxDate:i}});this.dispatchEvent(a)}get mergedFacets(){const e=[];return $n.forEach(t=>{var i,a;const o=this.selectedFacetGroups.find(p=>p.key===t),n=this.aggregationFacetGroups.find(p=>p.key===t);if(o&&!n){e.push(o);return}if(!n)return;const l=o!=null?o:n;let d=(i=o==null?void 0:o.buckets.map(p=>{const v=n.buckets.find(f=>f.key===p.key);return v?ft(ve({},p),{count:v.count}):p}))!==null&&i!==void 0?i:[];n.buckets.forEach(p=>{d.find(f=>f.key===p.key)||d.push(p)}),t==="lending"&&(d=d.filter(p=>Cn[p.key]));let c=(a=Object.keys((o==null?void 0:o.buckets)||[]))===null||a===void 0?void 0:a.length;c<this.allowedFacetCount&&(c=this.allowedFacetCount),l.buckets=d.splice(0,c),e.push(l)}),e}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const a=t,o=zi[a],n=Object.entries(i).map(([l,d])=>{var c,p,v;let f=l;return a==="language"&&(f=(p=(c=this.languageCodeHandler)===null||c===void 0?void 0:c.getLanguageNameFromCodeString(l))!==null&&p!==void 0?p:l),a==="lending"&&(f=(v=zr[l])!==null&&v!==void 0?v:l),{displayText:f,key:l,count:d.count,state:d.state}});return{title:o,key:a,buckets:n}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,a])=>{if(i==="year_histogram")return;const o=i,n=zi[o];if(!n)return;let l=a.buckets;o==="collection"&&(l=l==null?void 0:l.filter(p=>{var v;const f=(v=p==null?void 0:p.key)===null||v===void 0?void 0:v.toString();return!Fa[f]&&!(f!=null&&f.startsWith("fav-"))}));const d=l.map(p=>{var v,f,w;let x=p.key,$=`${p.key}`;return o==="language"&&(x=(f=(v=this.languageCodeHandler)===null||v===void 0?void 0:v.getCodeStringFromLanguageName(`${p.key}`))!==null&&f!==void 0?f:p.key),o==="lending"&&($=(w=zr[p.key])!==null&&w!==void 0?w:`${p.key}`),{displayText:$,key:`${x}`,count:p.doc_count,state:"none"}}),c={title:n,key:o,buckets:d};t.push(c)}),t}getFacetGroupTemplate(e){if(!this.facetsLoading&&e.buckets.length===0)return _;const{key:t}=e,i=this.openFacets[t],a=m`
       <span class="collapser ${i?"open":""}"> ${_o} </span>
     `;return m`
       <div class="facet-group ${this.collapsableFacets?"mobile":""}">
@@ -3410,6 +3410,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}static get styles(){return y`
       #container.loading {
         opacity: 0.5;
+      }
+
+      .histogram-loading-indicator {
+        width: 100%;
+        height: 2.25rem;
+        margin-top: 1.75rem;
+        font-size: 1.4rem;
+        text-align: center;
       }
 
       .collapser {
