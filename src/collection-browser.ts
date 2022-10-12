@@ -998,7 +998,8 @@ export class CollectionBrowser
     this.fullYearAggregationLoading = false;
 
     this.fullYearsHistogramAggregation =
-      results?.success?.response?.aggregations?.year_histogram;
+      results?.success?.response?.aggregations?.year_histogram ??
+      results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
   }
 
   private scrollToPage(pageNumber: number) {
