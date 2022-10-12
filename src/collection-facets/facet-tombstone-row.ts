@@ -17,9 +17,11 @@ export class FacetTombstoneRow extends LitElement {
     return css`
       #row {
         display: grid;
-        grid-template-columns: 13px 1fr 38px;
+        grid-template-columns: 15px 1fr 36px;
         grid-gap: 9px 6px;
         align-items: center;
+        margin: 2.5px auto;
+        border: 1px solid transparent;
       }
 
       .tombstone-line {
@@ -29,7 +31,9 @@ export class FacetTombstoneRow extends LitElement {
       }
 
       input[type='checkbox'] {
-        width: 100%;
+        width: 15px;
+        height: 15px;
+        margin: 0;
       }
     `;
   }
