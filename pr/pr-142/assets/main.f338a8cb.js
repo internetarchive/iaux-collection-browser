@@ -3312,9 +3312,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}static get styles(){return y`
       #row {
         display: grid;
-        grid-template-columns: 13px 1fr 38px;
+        grid-template-columns: 15px 1fr 36px;
         grid-gap: 9px 6px;
         align-items: center;
+        margin: 2.5px auto;
+        border: 1px solid transparent;
       }
 
       .tombstone-line {
@@ -3324,7 +3326,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
 
       input[type='checkbox'] {
-        width: 100%;
+        width: 15px;
+        height: 15px;
+        margin: 0;
       }
     `}};Ur=s([R("facet-tombstone-row")],Ur);let K=class extends O{constructor(){super(...arguments),this.moreLinksVisible=!0,this.facetsLoading=!1,this.fullYearAggregationLoading=!1,this.collapsableFacets=!1,this.showHistogramDatePicker=!1,this.openFacets={subject:!1,lending:!1,mediatype:!1,language:!1,creator:!1,collection:!1,year:!1},this.allowedFacetCount=6}render(){return m`
       <div id="container" class="${this.facetsLoading?"loading":""}">
