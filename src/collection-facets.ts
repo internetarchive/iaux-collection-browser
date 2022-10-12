@@ -8,6 +8,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
+import { map } from 'lit/directives/map.js';
 import type {
   Aggregation,
   Bucket,
@@ -39,6 +40,7 @@ import {
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
+import './collection-facets/facet-tombstone-row';
 import {
   analyticsActions,
   analyticsCategories,
@@ -366,7 +368,8 @@ export class CollectionFacets extends LitElement {
   private getFacetGroupTemplate(
     facetGroup: FacetGroup
   ): TemplateResult | typeof nothing {
-    if (facetGroup.buckets.length === 0) return nothing;
+    if (!this.facetsLoading && facetGroup.buckets.length === 0) return nothing;
+
     const { key } = facetGroup;
     const isOpen = this.openFacets[key];
     const collapser = html`
@@ -390,13 +393,29 @@ export class CollectionFacets extends LitElement {
           >
             ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
           </h1>
-          ${this.moreFacetsSortingIcon(facetGroup)}
+          ${this.facetsLoading
+            ? nothing
+            : this.moreFacetsSortingIcon(facetGroup)}
         </div>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
-          ${this.getFacetTemplate(facetGroup)}
-          ${this.searchMoreFacetsLink(facetGroup)}
+          ${this.facetsLoading
+            ? this.getTombstoneFacetGroupTemplate()
+            : html`
+                ${this.getFacetTemplate(facetGroup)}
+                ${this.searchMoreFacetsLink(facetGroup)}
+              `}
         </div>
       </div>
+    `;
+  }
+
+  private getTombstoneFacetGroupTemplate(): TemplateResult {
+    // Render five tombstone rows
+    return html`
+      ${map(
+        Array(5).fill(null),
+        () => html`<facet-tombstone-row></facet-tombstone-row>`
+      )}
     `;
   }
 
