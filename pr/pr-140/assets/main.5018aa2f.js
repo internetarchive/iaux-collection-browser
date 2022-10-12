@@ -516,6 +516,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
 
   .contain {
     object-fit: contain;
+    object-position: top;
     height: 100%;
     width: 100%;
   }
