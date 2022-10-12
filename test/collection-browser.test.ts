@@ -154,8 +154,11 @@ describe('Collection Browser', () => {
   });
 
   it('should render with a sort bar, facets, and infinite scroller', async () => {
+    const searchService = new MockSearchService();
+
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     el.baseQuery = 'hello';
@@ -238,6 +241,9 @@ describe('Collection Browser', () => {
 
     // This shouldn't throw an error
     expect(el.fetchPage(2)).to.exist;
+
+    // Should continue showing the empty placeholder
+    expect(el.shadowRoot?.querySelector('empty-placeholder')).to.exist;
   });
 
   it('applies loggedin flag to tile models if needed', async () => {
@@ -444,8 +450,11 @@ describe('Collection Browser', () => {
   });
 
   it('sets sort properties when user changes sort', async () => {
+    const searchService = new MockSearchService();
+
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     expect(el.selectedSort).to.equal(SortField.relevance);
@@ -471,8 +480,11 @@ describe('Collection Browser', () => {
   });
 
   it('scrolls to page', async () => {
+    const searchService = new MockSearchService();
+
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
     );
 
     const infiniteScroller = el.shadowRoot?.querySelector(

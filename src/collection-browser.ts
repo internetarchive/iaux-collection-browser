@@ -304,7 +304,10 @@ export class CollectionBrowser
       this.placeholderType = 'empty-query';
     }
 
-    if (!this.searchResultsLoading && this.totalResults === 0) {
+    if (
+      (!this.searchResultsLoading && this.totalResults === 0) ||
+      !this.searchService
+    ) {
       this.placeholderType = 'null-result';
     }
   }
