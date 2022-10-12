@@ -155,8 +155,6 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
-  @state() private lendingFacetLoading = false;
-
   @state() private fullYearAggregationLoading = false;
 
   @state() private aggregations?: Record<string, Aggregation>;
@@ -499,11 +497,7 @@ export class CollectionBrowser
   }
 
   private get facetDataLoading(): boolean {
-    return (
-      this.facetsLoading ||
-      this.lendingFacetLoading ||
-      this.fullYearAggregationLoading
-    );
+    return this.facetsLoading || this.fullYearAggregationLoading;
   }
 
   private get mobileFacetsTemplate() {
@@ -780,15 +774,9 @@ export class CollectionBrowser
       this.historyPopOccurred = false;
     }
 
-    // Ensure lending aggregations don't carry over to non-metadata searches
-    if (this.searchType !== SearchType.METADATA) {
-      delete this.aggregations?.lending;
-    }
-
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
-      this.fetchLendingFacet(),
       this.fetchFullYearHistogram(),
     ]);
   }
@@ -957,34 +945,7 @@ export class CollectionBrowser
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
-    this.aggregations = {
-      ...this.aggregations,
-      ...results?.success?.response.aggregations,
-    };
-  }
-
-  private async fetchLendingFacet() {
-    // Only retrieve lending facet for metadata searches
-    if (this.searchType !== SearchType.METADATA) return;
-    if (!this.fullQuery) return;
-
-    const params: SearchParams = {
-      query: this.fullQuery,
-      rows: 0,
-      aggregations: {
-        simpleParams: ['lending___status'],
-      },
-      aggregationsSize: 10, // Larger size to ensure we get all possible statuses
-    };
-
-    this.lendingFacetLoading = true;
-    const results = await this.searchService?.search(params, this.searchType);
-    this.lendingFacetLoading = false;
-
-    this.aggregations = {
-      ...this.aggregations,
-      ...results?.success?.response.aggregations,
-    };
+    this.aggregations = results?.success?.response.aggregations;
   }
 
   /**
