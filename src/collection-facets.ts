@@ -148,19 +148,21 @@ export class CollectionFacets extends LitElement {
 
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
-    return html`
-      <histogram-date-range
-        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-        .minSelectedDate=${this.minSelectedDate}
-        .maxSelectedDate=${this.maxSelectedDate}
-        .updateDelay=${100}
-        missingDataMessage="..."
-        .width=${180}
-        .bins=${fullYearsHistogramAggregation?.buckets as number[]}
-        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-      ></histogram-date-range>
-    `;
+    return this.fullYearAggregationLoading
+      ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
+      : html`
+          <histogram-date-range
+            .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
+            .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
+            .minSelectedDate=${this.minSelectedDate}
+            .maxSelectedDate=${this.maxSelectedDate}
+            .updateDelay=${100}
+            missingDataMessage="..."
+            .width=${180}
+            .bins=${fullYearsHistogramAggregation?.buckets as number[]}
+            @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+          ></histogram-date-range>
+        `;
   }
 
   private histogramDateRangeUpdated(
@@ -548,6 +550,14 @@ export class CollectionFacets extends LitElement {
     return css`
       #container.loading {
         opacity: 0.5;
+      }
+
+      .histogram-loading-indicator {
+        width: 100%;
+        height: 2.25rem;
+        margin-top: 1.75rem;
+        font-size: 1.4rem;
+        text-align: center;
       }
 
       .collapser {
