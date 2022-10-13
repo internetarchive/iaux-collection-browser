@@ -55,9 +55,7 @@ export class TileListCompact extends LitElement {
           >
           </mediatype-icon>
         </div>
-        <div id="views">
-          ${formatCount(this.model?.viewCount ?? 0, this.formatSize)}
-        </div>
+        <div id="views">${formatCount(this.views ?? 0, this.formatSize)}</div>
       </div>
     `;
   }
@@ -78,6 +76,12 @@ export class TileListCompact extends LitElement {
       default:
         return this.model?.dateArchived; // publicdate
     }
+  }
+
+  private get views(): number | undefined {
+    return this.sortParam?.field === 'week'
+      ? this.model?.weeklyViewCount // weekly views
+      : this.model?.viewCount; // all-time views
   }
 
   private get classSize(): string {

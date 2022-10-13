@@ -247,8 +247,13 @@ export class TileList extends LitElement {
   }
 
   private get viewsTemplate() {
+    const viewCount =
+      this.sortParam?.field === 'week'
+        ? this.model?.weeklyViewCount // weekly views
+        : this.model?.viewCount; // all-time views
+
     return this.metadataTemplate(
-      `${formatCount(this.model?.viewCount ?? 0, this.formatSize)}`,
+      `${formatCount(viewCount ?? 0, this.formatSize)}`,
       'Views'
     );
   }

@@ -1213,6 +1213,7 @@ export class CollectionBrowser
         ),
         volume: result.volume?.value,
         viewCount: result.downloads?.value ?? 0,
+        weeklyViewCount: result.week?.value,
         loginRequired,
         contentWarning,
       });

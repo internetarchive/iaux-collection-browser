@@ -246,6 +246,49 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
+  it('queries the search service with facets selected/negated', async () => {
+    const searchService = new MockSearchService();
+    const selectedFacets: SelectedFacets = {
+      subject: {
+        foo: {
+          key: 'foo',
+          count: 1,
+          state: 'selected',
+        },
+        bar: {
+          key: 'bar',
+          count: 2,
+          state: 'hidden',
+        },
+      },
+      lending: {},
+      mediatype: {},
+      language: {
+        en: {
+          key: 'en',
+          count: 1,
+          state: 'selected',
+        },
+      },
+      creator: {},
+      collection: {},
+      year: {},
+    };
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo AND (subject:("foo" OR -"bar") AND language:("en"))'
+    );
+  });
+
   it('fails gracefully if no search service provided', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`

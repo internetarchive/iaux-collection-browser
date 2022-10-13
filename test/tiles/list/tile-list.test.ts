@@ -5,6 +5,7 @@ import type { TileList } from '../../../src/tiles/list/tile-list';
 
 import '../../../src/tiles/list/tile-list';
 import { MockCollectionNameCache } from '../../mocks/mock-collection-name-cache';
+import type { TileModel } from '../../../src/models';
 
 describe('List Tile', () => {
   it('should render initial component', async () => {
@@ -68,5 +69,40 @@ describe('List Tile', () => {
     expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
       '/details/foo'
     );
+  });
+
+  it('should render weekly views when sorting by week', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{ viewCount: 50, weeklyViewCount: 10 }}
+        .sortParam=${{ field: 'week', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const viewsRow = el.shadowRoot?.getElementById('views-line');
+    expect(viewsRow).to.exist;
+    expect(viewsRow?.textContent?.trim()).to.equal('Views:  10');
+  });
+
+  it('should render added date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-01'),
+      dateArchived: new Date('2011-01-01'),
+      datePublished: new Date('2012-01-01'),
+      dateReviewed: new Date('2013-01-01'),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'addeddate', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Added:  Jan 01, 2010');
   });
 });
