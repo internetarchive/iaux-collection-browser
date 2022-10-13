@@ -139,9 +139,8 @@ export class AppRoot extends LitElement {
               id="metadata-search"
               name="search-type"
               value="metadata"
-              ?checked=${this.collectionBrowser?.searchType ===
-              SearchType.METADATA}
-              @click=${this.searchTypeChanged}
+              ?checked=${this.searchType === SearchType.METADATA}
+              @click=${this.searchTypeSelected}
             />
             <label for="metadata-search">Metadata</label>
           </span>
@@ -151,9 +150,8 @@ export class AppRoot extends LitElement {
               id="fulltext-search"
               name="search-type"
               value="fulltext"
-              ?checked=${this.collectionBrowser?.searchType ===
-              SearchType.FULLTEXT}
-              @click=${this.searchTypeChanged}
+              ?checked=${this.searchType === SearchType.FULLTEXT}
+              @click=${this.searchTypeSelected}
             />
             <label for="fulltext-search">Full text</label>
           </span>
@@ -301,6 +299,7 @@ export class AppRoot extends LitElement {
           .analyticsHandler=${this.analyticsHandler}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
+          @searchTypeChanged=${this.searchTypeChanged}
         >
         </collection-browser>
       </div>
@@ -308,11 +307,17 @@ export class AppRoot extends LitElement {
     `;
   }
 
-  private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>) {
+  private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>): void {
     this.searchQuery = e.detail.baseQuery;
   }
 
-  private searchTypeChanged(e: Event) {
+  /** Handler for search type changes coming from collection browser */
+  private searchTypeChanged(e: CustomEvent<SearchType>): void {
+    this.searchType = e.detail;
+  }
+
+  /** Handler for user input selecting a search type */
+  private searchTypeSelected(e: Event) {
     const target = e.target as HTMLInputElement;
     this.searchType =
       target.value === 'fulltext' ? SearchType.FULLTEXT : SearchType.METADATA;

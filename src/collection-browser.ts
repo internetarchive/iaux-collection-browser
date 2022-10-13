@@ -627,6 +627,9 @@ export class CollectionBrowser
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
     }
+    if (changed.has('searchType')) {
+      this.emitSearchTypeChanged();
+    }
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
     }
@@ -698,6 +701,14 @@ export class CollectionBrowser
         detail: {
           baseQuery: this.baseQuery,
         },
+      })
+    );
+  }
+
+  private emitSearchTypeChanged() {
+    this.dispatchEvent(
+      new CustomEvent<SearchType>('searchTypeChanged', {
+        detail: this.searchType,
       })
     );
   }
