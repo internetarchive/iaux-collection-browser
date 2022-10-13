@@ -261,6 +261,22 @@ describe('Collection Browser', () => {
     expect(el.shadowRoot?.querySelector('empty-placeholder')).to.exist;
   });
 
+  it('restores search type from URL param', async () => {
+    // Add a sin=TXT param to the URL
+    const url = new URL(window.location.href);
+    url.searchParams.append('sin', 'TXT');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    expect(el.searchType).to.equal(SearchType.FULLTEXT);
+  });
+
   it('applies loggedin flag to tile models if needed', async () => {
     const searchService = new MockSearchService();
 
