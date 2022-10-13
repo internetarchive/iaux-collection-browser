@@ -1,4 +1,8 @@
-import type { SortDirection, SortParam } from '@internetarchive/search-service';
+import {
+  SearchType,
+  SortDirection,
+  SortParam,
+} from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
 import {
   MetadataFieldToSortField,
@@ -14,6 +18,7 @@ import {
 
 export interface RestorationState {
   displayMode?: CollectionDisplayMode;
+  searchType?: SearchType;
   sortParam?: SortParam;
   selectedSort?: SortField;
   sortDirection?: SortDirection;
@@ -87,11 +92,19 @@ export class RestorationStateHandler
   private persistQueryStateToUrl(state: RestorationState) {
     const url = new URL(window.location.href);
     const { searchParams } = url;
+    searchParams.delete('sin');
     searchParams.delete('sort');
     searchParams.delete('query');
     searchParams.delete('page');
     searchParams.delete('and[]');
     searchParams.delete('not[]');
+
+    if (state.searchType) {
+      searchParams.set(
+        'sin',
+        state.searchType === SearchType.FULLTEXT ? 'TXT' : ''
+      );
+    }
 
     if (state.sortParam) {
       const prefix = state.sortParam.direction === 'desc' ? '-' : '';
@@ -155,6 +168,7 @@ export class RestorationStateHandler
 
   private loadQueryStateFromUrl(): RestorationState {
     const url = new URL(window.location.href);
+    const searchInside = url.searchParams.get('sin');
     const pageNumber = url.searchParams.get('page');
     const searchQuery = url.searchParams.get('query');
     const sortQuery = url.searchParams.get('sort');
@@ -173,6 +187,10 @@ export class RestorationStateHandler
       },
     };
 
+    if (searchInside) {
+      restorationState.searchType =
+        searchInside === 'TXT' ? SearchType.FULLTEXT : SearchType.METADATA;
+    }
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
       restorationState.currentPage = parsed;

@@ -5,6 +5,7 @@ import {
 } from '@internetarchive/analytics-manager';
 import {
   SearchService,
+  SearchServiceInterface,
   SearchType,
   StringField,
 } from '@internetarchive/search-service';
@@ -22,7 +23,8 @@ import '../src/collection-browser';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
-  private searchService = SearchService.default;
+  private searchService: SearchServiceInterface =
+    this.initSearchServiceFromUrlParams();
 
   private resizeObserver = new SharedResizeObserver();
 
@@ -71,6 +73,15 @@ export class AppRoot extends LitElement {
     console.log('Analytics Received ----', ae);
     this.latestAction = ae;
     this.analyticsManager?.sendEventNoSampling(ae);
+  }
+
+  private initSearchServiceFromUrlParams() {
+    const params = new URL(window.location.href).searchParams;
+    return new SearchService({
+      baseUrl: params.get('search_base_url') ?? undefined,
+      servicePath: params.get('search_service_path') ?? undefined,
+      debuggingEnabled: !!params.get('debugging') ?? undefined,
+    });
   }
 
   private searchPressed(e: Event) {
@@ -122,23 +133,28 @@ export class AppRoot extends LitElement {
 
         <div id="search-types">
           Search type:
-          <input
-            type="radio"
-            id="metadata-search"
-            name="search-type"
-            value="metadata"
-            checked
-            @click=${this.searchTypeChanged}
-          />
-          <label for="metadata-search">Metadata</label>
-          <input
-            type="radio"
-            id="fulltext-search"
-            name="search-type"
-            value="fulltext"
-            @click=${this.searchTypeChanged}
-          />
-          <label for="fulltext-search">Full text</label>
+          <span class="search-type">
+            <input
+              type="radio"
+              id="metadata-search"
+              name="search-type"
+              value="metadata"
+              ?checked=${this.searchType === SearchType.METADATA}
+              @click=${this.searchTypeSelected}
+            />
+            <label for="metadata-search">Metadata</label>
+          </span>
+          <span class="search-type">
+            <input
+              type="radio"
+              id="fulltext-search"
+              name="search-type"
+              value="fulltext"
+              ?checked=${this.searchType === SearchType.FULLTEXT}
+              @click=${this.searchTypeSelected}
+            />
+            <label for="fulltext-search">Full text</label>
+          </span>
         </div>
 
         <div id="toggle-controls">
@@ -176,7 +192,7 @@ export class AppRoot extends LitElement {
         <div id="cell-controls" class="hidden">
           <div id="cell-size-control">
             <div>
-              <label for="cell-width-slider">Minimum cell width:</label>
+              <label for="cell-width-slider">Min cell width:</label>
               <input
                 type="range"
                 min="10"
@@ -200,40 +216,6 @@ export class AppRoot extends LitElement {
                 @input=${this.heightChanged}
               />
               <span>${this.cellHeight}rem</span>
-            </div>
-            <div>
-              <label for="show-outline-check">Show outlines:</label>
-              <input
-                type="checkbox"
-                id="show-outline-check"
-                @click=${this.outlineChanged}
-              />
-            </div>
-            <div>
-              <label for="show-facet-group-outline-check"
-                >Show Facet Group Outlines:</label
-              >
-              <input
-                type="checkbox"
-                id="show-facet-group-outline-check"
-                @click=${this.toggleFacetGroupOutline}
-              />
-            </div>
-            <div>
-              <label for="simulate-login">Simulate Login:</label>
-              <input
-                type="checkbox"
-                id="simulate-login"
-                @click=${this.loginChanged}
-              />
-            </div>
-            <div>
-              <label for="show-dummy-snippets">Show dummy snippets:</label>
-              <input
-                type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
             </div>
           </div>
           <div id="cell-gap-control">
@@ -265,6 +247,42 @@ export class AppRoot extends LitElement {
             </div>
           </div>
         </div>
+        <div id="checkbox-controls">
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-outline-check"
+              @click=${this.outlineChanged}
+            />
+            <label for="show-outline-check">Show cell outlines</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-facet-group-outline-check"
+              @click=${this.toggleFacetGroupOutline}
+            />
+            <label for="show-facet-group-outline-check">
+              Show facet group outlines
+            </label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="simulate-login"
+              @click=${this.loginChanged}
+            />
+            <label for="simulate-login">Simulate login</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-dummy-snippets"
+              @click=${this.snippetsChanged}
+            />
+            <label for="show-dummy-snippets">Show dummy snippets</label>
+          </div>
+        </div>
       </div>
 
       <div id="collection-browser-container">
@@ -281,6 +299,7 @@ export class AppRoot extends LitElement {
           .analyticsHandler=${this.analyticsHandler}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
+          @searchTypeChanged=${this.searchTypeChanged}
         >
         </collection-browser>
       </div>
@@ -288,11 +307,17 @@ export class AppRoot extends LitElement {
     `;
   }
 
-  private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>) {
+  private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>): void {
     this.searchQuery = e.detail.baseQuery;
   }
 
-  private searchTypeChanged(e: Event) {
+  /** Handler for search type changes coming from collection browser */
+  private searchTypeChanged(e: CustomEvent<SearchType>): void {
+    this.searchType = e.detail;
+  }
+
+  /** Handler for user input selecting a search type */
+  private searchTypeSelected(e: Event) {
     const target = e.target as HTMLInputElement;
     this.searchType =
       target.value === 'fulltext' ? SearchType.FULLTEXT : SearchType.METADATA;
@@ -494,8 +519,17 @@ export class AppRoot extends LitElement {
       display: flex;
     }
 
+    #search-and-page-inputs > form {
+      margin-right: 1rem;
+    }
+
+    .search-type {
+      margin-right: 1rem;
+    }
+
     #cell-controls {
       display: flex;
+      flex-wrap: wrap;
     }
 
     #cell-controls label {
@@ -503,8 +537,23 @@ export class AppRoot extends LitElement {
       width: 10rem;
     }
 
+    #cell-size-control,
+    #cell-gap-control {
+      flex-basis: calc(50% - 1rem);
+      flex-grow: 1;
+    }
+
     #cell-gap-control {
       margin-left: 1rem;
+    }
+
+    #checkbox-controls {
+      padding-top: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-control {
+      flex-basis: 50%;
     }
 
     #last-event {
