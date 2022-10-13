@@ -15,6 +15,7 @@ import {
   LanguageCodeHandler,
   LanguageCodeHandlerInterface,
 } from '../src/language-code-handler/language-code-handler';
+import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -60,7 +61,7 @@ describe('Collection Facets', () => {
     const titleFacetRow = titleFacetGroup
       ?.querySelector('facets-template')
       ?.shadowRoot?.querySelector('.facet-row');
-    console.log(titleFacetGroup?.querySelector('facets-template'));
+
     expect(titleFacetRow?.textContent?.trim()).to.satisfy((text: string) =>
       /^foo\s*5$/.test(text)
     );
@@ -150,6 +151,45 @@ describe('Collection Facets', () => {
     expect(collectionName?.parentElement).to.not.be.instanceOf(
       HTMLAnchorElement
     );
+  });
+
+  it('does not render suppressed collection facets', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      collection: new Aggregation({
+        buckets: [
+          {
+            key: 'deemphasize',
+            doc_count: 5,
+          },
+          {
+            key: 'community',
+            doc_count: 5,
+          },
+          {
+            key: 'foo',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const collectionFacets = el.shadowRoot
+      ?.querySelector('facets-template')
+      ?.shadowRoot?.querySelectorAll('.facet-row');
+    expect(collectionFacets?.length).to.equal(1);
+
+    // The first (and only) collection link should be for 'foo'
+    const collectionLink = collectionFacets
+      ?.item(0)
+      .querySelector(`a[href='/details/foo']`);
+    expect(collectionLink).to.exist;
   });
 
   it('renders language facets with their human-readable names', async () => {
@@ -552,5 +592,65 @@ describe('Collection Facets', () => {
       expect(eventCaught).to.be.true;
       expect(eventFacet).to.equal('subject' as FacetOption);
     });
+  });
+
+  it('fire analytics on more link', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></collection-facets>`
+    );
+    const aggs: Record<string, Aggregation> = {
+      subject: new Aggregation({
+        buckets: [
+          {
+            key: 'foo',
+            doc_count: 5,
+          },
+          {
+            key: 'fi',
+            doc_count: 5,
+          },
+          {
+            key: 'fum',
+            doc_count: 5,
+          },
+          {
+            key: 'flee',
+            doc_count: 5,
+          },
+          {
+            key: 'wheee',
+            doc_count: 5,
+          },
+          {
+            key: 'whooo',
+            doc_count: 5,
+          },
+          {
+            key: 'boop',
+            doc_count: 5,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const moreLink = el.shadowRoot?.querySelector(
+      '.more-link'
+    ) as HTMLButtonElement;
+
+    expect(moreLink).to.exist; // has link
+
+    moreLink?.click();
+    await el.updateComplete;
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('showMoreFacetsModal');
+    expect(mockAnalyticsHandler.callLabel).to.equal('subject');
   });
 });

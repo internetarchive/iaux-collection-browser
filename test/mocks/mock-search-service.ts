@@ -10,6 +10,9 @@ import {
   mockSuccessSingleResult,
   mockSuccessMultipleResults,
   getMockSuccessSingleResultWithSort,
+  mockSuccessLoggedInResult,
+  mockSuccessNoPreviewResult,
+  mockSuccessLoggedInAndNoPreviewResult,
 } from './mock-search-responses';
 
 export class MockSearchService implements SearchServiceInterface {
@@ -40,14 +43,19 @@ export class MockSearchService implements SearchServiceInterface {
       });
     }
 
-    if (this.searchParams?.query === 'single-result') {
-      return mockSuccessSingleResult;
+    switch (this.searchParams?.query) {
+      case 'single-result':
+        return mockSuccessSingleResult;
+      case 'loggedin':
+        return mockSuccessLoggedInResult;
+      case 'no-preview':
+        return mockSuccessNoPreviewResult;
+      case 'loggedin-no-preview':
+        return mockSuccessLoggedInAndNoPreviewResult;
+      case 'with-sort':
+        return getMockSuccessSingleResultWithSort(this.resultsSpy);
+      default:
+        return mockSuccessMultipleResults;
     }
-
-    if (this.searchParams?.query === 'with-sort') {
-      return getMockSuccessSingleResultWithSort(this.resultsSpy);
-    }
-
-    return mockSuccessMultipleResults;
   }
 }

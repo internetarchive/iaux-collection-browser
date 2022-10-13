@@ -22,6 +22,7 @@ import {
   ModalConfig,
   ModalManagerInterface,
 } from '@internetarchive/modal-manager';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import chevronIcon from './assets/img/icons/chevron';
 import {
   FacetOption,
@@ -33,10 +34,15 @@ import {
   lendingFacetDisplayNames,
   lendingFacetKeysVisibility,
   LendingFacetKey,
+  suppressedCollections,
 } from './models';
 import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
+import {
+  analyticsActions,
+  analyticsCategories,
+} from './utils/analytics-events';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -66,7 +72,11 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) fullQuery?: string;
 
-  @property({ type: Object }) modalManager?: ModalManagerInterface;
+  @property({ type: Object, attribute: false })
+  modalManager?: ModalManagerInterface;
+
+  @property({ type: Object, attribute: false })
+  analyticsHandler?: AnalyticsManagerInterface;
 
   @property({ type: Object })
   languageCodeHandler?: LanguageCodeHandlerInterface;
@@ -254,7 +264,7 @@ export class CollectionFacets extends LitElement {
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, facetData]) => {
-            let displayText = value;
+            let displayText: string = value;
             // for selected languages, we store the language code instead of the
             // display name, so look up the name from the mapping
             if (option === 'language') {
@@ -301,12 +311,17 @@ export class CollectionFacets extends LitElement {
       const title = facetTitles[option];
       if (!title) return;
 
-      const castedBuckets = buckets.buckets as Bucket[];
+      let castedBuckets = buckets.buckets as Bucket[];
 
-      // we are not showing fav- items in facets
-      castedBuckets?.filter(
-        bucket => bucket?.key?.toString()?.startsWith('fav-') === false
-      );
+      if (option === 'collection') {
+        // we are not showing fav- collections or certain deemphasized collections in facets
+        castedBuckets = castedBuckets?.filter(bucket => {
+          const bucketKey = bucket?.key?.toString();
+          return (
+            !suppressedCollections[bucketKey] && !bucketKey?.startsWith('fav-')
+          );
+        });
+      }
 
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
         let bucketKey = bucket.key;
@@ -429,6 +444,11 @@ export class CollectionFacets extends LitElement {
       class="more-link"
       @click=${() => {
         this.showMoreFacetsModal(facetGroup, 'count');
+        this.analyticsHandler?.sendEventNoSampling({
+          category: analyticsCategories.default,
+          action: analyticsActions.showMoreFacetsModal,
+          label: facetGroup.key,
+        });
         this.dispatchEvent(
           new CustomEvent('showMoreFacets', { detail: facetGroup.key })
         );
@@ -446,6 +466,7 @@ export class CollectionFacets extends LitElement {
 
     const customModalContent = html`
       <more-facets-content
+        .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
         .fullQuery=${this.fullQuery}
@@ -570,9 +591,10 @@ export class CollectionFacets extends LitElement {
         padding: 0;
         background: inherit;
         border: 0;
-        color: blue;
+        color: var(--ia-theme-link-color, #4b64ff);
         cursor: pointer;
       }
+
       .sorting-icon {
         height: 15px;
         cursor: pointer;

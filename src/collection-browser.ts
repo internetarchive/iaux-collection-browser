@@ -155,8 +155,6 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
-  @state() private lendingFacetLoading = false;
-
   @state() private fullYearAggregationLoading = false;
 
   @state() private aggregations?: Record<string, Aggregation>;
@@ -306,7 +304,10 @@ export class CollectionBrowser
       this.placeholderType = 'empty-query';
     }
 
-    if (!this.searchResultsLoading && this.totalResults === 0) {
+    if (
+      (!this.searchResultsLoading && this.totalResults === 0) ||
+      !this.searchService
+    ) {
       this.placeholderType = 'null-result';
     }
   }
@@ -499,11 +500,7 @@ export class CollectionBrowser
   }
 
   private get facetDataLoading(): boolean {
-    return (
-      this.facetsLoading ||
-      this.lendingFacetLoading ||
-      this.fullYearAggregationLoading
-    );
+    return this.facetsLoading || this.fullYearAggregationLoading;
   }
 
   private get mobileFacetsTemplate() {
@@ -781,15 +778,9 @@ export class CollectionBrowser
       this.historyPopOccurred = false;
     }
 
-    // Ensure lending aggregations don't carry over to non-metadata searches
-    if (this.searchType !== SearchType.METADATA) {
-      delete this.aggregations?.lending;
-    }
-
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
-      this.fetchLendingFacet(),
       this.fetchFullYearHistogram(),
     ]);
   }
@@ -950,6 +941,8 @@ export class CollectionBrowser
     const params: SearchParams = {
       query: this.fullQuery,
       rows: 0,
+      // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
+      aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
     };
@@ -959,34 +952,7 @@ export class CollectionBrowser
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
-    this.aggregations = {
-      ...this.aggregations,
-      ...results?.success?.response.aggregations,
-    };
-  }
-
-  private async fetchLendingFacet() {
-    // Only retrieve lending facet for metadata searches
-    if (this.searchType !== SearchType.METADATA) return;
-    if (!this.fullQuery) return;
-
-    const params: SearchParams = {
-      query: this.fullQuery,
-      rows: 0,
-      aggregations: {
-        simpleParams: ['lending___status'],
-      },
-      aggregationsSize: 10, // Larger size to ensure we get all possible statuses
-    };
-
-    this.lendingFacetLoading = true;
-    const results = await this.searchService?.search(params, this.searchType);
-    this.lendingFacetLoading = false;
-
-    this.aggregations = {
-      ...this.aggregations,
-      ...results?.success?.response.aggregations,
-    };
+    this.aggregations = results?.success?.response.aggregations;
   }
 
   /**
@@ -1039,7 +1005,8 @@ export class CollectionBrowser
     this.fullYearAggregationLoading = false;
 
     this.fullYearsHistogramAggregation =
-      results?.success?.response?.aggregations?.year_histogram;
+      results?.success?.response?.aggregations?.year_histogram ??
+      results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
   }
 
   private scrollToPage(pageNumber: number) {
@@ -1210,26 +1177,23 @@ export class CollectionBrowser
       }
 
       tiles.push({
-        // TODO the commented items are not currently being returned by the PPS and
-        // we will need to have them added to the PPS hit schemas where appropriate
-
-        // averageRating: result.avg_rating?.value,
+        averageRating: result.avg_rating?.value,
         collections: result.collection?.values ?? [],
         commentCount: result.num_reviews?.value ?? 0,
         creator: result.creator?.value,
         creators: result.creator?.values ?? [],
-        // dateAdded: result.addeddate?.value,
+        dateAdded: result.addeddate?.value,
         dateArchived: result.publicdate?.value,
         datePublished: result.date?.value,
         dateReviewed: result.reviewdate?.value,
         description: result.description?.value,
         favCount: result.num_favorites?.value ?? 0,
         identifier: result.identifier,
-        // issue: result.issue?.value,
-        itemCount: 0, // result.item_count?.value ?? 0,
+        issue: result.issue?.value,
+        itemCount: result.item_count?.value ?? 0,
         mediatype: result.mediatype?.value ?? 'data',
         snippets: result.highlight?.values ?? [],
-        // source: result.source?.value,
+        source: result.source?.value,
         subjects: result.subject?.values ?? [],
         title: this.etreeTitle(
           result.title?.value,
@@ -1383,7 +1347,7 @@ export class CollectionBrowser
       width: 18rem;
       min-width: 18rem; /* Prevents Safari from shrinking col at first draw */
       padding-right: 12px;
-      padding-right: 1rem;
+      padding-right: 2.5rem;
     }
 
     .desktop #left-column::-webkit-scrollbar {

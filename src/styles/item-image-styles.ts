@@ -22,6 +22,7 @@ export const baseItemImageStyles = css`
 
   .contain {
     object-fit: contain;
+    object-position: top;
     height: 100%;
     width: 100%;
   }
