@@ -69,4 +69,18 @@ describe('List Tile', () => {
       '/details/foo'
     );
   });
+
+  it('should render weekly views when sorting by week', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{ viewCount: 50, weeklyViewCount: 10 }}
+        .sortParam=${{ field: 'week', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const viewsRow = el.shadowRoot?.getElementById('views-line');
+    expect(viewsRow).to.exist;
+    expect(viewsRow?.textContent?.trim()).to.equal('Views:  10');
+  });
 });

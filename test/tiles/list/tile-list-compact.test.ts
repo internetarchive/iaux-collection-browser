@@ -35,4 +35,18 @@ describe('List Tile Compact', () => {
 
     expect(creator).to.exist;
   });
+
+  it('should render weekly views when sorting by week', async () => {
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact
+        .model=${{ viewCount: 50, weeklyViewCount: 10 }}
+        .sortParam=${{ field: 'week', direction: 'desc' }}
+      >
+      </tile-list-compact>
+    `);
+
+    const viewsColumn = el.shadowRoot?.getElementById('views');
+    expect(viewsColumn).to.exist;
+    expect(viewsColumn?.textContent?.trim()).to.equal('10');
+  });
 });
