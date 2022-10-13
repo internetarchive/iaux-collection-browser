@@ -168,7 +168,7 @@ export class FacetsTemplate extends LitElement {
                     <span class="eye-closed">${eyeClosedIcon}</span>
                   </label>
                 </div>
-                <div
+                <label
                   for=${showOnlyCheckboxId}
                   class="facet-info-display"
                   title=${onlyShowText}
@@ -177,7 +177,7 @@ export class FacetsTemplate extends LitElement {
                   <div class="facet-count">
                     ${bucket.count.toLocaleString()}
                   </div>
-                </div>
+                </label>
               </div>
             `;
           }
