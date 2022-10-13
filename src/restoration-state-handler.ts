@@ -189,7 +189,7 @@ export class RestorationStateHandler
 
     if (searchInside) {
       restorationState.searchType =
-        searchInside === 'TXT' ? SearchType.FULLTEXT : undefined; // No explicit metadata sin
+        searchInside === 'TXT' ? SearchType.FULLTEXT : SearchType.METADATA;
     }
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
