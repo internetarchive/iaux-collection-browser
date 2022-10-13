@@ -24,6 +24,7 @@ export interface TileModel {
   title: string;
   viewCount: number;
   volume?: string;
+  weeklyViewCount?: number;
   loginRequired: boolean;
   contentWarning: boolean;
 }
