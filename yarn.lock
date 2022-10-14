@@ -84,10 +84,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
-"@internetarchive/collection-name-cache@^0.2.1-alpha.4":
-  version "0.2.1-alpha.4"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.1-alpha.4.tgz#fd062a55c64f218d448f87caabc57e069e624c92"
-  integrity sha512-dkRsDnYtEkfGHQb+YeU51yVJ1ZBV3+Ho1Ytr2T7sQz+x/D/58kpH9mrnk1MBXkdupgiQ97ROWrzNtxOZFHrn0g==
+"@internetarchive/collection-name-cache@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.1.tgz#a025c954b4c3084bfce6eb31faa0410a3454c889"
+  integrity sha512-3cdTNVKv/v2Gh8+i0xczdqgz+MGgvoL+x3RK0zyorzk6MMCpatndfhfp47ryUzs+iUAjy6DGA1xL9KD/g/4azQ==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
     "@internetarchive/search-service" "^0.4.2-alpha.1"
