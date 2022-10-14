@@ -40,6 +40,7 @@ export class MediatypeIcon extends LitElement {
       <div
         id="icon"
         class="${this.showText ? 'show-text' : 'hide-text'}"
+        title="${config.text}"
         style="--iconFillColor: ${config.color}"
       >
         ${config.icon}
@@ -69,6 +70,7 @@ export class MediatypeIcon extends LitElement {
       svg {
         height: var(--iconHeight, 10px);
         width: var(--iconWidth, 10px);
+        pointer-events: none;
       }
 
       .fill-color {
