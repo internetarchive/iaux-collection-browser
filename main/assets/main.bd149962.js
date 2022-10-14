@@ -3059,7 +3059,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                     <span class="eye-closed">${Al}</span>
                   </label>
                 </div>
-                <div
+                <label
                   for=${s}
                   class="facet-info-display"
                   title=${f}
@@ -3068,7 +3068,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                   <div class="facet-count">
                     ${i.count.toLocaleString()}
                   </div>
-                </div>
+                </label>
               </div>
             `})}
       </div>
