@@ -49,17 +49,19 @@ describe('Render facets', () => {
     expect(el.shadowRoot?.querySelector('.facets-on-modal')).to.exist;
   });
 
-  it('find facet-title and facet-count for perticular facet group', async () => {
+  it('find facet-title and facet-count for particular facet group', async () => {
     const el = await fixture<FacetsTemplate>(
       html`<facets-template .facetGroup=${facetGroup}></facets-template>`
     );
     await el.updateComplete;
 
     const facetInfo = el.shadowRoot?.querySelector('.facet-info-display');
-    expect(facetInfo?.querySelector('.facet-title')?.textContent).equal(
+    expect(facetInfo?.querySelector('.facet-title')?.textContent).to.equal(
       'audio'
     );
-    expect(facetInfo?.querySelector('.facet-count')?.textContent).equal('1001');
+    expect(
+      facetInfo?.querySelector('.facet-count')?.textContent?.trim()
+    ).to.equal('1,001');
   });
 
   it('find the hidden facet item', async () => {
