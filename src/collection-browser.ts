@@ -349,7 +349,6 @@ export class CollectionBrowser
         </div>
       </div>
       <div id="right-column" class="column">
-        ${this.searchResultsLoading ? this.loadingTemplate : nothing}
         ${this.sortFilterBarTemplate}
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
@@ -527,7 +526,6 @@ export class CollectionBrowser
 
   private get facetsTemplate() {
     return html`
-      ${this.facetsLoading ? this.loadingTemplate : nothing}
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
