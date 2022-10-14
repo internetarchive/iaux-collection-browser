@@ -3062,7 +3062,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                   title=${f}
                 >
                   <div class="facet-title">${d}</div>
-                  <div class="facet-count">${i.count}</div>
+                  <div class="facet-count">
+                    ${i.count.toLocaleString()}
+                  </div>
                 </div>
               </div>
             `})}
@@ -3791,7 +3793,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
     #results-total {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       margin-bottom: 5rem;
     }
 
@@ -3806,9 +3808,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
 
     #big-results-label {
-      font-size: 1rem;
+      font-size: 1.4rem;
       font-weight: 200;
-      text-transform: uppercase;
     }
 
     #list-header {
