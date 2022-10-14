@@ -21,6 +21,18 @@ export class TileStats extends LitElement {
   @property({ type: Number }) commentCount?: number;
 
   render() {
+    const formattedFavCount = formatCount(this.favCount, 'short', 'short');
+    const formattedReviewCount = formatCount(
+      this.commentCount,
+      'short',
+      'short'
+    );
+
+    const uploadsOrViewsTitle =
+      this.mediatype === 'account'
+        ? `${this.itemCount} uploads`
+        : `${this.viewCount} all-time views`;
+
     return html`
       <div class="item-stats">
         <p class="sr-only">
@@ -31,7 +43,7 @@ export class TileStats extends LitElement {
             <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
-          <li class="col">
+          <li class="col" title="${uploadsOrViewsTitle}">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
             <p class="status-text">
               <span class="sr-only">
@@ -44,18 +56,18 @@ export class TileStats extends LitElement {
               )}
             </p>
           </li>
-          <li class="col">
+          <li class="col" title="${formattedFavCount} favorites">
             ${favoriteFilledIcon}
             <p class="status-text">
               <span class="sr-only">Favorites:</span>
-              ${formatCount(this.favCount, 'short', 'short')}
+              ${formattedFavCount}
             </p>
           </li>
-          <li class="col">
+          <li class="col" title="${formattedReviewCount} reviews">
             ${reviewsIcon}
             <p class="status-text">
               <span class="sr-only">Reviews:</span>
-              ${formatCount(this.commentCount, 'short', 'short')}
+              ${formattedReviewCount}
             </p>
           </li>
         </ul>
@@ -116,6 +128,7 @@ export class TileStats extends LitElement {
         width: 10px;
         display: block;
         margin: auto;
+        pointer-events: none;
       }
 
       .status-text {
