@@ -1404,7 +1404,7 @@ export class CollectionBrowser
 
     #results-total {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       margin-bottom: 5rem;
     }
 
@@ -1419,9 +1419,8 @@ export class CollectionBrowser
     }
 
     #big-results-label {
-      font-size: 1rem;
+      font-size: 1.4rem;
       font-weight: 200;
-      text-transform: uppercase;
     }
 
     #list-header {

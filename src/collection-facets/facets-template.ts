@@ -174,7 +174,9 @@ export class FacetsTemplate extends LitElement {
                   title=${onlyShowText}
                 >
                   <div class="facet-title">${bucketTextDisplay}</div>
-                  <div class="facet-count">${bucket.count}</div>
+                  <div class="facet-count">
+                    ${bucket.count.toLocaleString()}
+                  </div>
                 </div>
               </div>
             `;
