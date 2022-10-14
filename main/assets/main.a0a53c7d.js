@@ -738,6 +738,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
       <div
         id="icon"
         class="${this.showText?"show-text":"hide-text"}"
+        title="${e.text}"
         style="--iconFillColor: ${e.color}"
       >
         ${e.icon}
@@ -763,6 +764,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
       svg {
         height: var(--iconHeight, 10px);
         width: var(--iconWidth, 10px);
+        pointer-events: none;
       }
 
       .fill-color {
@@ -801,7 +803,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
     />
     <title>Eye icon</title>
   </svg>
-`;function Vs(r,e){let t=1;return r>=1e9?t=1e9:r>=1e6?t=1e6:r>=1e3&&e==="short"&&(t=1e3),t}function Gs(r=0,e){const t=r/e,i=t<10;let a=0;return i?a=Math.round((t+Number.EPSILON)*10)/10:a=Math.round(t),a}function Qs(r,e,t,i){switch(e){case 1e9:return Ze(t==="short"?gt`${r}B`:gt`${r} billion`);case 1e6:return Ze(t==="short"?gt`${r}M`:gt`${r} million`);case 1e3:return Ze(t==="short"?gt`${r}K`:gt`${r} thousand`);default:return new Intl.NumberFormat(i).format(r)}}function Xt(r,e="long",t="short",i="en-US"){const a=r!=null?r:-1;if(a<0)return"";const o=Vs(a,e),s=Gs(a,o);return Qs(s,o,t,i)}let rt=class extends O{render(){return m`
+`;function Vs(r,e){let t=1;return r>=1e9?t=1e9:r>=1e6?t=1e6:r>=1e3&&e==="short"&&(t=1e3),t}function Gs(r=0,e){const t=r/e,i=t<10;let a=0;return i?a=Math.round((t+Number.EPSILON)*10)/10:a=Math.round(t),a}function Qs(r,e,t,i){switch(e){case 1e9:return Ze(t==="short"?gt`${r}B`:gt`${r} billion`);case 1e6:return Ze(t==="short"?gt`${r}M`:gt`${r} million`);case 1e3:return Ze(t==="short"?gt`${r}K`:gt`${r} thousand`);default:return new Intl.NumberFormat(i).format(r)}}function Xt(r,e="long",t="short",i="en-US"){const a=r!=null?r:-1;if(a<0)return"";const o=Vs(a,e),s=Gs(a,o);return Qs(s,o,t,i)}let rt=class extends O{render(){const e=Xt(this.favCount,"short","short"),t=Xt(this.commentCount,"short","short"),i=this.mediatype==="account"?`${this.itemCount} uploads`:`${this.viewCount} all-time views`;return m`
       <div class="item-stats">
         <p class="sr-only">
           ${this.mediatype==="account"?"Account Stats":"Item Stats"}
@@ -811,7 +813,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
             <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
-          <li class="col">
+          <li class="col" title="${i}">
             ${this.mediatype==="account"?js:Ws}
             <p class="status-text">
               <span class="sr-only">
@@ -820,18 +822,18 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
               ${Xt(this.mediatype==="account"?this.itemCount:this.viewCount,"short","short")}
             </p>
           </li>
-          <li class="col">
+          <li class="col" title="${e} favorites">
             ${Hs}
             <p class="status-text">
               <span class="sr-only">Favorites:</span>
-              ${Xt(this.favCount,"short","short")}
+              ${e}
             </p>
           </li>
-          <li class="col">
+          <li class="col" title="${t} reviews">
             ${Us}
             <p class="status-text">
               <span class="sr-only">Reviews:</span>
-              ${Xt(this.commentCount,"short","short")}
+              ${t}
             </p>
           </li>
         </ul>
@@ -888,6 +890,7 @@ to view this item`:"Content may be inappropriate"}static get styles(){return y`
         width: 10px;
         display: block;
         margin: auto;
+        pointer-events: none;
       }
 
       .status-text {
