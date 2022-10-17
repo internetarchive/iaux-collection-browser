@@ -146,7 +146,7 @@ export class MoreFacetsContent extends LitElement {
       this.pageNumber = Number(page);
     }
 
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
       action: analyticsActions.moreFacetsPageChange,
       label: `${this.pageNumber}`,
@@ -437,7 +437,7 @@ export class MoreFacetsContent extends LitElement {
     });
     this.dispatchEvent(event);
     this.modalManager?.closeModal();
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
       action: `${analyticsActions.applyMoreFacetsModal}`,
       label: `${this.facetKey}`,
@@ -446,7 +446,7 @@ export class MoreFacetsContent extends LitElement {
 
   private cancelClick() {
     this.modalManager?.closeModal();
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
       action: analyticsActions.closeMoreFacetsModal,
       label: `${this.facetKey}`,

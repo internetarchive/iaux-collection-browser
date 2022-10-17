@@ -72,7 +72,7 @@ export class AppRoot extends LitElement {
   private sendAnalytics(ae: AnalyticsEvent) {
     console.log('Analytics Received ----', ae);
     this.latestAction = ae;
-    this.analyticsManager?.sendEventNoSampling(ae);
+    this.analyticsManager?.sendEvent(ae);
   }
 
   private initSearchServiceFromUrlParams() {

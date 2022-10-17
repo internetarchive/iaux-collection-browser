@@ -467,7 +467,7 @@ export class CollectionFacets extends LitElement {
       class="more-link"
       @click=${() => {
         this.showMoreFacetsModal(facetGroup, 'count');
-        this.analyticsHandler?.sendEventNoSampling({
+        this.analyticsHandler?.sendEvent({
           category: analyticsCategories.default,
           action: analyticsActions.showMoreFacetsModal,
           label: facetGroup.key,
