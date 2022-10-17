@@ -404,7 +404,7 @@ export class CollectionBrowser
   private sendSortByAnalytics(prevSortDirection: SortDirection | null): void {
     const directionCleared = prevSortDirection && !this.sortDirection;
 
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.sortBy,
       label: `${this.selectedSort}${
@@ -430,7 +430,7 @@ export class CollectionBrowser
     this.displayMode = e.detail.displayMode;
 
     if (this.displayMode) {
-      this.analyticsHandler?.sendEventNoSampling({
+      this.analyticsHandler?.sendEvent({
         category: this.searchContext,
         action: analyticsActions.displayMode,
         label: this.displayMode,
@@ -447,7 +447,7 @@ export class CollectionBrowser
     }
     const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
 
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.filterByTitle,
       label: cleared
@@ -473,7 +473,7 @@ export class CollectionBrowser
     }
     const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
 
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.filterByCreator,
       label: cleared
@@ -600,7 +600,7 @@ export class CollectionBrowser
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
 
     if (this.dateRangeQueryClause) {
-      this.analyticsHandler?.sendEventNoSampling({
+      this.analyticsHandler?.sendEvent({
         category: this.searchContext,
         action: analyticsActions.histogramChanged,
         label: this.dateRangeQueryClause,
@@ -926,7 +926,7 @@ export class CollectionBrowser
     negative: boolean
   ): void {
     if (negative) {
-      this.analyticsHandler?.sendEventNoSampling({
+      this.analyticsHandler?.sendEvent({
         category: this.searchContext,
         action: facetSelected
           ? analyticsActions.facetNegativeSelected
@@ -934,7 +934,7 @@ export class CollectionBrowser
         label: name,
       });
     } else {
-      this.analyticsHandler?.sendEventNoSampling({
+      this.analyticsHandler?.sendEvent({
         category: this.searchContext,
         action: facetSelected
           ? analyticsActions.facetSelected
@@ -1251,13 +1251,13 @@ export class CollectionBrowser
    * Callback when a result is selected
    */
   resultSelected(event: CustomEvent<TileModel>): void {
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.resultSelected,
       label: event.detail.mediatype,
     });
 
-    this.analyticsHandler?.sendEventNoSampling({
+    this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.resultSelected,
       label: `page-${this.currentPage}`,
