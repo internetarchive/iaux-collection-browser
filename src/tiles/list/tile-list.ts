@@ -340,7 +340,7 @@ export class TileList extends LitElement {
     // Note: single ' for href='' to wrap " in query var gets changed back by yarn format
 
     // eslint-disable-next-line lit/no-invalid-html
-    return html`<a href="${this.baseNavigationUrl}/search.php?query=${query}">
+    return html`<a href="${this.baseNavigationUrl}/search?query=${query}">
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
   }
