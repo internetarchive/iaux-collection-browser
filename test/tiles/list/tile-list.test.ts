@@ -105,4 +105,34 @@ describe('List Tile', () => {
     expect(dateRow).to.exist;
     expect(dateRow?.textContent?.trim()).to.contain('Added:  Jan 01, 2010');
   });
+
+  it('should render links to /search pages (not search.php) for subject, creator, and source', async () => {
+    const model: Partial<TileModel> = {
+      subjects: ['foo'],
+      creators: ['bar'],
+      source: 'baz',
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list .model=${model}></tile-list>
+    `);
+
+    const subjectLink = el.shadowRoot?.querySelector('#topics a[href]');
+    expect(subjectLink).to.exist;
+    expect(subjectLink?.getAttribute('href')).to.equal(
+      `/search?query=${encodeURIComponent('subject:"foo"')}`
+    );
+
+    const creatorLink = el.shadowRoot?.querySelector('#creator a[href]');
+    expect(creatorLink).to.exist;
+    expect(creatorLink?.getAttribute('href')).to.equal(
+      `/search?query=${encodeURIComponent('creator:"bar"')}`
+    );
+
+    const sourceLink = el.shadowRoot?.querySelector('#source a[href]');
+    expect(sourceLink).to.exist;
+    expect(sourceLink?.getAttribute('href')).to.equal(
+      `/search?query=${encodeURIComponent('source:"baz"')}`
+    );
+  });
 });
