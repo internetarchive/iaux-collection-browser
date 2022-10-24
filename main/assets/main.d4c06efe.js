@@ -3335,7 +3335,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
     `}};Ur=s([N("facet-tombstone-row")],Ur);let K=class extends O{constructor(){super(...arguments),this.moreLinksVisible=!0,this.facetsLoading=!1,this.fullYearAggregationLoading=!1,this.collapsableFacets=!1,this.showHistogramDatePicker=!1,this.openFacets={subject:!1,lending:!1,mediatype:!1,language:!1,creator:!1,collection:!1,year:!1},this.allowedFacetCount=6}render(){return p`
       <div id="container" class="${this.facetsLoading?"loading":""}">
-        ${this.showHistogramDatePicker&&this.fullYearsHistogramAggregation||this.fullYearAggregationLoading?p`
+        ${this.showHistogramDatePicker&&(this.fullYearsHistogramAggregation||this.fullYearAggregationLoading)?p`
               <div class="facet-group">
                 <h1>Year Published <feature-feedback></feature-feedback></h1>
                 ${this.histogramTemplate}
