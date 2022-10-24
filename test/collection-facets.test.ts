@@ -34,6 +34,73 @@ describe('Collection Facets', () => {
       el.shadowRoot?.querySelector('#container')?.classList.contains('loading')
     ).to.be.false;
   });
+
+  it('renders a date picker loading placeholder when date picker enabled', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = true;
+    el.showHistogramDatePicker = true;
+    await el.updateComplete;
+
+    const histogramLoader = el.shadowRoot?.querySelector(
+      '.histogram-loading-indicator'
+    );
+    expect(histogramLoader).to.exist;
+  });
+
+  it('does not render a date picker loading placeholder when date picker disabled', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = true;
+    el.showHistogramDatePicker = false;
+    await el.updateComplete;
+
+    const histogramLoader = el.shadowRoot?.querySelector(
+      '.histogram-loading-indicator'
+    );
+    expect(histogramLoader).to.be.null;
+  });
+
+  it('renders the date picker when enabled with data present', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = false;
+    el.showHistogramDatePicker = true;
+    el.fullYearsHistogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
+    await el.updateComplete;
+
+    const histogram = el.shadowRoot?.querySelector('histogram-date-range');
+    expect(histogram).to.exist;
+  });
+
+  it('does not render the date picker when disabled', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = false;
+    el.showHistogramDatePicker = false;
+    el.fullYearsHistogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
+    await el.updateComplete;
+
+    const histogram = el.shadowRoot?.querySelector('histogram-date-range');
+    expect(histogram).to.be.null;
+  });
+
   it('renders aggregations as facets', async () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets></collection-facets>`
