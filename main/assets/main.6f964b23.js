@@ -1217,7 +1217,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <div id=${Oi(i)} class="metadata">
         ${this.labelTemplate(t)} ${e}
       </div>
-    `:_}labelTemplate(e){return p` ${e?p`<span class="label">${e}: </span>`:_}`}searchLink(e,t){if(!e||!t)return _;const i=encodeURIComponent(`${e}:"${t}"`);return p`<a href="${this.baseNavigationUrl}/search.php?query=${i}">
+    `:_}labelTemplate(e){return p` ${e?p`<span class="label">${e}: </span>`:_}`}searchLink(e,t){if(!e||!t)return _;const i=encodeURIComponent(`${e}:"${t}"`);return p`<a href="${this.baseNavigationUrl}/search?query=${i}">
       ${Zt.sanitize(t)}</a
     >`}detailsLink(e,t){const i=t!=null?t:e;return p`<a
       href="${this.baseNavigationUrl}/details/${encodeURI(e)}"
