@@ -9,6 +9,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import DOMPurify from 'dompurify';
 
@@ -295,7 +296,15 @@ export class TileList extends LitElement {
 
   private get descriptionTemplate() {
     return this.metadataTemplate(
-      DOMPurify.sanitize(this.model?.description ?? ''),
+      // Sanitize away all tags except <br>, no attrs allowed (and convert line breaks to <br>).
+      // Using <br> for this allows us keep using CSS line-clamp for ellipses,
+      // which doesn't work if the text lines are split out into separate sub-elements.
+      unsafeHTML(
+        DOMPurify.sanitize(
+          this.model?.description?.replace(/\n/g, '<br>') ?? '',
+          { ALLOWED_TAGS: ['br'] }
+        )
+      ),
       '',
       'description'
     );
