@@ -778,6 +778,11 @@ export class CollectionBrowser
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
     this.pagesToRender = this.initialPageNumber;
+
+    // Reset the infinite scroller's item count, so that it
+    // shows tile placeholders until the new query's results load in
+    this.infiniteScroller?.reload();
+
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
     }
