@@ -270,3 +270,39 @@ export const mockSuccessMultipleResults: Result<
     },
   },
 };
+
+export const mockSuccessMultiLineDescription: Result<
+  SearchResponse,
+  SearchServiceError
+> = {
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'multi-line-description',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'multi-line-description',
+        sort: [],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            collection: ['foo', 'bar'],
+            description: ['line1', 'line2'],
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+};

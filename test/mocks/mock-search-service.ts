@@ -14,6 +14,7 @@ import {
   mockSuccessNoPreviewResult,
   mockSuccessLoggedInAndNoPreviewResult,
   mockSuccessWithYearHistogramAggs,
+  mockSuccessMultiLineDescription,
 } from './mock-search-responses';
 
 export class MockSearchService implements SearchServiceInterface {
@@ -49,6 +50,8 @@ export class MockSearchService implements SearchServiceInterface {
         return mockSuccessSingleResult;
       case 'years':
         return mockSuccessWithYearHistogramAggs;
+      case 'multi-line-description':
+        return mockSuccessMultiLineDescription;
       case 'loggedin':
         return mockSuccessLoggedInResult;
       case 'no-preview':
