@@ -46,6 +46,7 @@ import {
   TileModel,
   CollectionDisplayMode,
   FacetOption,
+  FacetBucket,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -859,21 +860,34 @@ export class CollectionBrowser
     this.searchResultsLoading = false;
   }
 
+  /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
-    let { fullQueryWithoutDate } = this;
-    const { dateRangeQueryClause } = this;
-    if (dateRangeQueryClause) {
-      fullQueryWithoutDate += ` AND ${dateRangeQueryClause}`;
-    }
-    return fullQueryWithoutDate;
-  }
-
-  private get fullQueryWithoutDate(): string | undefined {
     if (!this.baseQuery) return undefined;
     let fullQuery = this.baseQuery;
-    const { facetQuery, sortFilterQueries } = this;
+
+    const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
+
     if (facetQuery) {
       fullQuery += ` AND ${facetQuery}`;
+    }
+    if (dateRangeQueryClause) {
+      fullQuery += ` AND ${dateRangeQueryClause}`;
+    }
+    if (sortFilterQueries) {
+      fullQuery += ` AND ${sortFilterQueries}`;
+    }
+    return fullQuery;
+  }
+
+  /** The full query without any year facets or date range clauses */
+  private get fullQueryWithoutDates(): string | undefined {
+    if (!this.baseQuery) return undefined;
+    let fullQuery = this.baseQuery;
+
+    const { facetQueryWithoutYear, sortFilterQueries } = this;
+
+    if (facetQueryWithoutYear) {
+      fullQuery += ` AND ${facetQueryWithoutYear}`;
     }
     if (sortFilterQueries) {
       fullQuery += ` AND ${sortFilterQueries}`;
@@ -888,33 +902,84 @@ export class CollectionBrowser
    */
   private get facetQuery(): string | undefined {
     if (!this.selectedFacets) return undefined;
-    const facetQuery = [];
+    const facetClauses = [];
     for (const [facetName, facetValues] of Object.entries(
       this.selectedFacets
     )) {
-      const facetEntries = Object.entries(facetValues);
-      const facetQueryName =
-        facetName === 'lending' ? 'lending___status' : facetName;
-      // eslint-disable-next-line no-continue
-      if (facetEntries.length === 0) continue;
-      const facetValuesArray: string[] = [];
-      for (const [key, facetData] of facetEntries) {
-        const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
-
-        if (facetName === 'language') {
-          const languages =
-            this.languageCodeHandler.getCodeArrayFromCodeString(key);
-          for (const language of languages) {
-            facetValuesArray.push(`${plusMinusPrefix}"${language}"`);
-          }
-        } else {
-          facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
-        }
-      }
-      const valueQuery = facetValuesArray.join(` OR `);
-      facetQuery.push(`${facetQueryName}:(${valueQuery})`);
+      facetClauses.push(this.buildFacetClause(facetName, facetValues));
     }
-    return facetQuery.length > 0 ? `(${facetQuery.join(' AND ')})` : undefined;
+    return this.joinFacetClauses(facetClauses);
+  }
+
+  /**
+   * Generates a query string for the currently selected facets, excluding 'year' facets.
+   *
+   * Example: `mediatype:("collection" OR "audio" OR -"etree") AND subject:("foo" OR -"bar")`
+   */
+  private get facetQueryWithoutYear(): string | undefined {
+    if (!this.selectedFacets) return undefined;
+    const facetClauses = [];
+    for (const [facetName, facetValues] of Object.entries(
+      this.selectedFacets
+    )) {
+      if (facetName !== 'year') {
+        facetClauses.push(this.buildFacetClause(facetName, facetValues));
+      }
+    }
+    return this.joinFacetClauses(facetClauses);
+  }
+
+  /**
+   * Builds an OR-joined facet clause for the given facet name and values.
+   *
+   * E.g., for name `subject` and values
+   * `{ foo: { state: 'selected' }, bar: { state: 'hidden' } }`
+   * this will produce the clause
+   * `subject:("foo" OR -"bar")`.
+   *
+   * @param facetName The facet type (e.g., 'collection')
+   * @param facetValues The facet buckets, mapped by their keys
+   */
+  private buildFacetClause(
+    facetName: string,
+    facetValues: Record<string, FacetBucket>
+  ): string {
+    const facetEntries = Object.entries(facetValues);
+    if (facetEntries.length === 0) return '';
+
+    const facetQueryName =
+      facetName === 'lending' ? 'lending___status' : facetName;
+    const facetValuesArray: string[] = [];
+
+    for (const [key, facetData] of facetEntries) {
+      const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
+
+      if (facetName === 'language') {
+        const languages =
+          this.languageCodeHandler.getCodeArrayFromCodeString(key);
+        for (const language of languages) {
+          facetValuesArray.push(`${plusMinusPrefix}"${language}"`);
+        }
+      } else {
+        facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
+      }
+    }
+
+    const valueQuery = facetValuesArray.join(` OR `);
+    return `${facetQueryName}:(${valueQuery})`;
+  }
+
+  /**
+   * Takes an array of facet clauses, and combines them into a
+   * full AND-joined facet query string. Empty clauses are ignored.
+   */
+  private joinFacetClauses(facetClauses: string[]): string | undefined {
+    const nonEmptyFacetClauses = facetClauses.filter(
+      clause => clause.length > 0
+    );
+    return nonEmptyFacetClauses.length > 0
+      ? `(${nonEmptyFacetClauses.join(' AND ')})`
+      : undefined;
   }
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
@@ -988,7 +1053,7 @@ export class CollectionBrowser
    * If this doesn't change, we don't need to re-fetch the histogram date range
    */
   private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDate}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+    return `${this.fullQueryWithoutDates}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
   }
 
   /**
@@ -1001,10 +1066,11 @@ export class CollectionBrowser
   private async fetchFullYearHistogram(): Promise<void> {
     const { fullQueryNoDateKey } = this;
     if (
-      !this.fullQueryWithoutDate ||
+      !this.fullQueryWithoutDates ||
       fullQueryNoDateKey === this.previousFullQueryNoDate
-    )
+    ) {
       return;
+    }
     this.previousFullQueryNoDate = fullQueryNoDateKey;
 
     const aggregations = {
@@ -1012,7 +1078,7 @@ export class CollectionBrowser
     };
 
     const params = {
-      query: this.fullQueryWithoutDate,
+      query: this.fullQueryWithoutDates,
       aggregations,
       rows: 0,
     };
