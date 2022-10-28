@@ -160,15 +160,15 @@ export class AppRoot extends LitElement {
         <div id="toggle-controls">
           <button
             @click=${() => {
-              const details =
-                this.shadowRoot?.getElementById('cell-size-control');
-              details?.classList.toggle('hidden');
-              const rowGapControls =
-                this.shadowRoot?.getElementById('cell-gap-control');
-              rowGapControls?.classList.toggle('hidden');
+              const cellControls =
+                this.shadowRoot?.getElementById('cell-controls');
+              cellControls?.classList.toggle('hidden');
+              const checkboxControls =
+                this.shadowRoot?.getElementById('checkbox-controls');
+              checkboxControls?.classList.toggle('hidden');
             }}
           >
-            Toggle Cell Controls
+            Toggle Controls
           </button>
           <button
             @click=${() => {
@@ -189,7 +189,7 @@ export class AppRoot extends LitElement {
           >
         </div>
 
-        <div id="cell-controls" class="hidden">
+        <div id="cell-controls">
           <div id="cell-size-control">
             <div>
               <label for="cell-width-slider">Min cell width:</label>
@@ -281,6 +281,15 @@ export class AppRoot extends LitElement {
               @click=${this.snippetsChanged}
             />
             <label for="show-dummy-snippets">Show dummy snippets</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="enable-date-picker"
+              checked
+              @click=${this.datePickerChanged}
+            />
+            <label for="enable-date-picker">Enable date picker</label>
           </div>
         </div>
       </div>
@@ -407,6 +416,11 @@ export class AppRoot extends LitElement {
       setTimeout(res, 0);
     });
     this.searchQuery = oldQuery; // Re-apply the original query
+  }
+
+  private datePickerChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.showHistogramDatePicker = target.checked;
   }
 
   private rowGapChanged(e: Event) {
@@ -563,7 +577,8 @@ export class AppRoot extends LitElement {
     }
 
     .hidden {
-      display: none;
+      /* If this class is present, we want the element hidden regardless of specificity */
+      display: none !important;
     }
 
     #toggle-controls {
