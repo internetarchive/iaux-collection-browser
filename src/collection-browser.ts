@@ -790,7 +790,8 @@ export class CollectionBrowser
     await Promise.all([
       this.doInitialPageFetch(),
       this.fetchFacets(),
-      this.fetchFullYearHistogram(),
+      // Only fetch histogram data separately if we need it b/c of date filters
+      this.shouldRequestYearHistogram && this.fetchFullYearHistogram(),
     ]);
   }
 
@@ -962,6 +963,13 @@ export class CollectionBrowser
     this.facetsLoading = false;
 
     this.aggregations = results?.success?.response.aggregations;
+
+    // If we're not fetching year histogram data separately, set it from the newly-fetched aggregations
+    if (!this.shouldRequestYearHistogram) {
+      this.fullYearsHistogramAggregation =
+        results?.success?.response?.aggregations?.year_histogram ??
+        results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
+    }
   }
 
   /**
@@ -1016,6 +1024,20 @@ export class CollectionBrowser
     this.fullYearsHistogramAggregation =
       results?.success?.response?.aggregations?.year_histogram ??
       results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
+  }
+
+  /**
+   * We only want to send a separate request for the year_histogram data
+   * if (a) the date picker component is enabled and (b) there is a date or date-range filter applied.
+   *
+   * Otherwise, we should just be using the histogram data supplied by the "normal" facet request.
+   */
+  private get shouldRequestYearHistogram() {
+    return (
+      this.showHistogramDatePicker &&
+      (this.dateRangeQueryClause ||
+        Object.keys(this.selectedFacets?.year ?? {}).length > 0)
+    );
   }
 
   private scrollToPage(pageNumber: number) {
