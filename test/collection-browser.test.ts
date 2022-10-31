@@ -646,6 +646,48 @@ describe('Collection Browser', () => {
     expect(el.selectedSort).to.equal(SortField.title);
   });
 
+  it('sets sort filter properties when user selects title filter', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.selectedTitleFilter = 'X';
+    await el.updateComplete;
+
+    // Wait an extra tick
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo AND firstTitle:X'
+    );
+  });
+
+  it('sets sort filter properties when user selects creator filter', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.selectedCreatorFilter = 'X';
+    await el.updateComplete;
+
+    // Wait an extra tick
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo AND firstCreator:X'
+    );
+  });
+
   it('sets date range query when date picker selection changed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
