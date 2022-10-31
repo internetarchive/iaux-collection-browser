@@ -20,6 +20,12 @@ import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
 import type { CollectionFacets } from '../src/collection-facets';
 
+/** Wait for the next tick of the event loop */
+const nextTick = () =>
+  new Promise(resolve => {
+    setTimeout(resolve, 0);
+  });
+
 describe('Collection Browser', () => {
   beforeEach(async () => {
     // Apparently query params set by one test can bleed into other tests.
@@ -199,6 +205,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(
@@ -219,6 +226,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.METADATA);
@@ -240,6 +248,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
@@ -840,6 +849,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'single-result';
     await el.updateComplete;
+    await nextTick();
 
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
