@@ -778,6 +778,9 @@ export class CollectionBrowser
     this.previousQueryKey = this.pageFetchQueryKey;
 
     this.dataSource = {};
+    this.totalResults = undefined;
+    this.aggregations = undefined;
+    this.fullYearsHistogramAggregation = undefined;
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
     this.pagesToRender = this.initialPageNumber;
