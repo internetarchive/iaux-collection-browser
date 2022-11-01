@@ -1,5 +1,6 @@
 import type { Result } from '@internetarchive/result-type';
 import {
+  Aggregation,
   ItemHit,
   SearchResponse,
   SearchServiceError,
@@ -32,6 +33,51 @@ export const mockSuccessSingleResult: Result<
           },
         }),
       ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+};
+
+export const mockSuccessWithYearHistogramAggs: Result<
+  SearchResponse,
+  SearchServiceError
+> = {
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'years',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'years',
+        sort: [],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      aggregations: {
+        subject: new Aggregation({
+          buckets: [
+            {
+              key: 'foo',
+              doc_count: 3,
+            },
+          ],
+        }),
+        year_histogram: new Aggregation({
+          buckets: [1, 2, 3, 3, 2, 1],
+          first_bucket_key: 1950,
+          last_bucket_key: 2000,
+          interval: 10,
+          number_buckets: 6,
+        }),
+      },
+      results: [],
     },
     responseHeader: {
       succeeded: true,

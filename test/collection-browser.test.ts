@@ -4,6 +4,7 @@ import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { SearchType } from '@internetarchive/search-service';
+import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
@@ -17,6 +18,7 @@ import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
+import type { CollectionFacets } from '../src/collection-facets';
 
 describe('Collection Browser', () => {
   beforeEach(async () => {
@@ -289,6 +291,98 @@ describe('Collection Browser', () => {
     );
   });
 
+  it('fires a separate date histogram query when year facets are applied', async () => {
+    const searchService = new MockSearchService();
+    const selectedFacets: SelectedFacets = {
+      subject: {},
+      lending: {},
+      mediatype: {},
+      language: {},
+      creator: {},
+      collection: {},
+      year: {
+        '2000': {
+          key: '2000',
+          state: 'selected',
+          count: 123,
+        },
+      },
+    };
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.showHistogramDatePicker = true;
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+
+    expect(
+      searchService.searchParams?.aggregations?.simpleParams
+    ).to.deep.equal(['year']); // Explicitly requests year aggregations
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo' // No date clause on query
+    );
+  });
+
+  it('fires a separate date histogram query when a date range is applied', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.showHistogramDatePicker = true;
+    el.dateRangeQueryClause = 'year:[1995 TO 2005]';
+    await el.updateComplete;
+
+    expect(
+      searchService.searchParams?.aggregations?.simpleParams
+    ).to.deep.equal(['year']); // Explicitly requests year aggregations
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo' // No date clause on query
+    );
+  });
+
+  it('does not fire a separate date histogram query when no date filters are applied', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.showHistogramDatePicker = true;
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.aggregations?.simpleParams).to.satisfy(
+      (aggTypes: string[]) => !aggTypes || !aggTypes.includes('year') // Not requesting year aggregations explicitly
+    );
+  });
+
+  it('does not fire a separate date histogram query when date picker is disabled', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.showHistogramDatePicker = false;
+    el.dateRangeQueryClause = 'year:[1995 TO 2005]';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.aggregations?.simpleParams).to.satisfy(
+      (aggTypes: string[]) => !aggTypes || !aggTypes.includes('year') // Not requesting year aggregations explicitly
+    );
+  });
+
   it('fails gracefully if no search service provided', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
@@ -550,6 +644,97 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal(SortField.title);
+  });
+
+  it('sets sort filter properties when user selects title filter', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.selectedTitleFilter = 'X';
+    await el.updateComplete;
+
+    // Wait an extra tick
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo AND firstTitle:X'
+    );
+  });
+
+  it('sets sort filter properties when user selects creator filter', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.selectedCreatorFilter = 'X';
+    await el.updateComplete;
+
+    // Wait an extra tick
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    expect(searchService.searchParams?.query).to.equal(
+      'collection:foo AND firstCreator:X'
+    );
+  });
+
+  it('sets date range query when date picker selection changed', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'years'; // Includes year_histogram aggregation in response
+    el.showHistogramDatePicker = true;
+    await el.updateComplete;
+
+    const facets = el.shadowRoot?.querySelector(
+      'collection-facets'
+    ) as CollectionFacets;
+    await facets?.updateComplete;
+
+    // Wait for the date picker to be rendered (which may take until the next tick)
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    const histogram = facets?.shadowRoot?.querySelector(
+      'histogram-date-range'
+    ) as HistogramDateRange;
+    expect(histogram).to.exist;
+
+    // Enter a new min date into the date picker
+    const minDateInput = histogram.shadowRoot?.querySelector(
+      '#date-min'
+    ) as HTMLInputElement;
+
+    const pressEnterEvent = new KeyboardEvent('keyup', {
+      key: 'Enter',
+    });
+
+    minDateInput.value = '1960';
+    minDateInput.dispatchEvent(pressEnterEvent);
+
+    // Wait for the histogram's update delay
+    await new Promise(res => {
+      setTimeout(res, histogram.updateDelay + 50);
+    });
+
+    // Ensure that the histogram change propagated to the collection browser's
+    // date query correctly.
+    await el.updateComplete;
+    expect(el.dateRangeQueryClause).to.equal('year:[1960 TO 2000]');
   });
 
   it('scrolls to page', async () => {

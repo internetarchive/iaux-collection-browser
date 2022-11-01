@@ -13,6 +13,7 @@ import {
   mockSuccessLoggedInResult,
   mockSuccessNoPreviewResult,
   mockSuccessLoggedInAndNoPreviewResult,
+  mockSuccessWithYearHistogramAggs,
 } from './mock-search-responses';
 
 export class MockSearchService implements SearchServiceInterface {
@@ -46,6 +47,8 @@ export class MockSearchService implements SearchServiceInterface {
     switch (this.searchParams?.query) {
       case 'single-result':
         return mockSuccessSingleResult;
+      case 'years':
+        return mockSuccessWithYearHistogramAggs;
       case 'loggedin':
         return mockSuccessLoggedInResult;
       case 'no-preview':
