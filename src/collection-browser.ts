@@ -325,6 +325,7 @@ export class CollectionBrowser
   private get collectionBrowserTemplate() {
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
+    const resultsCount = this.totalResults?.toLocaleString();
     const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
     return html`<div
         id="left-column"
@@ -334,9 +335,7 @@ export class CollectionBrowser
           ${this.mobileView ? this.mobileFacetsTemplate : nothing}
           <div id="results-total">
             <span id="big-results-count">
-              ${shouldShowSearching
-                ? html`Searching&hellip;`
-                : this.totalResults?.toLocaleString()}
+              ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
             </span>
             <span id="big-results-label">
               ${shouldShowSearching ? nothing : resultsLabel}
