@@ -136,14 +136,13 @@ describe('List Tile', () => {
     );
   });
 
-  it('should render multi-line descriptions', async () => {
+  it('should render multi-line descriptions with spaces b/w lines', async () => {
     const el = await fixture<TileList>(html`
       <tile-list .model=${{ description: 'line1\nline2' }}> </tile-list>
     `);
 
     const descriptionBlock = el.shadowRoot?.getElementById('description');
     expect(descriptionBlock).to.exist;
-    expect(descriptionBlock?.children.item(0)?.nodeName).to.equal('BR'); // <br> replaces line break
-    expect(descriptionBlock?.textContent?.trim()).to.equal('line1line2'); // <br> not included in text content
+    expect(descriptionBlock?.textContent?.trim()).to.equal('line1 line2'); // line break replaced by space
   });
 });

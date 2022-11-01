@@ -296,14 +296,9 @@ export class TileList extends LitElement {
 
   private get descriptionTemplate() {
     return this.metadataTemplate(
-      // Sanitize away all tags except <br>, no attrs allowed (and convert line breaks to <br>).
-      // Using <br> for this allows us keep using CSS line-clamp for ellipses,
-      // which doesn't work if the text lines are split out into separate sub-elements.
+      // Sanitize away any HTML tags and convert line breaks to spaces.
       unsafeHTML(
-        DOMPurify.sanitize(
-          this.model?.description?.replace(/\n/g, '<br>') ?? '',
-          { ALLOWED_TAGS: ['br'] }
-        )
+        DOMPurify.sanitize(this.model?.description?.replace(/\n/g, ' ') ?? '')
       ),
       '',
       'description'
