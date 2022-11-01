@@ -598,6 +598,8 @@ export class CollectionBrowser
     }>
   ) {
     const { minDate, maxDate } = e.detail;
+
+    [this.minSelectedDate, this.maxSelectedDate] = [minDate, maxDate];
     this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
 
     if (this.dateRangeQueryClause) {
@@ -1030,7 +1032,9 @@ export class CollectionBrowser
     this.aggregations = results?.success?.response.aggregations;
 
     // If we're not fetching year histogram data separately, set it from the newly-fetched aggregations
+    console.log('should', this.shouldRequestYearHistogram);
     if (!this.shouldRequestYearHistogram) {
+      console.log('Setting histogram data from facet request');
       this.fullYearsHistogramAggregation =
         results?.success?.response?.aggregations?.year_histogram ??
         results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
@@ -1087,6 +1091,7 @@ export class CollectionBrowser
     const results = await this.searchService?.search(params, this.searchType);
     this.fullYearAggregationLoading = false;
 
+    console.log('Setting histogram data from year request');
     this.fullYearsHistogramAggregation =
       results?.success?.response?.aggregations?.year_histogram ??
       results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
@@ -1094,16 +1099,16 @@ export class CollectionBrowser
 
   /**
    * We only want to send a separate request for the year_histogram data
-   * if (a) the date picker component is enabled and (b) there is a date or date-range filter applied.
+   * if (a) the date picker component is enabled and (b) there is a year facet or date-range filter applied.
    *
    * Otherwise, we should just be using the histogram data supplied by the "normal" facet request.
    */
   private get shouldRequestYearHistogram() {
-    return (
-      this.showHistogramDatePicker &&
-      (this.dateRangeQueryClause ||
-        Object.keys(this.selectedFacets?.year ?? {}).length > 0)
-    );
+    const datePickerEnabled = this.showHistogramDatePicker;
+    const hasDateRange = !!this.dateRangeQueryClause;
+    const hasYearFacet =
+      Object.keys(this.selectedFacets?.year ?? {}).length > 0;
+    return datePickerEnabled && (hasDateRange || hasYearFacet);
   }
 
   private scrollToPage(pageNumber: number) {
