@@ -1214,7 +1214,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         ${this.labelTemplate("Collections")}
         ${fi(this.collectionLinks,p`, `)}
       </div>
-    `}get descriptionTemplate(){var e,t,i;return this.metadataTemplate(qs(Zt.sanitize((i=(t=(e=this.model)===null||e===void 0?void 0:e.description)===null||t===void 0?void 0:t.replace(/\n/g,"<br>"))!==null&&i!==void 0?i:"",{ALLOWED_TAGS:["br"]})),"","description")}get textSnippetsTemplate(){var e;return this.hasSnippets?p`<text-snippet-block
+    `}get descriptionTemplate(){var e,t,i;return this.metadataTemplate(qs(Zt.sanitize((i=(t=(e=this.model)===null||e===void 0?void 0:e.description)===null||t===void 0?void 0:t.replace(/\n/g," "))!==null&&i!==void 0?i:"")),"","description")}get textSnippetsTemplate(){var e;return this.hasSnippets?p`<text-snippet-block
       viewsize="list"
       .snippets=${(e=this.model)===null||e===void 0?void 0:e.snippets}
     ></text-snippet-block>`:_}get hasSnippets(){var e,t;return!!(!((t=(e=this.model)===null||e===void 0?void 0:e.snippets)===null||t===void 0)&&t.length)}metadataTemplate(e,t="",i){return e?p`
