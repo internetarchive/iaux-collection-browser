@@ -421,6 +421,13 @@ export class AppRoot extends LitElement {
   private datePickerChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.collectionBrowser.showHistogramDatePicker = target.checked;
+
+    // When disabling the date picker from the demo app, also clear any existing date range params
+    if (!this.collectionBrowser.showHistogramDatePicker) {
+      this.collectionBrowser.minSelectedDate = undefined;
+      this.collectionBrowser.maxSelectedDate = undefined;
+      this.collectionBrowser.dateRangeQueryClause = undefined;
+    }
   }
 
   private rowGapChanged(e: Event) {
