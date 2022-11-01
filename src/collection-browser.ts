@@ -778,6 +778,11 @@ export class CollectionBrowser
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
     this.pagesToRender = this.initialPageNumber;
+
+    // Reset the infinite scroller's item count, so that it
+    // shows tile placeholders until the new query's results load in
+    this.infiniteScroller?.reload();
+
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
     }
@@ -1032,9 +1037,7 @@ export class CollectionBrowser
     this.aggregations = results?.success?.response.aggregations;
 
     // If we're not fetching year histogram data separately, set it from the newly-fetched aggregations
-    console.log('should', this.shouldRequestYearHistogram);
     if (!this.shouldRequestYearHistogram) {
-      console.log('Setting histogram data from facet request');
       this.fullYearsHistogramAggregation =
         results?.success?.response?.aggregations?.year_histogram ??
         results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
@@ -1091,7 +1094,6 @@ export class CollectionBrowser
     const results = await this.searchService?.search(params, this.searchType);
     this.fullYearAggregationLoading = false;
 
-    console.log('Setting histogram data from year request');
     this.fullYearsHistogramAggregation =
       results?.success?.response?.aggregations?.year_histogram ??
       results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
