@@ -78,6 +78,7 @@ export class AppRoot extends LitElement {
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
     return new SearchService({
+      includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
       servicePath: params.get('search_service_path') ?? undefined,
       debuggingEnabled: !!params.get('debugging') ?? undefined,

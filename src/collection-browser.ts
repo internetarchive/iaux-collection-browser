@@ -1290,7 +1290,7 @@ export class CollectionBrowser
         dateArchived: result.publicdate?.value,
         datePublished: result.date?.value,
         dateReviewed: result.reviewdate?.value,
-        description: result.description?.value,
+        description: result.description?.values.join('\n'),
         favCount: result.num_favorites?.value ?? 0,
         identifier: result.identifier,
         issue: result.issue?.value,

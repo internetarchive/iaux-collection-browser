@@ -475,6 +475,28 @@ describe('Collection Browser', () => {
     expect(cell.model?.contentWarning).to.be.true;
   });
 
+  it('joins full description array into a single string with line breaks', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    // This query receives an array description like ['line1', 'line2']
+    el.baseQuery = 'multi-line-description';
+    await el.updateComplete;
+
+    const cellTemplate = el.cellForIndex(0);
+    expect(cellTemplate).to.exist;
+
+    const cell = await fixture<TileDispatcher>(cellTemplate!);
+    expect(cell).to.exist;
+
+    // Actual model description should be joined
+    expect(cell.model?.description).to.equal('line1\nline2');
+  });
+
   it('can search on demand if only search type has changed', async () => {
     const searchService = new MockSearchService();
 

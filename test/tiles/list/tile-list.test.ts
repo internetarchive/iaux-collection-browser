@@ -135,4 +135,14 @@ describe('List Tile', () => {
       `/search?query=${encodeURIComponent('source:"baz"')}`
     );
   });
+
+  it('should render multi-line descriptions with spaces b/w lines', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list .model=${{ description: 'line1\nline2' }}> </tile-list>
+    `);
+
+    const descriptionBlock = el.shadowRoot?.getElementById('description');
+    expect(descriptionBlock).to.exist;
+    expect(descriptionBlock?.textContent?.trim()).to.equal('line1 line2'); // line break replaced by space
+  });
 });

@@ -9,6 +9,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import DOMPurify from 'dompurify';
 
@@ -295,7 +296,10 @@ export class TileList extends LitElement {
 
   private get descriptionTemplate() {
     return this.metadataTemplate(
-      DOMPurify.sanitize(this.model?.description ?? ''),
+      // Sanitize away any HTML tags and convert line breaks to spaces.
+      unsafeHTML(
+        DOMPurify.sanitize(this.model?.description?.replace(/\n/g, ' ') ?? '')
+      ),
       '',
       'description'
     );
