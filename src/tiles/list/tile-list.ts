@@ -68,8 +68,11 @@ export class TileList extends LitElement {
     const newCollectionLinks: TemplateResult[] = [];
     const promises: Promise<void>[] = [];
     for (const collection of this.model.collections) {
-      // Don't include collections that are meant to be suppressed
-      if (!suppressedCollections[collection]) {
+      // Don't include favorites or collections that are meant to be suppressed
+      if (
+        !suppressedCollections[collection] &&
+        !collection.startsWith('fav-')
+      ) {
         promises.push(
           this.collectionNameCache?.collectionNameFor(collection).then(name => {
             newCollectionLinks.push(
