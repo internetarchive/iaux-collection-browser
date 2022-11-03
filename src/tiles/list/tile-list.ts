@@ -346,13 +346,14 @@ export class TileList extends LitElement {
     // No whitespace after closing tag
     // Note: single ' for href='' to wrap " in query var gets changed back by yarn format
 
-    // eslint-disable-next-line lit/no-invalid-html
+    /* eslint-disable lit/no-invalid-html */
     return html`<a
       href="${this.baseNavigationUrl}/search?query=${query}"
       rel="nofollow"
     >
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
+    /* eslint-enable lit/no-invalid-html */
   }
 
   private detailsLink(identifier: string, text?: string): TemplateResult {
