@@ -115,7 +115,7 @@ export class FacetsTemplate extends LitElement {
             const bucketTextDisplay =
               facetGroup.key !== 'collection'
                 ? html`${bucket.displayText ?? bucket.key}`
-                : html`<a href="/details/${bucket.key}">
+                : html`<a href="/details/${bucket.key}" rel="nofollow">
                     <async-collection-name
                       .collectionNameCache=${this.collectionNameCache}
                       .identifier=${bucket.key}
