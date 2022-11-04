@@ -203,7 +203,7 @@ export class TileList extends LitElement {
   }
 
   private get creatorTemplate() {
-    // "Achivist since" if account
+    // "Archivist since" if account
     if (this.model?.mediatype === 'account') {
       return html`
         <div id="creator" class="metadata">
