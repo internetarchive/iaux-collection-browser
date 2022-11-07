@@ -113,195 +113,207 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.baseQuery = this.searchQuery;
   }
 
-  private get getClass() {
-    const searchParams = new URLSearchParams(window.location.search);
-
-    return searchParams.get('hide-dev-tools') ? 'hidden' : '';
-  }
-
   render() {
     return html`
-      <div class="dev-tool-container">
-        <div id="dev-tools" class=${this.getClass}>
-          <div id="search-and-page-inputs">
-            <form @submit=${this.searchPressed}>
-              Query:
-              <input
-                type="text"
-                id="base-query-field"
-                .value=${this.searchQuery ?? ''}
-              />
-              <input type="submit" value="Search" />
-            </form>
-            <form @submit=${this.changePagePressed}>
-              Page: <input type="number" value="1" id="page-number-input" />
-              <input type="submit" value="Go" />
-            </form>
-          </div>
-
-          <div id="search-types">
-            Search type:
-            <span class="search-type">
-              <input
-                type="radio"
-                id="metadata-search"
-                name="search-type"
-                value="metadata"
-                ?checked=${this.searchType === SearchType.METADATA}
-                @click=${this.searchTypeSelected}
-              />
-              <label for="metadata-search">Metadata</label>
-            </span>
-            <span class="search-type">
-              <input
-                type="radio"
-                id="fulltext-search"
-                name="search-type"
-                value="fulltext"
-                ?checked=${this.searchType === SearchType.FULLTEXT}
-                @click=${this.searchTypeSelected}
-              />
-              <label for="fulltext-search">Full text</label>
-            </span>
-          </div>
-
-          <div id="toggle-controls">
-            <button
-              @click=${() => {
-                const cellControls =
-                  this.shadowRoot?.getElementById('cell-controls');
-                cellControls?.classList.toggle('hidden');
-                const checkboxControls =
-                  this.shadowRoot?.getElementById('checkbox-controls');
-                checkboxControls?.classList.toggle('hidden');
-              }}
-            >
-              Toggle Controls
-            </button>
-            <button
-              @click=${() => {
-                const details = this.shadowRoot?.getElementById(
-                  'latest-event-details'
-                );
-                details?.classList.toggle('hidden');
-              }}
-            >
-              Last Event Captured
-            </button>
-          </div>
-
-          <div id="last-event">
-            <pre id="latest-event-details" class="hidden">
-              ${JSON.stringify(this.latestAction, null, 2)}
-            </pre
-            >
-          </div>
-
-          <div id="cell-controls">
-            <div id="cell-size-control">
-              <div>
-                <label for="cell-width-slider">Min cell width:</label>
-                <input
-                  type="checkbox"
-                  id="show-outline-check"
-                  @click=${this.outlineChanged}
-                />
-                <label for="show-outline-check">Show cell outlines</label>
-              </div>
-              <div class="checkbox-control">
-                <input
-                  type="checkbox"
-                  id="show-facet-group-outline-check"
-                  @click=${this.toggleFacetGroupOutline}
-                />
-                <label for="show-facet-group-outline-check">
-                  Show facet group outlines
-                </label>
-              </div>
-              <div class="checkbox-control">
-                <input
-                  type="checkbox"
-                  id="simulate-login"
-                  @click=${this.loginChanged}
-                />
-                <label for="simulate-login">Simulate login</label>
-              </div>
-              <div class="checkbox-control">
-                <input
-                  type="checkbox"
-                  id="show-dummy-snippets"
-                  @click=${this.snippetsChanged}
-                />
-                <label for="show-dummy-snippets">Show dummy snippets</label>
-              </div>
-            </div>
-          </div>
-          <div id="checkbox-controls">
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-outline-check"
-                @click=${this.outlineChanged}
-              />
-              <label for="show-outline-check">Show cell outlines</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-facet-group-outline-check"
-                @click=${this.toggleFacetGroupOutline}
-              />
-              <label for="show-facet-group-outline-check">
-                Show facet group outlines
-              </label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="simulate-login"
-                @click=${this.loginChanged}
-              />
-              <label for="simulate-login">Simulate login</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
-              <label for="show-dummy-snippets">Show dummy snippets</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="enable-date-picker"
-                checked
-                @click=${this.datePickerChanged}
-              />
-              <label for="enable-date-picker">Enable date picker</label>
-            </div>
-          </div>
+      <div id="dev-tools">
+        <div id="search-and-page-inputs">
+          <form @submit=${this.searchPressed}>
+            Query:
+            <input
+              type="text"
+              id="base-query-field"
+              .value=${this.searchQuery ?? ''}
+            />
+            <input type="submit" value="Search" />
+          </form>
+          <form @submit=${this.changePagePressed}>
+            Page: <input type="number" value="1" id="page-number-input" />
+            <input type="submit" value="Go" />
+          </form>
         </div>
-        <div id="collection-browser-container">
-          <collection-browser
-            .baseNavigationUrl=${'https://archive.org'}
-            .baseImageUrl=${'https://archive.org'}
-            .searchService=${this.searchService}
-            .searchType=${this.searchType}
-            .resizeObserver=${this.resizeObserver}
-            .collectionNameCache=${this.collectionNameCache}
-            .showHistogramDatePicker=${true}
-            .loggedIn=${this.loggedIn}
-            .modalManager=${this.modalManager}
-            .analyticsHandler=${this.analyticsHandler}
-            @visiblePageChanged=${this.visiblePageChanged}
-            @baseQueryChanged=${this.baseQueryChanged}
-            @searchTypeChanged=${this.searchTypeChanged}
+
+        <div id="search-types">
+          Search type:
+          <span class="search-type">
+            <input
+              type="radio"
+              id="metadata-search"
+              name="search-type"
+              value="metadata"
+              ?checked=${this.searchType === SearchType.METADATA}
+              @click=${this.searchTypeSelected}
+            />
+            <label for="metadata-search">Metadata</label>
+          </span>
+          <span class="search-type">
+            <input
+              type="radio"
+              id="fulltext-search"
+              name="search-type"
+              value="fulltext"
+              ?checked=${this.searchType === SearchType.FULLTEXT}
+              @click=${this.searchTypeSelected}
+            />
+            <label for="fulltext-search">Full text</label>
+          </span>
+        </div>
+
+        <div id="toggle-controls">
+          <button
+            @click=${() => {
+              const cellControls =
+                this.shadowRoot?.getElementById('cell-controls');
+              cellControls?.classList.toggle('hidden');
+              const checkboxControls =
+                this.shadowRoot?.getElementById('checkbox-controls');
+              checkboxControls?.classList.toggle('hidden');
+            }}
           >
-          </collection-browser>
+            Toggle Controls
+          </button>
+          <button
+            @click=${() => {
+              const details = this.shadowRoot?.getElementById(
+                'latest-event-details'
+              );
+              details?.classList.toggle('hidden');
+            }}
+          >
+            Last Event Captured
+          </button>
         </div>
-        <modal-manager></modal-manager>
+
+        <div id="last-event">
+          <pre id="latest-event-details" class="hidden">
+            ${JSON.stringify(this.latestAction, null, 2)}
+          </pre
+          >
+        </div>
+
+        <div id="cell-controls">
+          <div id="cell-size-control">
+            <div>
+              <label for="cell-width-slider">Min cell width:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="18"
+                step="0.1"
+                id="cell-width-slider"
+                @input=${this.widthChanged}
+              />
+              <span>${this.cellWidth}rem</span>
+            </div>
+            <div>
+              <label for="cell-height-slider">Cell height:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="29"
+                step="0.1"
+                id="cell-height-slider"
+                @input=${this.heightChanged}
+              />
+              <span>${this.cellHeight}rem</span>
+            </div>
+          </div>
+          <div id="cell-gap-control">
+            <div>
+              <label for="cell-row-gap-slider">Row gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-row-gap-slider"
+                @input=${this.rowGapChanged}
+              />
+              <span>${this.rowGap}rem</span>
+            </div>
+            <div>
+              <label for="cell-col-gap-slider">Col gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-col-gap-slider"
+                @input=${this.colGapChanged}
+              />
+              <span>${this.colGap}rem</span>
+            </div>
+          </div>
+        </div>
+        <div id="checkbox-controls">
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-outline-check"
+              @click=${this.outlineChanged}
+            />
+            <label for="show-outline-check">Show cell outlines</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-facet-group-outline-check"
+              @click=${this.toggleFacetGroupOutline}
+            />
+            <label for="show-facet-group-outline-check">
+              Show facet group outlines
+            </label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="simulate-login"
+              @click=${this.loginChanged}
+            />
+            <label for="simulate-login">Simulate login</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-dummy-snippets"
+              @click=${this.snippetsChanged}
+            />
+            <label for="show-dummy-snippets">Show dummy snippets</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="enable-date-picker"
+              checked
+              @click=${this.datePickerChanged}
+            />
+            <label for="enable-date-picker">Enable date picker</label>
+          </div>
+        </div>
       </div>
+
+      <div id="collection-browser-container">
+        <collection-browser
+          .baseNavigationUrl=${'https://archive.org'}
+          .baseImageUrl=${'https://archive.org'}
+          .searchService=${this.searchService}
+          .searchType=${this.searchType}
+          .resizeObserver=${this.resizeObserver}
+          .collectionNameCache=${this.collectionNameCache}
+          .showHistogramDatePicker=${true}
+          .loggedIn=${this.loggedIn}
+          .modalManager=${this.modalManager}
+          .analyticsHandler=${this.analyticsHandler}
+          @visiblePageChanged=${this.visiblePageChanged}
+          @baseQueryChanged=${this.baseQueryChanged}
+          @searchTypeChanged=${this.searchTypeChanged}
+        >
+        </collection-browser>
+      </div>
+      <modal-manager></modal-manager>
     `;
   }
 
@@ -343,30 +355,6 @@ export class AppRoot extends LitElement {
     } else {
       this.collectionBrowser.style.removeProperty(
         '--infiniteScrollerCellOutline'
-      );
-    }
-  }
-
-  private toggleDevTools() {
-    let newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?`;
-
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('hide-dev-tools')) {
-      searchParams.delete('hide-dev-tools');
-    } else {
-      searchParams.set('hide-dev-tools', 'true');
-    }
-
-    this.shadowRoot?.getElementById('dev-tools')?.classList.toggle('hidden');
-
-    if (window.history.pushState) {
-      newurl += searchParams;
-      window.history.pushState(
-        {
-          path: newurl,
-        },
-        '',
-        newurl
       );
     }
   }
@@ -523,6 +511,10 @@ export class AppRoot extends LitElement {
       font-size: 1.6rem;
     }
 
+    collection-browser {
+      margin-top: 20rem;
+    }
+
     modal-manager.showFacetGroupOutlines,
     collection-browser.showFacetGroupOutlines {
       --facet-row-border-top: 1px solid red;
@@ -533,11 +525,8 @@ export class AppRoot extends LitElement {
       width: 300px;
     }
 
-    .dev-tool-container {
-      position: relative;
-    }
     #dev-tools {
-      position: relative;
+      position: fixed;
       top: 0;
       left: 0;
       z-index: 1;
@@ -546,25 +535,10 @@ export class AppRoot extends LitElement {
       padding: 0.5rem 1rem;
       border: 1px solid black;
       font-size: 1.4rem;
-      width: 75%;
-      background: #ffffffb3;
     }
 
     #dev-tools > * {
       display: flex;
-    }
-
-    #dev-tool {
-      position: fixed;
-      left: 77.4%;
-      top: 0;
-      background: red;
-      padding: 5px;
-      color: white;
-      font-size: 1.4rem;
-      margin: 0;
-      z-index: 1;
-      cursor: pointer;
     }
 
     #search-and-page-inputs > form {
