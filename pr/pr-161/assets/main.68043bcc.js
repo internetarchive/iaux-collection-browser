@@ -3944,177 +3944,195 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         29rem
       );
     }
-  `;s([h({type:String})],M.prototype,"baseNavigationUrl",void 0);s([h({type:String})],M.prototype,"baseImageUrl",void 0);s([h({type:Object})],M.prototype,"searchService",void 0);s([h({type:String})],M.prototype,"searchType",void 0);s([h({type:String})],M.prototype,"baseQuery",void 0);s([h({type:String})],M.prototype,"displayMode",void 0);s([h({type:Object})],M.prototype,"sortParam",void 0);s([h({type:String})],M.prototype,"selectedSort",void 0);s([h({type:String})],M.prototype,"selectedTitleFilter",void 0);s([h({type:String})],M.prototype,"selectedCreatorFilter",void 0);s([h({type:String})],M.prototype,"sortDirection",void 0);s([h({type:String})],M.prototype,"dateRangeQueryClause",void 0);s([h({type:Number})],M.prototype,"pageSize",void 0);s([h({type:Object})],M.prototype,"resizeObserver",void 0);s([h({type:String})],M.prototype,"titleQuery",void 0);s([h({type:String})],M.prototype,"creatorQuery",void 0);s([h({type:Number})],M.prototype,"currentPage",void 0);s([h({type:String})],M.prototype,"minSelectedDate",void 0);s([h({type:String})],M.prototype,"maxSelectedDate",void 0);s([h({type:Object})],M.prototype,"selectedFacets",void 0);s([h({type:Boolean})],M.prototype,"showHistogramDatePicker",void 0);s([h({type:String,reflect:!0})],M.prototype,"searchContext",void 0);s([h({type:Object})],M.prototype,"collectionNameCache",void 0);s([h({type:String})],M.prototype,"pageContext",void 0);s([h({type:Object})],M.prototype,"restorationStateHandler",void 0);s([h({type:Number})],M.prototype,"mobileBreakpoint",void 0);s([h({type:Boolean})],M.prototype,"loggedIn",void 0);s([h({type:Object})],M.prototype,"modalManager",void 0);s([h({type:Boolean})],M.prototype,"isManageView",void 0);s([z()],M.prototype,"pagesToRender",void 0);s([z()],M.prototype,"searchResultsLoading",void 0);s([z()],M.prototype,"facetsLoading",void 0);s([z()],M.prototype,"fullYearAggregationLoading",void 0);s([z()],M.prototype,"aggregations",void 0);s([z()],M.prototype,"fullYearsHistogramAggregation",void 0);s([z()],M.prototype,"previousSearchType",void 0);s([z()],M.prototype,"totalResults",void 0);s([z()],M.prototype,"mobileView",void 0);s([z()],M.prototype,"mobileFacetsVisible",void 0);s([z()],M.prototype,"placeholderType",void 0);s([he("#content-container")],M.prototype,"contentContainer",void 0);s([h({type:Object,attribute:!1})],M.prototype,"analyticsHandler",void 0);s([he("infinite-scroller")],M.prototype,"infiniteScroller",void 0);M=s([N("collection-browser")],M);let se=class extends O{constructor(){super(...arguments),this.searchService=this.initSearchServiceFromUrlParams(),this.resizeObserver=new gs,this.localCache=new ls,this.collectionNameCache=new ys({searchService:this.searchService,localCache:this.localCache}),this.cellWidth=18,this.cellHeight=29,this.rowGap=1.7,this.colGap=1.7,this.loggedIn=!1,this.searchType=de.METADATA,this.analyticsManager=new Wo,this.analyticsHandler={sendPing:this.sendAnalytics.bind(this),sendEvent:this.sendAnalytics.bind(this),sendEventNoSampling:this.sendAnalytics.bind(this)}}sendAnalytics(e){var t;console.log("Analytics Received ----",e),this.latestAction=e,(t=this.analyticsManager)===null||t===void 0||t.sendEvent(e)}initSearchServiceFromUrlParams(){var e,t,i;const a=new URL(window.location.href).searchParams;return new Pe({includeCredentials:!1,baseUrl:(e=a.get("search_base_url"))!==null&&e!==void 0?e:void 0,servicePath:(t=a.get("search_service_path"))!==null&&t!==void 0?t:void 0,debuggingEnabled:(i=!!a.get("debugging"))!==null&&i!==void 0?i:void 0})}searchPressed(e){var t,i;e.preventDefault(),this.searchQuery=this.baseQueryField.value,((t=this.currentPage)!==null&&t!==void 0?t:1)>1&&this.collectionBrowser.goToPage((i=this.currentPage)!==null&&i!==void 0?i:1)}changePagePressed(e){e.preventDefault(),this.currentPage=this.pageNumberInput.valueAsNumber,this.collectionBrowser.goToPage(this.currentPage)}updated(e){e.has("currentPage")&&this.currentPage&&(this.pageNumberInput.value=this.currentPage.toString()),e.has("searchQuery")&&this.queryUpdated()}queryUpdated(){this.collectionBrowser.baseQuery=this.searchQuery}get getClass(){return new URLSearchParams(window.location.search).get("hide-dev-tools")?"hidden":""}render(){var e;return p`
-      <div class="dev-tool-container">
-        <div id="dev-tools" class=${this.getClass}>
-          <div id="search-and-page-inputs">
-            <form @submit=${this.searchPressed}>
-              Query:
-              <input
-                type="text"
-                id="base-query-field"
-                .value=${(e=this.searchQuery)!==null&&e!==void 0?e:""}
-              />
-              <input type="submit" value="Search" />
-            </form>
-            <form @submit=${this.changePagePressed}>
-              Page: <input type="number" value="1" id="page-number-input" />
-              <input type="submit" value="Go" />
-            </form>
-          </div>
-
-          <div id="search-types">
-            Search type:
-            <span class="search-type">
-              <input
-                type="radio"
-                id="metadata-search"
-                name="search-type"
-                value="metadata"
-                ?checked=${this.searchType===de.METADATA}
-                @click=${this.searchTypeSelected}
-              />
-              <label for="metadata-search">Metadata</label>
-            </span>
-            <span class="search-type">
-              <input
-                type="radio"
-                id="fulltext-search"
-                name="search-type"
-                value="fulltext"
-                ?checked=${this.searchType===de.FULLTEXT}
-                @click=${this.searchTypeSelected}
-              />
-              <label for="fulltext-search">Full text</label>
-            </span>
-          </div>
-
-          <div id="toggle-controls">
-            <button
-              @click=${()=>{var t,i;const a=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("cell-controls");a==null||a.classList.toggle("hidden");const o=(i=this.shadowRoot)===null||i===void 0?void 0:i.getElementById("checkbox-controls");o==null||o.classList.toggle("hidden")}}
-            >
-              Toggle Controls
-            </button>
-            <button
-              @click=${()=>{var t;const i=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("latest-event-details");i==null||i.classList.toggle("hidden")}}
-            >
-              Last Event Captured
-            </button>
-          </div>
-
-          <div id="last-event">
-            <pre id="latest-event-details" class="hidden">
-              ${JSON.stringify(this.latestAction,null,2)}
-            </pre
-            >
-          </div>
-
-          <div id="cell-controls">
-            <div id="cell-size-control">
-              <div>
-                <label for="cell-width-slider">Min cell width:</label>
-                <input
-                  type="checkbox"
-                  id="show-outline-check"
-                  @click=${this.outlineChanged}
-                />
-                <label for="show-outline-check">Show cell outlines</label>
-              </div>
-              <div class="checkbox-control">
-                <input
-                  type="checkbox"
-                  id="show-facet-group-outline-check"
-                  @click=${this.toggleFacetGroupOutline}
-                />
-                <label for="show-facet-group-outline-check">
-                  Show facet group outlines
-                </label>
-              </div>
-              <div class="checkbox-control">
-                <input
-                  type="checkbox"
-                  id="simulate-login"
-                  @click=${this.loginChanged}
-                />
-                <label for="simulate-login">Simulate login</label>
-              </div>
-              <div class="checkbox-control">
-                <input
-                  type="checkbox"
-                  id="show-dummy-snippets"
-                  @click=${this.snippetsChanged}
-                />
-                <label for="show-dummy-snippets">Show dummy snippets</label>
-              </div>
-            </div>
-          </div>
-          <div id="checkbox-controls">
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-outline-check"
-                @click=${this.outlineChanged}
-              />
-              <label for="show-outline-check">Show cell outlines</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-facet-group-outline-check"
-                @click=${this.toggleFacetGroupOutline}
-              />
-              <label for="show-facet-group-outline-check">
-                Show facet group outlines
-              </label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="simulate-login"
-                @click=${this.loginChanged}
-              />
-              <label for="simulate-login">Simulate login</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
-              <label for="show-dummy-snippets">Show dummy snippets</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="enable-date-picker"
-                checked
-                @click=${this.datePickerChanged}
-              />
-              <label for="enable-date-picker">Enable date picker</label>
-            </div>
-          </div>
+  `;s([h({type:String})],M.prototype,"baseNavigationUrl",void 0);s([h({type:String})],M.prototype,"baseImageUrl",void 0);s([h({type:Object})],M.prototype,"searchService",void 0);s([h({type:String})],M.prototype,"searchType",void 0);s([h({type:String})],M.prototype,"baseQuery",void 0);s([h({type:String})],M.prototype,"displayMode",void 0);s([h({type:Object})],M.prototype,"sortParam",void 0);s([h({type:String})],M.prototype,"selectedSort",void 0);s([h({type:String})],M.prototype,"selectedTitleFilter",void 0);s([h({type:String})],M.prototype,"selectedCreatorFilter",void 0);s([h({type:String})],M.prototype,"sortDirection",void 0);s([h({type:String})],M.prototype,"dateRangeQueryClause",void 0);s([h({type:Number})],M.prototype,"pageSize",void 0);s([h({type:Object})],M.prototype,"resizeObserver",void 0);s([h({type:String})],M.prototype,"titleQuery",void 0);s([h({type:String})],M.prototype,"creatorQuery",void 0);s([h({type:Number})],M.prototype,"currentPage",void 0);s([h({type:String})],M.prototype,"minSelectedDate",void 0);s([h({type:String})],M.prototype,"maxSelectedDate",void 0);s([h({type:Object})],M.prototype,"selectedFacets",void 0);s([h({type:Boolean})],M.prototype,"showHistogramDatePicker",void 0);s([h({type:String,reflect:!0})],M.prototype,"searchContext",void 0);s([h({type:Object})],M.prototype,"collectionNameCache",void 0);s([h({type:String})],M.prototype,"pageContext",void 0);s([h({type:Object})],M.prototype,"restorationStateHandler",void 0);s([h({type:Number})],M.prototype,"mobileBreakpoint",void 0);s([h({type:Boolean})],M.prototype,"loggedIn",void 0);s([h({type:Object})],M.prototype,"modalManager",void 0);s([h({type:Boolean})],M.prototype,"isManageView",void 0);s([z()],M.prototype,"pagesToRender",void 0);s([z()],M.prototype,"searchResultsLoading",void 0);s([z()],M.prototype,"facetsLoading",void 0);s([z()],M.prototype,"fullYearAggregationLoading",void 0);s([z()],M.prototype,"aggregations",void 0);s([z()],M.prototype,"fullYearsHistogramAggregation",void 0);s([z()],M.prototype,"previousSearchType",void 0);s([z()],M.prototype,"totalResults",void 0);s([z()],M.prototype,"mobileView",void 0);s([z()],M.prototype,"mobileFacetsVisible",void 0);s([z()],M.prototype,"placeholderType",void 0);s([he("#content-container")],M.prototype,"contentContainer",void 0);s([h({type:Object,attribute:!1})],M.prototype,"analyticsHandler",void 0);s([he("infinite-scroller")],M.prototype,"infiniteScroller",void 0);M=s([N("collection-browser")],M);let se=class extends O{constructor(){super(...arguments),this.searchService=this.initSearchServiceFromUrlParams(),this.resizeObserver=new gs,this.localCache=new ls,this.collectionNameCache=new ys({searchService:this.searchService,localCache:this.localCache}),this.cellWidth=18,this.cellHeight=29,this.rowGap=1.7,this.colGap=1.7,this.loggedIn=!1,this.searchType=de.METADATA,this.analyticsManager=new Wo,this.analyticsHandler={sendPing:this.sendAnalytics.bind(this),sendEvent:this.sendAnalytics.bind(this),sendEventNoSampling:this.sendAnalytics.bind(this)}}sendAnalytics(e){var t;console.log("Analytics Received ----",e),this.latestAction=e,(t=this.analyticsManager)===null||t===void 0||t.sendEvent(e)}initSearchServiceFromUrlParams(){var e,t,i;const a=new URL(window.location.href).searchParams;return new Pe({includeCredentials:!1,baseUrl:(e=a.get("search_base_url"))!==null&&e!==void 0?e:void 0,servicePath:(t=a.get("search_service_path"))!==null&&t!==void 0?t:void 0,debuggingEnabled:(i=!!a.get("debugging"))!==null&&i!==void 0?i:void 0})}searchPressed(e){var t,i;e.preventDefault(),this.searchQuery=this.baseQueryField.value,((t=this.currentPage)!==null&&t!==void 0?t:1)>1&&this.collectionBrowser.goToPage((i=this.currentPage)!==null&&i!==void 0?i:1)}changePagePressed(e){e.preventDefault(),this.currentPage=this.pageNumberInput.valueAsNumber,this.collectionBrowser.goToPage(this.currentPage)}updated(e){e.has("currentPage")&&this.currentPage&&(this.pageNumberInput.value=this.currentPage.toString()),e.has("searchQuery")&&this.queryUpdated()}queryUpdated(){this.collectionBrowser.baseQuery=this.searchQuery}render(){var e;return p`
+      <div id="dev-tools">
+        <div id="search-and-page-inputs">
+          <form @submit=${this.searchPressed}>
+            Query:
+            <input
+              type="text"
+              id="base-query-field"
+              .value=${(e=this.searchQuery)!==null&&e!==void 0?e:""}
+            />
+            <input type="submit" value="Search" />
+          </form>
+          <form @submit=${this.changePagePressed}>
+            Page: <input type="number" value="1" id="page-number-input" />
+            <input type="submit" value="Go" />
+          </form>
         </div>
-        <div id="collection-browser-container">
-          <collection-browser
-            .baseNavigationUrl=${"https://archive.org"}
-            .baseImageUrl=${"https://archive.org"}
-            .searchService=${this.searchService}
-            .searchType=${this.searchType}
-            .resizeObserver=${this.resizeObserver}
-            .collectionNameCache=${this.collectionNameCache}
-            .showHistogramDatePicker=${!0}
-            .loggedIn=${this.loggedIn}
-            .modalManager=${this.modalManager}
-            .analyticsHandler=${this.analyticsHandler}
-            @visiblePageChanged=${this.visiblePageChanged}
-            @baseQueryChanged=${this.baseQueryChanged}
-            @searchTypeChanged=${this.searchTypeChanged}
+
+        <div id="search-types">
+          Search type:
+          <span class="search-type">
+            <input
+              type="radio"
+              id="metadata-search"
+              name="search-type"
+              value="metadata"
+              ?checked=${this.searchType===de.METADATA}
+              @click=${this.searchTypeSelected}
+            />
+            <label for="metadata-search">Metadata</label>
+          </span>
+          <span class="search-type">
+            <input
+              type="radio"
+              id="fulltext-search"
+              name="search-type"
+              value="fulltext"
+              ?checked=${this.searchType===de.FULLTEXT}
+              @click=${this.searchTypeSelected}
+            />
+            <label for="fulltext-search">Full text</label>
+          </span>
+        </div>
+
+        <div id="toggle-controls">
+          <button
+            @click=${()=>{var t,i;const a=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("cell-controls");a==null||a.classList.toggle("hidden");const o=(i=this.shadowRoot)===null||i===void 0?void 0:i.getElementById("checkbox-controls");o==null||o.classList.toggle("hidden")}}
           >
-          </collection-browser>
+            Toggle Controls
+          </button>
+          <button
+            @click=${()=>{var t;const i=(t=this.shadowRoot)===null||t===void 0?void 0:t.getElementById("latest-event-details");i==null||i.classList.toggle("hidden")}}
+          >
+            Last Event Captured
+          </button>
         </div>
-        <modal-manager></modal-manager>
+
+        <div id="last-event">
+          <pre id="latest-event-details" class="hidden">
+            ${JSON.stringify(this.latestAction,null,2)}
+          </pre
+          >
+        </div>
+
+        <div id="cell-controls">
+          <div id="cell-size-control">
+            <div>
+              <label for="cell-width-slider">Min cell width:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="18"
+                step="0.1"
+                id="cell-width-slider"
+                @input=${this.widthChanged}
+              />
+              <span>${this.cellWidth}rem</span>
+            </div>
+            <div>
+              <label for="cell-height-slider">Cell height:</label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value="29"
+                step="0.1"
+                id="cell-height-slider"
+                @input=${this.heightChanged}
+              />
+              <span>${this.cellHeight}rem</span>
+            </div>
+          </div>
+          <div id="cell-gap-control">
+            <div>
+              <label for="cell-row-gap-slider">Row gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-row-gap-slider"
+                @input=${this.rowGapChanged}
+              />
+              <span>${this.rowGap}rem</span>
+            </div>
+            <div>
+              <label for="cell-col-gap-slider">Col gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-col-gap-slider"
+                @input=${this.colGapChanged}
+              />
+              <span>${this.colGap}rem</span>
+            </div>
+          </div>
+        </div>
+        <div id="checkbox-controls">
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-outline-check"
+              @click=${this.outlineChanged}
+            />
+            <label for="show-outline-check">Show cell outlines</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-facet-group-outline-check"
+              @click=${this.toggleFacetGroupOutline}
+            />
+            <label for="show-facet-group-outline-check">
+              Show facet group outlines
+            </label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="simulate-login"
+              @click=${this.loginChanged}
+            />
+            <label for="simulate-login">Simulate login</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="show-dummy-snippets"
+              @click=${this.snippetsChanged}
+            />
+            <label for="show-dummy-snippets">Show dummy snippets</label>
+          </div>
+          <div class="checkbox-control">
+            <input
+              type="checkbox"
+              id="enable-date-picker"
+              checked
+              @click=${this.datePickerChanged}
+            />
+            <label for="enable-date-picker">Enable date picker</label>
+          </div>
+        </div>
       </div>
-    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}searchTypeChanged(e){this.searchType=e.detail}searchTypeSelected(e){const t=e.target;this.searchType=t.value==="fulltext"?de.FULLTEXT:de.METADATA,this.reperformCurrentSearch()}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}toggleDevTools(){var e,t;let i=`${window.location.protocol}//${window.location.host}${window.location.pathname}?`;const a=new URLSearchParams(window.location.search);a.get("hide-dev-tools")?a.delete("hide-dev-tools"):a.set("hide-dev-tools","true"),(t=(e=this.shadowRoot)===null||e===void 0?void 0:e.getElementById("dev-tools"))===null||t===void 0||t.classList.toggle("hidden"),window.history.pushState&&(i+=a,window.history.pushState({path:i},"",i))}toggleFacetGroupOutline(e){e.target.checked?(this.collectionBrowser.classList.add("showFacetGroupOutlines"),this.modalManager.classList.add("showFacetGroupOutlines")):(this.collectionBrowser.classList.remove("showFacetGroupOutlines"),this.modalManager.classList.remove("showFacetGroupOutlines"))}async snippetsChanged(e){e.target.checked?this.searchService={async search(i,a){var o;const n=await Pe.default.search(i,a);return(o=n.success)===null||o===void 0||o.response.results.forEach(l=>{Object.defineProperty(l,"highlight",{value:new T(["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])})}),n}}:this.searchService=Pe.default,this.reperformCurrentSearch()}async reperformCurrentSearch(){const e=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(t=>{setTimeout(t,0)}),this.searchQuery=e}datePickerChanged(e){const t=e.target;this.collectionBrowser.showHistogramDatePicker=t.checked,this.collectionBrowser.showHistogramDatePicker||(this.collectionBrowser.minSelectedDate=void 0,this.collectionBrowser.maxSelectedDate=void 0,this.collectionBrowser.dateRangeQueryClause=void 0)}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};se.styles=y`
+
+      <div id="collection-browser-container">
+        <collection-browser
+          .baseNavigationUrl=${"https://archive.org"}
+          .baseImageUrl=${"https://archive.org"}
+          .searchService=${this.searchService}
+          .searchType=${this.searchType}
+          .resizeObserver=${this.resizeObserver}
+          .collectionNameCache=${this.collectionNameCache}
+          .showHistogramDatePicker=${!0}
+          .loggedIn=${this.loggedIn}
+          .modalManager=${this.modalManager}
+          .analyticsHandler=${this.analyticsHandler}
+          @visiblePageChanged=${this.visiblePageChanged}
+          @baseQueryChanged=${this.baseQueryChanged}
+          @searchTypeChanged=${this.searchTypeChanged}
+        >
+        </collection-browser>
+      </div>
+      <modal-manager></modal-manager>
+    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}searchTypeChanged(e){this.searchType=e.detail}searchTypeSelected(e){const t=e.target;this.searchType=t.value==="fulltext"?de.FULLTEXT:de.METADATA,this.reperformCurrentSearch()}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}toggleFacetGroupOutline(e){e.target.checked?(this.collectionBrowser.classList.add("showFacetGroupOutlines"),this.modalManager.classList.add("showFacetGroupOutlines")):(this.collectionBrowser.classList.remove("showFacetGroupOutlines"),this.modalManager.classList.remove("showFacetGroupOutlines"))}async snippetsChanged(e){e.target.checked?this.searchService={async search(i,a){var o;const n=await Pe.default.search(i,a);return(o=n.success)===null||o===void 0||o.response.results.forEach(l=>{Object.defineProperty(l,"highlight",{value:new T(["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])})}),n}}:this.searchService=Pe.default,this.reperformCurrentSearch()}async reperformCurrentSearch(){const e=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(t=>{setTimeout(t,0)}),this.searchQuery=e}datePickerChanged(e){const t=e.target;this.collectionBrowser.showHistogramDatePicker=t.checked,this.collectionBrowser.showHistogramDatePicker||(this.collectionBrowser.minSelectedDate=void 0,this.collectionBrowser.maxSelectedDate=void 0,this.collectionBrowser.dateRangeQueryClause=void 0)}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};se.styles=y`
     :host {
       display: block;
       --primaryButtonBGColor: #194880;
@@ -4148,6 +4166,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       font-size: 1.6rem;
     }
 
+    collection-browser {
+      margin-top: 20rem;
+    }
+
     modal-manager.showFacetGroupOutlines,
     collection-browser.showFacetGroupOutlines {
       --facet-row-border-top: 1px solid red;
@@ -4158,11 +4180,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       width: 300px;
     }
 
-    .dev-tool-container {
-      position: relative;
-    }
     #dev-tools {
-      position: relative;
+      position: fixed;
       top: 0;
       left: 0;
       z-index: 1;
@@ -4171,25 +4190,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding: 0.5rem 1rem;
       border: 1px solid black;
       font-size: 1.4rem;
-      width: 75%;
-      background: #ffffffb3;
     }
 
     #dev-tools > * {
       display: flex;
-    }
-
-    #dev-tool {
-      position: fixed;
-      left: 77.4%;
-      top: 0;
-      background: red;
-      padding: 5px;
-      color: white;
-      font-size: 1.4rem;
-      margin: 0;
-      z-index: 1;
-      cursor: pointer;
     }
 
     #search-and-page-inputs > form {
