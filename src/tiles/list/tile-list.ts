@@ -9,6 +9,7 @@ import {
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
 import DOMPurify from 'dompurify';
 
@@ -67,8 +68,11 @@ export class TileList extends LitElement {
     const newCollectionLinks: TemplateResult[] = [];
     const promises: Promise<void>[] = [];
     for (const collection of this.model.collections) {
-      // Don't include collections that are meant to be suppressed
-      if (!suppressedCollections[collection]) {
+      // Don't include favorites or collections that are meant to be suppressed
+      if (
+        !suppressedCollections[collection] &&
+        !collection.startsWith('fav-')
+      ) {
         promises.push(
           this.collectionNameCache?.collectionNameFor(collection).then(name => {
             newCollectionLinks.push(
@@ -295,7 +299,10 @@ export class TileList extends LitElement {
 
   private get descriptionTemplate() {
     return this.metadataTemplate(
-      DOMPurify.sanitize(this.model?.description ?? ''),
+      // Sanitize away any HTML tags and convert line breaks to spaces.
+      unsafeHTML(
+        DOMPurify.sanitize(this.model?.description?.replace(/\n/g, ' ') ?? '')
+      ),
       '',
       'description'
     );

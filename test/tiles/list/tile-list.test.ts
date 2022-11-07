@@ -71,6 +71,26 @@ describe('List Tile', () => {
     );
   });
 
+  it('should not render fav- collections', async () => {
+    const collectionNameCache = new MockCollectionNameCache();
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{ collections: ['fav-foo', 'bar'] }}
+        .collectionNameCache=${collectionNameCache}
+      >
+      </tile-list>
+    `);
+
+    const collectionsRow = el.shadowRoot?.getElementById('collections');
+    expect(collectionsRow).to.exist;
+
+    const collectionLinks = collectionsRow?.querySelectorAll('a[href]');
+    expect(collectionLinks?.length).to.equal(1);
+    expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
+      '/details/bar'
+    );
+  });
+
   it('should render weekly views when sorting by week', async () => {
     const el = await fixture<TileList>(html`
       <tile-list
@@ -134,5 +154,15 @@ describe('List Tile', () => {
     expect(sourceLink?.getAttribute('href')).to.equal(
       `/search?query=${encodeURIComponent('source:"baz"')}`
     );
+  });
+
+  it('should render multi-line descriptions with spaces b/w lines', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list .model=${{ description: 'line1\nline2' }}> </tile-list>
+    `);
+
+    const descriptionBlock = el.shadowRoot?.getElementById('description');
+    expect(descriptionBlock).to.exist;
+    expect(descriptionBlock?.textContent?.trim()).to.equal('line1 line2'); // line break replaced by space
   });
 });

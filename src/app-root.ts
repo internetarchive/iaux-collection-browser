@@ -78,6 +78,7 @@ export class AppRoot extends LitElement {
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
     return new SearchService({
+      includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
       servicePath: params.get('search_service_path') ?? undefined,
       debuggingEnabled: !!params.get('debugging') ?? undefined,
@@ -167,15 +168,15 @@ export class AppRoot extends LitElement {
           <div id="toggle-controls">
             <button
               @click=${() => {
-                const details =
-                  this.shadowRoot?.getElementById('cell-size-control');
-                details?.classList.toggle('hidden');
-                const rowGapControls =
-                  this.shadowRoot?.getElementById('cell-gap-control');
-                rowGapControls?.classList.toggle('hidden');
+                const cellControls =
+                  this.shadowRoot?.getElementById('cell-controls');
+                cellControls?.classList.toggle('hidden');
+                const checkboxControls =
+                  this.shadowRoot?.getElementById('checkbox-controls');
+                checkboxControls?.classList.toggle('hidden');
               }}
             >
-              Toggle Cell Controls
+              Toggle Controls
             </button>
             <button
               @click=${() => {
@@ -196,61 +197,42 @@ export class AppRoot extends LitElement {
             >
           </div>
 
-          <div id="cell-controls" class="hidden">
+          <div id="cell-controls">
             <div id="cell-size-control">
               <div>
                 <label for="cell-width-slider">Min cell width:</label>
                 <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="18"
-                  step="0.1"
-                  id="cell-width-slider"
-                  @input=${this.widthChanged}
+                  type="checkbox"
+                  id="show-outline-check"
+                  @click=${this.outlineChanged}
                 />
-                <span>${this.cellWidth}rem</span>
+                <label for="show-outline-check">Show cell outlines</label>
               </div>
-              <div>
-                <label for="cell-height-slider">Cell height:</label>
+              <div class="checkbox-control">
                 <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="29"
-                  step="0.1"
-                  id="cell-height-slider"
-                  @input=${this.heightChanged}
+                  type="checkbox"
+                  id="show-facet-group-outline-check"
+                  @click=${this.toggleFacetGroupOutline}
                 />
-                <span>${this.cellHeight}rem</span>
+                <label for="show-facet-group-outline-check">
+                  Show facet group outlines
+                </label>
               </div>
-            </div>
-            <div id="cell-gap-control">
-              <div>
-                <label for="cell-row-gap-slider">Row gap:</label>
+              <div class="checkbox-control">
                 <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-row-gap-slider"
-                  @input=${this.rowGapChanged}
+                  type="checkbox"
+                  id="simulate-login"
+                  @click=${this.loginChanged}
                 />
-                <span>${this.rowGap}rem</span>
+                <label for="simulate-login">Simulate login</label>
               </div>
-              <div>
-                <label for="cell-col-gap-slider">Col gap:</label>
+              <div class="checkbox-control">
                 <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-col-gap-slider"
-                  @input=${this.colGapChanged}
+                  type="checkbox"
+                  id="show-dummy-snippets"
+                  @click=${this.snippetsChanged}
                 />
-                <span>${this.colGap}rem</span>
+                <label for="show-dummy-snippets">Show dummy snippets</label>
               </div>
             </div>
           </div>
@@ -289,31 +271,37 @@ export class AppRoot extends LitElement {
               />
               <label for="show-dummy-snippets">Show dummy snippets</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-date-picker"
+                checked
+                @click=${this.datePickerChanged}
+              />
+              <label for="enable-date-picker">Enable date picker</label>
+            </div>
           </div>
         </div>
-        <button id="dev-tool" @click=${this.toggleDevTools}>
-          Toggle Search Controls
-        </button>
+        <div id="collection-browser-container">
+          <collection-browser
+            .baseNavigationUrl=${'https://archive.org'}
+            .baseImageUrl=${'https://archive.org'}
+            .searchService=${this.searchService}
+            .searchType=${this.searchType}
+            .resizeObserver=${this.resizeObserver}
+            .collectionNameCache=${this.collectionNameCache}
+            .showHistogramDatePicker=${true}
+            .loggedIn=${this.loggedIn}
+            .modalManager=${this.modalManager}
+            .analyticsHandler=${this.analyticsHandler}
+            @visiblePageChanged=${this.visiblePageChanged}
+            @baseQueryChanged=${this.baseQueryChanged}
+            @searchTypeChanged=${this.searchTypeChanged}
+          >
+          </collection-browser>
+        </div>
+        <modal-manager></modal-manager>
       </div>
-      <div id="collection-browser-container">
-        <collection-browser
-          .baseNavigationUrl=${'https://archive.org'}
-          .baseImageUrl=${'https://archive.org'}
-          .searchService=${this.searchService}
-          .searchType=${this.searchType}
-          .resizeObserver=${this.resizeObserver}
-          .collectionNameCache=${this.collectionNameCache}
-          .showHistogramDatePicker=${true}
-          .loggedIn=${this.loggedIn}
-          .modalManager=${this.modalManager}
-          .analyticsHandler=${this.analyticsHandler}
-          @visiblePageChanged=${this.visiblePageChanged}
-          @baseQueryChanged=${this.baseQueryChanged}
-          @searchTypeChanged=${this.searchTypeChanged}
-        >
-        </collection-browser>
-      </div>
-      <modal-manager></modal-manager>
     `;
   }
 
@@ -441,6 +429,18 @@ export class AppRoot extends LitElement {
       setTimeout(res, 0);
     });
     this.searchQuery = oldQuery; // Re-apply the original query
+  }
+
+  private datePickerChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.showHistogramDatePicker = target.checked;
+
+    // When disabling the date picker from the demo app, also clear any existing date range params
+    if (!this.collectionBrowser.showHistogramDatePicker) {
+      this.collectionBrowser.minSelectedDate = undefined;
+      this.collectionBrowser.maxSelectedDate = undefined;
+      this.collectionBrowser.dateRangeQueryClause = undefined;
+    }
   }
 
   private rowGapChanged(e: Event) {
@@ -611,7 +611,8 @@ export class AppRoot extends LitElement {
     }
 
     .hidden {
-      display: none;
+      /* If this class is present, we want the element hidden regardless of specificity */
+      display: none !important;
     }
 
     #toggle-controls {
