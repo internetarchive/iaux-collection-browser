@@ -3,13 +3,11 @@ import { customElement, property } from 'lit/decorators.js';
 import { loginRequiredIcon } from '../../assets/img/icons/login-required';
 import { restrictedIcon } from '../../assets/img/icons/restricted';
 
-@customElement('text-overlay')
-export class TextOverlay extends LitElement {
+@customElement('icon-text-overlay')
+export class IconTextOverlay extends LitElement {
   @property({ type: Boolean }) loggedIn = false;
 
   @property({ type: Boolean }) loginRequired = false;
-
-  @property({ type: Boolean }) iconRequired = false;
 
   render() {
     return html`
@@ -48,10 +46,10 @@ export class TextOverlay extends LitElement {
         width: auto;
         height: auto;
         padding: 5px;
-        background-color: #fffecb;
         display: flex;
         align-items: center;
         border-radius: 1px;
+        text-align: center;
       }
 
       .icon-overlay {
@@ -63,7 +61,11 @@ export class TextOverlay extends LitElement {
         margin: 0;
         vertical-align: bottom;
         padding-left: 5px;
-        text-align: center;
+      }
+
+      .no-preview {
+        background-color: #fffecb;
+        border: 1px solid #2c2c2c;
         color: #2c2c2c;
         font-size: 1.4rem;
         line-height: 2rem;

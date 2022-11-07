@@ -58,6 +58,7 @@ export class ImageBlock extends LitElement {
       <icon-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
+        .isCompactTile=${this.isCompactTile}
       >
       </icon-overlay>
     `;
@@ -73,6 +74,7 @@ export class ImageBlock extends LitElement {
       <text-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
+        ?iconRequired=${true}
       >
       </text-overlay>
     `;

@@ -22,7 +22,6 @@ export const baseItemImageStyles = css`
 
   .contain {
     object-fit: contain;
-    object-position: top;
     height: 100%;
     width: 100%;
   }
@@ -32,7 +31,8 @@ export const baseItemImageStyles = css`
   }
 
   .blur {
-    filter: blur(5px);
+    filter: blur(15px);
+    box-shadow: 1px 1px 2px 0px;
   }
 `;
 
