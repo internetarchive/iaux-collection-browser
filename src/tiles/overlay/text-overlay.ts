@@ -28,8 +28,8 @@ export class TextOverlay extends LitElement {
 
   private get textDisplay() {
     return this.loginRequired && !this.loggedIn
-      ? 'Log in\nto view this item'
-      : 'Content may be inappropriate';
+      ? html`Log in to view this item`
+      : html`Content may be inappropriate`;
   }
 
   static get styles(): CSSResultGroup {
