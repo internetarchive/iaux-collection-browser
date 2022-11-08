@@ -356,8 +356,7 @@ var Po=Object.defineProperty,Ro=Object.defineProperties;var No=Object.getOwnProp
         <div class="icon-overlay">${this.iconDisplay}</div>
         <p class="text-overlay">${this.textDisplay}</p>
       </div>
-    `}get iconDisplay(){return this.loginRequired&&!this.loggedIn?p`${po}`:p`${uo}`}get textDisplay(){return this.loginRequired&&!this.loggedIn?`Log in
-to view this item`:"Content may be inappropriate"}static get styles(){return y`
+    `}get iconDisplay(){return this.loginRequired&&!this.loggedIn?p`${po}`:p`${uo}`}get textDisplay(){return this.loginRequired&&!this.loggedIn?p`Log in to view this item`:p`Content may be inappropriate`}static get styles(){return y`
       :host {
         align-items: center;
         display: flex;
