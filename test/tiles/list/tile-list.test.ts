@@ -20,6 +20,21 @@ describe('List Tile', () => {
     expect(imageBlock).to.exist;
   });
 
+  it('should render the mobile template if below mobile breakpoint', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list .mobileBreakpoint=${500} .currentWidth=${400}> </tile-list>
+    `);
+
+    const listContainer = el.shadowRoot?.getElementById('list-line');
+    const topLine = el.shadowRoot?.getElementById('list-line-top');
+    const bottomLine = el.shadowRoot?.getElementById('list-line-bottom');
+
+    expect(listContainer).to.exist;
+    expect(listContainer?.classList.contains('mobile')).to.be.true;
+    expect(topLine).to.exist;
+    expect(bottomLine).to.exist;
+  });
+
   it('should render with creator element but not dates', async () => {
     const el = await fixture<TileList>(html`
       <tile-list .model=${{ creators: ['someone'] }}></tile-list>
@@ -164,5 +179,21 @@ describe('List Tile', () => {
     const descriptionBlock = el.shadowRoot?.getElementById('description');
     expect(descriptionBlock).to.exist;
     expect(descriptionBlock?.textContent?.trim()).to.equal('line1 line2'); // line break replaced by space
+  });
+
+  it('should render date added for accounts', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{
+          mediatype: 'account',
+          dateAdded: new Date('2015-05-05T00:00:00'),
+        }}
+      >
+      </tile-list>
+    `);
+
+    const creatorBlock = el.shadowRoot?.getElementById('creator');
+    expect(creatorBlock).to.exist;
+    expect(creatorBlock?.textContent?.trim()).to.equal('Archivist since 2015');
   });
 });

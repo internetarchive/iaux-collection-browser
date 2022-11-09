@@ -203,7 +203,7 @@ export class TileList extends LitElement {
   }
 
   private get creatorTemplate() {
-    // "Achivist since" if account
+    // "Archivist since" if account
     if (this.model?.mediatype === 'account') {
       return html`
         <div id="creator" class="metadata">
@@ -346,10 +346,14 @@ export class TileList extends LitElement {
     // No whitespace after closing tag
     // Note: single ' for href='' to wrap " in query var gets changed back by yarn format
 
-    // eslint-disable-next-line lit/no-invalid-html
-    return html`<a href="${this.baseNavigationUrl}/search?query=${query}">
+    /* eslint-disable lit/no-invalid-html */
+    return html`<a
+      href="${this.baseNavigationUrl}/search?query=${query}"
+      rel="nofollow"
+    >
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
+    /* eslint-enable lit/no-invalid-html */
   }
 
   private detailsLink(identifier: string, text?: string): TemplateResult {
