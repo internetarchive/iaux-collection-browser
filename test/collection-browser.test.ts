@@ -306,9 +306,16 @@ describe('Collection Browser', () => {
     el.selectedFacets = selectedFacets;
     await el.updateComplete;
 
-    expect(searchService.searchParams?.query).to.equal(
-      'collection:foo AND (subject:("foo" OR -"bar") AND language:("en"))'
-    );
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchParams?.filters).to.deep.equal({
+      subject: {
+        foo: 'inc',
+        bar: 'exc',
+      },
+      language: {
+        en: 'inc',
+      },
+    });
   });
 
   it('fires a separate date histogram query when year facets are applied', async () => {

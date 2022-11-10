@@ -918,7 +918,10 @@ export class CollectionBrowser
       for (const [facetName, facetValues] of Object.entries(
         this.selectedFacets
       )) {
-        const { name, values } = this.prepareFacet(facetName, facetValues);
+        const { name, values } = this.prepareFacetForFetch(
+          facetName,
+          facetValues
+        );
         for (const [value, bucket] of Object.entries(values)) {
           let constraint;
           if (bucket.state === 'selected') {
@@ -1082,10 +1085,10 @@ export class CollectionBrowser
    * @param facetName The name of the facet type (e.g., 'language')
    * @param facetValues An array of values for that facet type
    */
-  private prepareFacet(
+  private prepareFacetForFetch(
     facetName: string,
     facetValues: Record<string, FacetBucket>
-  ) {
+  ): { name: string; values: Record<string, FacetBucket> } {
     let [normalizedName, normalizedValues] = [facetName, facetValues];
 
     // The full "search engine" name of the lending field is "lending___status"
@@ -1093,7 +1096,7 @@ export class CollectionBrowser
       normalizedName = 'lending___status';
     }
 
-    // Language codes like "en-US|en-GB|en" need to be broken apart into
+    // Language codes like "en-US|en-GB|en" need to be broken apart into individual values
     if (facetName === 'language') {
       normalizedValues = {};
       for (const [facetValue, facetData] of Object.entries(facetValues)) {
