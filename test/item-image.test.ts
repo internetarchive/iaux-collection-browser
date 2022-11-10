@@ -79,4 +79,53 @@ describe('ItemImage component', () => {
       expect(imgClassName).to.eql(' waveform ');
     }, 1000);
   });
+
+  it('should not fetch image with undefined base url', async () => {
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .model=${testBookModel}
+      >
+      </item-image>
+    `);
+
+    // Doesn't set the image src if base url is undefined
+    const img = el.shadowRoot?.querySelector('img');
+    expect(img).to.exist;
+    expect(img?.getAttribute('src')).not.to.exist;
+  });
+
+  it('should not fetch image with undefined model', async () => {
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .baseImageUrl=${baseImageUrl}
+      >
+      </item-image>
+    `);
+
+    // Doesn't set the image src if model is not present
+    const img = el.shadowRoot?.querySelector('img');
+    expect(img).to.exist;
+    expect(img?.getAttribute('src')).not.to.exist;
+  });
+
+  it('should not fetch image with undefined identifier', async () => {
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .model=${{}}
+        .baseImageUrl=${baseImageUrl}
+      >
+      </item-image>
+    `);
+
+    // Doesn't set the image src if identifier is not present
+    const img = el.shadowRoot?.querySelector('img');
+    expect(img).to.exist;
+    expect(img?.getAttribute('src')).not.to.exist;
+  });
 });

@@ -1,4 +1,4 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
@@ -42,7 +42,10 @@ export class ItemImage extends LitElement {
    * Helpers
    */
   private get imageSrc() {
-    return `${this.baseImageUrl}/services/img/${this.model?.identifier}`;
+    // Don't try to load invalid image URLs
+    return this.baseImageUrl && this.model?.identifier
+      ? `${this.baseImageUrl}/services/img/${this.model.identifier}`
+      : nothing;
   }
 
   private get hashBasedGradient() {
