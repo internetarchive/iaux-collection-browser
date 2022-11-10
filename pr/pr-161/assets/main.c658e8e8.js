@@ -368,6 +368,8 @@ var Po=Object.defineProperty,Ro=Object.defineProperties;var No=Object.getOwnProp
         position: absolute;
         right: 0;
         left: 0;
+        top: 50%;
+        transform: translate(0px, -50%);
         width: auto;
         height: auto;
         padding: 5px;
@@ -428,12 +430,17 @@ var Po=Object.defineProperty,Ro=Object.defineProperties;var No=Object.getOwnProp
       .grid {
         height: var(--imgBlockHeight, 16rem);
         flex: 1;
+        display: inline-block;
+        position: initial;
       }
 
       /** tile-list view */
       .list.desktop {
         width: 100px;
         height: 100px;
+        display: inline-block;
+        position: relative;
+        text-align: center;
       }
 
       .list.mobile {
@@ -444,6 +451,7 @@ var Po=Object.defineProperty,Ro=Object.defineProperties;var No=Object.getOwnProp
       /** tile-list-compact view */
       .list-compact {
         display: block;
+        text-align: center;
       }
 
       .list-compact.desktop {
@@ -513,13 +521,10 @@ var Po=Object.defineProperty,Ro=Object.defineProperties;var No=Object.getOwnProp
   }
 
   .list-box {
-    width: 100%;
-    height: 100%;
     overflow: hidden;
     box-sizing: border-box;
-    display: flex;
+    display: inline-block;
     position: relative;
-    max-width: 100px;
   }
 
   .contain {
@@ -990,6 +995,8 @@ var Po=Object.defineProperty,Ro=Object.defineProperties;var No=Object.getOwnProp
       image-block {
         display: block;
         margin-bottom: 5px;
+        position: relative;
+        text-align: center;
       }
 
       image-block.has-snippets {
@@ -1229,7 +1236,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <div id=${Oi(i)} class="metadata">
         ${this.labelTemplate(t)} ${e}
       </div>
-    `:_}labelTemplate(e){return p` ${e?p`<span class="label">${e}: </span>`:_}`}searchLink(e,t){if(!e||!t)return _;const i=encodeURIComponent(`${e}:"${t}"`);return p`<a href="${this.baseNavigationUrl}/search?query=${i}">
+    `:_}labelTemplate(e){return p` ${e?p`<span class="label">${e}: </span>`:_}`}searchLink(e,t){if(!e||!t)return _;const i=encodeURIComponent(`${e}:"${t}"`);return p`<a
+      href="${this.baseNavigationUrl}/search?query=${i}"
+      rel="nofollow"
+    >
       ${Zt.sanitize(t)}</a
     >`}detailsLink(e,t){const i=t!=null?t:e;return p`<a
       href="${this.baseNavigationUrl}/details/${encodeURI(e)}"
