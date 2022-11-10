@@ -18,6 +18,9 @@ import type {
 import {
   Aggregation,
   Bucket,
+  FilterConstraint,
+  FilterMap,
+  FilterMapBuilder,
   SearchParams,
   SearchResult,
   SearchServiceInterface,
@@ -891,6 +894,49 @@ export class CollectionBrowser
     this.searchResultsLoading = false;
   }
 
+  private get filterMap(): FilterMap {
+    const builder = new FilterMapBuilder();
+
+    // Add the date range, if applicable
+    if (this.minSelectedDate) {
+      builder.addFilter(
+        'year',
+        this.minSelectedDate,
+        FilterConstraint.GREATER_OR_EQUAL
+      );
+    }
+    if (this.maxSelectedDate) {
+      builder.addFilter(
+        'year',
+        this.maxSelectedDate,
+        FilterConstraint.LESS_OR_EQUAL
+      );
+    }
+
+    // Add any selected facets
+    if (this.selectedFacets) {
+      for (const [facetName, facetValues] of Object.entries(
+        this.selectedFacets
+      )) {
+        const { name, values } = this.prepareFacet(facetName, facetValues);
+        for (const [value, bucket] of Object.entries(values)) {
+          let constraint;
+          if (bucket.state === 'selected') {
+            constraint = FilterConstraint.INCLUDE;
+          } else if (bucket.state === 'hidden') {
+            constraint = FilterConstraint.EXCLUDE;
+          }
+
+          if (constraint) {
+            builder.addFilter(name, value, constraint);
+          }
+        }
+      }
+    }
+
+    return builder.build();
+  }
+
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
@@ -1014,6 +1060,42 @@ export class CollectionBrowser
 
     const valueQuery = facetValuesArray.join(` OR `);
     return `${facetQueryName}:(${valueQuery})`;
+  }
+
+  /**
+   * Handles some special pre-request normalization steps for certain facet types
+   * that require them.
+   *
+   * @param facetName The name of the facet type (e.g., 'language')
+   * @param facetValues An array of values for that facet type
+   */
+  private prepareFacet(
+    facetName: string,
+    facetValues: Record<string, FacetBucket>
+  ) {
+    let [normalizedName, normalizedValues] = [facetName, facetValues];
+
+    // The full "search engine" name of the lending field is "lending___status"
+    if (facetName === 'lending') {
+      normalizedName = 'lending___status';
+    }
+
+    // Language codes like "en-US|en-GB|en" need to be broken apart into
+    if (facetName === 'language') {
+      normalizedValues = {};
+      for (const [facetValue, facetData] of Object.entries(facetValues)) {
+        const languages =
+          this.languageCodeHandler.getCodeArrayFromCodeString(facetValue);
+        for (const lang of languages) {
+          normalizedValues[lang] = { ...facetData };
+        }
+      }
+    }
+
+    return {
+      name: normalizedName,
+      values: normalizedValues,
+    };
   }
 
   /**
@@ -1185,7 +1267,7 @@ export class CollectionBrowser
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
-    if (!this.fullQuery) return;
+    if (!this.baseQuery) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1202,10 +1284,11 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: this.fullQuery,
+      query: this.baseQuery,
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
+      filters: this.filterMap,
       aggregations: { omit: true },
     };
     const searchResponse = await this.searchService?.search(
