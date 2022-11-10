@@ -45,6 +45,8 @@ export class TextOverlay extends LitElement {
         position: absolute;
         right: 0;
         left: 0;
+        top: 50%;
+        transform: translate(0px, -50%);
         width: auto;
         height: auto;
         padding: 5px;

@@ -11,13 +11,10 @@ export const baseItemImageStyles = css`
   }
 
   .list-box {
-    width: 100%;
-    height: 100%;
     overflow: hidden;
     box-sizing: border-box;
-    display: flex;
+    display: inline-block;
     position: relative;
-    max-width: 100px;
   }
 
   .contain {

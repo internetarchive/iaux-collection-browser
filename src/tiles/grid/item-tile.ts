@@ -169,6 +169,8 @@ export class ItemTile extends LitElement {
       image-block {
         display: block;
         margin-bottom: 5px;
+        position: relative;
+        text-align: center;
       }
 
       image-block.has-snippets {
