@@ -106,7 +106,7 @@ describe('ItemImage component', () => {
       </item-image>
     `);
 
-    // Doesn't set the image src if base url is undefined
+    // Doesn't set the image src if model is not present
     const img = el.shadowRoot?.querySelector('img');
     expect(img).to.exist;
     expect(img?.getAttribute('src')).not.to.exist;
@@ -123,7 +123,7 @@ describe('ItemImage component', () => {
       </item-image>
     `);
 
-    // Doesn't set the image src if base url is undefined
+    // Doesn't set the image src if identifier is not present
     const img = el.shadowRoot?.querySelector('img');
     expect(img).to.exist;
     expect(img?.getAttribute('src')).not.to.exist;
