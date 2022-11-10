@@ -937,6 +937,19 @@ export class CollectionBrowser
     return builder.build();
   }
 
+  /** The base query joined with any title/creator letter filters */
+  private get filteredQuery(): string | undefined {
+    if (!this.baseQuery) return undefined;
+    let filteredQuery = this.baseQuery;
+
+    const { sortFilterQueries } = this;
+    if (sortFilterQueries) {
+      filteredQuery += ` AND ${sortFilterQueries}`;
+    }
+
+    return filteredQuery;
+  }
+
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
@@ -1140,11 +1153,12 @@ export class CollectionBrowser
   }
 
   private async fetchFacets() {
-    if (!this.fullQuery) return;
+    if (!this.filteredQuery) return;
 
     const params: SearchParams = {
-      query: this.fullQuery,
+      query: this.filteredQuery,
       rows: 0,
+      filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
       aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
@@ -1267,7 +1281,7 @@ export class CollectionBrowser
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
-    if (!this.baseQuery) return;
+    if (!this.filteredQuery) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1284,7 +1298,7 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: this.baseQuery,
+      query: this.filteredQuery,
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
@@ -1326,7 +1340,7 @@ export class CollectionBrowser
       }
     }
     const queryChangedSinceFetch =
-      searchQuery !== this.fullQuery || sortChanged;
+      searchQuery !== this.filteredQuery || sortChanged;
     if (queryChangedSinceFetch) return;
 
     const { results } = success.response;
