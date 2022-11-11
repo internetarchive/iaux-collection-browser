@@ -1073,25 +1073,17 @@ export class CollectionBrowser
     facetName: string,
     facetValues: Record<string, FacetBucket>
   ): string {
-    const facetEntries = Object.entries(facetValues);
+    const { name: facetQueryName, values } = this.prepareFacetForFetch(
+      facetName,
+      facetValues
+    );
+    const facetEntries = Object.entries(values);
     if (facetEntries.length === 0) return '';
 
-    const facetQueryName =
-      facetName === 'lending' ? 'lending___status' : facetName;
     const facetValuesArray: string[] = [];
-
     for (const [key, facetData] of facetEntries) {
       const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
-
-      if (facetName === 'language') {
-        const languages =
-          this.languageCodeHandler.getCodeArrayFromCodeString(key);
-        for (const language of languages) {
-          facetValuesArray.push(`${plusMinusPrefix}"${language}"`);
-        }
-      } else {
-        facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
-      }
+      facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
     }
 
     const valueQuery = facetValuesArray.join(` OR `);
