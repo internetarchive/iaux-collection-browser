@@ -937,7 +937,26 @@ export class CollectionBrowser
       }
     }
 
-    return builder.build();
+    const filterMap = builder.build();
+
+    // TEMP: At present, the search engine incorrectly returns 0 results if
+    // the _first_ language filter contains a space, so let's try to avoid that if possible.
+    if (filterMap.language) {
+      for (const [value, constraint] of Object.entries(filterMap.language)) {
+        if (value.includes(' ')) {
+          // Delete and re-add this filter to make it the last one on the parent object
+          // (Technically this isn't in the standard, but most browser impls output
+          // object keys in the order they were added.)
+          delete filterMap.language[value];
+          filterMap.language[value] = constraint;
+        } else {
+          // As soon as we reach one without a space, we're done
+          break;
+        }
+      }
+    }
+
+    return filterMap;
   }
 
   /** The base query joined with any title/creator letter filters */
