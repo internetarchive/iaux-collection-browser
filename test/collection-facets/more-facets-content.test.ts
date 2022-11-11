@@ -80,7 +80,7 @@ describe('More facets content', () => {
     );
 
     el.facetKey = 'collection';
-    el.fullQuery = 'title:hello';
+    el.query = 'title:hello';
     await el.updateComplete;
 
     expect(searchService.searchParams?.query).to.equal('title:hello');
@@ -97,7 +97,7 @@ describe('More facets content', () => {
     );
 
     el.facetKey = 'collection';
-    el.fullQuery = 'title:hello';
+    el.query = 'title:hello';
     await el.updateComplete;
 
     expect(searchService.searchParams?.query).to.equal('title:hello');

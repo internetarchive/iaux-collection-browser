@@ -558,7 +558,8 @@ export class CollectionBrowser
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
-        .fullQuery=${this.fullQuery}
+        .query=${this.filteredQuery}
+        .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}

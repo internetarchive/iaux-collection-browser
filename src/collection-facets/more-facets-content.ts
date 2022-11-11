@@ -17,6 +17,7 @@ import {
   SearchParams,
   SearchType,
   AggregationSortType,
+  FilterMap,
 } from '@internetarchive/search-service';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
@@ -44,7 +45,9 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: String }) facetAggregationKey?: FacetOption;
 
-  @property({ type: String }) fullQuery?: string;
+  @property({ type: String }) query?: string;
+
+  @property({ type: Object }) filterMap?: FilterMap;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface;
 
@@ -127,7 +130,8 @@ export class MoreFacetsContent extends LitElement {
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
     const params: SearchParams = {
-      query: this.fullQuery as string,
+      query: this.query as string,
+      filters: this.filterMap,
       aggregations,
       aggregationsSize,
       rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
