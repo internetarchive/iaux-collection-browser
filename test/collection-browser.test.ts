@@ -20,7 +20,15 @@ import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
 import type { CollectionFacets } from '../src/collection-facets';
 
-/** Wait for the next tick of the event loop */
+/**
+ * Wait for the next tick of the event loop.
+ *
+ * This is necessary in some of the tests because certain collection browser
+ * updates take more than one tick to render (e.g., date picker & query changes).
+ * These delays are non-ideal and should eventually be investigated and fixed,
+ * but they are minor enough that waiting for the next tick is a reasonable
+ * testing solution for now.
+ */
 const nextTick = () =>
   new Promise(resolve => {
     setTimeout(resolve, 0);
