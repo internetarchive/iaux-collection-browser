@@ -940,7 +940,7 @@ export class CollectionBrowser
 
     const filterMap = builder.build();
 
-    // TEMP: At present, the search engine incorrectly returns 0 results if
+    // TEMP: At present, the backend search engine incorrectly returns 0 results if
     // the _first_ language filter contains a space, so let's try to avoid that if possible.
     if (filterMap.language) {
       for (const [value, constraint] of Object.entries(filterMap.language)) {
