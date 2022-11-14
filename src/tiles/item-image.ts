@@ -108,6 +108,7 @@ export class ItemImage extends LitElement {
         img {
           height: var(--imgHeight, 16rem);
           width: var(--imgWidth, 16rem);
+          box-shadow: 1px 1px 2px 0px;
         }
       `,
     ];

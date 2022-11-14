@@ -161,6 +161,7 @@ export class TileDispatcher
               .currentHeight=${this.currentHeight}
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
+              .baseNavigationUrl=${baseNavigationUrl}
               .sortParam=${sortParam}
               .loggedIn=${this.loggedIn}
             >

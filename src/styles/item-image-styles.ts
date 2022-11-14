@@ -22,7 +22,7 @@ export const baseItemImageStyles = css`
 
   .contain {
     object-fit: contain;
-    object-position: top;
+    object-position: center;
     height: 100%;
     width: 100%;
   }
@@ -33,6 +33,16 @@ export const baseItemImageStyles = css`
 
   .blur {
     filter: blur(5px);
+  }
+
+  .square {
+    width: 50%;
+  }
+
+  .square:after {
+    content: '';
+    display: block;
+    padding-bottom: 100%;
   }
 `;
 

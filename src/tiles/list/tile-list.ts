@@ -179,7 +179,7 @@ export class TileList extends LitElement {
     if (!source && !volume && !issue) {
       return nothing;
     }
-    return html` <div id="item-line">${source} ${volume} ${issue}</div> `;
+    return html` <div id="item-line">+++${source} ${volume} ${issue}</div> `;
   }
 
   private get sourceTemplate() {
