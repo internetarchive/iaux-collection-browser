@@ -58,6 +58,7 @@ export class ImageBlock extends LitElement {
       <icon-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
+        .isCompactTile=${this.isCompactTile}
       >
       </icon-overlay>
     `;
@@ -73,6 +74,7 @@ export class ImageBlock extends LitElement {
       <text-overlay
         .loggedIn=${this.loggedIn}
         .loginRequired=${this.model?.loginRequired}
+        ?iconRequired=${true}
       >
       </text-overlay>
     `;
@@ -89,12 +91,17 @@ export class ImageBlock extends LitElement {
       .grid {
         height: var(--imgBlockHeight, 16rem);
         flex: 1;
+        display: inline-block;
+        position: initial;
       }
 
       /** tile-list view */
       .list.desktop {
         width: 100px;
         height: 100px;
+        display: inline-block;
+        position: relative;
+        text-align: center;
       }
 
       .list.mobile {
@@ -105,6 +112,7 @@ export class ImageBlock extends LitElement {
       /** tile-list-compact view */
       .list-compact {
         display: block;
+        text-align: center;
       }
 
       .list-compact.desktop {

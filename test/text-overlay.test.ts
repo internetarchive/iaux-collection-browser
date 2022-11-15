@@ -23,10 +23,13 @@ describe('Text Overlay component', () => {
 
     const overlay = el.shadowRoot?.querySelector('.overlay');
     const noPreview = el.shadowRoot?.querySelector('.no-preview');
+    const iconOverlay = el.shadowRoot?.querySelector('.icon-overlay');
+    const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
 
     expect(overlay).to.exist;
     expect(noPreview).to.exist;
-    expect(noPreview?.textContent).to.equal('Log in\nto view this item');
+    expect(iconOverlay).to.exist;
+    expect(textOverlay?.textContent).to.equal('Log in to view this item');
   });
 
   it('should render component if content warning', async () => {
@@ -36,10 +39,13 @@ describe('Text Overlay component', () => {
 
     const overlay = el.shadowRoot?.querySelector('.overlay');
     const noPreview = el.shadowRoot?.querySelector('.no-preview');
+    const iconOverlay = el.shadowRoot?.querySelector('.icon-overlay');
+    const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
 
     expect(overlay).to.exist;
     expect(noPreview).to.exist;
-    expect(noPreview?.textContent).to.equal('Content may be inappropriate');
+    expect(iconOverlay).to.exist;
+    expect(textOverlay?.textContent).to.equal('Content may be inappropriate');
   });
 
   it('should render component if content warning', async () => {
@@ -49,9 +55,10 @@ describe('Text Overlay component', () => {
 
     const overlay = el.shadowRoot?.querySelector('.overlay');
     const noPreview = el.shadowRoot?.querySelector('.no-preview');
+    const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
 
     expect(overlay).to.exist;
     expect(noPreview).to.exist;
-    expect(noPreview?.textContent).to.equal('Content may be inappropriate');
+    expect(textOverlay?.textContent).to.equal('Content may be inappropriate');
   });
 });
