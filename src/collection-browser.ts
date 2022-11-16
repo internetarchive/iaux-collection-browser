@@ -907,6 +907,22 @@ export class CollectionBrowser
     return fullQuery;
   }
 
+  /** The full query without any title/creator letter filters */
+  private get fullQueryWithoutAlphaFilters(): string | undefined {
+    if (!this.baseQuery) return undefined;
+    let fullQuery = this.baseQuery;
+
+    const { facetQuery, dateRangeQueryClause } = this;
+
+    if (facetQuery) {
+      fullQuery += ` AND ${facetQuery}`;
+    }
+    if (dateRangeQueryClause) {
+      fullQuery += ` AND ${dateRangeQueryClause}`;
+    }
+    return fullQuery;
+  }
+
   /** The full query without any year facets or date range clauses */
   private get fullQueryWithoutDates(): string | undefined {
     if (!this.baseQuery) return undefined;
@@ -1344,10 +1360,10 @@ export class CollectionBrowser
   private async fetchLetterBuckets(
     type: 'firstTitle' | 'firstCreator'
   ): Promise<Bucket[]> {
-    if (!this.fullQuery) return [];
+    if (!this.fullQueryWithoutAlphaFilters) return [];
 
     const params: SearchParams = {
-      query: this.fullQuery,
+      query: this.fullQueryWithoutAlphaFilters,
       rows: 0,
       // Only fetch the firstTitle or firstCreator aggregation
       aggregations: { simpleParams: [type] },
