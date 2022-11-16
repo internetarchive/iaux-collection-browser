@@ -664,7 +664,7 @@ export class CollectionBrowser
       changed.has('dateRangeQueryClause') ||
       changed.has('selectedFacets')
     ) {
-      this.clearLetterCounts();
+      this.refreshLetterCounts();
     }
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
       const prevSortDirection = changed.get('sortDirection') as SortDirection;
@@ -1402,12 +1402,21 @@ export class CollectionBrowser
   }
 
   /**
-   * Sets both the title and creator letter counts to undefined.
-   * Call this whenever they are invalidated (e.g., the query changed).
+   * Clears the cached letter counts for both title and creator, and
+   * fetches a new set of counts for whichever of them is the currently
+   * selected sort option (which may be neither).
+   *
+   * Call this whenever the counts are invalidated (e.g., by a query change).
    */
-  private clearLetterCounts(): void {
+  private refreshLetterCounts(): void {
     this.titleLetterCounts = undefined;
     this.creatorLetterCounts = undefined;
+
+    if (this.selectedSort === 'title') {
+      this.fetchTitleLetterCounts();
+    } else if (this.selectedSort === 'creator') {
+      this.fetchCreatorLetterCounts();
+    }
   }
 
   /*
