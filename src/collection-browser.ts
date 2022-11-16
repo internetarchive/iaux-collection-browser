@@ -1211,10 +1211,19 @@ export class CollectionBrowser
       this.preloadCollectionNames(results);
       this.updateDataSource(pageNumber, results);
     }
-    if (results.length < this.pageSize) {
+
+    // When we reach the end of the data, we can't always immediately cap off the
+    // tile count, because there may be previous pages that haven't finished loading
+    // yet. So we flag the end of the data, but let the final page load set the count.
+    // This avoids race conditions dependent on the order pages arrive in.
+    if (results.length < this.pageSize || this.endOfDataReached) {
       this.endOfDataReached = true;
-      // this updates the infinite scroller to show the actual size
-      if (this.infiniteScroller) {
+      // This updates the infinite scroller to show the actual size
+      // (provided there are no other pages still being fetched)
+      if (
+        this.infiniteScroller &&
+        Object.keys(this.pageFetchesInProgress).length === 1 // This must be the last page fetch
+      ) {
         this.infiniteScroller.itemCount = this.actualTileCount;
       }
     }
