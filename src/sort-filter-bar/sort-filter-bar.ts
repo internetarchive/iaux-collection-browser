@@ -42,6 +42,10 @@ export class SortFilterBar
 
   @property({ type: Boolean }) showRelevance: boolean = true;
 
+  @property({ type: Object }) titleLetterCounts?: Record<string, number>;
+
+  @property({ type: Object }) creatorLetterCounts?: Record<string, number>;
+
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @state() alphaSelectorVisible: AlphaSelector | null = null;
@@ -563,6 +567,7 @@ export class SortFilterBar
   private get titleSelectorBar() {
     return html` <alpha-bar
       .selectedLetter=${this.selectedTitleFilter}
+      .letterCounts=${this.titleLetterCounts}
       @letterChanged=${this.titleLetterChanged}
     ></alpha-bar>`;
   }
@@ -570,6 +575,7 @@ export class SortFilterBar
   private get creatorSelectorBar() {
     return html` <alpha-bar
       .selectedLetter=${this.selectedCreatorFilter}
+      .letterCounts=${this.creatorLetterCounts}
       @letterChanged=${this.creatorLetterChanged}
     ></alpha-bar>`;
   }

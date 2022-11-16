@@ -17,6 +17,7 @@ import type {
 } from '@internetarchive/infinite-scroller';
 import {
   Aggregation,
+  Bucket,
   SearchParams,
   SearchResult,
   SearchServiceInterface,
@@ -176,6 +177,10 @@ export class CollectionBrowser
   @state() private mobileFacetsVisible = false;
 
   @state() private placeholderType: PlaceholderType = null;
+
+  @state() private titleLetterCounts?: Record<string, number>;
+
+  @state() private creatorLetterCounts?: Record<string, number>;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -376,6 +381,8 @@ export class CollectionBrowser
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
+        .titleLetterCounts=${this.titleLetterCounts}
+        .creatorLetterCounts=${this.creatorLetterCounts}
         .resizeObserver=${this.resizeObserver}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
@@ -423,6 +430,13 @@ export class CollectionBrowser
 
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
+
+    // Lazy-load the alphabet counts for title/creator sort bar as needed
+    if (this.selectedSort === 'title' && !this.titleLetterCounts) {
+      this.fetchTitleLetterCounts();
+    } else if (this.selectedSort === 'creator' && !this.creatorLetterCounts) {
+      this.fetchCreatorLetterCounts();
+    }
   }
 
   private displayModeChanged(
@@ -644,6 +658,13 @@ export class CollectionBrowser
       changed.has('searchService')
     ) {
       this.handleQueryChange();
+    }
+    if (
+      changed.has('baseQuery') ||
+      changed.has('dateRangeQueryClause') ||
+      changed.has('selectedFacets')
+    ) {
+      this.clearLetterCounts();
     }
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
       const prevSortDirection = changed.get('sortDirection') as SortDirection;
@@ -1318,6 +1339,75 @@ export class CollectionBrowser
     if (needsReload) {
       this.infiniteScroller.reload();
     }
+  }
+
+  private async fetchTitleLetterCounts(): Promise<void> {
+    if (!this.fullQuery) return;
+
+    const params: SearchParams = {
+      query: this.fullQuery,
+      rows: 0,
+      // Only fetch the firstTitle aggregation
+      aggregations: { simpleParams: ['firstTitle'] },
+      // Fetch all 26 letter buckets
+      aggregationsSize: 26,
+    };
+
+    const searchResponse = await this.searchService?.search(
+      params,
+      this.searchType
+    );
+    if (searchResponse?.success) {
+      // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
+      const buckets = searchResponse.success.response?.aggregations?.firstTitle
+        ?.buckets as Bucket[];
+      this.titleLetterCounts = buckets?.reduce(
+        (acc: Record<string, number>, cur: Bucket) => {
+          acc[(cur.key as string).toUpperCase()] = cur.doc_count;
+          return acc;
+        },
+        {}
+      );
+    }
+  }
+
+  private async fetchCreatorLetterCounts(): Promise<void> {
+    if (!this.fullQuery) return;
+
+    const params: SearchParams = {
+      query: this.fullQuery,
+      rows: 0,
+      // Only fetch the firstTitle aggregation
+      aggregations: { simpleParams: ['firstCreator'] },
+      // Fetch all 26 letter buckets
+      aggregationsSize: 26,
+    };
+
+    const searchResponse = await this.searchService?.search(
+      params,
+      this.searchType
+    );
+    if (searchResponse?.success) {
+      // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
+      const buckets = searchResponse.success.response?.aggregations
+        ?.firstCreator?.buckets as Bucket[];
+      this.creatorLetterCounts = buckets?.reduce(
+        (acc: Record<string, number>, cur: Bucket) => {
+          acc[(cur.key as string).toUpperCase()] = cur.doc_count;
+          return acc;
+        },
+        {}
+      );
+    }
+  }
+
+  /**
+   * Sets both the title and creator letter counts to undefined.
+   * Call this whenever they are invalidated (e.g., the query changed).
+   */
+  private clearLetterCounts(): void {
+    this.titleLetterCounts = undefined;
+    this.creatorLetterCounts = undefined;
   }
 
   /*
