@@ -1341,14 +1341,16 @@ export class CollectionBrowser
     }
   }
 
-  private async fetchTitleLetterCounts(): Promise<void> {
-    if (!this.fullQuery) return;
+  private async fetchLetterBuckets(
+    type: 'firstTitle' | 'firstCreator'
+  ): Promise<Bucket[]> {
+    if (!this.fullQuery) return [];
 
     const params: SearchParams = {
       query: this.fullQuery,
       rows: 0,
-      // Only fetch the firstTitle aggregation
-      aggregations: { simpleParams: ['firstTitle'] },
+      // Only fetch the firstTitle or firstCreator aggregation
+      aggregations: { simpleParams: [type] },
       // Fetch all 26 letter buckets
       aggregationsSize: 26,
     };
@@ -1357,48 +1359,33 @@ export class CollectionBrowser
       params,
       this.searchType
     );
-    if (searchResponse?.success) {
-      // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
-      const buckets = searchResponse.success.response?.aggregations?.firstTitle
-        ?.buckets as Bucket[];
-      this.titleLetterCounts = buckets?.reduce(
-        (acc: Record<string, number>, cur: Bucket) => {
-          acc[(cur.key as string).toUpperCase()] = cur.doc_count;
-          return acc;
-        },
-        {}
-      );
-    }
+
+    return (searchResponse?.success?.response?.aggregations?.[type]?.buckets ??
+      []) as Bucket[];
+  }
+
+  private async fetchTitleLetterCounts(): Promise<void> {
+    const buckets = await this.fetchLetterBuckets('firstTitle');
+    // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
+    this.titleLetterCounts = buckets.reduce(
+      (acc: Record<string, number>, bucket: Bucket) => {
+        acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
+        return acc;
+      },
+      {}
+    );
   }
 
   private async fetchCreatorLetterCounts(): Promise<void> {
-    if (!this.fullQuery) return;
-
-    const params: SearchParams = {
-      query: this.fullQuery,
-      rows: 0,
-      // Only fetch the firstTitle aggregation
-      aggregations: { simpleParams: ['firstCreator'] },
-      // Fetch all 26 letter buckets
-      aggregationsSize: 26,
-    };
-
-    const searchResponse = await this.searchService?.search(
-      params,
-      this.searchType
+    const buckets = await this.fetchLetterBuckets('firstCreator');
+    // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
+    this.creatorLetterCounts = buckets.reduce(
+      (acc: Record<string, number>, bucket: Bucket) => {
+        acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
+        return acc;
+      },
+      {}
     );
-    if (searchResponse?.success) {
-      // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
-      const buckets = searchResponse.success.response?.aggregations
-        ?.firstCreator?.buckets as Bucket[];
-      this.creatorLetterCounts = buckets?.reduce(
-        (acc: Record<string, number>, cur: Bucket) => {
-          acc[(cur.key as string).toUpperCase()] = cur.doc_count;
-          return acc;
-        },
-        {}
-      );
-    }
   }
 
   /**
