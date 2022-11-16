@@ -193,6 +193,84 @@ export const mockSuccessLoggedInAndNoPreviewResult: Result<
   },
 };
 
+export const mockSuccessFirstTitleResult: Result<
+  SearchResponse,
+  SearchServiceError
+> = {
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'first-title',
+        sort: ['title', 'asc'],
+      },
+      finalizedParameters: {
+        user_query: 'first-title',
+        sort: ['title', 'asc'],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      aggregations: {
+        firstTitle: new Aggregation({
+          buckets: [{ key: 'X', doc_count: 1 }],
+        }),
+      },
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+};
+
+export const mockSuccessFirstCreatorResult: Result<
+  SearchResponse,
+  SearchServiceError
+> = {
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'first-creator',
+        sort: ['creator', 'asc'],
+      },
+      finalizedParameters: {
+        user_query: 'first-creator',
+        sort: ['creator', 'asc'],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      aggregations: {
+        firstCreator: new Aggregation({
+          buckets: [{ key: 'X', doc_count: 1 }],
+        }),
+      },
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+};
+
 export const getMockSuccessSingleResultWithSort: (
   resultsSpy: Function
 ) => Result<SearchResponse, SearchServiceError> = (resultsSpy: Function) => ({

@@ -61,6 +61,8 @@ describe('Collection Browser', () => {
     );
 
     el.searchContext = 'betaSearchService';
+    el.selectedSort = 'creator' as SortField;
+    el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'A';
     await el.updateComplete;
 
@@ -86,6 +88,7 @@ describe('Collection Browser', () => {
 
     el.searchContext = 'beta-search-service';
     el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
     el.selectedTitleFilter = 'A';
     await el.updateComplete;
 
@@ -675,7 +678,9 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    el.baseQuery = 'collection:foo';
+    el.baseQuery = 'first-title';
+    el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
     el.selectedTitleFilter = 'X';
     await el.updateComplete;
 
@@ -685,7 +690,7 @@ describe('Collection Browser', () => {
     });
 
     expect(searchService.searchParams?.query).to.equal(
-      'collection:foo AND firstTitle:X'
+      'first-title AND firstTitle:X'
     );
   });
 
@@ -696,7 +701,9 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    el.baseQuery = 'collection:foo';
+    el.baseQuery = 'first-creator';
+    el.selectedSort = 'creator' as SortField;
+    el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
 
@@ -706,7 +713,7 @@ describe('Collection Browser', () => {
     });
 
     expect(searchService.searchParams?.query).to.equal(
-      'collection:foo AND firstCreator:X'
+      'first-creator AND firstCreator:X'
     );
   });
 
