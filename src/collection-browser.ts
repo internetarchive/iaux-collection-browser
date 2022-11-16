@@ -1394,8 +1394,10 @@ export class CollectionBrowser
    * increase the number of pages to render and start fetching data for the new page
    */
   private scrollThresholdReached() {
-    this.pagesToRender += 1;
-    this.fetchPage(this.pagesToRender);
+    if (!this.endOfDataReached) {
+      this.pagesToRender += 1;
+      this.fetchPage(this.pagesToRender);
+    }
   }
 
   static styles = css`
