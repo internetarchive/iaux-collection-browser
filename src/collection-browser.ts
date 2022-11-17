@@ -1212,20 +1212,12 @@ export class CollectionBrowser
       this.updateDataSource(pageNumber, results);
     }
 
-    // When we reach the end of the data, we can't always immediately cap off the
-    // tile count, because there may be previous pages that haven't finished loading
-    // yet. So we flag the end of the data, but let the final page load set the count.
-    // This avoids race conditions dependent on the order pages arrive in.
-    if (results.length < this.pageSize || this.endOfDataReached) {
+    // When we reach the end of the data, we can set the infinite scroller's
+    // item count to the real total number of results (rather than the
+    // temporary estimates based on pages rendered so far).
+    if (results.length < this.pageSize) {
       this.endOfDataReached = true;
-      // This updates the infinite scroller to show the actual size
-      // (provided there are no other pages still being fetched)
-      if (
-        this.infiniteScroller &&
-        Object.keys(this.pageFetchesInProgress).length === 1 // This must be the last page fetch
-      ) {
-        this.infiniteScroller.itemCount = this.actualTileCount;
-      }
+      this.infiniteScroller.itemCount = this.totalResults;
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
