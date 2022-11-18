@@ -48,6 +48,9 @@ import {
   CollectionDisplayMode,
   FacetOption,
   FacetBucket,
+  PrefixFilterType,
+  PrefixFilterCounts,
+  prefixFilterAggregationKeys,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -178,9 +181,10 @@ export class CollectionBrowser
 
   @state() private placeholderType: PlaceholderType = null;
 
-  @state() private titleLetterCounts?: Record<string, number>;
-
-  @state() private creatorLetterCounts?: Record<string, number>;
+  @state() private prefixFilterCountMap: Record<
+    PrefixFilterType,
+    PrefixFilterCounts
+  > = { title: {}, creator: {} };
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -381,8 +385,7 @@ export class CollectionBrowser
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
-        .titleLetterCounts=${this.titleLetterCounts}
-        .creatorLetterCounts=${this.creatorLetterCounts}
+        .prefixFilterCountMap=${this.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
@@ -432,11 +435,7 @@ export class CollectionBrowser
     this.sortParam = { field: sortField, direction: this.sortDirection };
 
     // Lazy-load the alphabet counts for title/creator sort bar as needed
-    if (this.selectedSort === 'title' && !this.titleLetterCounts) {
-      this.fetchTitleLetterCounts();
-    } else if (this.selectedSort === 'creator' && !this.creatorLetterCounts) {
-      this.fetchCreatorLetterCounts();
-    }
+    this.updatePrefixFiltersForCurrentSort();
   }
 
   private displayModeChanged(
@@ -1357,16 +1356,18 @@ export class CollectionBrowser
     }
   }
 
-  private async fetchLetterBuckets(
-    type: 'firstTitle' | 'firstCreator'
+  /** Fetches the aggregation buckets for the given prefix filter type. */
+  private async fetchPrefixFilterBuckets(
+    filterType: PrefixFilterType
   ): Promise<Bucket[]> {
     if (!this.fullQueryWithoutAlphaFilters) return [];
 
+    const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const params: SearchParams = {
       query: this.fullQueryWithoutAlphaFilters,
       rows: 0,
       // Only fetch the firstTitle or firstCreator aggregation
-      aggregations: { simpleParams: [type] },
+      aggregations: { simpleParams: [filterAggregationKey] },
       // Fetch all 26 letter buckets
       aggregationsSize: 26,
     };
@@ -1376,14 +1377,19 @@ export class CollectionBrowser
       this.searchType
     );
 
-    return (searchResponse?.success?.response?.aggregations?.[type]?.buckets ??
-      []) as Bucket[];
+    return (searchResponse?.success?.response?.aggregations?.[
+      filterAggregationKey
+    ]?.buckets ?? []) as Bucket[];
   }
 
-  private async fetchTitleLetterCounts(): Promise<void> {
-    const buckets = await this.fetchLetterBuckets('firstTitle');
+  /** Fetches and caches the prefix filter counts for the given filter type. */
+  private async updatePrefixFilterCounts(
+    filterType: PrefixFilterType
+  ): Promise<void> {
+    const buckets = await this.fetchPrefixFilterBuckets(filterType);
     // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
-    this.titleLetterCounts = buckets.reduce(
+    this.prefixFilterCountMap = { ...this.prefixFilterCountMap }; // Clone the object to trigger an update
+    this.prefixFilterCountMap[filterType] = buckets.reduce(
       (acc: Record<string, number>, bucket: Bucket) => {
         acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
         return acc;
@@ -1392,16 +1398,17 @@ export class CollectionBrowser
     );
   }
 
-  private async fetchCreatorLetterCounts(): Promise<void> {
-    const buckets = await this.fetchLetterBuckets('firstCreator');
-    // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
-    this.creatorLetterCounts = buckets.reduce(
-      (acc: Record<string, number>, bucket: Bucket) => {
-        acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
-        return acc;
-      },
-      {}
-    );
+  /**
+   * Fetches and caches the prefix filter counts for the current sort type,
+   * provided it is one that permits prefix filtering. (If not, this does nothing).
+   */
+  private async updatePrefixFiltersForCurrentSort(): Promise<void> {
+    if (['title', 'creator'].includes(this.selectedSort)) {
+      const filterType = this.selectedSort as PrefixFilterType;
+      if (!this.prefixFilterCountMap[filterType]) {
+        this.updatePrefixFilterCounts(filterType);
+      }
+    }
   }
 
   /**
@@ -1412,14 +1419,8 @@ export class CollectionBrowser
    * Call this whenever the counts are invalidated (e.g., by a query change).
    */
   private refreshLetterCounts(): void {
-    this.titleLetterCounts = undefined;
-    this.creatorLetterCounts = undefined;
-
-    if (this.selectedSort === 'title') {
-      this.fetchTitleLetterCounts();
-    } else if (this.selectedSort === 'creator') {
-      this.fetchCreatorLetterCounts();
-    }
+    this.prefixFilterCountMap = { title: {}, creator: {} };
+    this.updatePrefixFiltersForCurrentSort();
   }
 
   /*
