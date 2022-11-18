@@ -123,7 +123,7 @@ export const MetadataFieldToSortField: {
 export type PrefixFilterType = 'title' | 'creator';
 
 /** A map from prefixes (e.g., initial letters) to the number of items matching that prefix */
-export type PrefixFilterCountMap = Record<string, number>;
+export type PrefixFilterCounts = Record<string, number>;
 
 /**
  * A map from prefix filter types to the corresponding aggregation keys

@@ -1,11 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import type { PrefixFilterCounts } from '../models';
 
 @customElement('alpha-bar')
 export class AlphaBar extends LitElement {
   @property({ type: String }) selectedLetter: string | null = null;
 
-  @property({ type: Object }) letterCounts?: Record<string, number>;
+  @property({ type: Object }) letterCounts?: PrefixFilterCounts;
 
   private get selectedUppercaseLetter(): string | undefined {
     return this.selectedLetter?.toUpperCase();

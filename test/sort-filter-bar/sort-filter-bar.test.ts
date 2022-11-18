@@ -193,7 +193,7 @@ describe('Sort/filter bar letter behavior', () => {
     `);
 
     el.selectedSort = 'title' as SortField;
-    el.titleLetterCounts = { T: 1 };
+    el.prefixFilterCountMap = { title: { T: 1 }, creator: {} };
     await el.updateComplete;
 
     const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
@@ -214,7 +214,7 @@ describe('Sort/filter bar letter behavior', () => {
     `);
 
     el.selectedSort = 'creator' as SortField;
-    el.creatorLetterCounts = { C: 1 };
+    el.prefixFilterCountMap = { title: {}, creator: { C: 1 } };
     await el.updateComplete;
 
     const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
