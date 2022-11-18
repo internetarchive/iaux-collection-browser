@@ -181,10 +181,9 @@ export class CollectionBrowser
 
   @state() private placeholderType: PlaceholderType = null;
 
-  @state() private prefixFilterCountMap: Record<
-    PrefixFilterType,
-    PrefixFilterCounts
-  > = { title: {}, creator: {} };
+  @state() private prefixFilterCountMap: Partial<
+    Record<PrefixFilterType, PrefixFilterCounts>
+  > = {};
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -1419,7 +1418,7 @@ export class CollectionBrowser
    * Call this whenever the counts are invalidated (e.g., by a query change).
    */
   private refreshLetterCounts(): void {
-    this.prefixFilterCountMap = { title: {}, creator: {} };
+    this.prefixFilterCountMap = {};
     this.updatePrefixFiltersForCurrentSort();
   }
 
