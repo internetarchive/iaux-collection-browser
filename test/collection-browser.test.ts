@@ -761,6 +761,8 @@ describe('Collection Browser', () => {
     el.baseQuery = 'first-creator';
     el.selectedSort = 'creator' as SortField;
     el.selectedFacets = selectedFacets;
+    el.minSelectedDate = '1950';
+    el.maxSelectedDate = '1970';
     el.dateRangeQueryClause = 'year:[1950 TO 1970]';
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
@@ -772,8 +774,17 @@ describe('Collection Browser', () => {
     });
 
     expect(searchService.searchParams?.query).to.equal(
-      'first-creator AND (collection:("foo")) AND year:[1950 TO 1970] AND firstCreator:X'
+      'first-creator AND firstCreator:X'
     );
+    expect(searchService.searchParams?.filters).to.deep.equal({
+      collection: {
+        foo: 'inc',
+      },
+      year: {
+        '1950': 'gte',
+        '1970': 'lte',
+      },
+    });
   });
 
   it('sets date range query when date picker selection changed', async () => {
