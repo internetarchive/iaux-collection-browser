@@ -119,6 +119,21 @@ export const MetadataFieldToSortField: {
   creatorSorter: SortField.creator,
 };
 
+/** A union of the fields that permit prefix filtering (e.g., alphabetical filtering) */
+export type PrefixFilterType = 'title' | 'creator';
+
+/** A map from prefixes (e.g., initial letters) to the number of items matching that prefix */
+export type PrefixFilterCounts = Record<string, number>;
+
+/**
+ * A map from prefix filter types to the corresponding aggregation keys
+ * that are needed to fetch the filter counts from the backend.
+ */
+export const prefixFilterAggregationKeys: Record<PrefixFilterType, string> = {
+  title: 'firstTitle',
+  creator: 'firstCreator',
+};
+
 export type FacetOption =
   | 'subject'
   | 'lending'

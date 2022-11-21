@@ -319,6 +319,7 @@ export class AppRoot extends LitElement {
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>): void {
     this.searchQuery = e.detail.baseQuery;
+    this.collectionBrowser.clearFilters();
   }
 
   /** Handler for search type changes coming from collection browser */

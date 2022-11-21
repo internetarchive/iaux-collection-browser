@@ -185,3 +185,47 @@ describe('Display mode/style buttons', () => {
     expect(displayModeTitle).to.equal('Tile view');
   });
 });
+
+describe('Sort/filter bar letter behavior', () => {
+  it('sets the selected title letter when clicked', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    el.selectedSort = 'title' as SortField;
+    el.prefixFilterCountMap = { title: { T: 1 }, creator: {} };
+    await el.updateComplete;
+
+    const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
+    const letterLink = alphaBar?.shadowRoot?.querySelector(
+      'li > a[href]'
+    ) as HTMLAnchorElement;
+    expect(letterLink?.textContent?.trim()).to.equal('T');
+
+    letterLink?.click();
+    await el.updateComplete;
+
+    expect(el.selectedTitleFilter).to.equal('T');
+  });
+
+  it('sets the selected creator letter when clicked', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    el.selectedSort = 'creator' as SortField;
+    el.prefixFilterCountMap = { title: {}, creator: { C: 1 } };
+    await el.updateComplete;
+
+    const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
+    const letterLink = alphaBar?.shadowRoot?.querySelector(
+      'li > a[href]'
+    ) as HTMLAnchorElement;
+    expect(letterLink?.textContent?.trim()).to.equal('C');
+
+    letterLink?.click();
+    await el.updateComplete;
+
+    expect(el.selectedCreatorFilter).to.equal('C');
+  });
+});

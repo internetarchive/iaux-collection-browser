@@ -1,9 +1,12 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import type { PrefixFilterCounts } from '../models';
 
 @customElement('alpha-bar')
 export class AlphaBar extends LitElement {
   @property({ type: String }) selectedLetter: string | null = null;
+
+  @property({ type: Object }) letterCounts?: PrefixFilterCounts;
 
   private get selectedUppercaseLetter(): string | undefined {
     return this.selectedLetter?.toUpperCase();
@@ -21,20 +24,28 @@ export class AlphaBar extends LitElement {
                     ? 'selected'
                     : ''}
                 >
-                  <a
-                    href="#"
-                    @click=${(e: Event) => {
-                      e.preventDefault();
-                      this.letterClicked(letter);
-                    }}
-                  >
-                    ${letter}
-                  </a>
+                  ${this.letterCounts?.[letter]
+                    ? this.letterLinkTemplate(letter)
+                    : html`<span>${letter}</span>`}
                 </li>
               `
           )}
         </ul>
       </div>
+    `;
+  }
+
+  private letterLinkTemplate(letter: string) {
+    return html`
+      <a
+        href="#"
+        @click=${(e: Event) => {
+          e.preventDefault();
+          this.letterClicked(letter);
+        }}
+      >
+        ${letter}
+      </a>
     `;
   }
 
@@ -81,6 +92,12 @@ export class AlphaBar extends LitElement {
     a {
       color: #333;
       text-decoration: none;
+      padding: 0.5rem 0;
+      display: block;
+    }
+
+    span {
+      color: #aaa;
       padding: 0.5rem 0;
       display: block;
     }

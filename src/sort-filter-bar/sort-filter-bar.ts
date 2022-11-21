@@ -13,6 +13,8 @@ import type {
 } from '@internetarchive/shared-resize-observer';
 import {
   CollectionDisplayMode,
+  PrefixFilterCounts,
+  PrefixFilterType,
   SortField,
   SortFieldDisplayName,
 } from '../models';
@@ -41,6 +43,11 @@ export class SortFilterBar
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
   @property({ type: Boolean }) showRelevance: boolean = true;
+
+  @property({ type: Object }) prefixFilterCountMap?: Record<
+    PrefixFilterType,
+    PrefixFilterCounts
+  >;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
@@ -563,6 +570,7 @@ export class SortFilterBar
   private get titleSelectorBar() {
     return html` <alpha-bar
       .selectedLetter=${this.selectedTitleFilter}
+      .letterCounts=${this.prefixFilterCountMap?.title}
       @letterChanged=${this.titleLetterChanged}
     ></alpha-bar>`;
   }
@@ -570,6 +578,7 @@ export class SortFilterBar
   private get creatorSelectorBar() {
     return html` <alpha-bar
       .selectedLetter=${this.selectedCreatorFilter}
+      .letterCounts=${this.prefixFilterCountMap?.creator}
       @letterChanged=${this.creatorLetterChanged}
     ></alpha-bar>`;
   }

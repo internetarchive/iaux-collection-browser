@@ -15,6 +15,8 @@ import {
   mockSuccessLoggedInAndNoPreviewResult,
   mockSuccessWithYearHistogramAggs,
   mockSuccessMultiLineDescription,
+  mockSuccessFirstTitleResult,
+  mockSuccessFirstCreatorResult,
 } from './mock-search-responses';
 
 export class MockSearchService implements SearchServiceInterface {
@@ -58,6 +60,10 @@ export class MockSearchService implements SearchServiceInterface {
         return mockSuccessNoPreviewResult;
       case 'loggedin-no-preview':
         return mockSuccessLoggedInAndNoPreviewResult;
+      case 'first-title':
+        return mockSuccessFirstTitleResult;
+      case 'first-creator':
+        return mockSuccessFirstCreatorResult;
       case 'with-sort':
         return getMockSuccessSingleResultWithSort(this.resultsSpy);
       default:

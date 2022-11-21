@@ -61,6 +61,8 @@ describe('Collection Browser', () => {
     );
 
     el.searchContext = 'betaSearchService';
+    el.selectedSort = 'creator' as SortField;
+    el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'A';
     await el.updateComplete;
 
@@ -86,6 +88,7 @@ describe('Collection Browser', () => {
 
     el.searchContext = 'beta-search-service';
     el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
     el.selectedTitleFilter = 'A';
     await el.updateComplete;
 
@@ -675,7 +678,9 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    el.baseQuery = 'collection:foo';
+    el.baseQuery = 'first-title';
+    el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
     el.selectedTitleFilter = 'X';
     await el.updateComplete;
 
@@ -685,7 +690,7 @@ describe('Collection Browser', () => {
     });
 
     expect(searchService.searchParams?.query).to.equal(
-      'collection:foo AND firstTitle:X'
+      'first-title AND firstTitle:X'
     );
   });
 
@@ -696,7 +701,9 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    el.baseQuery = 'collection:foo';
+    el.baseQuery = 'first-creator';
+    el.selectedSort = 'creator' as SortField;
+    el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
 
@@ -706,7 +713,42 @@ describe('Collection Browser', () => {
     });
 
     expect(searchService.searchParams?.query).to.equal(
-      'collection:foo AND firstCreator:X'
+      'first-creator AND firstCreator:X'
+    );
+  });
+
+  it('sets sort filter properties simultaneous with facets and date range', async () => {
+    const searchService = new MockSearchService();
+    const selectedFacets: SelectedFacets = {
+      collection: { foo: { key: 'foo', state: 'selected', count: 1 } },
+      creator: {},
+      language: {},
+      lending: {},
+      mediatype: {},
+      subject: {},
+      year: {},
+    };
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'first-creator';
+    el.selectedSort = 'creator' as SortField;
+    el.selectedFacets = selectedFacets;
+    el.dateRangeQueryClause = 'year:[1950 TO 1970]';
+    el.sortDirection = 'asc';
+    el.selectedCreatorFilter = 'X';
+    await el.updateComplete;
+
+    // Wait an extra tick
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    expect(searchService.searchParams?.query).to.equal(
+      'first-creator AND (collection:("foo")) AND year:[1950 TO 1970] AND firstCreator:X'
     );
   });
 
