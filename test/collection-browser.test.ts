@@ -717,6 +717,41 @@ describe('Collection Browser', () => {
     );
   });
 
+  it('sets sort filter properties simultaneous with facets and date range', async () => {
+    const searchService = new MockSearchService();
+    const selectedFacets: SelectedFacets = {
+      collection: { foo: { key: 'foo', state: 'selected', count: 1 } },
+      creator: {},
+      language: {},
+      lending: {},
+      mediatype: {},
+      subject: {},
+      year: {},
+    };
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'first-creator';
+    el.selectedSort = 'creator' as SortField;
+    el.selectedFacets = selectedFacets;
+    el.dateRangeQueryClause = 'year:[1950 TO 1970]';
+    el.sortDirection = 'asc';
+    el.selectedCreatorFilter = 'X';
+    await el.updateComplete;
+
+    // Wait an extra tick
+    await new Promise(res => {
+      setTimeout(res, 0);
+    });
+
+    expect(searchService.searchParams?.query).to.equal(
+      'first-creator AND (collection:("foo")) AND year:[1950 TO 1970] AND firstCreator:X'
+    );
+  });
+
   it('sets date range query when date picker selection changed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
