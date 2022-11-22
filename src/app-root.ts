@@ -428,7 +428,6 @@ export class AppRoot extends LitElement {
     if (!this.collectionBrowser.showHistogramDatePicker) {
       this.collectionBrowser.minSelectedDate = undefined;
       this.collectionBrowser.maxSelectedDate = undefined;
-      this.collectionBrowser.dateRangeQueryClause = undefined;
     }
   }
 

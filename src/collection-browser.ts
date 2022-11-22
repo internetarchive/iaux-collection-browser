@@ -99,8 +99,6 @@ export class CollectionBrowser
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
-  @property({ type: String }) dateRangeQueryClause?: string;
-
   @property({ type: Number }) pageSize = 50;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
@@ -594,21 +592,6 @@ export class CollectionBrowser
     `;
   }
 
-  private get queryDebuggingTemplate() {
-    return html`
-      <div>
-        <ul>
-          <li>Base Query: ${this.baseQuery}</li>
-          <li>Facet Query: ${this.facetQuery}</li>
-          <li>Sort Filter Query: ${this.sortFilterQueries}</li>
-          <li>Date Range Query: ${this.dateRangeQueryClause}</li>
-          <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
-          <li>Full Query: ${this.fullQuery}</li>
-        </ul>
-      </div>
-    `;
-  }
-
   private histogramDateRangeUpdated(
     e: CustomEvent<{
       minDate: string;
@@ -616,17 +599,21 @@ export class CollectionBrowser
     }>
   ) {
     const { minDate, maxDate } = e.detail;
-
     [this.minSelectedDate, this.maxSelectedDate] = [minDate, maxDate];
-    this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
 
-    if (this.dateRangeQueryClause) {
-      this.analyticsHandler?.sendEvent({
-        category: this.searchContext,
-        action: analyticsActions.histogramChanged,
-        label: this.dateRangeQueryClause,
-      });
+    this.analyticsHandler?.sendEvent({
+      category: this.searchContext,
+      action: analyticsActions.histogramChanged,
+      label: this.dateRangeQueryClause,
+    });
+  }
+
+  private get dateRangeQueryClause() {
+    if (!this.minSelectedDate || !this.maxSelectedDate) {
+      return undefined;
     }
+
+    return `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`;
   }
 
   firstUpdated(): void {
@@ -656,7 +643,8 @@ export class CollectionBrowser
       changed.has('baseQuery') ||
       changed.has('titleQuery') ||
       changed.has('creatorQuery') ||
-      changed.has('dateRangeQueryClause') ||
+      changed.has('minSelectedDate') ||
+      changed.has('maxSelectedDate') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
       changed.has('searchService')
@@ -665,7 +653,8 @@ export class CollectionBrowser
     }
     if (
       changed.has('baseQuery') ||
-      changed.has('dateRangeQueryClause') ||
+      changed.has('minSelectedDate') ||
+      changed.has('maxSelectedDate') ||
       changed.has('selectedFacets')
     ) {
       this.refreshLetterCounts();
@@ -858,7 +847,6 @@ export class CollectionBrowser
     this.baseQuery = restorationState.baseQuery;
     this.titleQuery = restorationState.titleQuery;
     this.creatorQuery = restorationState.creatorQuery;
-    this.dateRangeQueryClause = restorationState.dateRangeQueryClause;
     this.sortParam = restorationState.sortParam ?? null;
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
@@ -878,7 +866,6 @@ export class CollectionBrowser
       selectedFacets: this.selectedFacets ?? defaultSelectedFacets,
       baseQuery: this.baseQuery,
       currentPage: this.currentPage,
-      dateRangeQueryClause: this.dateRangeQueryClause,
       titleQuery: this.titleQuery,
       creatorQuery: this.creatorQuery,
       minSelectedDate: this.minSelectedDate,
@@ -1283,7 +1270,14 @@ export class CollectionBrowser
   }
 
   /**
-   * The query key is a string that uniquely identifies the current query
+   * The query key is a string that uniquely identifies the current search.
+   * It consists of:
+   *  - The current base query
+   *  - The current search type
+   *  - Any currently-applied facets
+   *  - Any currently-applied date range
+   *  - Any currently-applied prefix filters
+   *  - The current sort options
    *
    * This lets us keep track of queries so we don't persist data that's
    * no longer relevant.

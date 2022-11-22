@@ -59,9 +59,6 @@ describe('Restoration state handler', () => {
     const restorationState = handler.getRestorationState();
     expect(restorationState.minSelectedDate).to.equal('2018');
     expect(restorationState.maxSelectedDate).to.equal('2021');
-    expect(restorationState.dateRangeQueryClause).to.equal(
-      'year:"2018 TO 2021"'
-    );
   });
 
   it('should restore creator filter from URL', async () => {

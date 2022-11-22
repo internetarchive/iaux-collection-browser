@@ -364,7 +364,8 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     el.showHistogramDatePicker = true;
-    el.dateRangeQueryClause = 'year:[1995 TO 2005]';
+    el.minSelectedDate = '1995';
+    el.maxSelectedDate = '2005';
     await el.updateComplete;
 
     expect(
@@ -402,7 +403,8 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     el.showHistogramDatePicker = false;
-    el.dateRangeQueryClause = 'year:[1995 TO 2005]';
+    el.minSelectedDate = '1995';
+    el.maxSelectedDate = '2005';
     await el.updateComplete;
 
     expect(searchService.searchParams?.aggregations?.simpleParams).to.satisfy(
@@ -763,7 +765,6 @@ describe('Collection Browser', () => {
     el.selectedFacets = selectedFacets;
     el.minSelectedDate = '1950';
     el.maxSelectedDate = '1970';
-    el.dateRangeQueryClause = 'year:[1950 TO 1970]';
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
@@ -833,7 +834,8 @@ describe('Collection Browser', () => {
     // Ensure that the histogram change propagated to the collection browser's
     // date query correctly.
     await el.updateComplete;
-    expect(el.dateRangeQueryClause).to.equal('year:[1960 TO 2000]');
+    expect(el.minSelectedDate).to.equal('1960');
+    expect(el.maxSelectedDate).to.equal('2000');
   });
 
   it('scrolls to page', async () => {

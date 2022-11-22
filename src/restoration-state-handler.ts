@@ -25,7 +25,6 @@ export interface RestorationState {
   selectedFacets: SelectedFacets;
   baseQuery?: string;
   currentPage?: number;
-  dateRangeQueryClause?: string;
   titleQuery?: string;
   creatorQuery?: string;
   minSelectedDate?: string;
@@ -142,8 +141,11 @@ export class RestorationStateHandler
       }
     }
 
-    if (state.dateRangeQueryClause) {
-      searchParams.append('and[]', state.dateRangeQueryClause);
+    if (state.minSelectedDate && state.maxSelectedDate) {
+      searchParams.append(
+        'and[]',
+        `year:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`
+      );
     }
     if (state.titleQuery) {
       searchParams.append('and[]', state.titleQuery);
@@ -159,7 +161,8 @@ export class RestorationStateHandler
         page: state.currentPage,
         and: state.selectedFacets,
         not: state.selectedFacets,
-        dateRange: state.dateRangeQueryClause,
+        minDate: state.minSelectedDate,
+        maxDate: state.maxSelectedDate,
       },
       '',
       url
@@ -244,7 +247,6 @@ export class RestorationStateHandler
                 0,
                 maxDate.length - 1
               );
-              restorationState.dateRangeQueryClause = `year:${value}`;
             } else {
               this.setSelectedFacetState(
                 restorationState.selectedFacets,
