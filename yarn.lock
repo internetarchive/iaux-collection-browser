@@ -84,13 +84,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
-"@internetarchive/collection-name-cache@^0.2.3-alpha.1":
-  version "0.2.3-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.3-alpha.1.tgz#0665f2f8a26faba9fb64ec0a1c37ac5c132e565c"
-  integrity sha512-3PA/dCVCEBaPbYzEhq4nqBBku197YCESYrSwaPGyj51DmlctzJ3IMrwW6EOCI4VYmsj/uQ6SFubEtVRytgVklg==
+"@internetarchive/collection-name-cache@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.3.tgz#020337e6c5840691d3bf82323060282bc4464195"
+  integrity sha512-CDfMqz4oh3f2BrvnyqD2Y9Y4sOs3fY3F5jI4xMyrdg/z3U0CRYpIQ8NSJFxbJ4EtNvaemlCbrRu5QLHdDYWZLg==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
-    "@internetarchive/search-service" "^0.4.3-alpha.1"
+    "@internetarchive/search-service" "^0.4.3"
     lit "^2.0.2"
 
 "@internetarchive/feature-feedback@^0.1.4":
@@ -191,10 +191,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^0.4.3-alpha.1":
-  version "0.4.3-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.4.3-alpha.1.tgz#258b2c1022eff677710effc95b7d4f14a9f39a70"
-  integrity sha512-a3uVraAO0NYE+uqnF1u4UDmUr1QOB3sTKXgUaAUhicxu9J8NcjMYKu7/lIT/tL5fc7KoBymDx0aisBFwTjL9Ig==
+"@internetarchive/search-service@^0.4.3":
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.4.3.tgz#0cc8752db5bd76a0a316addac160c6605d76a7e0"
+  integrity sha512-ANL8MdiZtw+0+tFvlHK96cRRceswH8aPZGdDNBVhlT3sYZsmF7tz41nkBBSxj4pzd/vAA05AQsgMWODCwSnUAQ==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.3"
     "@internetarchive/result-type" "^0.0.1"
