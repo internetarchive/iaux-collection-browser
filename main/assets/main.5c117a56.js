@@ -430,7 +430,6 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
       .grid {
         height: var(--imgBlockHeight, 16rem);
         flex: 1;
-        display: inline-block;
         position: initial;
       }
 
