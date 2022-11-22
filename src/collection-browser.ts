@@ -637,10 +637,12 @@ export class CollectionBrowser
 
   firstUpdated(): void {
     this.setupStateRestorationObserver();
+    console.log('first updated - restoring state');
     this.restoreState();
   }
 
   updated(changed: PropertyValues) {
+    console.log('updated', changed);
     if (
       changed.has('displayMode') ||
       changed.has('baseNavigationUrl') ||
@@ -650,12 +652,19 @@ export class CollectionBrowser
       this.infiniteScroller?.reload();
     }
     if (changed.has('baseQuery')) {
+      console.log('base query changed', changed.get('baseQuery'));
       this.emitBaseQueryChanged();
     }
     if (changed.has('searchType')) {
+      console.log('search type changed', changed.get('searchType'));
       this.emitSearchTypeChanged();
     }
     if (changed.has('currentPage') || changed.has('displayMode')) {
+      console.log(
+        'current page or display mode changed',
+        changed.get('currentPage'),
+        changed.get('displayMode')
+      );
       this.persistState();
     }
     if (
@@ -668,6 +677,7 @@ export class CollectionBrowser
       changed.has('selectedFacets') ||
       changed.has('searchService')
     ) {
+      console.log('handling query change', changed);
       this.handleQueryChange();
     }
     if (
@@ -802,6 +812,11 @@ export class CollectionBrowser
   private previousQueryKey?: string;
 
   private async handleQueryChange() {
+    console.log(
+      'handleQueryChange',
+      this.pageFetchQueryKey,
+      this.previousQueryKey
+    );
     // only reset if the query has actually changed
     if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
       return;
@@ -824,9 +839,9 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
+
     // if the query changed as part of a window.history pop event, we don't want to
     // persist the state because it overwrites the forward history
-
     if (!this.historyPopOccurred) {
       this.persistState();
       this.historyPopOccurred = false;
@@ -1173,6 +1188,7 @@ export class CollectionBrowser
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
+    console.log('maybe fetch page', pageNumber);
     if (!this.filteredQuery) return;
 
     // if we already have data, don't fetch again
@@ -1187,6 +1203,7 @@ export class CollectionBrowser
     if (pageFetches.has(pageNumber)) return;
     pageFetches.add(pageNumber);
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
+    console.log('fetching page', pageNumber);
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
