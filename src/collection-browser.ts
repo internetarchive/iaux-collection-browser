@@ -1251,12 +1251,13 @@ export class CollectionBrowser
       this.preloadCollectionNames(results);
       this.updateDataSource(pageNumber, results);
     }
+
+    // When we reach the end of the data, we can set the infinite scroller's
+    // item count to the real total number of results (rather than the
+    // temporary estimates based on pages rendered so far).
     if (results.length < this.pageSize) {
       this.endOfDataReached = true;
-      // this updates the infinite scroller to show the actual size
-      if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount = this.actualTileCount;
-      }
+      this.infiniteScroller.itemCount = this.totalResults;
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
@@ -1492,8 +1493,10 @@ export class CollectionBrowser
    * increase the number of pages to render and start fetching data for the new page
    */
   private scrollThresholdReached() {
-    this.pagesToRender += 1;
-    this.fetchPage(this.pagesToRender);
+    if (!this.endOfDataReached) {
+      this.pagesToRender += 1;
+      this.fetchPage(this.pagesToRender);
+    }
   }
 
   static styles = css`
