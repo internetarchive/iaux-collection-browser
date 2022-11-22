@@ -306,9 +306,16 @@ describe('Collection Browser', () => {
     el.selectedFacets = selectedFacets;
     await el.updateComplete;
 
-    expect(searchService.searchParams?.query).to.equal(
-      'collection:foo AND (subject:("foo" OR -"bar") AND language:("en"))'
-    );
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchParams?.filters).to.deep.equal({
+      subject: {
+        foo: 'inc',
+        bar: 'exc',
+      },
+      language: {
+        en: 'inc',
+      },
+    });
   });
 
   it('fires a separate date histogram query when year facets are applied', async () => {
@@ -357,7 +364,8 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     el.showHistogramDatePicker = true;
-    el.dateRangeQueryClause = 'year:[1995 TO 2005]';
+    el.minSelectedDate = '1995';
+    el.maxSelectedDate = '2005';
     await el.updateComplete;
 
     expect(
@@ -395,7 +403,8 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     el.showHistogramDatePicker = false;
-    el.dateRangeQueryClause = 'year:[1995 TO 2005]';
+    el.minSelectedDate = '1995';
+    el.maxSelectedDate = '2005';
     await el.updateComplete;
 
     expect(searchService.searchParams?.aggregations?.simpleParams).to.satisfy(
@@ -754,7 +763,8 @@ describe('Collection Browser', () => {
     el.baseQuery = 'first-creator';
     el.selectedSort = 'creator' as SortField;
     el.selectedFacets = selectedFacets;
-    el.dateRangeQueryClause = 'year:[1950 TO 1970]';
+    el.minSelectedDate = '1950';
+    el.maxSelectedDate = '1970';
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
@@ -765,8 +775,17 @@ describe('Collection Browser', () => {
     });
 
     expect(searchService.searchParams?.query).to.equal(
-      'first-creator AND (collection:("foo")) AND year:[1950 TO 1970] AND firstCreator:X'
+      'first-creator AND firstCreator:X'
     );
+    expect(searchService.searchParams?.filters).to.deep.equal({
+      collection: {
+        foo: 'inc',
+      },
+      year: {
+        '1950': 'gte',
+        '1970': 'lte',
+      },
+    });
   });
 
   it('sets date range query when date picker selection changed', async () => {
@@ -815,7 +834,8 @@ describe('Collection Browser', () => {
     // Ensure that the histogram change propagated to the collection browser's
     // date query correctly.
     await el.updateComplete;
-    expect(el.dateRangeQueryClause).to.equal('year:[1960 TO 2000]');
+    expect(el.minSelectedDate).to.equal('1960');
+    expect(el.maxSelectedDate).to.equal('2000');
   });
 
   it('scrolls to page', async () => {

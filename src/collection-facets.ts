@@ -12,6 +12,7 @@ import { map } from 'lit/directives/map.js';
 import type {
   Aggregation,
   Bucket,
+  FilterMap,
   SearchServiceInterface,
   SearchType,
 } from '@internetarchive/search-service';
@@ -72,7 +73,9 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
-  @property({ type: String }) fullQuery?: string;
+  @property({ type: String }) query?: string;
+
+  @property({ type: Object }) filterMap?: FilterMap;
 
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
@@ -491,7 +494,8 @@ export class CollectionFacets extends LitElement {
         .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
         .facetAggregationKey=${facetAggrKey}
-        .fullQuery=${this.fullQuery}
+        .query=${this.query}
+        .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}

@@ -18,6 +18,9 @@ import type {
 import {
   Aggregation,
   Bucket,
+  FilterConstraint,
+  FilterMap,
+  FilterMapBuilder,
   SearchParams,
   SearchResult,
   SearchServiceInterface,
@@ -95,8 +98,6 @@ export class CollectionBrowser
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
-
-  @property({ type: String }) dateRangeQueryClause?: string;
 
   @property({ type: Number }) pageSize = 50;
 
@@ -555,7 +556,8 @@ export class CollectionBrowser
         .collectionNameCache=${this.collectionNameCache}
         .languageCodeHandler=${this.languageCodeHandler}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
-        .fullQuery=${this.fullQuery}
+        .query=${this.filteredQuery}
+        .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetDataLoading}
@@ -590,21 +592,6 @@ export class CollectionBrowser
     `;
   }
 
-  private get queryDebuggingTemplate() {
-    return html`
-      <div>
-        <ul>
-          <li>Base Query: ${this.baseQuery}</li>
-          <li>Facet Query: ${this.facetQuery}</li>
-          <li>Sort Filter Query: ${this.sortFilterQueries}</li>
-          <li>Date Range Query: ${this.dateRangeQueryClause}</li>
-          <li>Sort: ${this.sortParam?.field} ${this.sortParam?.direction}</li>
-          <li>Full Query: ${this.fullQuery}</li>
-        </ul>
-      </div>
-    `;
-  }
-
   private histogramDateRangeUpdated(
     e: CustomEvent<{
       minDate: string;
@@ -612,17 +599,21 @@ export class CollectionBrowser
     }>
   ) {
     const { minDate, maxDate } = e.detail;
-
     [this.minSelectedDate, this.maxSelectedDate] = [minDate, maxDate];
-    this.dateRangeQueryClause = `year:[${minDate} TO ${maxDate}]`;
 
-    if (this.dateRangeQueryClause) {
-      this.analyticsHandler?.sendEvent({
-        category: this.searchContext,
-        action: analyticsActions.histogramChanged,
-        label: this.dateRangeQueryClause,
-      });
+    this.analyticsHandler?.sendEvent({
+      category: this.searchContext,
+      action: analyticsActions.histogramChanged,
+      label: this.dateRangeQueryClause,
+    });
+  }
+
+  private get dateRangeQueryClause() {
+    if (!this.minSelectedDate || !this.maxSelectedDate) {
+      return undefined;
     }
+
+    return `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`;
   }
 
   firstUpdated(): void {
@@ -652,7 +643,8 @@ export class CollectionBrowser
       changed.has('baseQuery') ||
       changed.has('titleQuery') ||
       changed.has('creatorQuery') ||
-      changed.has('dateRangeQueryClause') ||
+      changed.has('minSelectedDate') ||
+      changed.has('maxSelectedDate') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
       changed.has('searchService')
@@ -661,7 +653,8 @@ export class CollectionBrowser
     }
     if (
       changed.has('baseQuery') ||
-      changed.has('dateRangeQueryClause') ||
+      changed.has('minSelectedDate') ||
+      changed.has('maxSelectedDate') ||
       changed.has('selectedFacets')
     ) {
       this.refreshLetterCounts();
@@ -854,7 +847,6 @@ export class CollectionBrowser
     this.baseQuery = restorationState.baseQuery;
     this.titleQuery = restorationState.titleQuery;
     this.creatorQuery = restorationState.creatorQuery;
-    this.dateRangeQueryClause = restorationState.dateRangeQueryClause;
     this.sortParam = restorationState.sortParam ?? null;
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
@@ -874,7 +866,6 @@ export class CollectionBrowser
       selectedFacets: this.selectedFacets ?? defaultSelectedFacets,
       baseQuery: this.baseQuery,
       currentPage: this.currentPage,
-      dateRangeQueryClause: this.dateRangeQueryClause,
       titleQuery: this.titleQuery,
       creatorQuery: this.creatorQuery,
       minSelectedDate: this.minSelectedDate,
@@ -889,6 +880,84 @@ export class CollectionBrowser
     this.searchResultsLoading = true;
     await this.fetchPage(this.initialPageNumber);
     this.searchResultsLoading = false;
+  }
+
+  private get filterMap(): FilterMap {
+    const builder = new FilterMapBuilder();
+
+    // Add the date range, if applicable
+    if (this.minSelectedDate) {
+      builder.addFilter(
+        'year',
+        this.minSelectedDate,
+        FilterConstraint.GREATER_OR_EQUAL
+      );
+    }
+    if (this.maxSelectedDate) {
+      builder.addFilter(
+        'year',
+        this.maxSelectedDate,
+        FilterConstraint.LESS_OR_EQUAL
+      );
+    }
+
+    // Add any selected facets
+    if (this.selectedFacets) {
+      for (const [facetName, facetValues] of Object.entries(
+        this.selectedFacets
+      )) {
+        const { name, values } = this.prepareFacetForFetch(
+          facetName,
+          facetValues
+        );
+        for (const [value, bucket] of Object.entries(values)) {
+          let constraint;
+          if (bucket.state === 'selected') {
+            constraint = FilterConstraint.INCLUDE;
+          } else if (bucket.state === 'hidden') {
+            constraint = FilterConstraint.EXCLUDE;
+          }
+
+          if (constraint) {
+            builder.addFilter(name, value, constraint);
+          }
+        }
+      }
+    }
+
+    const filterMap = builder.build();
+
+    // TEMP: At present, the backend search engine incorrectly returns 0 results if
+    // the _first_ language filter contains a space, so let's try to avoid that if possible.
+    if (filterMap.language) {
+      for (const [value, constraint] of Object.entries(filterMap.language)) {
+        if (value.includes(' ')) {
+          // Delete and re-add this filter to make it the last one on the parent object
+          // (Technically this isn't in the standard, but most browser impls output
+          // object keys in the order they were added.)
+          delete filterMap.language[value];
+          filterMap.language[value] = constraint;
+        } else {
+          // As soon as we reach one without a space, we're done
+          break;
+        }
+      }
+    }
+
+    return filterMap;
+  }
+
+  /** The base query joined with any title/creator letter filters */
+  private get filteredQuery(): string | undefined {
+    if (!this.baseQuery) return undefined;
+    let filteredQuery = this.baseQuery;
+
+    const { sortFilterQueries } = this;
+    if (sortFilterQueries) {
+      filteredQuery += ` AND ${sortFilterQueries}`;
+    }
+
+    return filteredQuery;
   }
 
   /** The full query, including year facets and date range clauses */
@@ -991,29 +1060,57 @@ export class CollectionBrowser
     facetName: string,
     facetValues: Record<string, FacetBucket>
   ): string {
-    const facetEntries = Object.entries(facetValues);
+    const { name: facetQueryName, values } = this.prepareFacetForFetch(
+      facetName,
+      facetValues
+    );
+    const facetEntries = Object.entries(values);
     if (facetEntries.length === 0) return '';
 
-    const facetQueryName =
-      facetName === 'lending' ? 'lending___status' : facetName;
     const facetValuesArray: string[] = [];
-
     for (const [key, facetData] of facetEntries) {
       const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
-
-      if (facetName === 'language') {
-        const languages =
-          this.languageCodeHandler.getCodeArrayFromCodeString(key);
-        for (const language of languages) {
-          facetValuesArray.push(`${plusMinusPrefix}"${language}"`);
-        }
-      } else {
-        facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
-      }
+      facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
     }
 
     const valueQuery = facetValuesArray.join(` OR `);
     return `${facetQueryName}:(${valueQuery})`;
+  }
+
+  /**
+   * Handles some special pre-request normalization steps for certain facet types
+   * that require them.
+   *
+   * @param facetName The name of the facet type (e.g., 'language')
+   * @param facetValues An array of values for that facet type
+   */
+  private prepareFacetForFetch(
+    facetName: string,
+    facetValues: Record<string, FacetBucket>
+  ): { name: string; values: Record<string, FacetBucket> } {
+    let [normalizedName, normalizedValues] = [facetName, facetValues];
+
+    // The full "search engine" name of the lending field is "lending___status"
+    if (facetName === 'lending') {
+      normalizedName = 'lending___status';
+    }
+
+    // Language codes like "en-US|en-GB|en" need to be broken apart into individual values
+    if (facetName === 'language') {
+      normalizedValues = {};
+      for (const [facetValue, facetData] of Object.entries(facetValues)) {
+        const languages =
+          this.languageCodeHandler.getCodeArrayFromCodeString(facetValue);
+        for (const lang of languages) {
+          normalizedValues[lang] = { ...facetData };
+        }
+      }
+    }
+
+    return {
+      name: normalizedName,
+      values: normalizedValues,
+    };
   }
 
   /**
@@ -1058,11 +1155,12 @@ export class CollectionBrowser
   }
 
   private async fetchFacets() {
-    if (!this.fullQuery) return;
+    if (!this.filteredQuery) return;
 
     const params: SearchParams = {
-      query: this.fullQuery,
+      query: this.filteredQuery,
       rows: 0,
+      filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
       aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
@@ -1172,7 +1270,14 @@ export class CollectionBrowser
   }
 
   /**
-   * The query key is a string that uniquely identifies the current query
+   * The query key is a string that uniquely identifies the current search.
+   * It consists of:
+   *  - The current base query
+   *  - The current search type
+   *  - Any currently-applied facets
+   *  - Any currently-applied date range
+   *  - Any currently-applied prefix filters
+   *  - The current sort options
    *
    * This lets us keep track of queries so we don't persist data that's
    * no longer relevant.
@@ -1185,7 +1290,7 @@ export class CollectionBrowser
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
-    if (!this.fullQuery) return;
+    if (!this.filteredQuery) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1202,10 +1307,11 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: this.fullQuery,
+      query: this.filteredQuery,
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
+      filters: this.filterMap,
       aggregations: { omit: true },
     };
     const searchResponse = await this.searchService?.search(
@@ -1243,7 +1349,7 @@ export class CollectionBrowser
       }
     }
     const queryChangedSinceFetch =
-      searchQuery !== this.fullQuery || sortChanged;
+      searchQuery !== this.filteredQuery || sortChanged;
     if (queryChangedSinceFetch) return;
 
     const { results } = success.response;
