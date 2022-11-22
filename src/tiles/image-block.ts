@@ -91,7 +91,6 @@ export class ImageBlock extends LitElement {
       .grid {
         height: var(--imgBlockHeight, 16rem);
         flex: 1;
-        display: inline-block;
         position: initial;
       }
 
