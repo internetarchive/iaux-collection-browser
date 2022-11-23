@@ -32,6 +32,7 @@ export class ItemTile extends LitElement {
 
   render() {
     const itemTitle = this.model?.title;
+    console.log('volume: ', this.model?.volume, ' issue: ', this.model?.issue);
 
     return html`
       <div class="container">
@@ -54,6 +55,7 @@ export class ItemTile extends LitElement {
               </h1>
             </div>
 
+            ${this.volumeIssueTemplate}
             ${this.doesSortedByDate
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
@@ -75,6 +77,16 @@ export class ItemTile extends LitElement {
   /**
    * Templates
    */
+  private get creatorTemplate(): TemplateResult | typeof nothing {
+    if (!this.model?.creator) return nothing;
+
+    return html`
+      <div class="created-by">
+        <span class="truncated">by&nbsp;${this.model?.creator}</span>
+      </div>
+    `;
+  }
+
   private get sortedDateInfoTemplate() {
     let sortedValue;
 
@@ -104,22 +116,24 @@ export class ItemTile extends LitElement {
     `;
   }
 
-  private get creatorTemplate() {
-    return html`
-      <div class="created-by">
-        ${this.model?.creator
-          ? html`<span class="truncated">by&nbsp;${this.model?.creator}</span>`
-          : nothing}
-      </div>
-    `;
-  }
-
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
     return html`
       <text-snippet-block viewsize="grid" .snippets=${this.model?.snippets}>
       </text-snippet-block>
+    `;
+  }
+
+  private get volumeIssueTemplate(): TemplateResult | typeof nothing {
+    if (!this.model?.volume || !this.model?.issue) return nothing;
+
+    return html`
+      <div class="volume-issue">
+        <span class="truncated">
+          Volume&nbsp;${this.model?.volume}, Issue&nbsp;${this.model?.issue}
+        </span>
+      </div>
     `;
   }
 
@@ -187,7 +201,8 @@ export class ItemTile extends LitElement {
       }
 
       .created-by,
-      .date-sorted-by {
+      .date-sorted-by,
+      .volume-issue {
         display: flex;
         justify-content: left;
         align-items: flex-end; /* Important to start text from bottom */
