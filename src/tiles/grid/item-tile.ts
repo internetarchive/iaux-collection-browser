@@ -144,6 +144,7 @@ export class ItemTile extends LitElement {
         box-shadow: 1px 1px 2px 0px;
         display: flex;
         flex-direction: column;
+        height: 100%;
       }
 
       .tile-details {
