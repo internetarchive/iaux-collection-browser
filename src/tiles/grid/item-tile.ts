@@ -35,38 +35,38 @@ export class ItemTile extends LitElement {
 
     return html`
       <div class="container">
-        <div class="item-info">
-          <image-block 
-            class=${this.hasSnippets ? 'has-snippets' : nothing}
-            .model=${this.model}
-            .baseImageUrl=${this.baseImageUrl}
-            .loggedIn=${this.loggedIn}
-            .isCompactTile=${false}
-            .isListTile=${false}
-            .viewSize=${'grid'}>
-          </image-block>
+        <div class="tile-details">
+          <div class="item-info">
+            <image-block
+              class=${this.hasSnippets ? 'has-snippets' : nothing}
+              .model=${this.model}
+              .baseImageUrl=${this.baseImageUrl}
+              .loggedIn=${this.loggedIn}
+              .isCompactTile=${false}
+              .isListTile=${false}
+              .viewSize=${'grid'}
+            >
+            </image-block>
 
-          <div id="title">
-            <h1 class="truncated" title=${ifDefined(itemTitle)}>
-              ${itemTitle}
-            </h1>
+            <div id="title">
+              <h1 class="truncated" title=${ifDefined(itemTitle)}>
+                ${itemTitle}
+              </h1>
+            </div>
+
+            ${this.textSnippetsTemplate}
+            ${this.doesSortedByDate
+              ? this.sortedDateInfoTemplate
+              : this.creatorTemplate}
           </div>
 
-          ${this.textSnippetsTemplate}
-
-          ${
-            this.doesSortedByDate
-              ? this.sortedDateInfoTemplate
-              : this.creatorTemplate
-          }
-        </div>
-
-        <tile-stats 
-          .mediatype=${this.model?.mediatype}
-          .viewCount=${this.model?.viewCount}
-          .favCount=${this.model?.favCount}
-          .commentCount=${this.model?.commentCount}>
-        </tile-stats>
+          <tile-stats
+            .mediatype=${this.model?.mediatype}
+            .viewCount=${this.model?.viewCount}
+            .favCount=${this.model?.favCount}
+            .commentCount=${this.model?.commentCount}
+          >
+          </tile-stats>
         </div>
       </div>
     `;
@@ -144,6 +144,9 @@ export class ItemTile extends LitElement {
         box-shadow: 1px 1px 2px 0px;
         display: flex;
         flex-direction: column;
+      }
+
+      .tile-details {
         height: 100%;
       }
 

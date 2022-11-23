@@ -1807,7 +1807,7 @@ export class CollectionBrowser
       );
       --infiniteScrollerCellMaxHeight: var(
         --collectionBrowserCellMaxHeight,
-        29rem
+        40rem
       );
     }
   `;
