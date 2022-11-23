@@ -880,7 +880,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         display: flex;
         flex: 1;
         justify-content: space-between;
-        /* text-align: center; */
+        text-align: center;
         width: 100%;
         padding-top: 5px;
         padding-bottom: 5px;
