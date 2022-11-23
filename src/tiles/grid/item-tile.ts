@@ -142,12 +142,12 @@ export class ItemTile extends LitElement {
         background-color: #ffffff;
         border-radius: var(--collectionTileCornerRadius, 4px);
         box-shadow: 1px 1px 2px 0px;
-        display: flex;
-        flex-direction: column;
         height: 100%;
       }
 
       .tile-details {
+        display: flex;
+        flex-direction: column;
         height: 100%;
       }
 
