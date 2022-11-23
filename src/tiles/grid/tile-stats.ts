@@ -93,14 +93,16 @@ export class TileStats extends LitElement {
 
       .item-stats {
         height: 35px;
+        padding-left: 5px;
+        padding-right: 5px;
       }
 
       #stats-row {
-        align-items: center;
+        align-items: left;
         display: flex;
         flex: 1;
-        justify-content: space-evenly;
-        text-align: center;
+        justify-content: space-between;
+        /* text-align: center; */
         width: 100%;
         padding-top: 5px;
         padding-bottom: 5px;

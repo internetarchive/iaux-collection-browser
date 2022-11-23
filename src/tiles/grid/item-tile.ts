@@ -54,10 +54,10 @@ export class ItemTile extends LitElement {
               </h1>
             </div>
 
-            ${this.textSnippetsTemplate}
             ${this.doesSortedByDate
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
+            ${this.textSnippetsTemplate}
           </div>
 
           <tile-stats
