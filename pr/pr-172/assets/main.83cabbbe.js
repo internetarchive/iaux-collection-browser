@@ -919,7 +919,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         display: block;
         text-align: center;
       }
-    `}};n([h({type:String})],rt.prototype,"mediatype",void 0);n([h({type:Number})],rt.prototype,"itemCount",void 0);n([h({type:Number})],rt.prototype,"viewCount",void 0);n([h({type:Number})],rt.prototype,"favCount",void 0);n([h({type:Number})],rt.prototype,"commentCount",void 0);rt=n([R("tile-stats")],rt);let Mt=class extends O{constructor(){super(...arguments),this.loggedIn=!1}render(){var e,t,i,a,o,s,l;const d=(e=this.model)===null||e===void 0?void 0:e.title;return console.log("volume: ",(t=this.model)===null||t===void 0?void 0:t.volume," issue: ",(i=this.model)===null||i===void 0?void 0:i.issue),p`
+    `}};n([h({type:String})],rt.prototype,"mediatype",void 0);n([h({type:Number})],rt.prototype,"itemCount",void 0);n([h({type:Number})],rt.prototype,"viewCount",void 0);n([h({type:Number})],rt.prototype,"favCount",void 0);n([h({type:Number})],rt.prototype,"commentCount",void 0);rt=n([R("tile-stats")],rt);let Mt=class extends O{constructor(){super(...arguments),this.loggedIn=!1}render(){var e,t,i,a,o;const s=(e=this.model)===null||e===void 0?void 0:e.title;return p`
       <div class="container">
         <div class="tile-details">
           <div class="item-info">
@@ -935,8 +935,8 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
             </image-block>
 
             <div id="title">
-              <h1 class="truncated" title=${Ii(d)}>
-                ${d}
+              <h1 class="truncated" title=${Ii(s)}>
+                ${s}
               </h1>
             </div>
 
@@ -946,10 +946,10 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
           </div>
 
           <tile-stats
-            .mediatype=${(a=this.model)===null||a===void 0?void 0:a.mediatype}
-            .viewCount=${(o=this.model)===null||o===void 0?void 0:o.viewCount}
-            .favCount=${(s=this.model)===null||s===void 0?void 0:s.favCount}
-            .commentCount=${(l=this.model)===null||l===void 0?void 0:l.commentCount}
+            .mediatype=${(t=this.model)===null||t===void 0?void 0:t.mediatype}
+            .viewCount=${(i=this.model)===null||i===void 0?void 0:i.viewCount}
+            .favCount=${(a=this.model)===null||a===void 0?void 0:a.favCount}
+            .commentCount=${(o=this.model)===null||o===void 0?void 0:o.commentCount}
           >
           </tile-stats>
         </div>
