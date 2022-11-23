@@ -32,7 +32,6 @@ export class ItemTile extends LitElement {
 
   render() {
     const itemTitle = this.model?.title;
-    console.log('volume: ', this.model?.volume, ' issue: ', this.model?.issue);
 
     return html`
       <div class="container">
