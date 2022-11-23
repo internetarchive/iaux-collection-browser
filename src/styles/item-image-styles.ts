@@ -19,6 +19,7 @@ export const baseItemImageStyles = css`
 
   .contain {
     object-fit: contain;
+    object-position: center;
     height: 100%;
     width: 100%;
   }

@@ -96,7 +96,6 @@ export class TileStats extends LitElement {
       }
 
       #stats-row {
-        border-top: 1px solid #bbb;
         align-items: center;
         display: flex;
         flex: 1;

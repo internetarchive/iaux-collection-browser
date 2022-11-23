@@ -36,12 +36,6 @@ export class ItemTile extends LitElement {
     return html`
       <div class="container">
         <div class="item-info">
-          <div id="title">
-            <h1 class="truncated" title=${ifDefined(itemTitle)}>
-              ${itemTitle}
-            </h1>
-          </div>
-
           <image-block 
             class=${this.hasSnippets ? 'has-snippets' : nothing}
             .model=${this.model}
@@ -51,6 +45,12 @@ export class ItemTile extends LitElement {
             .isListTile=${false}
             .viewSize=${'grid'}>
           </image-block>
+
+          <div id="title">
+            <h1 class="truncated" title=${ifDefined(itemTitle)}>
+              ${itemTitle}
+            </h1>
+          </div>
 
           ${this.textSnippetsTemplate}
 
@@ -75,12 +75,6 @@ export class ItemTile extends LitElement {
   /**
    * Templates
    */
-  private get doesSortedByDate() {
-    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
-      this.sortParam?.field as string
-    );
-  }
-
   private get sortedDateInfoTemplate() {
     let sortedValue;
 
@@ -112,9 +106,9 @@ export class ItemTile extends LitElement {
 
   private get creatorTemplate() {
     return html`
-      <div class="created-by truncated">
+      <div class="created-by">
         ${this.model?.creator
-          ? html`<span>by&nbsp;${this.model?.creator}</span>`
+          ? html`<span class="truncated">by&nbsp;${this.model?.creator}</span>`
           : nothing}
       </div>
     `;
@@ -123,16 +117,25 @@ export class ItemTile extends LitElement {
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
-    return html`<text-snippet-block
-      viewsize="grid"
-      .snippets=${this.model?.snippets}
-    ></text-snippet-block>`;
+    return html`
+      <text-snippet-block viewsize="grid" .snippets=${this.model?.snippets}>
+      </text-snippet-block>
+    `;
+  }
+
+  private get doesSortedByDate() {
+    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
+      this.sortParam?.field as string
+    );
   }
 
   private get hasSnippets(): boolean {
     return !!this.model?.snippets?.length;
   }
 
+  /**
+   * CSS
+   */
   static get styles(): CSSResultGroup {
     return css`
       .container {
@@ -145,12 +148,13 @@ export class ItemTile extends LitElement {
       }
 
       .item-info {
-        padding: 5px 5px 0 5px;
         flex-grow: 1;
       }
 
       #title {
         flex-shrink: 0;
+        padding-left: 5px;
+        padding-right: 5px;
       }
 
       .hidden {
@@ -181,35 +185,33 @@ export class ItemTile extends LitElement {
       .created-by,
       .date-sorted-by {
         display: flex;
-        justify-content: center;
+        justify-content: left;
         align-items: flex-end; /* Important to start text from bottom */
-        height: 3rem;
-        padding-top: 1rem;
+        padding: 10px 5px 5px 5px;
       }
 
       .truncated {
         flex: 1;
         color: #2c2c2c;
         min-width: 0; /* Important for long words! */
-        text-align: center;
-        line-height: 2rem;
+        text-align: left;
+        line-height: 15px;
         text-overflow: ellipsis;
         overflow: hidden;
         word-wrap: break-word;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
+        padding-bottom: 1.5px;
       }
 
-      .truncated span {
+      span {
         font-size: 1.4rem;
         display: -webkit-box;
       }
 
       h1.truncated {
-        margin-top: 0rem;
-        margin-bottom: 0.5rem;
+        margin: 0px;
         font-size: 1.6rem;
-        height: 4rem;
         display: -webkit-box;
       }
     `;
