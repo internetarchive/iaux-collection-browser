@@ -89,6 +89,7 @@ export class RestorationStateHandler
   }
 
   private persistQueryStateToUrl(state: RestorationState) {
+    console.log('persistQueryStateToUrl', state);
     const url = new URL(window.location.href);
     const { searchParams } = url;
     searchParams.delete('sin');
@@ -154,13 +155,53 @@ export class RestorationStateHandler
       searchParams.append('and[]', state.creatorQuery);
     }
 
+    const selectedFacetStatesEqual = (
+      facets1: SelectedFacets,
+      facets2: SelectedFacets
+    ): boolean => {
+      if (facets1 === facets2) return true;
+
+      // We can assume they both have the same top-level entries (the allowable facet fields)
+      for (const [key, values] of Object.entries(facets1)) {
+        const facetField = key as keyof SelectedFacets;
+
+        // They must have the same number of entries for this field
+        const bucketEntries1 = Object.entries(values);
+        const bucketEntries2 = Object.entries(facets2[facetField]);
+        if (bucketEntries1.length !== bucketEntries2.length) return false;
+
+        // And since they have the same length, we just ensure every bucket state from the
+        // first object matches the corresponding bucket state in the second object.
+        // If the corresponding bucket doesn't exist or has a different state, we're done.
+        for (const [value, bucket] of bucketEntries1) {
+          if (facets2[facetField][value]?.state !== bucket.state) return false;
+        }
+      }
+
+      return true;
+    };
+
+    // Ensure we aren't pushing an identical state to the stack
+    const prevState = window.history.state;
+    if (
+      prevState.sort?.field === state.sortParam?.field &&
+      prevState.sort?.direction === state.sortParam?.direction &&
+      prevState.query === state.baseQuery &&
+      prevState.page === state.currentPage &&
+      prevState.minDate === state.minSelectedDate &&
+      prevState.maxDate === state.maxSelectedDate &&
+      selectedFacetStatesEqual(prevState.facets, state.selectedFacets)
+    ) {
+      console.log('Ignoring identical history state');
+      return;
+    }
+
     window.history.pushState(
       {
         sort: state.sortParam,
         query: state.baseQuery,
         page: state.currentPage,
-        and: state.selectedFacets,
-        not: state.selectedFacets,
+        facets: state.selectedFacets,
         minDate: state.minSelectedDate,
         maxDate: state.maxSelectedDate,
       },
@@ -170,6 +211,7 @@ export class RestorationStateHandler
   }
 
   private loadQueryStateFromUrl(): RestorationState {
+    console.log('loadQueryStateFromUrl', window.location.href);
     const url = new URL(window.location.href);
     const searchInside = url.searchParams.get('sin');
     const pageNumber = url.searchParams.get('page');
