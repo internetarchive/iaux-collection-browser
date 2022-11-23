@@ -102,7 +102,7 @@ export class TileStats extends LitElement {
         display: flex;
         flex: 1;
         justify-content: space-between;
-        /* text-align: center; */
+        text-align: center;
         width: 100%;
         padding-top: 5px;
         padding-bottom: 5px;
