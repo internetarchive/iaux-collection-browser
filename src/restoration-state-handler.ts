@@ -99,20 +99,15 @@ export class RestorationStateHandler
     searchParams.delete('and[]');
     searchParams.delete('not[]');
 
+    if (state.baseQuery) {
+      searchParams.set('query', state.baseQuery);
+    }
+
     if (state.searchType) {
       searchParams.set(
         'sin',
         state.searchType === SearchType.FULLTEXT ? 'TXT' : ''
       );
-    }
-
-    if (state.sortParam) {
-      const prefix = state.sortParam.direction === 'desc' ? '-' : '';
-      searchParams.set('sort', `${prefix}${state.sortParam.field}`);
-    }
-
-    if (state.baseQuery) {
-      searchParams.set('query', state.baseQuery);
     }
 
     if (state.currentPage) {
@@ -121,6 +116,11 @@ export class RestorationStateHandler
       } else {
         searchParams.delete('page');
       }
+    }
+
+    if (state.sortParam) {
+      const prefix = state.sortParam.direction === 'desc' ? '-' : '';
+      searchParams.set('sort', `${prefix}${state.sortParam.field}`);
     }
 
     if (state.selectedFacets) {
@@ -148,9 +148,11 @@ export class RestorationStateHandler
         `year:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`
       );
     }
+
     if (state.titleQuery) {
       searchParams.append('and[]', state.titleQuery);
     }
+
     if (state.creatorQuery) {
       searchParams.append('and[]', state.creatorQuery);
     }
@@ -158,10 +160,11 @@ export class RestorationStateHandler
     // Ensure we aren't pushing an identical state to the stack
     const prevState = window.history.state;
     if (
+      prevState.query === state.baseQuery &&
+      prevState.searchType === state.searchType &&
+      prevState.page === state.currentPage &&
       prevState.sort?.field === state.sortParam?.field &&
       prevState.sort?.direction === state.sortParam?.direction &&
-      prevState.query === state.baseQuery &&
-      prevState.page === state.currentPage &&
       prevState.minDate === state.minSelectedDate &&
       prevState.maxDate === state.maxSelectedDate &&
       this.selectedFacetStatesEqual(prevState.facets, state.selectedFacets)
@@ -172,12 +175,13 @@ export class RestorationStateHandler
 
     window.history.pushState(
       {
-        sort: state.sortParam,
         query: state.baseQuery,
+        searchType: state.searchType,
         page: state.currentPage,
-        facets: state.selectedFacets,
+        sort: state.sortParam,
         minDate: state.minSelectedDate,
         maxDate: state.maxSelectedDate,
+        facets: state.selectedFacets,
       },
       '',
       url
