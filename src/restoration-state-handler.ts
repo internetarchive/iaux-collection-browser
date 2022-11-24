@@ -155,32 +155,6 @@ export class RestorationStateHandler
       searchParams.append('and[]', state.creatorQuery);
     }
 
-    const selectedFacetStatesEqual = (
-      facets1: SelectedFacets,
-      facets2: SelectedFacets
-    ): boolean => {
-      if (facets1 === facets2) return true;
-
-      // We can assume they both have the same top-level entries (the allowable facet fields)
-      for (const [key, values] of Object.entries(facets1)) {
-        const facetField = key as keyof SelectedFacets;
-
-        // They must have the same number of entries for this field
-        const bucketEntries1 = Object.entries(values);
-        const bucketEntries2 = Object.entries(facets2[facetField]);
-        if (bucketEntries1.length !== bucketEntries2.length) return false;
-
-        // And since they have the same length, we just ensure every bucket state from the
-        // first object matches the corresponding bucket state in the second object.
-        // If the corresponding bucket doesn't exist or has a different state, we're done.
-        for (const [value, bucket] of bucketEntries1) {
-          if (facets2[facetField][value]?.state !== bucket.state) return false;
-        }
-      }
-
-      return true;
-    };
-
     // Ensure we aren't pushing an identical state to the stack
     const prevState = window.history.state;
     if (
@@ -190,7 +164,7 @@ export class RestorationStateHandler
       prevState.page === state.currentPage &&
       prevState.minDate === state.minSelectedDate &&
       prevState.maxDate === state.maxSelectedDate &&
-      selectedFacetStatesEqual(prevState.facets, state.selectedFacets)
+      this.selectedFacetStatesEqual(prevState.facets, state.selectedFacets)
     ) {
       console.log('Ignoring identical history state');
       return;
@@ -335,6 +309,32 @@ export class RestorationStateHandler
       return value.substring(1, value.length - 1);
     }
     return value;
+  }
+
+  private selectedFacetStatesEqual(
+    facets1: SelectedFacets,
+    facets2: SelectedFacets
+  ): boolean {
+    if (facets1 === facets2) return true;
+
+    // We can assume they both have the same top-level entries (the allowable facet fields)
+    for (const [key, values] of Object.entries(facets1)) {
+      const facetField = key as keyof SelectedFacets;
+
+      // They must have the same number of bucket entries for each field
+      const bucketEntries1 = Object.entries(values);
+      const bucketEntries2 = Object.entries(facets2[facetField]);
+      if (bucketEntries1.length !== bucketEntries2.length) return false;
+
+      // And since they have the same length, we just ensure every bucket state from the
+      // first object matches a corresponding bucket state in the second object.
+      // If the corresponding bucket doesn't exist or has a different state, we're done.
+      for (const [value, bucket] of bucketEntries1) {
+        if (bucket.state !== facets2[facetField][value]?.state) return false;
+      }
+    }
+
+    return true;
   }
 
   /**
