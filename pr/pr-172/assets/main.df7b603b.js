@@ -618,7 +618,6 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         img {
           height: var(--imgHeight, 16rem);
           width: var(--imgWidth, 16rem);
-          box-shadow: 1px 1px 2px 0px;
         }
       `]}};n([h({type:Object})],De.prototype,"model",void 0);n([h({type:String})],De.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],De.prototype,"isListTile",void 0);n([h({type:Boolean})],De.prototype,"isCompactTile",void 0);n([h({type:Boolean})],De.prototype,"loggedIn",void 0);n([z()],De.prototype,"isWaveform",void 0);n([ue("img")],De.prototype,"baseImage",void 0);De=n([R("item-image")],De);const Ls=I`
   <svg viewBox="0 0 100 100"
