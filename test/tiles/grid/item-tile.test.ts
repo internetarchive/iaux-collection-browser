@@ -31,12 +31,16 @@ describe('Item Tile', () => {
     const tileDetails = el.shadowRoot?.querySelector('.tile-details');
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
     const createdBy = el.shadowRoot?.querySelector('.created-by');
+    const createdByTruncated = el.shadowRoot?.querySelector(
+      '.created-by .truncated'
+    );
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
 
     expect(container).to.exist;
     expect(tileDetails).to.exist;
     expect(itemInfo).to.exist;
     expect(createdBy).to.exist;
+    expect(createdByTruncated).to.exist;
     expect(dateSortedBy).to.not.exist;
   });
 
@@ -143,5 +147,23 @@ describe('Item Tile', () => {
     const snippetBlock = el.shadowRoot?.querySelector('text-snippet-block');
 
     expect(snippetBlock).to.not.exist;
+  });
+
+  it('should render with volume/issue view', async () => {
+    const el = await fixture<ItemTile>(html`
+      <item-tile .model=${{ volume: '1', issue: 'Index' }}></item-tile>
+    `);
+
+    const volumeIssueBlock = el.shadowRoot?.querySelector('.volume-issue');
+
+    expect(volumeIssueBlock).to.exist;
+  });
+
+  it('should render with volume/issue view to not render', async () => {
+    const el = await fixture<ItemTile>(html`<item-tile></item-tile>`);
+
+    const volumeIssueBlock = el.shadowRoot?.querySelector('.volume-issue');
+
+    expect(volumeIssueBlock).to.not.exist;
   });
 });
