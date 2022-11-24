@@ -81,7 +81,9 @@ export class ItemTile extends LitElement {
 
     return html`
       <div class="created-by">
-        <span class="truncated">by&nbsp;${this.model?.creator}</span>
+        <span class="truncated" title=${ifDefined(this.model?.creator)}>
+          by&nbsp;${this.model?.creator}
+        </span>
       </div>
     `;
   }
@@ -129,7 +131,7 @@ export class ItemTile extends LitElement {
 
     return html`
       <div class="volume-issue">
-        <span class="truncated">
+        <span class="truncated" title="volume|issue">
           Volume&nbsp;${this.model?.volume}, Issue&nbsp;${this.model?.issue}
         </span>
       </div>
@@ -178,7 +180,7 @@ export class ItemTile extends LitElement {
         display: none;
       }
 
-      .container:hover > .item-info > #title > .truncated {
+      .container:hover > .tile-details > .item-info > #title > .truncated {
         text-decoration: underline;
       }
 

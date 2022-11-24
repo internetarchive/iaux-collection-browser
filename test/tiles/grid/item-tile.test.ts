@@ -9,22 +9,32 @@ describe('Item Tile', () => {
   it('should render initial component', async () => {
     const el = await fixture<ItemTile>(html`<item-tile></item-tile>`);
 
+    const container = el.shadowRoot?.querySelector('.container');
+    const tileDetails = el.shadowRoot?.querySelector('.tile-details');
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
     const itemTitle = el.shadowRoot?.querySelector('#title');
     const imageBlock = el.shadowRoot?.querySelector('image-block');
 
+    expect(container).to.exist;
+    expect(tileDetails).to.exist;
     expect(itemInfo).to.exist;
     expect(imageBlock).to.exist;
     expect(itemTitle).to.exist;
   });
 
   it('should render with created-by element', async () => {
-    const el = await fixture<ItemTile>(html`<item-tile></item-tile>`);
+    const el = await fixture<ItemTile>(
+      html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`
+    );
 
+    const container = el.shadowRoot?.querySelector('.container');
+    const tileDetails = el.shadowRoot?.querySelector('.tile-details');
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
     const createdBy = el.shadowRoot?.querySelector('.created-by');
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
 
+    expect(container).to.exist;
+    expect(tileDetails).to.exist;
     expect(itemInfo).to.exist;
     expect(createdBy).to.exist;
     expect(dateSortedBy).to.not.exist;
@@ -97,7 +107,9 @@ describe('Item Tile', () => {
   });
 
   it('should render with created-by when sort field id not like date', async () => {
-    const el = await fixture<ItemTile>(html`<item-tile></item-tile>`);
+    const el = await fixture<ItemTile>(
+      html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`
+    );
 
     el.sortParam = {
       field: 'week',
