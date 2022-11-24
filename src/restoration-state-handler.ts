@@ -160,6 +160,7 @@ export class RestorationStateHandler
     // Ensure we aren't pushing an identical state to the stack
     const prevState = window.history.state;
     if (
+      prevState &&
       prevState.query === state.baseQuery &&
       prevState.searchType === state.searchType &&
       prevState.page === state.currentPage &&
