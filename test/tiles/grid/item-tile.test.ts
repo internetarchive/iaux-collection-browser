@@ -31,16 +31,14 @@ describe('Item Tile', () => {
     const tileDetails = el.shadowRoot?.querySelector('.tile-details');
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
     const createdBy = el.shadowRoot?.querySelector('.created-by');
-    const createdByTruncated = el.shadowRoot?.querySelector(
-      '.created-by .truncated'
-    );
+    const truncatedCreatorText = createdBy?.querySelector('.truncated');
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
 
     expect(container).to.exist;
     expect(tileDetails).to.exist;
     expect(itemInfo).to.exist;
     expect(createdBy).to.exist;
-    expect(createdByTruncated).to.exist;
+    expect(truncatedCreatorText).to.exist;
     expect(dateSortedBy).to.not.exist;
   });
 
