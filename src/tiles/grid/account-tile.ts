@@ -8,53 +8,52 @@ import './tile-stats';
 export class AccountTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
+  private get getAvatar() {
+    return html`<div id="avatar">
+      <img
+        id="avatar"
+        alt="patron-avatar"
+        src="https://archive.org/services/img/${this.model?.identifier}"
+      />
+    </div>`;
+  }
+
+  private get getTitle() {
+    return html`<div id="title">
+      <h1 class="truncated">${this.model?.identifier}</h1>
+    </div>`;
+  }
+
+  private get getArchivist() {
+    return html`<div id="archivist-since">
+      Archivist since ${this.model?.dateAdded?.getFullYear()}
+    </div>`;
+  }
+
+  private get getTileStats() {
+    return html`<tile-stats
+      .mediatype=${this.model?.mediatype}
+      .itemCount=${this.model?.itemCount}
+      .favCount=${this.model?.favCount}
+      .commentCount=${this.model?.commentCount}
+    >
+    </tile-stats>`;
+  }
+
   render() {
     return html`
-      <div class="account-tile-main">
-        <div id="title">
-          <h1 class="truncated">${this.model?.identifier}</h1>
-        </div>
-
+      <div class="container">
         <div class="account-info">
-          <div id="avatar-info">
-            <img
-              id="avatar"
-              alt="patron-avatar"
-              src="https://archive.org/services/img/${this.model?.identifier}"
-            />
-          </div>
-
-          <span id="archivist-since">
-            Archivist since ${this.model?.dateAdded?.getFullYear()}
-          </span>
+          ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
         </div>
-
-        <tile-stats
-          .mediatype=${this.model?.mediatype}
-          .itemCount=${this.model?.itemCount}
-          .favCount=${this.model?.favCount}
-          .commentCount=${this.model?.commentCount}
-        >
-        </tile-stats>
+        ${this.getTileStats}
       </div>
     `;
   }
 
   static get styles() {
     return css`
-      h1 {
-        color: black;
-        font-size: 16px;
-        margin: 0;
-      }
-
-      span {
-        font-size: 14px;
-        color: #2c2c2c;
-        margin: 0px;
-      }
-
-      .account-tile-main {
+      .container {
         background-color: #fcf5e6;
         border: 1px #2c2c2c;
         border-radius: 4px;
@@ -62,21 +61,25 @@ export class AccountTile extends LitElement {
         height: 100%;
         display: flex;
         flex-direction: column;
-        text-align: center;
         width: 100%;
       }
 
       .account-info {
         flex-grow: 1;
+        padding: 5px;
       }
 
       #title {
-        padding: 5px 5px 0px 5px;
-        flex-shrink: 0;
-        height: 40px;
+        line-height: 15px;
+        margin: 5px 0 10px 0;
+      }
+      #title h1 {
+        font-size: 1.6rem;
+        text-align: left;
+        margin: 0;
       }
 
-      .account-tile-main:hover > #title > .truncated {
+      .container:hover > .account-info > #title > .truncated {
         text-decoration: underline;
       }
 
@@ -86,8 +89,6 @@ export class AccountTile extends LitElement {
       }
 
       #avatar-info {
-        margin-top: 5px;
-        margin-bottom: 5px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -99,23 +100,23 @@ export class AccountTile extends LitElement {
         width: 160px;
         height: 160px;
         box-shadow: 1px 1px 2px #888888;
+        margin: 0 auto;
       }
 
       #archivist-since {
         margin-bottom: 5px;
-        height: 40px;
+        font-size: 1.4rem;
       }
 
       .truncated {
         flex: 1;
         min-width: 0; /* Important for long words! */
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 3;
         text-overflow: ellipsis;
         overflow: hidden;
         display: -webkit-box;
         -webkit-box-orient: vertical;
         word-wrap: break-word;
-        line-height: 2rem;
         text-align: center;
       }
     `;

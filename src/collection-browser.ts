@@ -1801,14 +1801,6 @@ export class CollectionBrowser
         18rem
       );
       --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
-      --infiniteScrollerCellMinHeight: var(
-        --collectionBrowserCellMinHeight,
-        29rem
-      );
-      --infiniteScrollerCellMaxHeight: var(
-        --collectionBrowserCellMaxHeight,
-        29rem
-      );
     }
   `;
 }
