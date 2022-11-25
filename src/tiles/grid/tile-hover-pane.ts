@@ -1,3 +1,5 @@
+import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { SortParam } from '@internetarchive/search-service';
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { TileModel } from '../../models';
@@ -10,6 +12,11 @@ export class TileHoverPane extends LitElement {
 
   @property({ type: Boolean }) loggedIn: boolean = false;
 
+  @property({ type: Object }) sortParam?: SortParam;
+
+  @property({ type: Object })
+  collectionNameCache?: CollectionNameCacheInterface;
+
   protected render(): TemplateResult {
     return html`
       <div class="container">
@@ -17,6 +24,8 @@ export class TileHoverPane extends LitElement {
           .model=${this.model}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
+          .sortParam=${this.sortParam}
+          .collectionNameCache=${this.collectionNameCache}
         ></tile-list>
       </div>
     `;
@@ -30,6 +39,7 @@ export class TileHoverPane extends LitElement {
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 4px 4px 8px 0 black;
+        background: white;
       }
     `;
   }
