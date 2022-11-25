@@ -18,6 +18,7 @@ import type { TileDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
+import './grid/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
 import './list/tile-list-compact-header';
@@ -44,8 +45,6 @@ export class TileDispatcher
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @query('#container') private container!: HTMLDivElement;
-
   @property({ type: Number }) mobileBreakpoint?: number;
 
   @property({ type: String }) baseImageUrl?: string;
@@ -60,9 +59,20 @@ export class TileDispatcher
   @state()
   private hoverPaneShown: boolean = false;
 
+  private lastMouseOffsetX: number = 0;
+
+  private lastMouseClientX: number = 0;
+
+  @query('#container') private container!: HTMLDivElement;
+
   render() {
     return html`
-      <div id="container">
+      <div
+        id="container"
+        @mouseenter=${this.handleMouseEnter}
+        @mouseleave=${this.handleMouseLeave}
+        @mousemove=${this.handleMouseMove}
+      >
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
@@ -101,8 +111,6 @@ export class TileDispatcher
           this.dispatchEvent(
             new CustomEvent('resultSelected', { detail: this.model })
           )}
-        @mouseenter=${this.handleMouseEnter}
-        @mouseleave=${this.handleMouseLeave}
       >
         ${this.tile}
       </a>
@@ -112,7 +120,10 @@ export class TileDispatcher
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
     return this.hoverPaneShown
       ? html`<tile-hover-pane
+          class=${this.lastMouseClientX > window.innerWidth / 2 ? 'flip' : ''}
+          style="left: ${this.lastMouseOffsetX}px;"
           .model=${this.model}
+          .baseNavigationUrl=${this.baseNavigationUrl}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
           .sortParam=${this.sortParam}
@@ -155,12 +166,15 @@ export class TileDispatcher
     }
   }
 
-  private handleMouseEnter(): void {
-    if (!this.hoverPaneShown) {
-      this.hoverTimer = window.setTimeout(() => {
-        this.showHoverPane();
-      }, this.hoverDelayMillis);
-    }
+  private resetHoverTimer(): void {
+    clearTimeout(this.hoverTimer);
+    this.hoverTimer = window.setTimeout(() => {
+      this.showHoverPane();
+    }, this.hoverDelayMillis);
+  }
+
+  private handleMouseEnter(e: MouseEvent): void {
+    this.handleMouseMove(e);
   }
 
   private handleMouseLeave(): void {
@@ -168,11 +182,21 @@ export class TileDispatcher
     this.hideHoverPane();
   }
 
-  private showHoverPane() {
+  private handleMouseMove(e: MouseEvent): void {
+    // Reset the hover timer on mouse move
+    if (this.tileDisplayMode === 'grid' && !this.hoverPaneShown) {
+      this.resetHoverTimer();
+
+      this.lastMouseOffsetX = e.offsetX;
+      this.lastMouseClientX = e.clientX;
+    }
+  }
+
+  private showHoverPane(): void {
     this.hoverPaneShown = true;
   }
 
-  private hideHoverPane() {
+  private hideHoverPane(): void {
     this.hoverPaneShown = false;
   }
 
@@ -296,9 +320,11 @@ export class TileDispatcher
       tile-hover-pane {
         position: absolute;
         top: 10px;
-        right: 10px;
-        transform: translateX(100%);
         z-index: 1;
+      }
+
+      tile-hover-pane.flip {
+        transform: translateX(-100%);
       }
     `;
   }
