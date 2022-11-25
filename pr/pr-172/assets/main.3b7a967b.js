@@ -868,6 +868,14 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         list-style-type: none; // remove default list-style
       }
 
+      svg {
+        height: 10px;
+        width: 10px;
+        display: block;
+        margin: auto;
+        pointer-events: none;
+      }
+
       .item-stats {
         height: 35px;
         padding-left: 5px;
@@ -876,9 +884,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
 
       #stats-row {
         display: flex;
-        flex: 1;
-        justify-content: space-evenly;
-        text-align: center;
+        flex-wrap: wrap;
         width: 100%;
         padding-top: 5px;
         padding-bottom: 5px;
@@ -900,14 +906,6 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         height: 25px;
       }
 
-      svg {
-        height: 10px;
-        width: 10px;
-        display: block;
-        margin: auto;
-        pointer-events: none;
-      }
-
       .status-text {
         font-size: 14px;
         height: 15px;
@@ -921,16 +919,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
       <div class="container">
         <div class="tile-details">
           <div class="item-info">
-            <image-block
-              class=${this.hasSnippets?"has-snippets":x}
-              .model=${this.model}
-              .baseImageUrl=${this.baseImageUrl}
-              .loggedIn=${this.loggedIn}
-              .isCompactTile=${!1}
-              .isListTile=${!1}
-              .viewSize=${"grid"}
-            >
-            </image-block>
+            ${this.imageBlockTemplate}
 
             <div id="title">
               <h1 class="truncated" title=${oi(s)}>
@@ -958,7 +947,18 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
           by&nbsp;${(i=this.model)===null||i===void 0?void 0:i.creator}
         </span>
       </div>
-    `:x}get sortedDateInfoTemplate(){var e,t,i,a,o;let s;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":s={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":s={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":s={field:"added",value:(a=this.model)===null||a===void 0?void 0:a.dateAdded};break;case"publicdate":s={field:"archived",value:(o=this.model)===null||o===void 0?void 0:o.dateArchived};break}return p`
+    `:x}get imageBlockTemplate(){return p`
+      <image-block
+        class=${this.hasSnippets?"has-snippets":x}
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .loggedIn=${this.loggedIn}
+        .isCompactTile=${!1}
+        .isListTile=${!1}
+        .viewSize=${"grid"}
+      >
+      </image-block>
+    `}get sortedDateInfoTemplate(){var e,t,i,a,o;let s;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":s={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":s={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":s={field:"added",value:(a=this.model)===null||a===void 0?void 0:a.dateAdded};break;case"publicdate":s={field:"archived",value:(o=this.model)===null||o===void 0?void 0:o.dateArchived};break}return p`
       <div class="date-sorted-by truncated">
         <span>
           ${s==null?void 0:s.field} ${zi(s==null?void 0:s.value,"long")}
@@ -1052,7 +1052,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
 
       h1.truncated {
         margin: 0px;
-        font-size: 1.6rem;
+        font-size: 14px;
         display: -webkit-box;
       }
     `}};n([h({type:String})],Mt.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Mt.prototype,"loggedIn",void 0);n([h({type:Object})],Mt.prototype,"model",void 0);n([h({type:Object})],Mt.prototype,"sortParam",void 0);Mt=n([R("item-tile")],Mt);let _a=class extends O{render(){var e,t,i,a,o,s,l,d;return p`
