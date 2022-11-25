@@ -566,7 +566,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     const fetchPromise = el.fetchPage(2);
-    el.sortParam = null;
+    el.sortParam = undefined;
     await fetchPromise;
 
     // If the different sort param causes the results to be discarded,

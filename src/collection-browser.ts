@@ -90,15 +90,15 @@ export class CollectionBrowser
 
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
-  @property({ type: Object }) sortParam: SortParam | null = null;
+  @property({ type: Object }) sortParam?: SortParam;
+
+  @property({ type: String }) sortDirection?: SortDirection;
 
   @property({ type: String }) selectedSort: SortField = SortField.relevance;
 
-  @property({ type: String }) selectedTitleFilter: string | null = null;
+  @property({ type: String }) selectedTitleFilter?: string;
 
-  @property({ type: String }) selectedCreatorFilter: string | null = null;
-
-  @property({ type: String }) sortDirection: SortDirection | null = null;
+  @property({ type: String }) selectedCreatorFilter?: string;
 
   @property({ type: Number }) pageSize = 50;
 
@@ -283,13 +283,13 @@ export class CollectionBrowser
 
   clearFilters() {
     this.selectedFacets = defaultSelectedFacets;
-    this.sortParam = null;
-    this.selectedTitleFilter = null;
-    this.selectedCreatorFilter = null;
+    this.sortParam = undefined;
+    this.sortDirection = undefined;
+    this.selectedTitleFilter = undefined;
+    this.selectedCreatorFilter = undefined;
     this.titleQuery = undefined;
     this.creatorQuery = undefined;
     this.selectedSort = SortField.relevance;
-    this.sortDirection = null;
   }
 
   /**
@@ -297,6 +297,7 @@ export class CollectionBrowser
    * the query, the search type, or the sort has changed.
    */
   requestSearch() {
+    console.log('handling query change by request');
     this.handleQueryChange();
   }
 
@@ -422,7 +423,7 @@ export class CollectionBrowser
   private userChangedSort(
     e: CustomEvent<{
       selectedSort: SortField;
-      sortDirection: SortDirection | null;
+      sortDirection?: SortDirection;
     }>
   ) {
     const { selectedSort, sortDirection } = e.detail;
@@ -448,8 +449,8 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    if (this.selectedSort === 'relevance' || this.sortDirection === null) {
-      this.sortParam = null;
+    if (this.selectedSort === 'relevance' || !this.sortDirection) {
+      this.sortParam = undefined;
       return;
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
@@ -526,12 +527,12 @@ export class CollectionBrowser
   }
 
   private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
-    this.selectedCreatorFilter = null;
+    this.selectedCreatorFilter = undefined;
     this.selectedTitleFilter = e.detail.selectedLetter;
   }
 
   private creatorLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
-    this.selectedTitleFilter = null;
+    this.selectedTitleFilter = undefined;
     this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
@@ -652,18 +653,28 @@ export class CollectionBrowser
       this.infiniteScroller?.reload();
     }
     if (changed.has('baseQuery')) {
-      console.log('base query changed', changed.get('baseQuery'));
+      console.log(
+        'base query changed',
+        changed.get('baseQuery'),
+        this.baseQuery
+      );
       this.emitBaseQueryChanged();
     }
     if (changed.has('searchType')) {
-      console.log('search type changed', changed.get('searchType'));
+      console.log(
+        'search type changed',
+        changed.get('searchType'),
+        this.searchType
+      );
       this.emitSearchTypeChanged();
     }
     if (changed.has('currentPage') || changed.has('displayMode')) {
       console.log(
         'current page or display mode changed',
         changed.get('currentPage'),
-        changed.get('displayMode')
+        this.currentPage,
+        changed.get('displayMode'),
+        this.displayMode
       );
       this.persistState();
     }
@@ -674,10 +685,14 @@ export class CollectionBrowser
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
       changed.has('sortParam') ||
-      changed.has('selectedFacets') ||
-      changed.has('searchService')
+      changed.has('selectedFacets')
     ) {
-      console.log('handling query change', changed);
+      console.log(
+        'handling query change',
+        changed,
+        this.baseQuery,
+        this.sortParam
+      );
       this.handleQueryChange();
     }
     if (
@@ -870,14 +885,14 @@ export class CollectionBrowser
     if (restorationState.searchType != null)
       this.searchType = restorationState.searchType;
     this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
-    this.sortDirection = restorationState.sortDirection ?? null;
-    this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
-    this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
+    this.sortDirection = restorationState.sortDirection;
+    this.selectedTitleFilter = restorationState.selectedTitleFilter;
+    this.selectedCreatorFilter = restorationState.selectedCreatorFilter;
     this.selectedFacets = restorationState.selectedFacets;
     this.baseQuery = restorationState.baseQuery;
     this.titleQuery = restorationState.titleQuery;
     this.creatorQuery = restorationState.creatorQuery;
-    this.sortParam = restorationState.sortParam ?? null;
+    this.sortParam = restorationState.sortParam;
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
