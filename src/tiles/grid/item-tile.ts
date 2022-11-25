@@ -37,16 +37,7 @@ export class ItemTile extends LitElement {
       <div class="container">
         <div class="tile-details">
           <div class="item-info">
-            <image-block
-              class=${this.hasSnippets ? 'has-snippets' : nothing}
-              .model=${this.model}
-              .baseImageUrl=${this.baseImageUrl}
-              .loggedIn=${this.loggedIn}
-              .isCompactTile=${false}
-              .isListTile=${false}
-              .viewSize=${'grid'}
-            >
-            </image-block>
+            ${this.imageBlockTemplate}
 
             <div id="title">
               <h1 class="truncated" title=${ifDefined(itemTitle)}>
@@ -85,6 +76,21 @@ export class ItemTile extends LitElement {
           by&nbsp;${this.model?.creator}
         </span>
       </div>
+    `;
+  }
+
+  private get imageBlockTemplate(): TemplateResult {
+    return html`
+      <image-block
+        class=${this.hasSnippets ? 'has-snippets' : nothing}
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .loggedIn=${this.loggedIn}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'grid'}
+      >
+      </image-block>
     `;
   }
 
@@ -231,7 +237,7 @@ export class ItemTile extends LitElement {
 
       h1.truncated {
         margin: 0px;
-        font-size: 1.6rem;
+        font-size: 14px;
         display: -webkit-box;
       }
     `;

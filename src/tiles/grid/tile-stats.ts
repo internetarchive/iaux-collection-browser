@@ -91,6 +91,14 @@ export class TileStats extends LitElement {
         list-style-type: none; // remove default list-style
       }
 
+      svg {
+        height: 10px;
+        width: 10px;
+        display: block;
+        margin: auto;
+        pointer-events: none;
+      }
+
       .item-stats {
         height: 35px;
         padding-left: 5px;
@@ -99,9 +107,7 @@ export class TileStats extends LitElement {
 
       #stats-row {
         display: flex;
-        flex: 1;
-        justify-content: space-evenly;
-        text-align: center;
+        flex-wrap: wrap;
         width: 100%;
         padding-top: 5px;
         padding-bottom: 5px;
@@ -121,14 +127,6 @@ export class TileStats extends LitElement {
       .col {
         width: 25%;
         height: 25px;
-      }
-
-      svg {
-        height: 10px;
-        width: 10px;
-        display: block;
-        margin: auto;
-        pointer-events: none;
       }
 
       .status-text {
