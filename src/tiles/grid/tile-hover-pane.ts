@@ -8,51 +8,28 @@ export class TileHoverPane extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
-  @property({ type: Boolean }) loggedIn?: boolean;
+  @property({ type: Boolean }) loggedIn: boolean = false;
 
   protected render(): TemplateResult {
     return html`
       <div class="container">
-        ${this.imageTemplate} ${this.itemDetailsTemplate}
-      </div>
-    `;
-  }
-
-  private get imageTemplate(): TemplateResult {
-    return html`
-      <div class="image-container">
-        <image-block
+        <tile-list
           .model=${this.model}
           .baseImageUrl=${this.baseImageUrl}
-          .isCompactTile=${false}
-          .isListTile=${true}
-          .viewSize=${'desktop'}
           .loggedIn=${this.loggedIn}
-        ></image-block>
+        ></tile-list>
       </div>
     `;
-  }
-
-  private get itemDetailsTemplate(): TemplateResult {
-    return html` <div class="item-details"></div> `;
   }
 
   static get styles(): CSSResultGroup {
     return css`
       .container {
-        display: flex;
+        max-width: 50vw;
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 4px 4px 8px 0 black;
-      }
-
-      .image-container {
-        flex-grow: 0;
-      }
-
-      .item-details {
-        flex-grow: 1;
       }
     `;
   }
