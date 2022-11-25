@@ -1,5 +1,12 @@
-import { css, html, LitElement, nothing, PropertyValues } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import {
+  css,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+  TemplateResult,
+} from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
   SharedResizeObserverInterface,
@@ -45,12 +52,21 @@ export class TileDispatcher
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: Number }) hoverDelayMillis: number = 1000;
+
+  @state()
+  private hoverTimer?: number;
+
+  @state()
+  private hoverPaneShown: boolean = false;
+
   render() {
     return html`
       <div id="container">
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
+        ${this.hoverPaneTemplate}
       </div>
     `;
   }
@@ -85,10 +101,24 @@ export class TileDispatcher
           this.dispatchEvent(
             new CustomEvent('resultSelected', { detail: this.model })
           )}
+        @mouseenter=${this.handleMouseEnter}
+        @mouseleave=${this.handleMouseLeave}
       >
         ${this.tile}
       </a>
     `;
+  }
+
+  private get hoverPaneTemplate(): TemplateResult | typeof nothing {
+    return this.hoverPaneShown
+      ? html`<tile-hover-pane
+          .model=${this.model}
+          .baseImageUrl=${this.baseImageUrl}
+          .loggedIn=${this.loggedIn}
+          .sortParam=${this.sortParam}
+          .collectionNameCache=${this.collectionNameCache}
+        ></tile-hover-pane>`
+      : nothing;
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -123,6 +153,27 @@ export class TileDispatcher
       this.stopResizeObservation(previousObserver);
       this.startResizeObservation();
     }
+  }
+
+  private handleMouseEnter(): void {
+    if (!this.hoverPaneShown) {
+      this.hoverTimer = window.setTimeout(() => {
+        this.showHoverPane();
+      }, this.hoverDelayMillis);
+    }
+  }
+
+  private handleMouseLeave(): void {
+    clearTimeout(this.hoverTimer);
+    this.hideHoverPane();
+  }
+
+  private showHoverPane() {
+    this.hoverPaneShown = true;
+  }
+
+  private hideHoverPane() {
+    this.hoverPaneShown = false;
   }
 
   private get tile() {
@@ -222,6 +273,7 @@ export class TileDispatcher
       }
 
       #container {
+        position: relative;
         height: 100%;
       }
 
@@ -239,6 +291,14 @@ export class TileDispatcher
       a :first-child {
         display: block;
         height: 100%;
+      }
+
+      tile-hover-pane {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        transform: translateX(100%);
+        z-index: 1;
       }
     `;
   }
