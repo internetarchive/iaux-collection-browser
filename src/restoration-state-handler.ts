@@ -90,7 +90,6 @@ export class RestorationStateHandler
   }
 
   private persistQueryStateToUrl(state: RestorationState) {
-    console.log('persistQueryStateToUrl', state);
     const url = new URL(window.location.href);
     const { searchParams } = url;
     const oldParams = new URLSearchParams(searchParams);
@@ -161,8 +160,6 @@ export class RestorationStateHandler
     }
 
     // Ensure we aren't pushing an identical state to the stack
-    console.log('old params', oldParams.toString());
-    console.log('new params', searchParams.toString());
     if (
       oldParams.get('query') === searchParams.get('query') &&
       oldParams.get('sin') === searchParams.get('sin') &&
@@ -177,7 +174,6 @@ export class RestorationStateHandler
         searchParams.getAll('not[]').sort()
       )
     ) {
-      console.log('Ignoring identical params');
       return;
     }
 
@@ -197,7 +193,6 @@ export class RestorationStateHandler
   }
 
   private loadQueryStateFromUrl(): RestorationState {
-    console.log('loadQueryStateFromUrl', window.location.href);
     const url = new URL(window.location.href);
     const searchInside = url.searchParams.get('sin');
     const pageNumber = url.searchParams.get('page');
