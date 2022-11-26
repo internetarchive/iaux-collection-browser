@@ -15,6 +15,7 @@ import {
   FacetBucket,
   FacetState,
 } from './models';
+import { arrayEquals } from './utils/array-equals';
 
 export interface RestorationState {
   displayMode?: CollectionDisplayMode;
@@ -92,10 +93,12 @@ export class RestorationStateHandler
     console.log('persistQueryStateToUrl', state);
     const url = new URL(window.location.href);
     const { searchParams } = url;
-    searchParams.delete('sin');
-    searchParams.delete('sort');
+    const oldParams = new URLSearchParams(searchParams);
+
     searchParams.delete('query');
+    searchParams.delete('sin');
     searchParams.delete('page');
+    searchParams.delete('sort');
     searchParams.delete('and[]');
     searchParams.delete('not[]');
 
@@ -158,20 +161,23 @@ export class RestorationStateHandler
     }
 
     // Ensure we aren't pushing an identical state to the stack
-    const prevState = window.history.state;
-    console.log('prev state was', prevState);
+    console.log('old params', oldParams.toString());
+    console.log('new params', searchParams.toString());
     if (
-      prevState &&
-      prevState.query === state.baseQuery &&
-      prevState.searchType === state.searchType &&
-      prevState.page === state.currentPage &&
-      prevState.sort?.field === state.sortParam?.field &&
-      prevState.sort?.direction === state.sortParam?.direction &&
-      prevState.minDate === state.minSelectedDate &&
-      prevState.maxDate === state.maxSelectedDate &&
-      this.selectedFacetStatesEqual(prevState.facets, state.selectedFacets)
+      oldParams.get('query') === searchParams.get('query') &&
+      oldParams.get('sin') === searchParams.get('sin') &&
+      oldParams.get('page') === searchParams.get('page') &&
+      oldParams.get('sort') === searchParams.get('sort') &&
+      arrayEquals(
+        oldParams.getAll('and[]').sort(),
+        searchParams.getAll('and[]').sort()
+      ) &&
+      arrayEquals(
+        oldParams.getAll('not[]').sort(),
+        searchParams.getAll('not[]').sort()
+      )
     ) {
-      console.log('Ignoring identical history state');
+      console.log('Ignoring identical params');
       return;
     }
 

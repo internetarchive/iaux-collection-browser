@@ -449,14 +449,16 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    if (this.selectedSort === 'relevance' || !this.sortDirection) {
+    if (this.selectedSort === 'relevance') {
       this.sortParam = undefined;
       return;
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
+    if (!this.sortDirection) this.sortDirection = 'desc';
 
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
+    this.requestUpdate();
 
     // Lazy-load the alphabet counts for title/creator sort bar as needed
     this.updatePrefixFiltersForCurrentSort();
