@@ -61,10 +61,10 @@ describe('Collection Browser', () => {
 
     expect(el.selectedFacets).to.equal(defaultSelectedFacets);
     expect(el.selectedSort).to.equal('relevance');
-    expect(el.sortDirection).to.null;
-    expect(el.sortParam).to.null;
-    expect(el.selectedCreatorFilter).to.null;
-    expect(el.selectedTitleFilter).to.null;
+    expect(el.sortDirection).to.be.undefined;
+    expect(el.sortParam).to.be.undefined;
+    expect(el.selectedCreatorFilter).to.be.undefined;
+    expect(el.selectedTitleFilter).to.be.undefined;
   });
 
   it('filterBy creator with analytics', async () => {
@@ -87,7 +87,7 @@ describe('Collection Browser', () => {
     el.clearFilters();
     await el.updateComplete;
 
-    expect(el.selectedTitleFilter).to.null;
+    expect(el.selectedTitleFilter).to.be.undefined;
     expect(mockAnalyticsHandler.callCategory).to.equal('betaSearchService');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
@@ -113,7 +113,7 @@ describe('Collection Browser', () => {
     el.clearFilters();
     await el.updateComplete;
 
-    expect(el.selectedTitleFilter).to.null;
+    expect(el.selectedTitleFilter).to.be.undefined;
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');

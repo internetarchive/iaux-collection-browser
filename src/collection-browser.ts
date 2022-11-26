@@ -485,7 +485,7 @@ export class CollectionBrowser
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
     }
-    const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
+    const cleared = prevSelectedLetter && !this.selectedTitleFilter;
 
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
@@ -511,7 +511,7 @@ export class CollectionBrowser
     if (!prevSelectedLetter && !this.selectedCreatorFilter) {
       return;
     }
-    const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
+    const cleared = prevSelectedLetter && !this.selectedCreatorFilter;
 
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
