@@ -436,7 +436,7 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
-  private sendSortByAnalytics(prevSortDirection: SortDirection | null): void {
+  private sendSortByAnalytics(prevSortDirection?: SortDirection): void {
     const directionCleared = prevSortDirection && !this.sortDirection;
 
     this.analyticsHandler?.sendEvent({
@@ -481,7 +481,7 @@ export class CollectionBrowser
   /** Send Analytics when sorting by title's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
-  private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
+  private sendFilterByTitleAnalytics(prevSelectedLetter?: string): void {
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
     }
@@ -505,9 +505,7 @@ export class CollectionBrowser
   /** Send Analytics when filtering by creator's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
-  private sendFilterByCreatorAnalytics(
-    prevSelectedLetter: string | null
-  ): void {
+  private sendFilterByCreatorAnalytics(prevSelectedLetter?: string): void {
     if (!prevSelectedLetter && !this.selectedCreatorFilter) {
       return;
     }
