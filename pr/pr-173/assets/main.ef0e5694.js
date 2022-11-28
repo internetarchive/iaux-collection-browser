@@ -1096,11 +1096,10 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
       }
 
       #title {
-        line-height: 15px;
         margin: 5px 0 10px 0;
       }
       #title h1 {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         text-align: left;
         margin: 0;
       }
