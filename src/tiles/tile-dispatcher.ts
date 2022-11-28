@@ -106,7 +106,9 @@ export class TileDispatcher
     return html`
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-        title=${ifDefined(this.model?.title)}
+        title=${this.tileDisplayMode === 'grid'
+          ? nothing
+          : ifDefined(this.model?.title)}
         @click=${() =>
           this.dispatchEvent(
             new CustomEvent('resultSelected', { detail: this.model })
@@ -122,6 +124,7 @@ export class TileDispatcher
       ? html`<tile-hover-pane
           class=${this.lastMouseClientX > window.innerWidth / 2 ? 'flip' : ''}
           style="left: ${this.lastMouseOffsetX}px;"
+          role="tooltip"
           .model=${this.model}
           .baseNavigationUrl=${this.baseNavigationUrl}
           .baseImageUrl=${this.baseImageUrl}
