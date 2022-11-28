@@ -122,8 +122,9 @@ export class TileDispatcher
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
     return this.hoverPaneShown
       ? html`<tile-hover-pane
-          class=${this.lastMouseClientX > window.innerWidth / 2 ? 'flip' : ''}
-          style="left: ${this.lastMouseOffsetX}px;"
+          class=${this.getBoundingClientRect().left > window.innerWidth / 2
+            ? 'flip'
+            : nothing}
           role="tooltip"
           .model=${this.model}
           .baseNavigationUrl=${this.baseNavigationUrl}
@@ -323,11 +324,13 @@ export class TileDispatcher
       tile-hover-pane {
         position: absolute;
         top: 10px;
+        left: 10px;
         z-index: 1;
       }
 
       tile-hover-pane.flip {
-        transform: translateX(-100%);
+        left: unset;
+        right: 10px;
       }
     `;
   }
