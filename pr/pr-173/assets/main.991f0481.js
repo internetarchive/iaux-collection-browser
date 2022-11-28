@@ -1055,7 +1055,14 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         font-size: 14px;
         display: -webkit-box;
       }
-    `}};n([h({type:String})],Mt.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Mt.prototype,"loggedIn",void 0);n([h({type:Object})],Mt.prototype,"model",void 0);n([h({type:Object})],Mt.prototype,"sortParam",void 0);Mt=n([R("item-tile")],Mt);let _a=class extends O{get getAvatar(){var e;return p`<div id="avatar-info">
+    `}};n([h({type:String})],Mt.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Mt.prototype,"loggedIn",void 0);n([h({type:Object})],Mt.prototype,"model",void 0);n([h({type:Object})],Mt.prototype,"sortParam",void 0);Mt=n([R("item-tile")],Mt);let _a=class extends O{render(){return p`
+      <div class="container">
+        <div class="account-info">
+          ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
+        </div>
+        ${this.getTileStats}
+      </div>
+    `}get getAvatar(){var e;return p`<div id="avatar-info">
       <img
         id="avatar"
         alt="patron-avatar"
@@ -1071,14 +1078,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
       .favCount=${(i=this.model)===null||i===void 0?void 0:i.favCount}
       .commentCount=${(a=this.model)===null||a===void 0?void 0:a.commentCount}
     >
-    </tile-stats>`}render(){return p`
-      <div class="container">
-        <div class="account-info">
-          ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
-        </div>
-        ${this.getTileStats}
-      </div>
-    `}static get styles(){return y`
+    </tile-stats>`}static get styles(){return y`
       .container {
         background-color: #fcf5e6;
         border: 1px #2c2c2c;
