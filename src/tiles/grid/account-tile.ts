@@ -8,6 +8,17 @@ import './tile-stats';
 export class AccountTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
+  render() {
+    return html`
+      <div class="container">
+        <div class="account-info">
+          ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
+        </div>
+        ${this.getTileStats}
+      </div>
+    `;
+  }
+
   private get getAvatar() {
     return html`<div id="avatar-info">
       <img
@@ -38,17 +49,6 @@ export class AccountTile extends LitElement {
       .commentCount=${this.model?.commentCount}
     >
     </tile-stats>`;
-  }
-
-  render() {
-    return html`
-      <div class="container">
-        <div class="account-info">
-          ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
-        </div>
-        ${this.getTileStats}
-      </div>
-    `;
   }
 
   static get styles() {
