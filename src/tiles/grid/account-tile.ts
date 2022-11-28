@@ -9,7 +9,7 @@ export class AccountTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
   private get getAvatar() {
-    return html`<div id="avatar">
+    return html`<div id="avatar-info">
       <img
         id="avatar"
         alt="patron-avatar"
