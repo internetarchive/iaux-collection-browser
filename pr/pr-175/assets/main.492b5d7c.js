@@ -1556,7 +1556,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}get linkTileTemplate(){var e,t;return p`
       <a
         href="${this.baseNavigationUrl}/details/${(e=this.model)===null||e===void 0?void 0:e.identifier}"
-        title=${si((t=this.model)===null||t===void 0?void 0:t.title)}
+        title=${this.tileDisplayMode==="grid"?x:si((t=this.model)===null||t===void 0?void 0:t.title)}
         @click=${()=>this.dispatchEvent(new CustomEvent("resultSelected",{detail:this.model}))}
       >
         ${this.tile}
@@ -1564,6 +1564,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}get hoverPaneTemplate(){return this.hoverPaneShown?p`<tile-hover-pane
           class=${this.lastMouseClientX>window.innerWidth/2?"flip":""}
           style="left: ${this.lastMouseOffsetX}px;"
+          role="tooltip"
           .model=${this.model}
           .baseNavigationUrl=${this.baseNavigationUrl}
           .baseImageUrl=${this.baseImageUrl}
