@@ -86,12 +86,14 @@ export class ImageBlock extends LitElement {
         display: flex;
         justify-content: center;
         position: relative;
+        background-color: #f1f1f4;
       }
 
       .grid {
         height: var(--imgBlockHeight, 16rem);
         flex: 1;
         position: initial;
+        padding: 5px;
       }
 
       /** tile-list view */
