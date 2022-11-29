@@ -53,13 +53,8 @@ export class TileDispatcher
 
   @property({ type: Number }) showHoverPaneDelay: number = 1000;
 
-  @property({ type: Number }) hideHoverPaneDelay: number = 250;
-
   @state()
   private showHoverPaneTimer?: number;
-
-  @state()
-  private hideHoverPaneTimer?: number;
 
   @state()
   private hoverPaneShown: boolean = false;
@@ -172,18 +167,11 @@ export class TileDispatcher
     }
   }
 
-  private restartShowHoverTimer(): void {
+  private restartHoverPaneTimer(): void {
     clearTimeout(this.showHoverPaneTimer);
     this.showHoverPaneTimer = window.setTimeout(() => {
       this.showHoverPane();
     }, this.showHoverPaneDelay);
-  }
-
-  private restartHideHoverTimer(): void {
-    clearTimeout(this.hideHoverPaneTimer);
-    this.hideHoverPaneTimer = window.setTimeout(() => {
-      this.hideHoverPane();
-    }, this.hideHoverPaneDelay);
   }
 
   private handleMouseEnter(): void {
@@ -193,20 +181,14 @@ export class TileDispatcher
   private handleMouseLeave(): void {
     // Abort any timer to show the hover pane, as the mouse has left the item
     clearTimeout(this.showHoverPaneTimer);
-
-    // Start the timer to hide the hover pane when the mouse leaves
-    if (this.hoverPaneShown) {
-      this.restartHideHoverTimer();
-    }
+    // And hide the pane if it's already been shown
+    this.hideHoverPane();
   }
 
   private handleMouseMove(): void {
-    // Abort any timer to hide the hover pane, as the mouse has re-entered the item
-    clearTimeout(this.hideHoverPaneTimer);
-
-    // Restart the timer to show the hover pane anytime the mouse moves
+    // Restart the timer to show the hover pane anytime the mouse moves within the tile
     if (!this.hoverPaneShown) {
-      this.restartShowHoverTimer();
+      this.restartHoverPaneTimer();
     }
   }
 
