@@ -39,7 +39,7 @@ export class TileHoverPane extends LitElement {
     return css`
       #container {
         width: max-content;
-        max-width: 45vw;
+        max-width: min(45vw, 600px);
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
