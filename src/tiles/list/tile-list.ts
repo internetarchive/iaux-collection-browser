@@ -515,6 +515,14 @@ export class TileList extends LitElement {
         width: 100%;
       }
 
+      /*
+       * If the container becomes very tiny, don't let the thumbnail side take
+       * up too much space. Shouldn't make a difference on ordinary viewport sizes.
+       */
+      #list-line-left {
+        max-width: 25%;
+      }
+
       div a:hover {
         text-decoration: underline;
       }
@@ -526,7 +534,20 @@ export class TileList extends LitElement {
       #title-line {
         display: flex;
         flex-direction: row;
-        gap: 10px;
+        column-gap: 10px;
+      }
+
+      /*
+       * With the exception of the title line, allow these to wrap if
+       * the space becomes too small to accommodate them together.
+       * 
+       * The title line is excluded because it contains the mediatype icon
+       * which we don't want to wrap.
+       */
+      #item-line,
+      #dates-line,
+      #views-line {
+        flex-wrap: wrap;
       }
     `;
   }

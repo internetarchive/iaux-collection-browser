@@ -38,7 +38,7 @@ export class TileHoverPane extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       #container {
-        width: 700px;
+        width: max-content;
         max-width: 45vw;
         padding: 10px;
         border: 1px solid #ddd;

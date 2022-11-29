@@ -122,7 +122,7 @@ export class TileDispatcher
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
     return this.hoverPaneShown
       ? html`<tile-hover-pane
-          class=${this.getBoundingClientRect().left > window.innerWidth / 2
+          class=${this.getBoundingClientRect().left + 10 > window.innerWidth / 2
             ? 'flip'
             : nothing}
           role="tooltip"
