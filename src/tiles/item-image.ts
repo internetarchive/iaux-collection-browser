@@ -81,7 +81,19 @@ export class ItemImage extends LitElement {
       cover: this.isCompactTile,
       blur: toBlur || false,
       waveform: this.isWaveform,
+      radius50: this.itemImageRadius,
     };
+  }
+
+  /**
+   * Helper function to determine if border radius is needed
+   */
+  private get itemImageRadius() {
+    return (
+      this.model?.mediatype === 'account' &&
+      !this.isCompactTile &&
+      !this.isListTile
+    );
   }
 
   /**

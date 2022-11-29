@@ -9,18 +9,18 @@ describe('Account Tile', () => {
   it('should render initial component', async () => {
     const el = await fixture<AccountTile>(html`<account-tile></account-tile>`);
 
-    const itemInfo = el.shadowRoot?.querySelector('.account-info');
-    const itemAvatar = el.shadowRoot?.querySelector('#avatar-info');
-    const itemArchivist = el.shadowRoot?.querySelector('#archivist-since');
+    const itemInfo = el.shadowRoot?.querySelector('.item-info');
+    const ItemImage = el.shadowRoot?.querySelector('image-block');
+    const itemArchivist = el.shadowRoot?.querySelector('.archivist-since');
     const tileStats = el.shadowRoot?.querySelector('tile-stats');
 
     expect(itemInfo).to.exist;
-    expect(itemAvatar).to.exist;
+    expect(ItemImage).to.exist;
     expect(itemArchivist).to.exist;
     expect(tileStats).to.exist;
   });
 
-  it('should render with account-avatar and title element', async () => {
+  it('should render with title element', async () => {
     const el = await fixture<AccountTile>(html`
       <account-tile
         .model=${{
@@ -31,16 +31,10 @@ describe('Account Tile', () => {
     `);
     await el.updateComplete;
 
-    const itemInfo = el.shadowRoot?.querySelector('.account-info');
-    const accountAvatar = el.shadowRoot?.querySelector('#avatar');
+    const itemInfo = el.shadowRoot?.querySelector('.item-info');
     const accountTitle = el.shadowRoot?.querySelector('#title');
 
     expect(itemInfo).to.exist;
-    expect(accountAvatar).to.exist;
-    expect(accountAvatar?.getAttribute('src')).to.equal(
-      'https://archive.org/services/img/@jack-sparrow'
-    );
-
     expect(accountTitle).to.exist;
     expect(accountTitle?.querySelector('.truncated')?.textContent).to.equal(
       '@jack-sparrow'
@@ -58,7 +52,7 @@ describe('Account Tile', () => {
     `);
     await el.updateComplete;
 
-    const itemArchivist = el.shadowRoot?.querySelector('#archivist-since');
+    const itemArchivist = el.shadowRoot?.querySelector('.archivist-since');
     expect(itemArchivist?.textContent).contains('Archivist since 2022');
   });
 

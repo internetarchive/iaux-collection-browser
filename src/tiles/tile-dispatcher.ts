@@ -150,6 +150,7 @@ export class TileDispatcher
           case 'account':
             return html`<account-tile
               .model=${model}
+              .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
             >

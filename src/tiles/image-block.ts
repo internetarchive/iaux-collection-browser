@@ -81,12 +81,14 @@ export class ImageBlock extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
+    const imageBackgroundColor = css`var(--imageBackgroundColor, #f1f1f4)`;
+
     return css`
       div {
         display: flex;
         justify-content: center;
         position: relative;
-        background-color: #f1f1f4;
+        background-color: ${imageBackgroundColor};
       }
 
       .grid {
