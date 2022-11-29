@@ -51,17 +51,18 @@ export class TileDispatcher
 
   @property({ type: Boolean }) loggedIn = false;
 
-  @property({ type: Number }) hoverDelayMillis: number = 1000;
+  @property({ type: Number }) showHoverPaneDelay: number = 1000;
+
+  @property({ type: Number }) hideHoverPaneDelay: number = 250;
 
   @state()
-  private hoverTimer?: number;
+  private showHoverPaneTimer?: number;
+
+  @state()
+  private hideHoverPaneTimer?: number;
 
   @state()
   private hoverPaneShown: boolean = false;
-
-  private lastMouseOffsetX: number = 0;
-
-  private lastMouseClientX: number = 0;
 
   @query('#container') private container!: HTMLDivElement;
 
@@ -108,7 +109,7 @@ export class TileDispatcher
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
         title=${this.tileDisplayMode === 'grid'
-          ? nothing
+          ? nothing // Don't show title tooltips in grid mode (where we have the tile info popups)
           : ifDefined(this.model?.title)}
         @click=${() =>
           this.dispatchEvent(
@@ -124,7 +125,7 @@ export class TileDispatcher
     return this.hoverPaneShown
       ? html`<tile-hover-pane
           class=${this.getBoundingClientRect().left + 10 > window.innerWidth / 2
-            ? 'flip'
+            ? 'flip' // Flip the pane to grow leftward instead of rightward if it might overflow the viewport
             : nothing}
           role="tooltip"
           .model=${this.model}
@@ -171,29 +172,41 @@ export class TileDispatcher
     }
   }
 
-  private resetHoverTimer(): void {
-    clearTimeout(this.hoverTimer);
-    this.hoverTimer = window.setTimeout(() => {
+  private restartShowHoverTimer(): void {
+    clearTimeout(this.showHoverPaneTimer);
+    this.showHoverPaneTimer = window.setTimeout(() => {
       this.showHoverPane();
-    }, this.hoverDelayMillis);
+    }, this.showHoverPaneDelay);
   }
 
-  private handleMouseEnter(e: MouseEvent): void {
-    this.handleMouseMove(e);
+  private restartHideHoverTimer(): void {
+    clearTimeout(this.hideHoverPaneTimer);
+    this.hideHoverPaneTimer = window.setTimeout(() => {
+      this.hideHoverPane();
+    }, this.hideHoverPaneDelay);
+  }
+
+  private handleMouseEnter(): void {
+    this.handleMouseMove();
   }
 
   private handleMouseLeave(): void {
-    clearTimeout(this.hoverTimer);
-    this.hideHoverPane();
+    // Abort any timer to show the hover pane, as the mouse has left the item
+    clearTimeout(this.showHoverPaneTimer);
+
+    // Start the timer to hide the hover pane when the mouse leaves
+    if (this.hoverPaneShown) {
+      this.restartHideHoverTimer();
+    }
   }
 
-  private handleMouseMove(e: MouseEvent): void {
-    // Reset the hover timer on mouse move
-    if (this.tileDisplayMode === 'grid' && !this.hoverPaneShown) {
-      this.resetHoverTimer();
+  private handleMouseMove(): void {
+    // Abort any timer to hide the hover pane, as the mouse has re-entered the item
+    clearTimeout(this.hideHoverPaneTimer);
 
-      this.lastMouseOffsetX = e.offsetX;
-      this.lastMouseClientX = e.clientX;
+    // Restart the timer to show the hover pane anytime the mouse moves
+    if (!this.hoverPaneShown) {
+      this.restartShowHoverTimer();
     }
   }
 
