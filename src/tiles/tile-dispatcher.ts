@@ -66,12 +66,13 @@ export class TileDispatcher
   @query('#container') private container!: HTMLDivElement;
 
   render() {
+    const isGridMode = this.tileDisplayMode === 'grid';
     return html`
       <div
         id="container"
-        @mouseenter=${this.handleMouseEnter}
-        @mouseleave=${this.handleMouseLeave}
-        @mousemove=${this.handleMouseMove}
+        @mouseenter=${isGridMode ? this.handleMouseEnter : nothing}
+        @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
+        @mousemove=${isGridMode ? this.handleMouseMove : nothing}
       >
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
