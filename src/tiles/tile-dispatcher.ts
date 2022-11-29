@@ -51,7 +51,7 @@ export class TileDispatcher
 
   @property({ type: Boolean }) loggedIn = false;
 
-  @property({ type: Number }) showHoverPaneDelay: number = 1000;
+  @property({ type: Number }) showHoverPaneDelay: number = 500;
 
   @state()
   private showHoverPaneTimer?: number;
