@@ -1349,6 +1349,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         flex-wrap: wrap;
       }
     `}};s([h({type:Object})],ye.prototype,"model",void 0);s([h({type:String})],ye.prototype,"baseNavigationUrl",void 0);s([h({type:Object})],ye.prototype,"collectionNameCache",void 0);s([h({type:Number})],ye.prototype,"currentWidth",void 0);s([h({type:Number})],ye.prototype,"currentHeight",void 0);s([h({type:Object})],ye.prototype,"sortParam",void 0);s([h({type:Number})],ye.prototype,"mobileBreakpoint",void 0);s([T()],ye.prototype,"collectionLinks",void 0);s([h({type:String})],ye.prototype,"baseImageUrl",void 0);s([h({type:Boolean})],ye.prototype,"loggedIn",void 0);ye=s([R("tile-list")],ye);let He=class extends F{constructor(){super(...arguments),this.loggedIn=!1}render(){return p`
+      <div id="spacer"></div>
       <div id="container">
         <tile-list
           .model=${this.model}
@@ -1366,8 +1367,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        box-shadow: 4px 4px 8px 0 black;
+        box-shadow: 4px 4px 8px 0 rgba(0, 0, 0, 0.8);
         background: white;
+      }
+
+      #spacer {
+        height: 20px;
       }
     `}};s([h({type:Object})],He.prototype,"model",void 0);s([h({type:String})],He.prototype,"baseNavigationUrl",void 0);s([h({type:String})],He.prototype,"baseImageUrl",void 0);s([h({type:Boolean})],He.prototype,"loggedIn",void 0);s([h({type:Object})],He.prototype,"sortParam",void 0);s([h({type:Object})],He.prototype,"collectionNameCache",void 0);He=s([R("tile-hover-pane")],He);let ke=class extends F{constructor(){super(...arguments),this.sortParam=null,this.loggedIn=!1}render(){var e,t,i,a,o,n,l,d,c;return p`
       <div id="list-line" class="${this.classSize}">
@@ -1602,7 +1607,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
 
       tile-hover-pane ~ a {
-        filter: drop-shadow(0 0 2px black);
+        filter: drop-shadow(0 0 2px rgba(10, 10, 40, 0.8));
         transition: filter 0.1s ease;
       }
 
@@ -1614,6 +1619,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
         /* Don't make it visible until it has been properly positioned */
         visibility: hidden;
+
+        transform: translateY(8px);
+        opacity: 0;
+        transition: transform 0.1s ease-in, opacity 0.1s ease-in;
       }
 
       /*tile-hover-pane.flip {
@@ -1623,6 +1632,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       tile-hover-pane.visible {
         visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
       }
     `}};s([h({type:String})],te.prototype,"tileDisplayMode",void 0);s([h({type:Object})],te.prototype,"model",void 0);s([h({type:String})],te.prototype,"baseNavigationUrl",void 0);s([h({type:Number})],te.prototype,"currentWidth",void 0);s([h({type:Number})],te.prototype,"currentHeight",void 0);s([h({type:Object})],te.prototype,"resizeObserver",void 0);s([h({type:Object})],te.prototype,"collectionNameCache",void 0);s([h({type:Object})],te.prototype,"sortParam",void 0);s([h({type:Number})],te.prototype,"mobileBreakpoint",void 0);s([h({type:String})],te.prototype,"baseImageUrl",void 0);s([h({type:Boolean})],te.prototype,"loggedIn",void 0);s([h({type:Number})],te.prototype,"showHoverPaneDelay",void 0);s([T()],te.prototype,"showHoverPaneTimer",void 0);s([T()],te.prototype,"hoverPaneShown",void 0);s([le("#container")],te.prototype,"container",void 0);s([le("tile-hover-pane")],te.prototype,"hoverPane",void 0);te=s([R("tile-dispatcher")],te);let Lr=class extends F{render(){return p` <div id="container"></div> `}static get styles(){return y`
       :host {
