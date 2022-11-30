@@ -66,7 +66,7 @@ export class AccountTile extends LitElement {
       baseTileStyles,
       css`
         image-block {
-          --imageBackgroundColor: #fcf5e6;
+          --imageBlockBackgroundColor: #fcf5e6;
         }
       `,
     ];

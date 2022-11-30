@@ -162,6 +162,10 @@ export class ItemTile extends LitElement {
     return [
       baseTileStyles,
       css`
+        image-block {
+          --imageBlockBackgroundColor: #f1f1f4;
+        }
+
         image-block.has-snippets {
           /* If there is a text snippet block present, the image block needs to shrink */
           --imgBlockHeight: 11rem;
