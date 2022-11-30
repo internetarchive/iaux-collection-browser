@@ -90,6 +90,7 @@ export class ImageBlock extends LitElement {
         justify-content: center;
         position: relative;
         background-color: ${imageBlockBackgroundColor};
+        border-radius: 4px;
       }
 
       .grid {

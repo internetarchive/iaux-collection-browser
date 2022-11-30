@@ -80,10 +80,10 @@ export class TileDispatcher
         @mousemove=${isGridMode ? this.handleMouseMove : nothing}
         @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
       >
+        ${this.hoverPaneTemplate}
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
-        ${this.hoverPaneTemplate}
       </div>
     `;
   }
@@ -398,6 +398,11 @@ export class TileDispatcher
       a :first-child {
         display: block;
         height: 100%;
+      }
+
+      tile-hover-pane ~ a {
+        filter: drop-shadow(0 0 2px black);
+        transition: filter 0.1s ease;
       }
 
       tile-hover-pane {
