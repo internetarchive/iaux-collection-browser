@@ -508,12 +508,13 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
         ?iconRequired=${!0}
       >
       </text-overlay>
-    `}static get styles(){const e=y`var(--imageBackgroundColor, #f1f1f4)`;return y`
+    `}static get styles(){const e=y`var(--imageBlockBackgroundColor, #f1f1f4)`,t=y`var(--imageBlockBorderColor, #dddddd)`;return y`
       div {
         display: flex;
         justify-content: center;
         position: relative;
         background-color: ${e};
+        border: 1px solid ${t};
       }
 
       .grid {
@@ -1066,6 +1067,10 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
         </span>
       </div>
     `}get doesSortedByDate(){var e;return["date","reviewdate","addeddate","publicdate"].includes((e=this.sortParam)===null||e===void 0?void 0:e.field)}get hasSnippets(){var e,t;return!!(!((t=(e=this.model)===null||e===void 0?void 0:e.snippets)===null||t===void 0)&&t.length)}static get styles(){return[po,y`
+        image-block {
+          --imageBlockBackgroundColor: #f1f1f4;
+        }
+
         image-block.has-snippets {
           /* If there is a text snippet block present, the image block needs to shrink */
           --imgBlockHeight: 11rem;
@@ -1098,7 +1103,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
     >
     </tile-stats>`}static get styles(){return[po,y`
         image-block {
-          --imageBackgroundColor: #fcf5e6;
+          --imageBlockBackgroundColor: #fcf5e6;
         }
       `]}};n([h({type:Object})],Ei.prototype,"model",void 0);n([h({type:String})],Ei.prototype,"baseImageUrl",void 0);Ei=n([N("account-tile")],Ei);/**
  * @license
