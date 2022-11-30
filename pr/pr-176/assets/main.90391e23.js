@@ -156,21 +156,200 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
       fill="black"
     />
   </svg>
-`;let wa=class extends O{render(){var e,t,i;return p`
-      <div id="container test">
-        <div id="collection-image-title">
-          <div id="collection-title">${(e=this.model)===null||e===void 0?void 0:e.title}</div>
-          <div id="collection-image-container">
-            <div
-              id="collection-image"
-              style="background-image:url('https://archive.org/services/img/${(t=this.model)===null||t===void 0?void 0:t.identifier}')"
-            ></div>
-          </div>
+`;/**
+ * @license
+ * Copyright 2018 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */const wa=Pi(class extends Ni{constructor(r){var e;if(super(r),r.type!==Ee.ATTRIBUTE||r.name!=="class"||((e=r.strings)===null||e===void 0?void 0:e.length)>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(r){return" "+Object.keys(r).filter(e=>r[e]).join(" ")+" "}update(r,[e]){var t,i;if(this.et===void 0){this.et=new Set,r.strings!==void 0&&(this.st=new Set(r.strings.join(" ").split(/\s/).filter(o=>o!=="")));for(const o in e)e[o]&&!(!((t=this.st)===null||t===void 0)&&t.has(o))&&this.et.add(o);return this.render(e)}const a=r.element.classList;this.et.forEach(o=>{o in e||(a.remove(o),this.et.delete(o))});for(const o in e){const s=!!e[o];s===this.et.has(o)||((i=this.st)===null||i===void 0?void 0:i.has(o))||(s?(a.add(o),this.et.add(o)):(a.remove(o),this.et.delete(o)))}return ge}}),po=I`
+  <svg
+    viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="m56.4612493 8.80450354 41.8901185 75.94632926c1.7706782 2.8433173 2.1150372 5.2623412 1.0330766 7.2570716-1.0819604 1.9947304-3.26978 2.9920956-6.5634587 2.9920956h-85.69973905c-3.29367873 0-5.46954894-.9973652-6.52761065-2.9920956-1.0580617-1.9947304-.70175345-4.4137543 1.06892476-7.2570716l41.89011844-75.12308969c1.8184757-2.84331737 3.9693609-4.37738627 6.4526556-4.60220671s4.6341799 1.03483527 6.4526556 3.77896714zm28.5387507 75.19549646-35.037482-62-34.962518 62zm-31-34.7484359v-10.2515641h-8v10.2515641l2.089172 14.7484359h3.8184713zm-8 19.7484359v8h8v-8z"
+    />
+    <title>Content may be inappropriate</title>
+  </svg>
+`,mo=I`
+  <svg
+    viewBox="0 0 100 100"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g fill="#000" fill-rule="evenodd">
+      <path
+        d="m86 0c5.5228475 0 10 4.4771525 10 10v80c0 5.5228475-4.4771525 10-10 10h-57c-5.5228475 0-10-4.4771525-10-10v-13h7.999l.001 8c0 2.6887547 2.1223067 4.8818181 4.7831104 4.9953805l.2168896.0046195h50.06c2.6887547 0 4.8818181-2.1223067 4.9953805-4.7831104l.0046195-.2168896v-70c0-2.7614237-2.2385763-5-5-5h-50.06c-2.6887547 0-4.8818181 2.1223067-4.9953805 4.7831104l-.0046195.2168896-.001 7h-7.999v-12c0-5.5228475 4.4771525-10 10-10z"
+      />
+      <path
+        d="m4 52h14c-.0377367 5.0230706-.0377367 15.3564039 0 31h35v-31h16c-20.0693886-21.0798163-30.8885707-32.4131497-32.4575462-34z" fill-rule="nonzero" transform="matrix(0 1 -1 0 87 14)"
+      />
+    </g>
+    <title>Log in to view this item</title>
+  </svg>
+`;let si=class extends O{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1,this.isCompactTile=!1}render(){return p`<div class="icon-overlay ${this.getClass}">
+      ${this.iconDisplay}
+    </div>`}get getClass(){return this.isCompactTile?"list-compact":"list-detail"}get iconDisplay(){return this.loginRequired&&!this.loggedIn?p`${mo}`:p`${po}`}static get styles(){return y`
+      :host {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        z-index: 2;
+        background-color: rgb(255, 254, 203);
+        display: flex;
+        justify-content: center;
+        border: 1px solid #2c2c2c;
+      }
+
+      .icon-overlay {
+        height: 20px;
+        width: 20px;
+        padding: 2px;
+        padding: 2px;
+      }
+
+      .list-detail {
+        height: 20px;
+        width: 20px;
+      }
+      .list-compact {
+        height: 15px;
+        width: 15px;
+      }
+    `}};n([h({type:Boolean})],si.prototype,"loggedIn",void 0);n([h({type:Boolean})],si.prototype,"loginRequired",void 0);n([h({type:Boolean})],si.prototype,"isCompactTile",void 0);si=n([R("icon-overlay")],si);let ni=class extends O{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1,this.iconRequired=!1}render(){return p`
+      <div class="overlay no-preview">
+        <div class="icon-overlay">${this.iconDisplay}</div>
+        <p class="text-overlay">${this.textDisplay}</p>
+      </div>
+    `}get iconDisplay(){return this.loginRequired&&!this.loggedIn?p`${mo}`:p`${po}`}get textDisplay(){return this.loginRequired&&!this.loggedIn?p`Log in to view this item`:p`Content may be inappropriate`}static get styles(){return y`
+      :host {
+        align-items: center;
+        display: flex;
+      }
+
+      .overlay {
+        border: 1px solid #2c2c2c;
+        border-radius: 1px;
+        position: absolute;
+        right: 0;
+        left: 0;
+        top: 50%;
+        transform: translate(0px, -50%);
+        width: auto;
+        height: auto;
+        padding: 5px;
+        background-color: #fffecb;
+        display: flex;
+        align-items: center;
+        border-radius: 1px;
+      }
+
+      .icon-overlay {
+        width: 40px;
+        height: 40px;
+        display: inherit;
+      }
+      .text-overlay {
+        margin: 0;
+        vertical-align: bottom;
+        padding-left: 5px;
+        text-align: center;
+        color: #2c2c2c;
+        font-size: 1.4rem;
+        line-height: 2rem;
+      }
+    `}};n([h({type:Boolean})],ni.prototype,"loggedIn",void 0);n([h({type:Boolean})],ni.prototype,"loginRequired",void 0);n([h({type:Boolean})],ni.prototype,"iconRequired",void 0);ni=n([R("text-overlay")],ni);let Be=class extends O{constructor(){super(...arguments),this.isCompactTile=!1,this.isListTile=!1,this.loggedIn=!1,this.viewSize="desktop"}render(){var e;return!((e=this.model)===null||e===void 0)&&e.identifier?p`
+      <div class=${wa(this.baseClass)}>
+        <item-image
+          .model=${this.model}
+          .baseImageUrl=${this.baseImageUrl}
+          .isListTile=${this.isListTile}
+          .isCompactTile=${this.isCompactTile}
+          .loggedIn=${this.loggedIn}
+          style="--imgHeight: 100%; --imgWidth: 100%"
+        >
+        </item-image>
+        ${this.textOverlayTemplate} ${this.iconOverlayTemplate}
+      </div>
+    `:x}get baseClass(){return{list:this.isListTile&&!this.isCompactTile,"list-compact":this.isListTile&&this.isCompactTile,[this.viewSize]:!0}}get iconOverlayTemplate(){var e,t,i;return!this.isListTile||!(!((e=this.model)===null||e===void 0)&&e.loginRequired)&&!(!((t=this.model)===null||t===void 0)&&t.contentWarning)?x:p`
+      <icon-overlay
+        .loggedIn=${this.loggedIn}
+        .loginRequired=${(i=this.model)===null||i===void 0?void 0:i.loginRequired}
+        .isCompactTile=${this.isCompactTile}
+      >
+      </icon-overlay>
+    `}get textOverlayTemplate(){var e,t,i;return this.isListTile||!(!((e=this.model)===null||e===void 0)&&e.loginRequired)&&!(!((t=this.model)===null||t===void 0)&&t.contentWarning)?x:p`
+      <text-overlay
+        .loggedIn=${this.loggedIn}
+        .loginRequired=${(i=this.model)===null||i===void 0?void 0:i.loginRequired}
+        ?iconRequired=${!0}
+      >
+      </text-overlay>
+    `}static get styles(){return y`
+      div {
+        display: flex;
+        justify-content: center;
+        position: relative;
+        background-color: #f1f1f4;
+      }
+
+      .grid {
+        height: var(--imgBlockHeight, 16rem);
+        flex: 1;
+        position: initial;
+        padding: 5px;
+      }
+
+      /** tile-list view */
+      .list.desktop {
+        width: 100px;
+        height: 100px;
+        display: inline-block;
+        position: relative;
+        text-align: center;
+      }
+
+      .list.mobile {
+        width: 90px;
+        height: 90px;
+      }
+
+      /** tile-list-compact view */
+      .list-compact {
+        display: block;
+        text-align: center;
+      }
+
+      .list-compact.desktop {
+        width: 45px;
+        height: 45px;
+      }
+
+      .list-compact.mobile {
+        width: 30px;
+        height: 30px;
+      }
+    `}};n([h({type:String})],Be.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Be.prototype,"isCompactTile",void 0);n([h({type:Boolean})],Be.prototype,"isListTile",void 0);n([h({type:Boolean})],Be.prototype,"loggedIn",void 0);n([h({type:Object})],Be.prototype,"model",void 0);n([h({type:String})],Be.prototype,"viewSize",void 0);Be=n([R("image-block")],Be);let xa=class extends O{get imageBlockTemplate(){var e;return p`
+      <image-block
+        .model=${this.model}
+        .baseImageUrl=https://archive.org/services/img/${(e=this.model)===null||e===void 0?void 0:e.identifier}
+        .isCompactTile=${!1}
+        .isListTile=${!1}
+        .viewSize=${"grid"}
+      >
+      </image-block>
+    `}render(){var e,t;return p`
+      <div id="container">
+        <div id="tile-details">
+          <div id="item-info">${this.imageBlockTemplate}</div>
+
+          <div id="title">${(e=this.model)===null||e===void 0?void 0:e.title}</div>
         </div>
+
         <div id="item-count-container">
           <div id="item-count-image-container">${uo}</div>
           <div id="item-count-stacked-text">
-            <div id="item-count">${(i=this.model)===null||i===void 0?void 0:i.itemCount.toLocaleString()}</div>
+            <div id="item-count">${(t=this.model)===null||t===void 0?void 0:t.itemCount.toLocaleString()}</div>
             <div id="items-text">${Ze("items")}</div>
           </div>
         </div>
@@ -291,180 +470,7 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
         font-weight: bold;
         margin-left: 0.5rem;
       }
-    `}};n([h({type:Object})],wa.prototype,"model",void 0);wa=n([R("collection-tile")],wa);function zi(r,e="short",t="en-US"){if(!r)return"";const i={timeZone:"UTC"};switch(e){case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(r)}/**
- * @license
- * Copyright 2018 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */const xa=Pi(class extends Ni{constructor(r){var e;if(super(r),r.type!==Ee.ATTRIBUTE||r.name!=="class"||((e=r.strings)===null||e===void 0?void 0:e.length)>2)throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.")}render(r){return" "+Object.keys(r).filter(e=>r[e]).join(" ")+" "}update(r,[e]){var t,i;if(this.et===void 0){this.et=new Set,r.strings!==void 0&&(this.st=new Set(r.strings.join(" ").split(/\s/).filter(o=>o!=="")));for(const o in e)e[o]&&!(!((t=this.st)===null||t===void 0)&&t.has(o))&&this.et.add(o);return this.render(e)}const a=r.element.classList;this.et.forEach(o=>{o in e||(a.remove(o),this.et.delete(o))});for(const o in e){const s=!!e[o];s===this.et.has(o)||((i=this.st)===null||i===void 0?void 0:i.has(o))||(s?(a.add(o),this.et.add(o)):(a.remove(o),this.et.delete(o)))}return ge}}),po=I`
-  <svg
-    viewBox="0 0 100 100"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="m56.4612493 8.80450354 41.8901185 75.94632926c1.7706782 2.8433173 2.1150372 5.2623412 1.0330766 7.2570716-1.0819604 1.9947304-3.26978 2.9920956-6.5634587 2.9920956h-85.69973905c-3.29367873 0-5.46954894-.9973652-6.52761065-2.9920956-1.0580617-1.9947304-.70175345-4.4137543 1.06892476-7.2570716l41.89011844-75.12308969c1.8184757-2.84331737 3.9693609-4.37738627 6.4526556-4.60220671s4.6341799 1.03483527 6.4526556 3.77896714zm28.5387507 75.19549646-35.037482-62-34.962518 62zm-31-34.7484359v-10.2515641h-8v10.2515641l2.089172 14.7484359h3.8184713zm-8 19.7484359v8h8v-8z"
-    />
-    <title>Content may be inappropriate</title>
-  </svg>
-`,mo=I`
-  <svg
-    viewBox="0 0 100 100"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <g fill="#000" fill-rule="evenodd">
-      <path
-        d="m86 0c5.5228475 0 10 4.4771525 10 10v80c0 5.5228475-4.4771525 10-10 10h-57c-5.5228475 0-10-4.4771525-10-10v-13h7.999l.001 8c0 2.6887547 2.1223067 4.8818181 4.7831104 4.9953805l.2168896.0046195h50.06c2.6887547 0 4.8818181-2.1223067 4.9953805-4.7831104l.0046195-.2168896v-70c0-2.7614237-2.2385763-5-5-5h-50.06c-2.6887547 0-4.8818181 2.1223067-4.9953805 4.7831104l-.0046195.2168896-.001 7h-7.999v-12c0-5.5228475 4.4771525-10 10-10z"
-      />
-      <path
-        d="m4 52h14c-.0377367 5.0230706-.0377367 15.3564039 0 31h35v-31h16c-20.0693886-21.0798163-30.8885707-32.4131497-32.4575462-34z" fill-rule="nonzero" transform="matrix(0 1 -1 0 87 14)"
-      />
-    </g>
-    <title>Log in to view this item</title>
-  </svg>
-`;let si=class extends O{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1,this.isCompactTile=!1}render(){return p`<div class="icon-overlay ${this.getClass}">
-      ${this.iconDisplay}
-    </div>`}get getClass(){return this.isCompactTile?"list-compact":"list-detail"}get iconDisplay(){return this.loginRequired&&!this.loggedIn?p`${mo}`:p`${po}`}static get styles(){return y`
-      :host {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        z-index: 2;
-        background-color: rgb(255, 254, 203);
-        display: flex;
-        justify-content: center;
-        border: 1px solid #2c2c2c;
-      }
-
-      .icon-overlay {
-        height: 20px;
-        width: 20px;
-        padding: 2px;
-        padding: 2px;
-      }
-
-      .list-detail {
-        height: 20px;
-        width: 20px;
-      }
-      .list-compact {
-        height: 15px;
-        width: 15px;
-      }
-    `}};n([h({type:Boolean})],si.prototype,"loggedIn",void 0);n([h({type:Boolean})],si.prototype,"loginRequired",void 0);n([h({type:Boolean})],si.prototype,"isCompactTile",void 0);si=n([R("icon-overlay")],si);let ni=class extends O{constructor(){super(...arguments),this.loggedIn=!1,this.loginRequired=!1,this.iconRequired=!1}render(){return p`
-      <div class="overlay no-preview">
-        <div class="icon-overlay">${this.iconDisplay}</div>
-        <p class="text-overlay">${this.textDisplay}</p>
-      </div>
-    `}get iconDisplay(){return this.loginRequired&&!this.loggedIn?p`${mo}`:p`${po}`}get textDisplay(){return this.loginRequired&&!this.loggedIn?p`Log in to view this item`:p`Content may be inappropriate`}static get styles(){return y`
-      :host {
-        align-items: center;
-        display: flex;
-      }
-
-      .overlay {
-        border: 1px solid #2c2c2c;
-        border-radius: 1px;
-        position: absolute;
-        right: 0;
-        left: 0;
-        top: 50%;
-        transform: translate(0px, -50%);
-        width: auto;
-        height: auto;
-        padding: 5px;
-        background-color: #fffecb;
-        display: flex;
-        align-items: center;
-        border-radius: 1px;
-      }
-
-      .icon-overlay {
-        width: 40px;
-        height: 40px;
-        display: inherit;
-      }
-      .text-overlay {
-        margin: 0;
-        vertical-align: bottom;
-        padding-left: 5px;
-        text-align: center;
-        color: #2c2c2c;
-        font-size: 1.4rem;
-        line-height: 2rem;
-      }
-    `}};n([h({type:Boolean})],ni.prototype,"loggedIn",void 0);n([h({type:Boolean})],ni.prototype,"loginRequired",void 0);n([h({type:Boolean})],ni.prototype,"iconRequired",void 0);ni=n([R("text-overlay")],ni);let Be=class extends O{constructor(){super(...arguments),this.isCompactTile=!1,this.isListTile=!1,this.loggedIn=!1,this.viewSize="desktop"}render(){var e;return!((e=this.model)===null||e===void 0)&&e.identifier?p`
-      <div class=${xa(this.baseClass)}>
-        <item-image
-          .model=${this.model}
-          .baseImageUrl=${this.baseImageUrl}
-          .isListTile=${this.isListTile}
-          .isCompactTile=${this.isCompactTile}
-          .loggedIn=${this.loggedIn}
-          style="--imgHeight: 100%; --imgWidth: 100%"
-        >
-        </item-image>
-        ${this.textOverlayTemplate} ${this.iconOverlayTemplate}
-      </div>
-    `:x}get baseClass(){return{list:this.isListTile&&!this.isCompactTile,"list-compact":this.isListTile&&this.isCompactTile,[this.viewSize]:!0}}get iconOverlayTemplate(){var e,t,i;return!this.isListTile||!(!((e=this.model)===null||e===void 0)&&e.loginRequired)&&!(!((t=this.model)===null||t===void 0)&&t.contentWarning)?x:p`
-      <icon-overlay
-        .loggedIn=${this.loggedIn}
-        .loginRequired=${(i=this.model)===null||i===void 0?void 0:i.loginRequired}
-        .isCompactTile=${this.isCompactTile}
-      >
-      </icon-overlay>
-    `}get textOverlayTemplate(){var e,t,i;return this.isListTile||!(!((e=this.model)===null||e===void 0)&&e.loginRequired)&&!(!((t=this.model)===null||t===void 0)&&t.contentWarning)?x:p`
-      <text-overlay
-        .loggedIn=${this.loggedIn}
-        .loginRequired=${(i=this.model)===null||i===void 0?void 0:i.loginRequired}
-        ?iconRequired=${!0}
-      >
-      </text-overlay>
-    `}static get styles(){return y`
-      div {
-        display: flex;
-        justify-content: center;
-        position: relative;
-        background-color: #f1f1f4;
-      }
-
-      .grid {
-        height: var(--imgBlockHeight, 16rem);
-        flex: 1;
-        position: initial;
-        padding: 5px;
-      }
-
-      /** tile-list view */
-      .list.desktop {
-        width: 100px;
-        height: 100px;
-        display: inline-block;
-        position: relative;
-        text-align: center;
-      }
-
-      .list.mobile {
-        width: 90px;
-        height: 90px;
-      }
-
-      /** tile-list-compact view */
-      .list-compact {
-        display: block;
-        text-align: center;
-      }
-
-      .list-compact.desktop {
-        width: 45px;
-        height: 45px;
-      }
-
-      .list-compact.mobile {
-        width: 30px;
-        height: 30px;
-      }
-    `}};n([h({type:String})],Be.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Be.prototype,"isCompactTile",void 0);n([h({type:Boolean})],Be.prototype,"isListTile",void 0);n([h({type:Boolean})],Be.prototype,"loggedIn",void 0);n([h({type:Object})],Be.prototype,"model",void 0);n([h({type:String})],Be.prototype,"viewSize",void 0);Be=n([R("image-block")],Be);/**
+    `}};n([h({type:Object})],xa.prototype,"model",void 0);xa=n([R("collection-tile")],xa);function zi(r,e="short",t="en-US"){if(!r)return"";const i={timeZone:"UTC"};switch(e){case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(r)}/**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -606,9 +612,9 @@ var No=Object.defineProperty,Ro=Object.defineProperties;var Bo=Object.getOwnProp
     );
   }
 `;let De=class extends O{constructor(){super(...arguments),this.isListTile=!1,this.isCompactTile=!1,this.loggedIn=!1,this.isWaveform=!1}render(){return p`
-      <div class=${xa(this.itemBaseClass)}>
+      <div class=${wa(this.itemBaseClass)}>
         <img
-          class=${xa(this.itemImageClass)}
+          class=${wa(this.itemImageClass)}
           src="${this.imageSrc}"
           alt=""
           @load=${this.onLoad}
