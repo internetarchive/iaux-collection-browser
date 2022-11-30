@@ -14,6 +14,7 @@ import type { SortParam } from '@internetarchive/search-service';
 import { formatDate } from '../../utils/format-date';
 import type { TileModel } from '../../models';
 
+import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
 import '../text-snippet-block';
 import '../item-image';
@@ -158,88 +159,18 @@ export class ItemTile extends LitElement {
    * CSS
    */
   static get styles(): CSSResultGroup {
-    return css`
-      .container {
-        background-color: #ffffff;
-        border-radius: var(--collectionTileCornerRadius, 4px);
-        box-shadow: 1px 1px 2px 0px;
-        height: 100%;
-      }
+    return [
+      baseTileStyles,
+      css`
+        image-block {
+          --imageBlockBackgroundColor: #f1f1f4;
+        }
 
-      .tile-details {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-      }
-
-      .item-info {
-        flex-grow: 1;
-      }
-
-      #title {
-        flex-shrink: 0;
-        padding-left: 5px;
-        padding-right: 5px;
-      }
-
-      .hidden {
-        display: none;
-      }
-
-      .container:hover > .tile-details > .item-info > #title > .truncated {
-        text-decoration: underline;
-      }
-
-      /** this is a workaround for Safari 15 where the hover effects are not working */
-      #title:hover > .truncated {
-        text-decoration: underline;
-      }
-
-      image-block {
-        display: block;
-        margin-bottom: 5px;
-        position: relative;
-        text-align: center;
-      }
-
-      image-block.has-snippets {
-        /* If there is a text snippet block present, the image block needs to shrink */
-        --imgBlockHeight: 11rem;
-      }
-
-      .created-by,
-      .date-sorted-by,
-      .volume-issue {
-        display: flex;
-        justify-content: left;
-        align-items: flex-end; /* Important to start text from bottom */
-        padding: 10px 5px 5px 5px;
-      }
-
-      .truncated {
-        flex: 1;
-        color: #2c2c2c;
-        min-width: 0; /* Important for long words! */
-        text-align: left;
-        line-height: 15px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        word-wrap: break-word;
-        -webkit-line-clamp: 3;
-        -webkit-box-orient: vertical;
-        padding-bottom: 1.5px;
-      }
-
-      span {
-        font-size: 1.4rem;
-        display: -webkit-box;
-      }
-
-      h1.truncated {
-        margin: 0px;
-        font-size: 14px;
-        display: -webkit-box;
-      }
-    `;
+        image-block.has-snippets {
+          /* If there is a text snippet block present, the image block needs to shrink */
+          --imgBlockHeight: 11rem;
+        }
+      `,
+    ];
   }
 }

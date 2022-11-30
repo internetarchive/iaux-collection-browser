@@ -32,6 +32,10 @@ export const baseItemImageStyles = css`
     filter: blur(15px);
     box-shadow: 1px 1px 2px 0px;
   }
+
+  .radius50 {
+    border-radius: 50%;
+  }
 `;
 
 /**
