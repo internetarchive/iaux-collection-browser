@@ -22,6 +22,11 @@ import './grid/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
 import './list/tile-list-compact-header';
+import type { TileHoverPane } from './grid/tile-hover-pane';
+
+function clamp(val: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, val));
+}
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -59,7 +64,13 @@ export class TileDispatcher
   @state()
   private hoverPaneShown: boolean = false;
 
-  @query('#container') private container!: HTMLDivElement;
+  private lastMouseClientPos = { x: 0, y: 0 };
+
+  @query('#container')
+  private container!: HTMLDivElement;
+
+  @query('tile-hover-pane')
+  private hoverPane?: TileHoverPane;
 
   render() {
     const isGridMode = this.tileDisplayMode === 'grid';
@@ -119,9 +130,6 @@ export class TileDispatcher
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
     return this.hoverPaneShown
       ? html`<tile-hover-pane
-          class=${this.getBoundingClientRect().left + 10 > window.innerWidth / 2
-            ? 'flip' // Flip the pane to grow leftward instead of rightward if it might overflow the viewport
-            : nothing}
           role="tooltip"
           .model=${this.model}
           .baseNavigationUrl=${this.baseNavigationUrl}
@@ -131,6 +139,37 @@ export class TileDispatcher
           .collectionNameCache=${this.collectionNameCache}
         ></tile-hover-pane>`
       : nothing;
+  }
+
+  private get hoverPaneDesiredOffsets() {
+    // Try to find offsets for the hover pane that:
+    //  (a) cause it to lie entirely within the viewport,
+    //  (b) include the current mouse position, and
+    //  (c) minimize the distance between the mouse pointer and the rect's (10, 10) position.
+
+    let [top, left] = [0, 0];
+
+    const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
+    if (hoverPaneRect) {
+      // Place it on the current mouse position while respecting viewport bounds
+      top = clamp(
+        this.lastMouseClientPos.y - 10,
+        10,
+        window.innerHeight - hoverPaneRect.height - 10
+      );
+      left = clamp(
+        this.lastMouseClientPos.x - 10,
+        10,
+        window.innerWidth - hoverPaneRect.width - 30
+      );
+
+      // Subtract off the tile's own offsets
+      const tileRect = this.getBoundingClientRect();
+      top -= tileRect.top;
+      left -= tileRect.left;
+    }
+
+    return { top, left };
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -174,8 +213,8 @@ export class TileDispatcher
     }, this.showHoverPaneDelay);
   }
 
-  private handleMouseEnter(): void {
-    this.handleMouseMove();
+  private handleMouseEnter(e: MouseEvent): void {
+    this.handleMouseMove(e);
   }
 
   private handleMouseLeave(): void {
@@ -185,19 +224,37 @@ export class TileDispatcher
     this.hideHoverPane();
   }
 
-  private handleMouseMove(): void {
+  private handleMouseMove(e: MouseEvent): void {
     // Restart the timer to show the hover pane anytime the mouse moves within the tile
     if (!this.hoverPaneShown) {
       this.restartHoverPaneTimer();
+
+      this.lastMouseClientPos = { x: e.clientX, y: e.clientY };
     }
   }
 
-  private showHoverPane(): void {
+  private async showHoverPane(): Promise<void> {
     this.hoverPaneShown = true;
+
+    await this.updateComplete;
+    await new Promise(resolve => {
+      // Pane sizes aren't accurate until next paint
+      requestAnimationFrame(resolve);
+    });
+    this.repositionHoverPane();
   }
 
   private hideHoverPane(): void {
     this.hoverPaneShown = false;
+  }
+
+  private repositionHoverPane(): void {
+    if (!this.hoverPane) return;
+
+    const { top, left } = this.hoverPaneDesiredOffsets;
+    this.hoverPane.style.top = `${top}px`;
+    this.hoverPane.style.left = `${left}px`;
+    this.hoverPane.classList.add('visible');
   }
 
   private get tile() {
@@ -319,14 +376,21 @@ export class TileDispatcher
 
       tile-hover-pane {
         position: absolute;
-        top: 10px;
-        left: 10px;
+        top: -1000px;
+        left: -1000px;
         z-index: 1;
+
+        /* Don't make it visible until it has been properly positioned */
+        visibility: hidden;
       }
 
-      tile-hover-pane.flip {
+      /*tile-hover-pane.flip {
         left: unset;
         right: 10px;
+      }*/
+
+      tile-hover-pane.visible {
+        visibility: visible;
       }
     `;
   }
