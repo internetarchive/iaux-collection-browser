@@ -77,9 +77,8 @@ export class TileDispatcher
     return html`
       <div
         id="container"
-        @mouseenter=${isGridMode ? this.handleMouseEnter : nothing}
-        @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
         @mousemove=${isGridMode ? this.handleMouseMove : nothing}
+        @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
       >
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
@@ -213,17 +212,6 @@ export class TileDispatcher
     }, this.showHoverPaneDelay);
   }
 
-  private handleMouseEnter(e: MouseEvent): void {
-    this.handleMouseMove(e);
-  }
-
-  private handleMouseLeave(): void {
-    // Abort any timer to show the hover pane, as the mouse has left the item
-    clearTimeout(this.showHoverPaneTimer);
-    // And hide the pane if it's already been shown
-    this.hideHoverPane();
-  }
-
   private handleMouseMove(e: MouseEvent): void {
     // Restart the timer to show the hover pane anytime the mouse moves within the tile
     if (!this.hoverPaneShown) {
@@ -233,12 +221,19 @@ export class TileDispatcher
     }
   }
 
+  private handleMouseLeave(): void {
+    // Abort any timer to show the hover pane, as the mouse has left the item
+    clearTimeout(this.showHoverPaneTimer);
+    // And hide the pane if it's already been shown
+    this.hideHoverPane();
+  }
+
   private async showHoverPane(): Promise<void> {
     this.hoverPaneShown = true;
 
     await this.updateComplete;
     await new Promise(resolve => {
-      // Pane sizes aren't accurate until next paint
+      // Pane sizes aren't accurate until next frame
       requestAnimationFrame(resolve);
     });
     this.repositionHoverPane();
