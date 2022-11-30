@@ -62,7 +62,7 @@ describe('Account Tile', () => {
         .model=${{
           identifier: '@jack-sparrow',
           mediatype: 'account',
-          itemCount: 10000,
+          itemCount: 999,
           favCount: 100,
           commentCount: 3,
         }}
@@ -72,6 +72,24 @@ describe('Account Tile', () => {
     await el.updateComplete;
 
     const tileStats = el.shadowRoot?.querySelector('tile-stats');
+    const statsElements = tileStats?.shadowRoot?.querySelector('#stats-row');
+
     expect(tileStats).to.exist;
+    expect(statsElements).to.exist;
+
+    const downloads = statsElements
+      ?.querySelectorAll('.col')[1]
+      .querySelector('.status-text');
+    expect(downloads?.textContent).contains(999);
+
+    const favorites = statsElements
+      ?.querySelectorAll('.col')[2]
+      .querySelector('.status-text');
+    expect(favorites?.textContent).contains(100);
+
+    const reviewCounts = statsElements
+      ?.querySelectorAll('.col')[3]
+      .querySelector('.status-text');
+    expect(reviewCounts?.textContent).contains(3);
   });
 });
