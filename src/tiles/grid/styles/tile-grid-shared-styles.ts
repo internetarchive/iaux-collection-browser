@@ -5,7 +5,7 @@ import { css } from 'lit';
  */
 
 const tileCornerRadius = css`var(--collectionTileCornerRadius, 4px)`;
-const tileBackgroundColor = css`var(--TileBackgroundColor, #ffffff)`;
+const tileBackgroundColor = css`var(--tileBackgroundColor, #ffffff)`;
 
 export const baseTileStyles = css`
   .container {

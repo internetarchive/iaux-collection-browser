@@ -17,15 +17,16 @@ export class AccountTile extends LitElement {
       <div class="container">
         <div class="tile-details">
           <div class="item-info">
-            ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
+            ${this.getAvatarTemplate} ${this.getTitleTemplate}
+            ${this.getArchivistTemplate}
           </div>
-          ${this.getTileStats}
+          ${this.getTileStatsTemplate}
         </div>
       </div>
     `;
   }
 
-  private get getAvatar(): TemplateResult {
+  private get getAvatarTemplate(): TemplateResult {
     return html`
       <image-block
         .model=${this.model}
@@ -36,19 +37,19 @@ export class AccountTile extends LitElement {
     `;
   }
 
-  private get getTitle() {
+  private get getTitleTemplate() {
     return html`<div id="title">
       <h1 class="truncated">${this.model?.identifier}</h1>
     </div>`;
   }
 
-  private get getArchivist() {
+  private get getArchivistTemplate() {
     return html`<div class="archivist-since">
       <span>Archivist since ${this.model?.dateAdded?.getFullYear()}</span>
     </div>`;
   }
 
-  private get getTileStats() {
+  private get getTileStatsTemplate() {
     return html`<tile-stats
       .mediatype=${this.model?.mediatype}
       .itemCount=${this.model?.itemCount}
