@@ -1,26 +1,37 @@
 import { msg } from '@lit/localize';
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import type { TileModel } from '../../models';
+
+import '../image-block';
 
 @customElement('collection-tile')
 export class CollectionTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
+  private get imageBlockTemplate(): TemplateResult {
+    return html`
+      <image-block
+        .model=${this.model}
+        .baseImageUrl=https://archive.org/services/img/${this.model?.identifier}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'grid'}
+      >
+      </image-block>
+    `;
+  }
+
   render() {
     return html`
-      <div id="container test">
-        <div id="collection-image-title">
-          <div id="collection-title">${this.model?.title}</div>
-          <div id="collection-image-container">
-            <div
-              id="collection-image"
-              style="background-image:url('https://archive.org/services/img/${this
-                .model?.identifier}')"
-            ></div>
-          </div>
+      <div id="container">
+        <div id="tile-details">
+          <div id="item-info">${this.imageBlockTemplate}</div>
+
+          <div id="title">${this.model?.title}</div>
         </div>
+
         <div id="item-count-container">
           <div id="item-count-image-container">${collectionIcon}</div>
           <div id="item-count-stacked-text">
