@@ -291,7 +291,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
         font-weight: bold;
         margin-left: 0.5rem;
       }
-    `}};n([h({type:Object})],xa.prototype,"model",void 0);xa=n([N("collection-tile")],xa);function zi(r,e="short",t="en-US"){if(!r)return"";const i={timeZone:"UTC"};switch(e){case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(r)}const Ds=y`var(--collectionTileCornerRadius, 4px)`,Ls=y`var(--TileBackgroundColor, #ffffff)`,po=y`
+    `}};n([h({type:Object})],xa.prototype,"model",void 0);xa=n([N("collection-tile")],xa);function zi(r,e="short",t="en-US"){if(!r)return"";const i={timeZone:"UTC"};switch(e){case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(r)}const Ds=y`var(--collectionTileCornerRadius, 4px)`,Ls=y`var(--tileBackgroundColor, #ffffff)`,po=y`
   .container {
     background-color: ${Ls};
     border: 1px #2c2c2c;
@@ -1079,23 +1079,24 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
       <div class="container">
         <div class="tile-details">
           <div class="item-info">
-            ${this.getAvatar} ${this.getTitle} ${this.getArchivist}
+            ${this.getAvatarTemplate} ${this.getTitleTemplate}
+            ${this.getArchivistTemplate}
           </div>
-          ${this.getTileStats}
+          ${this.getTileStatsTemplate}
         </div>
       </div>
-    `}get getAvatar(){return p`
+    `}get getAvatarTemplate(){return p`
       <image-block
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .viewSize=${"grid"}
       >
       </image-block>
-    `}get getTitle(){var e;return p`<div id="title">
+    `}get getTitleTemplate(){var e;return p`<div id="title">
       <h1 class="truncated">${(e=this.model)===null||e===void 0?void 0:e.identifier}</h1>
-    </div>`}get getArchivist(){var e,t;return p`<div class="archivist-since">
+    </div>`}get getArchivistTemplate(){var e,t;return p`<div class="archivist-since">
       <span>Archivist since ${(t=(e=this.model)===null||e===void 0?void 0:e.dateAdded)===null||t===void 0?void 0:t.getFullYear()}</span>
-    </div>`}get getTileStats(){var e,t,i,a;return p`<tile-stats
+    </div>`}get getTileStatsTemplate(){var e,t,i,a;return p`<tile-stats
       .mediatype=${(e=this.model)===null||e===void 0?void 0:e.mediatype}
       .itemCount=${(t=this.model)===null||t===void 0?void 0:t.itemCount}
       .favCount=${(i=this.model)===null||i===void 0?void 0:i.favCount}
