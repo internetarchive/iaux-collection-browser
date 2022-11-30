@@ -397,7 +397,7 @@ export class TileDispatcher
       }
 
       tile-hover-pane ~ a {
-        filter: drop-shadow(0 0 2px black);
+        filter: drop-shadow(0 0 2px rgba(10, 10, 40, 0.8));
         transition: filter 0.1s ease;
       }
 
@@ -409,6 +409,10 @@ export class TileDispatcher
 
         /* Don't make it visible until it has been properly positioned */
         visibility: hidden;
+
+        transform: translateY(8px);
+        opacity: 0;
+        transition: transform 0.1s ease-in, opacity 0.1s ease-in;
       }
 
       /*tile-hover-pane.flip {
@@ -418,6 +422,8 @@ export class TileDispatcher
 
       tile-hover-pane.visible {
         visibility: visible;
+        opacity: 1;
+        transform: translateY(0);
       }
     `;
   }

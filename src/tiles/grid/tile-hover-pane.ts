@@ -22,6 +22,7 @@ export class TileHoverPane extends LitElement {
 
   protected render(): TemplateResult {
     return html`
+      <div id="spacer"></div>
       <div id="container">
         <tile-list
           .model=${this.model}
@@ -43,8 +44,12 @@ export class TileHoverPane extends LitElement {
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        box-shadow: 4px 4px 8px 0 black;
+        box-shadow: 4px 4px 8px 0 rgba(0, 0, 0, 0.8);
         background: white;
+      }
+
+      #spacer {
+        height: 20px;
       }
     `;
   }
