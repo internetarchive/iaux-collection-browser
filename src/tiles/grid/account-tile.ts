@@ -63,9 +63,15 @@ export class AccountTile extends LitElement {
    * CSS
    */
   static get styles() {
+    const tileBorderColor = css`var(--tileBorderColor, #dddddd)`;
+
     return [
       baseTileStyles,
       css`
+        .container {
+          border: 1px solid ${tileBorderColor};
+        }
+
         image-block {
           --imageBlockBackgroundColor: #fcf5e6;
         }

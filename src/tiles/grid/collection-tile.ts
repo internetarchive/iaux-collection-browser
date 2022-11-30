@@ -1,167 +1,118 @@
-import { msg } from '@lit/localize';
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import type { TileModel } from '../../models';
 
+import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
 
 @customElement('collection-tile')
 export class CollectionTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
-  private get imageBlockTemplate(): TemplateResult {
+  @property({ type: String }) baseImageUrl?: string;
+
+  render() {
+    return html`
+      <div class="container">
+        <div class="tile-details">
+          <div class="item-info">
+            ${this.getImageBlockTemplate} ${this.getTitleTemplate}
+          </div>
+        </div>
+
+        ${this.getTileStatsTemplate}
+      </div>
+    `;
+  }
+
+  private get getImageBlockTemplate(): TemplateResult {
     return html`
       <image-block
         .model=${this.model}
-        .baseImageUrl=https://archive.org/services/img/${this.model?.identifier}
-        .isCompactTile=${false}
-        .isListTile=${false}
+        .baseImageUrl=${this.baseImageUrl}
         .viewSize=${'grid'}
       >
       </image-block>
     `;
   }
 
-  render() {
+  private get getTitleTemplate() {
+    return html`<div id="title">
+      <h1 class="truncated">${this.model?.title}</h1>
+    </div>`;
+  }
+
+  private get getTileStatsTemplate() {
     return html`
-      <div id="container">
-        <div id="tile-details">
-          <div id="item-info">${this.imageBlockTemplate}</div>
+      <div id="item-stats">
+        <div id="item-mediatype">${collectionIcon}</div>
 
-          <div id="title">${this.model?.title}</div>
-        </div>
-
-        <div id="item-count-container">
-          <div id="item-count-image-container">${collectionIcon}</div>
-          <div id="item-count-stacked-text">
-            <div id="item-count">${this.model?.itemCount.toLocaleString()}</div>
-            <div id="items-text">${msg('items')}</div>
-          </div>
+        <div id="stats-row">
+          <span id="item-count">234,234 items</span>
+          <span id="item-size">234234 Gigabytes</span>
         </div>
       </div>
     `;
   }
 
   static get styles(): CSSResultGroup {
-    const cornerRadiusCss = css`var(--collectionTileCornerRadius, 4px)`;
+    const tileBorderColor = css`var(--tileBorderColor, #555555)`;
+    const tileBackgroundColor = css`var(--tileBackgroundColor, #666666)`;
 
-    return css`
-      #collection-image-container {
-        display: flex;
-        justify-content: center;
-        flex: 1;
-      }
+    return [
+      baseTileStyles,
+      css`
+        .container {
+          background-color: ${tileBackgroundColor};
+          border: 1px solid ${tileBorderColor};
+        }
 
-      #collection-image {
-        width: 16rem;
-        height: 16rem;
-        border-radius: 0.8rem;
-        overflow: hidden;
-        box-shadow: 1px 1px 2px 0px;
-        object-fit: cover;
-        background-position: center;
-        background-size: cover;
-      }
+        .item-info {
+          flex-grow: initial;
+        }
 
-      #item-count-image-container svg {
-        filter: invert(100%);
-      }
+        image-block {
+          --imageBlockBackgroundColor: ${tileBackgroundColor};
+        }
 
-      #collection-image-title {
-        background-color: #666;
-        border: 1px solid #2c2c2c;
-        padding: 0.5rem;
-        border-top-left-radius: ${cornerRadiusCss};
-        border-top-right-radius: ${cornerRadiusCss};
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-      }
+        h1.truncated {
+          color: #fff;
+        }
 
-      #collection-title {
-        font-weight: bold;
-        color: #fff;
-        font-size: 1.6rem;
-        text-align: center;
-        margin-bottom: 0.5rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        line-height: 2rem;
-        height: 4rem;
-      }
+        #item-mediatype {
+          margin-right: 0.5rem;
+        }
 
-      #container {
-        box-shadow: 1px 1px 2px 0px;
-        border-radius: ${cornerRadiusCss};
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
+        #item-mediatype svg {
+          filter: invert(100%);
+          height: 2.5rem;
+          align-items: baseline;
+        }
 
-      #container:hover > #collection-image-title > #collection-title {
-        text-decoration: underline;
-      }
+        .container:hover > #title {
+          text-decoration: underline;
+        }
 
-      /* this is a workaround for Safari 15 where the hover effects are not working */
-      #collection-image-title:hover > #collection-title {
-        text-decoration: underline;
-      }
+        /* this is a workaround for Safari 15 where the hover effects are not working */
+        image-block:hover > #title {
+          text-decoration: underline;
+        }
 
-      #container:hover > #collection-image-title {
-        background-color: #757575;
-      }
+        #item-stats {
+          display: flex;
+          padding: 0rem 0.5rem 0.5rem;
+          align-items: center;
+        }
 
-      #item-count-container {
-        background-color: #444;
-        border-bottom: 1px solid #2c2c2c;
-        border-left: 1px solid #2c2c2c;
-        border-right: 1px solid #2c2c2c;
-        border-bottom-left-radius: ${cornerRadiusCss};
-        border-bottom-right-radius: ${cornerRadiusCss};
-        display: flex;
-        padding: 0rem 0.5rem;
-        height: 5.5rem;
-        align-items: center;
-      }
-
-      #item-count-image-container {
-        margin-right: 0.5rem;
-      }
-
-      #item-count-stacked-text {
-        display: flex;
-        align-items: baseline;
-        color: #fff;
-      }
-      #item-count-image-container svg {
-        height: 2.5rem;
-        align-items: baseline;
-      }
-
-      #container:hover > #item-count-container {
-        background-color: #575757;
-      }
-
-      #item-count {
-        font-size: 1.4rem;
-        font-weight: bold;
-      }
-
-      #item-count-image {
-        width: 3rem;
-        height: 3rem;
-        margin-right: 1rem;
-      }
-
-      #items-text {
-        font-size: 1.4rem;
-        font-weight: bold;
-        margin-left: 0.5rem;
-      }
-    `;
+        #stats-row {
+          display: flex;
+          align-items: baseline;
+          color: rgb(255, 255, 255);
+          flex-direction: column;
+          margin-left: 5px;
+        }
+      `,
+    ];
   }
 }

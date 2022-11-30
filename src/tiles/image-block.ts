@@ -82,7 +82,6 @@ export class ImageBlock extends LitElement {
 
   static get styles(): CSSResultGroup {
     const imageBlockBackgroundColor = css`var(--imageBlockBackgroundColor, #f1f1f4)`;
-    const imageBlockBorderColor = css`var(--imageBlockBorderColor, #dddddd)`;
 
     return css`
       div {
@@ -90,7 +89,6 @@ export class ImageBlock extends LitElement {
         justify-content: center;
         position: relative;
         background-color: ${imageBlockBackgroundColor};
-        border: 1px solid ${imageBlockBorderColor};
       }
 
       .grid {

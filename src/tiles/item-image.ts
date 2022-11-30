@@ -82,6 +82,7 @@ export class ItemImage extends LitElement {
       blur: toBlur || false,
       waveform: this.isWaveform,
       radius50: this.itemImageRadius,
+      radius8: this.model?.mediatype === 'collection',
     };
   }
 

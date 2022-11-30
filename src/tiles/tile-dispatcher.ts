@@ -143,6 +143,7 @@ export class TileDispatcher
           case 'collection':
             return html`<collection-tile
               .model=${model}
+              .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
             >
@@ -202,6 +203,15 @@ export class TileDispatcher
       :host {
         display: block;
         height: 100%;
+      }
+
+      collection-tile {
+        --tileBorderColor: #555555;
+      }
+
+      account-tile,
+      item-tile {
+        --tileBorderColor: #dddddd;
       }
 
       #container {

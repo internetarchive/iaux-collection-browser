@@ -34,7 +34,14 @@ export const baseItemImageStyles = css`
   }
 
   .radius50 {
+    background-position: 50% 50%;
     border-radius: 50%;
+    width: 160px;
+    height: 160px;
+  }
+
+  .radius8 {
+    border-radius: 8px;
   }
 `;
 
