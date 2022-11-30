@@ -140,7 +140,17 @@ export class TileDispatcher
       : nothing;
   }
 
-  private get hoverPaneDesiredOffsets() {
+  /**
+   * Returns the desired top/left offsets (in pixels) for this tile's hover pane.
+   * The desired offsets balance positioning the hover pane under the mouse pointer
+   * while preventing it from flowing outside the viewport. The returned offsets are
+   * given relative to this tile's content box.
+   *
+   * These offsets are only valid if the hover pane is already rendered with its
+   * correct width and height. If the hover pane is not present, both offsets will
+   * be 0.
+   */
+  private get hoverPaneDesiredOffsets(): { top: number; left: number } {
     // Try to find offsets for the hover pane that:
     //  (a) cause it to lie entirely within the viewport,
     //  (b) include the current mouse position, and
@@ -205,6 +215,9 @@ export class TileDispatcher
     }
   }
 
+  /**
+   * Aborts any existing timer for showing the hover pane, and starts a new one.
+   */
   private restartHoverPaneTimer(): void {
     clearTimeout(this.showHoverPaneTimer);
     this.showHoverPaneTimer = window.setTimeout(() => {
@@ -212,6 +225,10 @@ export class TileDispatcher
     }, this.showHoverPaneDelay);
   }
 
+  /**
+   * Handler for the mousemove event on this tile.
+   * Restarts the timer for showing the hover pane and updates the current mouse position.
+   */
   private handleMouseMove(e: MouseEvent): void {
     // Restart the timer to show the hover pane anytime the mouse moves within the tile
     if (!this.hoverPaneShown) {
@@ -221,6 +238,10 @@ export class TileDispatcher
     }
   }
 
+  /**
+   * Handler for the mouseleave event on this tile.
+   * Hides the hover pane if present, and aborts the timer for showing it.
+   */
   private handleMouseLeave(): void {
     // Abort any timer to show the hover pane, as the mouse has left the item
     clearTimeout(this.showHoverPaneTimer);
@@ -228,6 +249,9 @@ export class TileDispatcher
     this.hideHoverPane();
   }
 
+  /**
+   * Causes this tile's hover pane to be rendered, positioned, and made visible.
+   */
   private async showHoverPane(): Promise<void> {
     this.hoverPaneShown = true;
 
@@ -236,20 +260,27 @@ export class TileDispatcher
       // Pane sizes aren't accurate until next frame
       requestAnimationFrame(resolve);
     });
+
     this.repositionHoverPane();
+    this.hoverPane?.classList.add('visible');
   }
 
+  /**
+   * Causes this tile's hover pane to be removed.
+   */
   private hideHoverPane(): void {
     this.hoverPaneShown = false;
   }
 
+  /**
+   * Positions the hover pane with the correct offsets.
+   */
   private repositionHoverPane(): void {
     if (!this.hoverPane) return;
 
     const { top, left } = this.hoverPaneDesiredOffsets;
     this.hoverPane.style.top = `${top}px`;
     this.hoverPane.style.left = `${left}px`;
-    this.hoverPane.classList.add('visible');
   }
 
   private get tile() {
