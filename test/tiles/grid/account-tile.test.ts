@@ -10,12 +10,12 @@ describe('Account Tile', () => {
     const el = await fixture<AccountTile>(html`<account-tile></account-tile>`);
 
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
-    const ItemImage = el.shadowRoot?.querySelector('image-block');
+    const itemImage = el.shadowRoot?.querySelector('image-block');
     const itemArchivist = el.shadowRoot?.querySelector('.archivist-since');
     const tileStats = el.shadowRoot?.querySelector('tile-stats');
 
     expect(itemInfo).to.exist;
-    expect(ItemImage).to.exist;
+    expect(itemImage).to.exist;
     expect(itemArchivist).to.exist;
     expect(tileStats).to.exist;
   });
