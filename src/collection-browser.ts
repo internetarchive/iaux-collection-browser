@@ -1590,6 +1590,7 @@ export class CollectionBrowser
         .sortParam=${this.sortParam}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        ?enableHoverPane=${true}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >
       </tile-dispatcher>

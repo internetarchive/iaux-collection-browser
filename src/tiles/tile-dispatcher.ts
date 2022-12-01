@@ -84,6 +84,7 @@ export class TileDispatcher
     return html`
       <div
         id="container"
+        class=${isGridMode ? 'hoverable' : nothing}
         @mousemove=${isGridMode ? this.handleMouseMove : nothing}
         @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
       >
@@ -161,7 +162,7 @@ export class TileDispatcher
     // Try to find offsets for the hover pane that:
     //  (a) cause it to lie entirely within the viewport,
     //  (b) include the current mouse position, and
-    //  (c) minimize the distance between the mouse pointer and the rect's (10, 10) position.
+    //  (c) minimize the distance between the mouse pointer and the rect's (10, -10) position.
 
     let [top, left] = [0, 0];
 
@@ -169,7 +170,7 @@ export class TileDispatcher
     if (hoverPaneRect) {
       // Place it on the current mouse position while respecting viewport bounds
       top = clamp(
-        this.lastMouseClientPos.y - 10,
+        this.lastMouseClientPos.y + 10,
         10,
         window.innerHeight - hoverPaneRect.height - 10
       );
@@ -225,7 +226,7 @@ export class TileDispatcher
   /**
    * Aborts any existing timer for showing the hover pane, and starts a new one.
    */
-  private restartHoverPaneTimer(): void {
+  private restartShowHoverPaneTimer(): void {
     clearTimeout(this.showHoverPaneTimer);
     this.showHoverPaneTimer = window.setTimeout(() => {
       this.showHoverPane();
@@ -237,9 +238,11 @@ export class TileDispatcher
    * Restarts the timer for showing the hover pane and updates the current mouse position.
    */
   private handleMouseMove(e: MouseEvent): void {
+    clearTimeout(this.hideHoverPaneTimer);
+
     // Restart the timer to show the hover pane anytime the mouse moves within the tile
     if (!this.hoverPaneShown) {
-      this.restartHoverPaneTimer();
+      this.restartShowHoverPaneTimer();
 
       this.lastMouseClientPos = { x: e.clientX, y: e.clientY };
     }
@@ -252,8 +255,12 @@ export class TileDispatcher
   private handleMouseLeave(): void {
     // Abort any timer to show the hover pane, as the mouse has left the item
     clearTimeout(this.showHoverPaneTimer);
-    // And hide the pane if it's already been shown
-    this.hideHoverPane();
+
+    // Hide the pane if it's already been shown
+    clearTimeout(this.hideHoverPaneTimer);
+    this.hideHoverPaneTimer = window.setTimeout(() => {
+      this.hideHoverPane();
+    }, this.hideHoverPaneDelay);
   }
 
   /**
@@ -269,14 +276,17 @@ export class TileDispatcher
     });
 
     this.repositionHoverPane();
-    this.hoverPane?.classList.add('visible');
+    this.hoverPane?.classList.add('visible', 'fade-in');
   }
 
   /**
    * Causes this tile's hover pane to be removed.
    */
   private hideHoverPane(): void {
-    this.hoverPaneShown = false;
+    this.hoverPane?.classList.remove('fade-in');
+    setTimeout(() => {
+      this.hoverPaneShown = false;
+    }, 100);
   }
 
   /**
@@ -389,6 +399,12 @@ export class TileDispatcher
       #container {
         position: relative;
         height: 100%;
+        border-radius: 4px;
+      }
+
+      #container.hoverable:hover {
+        box-shadow: 0 0 5px 0px rgba(10, 10, 40, 0.8);
+        transition: box-shadow 0.1s ease;
       }
 
       a {
@@ -403,11 +419,6 @@ export class TileDispatcher
         height: 100%;
       }
 
-      a:hover {
-        filter: drop-shadow(0 0 2px rgba(10, 10, 40, 0.8));
-        transition: filter 0.1s ease;
-      }
-
       tile-hover-pane {
         position: absolute;
         top: -1000px;
@@ -416,21 +427,10 @@ export class TileDispatcher
 
         /* Don't make it visible until it has been properly positioned */
         visibility: hidden;
-
-        transform: translateY(8px);
-        opacity: 0;
-        transition: transform 0.1s ease-in, opacity 0.1s ease-in;
       }
-
-      /*tile-hover-pane.flip {
-        left: unset;
-        right: 10px;
-      }*/
 
       tile-hover-pane.visible {
         visibility: visible;
-        opacity: 1;
-        transform: translateY(0);
       }
     `;
   }

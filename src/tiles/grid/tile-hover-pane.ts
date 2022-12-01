@@ -37,6 +37,23 @@ export class TileHoverPane extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      :host {
+        opacity: 0;
+        transform: translateY(8px);
+        transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+      }
+
+      :host(.fade-in) {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (prefers-reduced-motion) {
+        :host {
+          transition-duration: 0.001s, 0.001s !important; /* Imperceptibly fast */
+        }
+      }
+
       #container {
         width: max-content;
         max-width: min(45vw, 600px);
