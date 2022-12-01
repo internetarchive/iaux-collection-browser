@@ -30,10 +30,10 @@ export const baseItemImageStyles = css`
 
   .blur {
     filter: blur(15px);
-    box-shadow: 1px 1px 2px 0px;
+    box-shadow: 1px 1px 2px 0;
   }
 
-  .radius50 {
+  .account-image {
     object-fit: cover;
     background-position: 50% 50%;
     border-radius: 50%;
@@ -41,8 +41,11 @@ export const baseItemImageStyles = css`
     height: 160px;
   }
 
-  .radius8 {
+  .collection-image {
+    object-fit: fill;
     border-radius: 8px;
+    width: 160px;
+    height: 160px;
   }
 `;
 
