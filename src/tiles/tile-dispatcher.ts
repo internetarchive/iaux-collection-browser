@@ -56,10 +56,17 @@ export class TileDispatcher
 
   @property({ type: Boolean }) loggedIn = false;
 
-  @property({ type: Number }) showHoverPaneDelay: number = 500;
+  @property({ type: Boolean }) enableHoverPane = false;
+
+  @property({ type: Number }) showHoverPaneDelay: number = 300;
+
+  @property({ type: Number }) hideHoverPaneDelay: number = 125;
 
   @state()
   private showHoverPaneTimer?: number;
+
+  @state()
+  private hideHoverPaneTimer?: number;
 
   @state()
   private hoverPaneShown: boolean = false;
@@ -127,7 +134,7 @@ export class TileDispatcher
   }
 
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
-    return this.hoverPaneShown
+    return this.enableHoverPane && this.hoverPaneShown
       ? html`<tile-hover-pane
           role="tooltip"
           .model=${this.model}
@@ -396,7 +403,7 @@ export class TileDispatcher
         height: 100%;
       }
 
-      tile-hover-pane ~ a {
+      a:hover {
         filter: drop-shadow(0 0 2px rgba(10, 10, 40, 0.8));
         transition: filter 0.1s ease;
       }
