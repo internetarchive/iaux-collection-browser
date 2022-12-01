@@ -59,6 +59,7 @@ export class CollectionTile extends LitElement {
   static get styles(): CSSResultGroup {
     const tileBorderColor = css`var(--tileBorderColor, #555555)`;
     const tileBackgroundColor = css`var(--tileBackgroundColor, #666666)`;
+    const whiteColor = css`#fff`;
 
     return [
       baseTileStyles,
@@ -72,16 +73,8 @@ export class CollectionTile extends LitElement {
           flex-grow: initial;
         }
 
-        image-block {
-          --imageBlockBackgroundColor: ${tileBackgroundColor};
-        }
-
         h1.truncated {
-          color: #fff;
-        }
-
-        #item-mediatype {
-          margin-right: 0.5rem;
+          color: ${whiteColor};
         }
 
         #item-mediatype svg {
@@ -101,16 +94,16 @@ export class CollectionTile extends LitElement {
 
         #item-stats {
           display: flex;
-          padding: 0rem 0.5rem 0.5rem;
+          padding: 0 5px 5px;
           align-items: center;
         }
 
         #stats-row {
           display: flex;
           align-items: baseline;
-          color: rgb(255, 255, 255);
+          color: ${whiteColor};
           flex-direction: column;
-          margin-left: 5px;
+          margin-left: 10px;
         }
       `,
     ];

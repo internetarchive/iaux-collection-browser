@@ -71,10 +71,6 @@ export class AccountTile extends LitElement {
         .container {
           border: 1px solid ${tileBorderColor};
         }
-
-        image-block {
-          --imageBlockBackgroundColor: #fcf5e6;
-        }
       `,
     ];
   }

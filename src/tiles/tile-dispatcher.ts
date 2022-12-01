@@ -207,11 +207,18 @@ export class TileDispatcher
 
       collection-tile {
         --tileBorderColor: #555555;
+        --tileBackgroundColor, #666666;
+        --imageBlockBackgroundColor: #666666;
       }
 
-      account-tile,
+      account-tile {
+        --tileBorderColor: #dddddd;
+        --imageBlockBackgroundColor: #fcf5e6;
+      }
+
       item-tile {
         --tileBorderColor: #dddddd;
+        --imageBlockBackgroundColor: #f1f1f4;
       }
 
       #container {

@@ -34,6 +34,7 @@ export const baseItemImageStyles = css`
   }
 
   .radius50 {
+    object-fit: cover;
     background-position: 50% 50%;
     border-radius: 50%;
     width: 160px;
