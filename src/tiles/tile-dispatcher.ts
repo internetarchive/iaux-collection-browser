@@ -24,8 +24,10 @@ import './list/tile-list-compact';
 import './list/tile-list-compact-header';
 import type { TileHoverPane } from './grid/tile-hover-pane';
 
+type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
+
 function clamp(val: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, val));
+  return Math.max(min, Math.min(val, max));
 }
 
 @customElement('tile-dispatcher')
@@ -60,16 +62,16 @@ export class TileDispatcher
 
   @property({ type: Number }) showHoverPaneDelay: number = 300;
 
-  @property({ type: Number }) hideHoverPaneDelay: number = 125;
+  @property({ type: Number }) hideHoverPaneDelay: number = 100;
+
+  @state()
+  private hoverPaneState: HoverPaneState = 'hidden';
 
   @state()
   private showHoverPaneTimer?: number;
 
   @state()
   private hideHoverPaneTimer?: number;
-
-  @state()
-  private hoverPaneShown: boolean = false;
 
   private lastMouseClientPos = { x: 0, y: 0 };
 
@@ -135,7 +137,7 @@ export class TileDispatcher
   }
 
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
-    return this.enableHoverPane && this.hoverPaneShown
+    return this.enableHoverPane && this.hoverPaneState !== 'hidden'
       ? html`<tile-hover-pane
           role="tooltip"
           .model=${this.model}
@@ -224,26 +226,23 @@ export class TileDispatcher
   }
 
   /**
-   * Aborts any existing timer for showing the hover pane, and starts a new one.
-   */
-  private restartShowHoverPaneTimer(): void {
-    clearTimeout(this.showHoverPaneTimer);
-    this.showHoverPaneTimer = window.setTimeout(() => {
-      this.showHoverPane();
-    }, this.showHoverPaneDelay);
-  }
-
-  /**
    * Handler for the mousemove event on this tile.
-   * Restarts the timer for showing the hover pane and updates the current mouse position.
+   * Aborts any pending hide/fade-out for the hover tile, and restarts the
+   * timer to show it.
    */
   private handleMouseMove(e: MouseEvent): void {
+    // The mouse is within the tile, so abort any pending removal of the hover pane
     clearTimeout(this.hideHoverPaneTimer);
 
-    // Restart the timer to show the hover pane anytime the mouse moves within the tile
-    if (!this.hoverPaneShown) {
-      this.restartShowHoverPaneTimer();
+    // If the hover pane is currently fading out, just make it fade back in where it is
+    if (this.hoverPaneState === 'fading-out') {
+      this.hoverPaneState = 'shown';
+      this.hoverPane?.classList.add('fade-in');
+    }
 
+    // Restart the timer to show the hover pane anytime the mouse moves within the tile
+    if (this.hoverPaneState === 'hidden') {
+      this.restartShowHoverPaneTimer();
       this.lastMouseClientPos = { x: e.clientX, y: e.clientY };
     }
   }
@@ -253,21 +252,33 @@ export class TileDispatcher
    * Hides the hover pane if present, and aborts the timer for showing it.
    */
   private handleMouseLeave(): void {
-    // Abort any timer to show the hover pane, as the mouse has left the item
+    // Abort any timer to show the hover pane, as the mouse has left the tile
     clearTimeout(this.showHoverPaneTimer);
 
-    // Hide the pane if it's already been shown
+    // Hide the hover pane if it's already been shown
     clearTimeout(this.hideHoverPaneTimer);
-    this.hideHoverPaneTimer = window.setTimeout(() => {
-      this.hideHoverPane();
-    }, this.hideHoverPaneDelay);
+    if (this.hoverPaneState !== 'hidden') {
+      this.hideHoverPaneTimer = window.setTimeout(() => {
+        this.fadeOutHoverPane();
+      }, this.hideHoverPaneDelay);
+    }
+  }
+
+  /**
+   * Aborts and restarts the timer for showing the hover pane.
+   */
+  private restartShowHoverPaneTimer(): void {
+    clearTimeout(this.showHoverPaneTimer);
+    this.showHoverPaneTimer = window.setTimeout(() => {
+      this.showHoverPane();
+    }, this.showHoverPaneDelay);
   }
 
   /**
    * Causes this tile's hover pane to be rendered, positioned, and made visible.
    */
   private async showHoverPane(): Promise<void> {
-    this.hoverPaneShown = true;
+    this.hoverPaneState = 'shown';
 
     await this.updateComplete;
     await new Promise(resolve => {
@@ -280,12 +291,14 @@ export class TileDispatcher
   }
 
   /**
-   * Causes this tile's hover pane to be removed.
+   * Causes this tile's hover pane to begin fading out and starts
+   * the timer for it to be removed.
    */
-  private hideHoverPane(): void {
+  private fadeOutHoverPane(): void {
+    this.hoverPaneState = 'fading-out';
     this.hoverPane?.classList.remove('fade-in');
-    setTimeout(() => {
-      this.hoverPaneShown = false;
+    this.hideHoverPaneTimer = window.setTimeout(() => {
+      this.hoverPaneState = 'hidden';
     }, 100);
   }
 
