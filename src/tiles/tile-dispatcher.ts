@@ -183,8 +183,8 @@ export class TileDispatcher
    * given relative to this tile's content box.
    *
    * These offsets are only valid if the hover pane is already rendered with its
-   * correct width and height. If the hover pane is not present, both offsets will
-   * be 0.
+   * correct width and height. If the hover pane is not present, the returned offsets
+   * will simply represent the current mouse position.
    */
   private get hoverPaneDesiredOffsets(): { top: number; left: number } {
     // Try to find offsets for the hover pane that:
@@ -213,12 +213,12 @@ export class TileDispatcher
       // Apply desired offsets from the mouse position
       left += (flipHorizontal ? -1 : 1) * this.hoverPaneOffsetX;
       top += (flipVertical ? -1 : 1) * this.hoverPaneOffsetY;
-
-      // Subtract off the tile's own offsets
-      const tileRect = this.getBoundingClientRect();
-      left -= tileRect.left;
-      top -= tileRect.top;
     }
+
+    // Subtract off the tile's own offsets
+    const tileRect = this.getBoundingClientRect();
+    left -= tileRect.left;
+    top -= tileRect.top;
 
     return { left, top };
   }
