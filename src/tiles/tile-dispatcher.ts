@@ -1,10 +1,10 @@
 import {
   css,
   html,
+  HTMLTemplateResult,
   LitElement,
   nothing,
   PropertyValues,
-  TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -108,10 +108,10 @@ export class TileDispatcher
         @mousemove=${isGridMode ? this.handleMouseMove : nothing}
         @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
       >
-        ${this.hoverPaneTemplate}
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
+        ${this.hoverPaneTemplate}
       </div>
     `;
   }
@@ -154,10 +154,9 @@ export class TileDispatcher
     `;
   }
 
-  private get hoverPaneTemplate(): TemplateResult | typeof nothing {
+  private get hoverPaneTemplate(): HTMLTemplateResult | typeof nothing {
     return this.shouldRenderHoverPane
       ? html`<tile-hover-pane
-          role="tooltip"
           .model=${this.model}
           .baseNavigationUrl=${this.baseNavigationUrl}
           .baseImageUrl=${this.baseImageUrl}
