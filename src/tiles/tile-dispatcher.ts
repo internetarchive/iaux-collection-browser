@@ -26,10 +26,6 @@ import type { TileHoverPane } from './grid/tile-hover-pane';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
-function clamp(val: number, min: number, max: number): number {
-  return Math.max(min, Math.min(val, max));
-}
-
 @customElement('tile-dispatcher')
 export class TileDispatcher
   extends LitElement
@@ -58,14 +54,23 @@ export class TileDispatcher
 
   @property({ type: Boolean }) loggedIn = false;
 
+  /** Whether this tile should render a hover pane at all (if applicable) */
   @property({ type: Boolean }) enableHoverPane = false;
 
+  /**
+   * The delay between the mouse idling within the tile and when the hover
+   * pane should begin fading in (in milliseconds).
+   */
   @property({ type: Number }) showHoverPaneDelay: number = 300;
 
+  /**
+   * The delay between when the mouse leaves the tile and when the hover
+   * pane should begin fading out (in milliseconds).
+   */
   @property({ type: Number }) hideHoverPaneDelay: number = 100;
 
   /**
-   * The current state of this tile's hover pane.
+   * Used to control the current state of this tile's hover pane.
    *  - `'hidden'` => The hover pane is not present at all.
    *  - `'shown'` => The hover pane is either fading in or fully visible.
    *  - `'fading-out'` => The hover pane is fading out and about to be removed.
@@ -73,12 +78,15 @@ export class TileDispatcher
   @state()
   private hoverPaneState: HoverPaneState = 'hidden';
 
+  /** The timer ID for showing the hover pane */
   @state()
   private showHoverPaneTimer?: number;
 
+  /** The timer ID for hiding the hover pane */
   @state()
   private hideHoverPaneTimer?: number;
 
+  /** A record of the last mouse position on the tile, for positioning the hover pane */
   private lastMouseClientPos = { x: 0, y: 0 };
 
   @query('#container')
@@ -168,33 +176,39 @@ export class TileDispatcher
    */
   private get hoverPaneDesiredOffsets(): { top: number; left: number } {
     // Try to find offsets for the hover pane that:
-    //  (a) cause it to lie entirely within the viewport,
-    //  (b) include the current mouse position, and
-    //  (c) minimize the distance between the mouse pointer and the rect's (10, -10) position.
+    //  (a) cause it to lie entirely within the viewport, and
+    //  (b) to the extent possible, minimize the distance between the
+    //      nearest corner of the hover pane and the mouse position
+    //      (with some additional offsets applied after the fact).
 
-    let [top, left] = [0, 0];
+    let [left, top] = [this.lastMouseClientPos.x, this.lastMouseClientPos.y];
+
+    // Flip the hover pane according to which quadrant of the viewport the mouse is in.
+    // (Similar to how Wikipedia's link hover panes work)
+    const flipHorizontal = this.lastMouseClientPos.x > window.innerWidth / 2;
+    const flipVertical = this.lastMouseClientPos.y > window.innerHeight / 2;
 
     const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
     if (hoverPaneRect) {
-      // Place it on the current mouse position while respecting viewport bounds
-      top = clamp(
-        this.lastMouseClientPos.y + 10,
-        10,
-        window.innerHeight - hoverPaneRect.height - 10
-      );
-      left = clamp(
-        this.lastMouseClientPos.x - 10,
-        10,
-        window.innerWidth - hoverPaneRect.width - 30
-      );
+      // If we need to flip the hover pane, do so by subtracting its width/height from left/top
+      if (flipHorizontal) {
+        left -= hoverPaneRect.width;
+      }
+      if (flipVertical) {
+        top -= hoverPaneRect.height;
+      }
+
+      // Apply desired offsets from the mouse position
+      left -= (flipHorizontal ? -1 : 1) * 10;
+      top += (flipVertical ? -1 : 1) * 10;
 
       // Subtract off the tile's own offsets
       const tileRect = this.getBoundingClientRect();
-      top -= tileRect.top;
       left -= tileRect.left;
+      top -= tileRect.top;
     }
 
-    return { top, left };
+    return { left, top };
   }
 
   handleResize(entry: ResizeObserverEntry): void {
