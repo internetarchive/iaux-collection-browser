@@ -99,14 +99,29 @@ export class TileDispatcher
   @query('tile-hover-pane')
   private hoverPane?: TileHoverPane;
 
+  /** Maps each display mode to whether hover panes should appear in that mode */
+  private static readonly HOVER_PANE_DISPLAY_MODES: Record<
+    TileDisplayMode,
+    boolean
+  > = {
+    grid: true,
+    'list-compact': true,
+    'list-detail': false,
+    'list-header': false,
+  };
+
   render() {
     const isGridMode = this.tileDisplayMode === 'grid';
     return html`
       <div
         id="container"
         class=${isGridMode ? 'hoverable' : nothing}
-        @mousemove=${isGridMode ? this.handleMouseMove : nothing}
-        @mouseleave=${isGridMode ? this.handleMouseLeave : nothing}
+        @mousemove=${this.shouldEnableHoverPane
+          ? this.handleMouseMove
+          : nothing}
+        @mouseleave=${this.shouldEnableHoverPane
+          ? this.handleMouseLeave
+          : nothing}
       >
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
@@ -141,8 +156,8 @@ export class TileDispatcher
     return html`
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-        title=${this.tileDisplayMode === 'grid'
-          ? nothing // Don't show title tooltips in grid mode (where we have the tile info popups)
+        title=${this.shouldEnableHoverPane
+          ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
         @click=${() =>
           this.dispatchEvent(
@@ -167,12 +182,23 @@ export class TileDispatcher
       : nothing;
   }
 
-  private get shouldRenderHoverPane(): boolean {
+  /**
+   * Whether hover pane behavior should be enabled for this tile
+   * (e.g., whether mouse listeners should be attached, etc.)
+   */
+  private get shouldEnableHoverPane(): boolean {
     return (
       this.enableHoverPane &&
-      this.tileDisplayMode === 'grid' &&
-      this.hoverPaneState !== 'hidden'
+      !!this.tileDisplayMode &&
+      TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode]
     );
+  }
+
+  /**
+   * Whether this tile should currently render its hover pane.
+   */
+  private get shouldRenderHoverPane(): boolean {
+    return this.shouldEnableHoverPane && this.hoverPaneState !== 'hidden';
   }
 
   /**
