@@ -69,6 +69,10 @@ export class TileDispatcher
    */
   @property({ type: Number }) hideHoverPaneDelay: number = 100;
 
+  @property({ type: Number }) hoverPaneOffsetX: number = -10;
+
+  @property({ type: Number }) hoverPaneOffsetY: number = 15;
+
   /**
    * Used to control the current state of this tile's hover pane.
    *  - `'hidden'` => The hover pane is not present at all.
@@ -151,7 +155,7 @@ export class TileDispatcher
   }
 
   private get hoverPaneTemplate(): TemplateResult | typeof nothing {
-    return this.enableHoverPane && this.hoverPaneState !== 'hidden'
+    return this.shouldRenderHoverPane
       ? html`<tile-hover-pane
           role="tooltip"
           .model=${this.model}
@@ -162,6 +166,14 @@ export class TileDispatcher
           .collectionNameCache=${this.collectionNameCache}
         ></tile-hover-pane>`
       : nothing;
+  }
+
+  private get shouldRenderHoverPane(): boolean {
+    return (
+      this.enableHoverPane &&
+      this.tileDisplayMode === 'grid' &&
+      this.hoverPaneState !== 'hidden'
+    );
   }
 
   /**
@@ -199,8 +211,8 @@ export class TileDispatcher
       }
 
       // Apply desired offsets from the mouse position
-      left -= (flipHorizontal ? -1 : 1) * 10;
-      top += (flipVertical ? -1 : 1) * 10;
+      left += (flipHorizontal ? -1 : 1) * this.hoverPaneOffsetX;
+      top += (flipVertical ? -1 : 1) * this.hoverPaneOffsetY;
 
       // Subtract off the tile's own offsets
       const tileRect = this.getBoundingClientRect();
@@ -300,12 +312,14 @@ export class TileDispatcher
   private async showHoverPane(): Promise<void> {
     this.hoverPaneState = 'shown';
 
+    // Wait for the state update to render the hover pane
     await this.updateComplete;
     await new Promise(resolve => {
       // Pane sizes aren't accurate until next frame
       requestAnimationFrame(resolve);
     });
 
+    // Apply the correct positioning to the hover pane
     this.repositionHoverPane();
 
     // The hover pane is initially not visible (to avoid it shifting around
