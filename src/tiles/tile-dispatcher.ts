@@ -64,6 +64,12 @@ export class TileDispatcher
 
   @property({ type: Number }) hideHoverPaneDelay: number = 100;
 
+  /**
+   * The current state of this tile's hover pane.
+   *  - `'hidden'` => The hover pane is not present at all.
+   *  - `'shown'` => The hover pane is either fading in or fully visible.
+   *  - `'fading-out'` => The hover pane is fading out and about to be removed.
+   */
   @state()
   private hoverPaneState: HoverPaneState = 'hidden';
 
@@ -287,6 +293,10 @@ export class TileDispatcher
     });
 
     this.repositionHoverPane();
+
+    // The hover pane is initially not visible (to avoid it shifting around
+    // while being positioned). Since it now has the correct positioning, we
+    // can make it visible and begin its fade-in animation.
     this.hoverPane?.classList.add('visible', 'fade-in');
   }
 
