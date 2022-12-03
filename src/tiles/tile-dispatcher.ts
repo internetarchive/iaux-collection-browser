@@ -479,8 +479,12 @@ export class TileDispatcher
       }
 
       #container.hoverable:hover {
-        box-shadow: 0 0 5px 0px rgba(10, 10, 40, 0.8);
+        box-shadow: 0 0 6px 2px rgba(8, 8, 32, 0.8);
         transition: box-shadow 0.1s ease;
+      }
+
+      #container.hoverable:hover a {
+        transform: scale(1.01);
       }
 
       a {
@@ -488,6 +492,7 @@ export class TileDispatcher
         height: 100%;
         color: unset;
         text-decoration: none;
+        transition: transform 0.05s ease;
       }
 
       a :first-child {

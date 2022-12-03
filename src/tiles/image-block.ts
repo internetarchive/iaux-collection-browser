@@ -86,7 +86,6 @@ export class ImageBlock extends LitElement {
 
     return css`
       div {
-        border-radius: 4px;
         display: flex;
         justify-content: center;
         position: relative;
@@ -99,6 +98,7 @@ export class ImageBlock extends LitElement {
         flex: 1;
         position: initial;
         padding: 5px;
+        border-radius: 4px 4px 0 0;
       }
 
       .collection.grid {
