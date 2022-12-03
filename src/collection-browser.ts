@@ -272,7 +272,7 @@ export class CollectionBrowser
   goToPage(pageNumber: number) {
     this.initialPageNumber = pageNumber;
     this.pagesToRender = pageNumber;
-    this.scrollToPage(pageNumber);
+    return this.scrollToPage(pageNumber);
   }
 
   clearFilters() {
@@ -1136,22 +1136,25 @@ export class CollectionBrowser
       results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
   }
 
-  private scrollToPage(pageNumber: number) {
-    const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
-    // without this setTimeout, Safari just pauses until the `fetchPage` is complete
-    // then scrolls to the cell
-    setTimeout(() => {
-      this.isScrollingToCell = true;
-      this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
-      // This timeout is to give the scroll animation time to finish
-      // then updating the infinite scroller once we're done scrolling
-      // There's no scroll animation completion callback so we're
-      // giving it 0.5s to finish.
+  private scrollToPage(pageNumber: number): Promise<void> {
+    return new Promise(resolve => {
+      const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
+      // without this setTimeout, Safari just pauses until the `fetchPage` is complete
+      // then scrolls to the cell
       setTimeout(() => {
-        this.isScrollingToCell = false;
-        this.infiniteScroller?.reload();
-      }, 500);
-    }, 0);
+        this.isScrollingToCell = true;
+        this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
+        // This timeout is to give the scroll animation time to finish
+        // then updating the infinite scroller once we're done scrolling
+        // There's no scroll animation completion callback so we're
+        // giving it 0.5s to finish.
+        setTimeout(() => {
+          this.isScrollingToCell = false;
+          this.infiniteScroller?.reload();
+          resolve();
+        }, 500);
+      }, 0);
+    });
   }
 
   /**
