@@ -262,7 +262,7 @@ export class CollectionBrowser
   private dataSource: Record<string, TileModel[]> = {};
 
   @query('infinite-scroller')
-  private infiniteScroller!: InfiniteScroller;
+  private infiniteScroller?: InfiniteScroller;
 
   /**
    * Go to the given page of results
@@ -1142,14 +1142,14 @@ export class CollectionBrowser
     // then scrolls to the cell
     setTimeout(() => {
       this.isScrollingToCell = true;
-      this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+      this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
       // This timeout is to give the scroll animation time to finish
       // then updating the infinite scroller once we're done scrolling
       // There's no scroll animation completion callback so we're
       // giving it 0.5s to finish.
       setTimeout(() => {
         this.isScrollingToCell = false;
-        this.infiniteScroller.reload();
+        this.infiniteScroller?.reload();
       }, 500);
     }, 0);
   }
@@ -1248,7 +1248,9 @@ export class CollectionBrowser
     // temporary estimates based on pages rendered so far).
     if (results.length < this.pageSize) {
       this.endOfDataReached = true;
-      this.infiniteScroller.itemCount = this.totalResults;
+      if (this.infiniteScroller) {
+        this.infiniteScroller.itemCount = this.totalResults;
+      }
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
@@ -1350,7 +1352,7 @@ export class CollectionBrowser
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.infiniteScroller.reload();
+      this.infiniteScroller?.reload();
     }
   }
 
