@@ -5,7 +5,6 @@ import { css } from 'lit';
  */
 export const baseItemImageStyles = css`
   .drop-shadow {
-    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.8));
     overflow: hidden;
     height: 100%;
   }
@@ -44,7 +43,7 @@ export const baseItemImageStyles = css`
   .collection-image {
     object-fit: fill;
     border-radius: 8px;
-    width: 160px;
+    width: 100%;
     height: 160px;
   }
 `;

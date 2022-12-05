@@ -10,7 +10,7 @@ export type NumberFormat =
 export type LabelFormat =
   | 'short' // [1.2]K
   | 'long'; // [1.2] thousand
-type Divisor = 1_000_000_000 | 1_000_000 | 1_000 | 1;
+export type Divisor = 1_000_000_000 | 1_000_000 | 1_000 | 1_0 | 1;
 
 /**
  * Return the magnitude of a number.

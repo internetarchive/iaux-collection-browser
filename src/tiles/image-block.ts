@@ -44,6 +44,7 @@ export class ImageBlock extends LitElement {
     return {
       list: this.isListTile && !this.isCompactTile,
       'list-compact': this.isListTile && this.isCompactTile,
+      collection: this.model?.mediatype === 'collection', // fill the image in container
       [this.viewSize]: true,
     };
   }
@@ -96,6 +97,10 @@ export class ImageBlock extends LitElement {
         flex: 1;
         position: initial;
         padding: 5px;
+      }
+
+      .collection.grid {
+        display: block;
       }
 
       /** tile-list view */

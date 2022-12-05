@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import type { TileModel } from '../../models';
-
+import { formatUnitSize } from '../../utils/format-unit-size';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
 
@@ -49,11 +49,24 @@ export class CollectionTile extends LitElement {
         <div id="item-mediatype">${collectionIcon}</div>
 
         <div id="stats-row">
-          <span id="item-count">234,234 items</span>
-          <span id="item-size">234234 Gigabytes</span>
+          ${this.getItemsTemplate} ${this.getSizeTemplate}
         </div>
       </div>
     `;
+  }
+
+  private get getItemsTemplate() {
+    return html`<span id="item-count"
+      >${this.model?.itemCount.toLocaleString()} items</span
+    >`;
+  }
+
+  private get getSizeTemplate() {
+    const collectionSize = this.model?.collectionSize ?? 0;
+
+    return collectionSize
+      ? html`<span id="item-size">${formatUnitSize(collectionSize, 1_0)}</span>`
+      : ``;
   }
 
   static get styles(): CSSResultGroup {

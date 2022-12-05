@@ -4,7 +4,9 @@ export interface TileModel {
   averageRating?: number;
   collectionIdentifier?: string;
   collectionName?: string;
+  collectionFilesCount: number;
   collections: string[];
+  collectionSize: number;
   commentCount: number;
   creator?: string;
   creators: string[];
