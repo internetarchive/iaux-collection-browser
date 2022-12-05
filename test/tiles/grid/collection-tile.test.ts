@@ -5,7 +5,7 @@ import type { CollectionTile } from '../../../src/tiles/grid/collection-tile';
 
 import '../../../src/tiles/grid/collection-tile';
 
-describe('Account Tile', () => {
+describe('Collection Tile', () => {
   it('should render initial component', async () => {
     const el = await fixture<CollectionTile>(
       html`<collection-tile></collection-tile>`
@@ -26,6 +26,7 @@ describe('Account Tile', () => {
         .model=${{
           identifier: 'books',
           title: 'Books',
+          itemCount: 121,
         }}
       >
       </collection-tile>
@@ -47,6 +48,7 @@ describe('Account Tile', () => {
       <collection-tile
         .model=${{
           identifier: '@jack-sparrow',
+          itemCount: 1233,
         }}
       >
       </collection-tile>
@@ -62,6 +64,8 @@ describe('Account Tile', () => {
       <collection-tile
         .model=${{
           identifier: '@jack-sparrow',
+          itemCount: 14521,
+          collectionSize: 23222543,
         }}
       >
       </collection-tile>

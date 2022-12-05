@@ -32,5 +32,8 @@ export function formatUnitSize(
 
   itemSize = Math.round(itemSize * ndecimals) / ndecimals;
 
-  return `${itemSize.toLocaleString('en') + seprator + timesNames[times]}`;
+  if (itemSize)
+    return `${itemSize.toLocaleString('en') + seprator + timesNames[times]}`;
+
+  return nothing;
 }
