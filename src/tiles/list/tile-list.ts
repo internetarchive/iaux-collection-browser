@@ -90,7 +90,13 @@ export class TileList extends LitElement {
   }
 
   private get imageBlockTemplate() {
-    return html`
+    if (!this.model) return nothing;
+
+    return html`<a
+      href="${this.baseNavigationUrl}/details/${encodeURI(
+        this.model.identifier
+      )}"
+    >
       <image-block
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
@@ -100,7 +106,7 @@ export class TileList extends LitElement {
         .loggedIn=${this.loggedIn}
       >
       </image-block>
-    `;
+    </a> `;
   }
 
   private get detailsTemplate() {
