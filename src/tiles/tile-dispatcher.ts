@@ -69,6 +69,8 @@ export class TileDispatcher
    */
   @property({ type: Number }) hideHoverPaneDelay: number = 100;
 
+  @property({ type: Number }) hoverPaneLongPressDelay: number = 1000;
+
   @property({ type: Number }) hoverPaneOffsetX: number = -10;
 
   @property({ type: Number }) hoverPaneOffsetY: number = 15;
@@ -83,12 +85,12 @@ export class TileDispatcher
   private hoverPaneState: HoverPaneState = 'hidden';
 
   /** The timer ID for showing the hover pane */
-  @state()
   private showHoverPaneTimer?: number;
 
   /** The timer ID for hiding the hover pane */
-  @state()
   private hideHoverPaneTimer?: number;
+
+  private hoverPaneLongPressTimer?: number;
 
   /** A record of the last mouse position on the tile, for positioning the hover pane */
   private lastMouseClientPos = { x: 0, y: 0 };
@@ -121,6 +123,18 @@ export class TileDispatcher
           : nothing}
         @mouseleave=${this.shouldPrepareHoverPane
           ? this.handleMouseLeave
+          : nothing}
+        @touchstart=${this.shouldPrepareHoverPane
+          ? this.handleTouchStart
+          : nothing}
+        @touchend=${this.shouldPrepareHoverPane
+          ? this.cancelLongPress
+          : nothing}
+        @touchmove=${this.shouldPrepareHoverPane
+          ? this.cancelLongPress
+          : nothing}
+        @touchcancel=${this.shouldPrepareHoverPane
+          ? this.cancelLongPress
           : nothing}
       >
         ${this.tileDisplayMode === 'list-header'
@@ -319,6 +333,18 @@ export class TileDispatcher
         this.fadeOutHoverPane();
       }, this.hideHoverPaneDelay);
     }
+  }
+
+  private handleTouchStart(): void {
+    this.hoverPaneLongPressTimer = window.setTimeout(() => {
+      if (this.hoverPaneState === 'hidden') {
+        this.showHoverPane();
+      }
+    }, this.hoverPaneLongPressDelay);
+  }
+
+  private cancelLongPress(): void {
+    clearTimeout(this.hoverPaneLongPressTimer);
   }
 
   /**
