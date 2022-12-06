@@ -54,7 +54,7 @@ export class TileDispatcher
 
   @property({ type: Boolean }) loggedIn = false;
 
-  /** Whether this tile should render a hover pane at all (if applicable) */
+  /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
   /**
@@ -116,10 +116,10 @@ export class TileDispatcher
       <div
         id="container"
         class=${isGridMode ? 'hoverable' : nothing}
-        @mousemove=${this.shouldEnableHoverPane
+        @mousemove=${this.shouldPrepareHoverPane
           ? this.handleMouseMove
           : nothing}
-        @mouseleave=${this.shouldEnableHoverPane
+        @mouseleave=${this.shouldPrepareHoverPane
           ? this.handleMouseLeave
           : nothing}
       >
@@ -156,7 +156,7 @@ export class TileDispatcher
     return html`
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-        title=${this.shouldEnableHoverPane
+        title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
         @click=${() =>
@@ -183,10 +183,10 @@ export class TileDispatcher
   }
 
   /**
-   * Whether hover pane behavior should be enabled for this tile
+   * Whether hover pane behavior should be prepared for this tile
    * (e.g., whether mouse listeners should be attached, etc.)
    */
-  private get shouldEnableHoverPane(): boolean {
+  private get shouldPrepareHoverPane(): boolean {
     return (
       this.enableHoverPane &&
       !!this.tileDisplayMode &&
@@ -198,7 +198,7 @@ export class TileDispatcher
    * Whether this tile should currently render its hover pane.
    */
   private get shouldRenderHoverPane(): boolean {
-    return this.shouldEnableHoverPane && this.hoverPaneState !== 'hidden';
+    return this.shouldPrepareHoverPane && this.hoverPaneState !== 'hidden';
   }
 
   /**
