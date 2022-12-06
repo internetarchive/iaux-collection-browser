@@ -199,6 +199,12 @@ export class TileDispatcher
             .loggedIn=${this.loggedIn}
             .sortParam=${this.sortParam}
             .collectionNameCache=${this.collectionNameCache}
+            .featureFeedbackSettings=${{
+              enabled: true,
+              buttonText: 'Feedback?',
+              featureIdentifier: 'TileHoverPopup',
+              prompt: 'What do you think of the search tile info popups?',
+            }}
           ></tile-hover-pane>`
       : nothing;
   }

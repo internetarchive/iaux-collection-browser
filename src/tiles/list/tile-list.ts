@@ -48,6 +48,13 @@ export class TileList extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: Object }) featureFeedbackSettings = {
+    enabled: false,
+    buttonText: '',
+    featureIdentifier: '',
+    prompt: '',
+  };
+
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
@@ -64,7 +71,9 @@ export class TileList extends LitElement {
   private get mobileTemplate() {
     return html`
       <div id="list-line-top">
-        <div id="list-line-left">${this.imageBlockTemplate}</div>
+        <div id="list-line-left">
+          ${this.imageBlockTemplate}${this.feedbackTemplate}
+        </div>
         <div id="list-line-right">
           <div id="title-line">
             <div id="title">${this.titleTemplate}</div>
@@ -78,7 +87,9 @@ export class TileList extends LitElement {
 
   private get desktopTemplate() {
     return html`
-      <div id="list-line-left">${this.imageBlockTemplate}</div>
+      <div id="list-line-left">
+        ${this.imageBlockTemplate}${this.feedbackTemplate}
+      </div>
       <div id="list-line-right">
         <div id="title-line">
           <div id="title">${this.titleTemplate}</div>
@@ -107,6 +118,17 @@ export class TileList extends LitElement {
       >
       </image-block>
     </a> `;
+  }
+
+  private get feedbackTemplate() {
+    return this.featureFeedbackSettings?.enabled
+      ? html` <feature-feedback
+          .buttonText=${this.featureFeedbackSettings.buttonText}
+          .featureIdentifier=${this.featureFeedbackSettings.featureIdentifier}
+          .prompt=${this.featureFeedbackSettings.prompt}
+        >
+        </feature-feedback>`
+      : nothing;
   }
 
   private get detailsTemplate() {
@@ -527,6 +549,10 @@ export class TileList extends LitElement {
        */
       #list-line-left {
         max-width: 25%;
+
+        display: flex;
+        flex-direction: column;
+        row-gap: 5px;
       }
 
       div a:hover {

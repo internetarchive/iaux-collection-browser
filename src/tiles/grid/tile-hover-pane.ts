@@ -20,6 +20,13 @@ export class TileHoverPane extends LitElement {
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
+  @property({ type: Object }) featureFeedbackSettings = {
+    enabled: false,
+    buttonText: '',
+    featureIdentifier: '',
+    prompt: '',
+  };
+
   protected render(): TemplateResult {
     return html`
       <div id="container">
@@ -30,6 +37,7 @@ export class TileHoverPane extends LitElement {
           .loggedIn=${this.loggedIn}
           .sortParam=${this.sortParam}
           .collectionNameCache=${this.collectionNameCache}
+          .featureFeedbackSettings=${this.featureFeedbackSettings}
         ></tile-list>
       </div>
     `;
