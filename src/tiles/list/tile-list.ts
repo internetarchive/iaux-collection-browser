@@ -48,44 +48,6 @@ export class TileList extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
-  protected updated(changed: PropertyValues): void {
-    if (changed.has('model')) {
-      this.fetchCollectionNames();
-    }
-  }
-
-  private async fetchCollectionNames() {
-    if (
-      !this.model?.collections ||
-      this.model.collections.length === 0 ||
-      !this.collectionNameCache
-    ) {
-      return;
-    }
-    // Note: quirk of Lit: need to replace collectionLinks array,
-    // otherwise it will not re-render. Can't simply alter the array.
-    this.collectionLinks = [];
-    const newCollectionLinks: TemplateResult[] = [];
-    const promises: Promise<void>[] = [];
-    for (const collection of this.model.collections) {
-      // Don't include favorites or collections that are meant to be suppressed
-      if (
-        !suppressedCollections[collection] &&
-        !collection.startsWith('fav-')
-      ) {
-        promises.push(
-          this.collectionNameCache?.collectionNameFor(collection).then(name => {
-            newCollectionLinks.push(
-              this.detailsLink(collection, name ?? collection)
-            );
-          })
-        );
-      }
-    }
-    await Promise.all(promises);
-    this.collectionLinks = newCollectionLinks;
-  }
-
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
@@ -96,6 +58,9 @@ export class TileList extends LitElement {
     `;
   }
 
+  /**
+   * Templates
+   */
   private get mobileTemplate() {
     return html`
       <div id="list-line-top">
@@ -364,6 +329,44 @@ export class TileList extends LitElement {
       href="${this.baseNavigationUrl}/details/${encodeURI(identifier)}"
       >${DOMPurify.sanitize(linkText)}</a
     >`;
+  }
+
+  protected updated(changed: PropertyValues): void {
+    if (changed.has('model')) {
+      this.fetchCollectionNames();
+    }
+  }
+
+  private async fetchCollectionNames() {
+    if (
+      !this.model?.collections ||
+      this.model.collections.length === 0 ||
+      !this.collectionNameCache
+    ) {
+      return;
+    }
+    // Note: quirk of Lit: need to replace collectionLinks array,
+    // otherwise it will not re-render. Can't simply alter the array.
+    this.collectionLinks = [];
+    const newCollectionLinks: TemplateResult[] = [];
+    const promises: Promise<void>[] = [];
+    for (const collection of this.model.collections) {
+      // Don't include favorites or collections that are meant to be suppressed
+      if (
+        !suppressedCollections[collection] &&
+        !collection.startsWith('fav-')
+      ) {
+        promises.push(
+          this.collectionNameCache?.collectionNameFor(collection).then(name => {
+            newCollectionLinks.push(
+              this.detailsLink(collection, name ?? collection)
+            );
+          })
+        );
+      }
+    }
+    await Promise.all(promises);
+    this.collectionLinks = newCollectionLinks;
   }
 
   /*
