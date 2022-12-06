@@ -30,7 +30,7 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
     );
 
-    const container = el.shadowRoot?.querySelector('.container');
+    const container = el.shadowRoot?.querySelector('.snippet-view');
 
     // Has the correct number of snippets and highlights
     expect(container?.children.length).to.equal(snippets.length);
@@ -47,7 +47,7 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
     );
 
-    const container = el.shadowRoot?.querySelector('.container');
+    const container = el.shadowRoot?.querySelector('.snippet-view');
 
     // Has the correct number of snippets and highlights
     expect(container?.children.length).to.equal(snippets.length);
@@ -62,7 +62,7 @@ describe('TextSnippetBlock component', () => {
       ></text-snippet-block>`
     );
 
-    const container = el.shadowRoot?.querySelector('.container');
+    const container = el.shadowRoot?.querySelector('.snippet-view');
 
     // Applies the right container classes
     expect(container?.classList.contains('grid')).to.be.true;
@@ -77,7 +77,7 @@ describe('TextSnippetBlock component', () => {
       ></text-snippet-block>`
     );
 
-    const container = el.shadowRoot?.querySelector('.container');
+    const container = el.shadowRoot?.querySelector('.snippet-view');
 
     // Applies the right container classes
     expect(container?.classList.contains('list')).to.be.true;
