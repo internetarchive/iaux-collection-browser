@@ -69,7 +69,7 @@ export class TileDispatcher
    */
   @property({ type: Number }) hideHoverPaneDelay: number = 100;
 
-  @property({ type: Number }) hoverPaneLongPressDelay: number = 1000;
+  @property({ type: Number }) hoverPaneLongPressDelay: number = 800;
 
   @property({ type: Number }) hoverPaneOffsetX: number = -10;
 
@@ -185,14 +185,21 @@ export class TileDispatcher
 
   private get hoverPaneTemplate(): HTMLTemplateResult | typeof nothing {
     return this.shouldRenderHoverPane
-      ? html`<tile-hover-pane
-          .model=${this.model}
-          .baseNavigationUrl=${this.baseNavigationUrl}
-          .baseImageUrl=${this.baseImageUrl}
-          .loggedIn=${this.loggedIn}
-          .sortParam=${this.sortParam}
-          .collectionNameCache=${this.collectionNameCache}
-        ></tile-hover-pane>`
+      ? html` ${this.mobileBreakpoint &&
+          window.innerWidth < this.mobileBreakpoint
+            ? html`<div
+                id="touch-backdrop"
+                @touchstart=${this.clearHoverPane}
+              ></div>`
+            : nothing}
+          <tile-hover-pane
+            .model=${this.model}
+            .baseNavigationUrl=${this.baseNavigationUrl}
+            .baseImageUrl=${this.baseImageUrl}
+            .loggedIn=${this.loggedIn}
+            .sortParam=${this.sortParam}
+            .collectionNameCache=${this.collectionNameCache}
+          ></tile-hover-pane>`
       : nothing;
   }
 
@@ -347,6 +354,12 @@ export class TileDispatcher
     clearTimeout(this.hoverPaneLongPressTimer);
   }
 
+  clearHoverPane() {
+    if (this.hoverPaneState !== 'hidden') {
+      this.fadeOutHoverPane();
+    }
+  }
+
   /**
    * Aborts and restarts the timer for showing the hover pane.
    */
@@ -386,6 +399,8 @@ export class TileDispatcher
   private fadeOutHoverPane(): void {
     this.hoverPaneState = 'fading-out';
     this.hoverPane?.classList.remove('fade-in');
+
+    clearTimeout(this.hideHoverPaneTimer);
     this.hideHoverPaneTimer = window.setTimeout(() => {
       this.hoverPaneState = 'hidden';
     }, 100);
@@ -524,6 +539,15 @@ export class TileDispatcher
       a :first-child {
         display: block;
         height: 100%;
+      }
+
+      #touch-backdrop {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        z-index: 1;
       }
 
       tile-hover-pane {
