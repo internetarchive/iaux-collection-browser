@@ -314,6 +314,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
     display: flex;
     flex-direction: column;
     height: 100%;
+    row-gap: 10px;
   }
 
   .item-info {
@@ -333,7 +334,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
     display: flex;
     justify-content: left;
     align-items: flex-end; /* Important to start text from bottom */
-    padding: 10px 5px 5px 5px;
+    padding: 10px 5px 0px 5px;
   }
 
   .truncated {
@@ -575,7 +576,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
         flex-wrap: wrap;
         width: 100%;
         border-left: 5px solid #194880;
-        margin-top: 5px;
+        margin-top: var(--containerTopMargin, 10px);
         margin-left: var(--containerLeftMargin, 0px);
         border-radius: 3px;
       }
@@ -1079,6 +1080,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
 
         text-snippet-block {
           --containerLeftMargin: 5px;
+          --containerTopMargin: 10px;
         }
       `]}};n([h({type:String})],Mt.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Mt.prototype,"loggedIn",void 0);n([h({type:Object})],Mt.prototype,"model",void 0);n([h({type:Object})],Mt.prototype,"sortParam",void 0);Mt=n([N("item-tile")],Mt);let Ei=class extends O{render(){return p`
       <div class="container">
