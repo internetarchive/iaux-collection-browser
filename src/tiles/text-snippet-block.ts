@@ -87,7 +87,7 @@ export class TextSnippetBlock extends LitElement {
         flex-wrap: wrap;
         width: 100%;
         border-left: 5px solid #194880;
-        margin-top: 5px;
+        margin-top: 10px;
         margin-left: var(--containerLeftMargin, 0px);
         border-radius: 3px;
       }
