@@ -49,7 +49,7 @@ export const baseTileStyles = css`
     display: flex;
     justify-content: left;
     align-items: flex-end; /* Important to start text from bottom */
-    padding: 10px 5px 5px 5px;
+    padding: 10px 5px 0px 5px;
   }
 
   .truncated {

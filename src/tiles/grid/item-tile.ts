@@ -168,6 +168,7 @@ export class ItemTile extends LitElement {
 
         text-snippet-block {
           --containerLeftMargin: 5px;
+          --containerTopMargin: 10px;
         }
       `,
     ];
