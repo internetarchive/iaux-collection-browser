@@ -30,6 +30,7 @@ export const baseTileStyles = css`
     display: flex;
     flex-direction: column;
     height: 100%;
+    row-gap: 10px;
   }
 
   .item-info {
