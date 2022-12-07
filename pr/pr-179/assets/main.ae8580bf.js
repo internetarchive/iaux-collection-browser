@@ -575,7 +575,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
         flex-wrap: wrap;
         width: 100%;
         border-left: 5px solid #194880;
-        margin-top: var(--containerTopMargin, 5px);
+        margin-top: var(--containerTopMargin, 10px);
         margin-left: var(--containerLeftMargin, 0px);
         border-radius: 3px;
       }
