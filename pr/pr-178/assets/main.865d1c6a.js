@@ -577,6 +577,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
         border-left: 5px solid #194880;
         margin-top: 5px;
         margin-left: var(--containerLeftMargin, 0px);
+        border-radius: 3px;
       }
 
       .snippet-view {
@@ -592,7 +593,6 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
       }
 
       .grid {
-        /* Bottom margin reduced by 1px to account for the separator */
         margin: 0px 15px 0px 5px;
         font-size: 1.2rem;
         line-height: 1.5rem;
