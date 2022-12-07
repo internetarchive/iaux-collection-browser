@@ -314,6 +314,7 @@ var No=Object.defineProperty,Bo=Object.defineProperties;var Ho=Object.getOwnProp
     display: flex;
     flex-direction: column;
     height: 100%;
+    row-gap: 10px;
   }
 
   .item-info {
