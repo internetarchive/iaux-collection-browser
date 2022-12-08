@@ -1008,13 +1008,13 @@ var Bo=Object.defineProperty,Ho=Object.defineProperties;var Uo=Object.getOwnProp
         .viewSize=${"grid"}
       >
       </image-block>
-    `}get sortedDateInfoTemplate(){var e,t,i,a,o;let s;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":s={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":s={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":s={field:"added",value:(a=this.model)===null||a===void 0?void 0:a.dateAdded};break;case"publicdate":s={field:"archived",value:(o=this.model)===null||o===void 0?void 0:o.dateArchived};break}return p`
+    `}get sortedDateInfoTemplate(){var e,t,i,a,o;let s;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":s={field:"published",value:(t=this.model)===null||t===void 0?void 0:t.datePublished};break;case"reviewdate":s={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":s={field:"added",value:(a=this.model)===null||a===void 0?void 0:a.dateAdded};break;case"publicdate":s={field:"archived",value:(o=this.model)===null||o===void 0?void 0:o.dateArchived};break}return s!=null&&s.value?p`
       <div class="date-sorted-by truncated">
         <span>
           ${s==null?void 0:s.field} ${Ei(s==null?void 0:s.value,"long")}
         </span>
       </div>
-    `}get textSnippetsTemplate(){var e;return this.hasSnippets?p`
+    `:x}get textSnippetsTemplate(){var e;return this.hasSnippets?p`
       <text-snippet-block viewsize="grid" .snippets=${(e=this.model)===null||e===void 0?void 0:e.snippets}>
       </text-snippet-block>
     `:x}get volumeIssueTemplate(){var e,t,i,a;return!(!((e=this.model)===null||e===void 0)&&e.volume)||!(!((t=this.model)===null||t===void 0)&&t.issue)?x:p`
