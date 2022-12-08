@@ -98,6 +98,7 @@ export class ItemTile extends LitElement {
   private get sortedDateInfoTemplate() {
     let sortedValue;
 
+    // console.log('model: ', this.model)
     switch (this.sortParam?.field) {
       case 'date':
         sortedValue = { field: 'published', value: this.model?.datePublished };
@@ -115,6 +116,9 @@ export class ItemTile extends LitElement {
         break;
     }
 
+    if (!sortedValue?.value) {
+      return nothing;
+    }
     return html`
       <div class="date-sorted-by truncated">
         <span>
