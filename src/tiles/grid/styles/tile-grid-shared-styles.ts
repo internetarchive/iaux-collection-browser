@@ -31,6 +31,7 @@ export const baseTileStyles = css`
     flex-direction: column;
     height: 100%;
     row-gap: 10px;
+    font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   }
 
   .item-info {
@@ -73,6 +74,7 @@ export const baseTileStyles = css`
     line-height: 15px;
     font-size: 14px;
     font-weight: 500;
+    padding-bottom: 1px;
   }
 
   span {
@@ -83,6 +85,7 @@ export const baseTileStyles = css`
     word-wrap: break-word;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
+    padding-bottom: 1px;
   }
 
   .container:hover > .tile-details > .item-info > #title > .truncated {
