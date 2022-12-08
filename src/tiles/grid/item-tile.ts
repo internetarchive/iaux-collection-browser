@@ -159,11 +159,13 @@ export class ItemTile extends LitElement {
    * CSS
    */
   static get styles(): CSSResultGroup {
+    const tileBorderColor = css`var(--tileBorderColor, #dddddd)`;
+
     return [
       baseTileStyles,
       css`
-        image-block {
-          --imageBlockBackgroundColor: #f1f1f4;
+        .container {
+          border: 1px solid ${tileBorderColor};
         }
 
         text-snippet-block {

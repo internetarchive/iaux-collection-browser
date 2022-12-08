@@ -21,6 +21,8 @@ const testBookModel: TileModel = {
   viewCount: 0,
   loginRequired: false,
   contentWarning: false,
+  collectionFilesCount: 0,
+  collectionSize: 0,
 };
 
 const testAudioModel: TileModel = {
@@ -36,6 +38,8 @@ const testAudioModel: TileModel = {
   viewCount: 0,
   loginRequired: false,
   contentWarning: false,
+  collectionFilesCount: 0,
+  collectionSize: 0,
 };
 
 describe('ItemImage component', () => {

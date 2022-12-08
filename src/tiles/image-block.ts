@@ -44,6 +44,7 @@ export class ImageBlock extends LitElement {
     return {
       list: this.isListTile && !this.isCompactTile,
       'list-compact': this.isListTile && this.isCompactTile,
+      collection: this.model?.mediatype === 'collection', // fill the image in container
       [this.viewSize]: true,
     };
   }
@@ -82,7 +83,6 @@ export class ImageBlock extends LitElement {
 
   static get styles(): CSSResultGroup {
     const imageBlockBackgroundColor = css`var(--imageBlockBackgroundColor, #f1f1f4)`;
-    const imageBlockBorderColor = css`var(--imageBlockBorderColor, #dddddd)`;
 
     return css`
       div {
@@ -90,7 +90,6 @@ export class ImageBlock extends LitElement {
         justify-content: center;
         position: relative;
         background-color: ${imageBlockBackgroundColor};
-        border: 1px solid ${imageBlockBorderColor};
       }
 
       .grid {
@@ -98,6 +97,10 @@ export class ImageBlock extends LitElement {
         flex: 1;
         position: initial;
         padding: 5px;
+      }
+
+      .collection.grid {
+        display: block;
       }
 
       /** tile-list view */

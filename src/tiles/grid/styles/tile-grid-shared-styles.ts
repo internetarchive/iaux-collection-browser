@@ -4,8 +4,8 @@ import { css } from 'lit';
  * Base tile styles
  */
 
-const tileCornerRadius = css`var(--collectionTileCornerRadius, 4px)`;
 const tileBackgroundColor = css`var(--tileBackgroundColor, #ffffff)`;
+const tileCornerRadius = css`var(--tileCornerRadius, 4px)`;
 
 export const baseTileStyles = css`
   .container {
@@ -41,6 +41,7 @@ export const baseTileStyles = css`
     flex-shrink: 0;
     padding-left: 5px;
     padding-right: 5px;
+    margin-bottom: 10px;
   }
 
   .created-by,
@@ -50,7 +51,7 @@ export const baseTileStyles = css`
     display: flex;
     justify-content: left;
     align-items: flex-end; /* Important to start text from bottom */
-    padding: 10px 5px 0px 5px;
+    padding: 0 5px 5px 5px;
   }
 
   .truncated {

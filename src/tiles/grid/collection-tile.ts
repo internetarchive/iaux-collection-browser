@@ -1,156 +1,126 @@
-import { msg } from '@lit/localize';
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import type { TileModel } from '../../models';
+import { formatUnitSize } from '../../utils/format-unit-size';
+import { baseTileStyles } from './styles/tile-grid-shared-styles';
+import '../image-block';
 
 @customElement('collection-tile')
 export class CollectionTile extends LitElement {
   @property({ type: Object }) model?: TileModel;
 
+  @property({ type: String }) baseImageUrl?: string;
+
   render() {
     return html`
-      <div id="container">
-        <div id="collection-image-title">
-          <div id="collection-title">${this.model?.title}</div>
-          <div id="collection-image-container">
-            <div
-              id="collection-image"
-              style="background-image:url('https://archive.org/services/img/${this
-                .model?.identifier}')"
-            ></div>
+      <div class="container">
+        <div class="tile-details">
+          <div class="item-info">
+            ${this.getImageBlockTemplate} ${this.getTitleTemplate}
           </div>
         </div>
-        <div id="item-count-container">
-          <div id="item-count-image-container">${collectionIcon}</div>
-          <div id="item-count-stacked-text">
-            <div id="item-count">${this.model?.itemCount.toLocaleString()}</div>
-            <div id="items-text">${msg('items')}</div>
-          </div>
+
+        ${this.getTileStatsTemplate}
+      </div>
+    `;
+  }
+
+  private get getImageBlockTemplate(): TemplateResult {
+    return html`
+      <image-block
+        .model=${this.model}
+        .baseImageUrl=${this.baseImageUrl}
+        .viewSize=${'grid'}
+      >
+      </image-block>
+    `;
+  }
+
+  private get getTitleTemplate() {
+    return html`<div id="title">
+      <h1 class="truncated">${this.model?.title}</h1>
+    </div>`;
+  }
+
+  private get getTileStatsTemplate() {
+    return html`
+      <div id="item-stats">
+        <div id="item-mediatype">${collectionIcon}</div>
+
+        <div id="stats-row">
+          ${this.getItemsTemplate} ${this.getSizeTemplate}
         </div>
       </div>
     `;
   }
 
+  private get getItemsTemplate() {
+    const collectionItems = this.model?.itemCount.toLocaleString();
+
+    return html`<span id="item-count"
+      >${collectionItems} item${Number(collectionItems) !== 1 ? 's' : ''}</span
+    >`;
+  }
+
+  private get getSizeTemplate() {
+    const collectionSize = this.model?.collectionSize ?? 0;
+
+    return collectionSize
+      ? html`<span id="item-size">${formatUnitSize(collectionSize, 1)}</span>`
+      : ``;
+  }
+
   static get styles(): CSSResultGroup {
-    const cornerRadiusCss = css`var(--collectionTileCornerRadius, 4px)`;
+    const tileBorderColor = css`var(--tileBorderColor, #555555)`;
+    const tileBackgroundColor = css`var(--tileBackgroundColor, #666666)`;
+    const whiteColor = css`#fff`;
 
-    return css`
-      #collection-image-container {
-        display: flex;
-        justify-content: center;
-        flex: 1;
-      }
+    return [
+      baseTileStyles,
+      css`
+        .container {
+          background-color: ${tileBackgroundColor};
+          border: 1px solid ${tileBorderColor};
+        }
 
-      #collection-image {
-        width: 16rem;
-        height: 16rem;
-        border-radius: 0.8rem;
-        overflow: hidden;
-        box-shadow: 1px 1px 2px 0px;
-        object-fit: cover;
-        background-position: center;
-        background-size: cover;
-      }
+        .item-info {
+          flex-grow: initial;
+        }
 
-      #item-count-image-container svg {
-        filter: invert(100%);
-      }
+        h1.truncated {
+          color: ${whiteColor};
+        }
 
-      #collection-image-title {
-        background-color: #666;
-        border: 1px solid #2c2c2c;
-        padding: 0.5rem;
-        border-top-left-radius: ${cornerRadiusCss};
-        border-top-right-radius: ${cornerRadiusCss};
-        display: flex;
-        flex-direction: column;
-        flex: 1;
-      }
+        #item-mediatype svg {
+          filter: invert(100%);
+          height: 2.5rem;
+          align-items: baseline;
+        }
 
-      #collection-title {
-        font-weight: bold;
-        color: #fff;
-        font-size: 1.6rem;
-        text-align: center;
-        margin-bottom: 0.5rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        line-height: 2rem;
-        height: 4rem;
-      }
+        .container:hover > #title {
+          text-decoration: underline;
+        }
 
-      #container {
-        box-shadow: 1px 1px 2px 0px;
-        border-radius: ${cornerRadiusCss};
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
+        /* this is a workaround for Safari 15 where the hover effects are not working */
+        image-block:hover > #title {
+          text-decoration: underline;
+        }
 
-      #container:hover > #collection-image-title > #collection-title {
-        text-decoration: underline;
-      }
+        #item-stats {
+          display: flex;
+          padding: 0 5px 5px;
+          align-items: center;
+        }
 
-      /* this is a workaround for Safari 15 where the hover effects are not working */
-      #collection-image-title:hover > #collection-title {
-        text-decoration: underline;
-      }
-
-      #container:hover > #collection-image-title {
-        background-color: #757575;
-      }
-
-      #item-count-container {
-        background-color: #444;
-        border-bottom: 1px solid #2c2c2c;
-        border-left: 1px solid #2c2c2c;
-        border-right: 1px solid #2c2c2c;
-        border-bottom-left-radius: ${cornerRadiusCss};
-        border-bottom-right-radius: ${cornerRadiusCss};
-        display: flex;
-        padding: 0rem 0.5rem;
-        height: 5.5rem;
-        align-items: center;
-      }
-
-      #item-count-image-container {
-        margin-right: 0.5rem;
-      }
-
-      #item-count-stacked-text {
-        display: flex;
-        align-items: baseline;
-        color: #fff;
-      }
-      #item-count-image-container svg {
-        height: 2.5rem;
-        align-items: baseline;
-      }
-
-      #container:hover > #item-count-container {
-        background-color: #575757;
-      }
-
-      #item-count {
-        font-size: 1.4rem;
-        font-weight: bold;
-      }
-
-      #item-count-image {
-        width: 3rem;
-        height: 3rem;
-        margin-right: 1rem;
-      }
-
-      #items-text {
-        font-size: 1.4rem;
-        font-weight: bold;
-        margin-left: 0.5rem;
-      }
-    `;
+        #stats-row {
+          display: flex;
+          align-items: baseline;
+          color: ${whiteColor};
+          flex-direction: column;
+          margin-left: 10px;
+        }
+      `,
+    ];
   }
 }

@@ -1430,6 +1430,8 @@ export class CollectionBrowser
       tiles.push({
         averageRating: result.avg_rating?.value,
         collections: result.collection?.values ?? [],
+        collectionFilesCount: result.collection_files_count?.value ?? 0,
+        collectionSize: result.collection_size?.value ?? 0,
         commentCount: result.num_reviews?.value ?? 0,
         creator: result.creator?.value,
         creators: result.creator?.values ?? [],
