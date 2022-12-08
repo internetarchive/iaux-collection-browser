@@ -116,7 +116,6 @@ export class ItemTile extends LitElement {
         break;
     }
 
-    // console.log('sortedValue: ', sortedValue)
     if (!sortedValue?.value) {
       return nothing;
     }
