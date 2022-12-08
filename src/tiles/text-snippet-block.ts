@@ -19,20 +19,12 @@ export class TextSnippetBlock extends LitElement {
     if (!this.snippets?.length) return html`${nothing}`;
 
     return html`
-      <div class="${this.containerClasses}">${this.ellipsisJoinedSnippets}</div>
-
-      ${this.viewSize === 'grid'
-        ? html`<div class="separator"></div>`
-        : nothing}
+      <div class="container">
+        <div class="snippet-view ${this.viewSize}">
+          ${this.ellipsisJoinedSnippets}
+        </div>
+      </div>
     `;
-  }
-
-  private get viewSizeClass() {
-    return this.viewSize === 'grid' ? 'grid' : 'list';
-  }
-
-  private get containerClasses() {
-    return `container ${this.viewSizeClass}`;
   }
 
   /**
@@ -90,32 +82,36 @@ export class TextSnippetBlock extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: 100%;
+        border-left: 5px solid #194880;
+        margin-top: var(--containerTopMargin, 10px);
+        margin-left: var(--containerLeftMargin, 0px);
+        border-radius: 3px;
+      }
+
+      .snippet-view {
         display: -webkit-box;
-        font-family: 'Times New Roman', serif;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 14px;
         overflow: hidden;
         overflow-wrap: break-word;
         -webkit-line-clamp: var(--maxLines, 3);
         -webkit-box-orient: vertical;
-      }
-
-      .separator {
-        /* Border line should extend to the edges of the tile */
-        margin: 0 -5px;
-        border-bottom: 1px solid #bbb;
+        margin-left: 5px;
+        margin-right: 10px;
       }
 
       .grid {
-        /* Bottom margin reduced by 1px to account for the separator */
-        margin: 0.5rem 0 0.4rem;
+        margin: 0px 15px 0px 5px;
         font-size: 1.2rem;
         line-height: 1.5rem;
       }
 
       .list {
-        margin: 1rem 0 0;
-        padding: 0 0 0 1.5rem;
-        border-left: 0.5rem solid #194880;
-        border-radius: 3px;
+        padding-left: 20px;
         font-size: 1.4rem;
         line-height: 2rem;
       }

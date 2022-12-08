@@ -56,8 +56,10 @@ export class CollectionTile extends LitElement {
   }
 
   private get getItemsTemplate() {
+    const collectionItems = this.model?.itemCount.toLocaleString();
+
     return html`<span id="item-count"
-      >${this.model?.itemCount.toLocaleString()} items</span
+      >${collectionItems} item${Number(collectionItems) !== 1 ? 's' : ''}</span
     >`;
   }
 
@@ -65,7 +67,7 @@ export class CollectionTile extends LitElement {
     const collectionSize = this.model?.collectionSize ?? 0;
 
     return collectionSize
-      ? html`<span id="item-size">${formatUnitSize(collectionSize, 1_0)}</span>`
+      ? html`<span id="item-size">${formatUnitSize(collectionSize, 1)}</span>`
       : ``;
   }
 

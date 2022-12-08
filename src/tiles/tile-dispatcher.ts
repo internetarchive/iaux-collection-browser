@@ -207,7 +207,7 @@ export class TileDispatcher
 
       collection-tile {
         --tileBorderColor: #555555;
-        --tileBackgroundColor, #666666;
+        --tileBackgroundColor: #666666;
         --imageBlockBackgroundColor: #666666;
       }
 

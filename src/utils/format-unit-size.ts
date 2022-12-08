@@ -2,38 +2,42 @@
  * Replaces Petabox www/common/Util::humanSize()
  */
 import { nothing } from 'lit';
-import type { Divisor } from './format-count';
+
+enum unitSizes {
+  'bytes',
+  'kilobytes',
+  'megabytes',
+  'gigabytes',
+  'terabytes',
+  'petabytes',
+  'exabytes',
+  'zettabytes',
+  'yottabytes',
+}
 
 export function formatUnitSize(
   size: number | undefined,
-  ndecimals: Divisor,
-  seprator: String = ' '
+  nDecimals: number,
+  separator: string = ' '
 ) {
-  let times = 0;
   let itemSize = size;
-  const timesNames = [];
+  if (itemSize === undefined) return nothing; // early return.
 
-  if (itemSize === undefined) return nothing;
+  let unitIndex = 0;
 
+  // convert byte to highest possible unit
   while (itemSize > 1024) {
     itemSize /= 1024;
-    times += 1;
+    unitIndex += 1;
   }
 
-  timesNames[0] = 'bytes';
-  timesNames[1] = 'kilobytes';
-  timesNames[2] = 'megabytes';
-  timesNames[3] = 'gigabytes';
-  timesNames[4] = 'terabytes';
-  timesNames[5] = 'petabytes';
-  timesNames[6] = 'exabytes';
-  timesNames[7] = 'zettabytes';
-  timesNames[8] = 'yottabytes';
+  const magnitude = 10 ** nDecimals;
+  itemSize = Math.round(itemSize * magnitude) / magnitude;
 
-  itemSize = Math.round(itemSize * ndecimals) / ndecimals;
+  let unitText = unitSizes[unitIndex];
 
-  if (itemSize)
-    return `${itemSize.toLocaleString('en') + seprator + timesNames[times]}`;
+  // convert plural to singular.
+  unitText = itemSize === 1 ? unitText.slice(0, -1) : unitText;
 
-  return nothing;
+  return `${itemSize.toLocaleString() + separator + unitText}`;
 }

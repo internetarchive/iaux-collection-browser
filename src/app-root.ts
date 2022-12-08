@@ -78,6 +78,7 @@ export class AppRoot extends LitElement {
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
     return new SearchService({
+      includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
       servicePath: params.get('search_service_path') ?? undefined,
       debuggingEnabled: !!params.get('debugging') ?? undefined,
@@ -289,9 +290,18 @@ export class AppRoot extends LitElement {
               />
               <label for="show-dummy-snippets">Show dummy snippets</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-date-picker"
+                checked
+                @click=${this.datePickerChanged}
+              />
+              <label for="enable-date-picker">Enable date picker</label>
+            </div>
           </div>
         </div>
-        <button id="dev-tool" @click=${this.toggleDevTools}>
+        <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
           Toggle Search Controls
         </button>
       </div>
@@ -360,9 +370,9 @@ export class AppRoot extends LitElement {
   }
 
   private toggleDevTools() {
-    let newurl = `${window.location.protocol}//${window.location.host}${window.location.pathname}?`;
+    const pageUrl = new URL(window.location.href);
+    const { searchParams } = pageUrl;
 
-    const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.get('hide-dev-tools')) {
       searchParams.delete('hide-dev-tools');
     } else {
@@ -371,14 +381,13 @@ export class AppRoot extends LitElement {
 
     this.shadowRoot?.getElementById('dev-tools')?.classList.toggle('hidden');
 
-    if (window.history.pushState) {
-      newurl += searchParams;
-      window.history.pushState(
+    if (window.history.replaceState) {
+      window.history.replaceState(
         {
-          path: newurl,
+          path: pageUrl.toString(),
         },
         '',
-        newurl
+        pageUrl.toString()
       );
     }
   }
@@ -441,6 +450,17 @@ export class AppRoot extends LitElement {
       setTimeout(res, 0);
     });
     this.searchQuery = oldQuery; // Re-apply the original query
+  }
+
+  private datePickerChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.showHistogramDatePicker = target.checked;
+
+    // When disabling the date picker from the demo app, also clear any existing date range params
+    if (!this.collectionBrowser.showHistogramDatePicker) {
+      this.collectionBrowser.minSelectedDate = undefined;
+      this.collectionBrowser.maxSelectedDate = undefined;
+    }
   }
 
   private rowGapChanged(e: Event) {
@@ -554,7 +574,7 @@ export class AppRoot extends LitElement {
       display: flex;
     }
 
-    #dev-tool {
+    #toggle-dev-tools-btn {
       position: fixed;
       left: 77.4%;
       top: 0;

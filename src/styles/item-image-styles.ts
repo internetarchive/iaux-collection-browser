@@ -41,7 +41,7 @@ export const baseItemImageStyles = css`
   }
 
   .collection-image {
-    object-fit: fill;
+    object-fit: cover;
     border-radius: 8px;
     width: 100%;
     height: 160px;
