@@ -514,10 +514,6 @@ export class CollectionBrowser
     this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
-  private get facetDataLoading(): boolean {
-    return this.facetsLoading || this.fullYearAggregationLoading;
-  }
-
   private get mobileFacetsTemplate() {
     return html`
       <div id="mobile-filter-collapse">
@@ -560,8 +556,8 @@ export class CollectionBrowser
         .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
-        ?facetsLoading=${this.facetDataLoading}
-        ?fullYearAggregationLoading=${this.fullYearAggregationLoading}
+        ?facetsLoading=${this.facetsLoading}
+        ?fullYearAggregationLoading=${this.facetsLoading}
         .onFacetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
       >
@@ -812,12 +808,7 @@ export class CollectionBrowser
       this.historyPopOccurred = false;
     }
 
-    await Promise.all([
-      this.doInitialPageFetch(),
-      this.fetchFacets(),
-      // Only fetch histogram data separately if we need it b/c of date filters
-      this.shouldRequestYearHistogram && this.fetchFullYearHistogram(),
-    ]);
+    await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
   }
 
   private setupStateRestorationObserver() {
@@ -995,22 +986,6 @@ export class CollectionBrowser
     return fullQuery;
   }
 
-  /** The full query without any year facets or date range clauses */
-  private get fullQueryWithoutDates(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery;
-
-    const { facetQueryWithoutYear, sortFilterQueries } = this;
-
-    if (facetQueryWithoutYear) {
-      fullQuery += ` AND ${facetQueryWithoutYear}`;
-    }
-    if (sortFilterQueries) {
-      fullQuery += ` AND ${sortFilterQueries}`;
-    }
-    return fullQuery;
-  }
-
   /**
    * Generates a query string for the given facets
    *
@@ -1023,24 +998,6 @@ export class CollectionBrowser
       this.selectedFacets
     )) {
       facetClauses.push(this.buildFacetClause(facetName, facetValues));
-    }
-    return this.joinFacetClauses(facetClauses);
-  }
-
-  /**
-   * Generates a query string for the currently selected facets, excluding 'year' facets.
-   *
-   * Example: `mediatype:("collection" OR "audio" OR -"etree") AND subject:("foo" OR -"bar")`
-   */
-  private get facetQueryWithoutYear(): string | undefined {
-    if (!this.selectedFacets) return undefined;
-    const facetClauses = [];
-    for (const [facetName, facetValues] of Object.entries(
-      this.selectedFacets
-    )) {
-      if (facetName !== 'year') {
-        facetClauses.push(this.buildFacetClause(facetName, facetValues));
-      }
     }
     return this.joinFacetClauses(facetClauses);
   }
@@ -1174,81 +1131,9 @@ export class CollectionBrowser
 
     this.aggregations = results?.success?.response.aggregations;
 
-    // If we're not fetching year histogram data separately, set it from the newly-fetched aggregations
-    if (!this.shouldRequestYearHistogram) {
-      this.fullYearsHistogramAggregation =
-        results?.success?.response?.aggregations?.year_histogram ??
-        results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
-    }
-  }
-
-  /**
-   * If we haven't changed the query, we don't need to fetch the full year histogram
-   *
-   * @private
-   * @type {string}
-   * @memberof CollectionBrowser
-   */
-  private previousFullQueryNoDate?: string;
-
-  /**
-   * The query key is a string that uniquely identifies the current query
-   * without the date range.
-   *
-   * If this doesn't change, we don't need to re-fetch the histogram date range
-   */
-  private get fullQueryNoDateKey() {
-    return `${this.fullQueryWithoutDates}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
-  }
-
-  /**
-   * This method is similar to fetching the facets above,
-   * but only fetching the year histogram. There is a subtle difference
-   * in how you have to fetch the year histogram where you can't use the
-   * advanced JSON syntax like the other aggregations. It's a special
-   * case that @ximm put it place.
-   */
-  private async fetchFullYearHistogram(): Promise<void> {
-    const { fullQueryNoDateKey } = this;
-    if (
-      !this.fullQueryWithoutDates ||
-      fullQueryNoDateKey === this.previousFullQueryNoDate
-    ) {
-      return;
-    }
-    this.previousFullQueryNoDate = fullQueryNoDateKey;
-
-    const aggregations = {
-      simpleParams: ['year'],
-    };
-
-    const params = {
-      query: this.fullQueryWithoutDates,
-      aggregations,
-      rows: 0,
-    };
-
-    this.fullYearAggregationLoading = true;
-    const results = await this.searchService?.search(params, this.searchType);
-    this.fullYearAggregationLoading = false;
-
     this.fullYearsHistogramAggregation =
       results?.success?.response?.aggregations?.year_histogram ??
       results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
-  }
-
-  /**
-   * We only want to send a separate request for the year_histogram data
-   * if (a) the date picker component is enabled and (b) there is a year facet or date-range filter applied.
-   *
-   * Otherwise, we should just be using the histogram data supplied by the "normal" facet request.
-   */
-  private get shouldRequestYearHistogram() {
-    const datePickerEnabled = this.showHistogramDatePicker;
-    const hasDateRange = !!this.dateRangeQueryClause;
-    const hasYearFacet =
-      Object.keys(this.selectedFacets?.year ?? {}).length > 0;
-    return datePickerEnabled && (hasDateRange || hasYearFacet);
   }
 
   private scrollToPage(pageNumber: number) {
