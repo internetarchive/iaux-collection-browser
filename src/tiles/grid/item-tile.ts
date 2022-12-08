@@ -115,6 +115,9 @@ export class ItemTile extends LitElement {
         break;
     }
 
+    if (!sortedValue?.value) {
+      return nothing;
+    }
     return html`
       <div class="date-sorted-by truncated">
         <span>
