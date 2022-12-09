@@ -103,6 +103,7 @@ export class TileStats extends LitElement {
         height: 35px;
         padding-left: 5px;
         padding-right: 5px;
+        font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
       }
 
       #stats-row {
