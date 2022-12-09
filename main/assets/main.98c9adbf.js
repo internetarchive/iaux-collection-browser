@@ -156,6 +156,7 @@ var Bo=Object.defineProperty,Ho=Object.defineProperties;var Uo=Object.getOwnProp
     flex-direction: column;
     height: 100%;
     row-gap: 10px;
+    font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   }
 
   .item-info {
@@ -198,6 +199,7 @@ var Bo=Object.defineProperty,Ho=Object.defineProperties;var Uo=Object.getOwnProp
     line-height: 15px;
     font-size: 14px;
     font-weight: 500;
+    padding-bottom: 1px;
   }
 
   span {
@@ -208,6 +210,7 @@ var Bo=Object.defineProperty,Ho=Object.defineProperties;var Uo=Object.getOwnProp
     word-wrap: break-word;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
+    padding-bottom: 1px;
   }
 
   .container:hover > .tile-details > .item-info > #title > .truncated {
@@ -930,6 +933,7 @@ var Bo=Object.defineProperty,Ho=Object.defineProperties;var Uo=Object.getOwnProp
         height: 35px;
         padding-left: 5px;
         padding-right: 5px;
+        font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
       }
 
       #stats-row {
