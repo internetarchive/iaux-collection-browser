@@ -18,11 +18,11 @@ import type { TileDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
-import './grid/tile-hover-pane';
+import './hover/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
 import './list/tile-list-compact-header';
-import type { TileHoverPane } from './grid/tile-hover-pane';
+import type { TileHoverPane } from './hover/tile-hover-pane';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
@@ -530,10 +530,6 @@ export class TileDispatcher
         transition: box-shadow 0.1s ease;
       }
 
-      #container.hoverable:hover a {
-        transform: scale(1.01);
-      }
-
       a {
         display: block;
         height: 100%;
@@ -558,8 +554,8 @@ export class TileDispatcher
 
       tile-hover-pane {
         position: absolute;
-        top: -1000px;
-        left: -1000px;
+        top: -2000px;
+        left: -2000px;
         z-index: 1;
 
         /* Don't make it visible until it has been properly positioned */
