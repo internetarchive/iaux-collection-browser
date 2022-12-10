@@ -9,7 +9,9 @@ import type { TileModel } from '../../../src/models';
 
 describe('List Tile', () => {
   it('should render initial component', async () => {
-    const el = await fixture<TileList>(html`<tile-list></tile-list>`);
+    const el = await fixture<TileList>(
+      html`<tile-list .model=${{}}></tile-list>`
+    );
 
     const listContainer = el.shadowRoot?.querySelector('#list-line');
     const itemTitle = el.shadowRoot?.querySelector('#title');
