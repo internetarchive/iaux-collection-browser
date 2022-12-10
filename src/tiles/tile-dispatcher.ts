@@ -91,7 +91,7 @@ export class TileDispatcher
 
   protected firstUpdated(): void {
     if (this.shouldPrepareHoverPane) {
-      this.hoverPaneController = new HoverPaneController(this, this, this);
+      this.hoverPaneController = new HoverPaneController(this, this);
     }
   }
 

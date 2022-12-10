@@ -58,6 +58,11 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   private hoverPane?: HTMLElement;
 
   /**
+   * The properties to be passed to the hover pane element
+   */
+  private hoverPaneProps?: HoverPaneProperties;
+
+  /**
    * The breakpoint (in pixels) below which the mobile interface should be used.
    */
   private mobileBreakpoint?: number;
@@ -122,8 +127,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     private readonly host: ReactiveControllerHost &
       HoverPaneProviderInterface &
       HTMLElement,
-    /** The properties to be passed to the hover pane element */
-    private hoverPaneProps: HoverPaneProperties,
     /** Options for adjusting the hover pane behavior (offsets, delays, etc.) */
     options: HoverPaneControllerOptions = {}
   ) {
