@@ -8,7 +8,6 @@ import {
   ReactiveControllerHost,
 } from 'lit';
 import type { TileModel } from '../../models';
-import type { TileHoverPane } from './tile-hover-pane';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
@@ -34,7 +33,7 @@ export interface HoverPaneControllerOptions {
 /** A common interface for providing a hover pane element. */
 export interface HoverPaneProviderInterface {
   /** Returns the provider's current hover pane element. */
-  getHoverPane(): TileHoverPane | undefined;
+  getHoverPane(): HTMLElement | undefined;
   /** Returns properties that should be passed to the hover pane. */
   getHoverPaneProps(): HoverPaneProperties;
 }
@@ -56,7 +55,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /**
    * The hover pane element attached to this controller's host.
    */
-  private hoverPane?: TileHoverPane;
+  private hoverPane?: HTMLElement;
 
   /**
    * The breakpoint (in pixels) below which the mobile interface should be used.
