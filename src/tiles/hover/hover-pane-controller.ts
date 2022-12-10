@@ -321,11 +321,12 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /**
    * Immediately causes the hover pane to begin fading out, if it is present.
    */
-  private clearHoverPane() {
+  // NB: Arrow function so 'this' remains bound to the controller
+  private clearHoverPane = (): void => {
     if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
     }
-  }
+  };
 
   /**
    * Aborts and restarts the timer for showing the hover pane.
