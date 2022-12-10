@@ -16,6 +16,10 @@ export const baseItemImageStyles = css`
     position: relative;
   }
 
+  .list-box img {
+    border-radius: 0;
+  }
+
   .contain {
     object-fit: contain;
     object-position: center;
@@ -40,7 +44,7 @@ export const baseItemImageStyles = css`
     height: 160px;
   }
 
-  .collection-image {
+  :not(.list-box) > .collection-image {
     object-fit: cover;
     border-radius: 8px;
     width: 100%;
