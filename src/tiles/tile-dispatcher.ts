@@ -1,12 +1,5 @@
-import {
-  css,
-  html,
-  HTMLTemplateResult,
-  LitElement,
-  nothing,
-  PropertyValues,
-} from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { css, html, LitElement, nothing, PropertyValues } from 'lit';
+import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
   SharedResizeObserverInterface,
@@ -23,13 +16,19 @@ import './list/tile-list';
 import './list/tile-list-compact';
 import './list/tile-list-compact-header';
 import type { TileHoverPane } from './hover/tile-hover-pane';
-
-type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
+import {
+  HoverPaneController,
+  HoverPaneControllerInterface,
+  HoverPaneProperties,
+  HoverPaneProviderInterface,
+} from './hover/hover-pane-controller';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
   extends LitElement
-  implements SharedResizeObserverResizeHandlerInterface
+  implements
+    SharedResizeObserverResizeHandlerInterface,
+    HoverPaneProviderInterface
 {
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
 
@@ -57,43 +56,7 @@ export class TileDispatcher
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
-  /**
-   * The delay between the mouse idling within the tile and when the hover
-   * pane should begin fading in (in milliseconds).
-   */
-  @property({ type: Number }) showHoverPaneDelay: number = 300;
-
-  /**
-   * The delay between when the mouse leaves the tile and when the hover
-   * pane should begin fading out (in milliseconds).
-   */
-  @property({ type: Number }) hideHoverPaneDelay: number = 100;
-
-  @property({ type: Number }) hoverPaneLongPressDelay: number = 800;
-
-  @property({ type: Number }) hoverPaneOffsetX: number = -10;
-
-  @property({ type: Number }) hoverPaneOffsetY: number = 15;
-
-  /**
-   * Used to control the current state of this tile's hover pane.
-   *  - `'hidden'` => The hover pane is not present at all.
-   *  - `'shown'` => The hover pane is either fading in or fully visible.
-   *  - `'fading-out'` => The hover pane is fading out and about to be removed.
-   */
-  @state()
-  private hoverPaneState: HoverPaneState = 'hidden';
-
-  /** The timer ID for showing the hover pane */
-  private showHoverPaneTimer?: number;
-
-  /** The timer ID for hiding the hover pane */
-  private hideHoverPaneTimer?: number;
-
-  private hoverPaneLongPressTimer?: number;
-
-  /** A record of the last mouse position on the tile, for positioning the hover pane */
-  private lastMouseClientPos = { x: 0, y: 0 };
+  private hoverPaneController?: HoverPaneControllerInterface;
 
   @query('#container')
   private container!: HTMLDivElement;
@@ -114,35 +77,22 @@ export class TileDispatcher
 
   render() {
     const isGridMode = this.tileDisplayMode === 'grid';
+    const hoverPaneTemplate =
+      this.hoverPaneController?.getTemplate() ?? nothing;
     return html`
-      <div
-        id="container"
-        class=${isGridMode ? 'hoverable' : nothing}
-        @mousemove=${this.shouldPrepareHoverPane
-          ? this.handleMouseMove
-          : nothing}
-        @mouseleave=${this.shouldPrepareHoverPane
-          ? this.handleMouseLeave
-          : nothing}
-        @touchstart=${this.shouldPrepareHoverPane
-          ? this.handleTouchStart
-          : nothing}
-        @touchend=${this.shouldPrepareHoverPane
-          ? this.cancelLongPress
-          : nothing}
-        @touchmove=${this.shouldPrepareHoverPane
-          ? this.cancelLongPress
-          : nothing}
-        @touchcancel=${this.shouldPrepareHoverPane
-          ? this.cancelLongPress
-          : nothing}
-      >
+      <div id="container" class=${isGridMode ? 'hoverable' : nothing}>
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
-        ${this.hoverPaneTemplate}
+        ${hoverPaneTemplate}
       </div>
     `;
+  }
+
+  protected firstUpdated(): void {
+    if (this.shouldPrepareHoverPane) {
+      this.hoverPaneController = new HoverPaneController(this, this, this);
+    }
   }
 
   private get headerTemplate() {
@@ -183,32 +133,6 @@ export class TileDispatcher
     `;
   }
 
-  private get hoverPaneTemplate(): HTMLTemplateResult | typeof nothing {
-    return this.shouldRenderHoverPane
-      ? html` ${this.mobileBreakpoint &&
-          window.innerWidth < this.mobileBreakpoint
-            ? html`<div
-                id="touch-backdrop"
-                @touchstart=${this.clearHoverPane}
-              ></div>`
-            : nothing}
-          <tile-hover-pane
-            .model=${this.model}
-            .baseNavigationUrl=${this.baseNavigationUrl}
-            .baseImageUrl=${this.baseImageUrl}
-            .loggedIn=${this.loggedIn}
-            .sortParam=${this.sortParam}
-            .collectionNameCache=${this.collectionNameCache}
-            .featureFeedbackSettings=${{
-              enabled: true,
-              buttonText: 'Feedback?',
-              featureIdentifier: 'TileHoverPopup',
-              prompt: 'What do you think of the search tile info popups?',
-            }}
-          ></tile-hover-pane>`
-      : nothing;
-  }
-
   /**
    * Whether hover pane behavior should be prepared for this tile
    * (e.g., whether mouse listeners should be attached, etc.)
@@ -221,58 +145,14 @@ export class TileDispatcher
     );
   }
 
-  /**
-   * Whether this tile should currently render its hover pane.
-   */
-  private get shouldRenderHoverPane(): boolean {
-    return this.shouldPrepareHoverPane && this.hoverPaneState !== 'hidden';
+  /** @inheritdoc */
+  getHoverPane(): TileHoverPane | undefined {
+    return this.hoverPane;
   }
 
-  /**
-   * Returns the desired top/left offsets (in pixels) for this tile's hover pane.
-   * The desired offsets balance positioning the hover pane under the mouse pointer
-   * while preventing it from flowing outside the viewport. The returned offsets are
-   * given relative to this tile's content box.
-   *
-   * These offsets are only valid if the hover pane is already rendered with its
-   * correct width and height. If the hover pane is not present, the returned offsets
-   * will simply represent the current mouse position.
-   */
-  private get hoverPaneDesiredOffsets(): { top: number; left: number } {
-    // Try to find offsets for the hover pane that:
-    //  (a) cause it to lie entirely within the viewport, and
-    //  (b) to the extent possible, minimize the distance between the
-    //      nearest corner of the hover pane and the mouse position
-    //      (with some additional offsets applied after the fact).
-
-    let [left, top] = [this.lastMouseClientPos.x, this.lastMouseClientPos.y];
-
-    // Flip the hover pane according to which quadrant of the viewport the mouse is in.
-    // (Similar to how Wikipedia's link hover panes work)
-    const flipHorizontal = this.lastMouseClientPos.x > window.innerWidth / 2;
-    const flipVertical = this.lastMouseClientPos.y > window.innerHeight / 2;
-
-    const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
-    if (hoverPaneRect) {
-      // If we need to flip the hover pane, do so by subtracting its width/height from left/top
-      if (flipHorizontal) {
-        left -= hoverPaneRect.width;
-      }
-      if (flipVertical) {
-        top -= hoverPaneRect.height;
-      }
-
-      // Apply desired offsets from the mouse position
-      left += (flipHorizontal ? -1 : 1) * this.hoverPaneOffsetX;
-      top += (flipVertical ? -1 : 1) * this.hoverPaneOffsetY;
-    }
-
-    // Subtract off the tile's own offsets
-    const tileRect = this.getBoundingClientRect();
-    left -= tileRect.left;
-    top -= tileRect.top;
-
-    return { left, top };
+  /** @inheritdoc */
+  getHoverPaneProps(): HoverPaneProperties {
+    return this;
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -307,120 +187,6 @@ export class TileDispatcher
       this.stopResizeObservation(previousObserver);
       this.startResizeObservation();
     }
-  }
-
-  /**
-   * Handler for the mousemove event on this tile.
-   * Aborts any pending hide/fade-out for the hover tile, and restarts the
-   * timer to show it.
-   */
-  private handleMouseMove(e: MouseEvent): void {
-    // The mouse is within the tile, so abort any pending removal of the hover pane
-    clearTimeout(this.hideHoverPaneTimer);
-
-    // If the hover pane is currently fading out, just make it fade back in where it is
-    if (this.hoverPaneState === 'fading-out') {
-      this.hoverPaneState = 'shown';
-      this.hoverPane?.classList.add('fade-in');
-    }
-
-    // Restart the timer to show the hover pane anytime the mouse moves within the tile
-    if (this.hoverPaneState === 'hidden') {
-      this.restartShowHoverPaneTimer();
-      this.lastMouseClientPos = { x: e.clientX, y: e.clientY };
-    }
-  }
-
-  /**
-   * Handler for the mouseleave event on this tile.
-   * Hides the hover pane if present, and aborts the timer for showing it.
-   */
-  private handleMouseLeave(): void {
-    // Abort any timer to show the hover pane, as the mouse has left the tile
-    clearTimeout(this.showHoverPaneTimer);
-
-    // Hide the hover pane if it's already been shown
-    clearTimeout(this.hideHoverPaneTimer);
-    if (this.hoverPaneState !== 'hidden') {
-      this.hideHoverPaneTimer = window.setTimeout(() => {
-        this.fadeOutHoverPane();
-      }, this.hideHoverPaneDelay);
-    }
-  }
-
-  private handleTouchStart(): void {
-    this.hoverPaneLongPressTimer = window.setTimeout(() => {
-      if (this.hoverPaneState === 'hidden') {
-        this.showHoverPane();
-      }
-    }, this.hoverPaneLongPressDelay);
-  }
-
-  private cancelLongPress(): void {
-    clearTimeout(this.hoverPaneLongPressTimer);
-  }
-
-  clearHoverPane() {
-    if (this.hoverPaneState !== 'hidden') {
-      this.fadeOutHoverPane();
-    }
-  }
-
-  /**
-   * Aborts and restarts the timer for showing the hover pane.
-   */
-  private restartShowHoverPaneTimer(): void {
-    clearTimeout(this.showHoverPaneTimer);
-    this.showHoverPaneTimer = window.setTimeout(() => {
-      this.showHoverPane();
-    }, this.showHoverPaneDelay);
-  }
-
-  /**
-   * Causes this tile's hover pane to be rendered, positioned, and made visible.
-   */
-  private async showHoverPane(): Promise<void> {
-    this.hoverPaneState = 'shown';
-
-    // Wait for the state update to render the hover pane
-    await this.updateComplete;
-    await new Promise(resolve => {
-      // Pane sizes aren't accurate until next frame
-      requestAnimationFrame(resolve);
-    });
-
-    // Apply the correct positioning to the hover pane
-    this.repositionHoverPane();
-
-    // The hover pane is initially not visible (to avoid it shifting around
-    // while being positioned). Since it now has the correct positioning, we
-    // can make it visible and begin its fade-in animation.
-    this.hoverPane?.classList.add('visible', 'fade-in');
-  }
-
-  /**
-   * Causes this tile's hover pane to begin fading out and starts
-   * the timer for it to be removed.
-   */
-  private fadeOutHoverPane(): void {
-    this.hoverPaneState = 'fading-out';
-    this.hoverPane?.classList.remove('fade-in');
-
-    clearTimeout(this.hideHoverPaneTimer);
-    this.hideHoverPaneTimer = window.setTimeout(() => {
-      this.hoverPaneState = 'hidden';
-    }, 100);
-  }
-
-  /**
-   * Positions the hover pane with the correct offsets.
-   */
-  private repositionHoverPane(): void {
-    if (!this.hoverPane) return;
-
-    const { top, left } = this.hoverPaneDesiredOffsets;
-    this.hoverPane.style.top = `${top}px`;
-    this.hoverPane.style.left = `${left}px`;
   }
 
   private get tile() {
@@ -557,13 +323,6 @@ export class TileDispatcher
         top: -2000px;
         left: -2000px;
         z-index: 1;
-
-        /* Don't make it visible until it has been properly positioned */
-        visibility: hidden;
-      }
-
-      tile-hover-pane.visible {
-        visibility: visible;
       }
     `;
   }

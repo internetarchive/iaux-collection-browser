@@ -46,9 +46,14 @@ export class TileHoverPane extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       :host {
+        visibility: hidden;
         opacity: 0;
         transform: translateY(8px);
         transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+      }
+
+      :host(.visible) {
+        visibility: visible;
       }
 
       :host(.fade-in) {
