@@ -230,6 +230,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * hover pane functional.
    */
   private attachListeners(): void {
+    this.host.addEventListener('mouseenter', this.handleMouseEnter);
     this.host.addEventListener('mousemove', this.handleMouseMove);
     this.host.addEventListener('mouseleave', this.handleMouseLeave);
 
@@ -245,6 +246,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * Removes all the hover pane listeners from the host element.
    */
   private detachListeners(): void {
+    this.host.removeEventListener('mouseenter', this.handleMouseEnter);
     this.host.removeEventListener('mousemove', this.handleMouseMove);
     this.host.removeEventListener('mouseleave', this.handleMouseLeave);
     this.host.removeEventListener('touchstart', this.handleTouchStart);
@@ -252,6 +254,14 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('touchend', this.cancelLongPress);
     this.host.removeEventListener('touchcancel', this.cancelLongPress);
   }
+
+  /**
+   * Handler for the mouseenter event on the host element.
+   */
+  // NB: Arrow function so 'this' remains bound to the controller
+  private handleMouseEnter = (e: MouseEvent): void =>
+    // Delegate to the mousemove handler, as they are currently processed identically
+    this.handleMouseMove(e);
 
   /**
    * Handler for the mousemove event on the host element.

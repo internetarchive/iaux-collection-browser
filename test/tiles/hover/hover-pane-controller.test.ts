@@ -88,6 +88,22 @@ describe('Hover Pane Controller', () => {
     expect(host.controller?.getTemplate()).to.equal(nothing);
   });
 
+  it('should produce a hover pane template after mouseenter, even without mousemove', async () => {
+    const host = await fixture<HostElement>(
+      html`<host-element
+        .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+      ></host-element>`
+    );
+
+    host.dispatchEvent(new MouseEvent('mouseenter'));
+    // Need to wait a tick for the event handlers to run
+    await new Promise(resolve => {
+      setTimeout(resolve, 0);
+    });
+
+    expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
+  });
+
   it('should immediately fade back in if mouse enters while fading out', async () => {
     const host = await fixture<HostElement>(
       html`<host-element
