@@ -385,12 +385,10 @@ export class SortFilterBar
 
     this.alphaSelectorVisible = null;
     if (sortField !== 'title' && this.selectedTitleFilter) {
-      this.alphaSelectorVisible = 'title';
       this.selectedTitleFilter = null;
       this.emitTitleLetterChangedEvent();
     }
     if (sortField !== 'creator' && this.selectedCreatorFilter) {
-      this.alphaSelectorVisible = 'creator';
       this.selectedCreatorFilter = null;
       this.emitCreatorLetterChangedEvent();
     }
