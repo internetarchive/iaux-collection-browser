@@ -95,7 +95,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * The delay between when a touch event begins on the host element and when the
    * hover pane should begin fading in (in milliseconds).
    */
-  private longPressDelay: number = 800;
+  private longPressDelay: number = 600;
 
   /**
    * Whether long press interactions should cause the hover pane to appear (when
