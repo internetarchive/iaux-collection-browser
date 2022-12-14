@@ -1691,7 +1691,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             </option>
           `)}
       </select>
-    `}mobileSortChanged(e){const i=e.target.value;this.setSelectedSort(i),this.alphaSelectorVisible=null,i!=="title"&&this.selectedTitleFilter&&(this.alphaSelectorVisible="title",this.selectedTitleFilter=null,this.emitTitleLetterChangedEvent()),i!=="creator"&&this.selectedCreatorFilter&&(this.alphaSelectorVisible="creator",this.selectedCreatorFilter=null,this.emitCreatorLetterChangedEvent())}get displayOptionTemplate(){return p`
+    `}mobileSortChanged(e){const i=e.target.value;this.setSelectedSort(i),this.alphaSelectorVisible=null,i!=="title"&&this.selectedTitleFilter&&(this.selectedTitleFilter=null,this.emitTitleLetterChangedEvent()),i!=="creator"&&this.selectedCreatorFilter&&(this.selectedCreatorFilter=null,this.emitCreatorLetterChangedEvent())}get displayOptionTemplate(){return p`
       <ul>
         <li>
           <button
