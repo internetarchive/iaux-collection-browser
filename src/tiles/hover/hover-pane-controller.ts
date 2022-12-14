@@ -32,7 +32,7 @@ export interface HoverPaneControllerOptions {
 
 /** A common interface for providing a hover pane element. */
 export interface HoverPaneProviderInterface {
-  /** Returns the provider's current hover pane element. */
+  /** Returns the provider's currently rendered hover pane element. */
   getHoverPane(): HTMLElement | undefined;
   /** Returns properties that should be passed to the hover pane. */
   getHoverPaneProps(): HoverPaneProperties;
@@ -98,7 +98,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   private longPressDelay: number = 800;
 
   /**
-   * Whether long press interactions should cause the hover pane to appear.
+   * Whether long press interactions should cause the hover pane to appear (when
+   * below the mobile breakpoint).
    */
   private enableLongPress: boolean = true;
 
