@@ -239,6 +239,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       this.host.addEventListener('touchmove', this.handleLongPressCancel);
       this.host.addEventListener('touchend', this.handleLongPressCancel);
       this.host.addEventListener('touchcancel', this.handleLongPressCancel);
+      this.host.addEventListener('contextmenu', this.handleContextMenu);
     }
   }
 
@@ -253,6 +254,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('touchmove', this.handleLongPressCancel);
     this.host.removeEventListener('touchend', this.handleLongPressCancel);
     this.host.removeEventListener('touchcancel', this.handleLongPressCancel);
+    this.host.removeEventListener('contextmenu', this.handleContextMenu);
   }
 
   /**
@@ -327,6 +329,15 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   // NB: Arrow function so 'this' remains bound to the controller
   private handleLongPressCancel = (): void => {
     clearTimeout(this.longPressTimer);
+  };
+
+  /**
+   * Handler for the contextmenu event, which should be suppressed during
+   * mobile long-press events on the host element.
+   */
+  // NB: Arrow function so 'this' remains bound to the controller
+  private handleContextMenu = (e: Event): void => {
+    e.preventDefault();
   };
 
   /**
