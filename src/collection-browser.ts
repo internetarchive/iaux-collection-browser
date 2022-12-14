@@ -1659,7 +1659,7 @@ export class CollectionBrowser
       position: relative;
       border-left: 1px solid rgb(232, 232, 232);
       padding-left: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.5rem; // add space in the bottom of infinite scroller
     }
 
     .mobile #right-column {
