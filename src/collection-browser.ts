@@ -8,7 +8,7 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type {
@@ -262,7 +262,7 @@ export class CollectionBrowser
   private dataSource: Record<string, TileModel[]> = {};
 
   @query('infinite-scroller')
-  private infiniteScroller?: InfiniteScroller;
+  private infiniteScroller!: InfiniteScroller;
 
   /**
    * Go to the given page of results
@@ -328,6 +328,7 @@ export class CollectionBrowser
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
       ></empty-placeholder>
+      ${this.infiniteScrollerTemplate}
     `;
   }
 
@@ -371,12 +372,20 @@ export class CollectionBrowser
 
   private get infiniteScrollerTemplate() {
     return html`<infinite-scroller
-      class="${ifDefined(this.displayMode)}"
+      class=${this.infiniteScrollerClasses}
+      itemCount=${this.placeholderType ? 0 : nothing}
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
     ></infinite-scroller>`;
+  }
+
+  private get infiniteScrollerClasses() {
+    return classMap({
+      [this.displayMode ?? '']: !!this.displayMode,
+      hidden: !!this.placeholderType,
+    });
   }
 
   private get sortFilterBarTemplate() {
@@ -1693,6 +1702,10 @@ export class CollectionBrowser
         18rem
       );
       --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
+    }
+
+    infinite-scroller.hidden {
+      display: none;
     }
   `;
 }
