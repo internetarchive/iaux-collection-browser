@@ -1659,11 +1659,13 @@ export class CollectionBrowser
       position: relative;
       border-left: 1px solid rgb(232, 232, 232);
       padding-left: 1rem;
+      margin-bottom: 1.5rem;
     }
 
     .mobile #right-column {
       border-left: none;
       padding: 0;
+      margin-bottom: 1.5rem;
     }
 
     #left-column {
