@@ -236,9 +236,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
     if (this.enableLongPress) {
       this.host.addEventListener('touchstart', this.handleTouchStart);
-      this.host.addEventListener('touchmove', this.cancelLongPress);
-      this.host.addEventListener('touchend', this.cancelLongPress);
-      this.host.addEventListener('touchcancel', this.cancelLongPress);
+      this.host.addEventListener('touchmove', this.handleLongPressCancel);
+      this.host.addEventListener('touchend', this.handleLongPressCancel);
+      this.host.addEventListener('touchcancel', this.handleLongPressCancel);
     }
   }
 
@@ -250,18 +250,19 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('mousemove', this.handleMouseMove);
     this.host.removeEventListener('mouseleave', this.handleMouseLeave);
     this.host.removeEventListener('touchstart', this.handleTouchStart);
-    this.host.removeEventListener('touchmove', this.cancelLongPress);
-    this.host.removeEventListener('touchend', this.cancelLongPress);
-    this.host.removeEventListener('touchcancel', this.cancelLongPress);
+    this.host.removeEventListener('touchmove', this.handleLongPressCancel);
+    this.host.removeEventListener('touchend', this.handleLongPressCancel);
+    this.host.removeEventListener('touchcancel', this.handleLongPressCancel);
   }
 
   /**
    * Handler for the mouseenter event on the host element.
    */
   // NB: Arrow function so 'this' remains bound to the controller
-  private handleMouseEnter = (e: MouseEvent): void =>
+  private handleMouseEnter = (e: MouseEvent): void => {
     // Delegate to the mousemove handler, as they are currently processed identically
     this.handleMouseMove(e);
+  };
 
   /**
    * Handler for the mousemove event on the host element.
@@ -324,7 +325,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * a long press.
    */
   // NB: Arrow function so 'this' remains bound to the controller
-  private cancelLongPress = (): void => {
+  private handleLongPressCancel = (): void => {
     clearTimeout(this.longPressTimer);
   };
 
