@@ -229,3 +229,92 @@ describe('Sort/filter bar letter behavior', () => {
     expect(el.selectedCreatorFilter).to.equal('C');
   });
 });
+
+describe('Sort/filter bar mobile view', () => {
+  let origWindowSize: { width: number; height: number };
+  before(() => {
+    origWindowSize = { width: window.innerWidth, height: window.innerHeight };
+    window.resizeTo(500, 600);
+  });
+
+  after(() => {
+    window.resizeTo(origWindowSize.width, origWindowSize.height);
+  });
+
+  it('renders in mobile view', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    const mobileSortSelector = el.shadowRoot?.querySelector(
+      '#mobile-sort-selector'
+    );
+    const desktopSortSelector = el.shadowRoot?.querySelector(
+      '#desktop-sort-selector'
+    );
+
+    expect(mobileSortSelector?.classList?.contains('visible')).to.be.true;
+    expect(desktopSortSelector?.classList?.contains('hidden')).to.be.true;
+  });
+
+  it('changes selected sort in mobile view', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    const mobileSortSelector = el.shadowRoot?.querySelector(
+      '#mobile-sort-selector'
+    ) as HTMLSelectElement;
+    expect(mobileSortSelector).to.exist;
+
+    mobileSortSelector.value = 'title';
+    mobileSortSelector.dispatchEvent(new Event('change'));
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('title');
+  });
+
+  it('clears title filter when sort changed from title in mobile view', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    el.selectedSort = 'title' as SortField;
+    el.selectedTitleFilter = 'A';
+    await el.updateComplete;
+
+    const mobileSortSelector = el.shadowRoot?.querySelector(
+      '#mobile-sort-selector'
+    ) as HTMLSelectElement;
+    expect(mobileSortSelector).to.exist;
+
+    mobileSortSelector.value = 'relevance';
+    mobileSortSelector.dispatchEvent(new Event('change'));
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('relevance');
+    expect(el.selectedTitleFilter).to.be.null;
+  });
+
+  it('clears creator filter when sort changed from creator in mobile view', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    el.selectedSort = 'creator' as SortField;
+    el.selectedCreatorFilter = 'A';
+    await el.updateComplete;
+
+    const mobileSortSelector = el.shadowRoot?.querySelector(
+      '#mobile-sort-selector'
+    ) as HTMLSelectElement;
+    expect(mobileSortSelector).to.exist;
+
+    mobileSortSelector.value = 'relevance';
+    mobileSortSelector.dispatchEvent(new Event('change'));
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('relevance');
+    expect(el.selectedCreatorFilter).to.be.null;
+  });
+});
