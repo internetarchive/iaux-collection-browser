@@ -68,7 +68,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /**
    * The breakpoint (in pixels) below which the mobile interface should be used.
    */
-  private mobileBreakpoint?: number;
+  private mobileBreakpoint?: number = 600;
 
   /**
    * The number of horizontal pixels the hover pane should be offset from the
