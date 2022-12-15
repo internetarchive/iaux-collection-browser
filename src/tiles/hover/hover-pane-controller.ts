@@ -159,6 +159,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .loggedIn=${this.hoverPaneProps?.loggedIn}
             .sortParam=${this.hoverPaneProps?.sortParam}
             .collectionNameCache=${this.hoverPaneProps?.collectionNameCache}
+            @contextmenu=${(e: Event) => {
+              e.stopPropagation();
+            }}
           ></tile-hover-pane>`
       : nothing;
   }
