@@ -257,10 +257,10 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       this.host.addEventListener('touchmove', this.handleLongPressCancel);
       this.host.addEventListener('touchend', this.handleLongPressCancel);
       this.host.addEventListener('touchcancel', this.handleLongPressCancel);
-    }
 
-    if (this.isMobileView) {
-      this.host.addEventListener('contextmenu', this.handleContextMenu);
+      if (this.isMobileView) {
+        this.host.addEventListener('contextmenu', this.handleContextMenu);
+      }
     }
   }
 
