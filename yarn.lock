@@ -108,10 +108,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.3.tgz"
   integrity sha512-gN7ivwHWlf8V7fD3VakQ4NtddSou5i3A3TqbIo8EKF+XTxJXaXpNBmzkZEGf2oMVK8rHvrabFxZKVEy9qG7Omw==
 
-"@internetarchive/histogram-date-range@^0.1.8-alpha.3":
-  version "0.1.8-alpha.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.8-alpha.3.tgz#d8f390d2cb841564ea88d23980ea8b7f702c2202"
-  integrity sha512-0vPnXS7Zzi9PXQT1AJDdf2UQgdLF14oFdBLo10F1oUiNoRwuvVgFULzUfWKpoKxHmTSc/6L3uH0C21MwKqMWwA==
+"@internetarchive/histogram-date-range@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.8.tgz#7fca61151186178c5d5ae2641cd8a77a5fded77e"
+  integrity sha512-Tx+wqKFa80cCeFFZPvyMYvAFqqQ3L4wbKk1ZAci6z+qwEDWJr5Sf841cuC0qK/dqD88x3BB6mW/+E5SCuuwB6Q==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.3"
     dayjs "^1.10.7"
