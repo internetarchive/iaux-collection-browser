@@ -380,7 +380,18 @@ export class SortFilterBar
 
   private mobileSortChanged(e: Event) {
     const target = e.target as HTMLSelectElement;
-    this.setSelectedSort(target.value as SortField);
+    const sortField = target.value as SortField;
+    this.setSelectedSort(sortField);
+
+    this.alphaSelectorVisible = null;
+    if (sortField !== 'title' && this.selectedTitleFilter) {
+      this.selectedTitleFilter = null;
+      this.emitTitleLetterChangedEvent();
+    }
+    if (sortField !== 'creator' && this.selectedCreatorFilter) {
+      this.selectedCreatorFilter = null;
+      this.emitCreatorLetterChangedEvent();
+    }
   }
 
   private get displayOptionTemplate() {
