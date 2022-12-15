@@ -68,6 +68,12 @@ export class TileHoverPane extends LitElement {
         box-shadow: 4px 4px 8px 0 rgba(0, 0, 0, 0.8);
         background: white;
       }
+
+      @media screen and (max-width: 600px) {
+        #container {
+          max-width: 80vw;
+        }
+      }
     `;
   }
 }
