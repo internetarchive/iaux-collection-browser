@@ -230,16 +230,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
       // On mobile view, shunt the hover pane to avoid overflowing the viewport
       if (this.isMobileView) {
-        left = clamp(
-          left,
-          10,
-          window.innerWidth - hoverPaneRect.width - this.offsetX
-        );
-        top = clamp(
-          top,
-          10,
-          window.innerHeight - hoverPaneRect.height - this.offsetY
-        );
+        left = clamp(left, 20, window.innerWidth - hoverPaneRect.width - 20);
+        top = clamp(top, 20, window.innerHeight - hoverPaneRect.height - 20);
       }
     }
 
