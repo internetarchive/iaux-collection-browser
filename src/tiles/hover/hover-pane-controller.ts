@@ -135,7 +135,14 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     options: HoverPaneControllerOptions = {}
   ) {
     this.host.addController(this);
-    Object.assign(this, options);
+
+    this.mobileBreakpoint = options.mobileBreakpoint ?? this.mobileBreakpoint;
+    this.offsetX = options.offsetX ?? this.offsetX;
+    this.offsetY = options.offsetY ?? this.offsetY;
+    this.showDelay = options.showDelay ?? this.showDelay;
+    this.hideDelay = options.hideDelay ?? this.hideDelay;
+    this.longPressDelay = options.longPressDelay ?? this.longPressDelay;
+    this.enableLongPress = options.enableLongPress ?? this.enableLongPress;
   }
 
   hostConnected(): void {
