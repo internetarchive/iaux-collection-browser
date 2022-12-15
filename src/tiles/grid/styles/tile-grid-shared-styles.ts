@@ -13,6 +13,7 @@ export const baseTileStyles = css`
     border: 1px #2c2c2c;
     border-radius: ${tileCornerRadius};
     box-shadow: 1px 1px 2px 0;
+    box-sizing: border-box;
     height: 100%;
     display: flex;
     flex-direction: column;
