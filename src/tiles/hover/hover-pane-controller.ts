@@ -51,6 +51,9 @@ export interface HoverPaneControllerInterface extends ReactiveController {
   getTemplate(): HTMLTemplateResult | typeof nothing;
 }
 
+const clamp = (val: number, min = -Infinity, max = Infinity) =>
+  Math.max(min, Math.min(val, max));
+
 export class HoverPaneController implements HoverPaneControllerInterface {
   /**
    * The hover pane element attached to this controller's host.
@@ -206,8 +209,10 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
     // Flip the hover pane according to which quadrant of the viewport the mouse is in.
     // (Similar to how Wikipedia's link hover panes work)
-    const flipHorizontal = this.lastMouseClientPos.x > window.innerWidth / 2;
-    const flipVertical = this.lastMouseClientPos.y > window.innerHeight / 2;
+    const flipHorizontal =
+      !this.isMobileView && this.lastMouseClientPos.x > window.innerWidth / 2;
+    const flipVertical =
+      !this.isMobileView && this.lastMouseClientPos.y > window.innerHeight / 2;
 
     const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
     if (hoverPaneRect) {
@@ -222,6 +227,20 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       // Apply desired offsets from the mouse position
       left += (flipHorizontal ? -1 : 1) * this.offsetX;
       top += (flipVertical ? -1 : 1) * this.offsetY;
+
+      // On mobile view, shunt the hover pane to avoid overflowing the viewport
+      if (this.isMobileView) {
+        left = clamp(
+          left,
+          10,
+          window.innerWidth - hoverPaneRect.width - this.offsetX
+        );
+        top = clamp(
+          top,
+          10,
+          window.innerHeight - hoverPaneRect.height - this.offsetY
+        );
+      }
     }
 
     // Subtract off the tile's own offsets
