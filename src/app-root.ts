@@ -602,6 +602,10 @@ export class AppRoot extends LitElement {
       min-width: 50px;
     }
 
+    #page-number-input {
+      width: 75px;
+    }
+
     .search-type {
       margin-right: 1rem;
     }
