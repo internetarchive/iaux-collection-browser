@@ -124,7 +124,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   private longPressTimer?: number;
 
   /** A record of the last mouse position on the host element, for positioning the hover pane */
-  private lastMouseClientPos = { x: 0, y: 0 };
+  private lastPointerClientPos = { x: 0, y: 0 };
 
   constructor(
     /** The host element to which this controller should attach listeners */
@@ -200,13 +200,13 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
   /**
    * Returns the desired top/left offsets (in pixels) for this tile's hover pane.
-   * The desired offsets balance positioning the hover pane under the mouse pointer
+   * The desired offsets balance positioning the hover pane under the primary pointer
    * while preventing it from flowing outside the viewport. The returned offsets are
    * given relative to this tile's content box.
    *
    * These offsets are only valid if the hover pane is already rendered with its
    * correct width and height. If the hover pane is not present, the returned offsets
-   * will simply represent the current mouse position.
+   * will simply represent the current pointer position.
    */
   private get hoverPaneDesiredOffsets(): { top: number; left: number } {
     // Try to find offsets for the hover pane that:
@@ -215,14 +215,18 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     //      nearest corner of the hover pane and the mouse position
     //      (with some additional offsets applied after the fact).
 
-    let [left, top] = [this.lastMouseClientPos.x, this.lastMouseClientPos.y];
+    let [left, top] = [
+      this.lastPointerClientPos.x,
+      this.lastPointerClientPos.y,
+    ];
 
     // Flip the hover pane according to which quadrant of the viewport the mouse is in.
     // (Similar to how Wikipedia's link hover panes work)
     const flipHorizontal =
-      !this.isMobileView && this.lastMouseClientPos.x > window.innerWidth / 2;
+      !this.isMobileView && this.lastPointerClientPos.x > window.innerWidth / 2;
     const flipVertical =
-      !this.isMobileView && this.lastMouseClientPos.y > window.innerHeight / 2;
+      !this.isMobileView &&
+      this.lastPointerClientPos.y > window.innerHeight / 2;
 
     const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
     if (hoverPaneRect) {
@@ -316,7 +320,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     // Restart the timer to show the hover pane anytime the mouse moves within the tile
     if (this.hoverPaneState === 'hidden') {
       this.restartShowHoverPaneTimer();
-      this.lastMouseClientPos = { x: e.clientX, y: e.clientY };
+      this.lastPointerClientPos = { x: e.clientX, y: e.clientY };
     }
   };
 
@@ -343,13 +347,21 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * Begins the timer for recognizing a long press event.
    */
   // NB: Arrow function so 'this' remains bound to the controller
-  private handleTouchStart = (): void => {
+  private handleTouchStart = (e: TouchEvent): void => {
     clearTimeout(this.longPressTimer);
-    this.longPressTimer = window.setTimeout(() => {
-      if (this.hoverPaneState === 'hidden') {
-        this.showHoverPane();
-      }
-    }, this.longPressDelay);
+
+    if (e.touches.length === 1) {
+      this.longPressTimer = window.setTimeout(() => {
+        if (this.hoverPaneState === 'hidden') {
+          this.showHoverPane();
+        }
+      }, this.longPressDelay);
+
+      this.lastPointerClientPos = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    }
   };
 
   /**
