@@ -177,7 +177,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   }
 
   private get touchBackdropTemplate(): HTMLTemplateResult | typeof nothing {
-    return this.enableLongPress
+    return this.isTouchEnabled && this.enableLongPress
       ? html`<div
           id="touch-backdrop"
           @touchstart=${this.handleBackdropTouchStart}
@@ -191,6 +191,13 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /** Whether to use the mobile layout */
   private get isMobileView(): boolean {
     return !!this.mobileBreakpoint && window.innerWidth < this.mobileBreakpoint;
+  }
+
+  private get isTouchEnabled(): boolean {
+    return (
+      'ontouchstart' in window &&
+      window.matchMedia('(any-pointer: coarse)').matches
+    );
   }
 
   /** Whether this controller should currently render its hover pane. */
@@ -263,15 +270,12 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.addEventListener('mousemove', this.handleMouseMove);
     this.host.addEventListener('mouseleave', this.handleMouseLeave);
 
-    if (this.enableLongPress) {
+    if (this.isTouchEnabled && this.enableLongPress) {
       this.host.addEventListener('touchstart', this.handleTouchStart);
       this.host.addEventListener('touchmove', this.handleLongPressCancel);
       this.host.addEventListener('touchend', this.handleLongPressCancel);
       this.host.addEventListener('touchcancel', this.handleLongPressCancel);
-
-      if (this.isMobileView) {
-        this.host.addEventListener('contextmenu', this.handleContextMenu);
-      }
+      this.host.addEventListener('contextmenu', this.handleContextMenu);
     }
   }
 
