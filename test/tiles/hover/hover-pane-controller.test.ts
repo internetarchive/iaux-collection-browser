@@ -193,135 +193,157 @@ describe('Hover Pane Controller', () => {
     expect(host.controller?.getTemplate()).to.equal(nothing);
   });
 
-  it('should produce a hover pane after long press', async () => {
-    const host = await fixture<HostElement>(
-      html`<host-element
-        .controllerOptions=${{
-          showDelay: 0,
-          longPressDelay: 0,
-          enableLongPress: true,
-        }}
-      ></host-element>`
-    );
+  describe('Touch & long-press', () => {
+    let oldMatchMedia: typeof window.matchMedia;
+    let oldOnTouchStart: typeof window.ontouchstart;
 
-    // Touch the host element and wait for the long press handlers to run
-    host.dispatchEvent(new TouchEvent('touchstart'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 0);
+    before(() => {
+      oldMatchMedia = window.matchMedia;
+      oldOnTouchStart = window.ontouchstart;
+      window.matchMedia = () => ({ matches: true } as MediaQueryList);
+      window.ontouchstart = () => {};
     });
 
-    expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
-  });
-
-  it('should cancel a long press by moving', async () => {
-    const host = await fixture<HostElement>(
-      html`<host-element
-        .controllerOptions=${{
-          showDelay: 0,
-          longPressDelay: 100,
-          enableLongPress: true,
-        }}
-      ></host-element>`
-    );
-
-    // Touch the host element
-    host.dispatchEvent(new TouchEvent('touchstart'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 0);
+    after(() => {
+      window.matchMedia = oldMatchMedia;
+      window.ontouchstart = oldOnTouchStart;
     });
 
-    // Move the touch point, cancelling the long press
-    host.dispatchEvent(new TouchEvent('touchmove'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 150);
+    const getTouchStartEvent = (host: EventTarget) =>
+      new TouchEvent('touchstart', {
+        touches: [new Touch({ identifier: 0, target: host })],
+      });
+
+    it('should produce a hover pane after long press', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{
+            showDelay: 0,
+            longPressDelay: 0,
+            enableLongPress: true,
+          }}
+        ></host-element>`
+      );
+
+      // Touch the host element and wait for the long press handlers to run
+      host.dispatchEvent(getTouchStartEvent(host));
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
+
+      expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
     });
 
-    expect(host.controller?.getTemplate()).to.equal(nothing);
-  });
+    it('should cancel a long press by moving', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{
+            showDelay: 0,
+            longPressDelay: 100,
+            enableLongPress: true,
+          }}
+        ></host-element>`
+      );
 
-  it('should cancel a long press by ending touch', async () => {
-    const host = await fixture<HostElement>(
-      html`<host-element
-        .controllerOptions=${{
-          showDelay: 0,
-          longPressDelay: 100,
-          enableLongPress: true,
-        }}
-      ></host-element>`
-    );
+      // Touch the host element
+      host.dispatchEvent(getTouchStartEvent(host));
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
 
-    // Touch the host element
-    host.dispatchEvent(new TouchEvent('touchstart'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 0);
+      // Move the touch point, cancelling the long press
+      host.dispatchEvent(new TouchEvent('touchmove'));
+      await new Promise(resolve => {
+        setTimeout(resolve, 150);
+      });
+
+      expect(host.controller?.getTemplate()).to.equal(nothing);
     });
 
-    // Lift the touch point, cancelling the long press
-    host.dispatchEvent(new TouchEvent('touchend'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 150);
+    it('should cancel a long press by ending touch', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{
+            showDelay: 0,
+            longPressDelay: 100,
+            enableLongPress: true,
+          }}
+        ></host-element>`
+      );
+
+      // Touch the host element
+      host.dispatchEvent(getTouchStartEvent(host));
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
+
+      // Lift the touch point, cancelling the long press
+      host.dispatchEvent(new TouchEvent('touchend'));
+      await new Promise(resolve => {
+        setTimeout(resolve, 150);
+      });
+
+      expect(host.controller?.getTemplate()).to.equal(nothing);
     });
 
-    expect(host.controller?.getTemplate()).to.equal(nothing);
-  });
+    it('should cancel a long press by cancelling touch (e.g., too many touch points)', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{
+            showDelay: 0,
+            longPressDelay: 100,
+            enableLongPress: true,
+          }}
+        ></host-element>`
+      );
 
-  it('should cancel a long press by cancelling touch (e.g., too many touch points)', async () => {
-    const host = await fixture<HostElement>(
-      html`<host-element
-        .controllerOptions=${{
-          showDelay: 0,
-          longPressDelay: 100,
-          enableLongPress: true,
-        }}
-      ></host-element>`
-    );
+      // Touch the host element
+      host.dispatchEvent(getTouchStartEvent(host));
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
 
-    // Touch the host element
-    host.dispatchEvent(new TouchEvent('touchstart'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 0);
+      // Cancel the touch point, also cancelling the long press
+      host.dispatchEvent(new TouchEvent('touchcancel'));
+      await new Promise(resolve => {
+        setTimeout(resolve, 150);
+      });
+
+      expect(host.controller?.getTemplate()).to.equal(nothing);
     });
 
-    // Cancel the touch point, also cancelling the long press
-    host.dispatchEvent(new TouchEvent('touchcancel'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 150);
+    it('should close the hover pane on mobile when touching the backdrop', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{
+            showDelay: 0,
+            hideDelay: 0,
+            longPressDelay: 0,
+            enableLongPress: true,
+            mobileBreakpoint: 9999, // Ensure we get the mobile view
+          }}
+        ></host-element>`
+      );
+
+      // Touch the host element
+      host.dispatchEvent(getTouchStartEvent(host));
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
+
+      expect(host.controller?.getTemplate()).not.to.equal(nothing);
+
+      await host.updateComplete;
+
+      // Touch the backdrop
+      host.shadowRoot
+        ?.querySelector('#touch-backdrop')
+        ?.dispatchEvent(new TouchEvent('touchstart'));
+      await new Promise(resolve => {
+        setTimeout(resolve, 150);
+      });
+
+      expect(host.controller?.getTemplate()).to.equal(nothing);
     });
-
-    expect(host.controller?.getTemplate()).to.equal(nothing);
-  });
-
-  it('should close the hover pane on mobile when touching the backdrop', async () => {
-    const host = await fixture<HostElement>(
-      html`<host-element
-        .controllerOptions=${{
-          showDelay: 0,
-          hideDelay: 0,
-          longPressDelay: 0,
-          enableLongPress: true,
-          mobileBreakpoint: 9999, // Ensure we get the mobile view
-        }}
-      ></host-element>`
-    );
-
-    // Touch the host element
-    host.dispatchEvent(new TouchEvent('touchstart'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 0);
-    });
-
-    expect(host.controller?.getTemplate()).not.to.equal(nothing);
-
-    await host.updateComplete;
-
-    // Touch the backdrop
-    host.shadowRoot
-      ?.querySelector('#touch-backdrop')
-      ?.dispatchEvent(new TouchEvent('touchstart'));
-    await new Promise(resolve => {
-      setTimeout(resolve, 150);
-    });
-
-    expect(host.controller?.getTemplate()).to.equal(nothing);
   });
 });
