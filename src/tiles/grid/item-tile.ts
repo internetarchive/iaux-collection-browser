@@ -176,6 +176,20 @@ export class ItemTile extends LitElement {
           --containerLeftMargin: 5px;
           --containerTopMargin: 10px;
         }
+
+        /**
+         * iOS Safari long-press on tiles (to bring up hover pane)
+         * gets messy without this
+         */
+        @media screen and (pointer: coarse) and (hover: none) {
+          .container {
+            -webkit-user-select: none;
+          }
+
+          .truncated {
+            -webkit-user-select: text;
+          }
+        }
       `,
     ];
   }
