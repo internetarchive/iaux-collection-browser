@@ -30,7 +30,7 @@ export const baseTileStyles = css`
     display: flex;
     flex-direction: column;
     height: 100%;
-    row-gap: 10px;
+    row-gap: 5px;
     font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   }
 
@@ -42,7 +42,7 @@ export const baseTileStyles = css`
     flex-shrink: 0;
     padding-left: 5px;
     padding-right: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
 
   .created-by,
