@@ -100,7 +100,7 @@ export class TileStats extends LitElement {
       }
 
       .item-stats {
-        height: 35px;
+        height: 30px;
         padding-left: 5px;
         padding-right: 5px;
         font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
@@ -108,9 +108,9 @@ export class TileStats extends LitElement {
 
       #stats-row {
         display: flex;
+        justify-content: space-between;
         flex-wrap: wrap;
         width: 100%;
-        padding-top: 5px;
         padding-bottom: 5px;
       }
 
@@ -126,7 +126,7 @@ export class TileStats extends LitElement {
       }
 
       .col {
-        width: 25%;
+        min-width: 15px;
         height: 25px;
       }
 
