@@ -181,6 +181,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       ? html`<div
           id="touch-backdrop"
           @touchstart=${this.handleBackdropTouchStart}
+          @touchmove=${this.handleBackdropTouchStart}
+          @touchend=${this.handleBackdropTouchStart}
+          @touchcancel=${this.handleBackdropTouchStart}
         ></div>`
       : nothing;
   }
