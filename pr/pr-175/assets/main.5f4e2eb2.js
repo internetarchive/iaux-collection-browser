@@ -1045,6 +1045,20 @@ var jo=Object.defineProperty,Vo=Object.defineProperties;var Wo=Object.getOwnProp
           --containerLeftMargin: 5px;
           --containerTopMargin: 10px;
         }
+
+        /**
+         * iOS Safari long-press on tiles (to bring up hover pane)
+         * gets messy without this
+         */
+        @media screen and (pointer: coarse) and (hover: none) {
+          .container {
+            -webkit-user-select: none;
+          }
+
+          .truncated {
+            -webkit-user-select: text;
+          }
+        }
       `]}};n([h({type:String})],At.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],At.prototype,"loggedIn",void 0);n([h({type:Object})],At.prototype,"model",void 0);n([h({type:Object})],At.prototype,"sortParam",void 0);At=n([N("item-tile")],At);let Pi=class extends P{render(){return u`
       <div class="container">
         <div class="tile-details">
