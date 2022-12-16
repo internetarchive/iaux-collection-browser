@@ -146,7 +146,6 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
 
   image-block {
     display: block;
-    margin-bottom: 5px;
     position: relative;
     text-align: center;
   }
@@ -155,19 +154,19 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
     display: flex;
     flex-direction: column;
     height: 100%;
-    row-gap: 5px;
+    row-gap: 10px;
     font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   }
 
   .item-info {
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
     flex-grow: 1;
   }
 
   #title {
-    flex-shrink: 0;
-    padding-left: 5px;
-    padding-right: 5px;
-    margin-bottom: 5px;
+    padding: 0 5px;
   }
 
   .created-by,
@@ -177,7 +176,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
     display: flex;
     justify-content: left;
     align-items: flex-end; /* Important to start text from bottom */
-    padding: 0 5px 5px 5px;
+    padding: 0 5px;
   }
 
   .truncated {
@@ -496,11 +495,12 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        width: 100%;
+        width: calc(100% - 10px);
         border-left: 5px solid #194880;
         margin-top: var(--containerTopMargin, 10px);
         margin-left: var(--containerLeftMargin, 0px);
         border-radius: 3px;
+        box-sizing: border-box;
       }
 
       .snippet-view {
@@ -512,17 +512,16 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         -webkit-line-clamp: var(--maxLines, 3);
         -webkit-box-orient: vertical;
         margin-left: 5px;
-        margin-right: 10px;
       }
 
       .grid {
-        margin: 0px 15px 0px 5px;
         font-size: 1.2rem;
         line-height: 1.5rem;
       }
 
       .list {
-        padding-left: 20px;
+        margin: 0;
+        padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
       }
@@ -1017,7 +1016,6 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
       </div>
     `:x}get imageBlockTemplate(){return u`
       <image-block
-        class=${this.hasSnippets?"has-snippets":x}
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .loggedIn=${this.loggedIn}
@@ -1048,7 +1046,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
 
         text-snippet-block {
           --containerLeftMargin: 5px;
-          --containerTopMargin: 10px;
+          --containerTopMargin: 5px;
         }
       `]}};n([h({type:String})],Dt.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Dt.prototype,"loggedIn",void 0);n([h({type:Object})],Dt.prototype,"model",void 0);n([h({type:Object})],Dt.prototype,"sortParam",void 0);Dt=n([N("item-tile")],Dt);let Li=class extends O{render(){return u`
       <div class="container">
