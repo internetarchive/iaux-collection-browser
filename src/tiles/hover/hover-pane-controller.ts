@@ -177,7 +177,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   }
 
   private get touchBackdropTemplate(): HTMLTemplateResult | typeof nothing {
-    return this.isMobileView && this.enableLongPress
+    return this.enableLongPress
       ? html`<div
           id="touch-backdrop"
           @touchstart=${this.handleBackdropTouchStart}
@@ -222,11 +222,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
     // Flip the hover pane according to which quadrant of the viewport the mouse is in.
     // (Similar to how Wikipedia's link hover panes work)
-    const flipHorizontal =
-      !this.isMobileView && this.lastPointerClientPos.x > window.innerWidth / 2;
-    const flipVertical =
-      !this.isMobileView &&
-      this.lastPointerClientPos.y > window.innerHeight / 2;
+    const flipHorizontal = this.lastPointerClientPos.x > window.innerWidth / 2;
+    const flipVertical = this.lastPointerClientPos.y > window.innerHeight / 2;
 
     const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
     if (hoverPaneRect) {
