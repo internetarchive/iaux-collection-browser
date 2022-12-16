@@ -180,10 +180,13 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     return this.isTouchEnabled && this.enableLongPress
       ? html`<div
           id="touch-backdrop"
-          @touchstart=${this.handleBackdropTouchStart}
-          @touchmove=${this.handleBackdropTouchStart}
-          @touchend=${this.handleBackdropTouchStart}
-          @touchcancel=${this.handleBackdropTouchStart}
+          @touchstart=${this.handleBackdropInteraction}
+          @touchmove=${this.handleBackdropInteraction}
+          @touchend=${this.handleBackdropInteraction}
+          @touchcancel=${this.handleBackdropInteraction}
+          @mouseenter=${this.handleBackdropInteraction}
+          @mousemove=${this.handleBackdropInteraction}
+          @mouseleave=${this.handleBackdropInteraction}
         ></div>`
       : nothing;
   }
@@ -388,7 +391,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * Immediately causes the hover pane to begin fading out, if it is present.
    */
   // NB: Arrow function so 'this' remains bound to the controller
-  private handleBackdropTouchStart = (e: TouchEvent): void => {
+  private handleBackdropInteraction = (e: Event): void => {
     if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
     }
