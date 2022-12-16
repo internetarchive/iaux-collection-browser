@@ -21,7 +21,6 @@ export const baseTileStyles = css`
 
   image-block {
     display: block;
-    margin-bottom: 5px;
     position: relative;
     text-align: center;
   }
@@ -30,19 +29,19 @@ export const baseTileStyles = css`
     display: flex;
     flex-direction: column;
     height: 100%;
-    row-gap: 5px;
+    row-gap: 10px;
     font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   }
 
   .item-info {
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
     flex-grow: 1;
   }
 
   #title {
-    flex-shrink: 0;
-    padding-left: 5px;
-    padding-right: 5px;
-    margin-bottom: 5px;
+    padding: 0 5px;
   }
 
   .created-by,
@@ -52,7 +51,7 @@ export const baseTileStyles = css`
     display: flex;
     justify-content: left;
     align-items: flex-end; /* Important to start text from bottom */
-    padding: 0 5px 5px 5px;
+    padding: 0 5px;
   }
 
   .truncated {

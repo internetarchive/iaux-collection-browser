@@ -83,7 +83,6 @@ export class ItemTile extends LitElement {
   private get imageBlockTemplate(): TemplateResult {
     return html`
       <image-block
-        class=${this.hasSnippets ? 'has-snippets' : nothing}
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .loggedIn=${this.loggedIn}
@@ -174,7 +173,7 @@ export class ItemTile extends LitElement {
 
         text-snippet-block {
           --containerLeftMargin: 5px;
-          --containerTopMargin: 10px;
+          --containerTopMargin: 5px;
         }
       `,
     ];
