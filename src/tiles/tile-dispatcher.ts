@@ -318,7 +318,7 @@ export class TileDispatcher
         top: 0;
         left: 0;
         z-index: 1;
-        background: rgba(255, 0, 0, 0.2);
+        background: transparent;
       }
 
       tile-hover-pane {
