@@ -169,13 +169,17 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .loggedIn=${this.hoverPaneProps?.loggedIn}
             .sortParam=${this.hoverPaneProps?.sortParam}
             .collectionNameCache=${this.hoverPaneProps?.collectionNameCache}
-            @contextmenu=${(e: Event) => {
-              e.stopPropagation();
-            }}
           ></tile-hover-pane>`
       : nothing;
   }
 
+  /**
+   * Produces a template for the invisible touch capture backdrop that
+   * is used to cancel the hover pane on touch devices. We want any
+   * touch interaction on the backdrop to remove the hover pane, and
+   * we don't want to bubble up mouse events that would otherwise
+   * affect the state of the hover pane (e.g., fading it back in).
+   */
   private get touchBackdropTemplate(): HTMLTemplateResult | typeof nothing {
     return this.isTouchEnabled && this.enableLongPress
       ? html`<div
@@ -184,9 +188,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
           @touchmove=${this.handleBackdropInteraction}
           @touchend=${this.handleBackdropInteraction}
           @touchcancel=${this.handleBackdropInteraction}
-          @mouseenter=${this.handleBackdropInteraction}
-          @mousemove=${this.handleBackdropInteraction}
-          @mouseleave=${this.handleBackdropInteraction}
+          @mouseenter=${(e: MouseEvent) => e.stopPropagation()}
+          @mousemove=${(e: MouseEvent) => e.stopPropagation()}
+          @mouseleave=${(e: MouseEvent) => e.stopPropagation()}
         ></div>`
       : nothing;
   }

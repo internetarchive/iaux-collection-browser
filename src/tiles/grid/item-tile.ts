@@ -183,11 +183,11 @@ export class ItemTile extends LitElement {
          */
         @media screen and (pointer: coarse) and (hover: none) {
           .container {
-            -webkit-user-select: none;
+            -webkit-touch-callout: none;
           }
 
           .truncated {
-            -webkit-user-select: text;
+            -webkit-touch-callout: default;
           }
         }
       `,
