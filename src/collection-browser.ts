@@ -8,7 +8,7 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
+import { classMap } from 'lit/directives/class-map.js';
 
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type {
@@ -272,7 +272,7 @@ export class CollectionBrowser
   goToPage(pageNumber: number) {
     this.initialPageNumber = pageNumber;
     this.pagesToRender = pageNumber;
-    this.scrollToPage(pageNumber);
+    return this.scrollToPage(pageNumber);
   }
 
   clearFilters() {
@@ -328,6 +328,7 @@ export class CollectionBrowser
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
       ></empty-placeholder>
+      ${this.infiniteScrollerTemplate}
     `;
   }
 
@@ -371,12 +372,20 @@ export class CollectionBrowser
 
   private get infiniteScrollerTemplate() {
     return html`<infinite-scroller
-      class="${ifDefined(this.displayMode)}"
+      class=${this.infiniteScrollerClasses}
+      itemCount=${this.placeholderType ? 0 : nothing}
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
     ></infinite-scroller>`;
+  }
+
+  private get infiniteScrollerClasses() {
+    return classMap({
+      [this.displayMode ?? '']: !!this.displayMode,
+      hidden: !!this.placeholderType,
+    });
   }
 
   private get sortFilterBarTemplate() {
@@ -1136,22 +1145,25 @@ export class CollectionBrowser
       results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
   }
 
-  private scrollToPage(pageNumber: number) {
-    const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
-    // without this setTimeout, Safari just pauses until the `fetchPage` is complete
-    // then scrolls to the cell
-    setTimeout(() => {
-      this.isScrollingToCell = true;
-      this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
-      // This timeout is to give the scroll animation time to finish
-      // then updating the infinite scroller once we're done scrolling
-      // There's no scroll animation completion callback so we're
-      // giving it 0.5s to finish.
+  private scrollToPage(pageNumber: number): Promise<void> {
+    return new Promise(resolve => {
+      const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
+      // without this setTimeout, Safari just pauses until the `fetchPage` is complete
+      // then scrolls to the cell
       setTimeout(() => {
-        this.isScrollingToCell = false;
-        this.infiniteScroller.reload();
-      }, 500);
-    }, 0);
+        this.isScrollingToCell = true;
+        this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
+        // This timeout is to give the scroll animation time to finish
+        // then updating the infinite scroller once we're done scrolling
+        // There's no scroll animation completion callback so we're
+        // giving it 0.5s to finish.
+        setTimeout(() => {
+          this.isScrollingToCell = false;
+          this.infiniteScroller?.reload();
+          resolve();
+        }, 500);
+      }, 0);
+    });
   }
 
   /**
@@ -1248,7 +1260,9 @@ export class CollectionBrowser
     // temporary estimates based on pages rendered so far).
     if (results.length < this.pageSize) {
       this.endOfDataReached = true;
-      this.infiniteScroller.itemCount = this.totalResults;
+      if (this.infiniteScroller) {
+        this.infiniteScroller.itemCount = this.totalResults;
+      }
     }
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
@@ -1350,7 +1364,7 @@ export class CollectionBrowser
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.infiniteScroller.reload();
+      this.infiniteScroller?.reload();
     }
   }
 
@@ -1688,6 +1702,10 @@ export class CollectionBrowser
         18rem
       );
       --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
+    }
+
+    infinite-scroller.hidden {
+      display: none;
     }
   `;
 }

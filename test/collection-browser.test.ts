@@ -751,7 +751,12 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    // Infinite scroller won't exist unless there's a base query
+    // Infinite scroller won't exist unless there's a base query.
+    // First ensure that we don't throw errors when it doesn't exist.
+    await el.goToPage(1);
+
+    // And make sure it correctly calls scrollToCell when the
+    // infinite scroller does exist.
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
 
@@ -764,12 +769,7 @@ describe('Collection Browser', () => {
     const spy = sinon.spy();
     infiniteScroller.scrollToCell = spy;
 
-    el.goToPage(1);
-
-    // Give it a second to scroll
-    await new Promise(res => {
-      setTimeout(res, 1000);
-    });
+    await el.goToPage(1);
 
     expect(spy.callCount).to.equal(1);
 
