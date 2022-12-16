@@ -43,7 +43,7 @@ export class TileStats extends LitElement {
             <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
-          <li class="col" title="${uploadsOrViewsTitle}">
+          <li class="col views" title="${uploadsOrViewsTitle}">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
             <p class="status-text">
               <span class="sr-only">
@@ -56,14 +56,14 @@ export class TileStats extends LitElement {
               )}
             </p>
           </li>
-          <li class="col" title="${formattedFavCount} favorites">
+          <li class="col favorites" title="${formattedFavCount} favorites">
             ${favoriteFilledIcon}
             <p class="status-text">
               <span class="sr-only">Favorites:</span>
               ${formattedFavCount}
             </p>
           </li>
-          <li class="col" title="${formattedReviewCount} reviews">
+          <li class="col reviews" title="${formattedReviewCount} reviews">
             ${reviewsIcon}
             <p class="status-text">
               <span class="sr-only">Reviews:</span>
@@ -97,6 +97,13 @@ export class TileStats extends LitElement {
         display: block;
         margin: auto;
         pointer-events: none;
+      }
+
+      /* Make the reviews icon slightly smaller/lower, for even visual weight */
+      .reviews svg {
+        height: 9px;
+        width: 9px;
+        margin-top: 1px;
       }
 
       .item-stats {
