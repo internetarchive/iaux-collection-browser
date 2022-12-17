@@ -21,7 +21,7 @@ export class TileListCompactHeader extends LitElement {
         <div id="title">Title</div>
         <div id="creator">Creator</div>
         <div id="date">${dateLabel(this.sortParam?.field)}</div>
-        <div id="icon"></div>
+        <div id="icon">Type</div>
         <div id="views">Views</div>
       </div>
     `;
