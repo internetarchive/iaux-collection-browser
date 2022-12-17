@@ -67,14 +67,14 @@ export class TileListCompact extends LitElement {
    */
   private get date(): Date | undefined {
     switch (this.sortParam?.field) {
-      case 'date':
-        return this.model?.datePublished;
+      case 'publicdate':
+        return this.model?.dateArchived;
       case 'reviewdate':
         return this.model?.dateReviewed;
       case 'addeddate':
         return this.model?.dateAdded;
       default:
-        return this.model?.dateArchived; // publicdate
+        return this.model?.datePublished; // 'date'
     }
   }
 
