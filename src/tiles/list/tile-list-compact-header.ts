@@ -56,6 +56,7 @@ export class TileListCompactHeader extends LitElement {
 
       #views {
         text-align: right;
+        padding-right: 8px;
       }
 
       #list-line-header {
