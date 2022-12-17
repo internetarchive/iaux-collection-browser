@@ -1403,6 +1403,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       #views {
         text-align: right;
+        padding-right: 8px;
       }
 
       #list-line-header {
