@@ -92,8 +92,8 @@ export class TileStats extends LitElement {
       }
 
       svg {
-        height: 10px;
-        width: 10px;
+        height: 13px;
+        width: 13px;
         display: block;
         margin: auto;
         pointer-events: none;
@@ -101,9 +101,9 @@ export class TileStats extends LitElement {
 
       /* Make the reviews icon slightly smaller/lower, for even visual weight */
       .reviews svg {
-        height: 9px;
-        width: 9px;
-        margin-top: 1px;
+        height: 11px;
+        width: 11px;
+        margin-top: 2px;
       }
 
       .item-stats {
@@ -141,7 +141,7 @@ export class TileStats extends LitElement {
         font-size: 14px;
         height: 15px;
         color: #2c2c2c;
-        line-height: 20px;
+        line-height: 17px;
         margin: auto;
         display: block;
         text-align: center;
