@@ -1331,11 +1331,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
 
       #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 62px 19px;
+        grid-template-columns: 36px 3fr 2fr 68px 35px;
       }
 
       #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
       }
 
       #list-line:hover #title {
@@ -1352,6 +1352,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+      }
+
+      #icon {
+        margin-left: 2px;
       }
 
       #views {
@@ -1414,11 +1418,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
 
       #list-line-header.mobile {
-        grid-template-columns: 36px 3fr 2fr 91px;
+        grid-template-columns: 36px 3fr 2fr 68px 35px;
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
       }
     `}};n([h({type:Object})],Lt.prototype,"model",void 0);n([h({type:Number})],Lt.prototype,"currentWidth",void 0);n([h({type:Object})],Lt.prototype,"sortParam",void 0);n([h({type:Number})],Lt.prototype,"mobileBreakpoint",void 0);Lt=n([N("tile-list-compact-header")],Lt);let fe=class extends O{constructor(){super(...arguments),this.sortParam=null,this.loggedIn=!1}render(){return u`
       <div id="container">
