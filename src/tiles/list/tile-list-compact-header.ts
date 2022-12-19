@@ -67,11 +67,11 @@ export class TileListCompactHeader extends LitElement {
       }
 
       #list-line-header.mobile {
-        grid-template-columns: 36px 3fr 2fr 91px;
+        grid-template-columns: 36px 3fr 2fr 68px 35px;
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
       }
     `;
   }

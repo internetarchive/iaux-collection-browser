@@ -127,11 +127,11 @@ export class TileListCompact extends LitElement {
       }
 
       #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 62px 19px;
+        grid-template-columns: 36px 3fr 2fr 68px 35px;
       }
 
       #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
       }
 
       #list-line:hover #title {
@@ -148,6 +148,10 @@ export class TileListCompact extends LitElement {
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+      }
+
+      #icon {
+        margin-left: 2px;
       }
 
       #views {
