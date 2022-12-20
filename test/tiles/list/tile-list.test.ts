@@ -181,6 +181,61 @@ describe('List Tile', () => {
     expect(descriptionBlock?.textContent?.trim()).to.equal('line1 line2'); // line break replaced by space
   });
 
+  it('should render mediatype icon as link to corresponding mediatype collection details', async () => {
+    const model: Partial<TileModel> = {
+      mediatype: 'texts',
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .baseNavigationUrl=${'https://archive.org'}
+        .model=${model}
+      ></tile-list>
+    `);
+
+    const mediatypeLink = el.shadowRoot?.querySelector('a#icon-right');
+    expect(mediatypeLink).to.exist;
+    expect(mediatypeLink?.getAttribute('href')).to.equal(
+      `https://archive.org/details/texts`
+    );
+  });
+
+  it('should render collection mediatype icon as link to search page', async () => {
+    const model: Partial<TileModel> = {
+      mediatype: 'collection',
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .baseNavigationUrl=${'https://archive.org'}
+        .model=${model}
+      ></tile-list>
+    `);
+
+    const mediatypeLink = el.shadowRoot?.querySelector('a#icon-right');
+    expect(mediatypeLink).to.exist;
+    expect(mediatypeLink?.getAttribute('href')).to.equal(
+      `https://archive.org/search?query=mediatype:collection&sort=-downloads`
+    );
+  });
+
+  it('should not render account mediatype icon as link', async () => {
+    const model: Partial<TileModel> = {
+      mediatype: 'account',
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .baseNavigationUrl=${'https://archive.org'}
+        .model=${model}
+      ></tile-list>
+    `);
+
+    const mediatypeLink = el.shadowRoot?.querySelector('a#icon-right');
+    expect(mediatypeLink).to.exist;
+    expect(mediatypeLink?.getAttribute('href')).not.to.exist;
+  });
+
   it('should render date added for accounts', async () => {
     const el = await fixture<TileList>(html`
       <tile-list
