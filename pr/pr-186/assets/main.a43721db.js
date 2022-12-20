@@ -887,7 +887,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
             <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
-          <li class="col views" title="${i}">
+          <li class="col" title="${i}">
             ${this.mediatype==="account"?Gs:Qs}
             <p class="status-text">
               <span class="sr-only">
@@ -896,7 +896,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
               ${ei(this.mediatype==="account"?this.itemCount:this.viewCount,"short","short")}
             </p>
           </li>
-          <li class="col favorites" title="${e} favorites">
+          <li class="col" title="${e} favorites">
             ${Ws}
             <p class="status-text">
               <span class="sr-only">Favorites:</span>
