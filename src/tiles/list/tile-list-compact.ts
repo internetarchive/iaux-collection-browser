@@ -66,15 +66,21 @@ export class TileListCompact extends LitElement {
    * @see src/models.ts
    */
   private get date(): Date | undefined {
+    // Note on 'publicdate' vs. 'date':
+    // The search engine metadata uses 'publicdate' as the key for the date the item
+    // was created on archive.org, which in the UI is referred to as "Date Archived".
+    // In contrast, the search engine metadata uses 'date' to refer to the actual
+    // publication date of the underlying media ("Date Published" in the UI).
+    // Refer to the full metadata schema for more info.
     switch (this.sortParam?.field) {
-      case 'date':
-        return this.model?.datePublished;
+      case 'publicdate':
+        return this.model?.dateArchived;
       case 'reviewdate':
         return this.model?.dateReviewed;
       case 'addeddate':
         return this.model?.dateAdded;
       default:
-        return this.model?.dateArchived; // publicdate
+        return this.model?.datePublished;
     }
   }
 
@@ -127,11 +133,11 @@ export class TileListCompact extends LitElement {
       }
 
       #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 62px 19px;
+        grid-template-columns: 36px 3fr 2fr 68px 35px;
       }
 
       #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
       }
 
       #list-line:hover #title {
@@ -148,6 +154,10 @@ export class TileListCompact extends LitElement {
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
+      }
+
+      #icon {
+        margin-left: 2px;
       }
 
       #views {

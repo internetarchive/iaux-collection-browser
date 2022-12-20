@@ -21,7 +21,7 @@ export class TileListCompactHeader extends LitElement {
         <div id="title">Title</div>
         <div id="creator">Creator</div>
         <div id="date">${dateLabel(this.sortParam?.field)}</div>
-        <div id="icon"></div>
+        <div id="icon">Type</div>
         <div id="views">Views</div>
       </div>
     `;
@@ -56,6 +56,7 @@ export class TileListCompactHeader extends LitElement {
 
       #views {
         text-align: right;
+        padding-right: 8px;
       }
 
       #list-line-header {
@@ -66,11 +67,11 @@ export class TileListCompactHeader extends LitElement {
       }
 
       #list-line-header.mobile {
-        grid-template-columns: 36px 3fr 2fr 91px;
+        grid-template-columns: 36px 3fr 2fr 68px 35px;
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 2fr 100px 20px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
       }
     `;
   }
