@@ -43,7 +43,7 @@ export class TileStats extends LitElement {
             <p class="sr-only">Mediatype:</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
-          <li class="col views" title="${uploadsOrViewsTitle}">
+          <li class="col" title="${uploadsOrViewsTitle}">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
             <p class="status-text">
               <span class="sr-only">
@@ -56,7 +56,7 @@ export class TileStats extends LitElement {
               )}
             </p>
           </li>
-          <li class="col favorites" title="${formattedFavCount} favorites">
+          <li class="col" title="${formattedFavCount} favorites">
             ${favoriteFilledIcon}
             <p class="status-text">
               <span class="sr-only">Favorites:</span>
