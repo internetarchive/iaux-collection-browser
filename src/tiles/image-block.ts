@@ -90,6 +90,7 @@ export class ImageBlock extends LitElement {
         justify-content: center;
         position: relative;
         background-color: ${imageBlockBackgroundColor};
+        border-radius: 4px;
       }
 
       .grid {
@@ -97,6 +98,7 @@ export class ImageBlock extends LitElement {
         flex: 1;
         position: initial;
         padding: 5px;
+        border-radius: 4px 4px 0 0;
       }
 
       .collection.grid {
@@ -106,6 +108,7 @@ export class ImageBlock extends LitElement {
       /** tile-list view */
       .list.desktop {
         width: 100px;
+        max-width: 100%;
         height: 100px;
         display: inline-block;
         position: relative;

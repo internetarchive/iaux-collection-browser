@@ -85,11 +85,12 @@ export class TextSnippetBlock extends LitElement {
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        width: 100%;
+        width: calc(100% - 10px);
         border-left: 5px solid #194880;
         margin-top: var(--containerTopMargin, 10px);
         margin-left: var(--containerLeftMargin, 0px);
         border-radius: 3px;
+        box-sizing: border-box;
       }
 
       .snippet-view {
@@ -101,17 +102,16 @@ export class TextSnippetBlock extends LitElement {
         -webkit-line-clamp: var(--maxLines, 3);
         -webkit-box-orient: vertical;
         margin-left: 5px;
-        margin-right: 10px;
       }
 
       .grid {
-        margin: 0px 15px 0px 5px;
         font-size: 1.2rem;
         line-height: 1.5rem;
       }
 
       .list {
-        padding-left: 20px;
+        margin: 0;
+        padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
       }

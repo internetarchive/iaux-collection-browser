@@ -63,7 +63,7 @@ export class TileStats extends LitElement {
               ${formattedFavCount}
             </p>
           </li>
-          <li class="col" title="${formattedReviewCount} reviews">
+          <li class="col reviews" title="${formattedReviewCount} reviews">
             ${reviewsIcon}
             <p class="status-text">
               <span class="sr-only">Reviews:</span>
@@ -92,15 +92,22 @@ export class TileStats extends LitElement {
       }
 
       svg {
-        height: 10px;
-        width: 10px;
+        height: 13px;
+        width: 13px;
         display: block;
         margin: auto;
         pointer-events: none;
       }
 
+      /* Make the reviews icon slightly smaller/lower, for even visual weight */
+      .reviews svg {
+        height: 11px;
+        width: 11px;
+        margin-top: 2px;
+      }
+
       .item-stats {
-        height: 35px;
+        height: 30px;
         padding-left: 5px;
         padding-right: 5px;
         font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
@@ -108,9 +115,9 @@ export class TileStats extends LitElement {
 
       #stats-row {
         display: flex;
+        justify-content: space-between;
         flex-wrap: wrap;
         width: 100%;
-        padding-top: 5px;
         padding-bottom: 5px;
       }
 
@@ -126,7 +133,7 @@ export class TileStats extends LitElement {
       }
 
       .col {
-        width: 25%;
+        min-width: 15px;
         height: 25px;
       }
 
@@ -134,7 +141,7 @@ export class TileStats extends LitElement {
         font-size: 14px;
         height: 15px;
         color: #2c2c2c;
-        line-height: 20px;
+        line-height: 17px;
         margin: auto;
         display: block;
         text-align: center;
