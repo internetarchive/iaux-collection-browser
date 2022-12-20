@@ -1134,13 +1134,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       ${this.topicsTemplate} ${this.collectionsTemplate}
       ${this.descriptionTemplate} ${this.textSnippetsTemplate}
     `}get iconRightTemplate(){var e,t;return u`
-      <div id="icon-right">
+      <a id="icon-right" href=${this.mediatypeURL} target="_blank">
         <mediatype-icon
           .mediatype=${(e=this.model)===null||e===void 0?void 0:e.mediatype}
           .collections=${(t=this.model)===null||t===void 0?void 0:t.collections}
         >
         </mediatype-icon>
-      </div>
+      </a>
     `}get titleTemplate(){var e;return!((e=this.model)===null||e===void 0)&&e.title?u` ${this.detailsLink(this.model.identifier,this.model.title)} `:x}get itemLineTemplate(){const e=this.sourceTemplate,t=this.volumeTemplate,i=this.issueTemplate;return!e&&!t&&!i?x:u` <div id="item-line">${e} ${t} ${i}</div> `}get sourceTemplate(){var e;return!((e=this.model)===null||e===void 0)&&e.source?u`
       <div id="source" class="metadata">
         ${this.labelTemplate("Source")}
@@ -1180,7 +1180,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     >`}detailsLink(e,t){const i=t!=null?t:e;return u`<a
       href="${this.baseNavigationUrl}/details/${encodeURI(e)}"
       >${ti.sanitize(i)}</a
-    >`}updated(e){e.has("model")&&this.fetchCollectionNames()}async fetchCollectionNames(){var e,t;if(!(!((e=this.model)===null||e===void 0)&&e.collections)||this.model.collections.length===0||!this.collectionNameCache)return;this.collectionLinks=[];const i=[],a=[];for(const o of this.model.collections)!Na[o]&&!o.startsWith("fav-")&&a.push((t=this.collectionNameCache)===null||t===void 0?void 0:t.collectionNameFor(o).then(s=>{i.push(this.detailsLink(o,s!=null?s:o))}));await Promise.all(a),this.collectionLinks=i}get date(){var e,t,i,a,o;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":return(t=this.model)===null||t===void 0?void 0:t.datePublished;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(a=this.model)===null||a===void 0?void 0:a.dateAdded;default:return(o=this.model)===null||o===void 0?void 0:o.dateArchived}}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return y`
+    >`}get mediatypeURL(){var e;if(!this.baseNavigationUrl||!(!((e=this.model)===null||e===void 0)&&e.mediatype))return x;switch(this.model.mediatype){case"collection":return`${this.baseNavigationUrl}/search?query=mediatype:collection&sort=-downloads`;case"account":return x;default:return`${this.baseNavigationUrl}/details/${encodeURI(this.model.mediatype)}`}}updated(e){e.has("model")&&this.fetchCollectionNames()}async fetchCollectionNames(){var e,t;if(!(!((e=this.model)===null||e===void 0)&&e.collections)||this.model.collections.length===0||!this.collectionNameCache)return;this.collectionLinks=[];const i=[],a=[];for(const o of this.model.collections)!Na[o]&&!o.startsWith("fav-")&&a.push((t=this.collectionNameCache)===null||t===void 0?void 0:t.collectionNameFor(o).then(s=>{i.push(this.detailsLink(o,s!=null?s:o))}));await Promise.all(a),this.collectionLinks=i}get date(){var e,t,i,a,o;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":return(t=this.model)===null||t===void 0?void 0:t.datePublished;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(a=this.model)===null||a===void 0?void 0:a.dateAdded;default:return(o=this.model)===null||o===void 0?void 0:o.dateArchived}}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return y`
       html {
         font-size: unset;
       }
