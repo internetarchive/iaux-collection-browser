@@ -66,6 +66,12 @@ export class TileListCompact extends LitElement {
    * @see src/models.ts
    */
   private get date(): Date | undefined {
+    // Note on 'publicdate' vs. 'date':
+    // The search engine metadata uses 'publicdate' as the key for the date the item
+    // was created on archive.org, which in the UI is referred to as "Date Archived".
+    // In contrast, the search engine metadata uses 'date' to refer to the actual
+    // publication date of the underlying media ("Date Published" in the UI).
+    // Refer to the full metadata schema for more info.
     switch (this.sortParam?.field) {
       case 'publicdate':
         return this.model?.dateArchived;
@@ -74,7 +80,7 @@ export class TileListCompact extends LitElement {
       case 'addeddate':
         return this.model?.dateAdded;
       default:
-        return this.model?.datePublished; // 'date'
+        return this.model?.datePublished;
     }
   }
 
