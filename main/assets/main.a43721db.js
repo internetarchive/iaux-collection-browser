@@ -150,7 +150,6 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
 
   image-block {
     display: block;
-    margin-bottom: 5px;
     position: relative;
     text-align: center;
   }
@@ -164,14 +163,14 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
   }
 
   .item-info {
+    display: flex;
+    flex-direction: column;
+    row-gap: 5px;
     flex-grow: 1;
   }
 
   #title {
-    flex-shrink: 0;
-    padding-left: 5px;
-    padding-right: 5px;
-    margin-bottom: 10px;
+    padding: 0 5px;
   }
 
   .created-by,
@@ -181,7 +180,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
     display: flex;
     justify-content: left;
     align-items: flex-end; /* Important to start text from bottom */
-    padding: 0 5px 5px 5px;
+    padding: 0 5px;
   }
 
   .truncated {
@@ -360,6 +359,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         justify-content: center;
         position: relative;
         background-color: ${e};
+        border-radius: 4px;
       }
 
       .grid {
@@ -367,6 +367,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         flex: 1;
         position: initial;
         padding: 5px;
+        border-radius: 4px 4px 0 0;
       }
 
       .collection.grid {
@@ -376,6 +377,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
       /** tile-list view */
       .list.desktop {
         width: 100px;
+        max-width: 100%;
         height: 100px;
         display: inline-block;
         position: relative;
@@ -493,11 +495,12 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         display: flex;
         flex-direction: row;
         flex-wrap: wrap;
-        width: 100%;
+        width: calc(100% - 10px);
         border-left: 5px solid #194880;
         margin-top: var(--containerTopMargin, 10px);
         margin-left: var(--containerLeftMargin, 0px);
         border-radius: 3px;
+        box-sizing: border-box;
       }
 
       .snippet-view {
@@ -509,17 +512,16 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         -webkit-line-clamp: var(--maxLines, 3);
         -webkit-box-orient: vertical;
         margin-left: 5px;
-        margin-right: 10px;
       }
 
       .grid {
-        margin: 0px 15px 0px 5px;
         font-size: 1.2rem;
         line-height: 1.5rem;
       }
 
       .list {
-        padding-left: 20px;
+        margin: 0;
+        padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
       }
@@ -540,6 +542,10 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
     box-sizing: border-box;
     display: inline-block;
     position: relative;
+  }
+
+  .list-box img {
+    border-radius: 0;
   }
 
   .contain {
@@ -566,7 +572,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
     height: 160px;
   }
 
-  .collection-image {
+  :not(.list-box) > .collection-image {
     object-fit: cover;
     border-radius: 8px;
     width: 100%;
@@ -897,7 +903,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
               ${e}
             </p>
           </li>
-          <li class="col" title="${t} reviews">
+          <li class="col reviews" title="${t} reviews">
             ${Vs}
             <p class="status-text">
               <span class="sr-only">Reviews:</span>
@@ -922,15 +928,22 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
       }
 
       svg {
-        height: 10px;
-        width: 10px;
+        height: 13px;
+        width: 13px;
         display: block;
         margin: auto;
         pointer-events: none;
       }
 
+      /* Make the reviews icon slightly smaller/lower, for even visual weight */
+      .reviews svg {
+        height: 11px;
+        width: 11px;
+        margin-top: 2px;
+      }
+
       .item-stats {
-        height: 35px;
+        height: 30px;
         padding-left: 5px;
         padding-right: 5px;
         font-family: 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
@@ -938,9 +951,9 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
 
       #stats-row {
         display: flex;
+        justify-content: space-between;
         flex-wrap: wrap;
         width: 100%;
-        padding-top: 5px;
         padding-bottom: 5px;
       }
 
@@ -956,7 +969,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
       }
 
       .col {
-        width: 25%;
+        min-width: 15px;
         height: 25px;
       }
 
@@ -964,7 +977,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
         font-size: 14px;
         height: 15px;
         color: #2c2c2c;
-        line-height: 20px;
+        line-height: 17px;
         margin: auto;
         display: block;
         text-align: center;
@@ -1003,7 +1016,6 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
       </div>
     `:x}get imageBlockTemplate(){return u`
       <image-block
-        class=${this.hasSnippets?"has-snippets":x}
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .loggedIn=${this.loggedIn}
@@ -1034,7 +1046,7 @@ var Bo=Object.defineProperty,Uo=Object.defineProperties;var Ho=Object.getOwnProp
 
         text-snippet-block {
           --containerLeftMargin: 5px;
-          --containerTopMargin: 10px;
+          --containerTopMargin: 5px;
         }
       `]}};n([h({type:String})],Dt.prototype,"baseImageUrl",void 0);n([h({type:Boolean})],Dt.prototype,"loggedIn",void 0);n([h({type:Object})],Dt.prototype,"model",void 0);n([h({type:Object})],Dt.prototype,"sortParam",void 0);Dt=n([N("item-tile")],Dt);let Fi=class extends O{render(){return u`
       <div class="container">
