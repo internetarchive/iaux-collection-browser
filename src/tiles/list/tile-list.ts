@@ -120,7 +120,7 @@ export class TileList extends LitElement {
   // Data templates
   private get iconRightTemplate() {
     return html`
-      <a id="icon-right" href=${this.mediatypeURL}>
+      <a id="icon-right" href=${this.mediatypeURL} target="_blank">
         <mediatype-icon
           .mediatype=${this.model?.mediatype}
           .collections=${this.model?.collections}
@@ -333,9 +333,19 @@ export class TileList extends LitElement {
 
   /** The URL of this item's mediatype collection, if defined. */
   private get mediatypeURL(): string | typeof nothing {
-    return this.baseNavigationUrl && this.model?.mediatype
-      ? `${this.baseNavigationUrl}/details/${encodeURI(this.model.mediatype)}`
-      : nothing;
+    if (!this.baseNavigationUrl || !this.model?.mediatype) return nothing;
+
+    // Need special handling for certain mediatypes that don't have a top-level collection page
+    switch (this.model.mediatype) {
+      case 'collection':
+        return `${this.baseNavigationUrl}/search?query=mediatype:collection&sort=-downloads`;
+      case 'account':
+        return nothing;
+      default:
+        return `${this.baseNavigationUrl}/details/${encodeURI(
+          this.model.mediatype
+        )}`;
+    }
   }
 
   protected updated(changed: PropertyValues): void {
