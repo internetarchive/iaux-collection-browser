@@ -1700,11 +1700,20 @@ export class CollectionBrowser
     infinite-scroller.grid {
       --infiniteScrollerCellMinWidth: var(
         --collectionBrowserCellMinWidth,
-        18rem
+        17rem
       );
       --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
     }
 
+    /* Allow tiles to shrink a bit further at smaller viewport widths */
+    @media screen and (max-width: 880px) {
+      infinite-scroller.grid {
+        --infiniteScrollerCellMinWidth: var(
+          --collectionBrowserCellMinWidth,
+          15rem
+        );
+      }
+    }
     /* At very small widths, maintain a 2-tile layout as far as it can reasonably go */
     @media screen and (max-width: 360px) {
       infinite-scroller.grid {
