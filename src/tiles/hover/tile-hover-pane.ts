@@ -55,7 +55,7 @@ export class TileHoverPane extends LitElement {
 
       @media (prefers-reduced-motion: reduce) {
         :host {
-          transition-duration: 0.001s, 0.001s !important; /* Imperceptibly fast */
+          transition-duration: 0.001s !important; /* Imperceptibly fast */
         }
       }
 

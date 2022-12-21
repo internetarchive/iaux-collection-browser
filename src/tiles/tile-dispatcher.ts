@@ -324,9 +324,9 @@ export class TileDispatcher
 
       tile-hover-pane {
         position: absolute;
-        top: -2000px;
-        left: -2000px;
-        z-index: 1;
+        top: 0;
+        left: -9999px;
+        z-index: 2;
       }
     `;
   }
