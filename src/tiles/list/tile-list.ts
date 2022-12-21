@@ -532,6 +532,9 @@ export class TileList extends LitElement {
         flex-direction: column;
         row-gap: 5px;
       }
+      #list-line-right {
+        max-width: calc(75% - 5px);
+      }
 
       div a:hover {
         text-decoration: underline;
