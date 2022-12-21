@@ -278,14 +278,12 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    */
   private attachListeners(): void {
     if (this.isHoverEnabled) {
-      console.log('Hover enabled, attaching mouse listeners');
       this.host.addEventListener('mouseenter', this.handleMouseEnter);
       this.host.addEventListener('mousemove', this.handleMouseMove);
       this.host.addEventListener('mouseleave', this.handleMouseLeave);
     }
 
     if (this.isTouchEnabled && this.enableLongPress) {
-      console.log('Touch & long-pres enabled, attaching touch listeners');
       this.host.addEventListener('touchstart', this.handleTouchStart);
       this.host.addEventListener('touchmove', this.handleLongPressCancel);
       this.host.addEventListener('touchend', this.handleLongPressCancel);
