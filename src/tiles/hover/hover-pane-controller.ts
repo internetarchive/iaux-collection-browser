@@ -104,7 +104,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * Whether long press interactions should cause the hover pane to appear (when
    * below the mobile breakpoint).
    */
-  private enableLongPress: boolean = true;
+  private enableLongPress: boolean = false;
 
   /**
    * Used to control the current state of this provider's hover pane.
