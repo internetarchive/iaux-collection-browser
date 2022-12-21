@@ -57,6 +57,21 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
 }
 
 describe('Hover Pane Controller', () => {
+  let oldMatchMedia: typeof window.matchMedia;
+  let oldOnTouchStart: typeof window.ontouchstart;
+
+  before(() => {
+    oldMatchMedia = window.matchMedia;
+    oldOnTouchStart = window.ontouchstart;
+    window.matchMedia = () => ({ matches: true } as MediaQueryList);
+    window.ontouchstart = () => {};
+  });
+
+  after(() => {
+    window.matchMedia = oldMatchMedia;
+    window.ontouchstart = oldOnTouchStart;
+  });
+
   it('should initially provide empty template', async () => {
     const host = await fixture<HostElement>(
       html`<host-element></host-element>`
@@ -194,21 +209,6 @@ describe('Hover Pane Controller', () => {
   });
 
   describe.skip('Touch & long-press', () => {
-    let oldMatchMedia: typeof window.matchMedia;
-    let oldOnTouchStart: typeof window.ontouchstart;
-
-    before(() => {
-      oldMatchMedia = window.matchMedia;
-      oldOnTouchStart = window.ontouchstart;
-      window.matchMedia = () => ({ matches: true } as MediaQueryList);
-      window.ontouchstart = () => {};
-    });
-
-    after(() => {
-      window.matchMedia = oldMatchMedia;
-      window.ontouchstart = oldOnTouchStart;
-    });
-
     const getTouchStartEvent = (host: EventTarget) =>
       new TouchEvent('touchstart', {
         touches: [new Touch({ identifier: 0, target: host })],
