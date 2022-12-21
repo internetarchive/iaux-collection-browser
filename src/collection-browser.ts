@@ -1705,6 +1705,16 @@ export class CollectionBrowser
       --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
     }
 
+    /* At very small widths, maintain a 2-tile layout as far as it can reasonably go */
+    @media screen and (max-width: 360px) {
+      infinite-scroller.grid {
+        --infiniteScrollerCellMinWidth: var(
+          --collectionBrowserCellMinWidth,
+          12rem
+        );
+      }
+    }
+
     infinite-scroller.hidden {
       display: none;
     }
