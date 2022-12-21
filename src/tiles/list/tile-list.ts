@@ -465,6 +465,12 @@ export class TileList extends LitElement {
         margin-top: -4px;
         padding-bottom: 2px;
         flex-grow: 1;
+
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        overflow-wrap: anywhere;
       }
 
       .metadata {
@@ -483,6 +489,14 @@ export class TileList extends LitElement {
         word-break: break-word;
         -webkit-line-clamp: 3; /* number of lines to show */
         line-clamp: 3;
+      }
+
+      #collections {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+        overflow: hidden;
+        overflow-wrap: anywhere;
       }
 
       #icon {
@@ -531,9 +545,6 @@ export class TileList extends LitElement {
         display: flex;
         flex-direction: column;
         row-gap: 5px;
-      }
-      #list-line-right {
-        max-width: calc(75% - 5px);
       }
 
       div a:hover {
