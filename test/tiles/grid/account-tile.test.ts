@@ -45,7 +45,7 @@ describe('Account Tile', () => {
     const el = await fixture<AccountTile>(html`
       <account-tile
         .model=${{
-          dateAdded: new Date('2022-01-02'),
+          dateAdded: new Date('2022-01-01'),
         }}
       >
       </account-tile>
