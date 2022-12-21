@@ -200,6 +200,10 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     return !!this.mobileBreakpoint && window.innerWidth < this.mobileBreakpoint;
   }
 
+  private get isHoverEnabled(): boolean {
+    return window.matchMedia('(hover: hover)').matches;
+  }
+
   private get isTouchEnabled(): boolean {
     return (
       'ontouchstart' in window &&
@@ -273,9 +277,11 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * hover pane functional.
    */
   private attachListeners(): void {
-    this.host.addEventListener('mouseenter', this.handleMouseEnter);
-    this.host.addEventListener('mousemove', this.handleMouseMove);
-    this.host.addEventListener('mouseleave', this.handleMouseLeave);
+    if (this.isHoverEnabled && !this.isTouchEnabled) {
+      this.host.addEventListener('mouseenter', this.handleMouseEnter);
+      this.host.addEventListener('mousemove', this.handleMouseMove);
+      this.host.addEventListener('mouseleave', this.handleMouseLeave);
+    }
 
     if (this.isTouchEnabled && this.enableLongPress) {
       this.host.addEventListener('touchstart', this.handleTouchStart);
