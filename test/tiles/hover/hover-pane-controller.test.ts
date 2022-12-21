@@ -208,7 +208,7 @@ describe('Hover Pane Controller', () => {
     expect(host.controller?.getTemplate()).to.equal(nothing);
   });
 
-  describe.skip('Touch & long-press', () => {
+  describe('Touch & long-press', () => {
     const getTouchStartEvent = (host: EventTarget) =>
       new TouchEvent('touchstart', {
         touches: [new Touch({ identifier: 0, target: host })],
