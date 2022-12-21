@@ -277,7 +277,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * hover pane functional.
    */
   private attachListeners(): void {
-    if (this.isHoverEnabled && !this.isTouchEnabled) {
+    if (this.isHoverEnabled) {
       this.host.addEventListener('mouseenter', this.handleMouseEnter);
       this.host.addEventListener('mousemove', this.handleMouseMove);
       this.host.addEventListener('mouseleave', this.handleMouseLeave);
