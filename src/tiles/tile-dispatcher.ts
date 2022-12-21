@@ -93,6 +93,7 @@ export class TileDispatcher
     if (this.shouldPrepareHoverPane) {
       this.hoverPaneController = new HoverPaneController(this, {
         mobileBreakpoint: this.mobileBreakpoint,
+        enableLongPress: false,
       });
     }
   }
