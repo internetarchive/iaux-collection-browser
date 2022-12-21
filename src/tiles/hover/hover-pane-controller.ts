@@ -134,8 +134,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     /** Options for adjusting the hover pane behavior (offsets, delays, etc.) */
     options: HoverPaneControllerOptions = {}
   ) {
-    this.host.addController(this);
-
     this.mobileBreakpoint = options.mobileBreakpoint ?? this.mobileBreakpoint;
     this.offsetX = options.offsetX ?? this.offsetX;
     this.offsetY = options.offsetY ?? this.offsetY;
@@ -143,6 +141,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.hideDelay = options.hideDelay ?? this.hideDelay;
     this.longPressDelay = options.longPressDelay ?? this.longPressDelay;
     this.enableLongPress = options.enableLongPress ?? this.enableLongPress;
+
+    this.host.addController(this);
   }
 
   hostConnected(): void {
