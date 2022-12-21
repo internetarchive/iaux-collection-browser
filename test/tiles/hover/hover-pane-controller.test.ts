@@ -200,7 +200,8 @@ describe('Hover Pane Controller', () => {
     before(() => {
       oldMatchMedia = window.matchMedia;
       oldOnTouchStart = window.ontouchstart;
-      window.matchMedia = () => ({ matches: true } as MediaQueryList);
+      window.matchMedia = q =>
+        ({ matches: q.includes('pointer: coarse') } as MediaQueryList);
       window.ontouchstart = () => {};
     });
 
