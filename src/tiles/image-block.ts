@@ -110,6 +110,7 @@ export class ImageBlock extends LitElement {
         width: 100px;
         max-width: 100%;
         height: 100px;
+        max-width: 100%;
         display: inline-block;
         position: relative;
         text-align: center;

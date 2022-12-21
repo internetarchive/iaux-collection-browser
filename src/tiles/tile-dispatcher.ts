@@ -11,14 +11,24 @@ import type { TileDisplayMode, TileModel } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
+import './hover/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
 import './list/tile-list-compact-header';
+import type { TileHoverPane } from './hover/tile-hover-pane';
+import {
+  HoverPaneController,
+  HoverPaneControllerInterface,
+  HoverPaneProperties,
+  HoverPaneProviderInterface,
+} from './hover/hover-pane-controller';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
   extends LitElement
-  implements SharedResizeObserverResizeHandlerInterface
+  implements
+    SharedResizeObserverResizeHandlerInterface,
+    HoverPaneProviderInterface
 {
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
 
@@ -37,22 +47,55 @@ export class TileDispatcher
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @query('#container') private container!: HTMLDivElement;
-
   @property({ type: Number }) mobileBreakpoint?: number;
 
   @property({ type: String }) baseImageUrl?: string;
 
   @property({ type: Boolean }) loggedIn = false;
 
+  /** Whether this tile should include a hover pane at all (for applicable tile modes) */
+  @property({ type: Boolean }) enableHoverPane = false;
+
+  private hoverPaneController?: HoverPaneControllerInterface;
+
+  @query('#container')
+  private container!: HTMLDivElement;
+
+  @query('tile-hover-pane')
+  private hoverPane?: TileHoverPane;
+
+  /** Maps each display mode to whether hover panes should appear in that mode */
+  private static readonly HOVER_PANE_DISPLAY_MODES: Record<
+    TileDisplayMode,
+    boolean
+  > = {
+    grid: true,
+    'list-compact': true,
+    'list-detail': false,
+    'list-header': false,
+  };
+
   render() {
+    const isGridMode = this.tileDisplayMode === 'grid';
+    const hoverPaneTemplate =
+      this.hoverPaneController?.getTemplate() ?? nothing;
     return html`
-      <div id="container">
+      <div id="container" class=${isGridMode ? 'hoverable' : nothing}>
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
+        ${hoverPaneTemplate}
       </div>
     `;
+  }
+
+  protected firstUpdated(): void {
+    if (this.shouldPrepareHoverPane) {
+      this.hoverPaneController = new HoverPaneController(this, {
+        mobileBreakpoint: this.mobileBreakpoint,
+        enableLongPress: false,
+      });
+    }
   }
 
   private get headerTemplate() {
@@ -80,7 +123,9 @@ export class TileDispatcher
     return html`
       <a
         href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
-        title=${ifDefined(this.model?.title)}
+        title=${this.shouldPrepareHoverPane
+          ? nothing // Don't show title tooltips when we have the tile info popups
+          : ifDefined(this.model?.title)}
         @click=${() =>
           this.dispatchEvent(
             new CustomEvent('resultSelected', { detail: this.model })
@@ -89,6 +134,28 @@ export class TileDispatcher
         ${this.tile}
       </a>
     `;
+  }
+
+  /**
+   * Whether hover pane behavior should be prepared for this tile
+   * (e.g., whether mouse listeners should be attached, etc.)
+   */
+  private get shouldPrepareHoverPane(): boolean {
+    return (
+      this.enableHoverPane &&
+      !!this.tileDisplayMode &&
+      TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode]
+    );
+  }
+
+  /** @inheritdoc */
+  getHoverPane(): TileHoverPane | undefined {
+    return this.hoverPane;
+  }
+
+  /** @inheritdoc */
+  getHoverPaneProps(): HoverPaneProperties {
+    return this;
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -222,11 +289,14 @@ export class TileDispatcher
       }
 
       #container {
+        position: relative;
         height: 100%;
+        border-radius: 4px;
       }
 
-      #delete-button {
-        float: right;
+      #container.hoverable:hover {
+        box-shadow: 0 0 6px 2px rgba(8, 8, 32, 0.8);
+        transition: box-shadow 0.1s ease;
       }
 
       a {
@@ -234,11 +304,29 @@ export class TileDispatcher
         height: 100%;
         color: unset;
         text-decoration: none;
+        transition: transform 0.05s ease;
       }
 
       a :first-child {
         display: block;
         height: 100%;
+      }
+
+      #touch-backdrop {
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        background: transparent;
+      }
+
+      tile-hover-pane {
+        position: absolute;
+        top: 0;
+        left: -9999px;
+        z-index: 2;
       }
     `;
   }

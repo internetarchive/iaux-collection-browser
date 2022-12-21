@@ -125,7 +125,7 @@ export class AppRoot extends LitElement {
         <div id="dev-tools" class=${this.getClass}>
           <div id="search-and-page-inputs">
             <form @submit=${this.searchPressed}>
-              Query:
+              <label for="base-query-field"> Query: </label>
               <input
                 type="text"
                 id="base-query-field"
@@ -134,7 +134,8 @@ export class AppRoot extends LitElement {
               <input type="submit" value="Search" />
             </form>
             <form @submit=${this.changePagePressed}>
-              Page: <input type="number" value="1" id="page-number-input" />
+              <label for="page-number-input"> Page: </label>
+              <input type="number" value="1" id="page-number-input" />
               <input type="submit" value="Go" />
             </form>
           </div>
@@ -587,8 +588,22 @@ export class AppRoot extends LitElement {
       cursor: pointer;
     }
 
+    #search-and-page-inputs {
+      flex-wrap: wrap;
+      row-gap: 2px;
+    }
+
     #search-and-page-inputs > form {
       margin-right: 1rem;
+    }
+
+    #search-and-page-inputs label {
+      display: inline-block;
+      min-width: 50px;
+    }
+
+    #page-number-input {
+      width: 75px;
     }
 
     .search-type {
