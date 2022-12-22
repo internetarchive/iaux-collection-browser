@@ -135,6 +135,7 @@ export class TileStats extends LitElement {
 
       .col {
         min-width: 15px;
+        max-width: 25%;
         height: 25px;
       }
 
