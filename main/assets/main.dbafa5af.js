@@ -376,6 +376,12 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
       }
 
       /** tile-list view */
+      .list {
+        border-radius: 0;
+        background-color: var(--imageBlockListBackgroundColor, #ebebee);
+        box-shadow: 1px 1px 2px rgb(0, 0, 0, 0.2);
+      }
+
       .list.desktop {
         width: 100px;
         max-width: 100%;
