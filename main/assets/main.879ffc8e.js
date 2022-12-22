@@ -973,6 +973,7 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
 
       .col {
         min-width: 15px;
+        max-width: 25%;
         height: 25px;
       }
 
@@ -4051,9 +4052,28 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     infinite-scroller.grid {
       --infiniteScrollerCellMinWidth: var(
         --collectionBrowserCellMinWidth,
-        18rem
+        17rem
       );
       --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
+    }
+
+    /* Allow tiles to shrink a bit further at smaller viewport widths */
+    @media screen and (max-width: 880px) {
+      infinite-scroller.grid {
+        --infiniteScrollerCellMinWidth: var(
+          --collectionBrowserCellMinWidth,
+          15rem
+        );
+      }
+    }
+    /* At very small widths, maintain a 2-tile layout as far as it can reasonably go */
+    @media screen and (max-width: 360px) {
+      infinite-scroller.grid {
+        --infiniteScrollerCellMinWidth: var(
+          --collectionBrowserCellMinWidth,
+          12rem
+        );
+      }
     }
 
     infinite-scroller.hidden {
