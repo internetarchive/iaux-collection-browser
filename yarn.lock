@@ -86,7 +86,7 @@
 
 "@internetarchive/collection-name-cache@^0.2.3":
   version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.3.tgz#020337e6c5840691d3bf82323060282bc4464195"
+  resolved "https://registry.npmjs.org/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.3.tgz"
   integrity sha512-CDfMqz4oh3f2BrvnyqD2Y9Y4sOs3fY3F5jI4xMyrdg/z3U0CRYpIQ8NSJFxbJ4EtNvaemlCbrRu5QLHdDYWZLg==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
@@ -109,9 +109,9 @@
   integrity sha512-gN7ivwHWlf8V7fD3VakQ4NtddSou5i3A3TqbIo8EKF+XTxJXaXpNBmzkZEGf2oMVK8rHvrabFxZKVEy9qG7Omw==
 
 "@internetarchive/histogram-date-range@^0.1.8":
-  version "0.1.8"
-  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.8.tgz#7fca61151186178c5d5ae2641cd8a77a5fded77e"
-  integrity sha512-Tx+wqKFa80cCeFFZPvyMYvAFqqQ3L4wbKk1ZAci6z+qwEDWJr5Sf841cuC0qK/dqD88x3BB6mW/+E5SCuuwB6Q==
+  version "0.1.9"
+  resolved "https://registry.npmjs.org/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.9.tgz"
+  integrity sha512-jXcdh7nmVxSjcAfKrMLtpEty3BNL3Y1RLenQWg44x7EpLXtAFcwRDdnMFq5SDCZqOU+tqt9cTK6IPfsWfhNkEQ==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.3"
     dayjs "^1.10.7"
@@ -193,7 +193,7 @@
 
 "@internetarchive/search-service@^0.4.3":
   version "0.4.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-0.4.3.tgz#0cc8752db5bd76a0a316addac160c6605d76a7e0"
+  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-0.4.3.tgz"
   integrity sha512-ANL8MdiZtw+0+tFvlHK96cRRceswH8aPZGdDNBVhlT3sYZsmF7tz41nkBBSxj4pzd/vAA05AQsgMWODCwSnUAQ==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.3"
