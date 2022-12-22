@@ -542,52 +542,6 @@ describe('Collection Facets', () => {
       expect(moreLink).to.be.null;
     });
 
-    it('renders sorting icons', async () => {
-      const el = await fixture<CollectionFacets>(
-        html`<collection-facets></collection-facets>`
-      );
-
-      const aggs: Record<string, Aggregation> = {
-        subject: new Aggregation({
-          buckets: [
-            {
-              key: 'foo',
-              doc_count: 5,
-            },
-          ],
-        }),
-      };
-
-      el.aggregations = aggs;
-      await el.updateComplete;
-
-      const sortingIcon = el.shadowRoot?.querySelector('.sorting-icon');
-      expect(sortingIcon).to.exist;
-    });
-
-    it('does not render sorting icon for lending facets', async () => {
-      const el = await fixture<CollectionFacets>(
-        html`<collection-facets></collection-facets>`
-      );
-
-      const aggs: Record<string, Aggregation> = {
-        lending: new Aggregation({
-          buckets: [
-            {
-              key: 'is_readable',
-              doc_count: 5,
-            },
-          ],
-        }),
-      };
-
-      el.aggregations = aggs;
-      await el.updateComplete;
-
-      const sortingIcon = el.shadowRoot?.querySelector('.sorting-icon');
-      expect(sortingIcon).not.to.exist;
-    });
-
     it('Render More Facets', async () => {
       const el = await fixture<CollectionFacets>(
         html`<collection-facets
