@@ -397,26 +397,21 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get getModalHeaderTemplate(): TemplateResult {
-    const title =
-      this.sortedBy === 'alpha' ? 'Sort by count' : 'Sort by alphabetically';
-
-    const image =
-      this.sortedBy === 'alpha'
-        ? 'https://archive.org/images/filter-alpha.png'
-        : 'https://archive.org/images/filter-count.png';
+    const title = this.sortedBy === 'alpha' ? 'Sort by count' : 'Sort by value';
 
     return html`<span class="sr-only">More facets for:</span>
       <span class="title">
         ${this.facetGroupTitle}
-        <input
-          class="sorting-icon"
-          type="image"
-          @click=${() => this.sortFacetAggregation()}
-          src="${image}"
-          title=${title}
-          alt="sort facets"
-        />
-      </span> `;
+        <a
+          class="sort-link"
+          href="#"
+          @click=${(e: Event) => {
+            e.preventDefault();
+            this.sortFacetAggregation();
+          }}
+          >${title}</a
+        >
+      </span>`;
   }
 
   render() {
@@ -480,6 +475,16 @@ export class MoreFacetsContent extends LitElement {
         font-size: 1.8rem;
         padding: 0 10px;
         font-weight: bold;
+      }
+      .sort-link {
+        margin-left: 0.7rem;
+        color: var(--ia-theme-link-color, #4b64ff);
+        font-size: 1.3rem;
+        font-weight: normal;
+        text-decoration: none;
+      }
+      .sort-link:hover {
+        text-decoration: underline;
       }
       .facets-content {
         font-size: 1.2rem;
