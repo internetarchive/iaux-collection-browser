@@ -3346,18 +3346,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           >
             Apply filters
           </button>
-        </div> `:w}sortFacetAggregation(){this.sortedBy=this.sortedBy==="count"?"alpha":"count",this.dispatchEvent(new CustomEvent("sortedFacets",{detail:this.sortedBy}))}get getModalHeaderTemplate(){const e=this.sortedBy==="alpha"?"Sort by count":"Sort by alphabetically",t=this.sortedBy==="alpha"?"https://archive.org/images/filter-alpha.png":"https://archive.org/images/filter-count.png";return p`<span class="sr-only">More facets for:</span>
+        </div> `:w}sortFacetAggregation(){this.sortedBy=this.sortedBy==="count"?"alpha":"count",this.dispatchEvent(new CustomEvent("sortedFacets",{detail:this.sortedBy}))}get getModalHeaderTemplate(){const e=this.sortedBy==="alpha"?"Sort by count":"Sort by value";return p`<span class="sr-only">More facets for:</span>
       <span class="title">
         ${this.facetGroupTitle}
-        <input
-          class="sorting-icon"
-          type="image"
-          @click=${()=>this.sortFacetAggregation()}
-          src="${t}"
-          title=${e}
-          alt="sort facets"
-        />
-      </span> `}render(){return p`
+        <button
+          class="sort-button"
+          @click=${t=>{t.preventDefault(),this.sortFacetAggregation()}}
+        >
+          ${e}
+        </button>
+      </span>`}render(){return p`
       ${this.facetsLoading?this.loaderTemplate:p`
             <section id="more-facets">
               <div class="header-content">${this.getModalHeaderTemplate}</div>
@@ -3385,6 +3383,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         font-size: 1.8rem;
         padding: 0 10px;
         font-weight: bold;
+      }
+      .sort-button {
+        margin-left: 0.7rem;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--ia-theme-link-color, #4b64ff);
+        font-size: 1.3rem;
+        font-weight: normal;
+        cursor: pointer;
+      }
+      .sort-button:hover {
+        text-decoration: underline;
       }
       .facets-content {
         font-size: 1.2rem;
@@ -3510,7 +3521,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           >
             ${this.collapsableFacets?a:w} ${e.title}
           </h1>
-          ${this.facetsLoading?w:this.moreFacetsSortingIcon(e)}
         </div>
         <div class="facet-group-content ${i?"open":""}">
           ${this.facetsLoading?this.getTombstoneFacetGroupTemplate():p`
@@ -3521,15 +3531,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       </div>
     `}getTombstoneFacetGroupTemplate(){return p`
       ${ra(Array(5).fill(null),()=>p`<facet-tombstone-row></facet-tombstone-row>`)}
-    `}moreFacetsSortingIcon(e){return e.key==="lending"?w:p`
-          <input
-            class="sorting-icon"
-            type="image"
-            @click=${()=>this.showMoreFacetsModal(e,"alpha")}
-            src="https://archive.org/images/filter-count.png"
-            alt="Sort alphabetically"
-          />
-        `}searchMoreFacetsLink(e){return!this.moreLinksVisible||e.key==="lending"||Object.keys(e.buckets).length<this.allowedFacetCount?w:p`<button
+    `}searchMoreFacetsLink(e){return!this.moreLinksVisible||e.key==="lending"||Object.keys(e.buckets).length<this.allowedFacetCount?w:p`<button
       class="more-link"
       @click=${()=>{var t;this.showMoreFacetsModal(e,"count"),(t=this.analyticsHandler)===null||t===void 0||t.sendEvent({category:Xe.default,action:Z.showMoreFacetsModal,label:e.key}),this.dispatchEvent(new CustomEvent("showMoreFacets",{detail:e.key}))}}
     >
