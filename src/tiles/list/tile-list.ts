@@ -339,7 +339,9 @@ export class TileList extends LitElement {
 
   /** The URL of this item's mediatype collection, if defined. */
   private get mediatypeURL(): string | typeof nothing {
-    if (!this.baseNavigationUrl || !this.model?.mediatype) return nothing;
+    // NB: baseNavigationUrl can be an empty string
+    if (this.baseNavigationUrl === undefined || !this.model?.mediatype)
+      return nothing;
 
     // Need special handling for certain mediatypes that don't have a top-level collection page
     switch (this.model.mediatype) {
