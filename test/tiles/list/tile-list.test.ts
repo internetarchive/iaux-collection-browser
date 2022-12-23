@@ -202,6 +202,20 @@ describe('List Tile', () => {
     );
   });
 
+  it('should render mediatype icon as link even with empty baseNavigationUrl', async () => {
+    const model: Partial<TileModel> = {
+      mediatype: 'texts',
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list .baseNavigationUrl=${''} .model=${model}></tile-list>
+    `);
+
+    const mediatypeLink = el.shadowRoot?.querySelector('a#icon-right');
+    expect(mediatypeLink).to.exist;
+    expect(mediatypeLink?.getAttribute('href')).to.equal(`/details/texts`);
+  });
+
   it('should render collection mediatype icon as link to search page', async () => {
     const model: Partial<TileModel> = {
       mediatype: 'collection',
