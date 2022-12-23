@@ -3929,6 +3929,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       min-width: 18rem; /* Prevents Safari from shrinking col at first draw */
       padding-right: 12px;
       padding-right: 2.5rem;
+      z-index: 1;
     }
 
     .desktop #left-column::-webkit-scrollbar {
