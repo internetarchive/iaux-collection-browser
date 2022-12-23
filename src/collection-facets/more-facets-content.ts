@@ -402,15 +402,15 @@ export class MoreFacetsContent extends LitElement {
     return html`<span class="sr-only">More facets for:</span>
       <span class="title">
         ${this.facetGroupTitle}
-        <a
-          class="sort-link"
-          href="#"
+        <button
+          class="sort-button"
           @click=${(e: Event) => {
             e.preventDefault();
             this.sortFacetAggregation();
           }}
-          >${title}</a
         >
+          ${title}
+        </button>
       </span>`;
   }
 
@@ -476,14 +476,17 @@ export class MoreFacetsContent extends LitElement {
         padding: 0 10px;
         font-weight: bold;
       }
-      .sort-link {
+      .sort-button {
         margin-left: 0.7rem;
+        padding: 0;
+        border: none;
+        background: transparent;
         color: var(--ia-theme-link-color, #4b64ff);
         font-size: 1.3rem;
         font-weight: normal;
-        text-decoration: none;
+        cursor: pointer;
       }
-      .sort-link:hover {
+      .sort-button:hover {
         text-decoration: underline;
       }
       .facets-content {
