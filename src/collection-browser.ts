@@ -1608,6 +1608,8 @@ export class CollectionBrowser
     .mobile #facets-container {
       overflow: hidden;
       padding-bottom: 0;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     #facets-container.expanded {
