@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { PrefixFilterCounts } from '../models';
 
@@ -22,7 +22,7 @@ export class AlphaBar extends LitElement {
                 <li
                   class=${letter === this.selectedUppercaseLetter
                     ? 'selected'
-                    : ''}
+                    : nothing}
                 >
                   ${this.letterCounts?.[letter]
                     ? this.letterLinkTemplate(letter)
@@ -87,6 +87,10 @@ export class AlphaBar extends LitElement {
       flex: 1;
       text-align: center;
       max-width: 2.5rem;
+    }
+
+    li:hover:not(.selected) {
+      background-color: #ccc;
     }
 
     a {
