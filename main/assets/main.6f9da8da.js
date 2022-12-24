@@ -3968,6 +3968,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     .mobile #facets-container {
       overflow: hidden;
       padding-bottom: 0;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     #facets-container.expanded {
