@@ -9,7 +9,9 @@ export class AlphaBarTooltip extends LitElement {
     return html`
       <div id="tooltip-container" role="tooltip">
         <div id="arrow"></div>
-        <div id="tooltip-text">${this.numResults} results</div>
+        <div id="tooltip-text">
+          ${this.numResults} ${this.numResults === 1 ? 'result' : 'results'}
+        </div>
       </div>
     `;
   }
