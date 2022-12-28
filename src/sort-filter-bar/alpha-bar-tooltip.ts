@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 @customElement('alpha-bar-tooltip')
@@ -14,34 +14,39 @@ export class AlphaBarTooltip extends LitElement {
     `;
   }
 
-  static styles = css`
-    #tooltip-container {
-      width: max-content;
-      max-width: 200px;
-      padding-top: var(--tooltipArrowSize, 5px);
-      pointer-events: none;
-    }
+  static get styles(): CSSResultGroup {
+    const arrowSize = css`var(--tooltipArrowSize, 5px)`;
+    const arrowOffset = css`var(--tooltipArrowOffset, 0px)`;
 
-    #arrow {
-      position: absolute;
-      left: calc(50% + var(--tooltipArrowOffset, 0px));
-      top: 0;
-      width: 0;
-      height: 0;
-      margin-top: calc(-1 * var(--tooltipArrowSize, 5px));
-      margin-left: calc(-1 * var(--tooltipArrowSize, 5px));
-      border: var(--tooltipArrowSize, 5px) solid transparent;
-      border-bottom-color: black;
-    }
+    return css`
+      #tooltip-container {
+        width: max-content;
+        max-width: 200px;
+        padding-top: ${arrowSize};
+        pointer-events: none;
+      }
 
-    #tooltip-text {
-      padding: 3px 8px;
-      border-radius: 4px;
-      background-color: #000;
-      color: white;
-      font-size: 1.2rem;
-      text-align: center;
-      text-decoration: none;
-    }
-  `;
+      #arrow {
+        position: absolute;
+        left: calc(50% + ${arrowOffset});
+        top: 0;
+        width: 0;
+        height: 0;
+        margin-top: calc(-1 * ${arrowSize});
+        margin-left: calc(-1 * ${arrowSize});
+        border: ${arrowSize} solid transparent;
+        border-bottom-color: black;
+      }
+
+      #tooltip-text {
+        padding: 3px 8px;
+        border-radius: 4px;
+        background-color: #000;
+        color: white;
+        font-size: 1.2rem;
+        text-align: center;
+        text-decoration: none;
+      }
+    `;
+  }
 }
