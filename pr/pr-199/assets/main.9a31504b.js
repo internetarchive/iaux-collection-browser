@@ -1710,7 +1710,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}};ur=s([F("collection-browser-loading-tile")],ur);let ca=class extends E{constructor(){super(...arguments),this.numResults=0}render(){return p`
       <div id="tooltip-container" role="tooltip">
         <div id="arrow"></div>
-        <div id="tooltip-text">${this.numResults} results</div>
+        <div id="tooltip-text">
+          ${this.numResults} ${this.numResults===1?"result":"results"}
+        </div>
       </div>
     `}static get styles(){const e=f`var(--tooltipArrowSize, 5px)`,t=f`var(--tooltipArrowOffset, 0px)`;return f`
       #tooltip-container {
@@ -1792,7 +1794,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       max-width: 2.5rem;
     }
 
-    li:hover:not(.selected) {
+    li:hover:not(.selected) a {
       background-color: #ccc;
     }
 
