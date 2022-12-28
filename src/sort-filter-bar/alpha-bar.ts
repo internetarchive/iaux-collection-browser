@@ -188,7 +188,7 @@ export class AlphaBar extends LitElement {
       max-width: 2.5rem;
     }
 
-    li:hover:not(.selected) {
+    li:hover:not(.selected) a {
       background-color: #ccc;
     }
 
