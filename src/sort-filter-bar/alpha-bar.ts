@@ -186,17 +186,21 @@ export class AlphaBar extends LitElement {
       flex: 1;
       text-align: center;
       max-width: 2.5rem;
+      border-radius: 50%;
     }
 
     li:hover:not(.selected) a {
-      background-color: #ccc;
+      background-color: #c0c0c0;
     }
 
     a {
       color: #333;
       text-decoration: none;
-      padding: 0.5rem 0;
-      display: block;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1;
+      border-radius: 50%;
     }
 
     span {
@@ -206,7 +210,7 @@ export class AlphaBar extends LitElement {
     }
 
     .selected {
-      background-color: darkgray;
+      background-color: #2c2c2c;
     }
 
     .selected a {
