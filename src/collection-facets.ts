@@ -24,7 +24,10 @@ import {
   ModalConfig,
   ModalManagerInterface,
 } from '@internetarchive/modal-manager';
+import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
+import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
+import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import chevronIcon from './assets/img/icons/chevron';
 import {
   FacetOption,
@@ -81,6 +84,15 @@ export class CollectionFacets extends LitElement {
   modalManager?: ModalManagerInterface;
 
   @property({ type: Object, attribute: false })
+  resizeObserver?: SharedResizeObserverInterface;
+
+  @property({ type: Object, attribute: false })
+  featureFeedbackService?: FeatureFeedbackServiceInterface;
+
+  @property({ type: Object, attribute: false })
+  recaptchaManager?: RecaptchaManagerInterface;
+
+  @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
 
   @property({ type: Object })
@@ -120,7 +132,16 @@ export class CollectionFacets extends LitElement {
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
               <div class="facet-group">
-                <h1>Year Published <feature-feedback></feature-feedback></h1>
+                <h1>
+                  Year Published
+                  <feature-feedback
+                    featureIdentifier="HistogramDatePicker"
+                    prompt="What do you think of the Histogram Date Picker?"
+                    .featureFeedbackService=${this.featureFeedbackService}
+                    .resizeObserver=${this.resizeObserver}
+                    .recaptchaManager=${this.recaptchaManager}
+                  ></feature-feedback>
+                </h1>
                 ${this.histogramTemplate}
               </div>
             `
