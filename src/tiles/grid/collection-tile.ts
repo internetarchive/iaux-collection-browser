@@ -66,7 +66,7 @@ export class CollectionTile extends LitElement {
   }
 
   private get getItemsTemplate() {
-    const collectionItems = this.model?.itemCount.toLocaleString();
+    const collectionItems = this.model?.itemCount?.toLocaleString();
 
     return html`<span id="item-count"
       >${collectionItems} item${Number(collectionItems) !== 1 ? 's' : ''}</span

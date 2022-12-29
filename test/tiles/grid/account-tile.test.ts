@@ -1,5 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
+import sinon from 'sinon';
 import { html } from 'lit';
 import type { AccountTile } from '../../../src/tiles/grid/account-tile';
 
@@ -91,5 +92,31 @@ describe('Account Tile', () => {
       ?.querySelectorAll('.col')[3]
       .querySelector('.status-text');
     expect(reviewCounts?.textContent).contains(3);
+  });
+
+  it('should render info button when showInfoButton flag is set', async () => {
+    const el = await fixture<AccountTile>(html`
+      <account-tile ?showInfoButton=${true}> </account-tile>
+    `);
+
+    const infoButton = el.shadowRoot?.querySelector('.info-button');
+
+    expect(infoButton).to.exist;
+  });
+
+  it('should dispatch event when info button tapped', async () => {
+    const infoButtonSpy = sinon.spy();
+    const el = await fixture<AccountTile>(html`
+      <account-tile ?showInfoButton=${true} @infoButtonPressed=${infoButtonSpy}>
+      </account-tile>
+    `);
+
+    const infoButton = el.shadowRoot?.querySelector(
+      '.info-button'
+    ) as HTMLButtonElement;
+    infoButton.click();
+    await el.updateComplete;
+
+    expect(infoButtonSpy.callCount).to.equal(1);
   });
 });

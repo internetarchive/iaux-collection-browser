@@ -1,5 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
+import sinon from 'sinon';
 import { html } from 'lit';
 import type { CollectionTile } from '../../../src/tiles/grid/collection-tile';
 
@@ -81,5 +82,34 @@ describe('Collection Tile', () => {
     expect(itemMediaType).to.exist;
     expect(itemCount).to.exist;
     expect(itemSize).to.exist;
+  });
+
+  it('should render info button when showInfoButton flag is set', async () => {
+    const el = await fixture<CollectionTile>(html`
+      <collection-tile ?showInfoButton=${true}> </collection-tile>
+    `);
+
+    const infoButton = el.shadowRoot?.querySelector('.info-button');
+
+    expect(infoButton).to.exist;
+  });
+
+  it('should dispatch event when info button tapped', async () => {
+    const infoButtonSpy = sinon.spy();
+    const el = await fixture<CollectionTile>(html`
+      <collection-tile
+        ?showInfoButton=${true}
+        @infoButtonPressed=${infoButtonSpy}
+      >
+      </collection-tile>
+    `);
+
+    const infoButton = el.shadowRoot?.querySelector(
+      '.info-button'
+    ) as HTMLButtonElement;
+    infoButton.click();
+    await el.updateComplete;
+
+    expect(infoButtonSpy.callCount).to.equal(1);
   });
 });
