@@ -49,6 +49,14 @@ export interface HoverPaneControllerInterface extends ReactiveController {
    * pane should not currently be rendered.
    */
   getTemplate(): HTMLTemplateResult | typeof nothing;
+
+  /**
+   * Requests to manually toggle the state of the hover pane.
+   * If the hover pane is already shown, it will begin fading out and then
+   * subsequently be hidden and removed. If the hover pane is already fading
+   * out or hidden, it will fade back in and be shown.
+   */
+  toggleHoverPane(coords: { x: number; y: number }): void;
 }
 
 const clamp = (val: number, min = -Infinity, max = Infinity) =>
@@ -171,6 +179,16 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .collectionNameCache=${this.hoverPaneProps?.collectionNameCache}
           ></tile-hover-pane>`
       : nothing;
+  }
+
+  /** @inheritdoc */
+  toggleHoverPane(coords: { x: number; y: number }): void {
+    if (this.hoverPaneState === 'shown') {
+      this.fadeOutHoverPane();
+    } else {
+      this.lastPointerClientPos = coords;
+      this.showHoverPane();
+    }
   }
 
   /**
