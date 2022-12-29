@@ -459,8 +459,8 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
           ${this.getItemsTemplate} ${this.getSizeTemplate}
         </div>
       </div>
-    `}get getItemsTemplate(){var e;const t=(e=this.model)===null||e===void 0?void 0:e.itemCount.toLocaleString();return p`<span id="item-count"
-      >${t} item${Number(t)!==1?"s":""}</span
+    `}get getItemsTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.itemCount)===null||t===void 0?void 0:t.toLocaleString();return p`<span id="item-count"
+      >${i} item${Number(i)!==1?"s":""}</span
     >`}get getSizeTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.collectionSize)!==null&&t!==void 0?t:0;return i?p`<span id="item-size">${Xo(i,1)}</span>`:""}get infoButtonTemplate(){return this.showInfoButton?p`<button class="info-button" @click=${this.infoButtonPressed}>
           &#128712;
         </button>`:w}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=f`var(--tileBorderColor, #555555)`,t=f`var(--tileBackgroundColor, #666666)`,i=f`#fff`;return[ba,f`
