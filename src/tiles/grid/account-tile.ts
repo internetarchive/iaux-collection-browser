@@ -1,4 +1,4 @@
-import { css, html, LitElement, TemplateResult } from 'lit';
+import { css, html, LitElement, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { TileModel } from '../../models';
 
@@ -12,9 +12,12 @@ export class AccountTile extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Boolean }) showInfoButton = false;
+
   render() {
     return html`
       <div class="container">
+        ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
             ${this.getAvatarTemplate} ${this.getTitleTemplate}
@@ -57,6 +60,24 @@ export class AccountTile extends LitElement {
       .commentCount=${this.model?.commentCount}
     >
     </tile-stats>`;
+  }
+
+  private get infoButtonTemplate(): TemplateResult | typeof nothing {
+    // &#9432; is an information icon
+    return this.showInfoButton
+      ? html`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#128712;
+        </button>`
+      : nothing;
+  }
+
+  private infoButtonPressed(e: PointerEvent) {
+    e.preventDefault();
+    const event = new CustomEvent<{ x: number; y: number }>(
+      'infoButtonPressed',
+      { detail: { x: e.clientX, y: e.clientY } }
+    );
+    this.dispatchEvent(event);
   }
 
   /**

@@ -97,6 +97,25 @@ export const baseTileStyles = css`
     text-decoration: underline;
   }
 
+  .info-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    margin: -1px 0;
+    padding: 0;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent;
+    color: white;
+    font-size: 2.5rem;
+    line-height: 1;
+    text-shadow: black 1px 1px 4px;
+    aspect-ratio: 1 / 1;
+    z-index: 1;
+  }
+
   .hidden {
     display: none;
   }

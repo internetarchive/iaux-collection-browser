@@ -31,11 +31,14 @@ export class ItemTile extends LitElement {
 
   @property({ type: Object }) sortParam?: SortParam;
 
+  @property({ type: Boolean }) showInfoButton = false;
+
   render() {
     const itemTitle = this.model?.title;
 
     return html`
       <div class="container">
+        ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
             ${this.imageBlockTemplate}
@@ -96,8 +99,6 @@ export class ItemTile extends LitElement {
 
   private get sortedDateInfoTemplate() {
     let sortedValue;
-
-    // console.log('model: ', this.model)
     switch (this.sortParam?.field) {
       case 'date':
         sortedValue = { field: 'published', value: this.model?.datePublished };
@@ -125,6 +126,15 @@ export class ItemTile extends LitElement {
         </span>
       </div>
     `;
+  }
+
+  private get infoButtonTemplate(): TemplateResult | typeof nothing {
+    // &#9432; is an information icon
+    return this.showInfoButton
+      ? html`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#128712;
+        </button>`
+      : nothing;
   }
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
@@ -156,6 +166,15 @@ export class ItemTile extends LitElement {
 
   private get hasSnippets(): boolean {
     return !!this.model?.snippets?.length;
+  }
+
+  private infoButtonPressed(e: PointerEvent): void {
+    e.preventDefault();
+    const event = new CustomEvent<{ x: number; y: number }>(
+      'infoButtonPressed',
+      { detail: { x: e.clientX, y: e.clientY } }
+    );
+    this.dispatchEvent(event);
   }
 
   /**

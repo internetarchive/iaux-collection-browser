@@ -1,4 +1,11 @@
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import type { TileModel } from '../../models';
@@ -12,9 +19,12 @@ export class CollectionTile extends LitElement {
 
   @property({ type: String }) baseImageUrl?: string;
 
+  @property({ type: Boolean }) showInfoButton = false;
+
   render() {
     return html`
       <div class="container">
+        ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
             ${this.getImageBlockTemplate} ${this.getTitleTemplate}
@@ -69,6 +79,24 @@ export class CollectionTile extends LitElement {
     return collectionSize
       ? html`<span id="item-size">${formatUnitSize(collectionSize, 1)}</span>`
       : ``;
+  }
+
+  private get infoButtonTemplate(): TemplateResult | typeof nothing {
+    // &#9432; is an information icon
+    return this.showInfoButton
+      ? html`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#128712;
+        </button>`
+      : nothing;
+  }
+
+  private infoButtonPressed(e: PointerEvent) {
+    e.preventDefault();
+    const event = new CustomEvent<{ x: number; y: number }>(
+      'infoButtonPressed',
+      { detail: { x: e.clientX, y: e.clientY } }
+    );
+    this.dispatchEvent(event);
   }
 
   static get styles(): CSSResultGroup {
