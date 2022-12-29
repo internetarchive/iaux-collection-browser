@@ -148,6 +148,10 @@ export class TileDispatcher
     );
   }
 
+  private get isHoverEnabled(): boolean {
+    return window.matchMedia('(hover: hover)').matches;
+  }
+
   /** @inheritdoc */
   getHoverPane(): TileHoverPane | undefined {
     return this.hoverPane;
@@ -192,6 +196,12 @@ export class TileDispatcher
     }
   }
 
+  private tileInfoButtonPressed(
+    e: CustomEvent<{ x: number; y: number }>
+  ): void {
+    this.hoverPaneController?.toggleHoverPane(e.detail);
+  }
+
   private get tile() {
     const {
       model,
@@ -213,6 +223,8 @@ export class TileDispatcher
               .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
+              ?showInfoButton=${!this.isHoverEnabled}
+              @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </collection-tile>`;
           case 'account':
@@ -221,6 +233,8 @@ export class TileDispatcher
               .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
+              ?showInfoButton=${!this.isHoverEnabled}
+              @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </account-tile>`;
           default:
@@ -232,6 +246,8 @@ export class TileDispatcher
               .baseImageUrl=${this.baseImageUrl}
               .sortParam=${sortParam}
               .loggedIn=${this.loggedIn}
+              ?showInfoButton=${!this.isHoverEnabled}
+              @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </item-tile>`;
         }
