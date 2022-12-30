@@ -186,7 +186,7 @@ export class AlphaBar extends LitElement {
       flex: 1;
       text-align: center;
       max-width: 2.5rem;
-      border-radius: 50%;
+      border-radius: 4px;
     }
 
     li:hover:not(.selected) a {
@@ -200,7 +200,7 @@ export class AlphaBar extends LitElement {
       justify-content: center;
       align-items: center;
       aspect-ratio: 1 / 1;
-      border-radius: 50%;
+      border-radius: 4px;
     }
 
     span {
