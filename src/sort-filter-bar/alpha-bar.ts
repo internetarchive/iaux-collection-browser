@@ -193,20 +193,23 @@ export class AlphaBar extends LitElement {
       background-color: #c0c0c0;
     }
 
-    a {
-      color: #333;
-      text-decoration: none;
+    a,
+    span {
       display: flex;
       justify-content: center;
       align-items: center;
       aspect-ratio: 1 / 1;
+    }
+
+    a {
+      color: #333;
+      text-decoration: none;
       border-radius: 4px;
     }
 
     span {
       color: #aaa;
-      padding: 0.5rem 0;
-      display: block;
+      cursor: default;
     }
 
     .selected {
