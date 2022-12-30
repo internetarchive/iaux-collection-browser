@@ -1792,7 +1792,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       flex: 1;
       text-align: center;
       max-width: 2.5rem;
-      border-radius: 50%;
+      border-radius: 4px;
     }
 
     li:hover:not(.selected) a {
@@ -1806,7 +1806,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       justify-content: center;
       align-items: center;
       aspect-ratio: 1 / 1;
-      border-radius: 50%;
+      border-radius: 4px;
     }
 
     span {
