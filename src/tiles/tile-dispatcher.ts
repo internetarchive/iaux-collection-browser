@@ -337,7 +337,7 @@ export class TileDispatcher
         height: 100vh;
         top: 0;
         left: 0;
-        z-index: 1;
+        z-index: 2;
         background: transparent;
       }
 
