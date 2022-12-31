@@ -230,17 +230,20 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
     position: absolute;
     right: 10px;
     top: 10px;
-    margin: -1px 0;
+    margin: 0;
     padding: 0;
     border: none;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: transparent;
+    background: rgba(220, 220, 220, 0.5);
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
+    font-weight: bold;
     line-height: 1;
-    text-shadow: black 1px 1px 4px;
+    text-shadow: black 1px 1px 3px;
+    overflow: visible;
     aspect-ratio: 1 / 1;
     z-index: 1;
   }
@@ -476,7 +479,7 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
     `}get getItemsTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.itemCount)===null||t===void 0?void 0:t.toLocaleString();return p`<span id="item-count"
       >${i} item${Number(i)!==1?"s":""}</span
     >`}get getSizeTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.collectionSize)!==null&&t!==void 0?t:0;return i?p`<span id="item-size">${Xo(i,1)}</span>`:""}get infoButtonTemplate(){return this.showInfoButton?p`<button class="info-button" @click=${this.infoButtonPressed}>
-          &#128712;
+          &#9432;
           <span class="sr-only">More info</span>
         </button>`:w}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=f`var(--tileBorderColor, #555555)`,t=f`var(--tileBackgroundColor, #666666)`,i=f`#fff`;return[ba,f`
         .container {
@@ -1079,7 +1082,7 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
         </span>
       </div>
     `:w}get infoButtonTemplate(){return this.showInfoButton?p`<button class="info-button" @click=${this.infoButtonPressed}>
-          &#128712;
+          &#9432;
           <span class="sr-only">More info</span>
         </button>`:w}get textSnippetsTemplate(){var e;return this.hasSnippets?p`
       <text-snippet-block viewsize="grid" .snippets=${(e=this.model)===null||e===void 0?void 0:e.snippets}>
@@ -1142,7 +1145,7 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
       .commentCount=${(a=this.model)===null||a===void 0?void 0:a.commentCount}
     >
     </tile-stats>`}get infoButtonTemplate(){return this.showInfoButton?p`<button class="info-button" @click=${this.infoButtonPressed}>
-          &#128712;
+          &#9432;
           <span class="sr-only">More info</span>
         </button>`:w}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=f`var(--tileBorderColor, #dddddd)`;return[ba,f`
         .container {
