@@ -475,21 +475,6 @@ export class MoreFacetsContent extends LitElement {
         overflow: auto;
         padding: 10px;
       }
-      .page-number {
-        background: none;
-        border: 0;
-        cursor: pointer;
-        border-radius: 100%;
-        width: 25px;
-        height: 25px;
-        margin: 10px;
-        font-size: 1.4rem;
-        vertical-align: middle;
-      }
-      .current-page {
-        background: black;
-        color: white;
-      }
       .facets-loader {
         margin-bottom: 20px;
         width: 70px;
@@ -506,7 +491,7 @@ export class MoreFacetsContent extends LitElement {
         cursor: pointer;
       }
       .btn-cancel {
-        background-color: #000;
+        background-color: #2c2c2c;
         color: white;
       }
       .btn-submit {
