@@ -132,7 +132,7 @@ export class ItemTile extends LitElement {
     // &#9432; is an information icon
     return this.showInfoButton
       ? html`<button class="info-button" @click=${this.infoButtonPressed}>
-          &#128712;
+          &#9432;
           <span class="sr-only">More info</span>
         </button>`
       : nothing;

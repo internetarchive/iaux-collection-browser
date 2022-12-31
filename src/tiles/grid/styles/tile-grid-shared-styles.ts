@@ -101,17 +101,20 @@ export const baseTileStyles = css`
     position: absolute;
     right: 10px;
     top: 10px;
-    margin: -1px 0;
+    margin: 0;
     padding: 0;
     border: none;
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: transparent;
+    background: rgba(220, 220, 220, 0.5);
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
+    font-weight: bold;
     line-height: 1;
-    text-shadow: black 1px 1px 4px;
+    text-shadow: black 1px 1px 3px;
+    overflow: visible;
     aspect-ratio: 1 / 1;
     z-index: 1;
   }
