@@ -199,7 +199,10 @@ export class TileDispatcher
   private tileInfoButtonPressed(
     e: CustomEvent<{ x: number; y: number }>
   ): void {
-    this.hoverPaneController?.toggleHoverPane(e.detail);
+    this.hoverPaneController?.toggleHoverPane({
+      coords: e.detail,
+      enableTouchBackdrop: true,
+    });
   }
 
   private get tile() {
