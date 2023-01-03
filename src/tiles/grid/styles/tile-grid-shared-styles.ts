@@ -51,7 +51,7 @@ export const baseTileStyles = css`
   .archivist-since {
     display: flex;
     justify-content: left;
-    align-items: flex-end; /* Important to start text from bottom */
+    align-items: flex-start;
     padding: 0 5px;
   }
 
