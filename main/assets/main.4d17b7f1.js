@@ -180,7 +180,7 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
   .archivist-since {
     display: flex;
     justify-content: left;
-    align-items: flex-end; /* Important to start text from bottom */
+    align-items: flex-start;
     padding: 0 5px;
   }
 
