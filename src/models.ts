@@ -79,13 +79,13 @@ export const SortFieldDisplayName: {
   [key in SortField]: string;
 } = {
   relevance: 'Relevance',
-  alltimeview: 'All-time Views',
-  weeklyview: 'Weekly Views',
+  alltimeview: 'All-time views',
+  weeklyview: 'Weekly views',
   title: 'Title',
-  datearchived: 'Date Archived',
-  date: 'Date Published',
-  datereviewed: 'Date Reviewed',
-  dateadded: 'Date Added',
+  datearchived: 'Date archived',
+  date: 'Date published',
+  datereviewed: 'Date reviewed',
+  dateadded: 'Date added',
   creator: 'Creator',
 };
 
