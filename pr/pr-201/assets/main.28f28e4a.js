@@ -180,7 +180,7 @@ var lo=Object.defineProperty,co=Object.defineProperties;var ho=Object.getOwnProp
   .archivist-since {
     display: flex;
     justify-content: left;
-    align-items: flex-end; /* Important to start text from bottom */
+    align-items: flex-start;
     padding: 0 5px;
   }
 
@@ -3651,7 +3651,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         height: 15px;
         cursor: pointer;
       }
-    `}};s([c({type:Object})],R.prototype,"searchService",void 0);s([c({type:String})],R.prototype,"searchType",void 0);s([c({type:Object})],R.prototype,"aggregations",void 0);s([c({type:Object})],R.prototype,"fullYearsHistogramAggregation",void 0);s([c({type:String})],R.prototype,"minSelectedDate",void 0);s([c({type:String})],R.prototype,"maxSelectedDate",void 0);s([c({type:Boolean})],R.prototype,"moreLinksVisible",void 0);s([c({type:Boolean})],R.prototype,"facetsLoading",void 0);s([c({type:Boolean})],R.prototype,"fullYearAggregationLoading",void 0);s([c({type:Object})],R.prototype,"selectedFacets",void 0);s([c({type:Boolean})],R.prototype,"collapsableFacets",void 0);s([c({type:Boolean})],R.prototype,"showHistogramDatePicker",void 0);s([c({type:String})],R.prototype,"query",void 0);s([c({type:Object})],R.prototype,"filterMap",void 0);s([c({type:Object,attribute:!1})],R.prototype,"modalManager",void 0);s([c({type:Object,attribute:!1})],R.prototype,"resizeObserver",void 0);s([c({type:Object,attribute:!1})],R.prototype,"featureFeedbackService",void 0);s([c({type:Object,attribute:!1})],R.prototype,"recaptchaManager",void 0);s([c({type:Object,attribute:!1})],R.prototype,"analyticsHandler",void 0);s([c({type:Object})],R.prototype,"languageCodeHandler",void 0);s([c({type:Object})],R.prototype,"collectionNameCache",void 0);s([c({type:Function})],R.prototype,"onFacetClick",void 0);s([T()],R.prototype,"openFacets",void 0);s([c({type:Object,attribute:!1})],R.prototype,"allowedFacetCount",void 0);R=s([F("collection-facets")],R);let _r=class extends A{render(){return p`
+    `}};s([c({type:Object})],R.prototype,"searchService",void 0);s([c({type:String})],R.prototype,"searchType",void 0);s([c({type:Object})],R.prototype,"aggregations",void 0);s([c({type:Object})],R.prototype,"fullYearsHistogramAggregation",void 0);s([c({type:String})],R.prototype,"minSelectedDate",void 0);s([c({type:String})],R.prototype,"maxSelectedDate",void 0);s([c({type:Boolean})],R.prototype,"moreLinksVisible",void 0);s([c({type:Boolean})],R.prototype,"facetsLoading",void 0);s([c({type:Boolean})],R.prototype,"fullYearAggregationLoading",void 0);s([c({type:Object})],R.prototype,"selectedFacets",void 0);s([c({type:Boolean})],R.prototype,"collapsableFacets",void 0);s([c({type:Boolean})],R.prototype,"showHistogramDatePicker",void 0);s([c({type:String})],R.prototype,"query",void 0);s([c({type:Object})],R.prototype,"filterMap",void 0);s([c({type:Object,attribute:!1})],R.prototype,"modalManager",void 0);s([c({type:Object,attribute:!1})],R.prototype,"resizeObserver",void 0);s([c({type:Object,attribute:!1})],R.prototype,"featureFeedbackService",void 0);s([c({type:Object,attribute:!1})],R.prototype,"recaptchaManager",void 0);s([c({type:Object,attribute:!1})],R.prototype,"analyticsHandler",void 0);s([c({type:Object,attribute:!1})],R.prototype,"languageCodeHandler",void 0);s([c({type:Object,attribute:!1})],R.prototype,"collectionNameCache",void 0);s([c({type:Function})],R.prototype,"onFacetClick",void 0);s([T()],R.prototype,"openFacets",void 0);R=s([F("collection-facets")],R);let _r=class extends A{render(){return p`
       <div class="lds-ring">
         <div></div>
         <div></div>
@@ -3825,6 +3825,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .searchService=${this.searchService}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .recaptchaManager=${this.recaptchaManager}
+        .resizeObserver=${this.resizeObserver}
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
