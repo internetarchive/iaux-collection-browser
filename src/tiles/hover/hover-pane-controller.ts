@@ -38,6 +38,11 @@ export interface HoverPaneProviderInterface {
   getHoverPaneProps(): HoverPaneProperties;
 }
 
+export interface ToggleHoverPaneOptions {
+  coords: { x: number; y: number };
+  enableTouchBackdrop?: boolean;
+}
+
 /**
  * An interface for interacting with hover pane controllers (e.g.,
  * to retrieve their current hover pane template).
@@ -49,6 +54,14 @@ export interface HoverPaneControllerInterface extends ReactiveController {
    * pane should not currently be rendered.
    */
   getTemplate(): HTMLTemplateResult | typeof nothing;
+
+  /**
+   * Requests to manually toggle the state of the hover pane.
+   * If the hover pane is already shown, it will begin fading out and then
+   * subsequently be hidden and removed. If the hover pane is already fading
+   * out or hidden, it will fade back in and be shown.
+   */
+  toggleHoverPane(options: ToggleHoverPaneOptions): void;
 }
 
 const clamp = (val: number, min = -Infinity, max = Infinity) =>
@@ -123,6 +136,12 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /** The timer ID for recognizing a long press event */
   private longPressTimer?: number;
 
+  /**
+   * Whether the touch backdrop should currently be rendered irrespective of other touch
+   * interactions being enabled.
+   */
+  private forceTouchBackdrop: boolean = false;
+
   /** A record of the last mouse position on the host element, for positioning the hover pane */
   private lastPointerClientPos = { x: 0, y: 0 };
 
@@ -173,6 +192,18 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       : nothing;
   }
 
+  /** @inheritdoc */
+  toggleHoverPane(options: ToggleHoverPaneOptions): void {
+    if (this.hoverPaneState === 'shown') {
+      this.fadeOutHoverPane();
+      this.forceTouchBackdrop = false;
+    } else {
+      this.lastPointerClientPos = options.coords;
+      this.forceTouchBackdrop = options.enableTouchBackdrop ?? false;
+      this.showHoverPane();
+    }
+  }
+
   /**
    * Produces a template for the invisible touch capture backdrop that
    * is used to cancel the hover pane on touch devices. We want any
@@ -181,7 +212,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * affect the state of the hover pane (e.g., fading it back in).
    */
   private get touchBackdropTemplate(): HTMLTemplateResult | typeof nothing {
-    return this.isTouchEnabled && this.enableLongPress
+    return this.showTouchBackdrop
       ? html`<div
           id="touch-backdrop"
           @touchstart=${this.handleBackdropInteraction}
@@ -193,6 +224,12 @@ export class HoverPaneController implements HoverPaneControllerInterface {
           @mouseleave=${(e: MouseEvent) => e.stopPropagation()}
         ></div>`
       : nothing;
+  }
+
+  private get showTouchBackdrop(): boolean {
+    return (
+      (this.isTouchEnabled && this.enableLongPress) || this.forceTouchBackdrop
+    );
   }
 
   /** Whether to use the mobile layout */

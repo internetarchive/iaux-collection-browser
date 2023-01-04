@@ -1,5 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
+import sinon from 'sinon';
 import { html } from 'lit';
 import type { ItemTile } from '../../../src/tiles/grid/item-tile';
 
@@ -171,6 +172,32 @@ describe('Item Tile', () => {
     const snippetBlock = el.shadowRoot?.querySelector('text-snippet-block');
 
     expect(snippetBlock).to.not.exist;
+  });
+
+  it('should render info button when showInfoButton flag is set', async () => {
+    const el = await fixture<ItemTile>(html`
+      <item-tile ?showInfoButton=${true}> </item-tile>
+    `);
+
+    const infoButton = el.shadowRoot?.querySelector('.info-button');
+
+    expect(infoButton).to.exist;
+  });
+
+  it('should dispatch event when info button tapped', async () => {
+    const infoButtonSpy = sinon.spy();
+    const el = await fixture<ItemTile>(html`
+      <item-tile ?showInfoButton=${true} @infoButtonPressed=${infoButtonSpy}>
+      </item-tile>
+    `);
+
+    const infoButton = el.shadowRoot?.querySelector(
+      '.info-button'
+    ) as HTMLButtonElement;
+    infoButton.click();
+    await el.updateComplete;
+
+    expect(infoButtonSpy.callCount).to.equal(1);
   });
 
   it('should render with volume/issue view', async () => {

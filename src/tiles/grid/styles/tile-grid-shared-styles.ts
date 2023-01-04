@@ -97,7 +97,43 @@ export const baseTileStyles = css`
     text-decoration: underline;
   }
 
+  .info-button {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    margin: 0;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(220, 220, 220, 0.5);
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: black 1px 1px 3px;
+    overflow: visible;
+    aspect-ratio: 1 / 1;
+    z-index: 1;
+  }
+
   .hidden {
     display: none;
+  }
+
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    margin: -1px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+    clip: rect(1px, 1px, 1px, 1px) !important;
+    -webkit-clip-path: inset(50%) !important;
+    clip-path: inset(50%) !important;
   }
 `;
