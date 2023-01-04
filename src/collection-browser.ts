@@ -1350,6 +1350,7 @@ export class CollectionBrowser
         dateReviewed: result.reviewdate?.value,
         description: result.description?.values.join('\n'),
         favCount: result.num_favorites?.value ?? 0,
+        href: result.__href__?.value,
         identifier: result.identifier,
         issue: result.issue?.value,
         itemCount: result.item_count?.value ?? 0,
