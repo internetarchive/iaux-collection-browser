@@ -122,7 +122,7 @@ export class TileDispatcher
   private get linkTileTemplate() {
     return html`
       <a
-        href="${this.baseNavigationUrl}/details/${this.model?.identifier}"
+        href="${this.linkTileHref}"
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
@@ -134,6 +134,15 @@ export class TileDispatcher
         ${this.tile}
       </a>
     `;
+  }
+
+  private get linkTileHref() {
+    // Use the server-specified href if available.
+    // Otherwise, construct a details page URL from the item identifier.
+    return (
+      `${this.baseNavigationUrl}${this.model?.href}` ??
+      `${this.baseNavigationUrl}/details/${this.model?.identifier}`
+    );
   }
 
   /**
