@@ -558,6 +558,9 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .searchService=${this.searchService}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .recaptchaManager=${this.recaptchaManager}
+        .resizeObserver=${this.resizeObserver}
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
