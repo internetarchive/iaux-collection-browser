@@ -35,6 +35,8 @@ import type {
 import '@internetarchive/infinite-scroller';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
+import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
+import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -138,6 +140,11 @@ export class CollectionBrowser
   @property({ type: Boolean }) loggedIn = false;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface = undefined;
+
+  @property({ type: Object })
+  featureFeedbackService?: FeatureFeedbackServiceInterface;
+
+  @property({ type: Object }) recaptchaManager?: RecaptchaManagerInterface;
 
   /**
    * If item management UI active
@@ -551,6 +558,9 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .searchService=${this.searchService}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .recaptchaManager=${this.recaptchaManager}
+        .resizeObserver=${this.resizeObserver}
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
