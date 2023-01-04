@@ -141,14 +141,13 @@ export class TileList extends LitElement {
       return nothing;
     }
 
-    if (this.model?.href) {
-      // If the model has a server-specified href, use it
-      return html`<a href="${this.baseNavigationUrl}${this.model.href}"
-        >${this.model.title ?? this.model.identifier}</a
-      >`;
-    }
+    // If the model has a server-specified href, use it
     // Otherwise construct a details link using the identifier
-    return this.detailsLink(this.model.identifier, this.model.title);
+    return this.model?.href
+      ? html`<a href="${this.baseNavigationUrl}${this.model.href}"
+          >${this.model.title ?? this.model.identifier}</a
+        >`
+      : this.detailsLink(this.model.identifier, this.model.title);
   }
 
   private get itemLineTemplate() {
