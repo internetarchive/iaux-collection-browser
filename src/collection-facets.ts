@@ -95,10 +95,10 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
 
-  @property({ type: Object })
+  @property({ type: Object, attribute: false })
   languageCodeHandler?: LanguageCodeHandlerInterface;
 
-  @property({ type: Object })
+  @property({ type: Object, attribute: false })
   collectionNameCache?: CollectionNameCacheInterface;
 
   /** Fires when a facet is clicked */
@@ -118,10 +118,8 @@ export class CollectionFacets extends LitElement {
     year: false,
   };
 
-  @property({ type: Object, attribute: false })
-
   /**
-   * render number of facet items
+   * Maximum # of facet buckets to render per facet group
    */
   private allowedFacetCount = 6;
 
