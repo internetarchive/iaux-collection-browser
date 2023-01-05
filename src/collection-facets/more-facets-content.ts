@@ -30,7 +30,6 @@ import {
   facetTitles,
   suppressedCollections,
 } from '../models';
-import type { LanguageCodeHandlerInterface } from '../language-code-handler/language-code-handler';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -57,9 +56,6 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
-
-  @property({ type: Object })
-  languageCodeHandler?: LanguageCodeHandlerInterface;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
@@ -222,15 +218,7 @@ export class MoreFacetsContent extends LitElement {
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, data]) => {
-            let displayText: string = value;
-            // for selected languages, we store the language code instead of the
-            // display name, so look up the name from the mapping
-            if (option === 'language') {
-              displayText =
-                this.languageCodeHandler?.getLanguageNameFromCodeString(
-                  value
-                ) ?? value;
-            }
+            const displayText: string = value;
             return {
               displayText,
               key: value,
@@ -294,15 +282,7 @@ export class MoreFacetsContent extends LitElement {
       );
 
       const facetBucket: FacetBucket[] = bucketsMaxSix.map(bucket => {
-        let bucketKey = bucket.key;
-        // for languages, we need to search by language code instead of the
-        // display name, which is what we get from the search engine result
-        if (option === 'language') {
-          bucketKey =
-            this.languageCodeHandler?.getCodeStringFromLanguageName(
-              `${bucket.key}`
-            ) ?? bucket.key;
-        }
+        const bucketKey = bucket.key;
         return {
           displayText: `${bucket.key}`,
           key: `${bucketKey}`,

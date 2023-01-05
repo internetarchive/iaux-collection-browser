@@ -11,10 +11,6 @@ import type { CollectionFacets } from '../src/collection-facets';
 import '@internetarchive/modal-manager';
 import '../src/collection-facets';
 import type { FacetOption, SelectedFacets } from '../src/models';
-import {
-  LanguageCodeHandler,
-  LanguageCodeHandlerInterface,
-} from '../src/language-code-handler/language-code-handler';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 
 describe('Collection Facets', () => {
@@ -257,69 +253,6 @@ describe('Collection Facets', () => {
       ?.item(0)
       .querySelector(`a[href='/details/foo']`);
     expect(collectionLink).to.exist;
-  });
-
-  it('renders language facets with their human-readable names', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
-
-    const languageCodeHandler: LanguageCodeHandlerInterface =
-      new LanguageCodeHandler();
-
-    const aggs: Record<string, Aggregation> = {
-      language: new Aggregation({
-        buckets: [
-          {
-            key: 'English',
-            doc_count: 3,
-          },
-        ],
-      }),
-    };
-
-    el.languageCodeHandler = languageCodeHandler;
-    el.aggregations = aggs;
-    await el.updateComplete;
-
-    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const languageTitle =
-      facetsTemplate?.shadowRoot?.querySelector('.facet-title');
-    expect(languageTitle?.textContent?.trim()).to.equal('English');
-  });
-
-  it('renders selected/negative language facets with human-readable names', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
-
-    const languageCodeHandler: LanguageCodeHandlerInterface =
-      new LanguageCodeHandler();
-
-    const selectedFacets: SelectedFacets = {
-      subject: {},
-      lending: {},
-      mediatype: {},
-      language: {
-        en: {
-          key: 'en',
-          count: 5,
-          state: 'selected',
-        },
-      },
-      creator: {},
-      collection: {},
-      year: {},
-    };
-
-    el.languageCodeHandler = languageCodeHandler;
-    el.selectedFacets = selectedFacets;
-    await el.updateComplete;
-
-    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const languageTitle =
-      facetsTemplate?.shadowRoot?.querySelector('.facet-title');
-    expect(languageTitle?.textContent?.trim()).to.equal('English');
   });
 
   it('renders lending facets with human-readable names', async () => {

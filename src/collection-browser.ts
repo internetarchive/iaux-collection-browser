@@ -63,7 +63,6 @@ import {
   RestorationState,
 } from './restoration-state-handler';
 import chevronIcon from './assets/img/icons/chevron';
-import { LanguageCodeHandler } from './language-code-handler/language-code-handler';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
 
@@ -194,8 +193,6 @@ export class CollectionBrowser
   > = {};
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
-
-  private languageCodeHandler = new LanguageCodeHandler();
 
   @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
@@ -569,7 +566,6 @@ export class CollectionBrowser
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
-        .languageCodeHandler=${this.languageCodeHandler}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .query=${this.filteredQuery}
         .filterMap=${this.filterMap}
@@ -936,24 +932,6 @@ export class CollectionBrowser
     }
 
     const filterMap = builder.build();
-
-    // TEMP: At present, the backend search engine incorrectly returns 0 results if
-    // the _first_ language filter contains a space, so let's try to avoid that if possible.
-    if (filterMap.language) {
-      for (const [value, constraint] of Object.entries(filterMap.language)) {
-        if (value.includes(' ')) {
-          // Delete and re-add this filter to make it the last one on the parent object
-          // (Technically this isn't in the standard, but most browser impls output
-          // object keys in the order they were added.)
-          delete filterMap.language[value];
-          filterMap.language[value] = constraint;
-        } else {
-          // As soon as we reach one without a space, we're done
-          break;
-        }
-      }
-    }
-
     return filterMap;
   }
 
@@ -1064,23 +1042,12 @@ export class CollectionBrowser
     facetName: string,
     facetValues: Record<string, FacetBucket>
   ): { name: string; values: Record<string, FacetBucket> } {
+    // eslint-disable-next-line prefer-const
     let [normalizedName, normalizedValues] = [facetName, facetValues];
 
     // The full "search engine" name of the lending field is "lending___status"
     if (facetName === 'lending') {
       normalizedName = 'lending___status';
-    }
-
-    // Language codes like "en-US|en-GB|en" need to be broken apart into individual values
-    if (facetName === 'language') {
-      normalizedValues = {};
-      for (const [facetValue, facetData] of Object.entries(facetValues)) {
-        const languages =
-          this.languageCodeHandler.getCodeArrayFromCodeString(facetValue);
-        for (const lang of languages) {
-          normalizedValues[lang] = { ...facetData };
-        }
-      }
     }
 
     return {

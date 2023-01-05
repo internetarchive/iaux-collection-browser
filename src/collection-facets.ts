@@ -41,7 +41,6 @@ import {
   LendingFacetKey,
   suppressedCollections,
 } from './models';
-import type { LanguageCodeHandlerInterface } from './language-code-handler/language-code-handler';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
@@ -94,9 +93,6 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
-
-  @property({ type: Object, attribute: false })
-  languageCodeHandler?: LanguageCodeHandlerInterface;
 
   @property({ type: Object, attribute: false })
   collectionNameCache?: CollectionNameCacheInterface;
@@ -292,14 +288,6 @@ export class CollectionFacets extends LitElement {
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, facetData]) => {
             let displayText: string = value;
-            // for selected languages, we store the language code instead of the
-            // display name, so look up the name from the mapping
-            if (option === 'language') {
-              displayText =
-                this.languageCodeHandler?.getLanguageNameFromCodeString(
-                  value
-                ) ?? value;
-            }
             // for lending facets, convert the key to a readable format
             if (option === 'lending') {
               displayText =
@@ -351,18 +339,8 @@ export class CollectionFacets extends LitElement {
       }
 
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
-        let bucketKey = bucket.key;
+        const bucketKey = bucket.key;
         let displayText = `${bucket.key}`;
-        // for languages, we need to search by language code instead of the
-        // display name, which is what we get from the search engine result
-        if (option === 'language') {
-          // const languageCodeKey = languageToCodeMap[bucket.key];
-          bucketKey =
-            this.languageCodeHandler?.getCodeStringFromLanguageName(
-              `${bucket.key}`
-            ) ?? bucket.key;
-          // bucketKey = languageCodeKey ?? bucket.key;
-        }
         // for lending facets, convert the bucket key to a readable format
         if (option === 'lending') {
           displayText =
@@ -499,7 +477,6 @@ export class CollectionFacets extends LitElement {
         .searchService=${this.searchService}
         .searchType=${this.searchType}
         .collectionNameCache=${this.collectionNameCache}
-        .languageCodeHandler=${this.languageCodeHandler}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
         @facetsChanged=${(e: CustomEvent) => {
