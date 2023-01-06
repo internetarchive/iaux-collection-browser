@@ -418,6 +418,7 @@ export class SortFilterBar
       <ia-dropdown
         id=${options?.id ?? nothing}
         class=${options?.isSelected?.() ? 'selected' : nothing}
+        displayCaret
         .options=${options?.dropdownOptions}
         .selectedOption=${options?.selectedOption}
         @optionSelected=${options?.optionSelectedHandler ?? nothing}
@@ -929,8 +930,9 @@ export class SortFilterBar
       --dropdownTextColor: white;
       --dropdownFontSize: 1.3rem;
       --dropdownListZIndex: 2;
+      --dropdownCaretColor: #2c2c2c;
 
-      padding: 0 5px;
+      padding-left: 5px;
     }
     ia-dropdown.selected .dropdown-label {
       font-weight: bold;
@@ -940,17 +942,10 @@ export class SortFilterBar
     }
 
     .dropdown-label {
-      margin: 0 -10px 0 0;
       font-size: 1.4rem;
       line-height: 2;
       color: #2c2c2c;
       white-space: nowrap;
-    }
-    .dropdown-label::after {
-      content: '▼';
-      font-size: 1rem;
-      line-height: 1;
-      vertical-align: middle;
     }
   `;
 }
