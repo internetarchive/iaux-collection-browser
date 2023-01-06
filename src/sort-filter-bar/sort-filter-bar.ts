@@ -289,7 +289,9 @@ export class SortFilterBar
                 this.getDropdownOption(SortField.weeklyview),
                 this.getDropdownOption(SortField.alltimeview),
               ],
-              selectedOption: SortField.weeklyview,
+              selectedOption: this.viewOptionSelected
+                ? this.selectedSort
+                : SortField.weeklyview,
             })}
           </li>
           <li>
@@ -336,7 +338,9 @@ export class SortFilterBar
                 this.getDropdownOption(SortField.datereviewed),
                 this.getDropdownOption(SortField.dateadded),
               ],
-              selectedOption: SortField.date,
+              selectedOption: this.dateOptionSelected
+                ? this.selectedSort
+                : SortField.date,
             })}
           </li>
           <li>
