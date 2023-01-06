@@ -2314,7 +2314,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       justify-content: space-between;
       border-bottom: 1px solid #2c2c2c;
       align-items: center;
-      padding: 0.5rem 1.5rem;
     }
 
     #sort-direction-container {
@@ -2468,6 +2467,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     #desktop-sort-selector li {
       display: flex;
       align-items: center;
+      padding-left: 5px;
+      padding-right: 5px;
     }
 
     #desktop-sort-selector li a {
@@ -2480,12 +2481,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
     #desktop-sort-selector li a.selected {
       font-weight: bold;
-    }
-
-    #desktop-sort-selector li::after {
-      content: '•';
-      padding-left: 5px;
-      padding-right: 5px;
     }
 
     #desktop-sort-selector li:last-child::after {
