@@ -423,9 +423,9 @@ export class SortFilterBar
         @optionSelected=${options?.optionSelectedHandler ?? nothing}
         @click=${options?.clickHandler ?? nothing}
       >
-        <p class="dropdown-label" slot="dropdown-label">
+        <span href="#" class="dropdown-label" slot="dropdown-label">
           ${options?.displayName ?? ''}
-        </p>
+        </span>
       </ia-dropdown>
     `;
   }
@@ -912,7 +912,7 @@ export class SortFilterBar
       appearance: none;
       cursor: pointer;
       -webkit-appearance: none;
-      opacity: 0.5;
+      opacity: 0.3;
     }
 
     #display-style-selector button.active {
