@@ -737,7 +737,7 @@ export class SortFilterBar
 
     #sort-by-text {
       margin-right: 10px;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: bold;
       white-space: nowrap;
     }
