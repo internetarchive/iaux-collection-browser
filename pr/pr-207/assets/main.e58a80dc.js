@@ -2226,6 +2226,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <ia-dropdown
         id=${(t=e==null?void 0:e.id)!==null&&t!==void 0?t:w}
         class=${!((i=e==null?void 0:e.isSelected)===null||i===void 0)&&i.call(e)?"selected":w}
+        displayCaret
         .options=${e==null?void 0:e.dropdownOptions}
         .selectedOption=${e==null?void 0:e.selectedOption}
         @optionSelected=${(a=e==null?void 0:e.optionSelectedHandler)!==null&&a!==void 0?a:w}
@@ -2518,8 +2519,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       --dropdownTextColor: white;
       --dropdownFontSize: 1.3rem;
       --dropdownListZIndex: 2;
+      --dropdownCaretColor: #2c2c2c;
 
-      padding: 0 5px;
+      padding-left: 5px;
     }
     ia-dropdown.selected .dropdown-label {
       font-weight: bold;
@@ -2529,17 +2531,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
 
     .dropdown-label {
-      margin: 0 -10px 0 0;
       font-size: 1.4rem;
       line-height: 2;
       color: #2c2c2c;
       white-space: nowrap;
-    }
-    .dropdown-label::after {
-      content: '▼';
-      font-size: 1rem;
-      line-height: 1;
-      vertical-align: middle;
     }
   `;s([c({type:String})],Q.prototype,"displayMode",void 0);s([c({type:String})],Q.prototype,"sortDirection",void 0);s([c({type:String})],Q.prototype,"selectedSort",void 0);s([c({type:String})],Q.prototype,"selectedTitleFilter",void 0);s([c({type:String})],Q.prototype,"selectedCreatorFilter",void 0);s([c({type:Boolean})],Q.prototype,"showRelevance",void 0);s([c({type:Object})],Q.prototype,"prefixFilterCountMap",void 0);s([c({type:Object})],Q.prototype,"resizeObserver",void 0);s([$()],Q.prototype,"alphaSelectorVisible",void 0);s([$()],Q.prototype,"dateSortSelectorVisible",void 0);s([$()],Q.prototype,"viewSortSelectorVisible",void 0);s([$()],Q.prototype,"desktopSortContainerWidth",void 0);s([$()],Q.prototype,"selectorBarContainerWidth",void 0);s([$()],Q.prototype,"hoveringOverDateSortOptions",void 0);s([X("#desktop-sort-container")],Q.prototype,"desktopSortContainer",void 0);s([X("#sort-selector-container")],Q.prototype,"sortSelectorContainer",void 0);s([X("#views-dropdown")],Q.prototype,"viewsDropdown",void 0);s([X("#date-dropdown")],Q.prototype,"dateDropdown",void 0);Q=s([P("sort-filter-bar")],Q);/**
  * @license
