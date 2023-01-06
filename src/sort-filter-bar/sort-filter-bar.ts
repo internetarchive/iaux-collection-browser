@@ -749,8 +749,8 @@ export class SortFilterBar
       padding: 0;
       cursor: pointer;
       outline: inherit;
-      width: 12px;
-      height: 12px;
+      width: 13px;
+      height: 10px;
       opacity: 0.5;
     }
 
@@ -761,6 +761,10 @@ export class SortFilterBar
     .sort-button:disabled {
       opacity: 0.25;
       cursor: default;
+    }
+
+    .sort-button > svg {
+      display: block;
     }
 
     #date-sort-selector,
