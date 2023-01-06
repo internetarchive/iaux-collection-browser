@@ -827,7 +827,7 @@ export class SortFilterBar
       display: flex;
       flex-direction: column;
       gap: 3px;
-      margin-right: 1rem;
+      margin-right: 5px;
     }
 
     #sort-selector-container {
@@ -881,6 +881,7 @@ export class SortFilterBar
     }
 
     #desktop-sort-selector li a {
+      padding: 0 5px;
       text-decoration: none;
       font-size: 1.4rem;
       color: #333;
@@ -893,8 +894,8 @@ export class SortFilterBar
 
     #desktop-sort-selector li::after {
       content: '•';
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding-left: 5px;
+      padding-right: 5px;
     }
 
     #desktop-sort-selector li:last-child::after {
@@ -928,6 +929,8 @@ export class SortFilterBar
       --dropdownTextColor: white;
       --dropdownFontSize: 1.3rem;
       --dropdownListZIndex: 2;
+
+      padding: 0 5px;
     }
     ia-dropdown.selected .dropdown-label {
       font-weight: bold;
