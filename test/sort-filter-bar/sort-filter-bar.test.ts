@@ -1,6 +1,7 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
+import type { IaDropdown } from '@internetarchive/ia-dropdown';
 import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
 import type { SortField } from '../../src/models';
 
@@ -44,81 +45,97 @@ describe('Sort selector default buttons', async () => {
     <sort-filter-bar> </sort-filter-bar>
   `);
   const sortSelectorContainer = el.shadowRoot?.querySelector(
+    '#sort-selector-container'
+  );
+  const desktopSortSelector = sortSelectorContainer?.querySelector(
     '#desktop-sort-selector'
   );
 
+  it('should render basic component', async () => {
+    expect(sortSelectorContainer).to.exist;
+    expect(desktopSortSelector).to.exist;
+  });
+
   it('should render sort-by label', async () => {
-    expect(sortSelectorContainer?.children.item(0)?.textContent).to.equal(
-      'Sort By'
+    const sortByLabel = sortSelectorContainer?.querySelector('#sort-by-text');
+    expect(sortByLabel).to.exist;
+    expect(sortByLabel?.textContent?.trim()).to.equal('Sort by:');
+  });
+
+  it('should render sort direction buttons', async () => {
+    const sortDirections = sortSelectorContainer?.querySelector(
+      '#sort-direction-container'
     );
+    expect(sortDirections).to.exist;
+    expect(sortDirections?.querySelectorAll('.sort-button').length).to.equal(2);
   });
 
   it('should render default relevance-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(1)
-      ?.querySelector('a');
+    const defaultSortSelector = desktopSortSelector?.querySelector('a');
     expect(defaultSortSelector?.textContent).to.contain('Relevance');
     expect(defaultSortSelector?.getAttribute('class')).to.equal('selected');
   });
 
   it('should render default view-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(2)
-      ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Weekly Views');
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('ia-dropdown');
+    expect(defaultSortSelector?.textContent).to.contain('Weekly views');
   });
 
   it('should render active view-sort selectors', async () => {
     el.selectedSort = 'alltimeview' as SortField;
     await el.updateComplete;
 
-    const defaultSortSelector =
-      sortSelectorContainer?.querySelector('a.selected');
-    expect(defaultSortSelector?.textContent).to.contain('All-time Views');
+    const defaultSortSelector = desktopSortSelector?.querySelector(
+      'ia-dropdown.selected'
+    );
+    expect(defaultSortSelector?.textContent).to.contain('All-time views');
   });
 
   it('should render default title-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(3)
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(2)
       ?.querySelector('a');
     expect(defaultSortSelector?.textContent).to.contain('Title');
   });
 
   it('should render default date-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(4)
-      ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Date Published');
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown');
+    expect(defaultSortSelector?.textContent).to.contain('Date published');
   });
 
   it('should render active date-sort selectors', async () => {
     el.selectedSort = 'datereviewed' as SortField;
     await el.updateComplete;
 
-    const defaultSortSelector =
-      sortSelectorContainer?.querySelector('a.selected');
-    expect(defaultSortSelector?.textContent).to.contain('Date Reviewed');
+    const defaultSortSelector = desktopSortSelector?.querySelector(
+      'ia-dropdown.selected'
+    );
+    expect(defaultSortSelector?.textContent).to.contain('Date reviewed');
   });
 
   it('should render default creator-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(5)
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(4)
       ?.querySelector('a');
     expect(defaultSortSelector?.textContent).to.contain('Creator');
   });
 
   it('click event on view-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(2)
-      ?.querySelector('a');
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('ia-dropdown') as IaDropdown;
 
     await defaultSortSelector?.click();
     expect(el.selectedSort).to.equal('weeklyview');
   });
 
   it('click event on title selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(3)
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(2)
       ?.querySelector('a');
 
     await defaultSortSelector?.click();
@@ -126,17 +143,17 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('click event on date-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(4)
-      ?.querySelector('a');
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown') as IaDropdown;
 
     await defaultSortSelector?.click();
     expect(el.selectedSort).to.equal('date');
   });
 
   it('click event on creator selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(5)
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(4)
       ?.querySelector('a');
 
     await defaultSortSelector?.click();
@@ -246,15 +263,15 @@ describe('Sort/filter bar mobile view', () => {
       <sort-filter-bar></sort-filter-bar>
     `);
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
+    const mobileSortContainer = el.shadowRoot?.querySelector(
+      '#mobile-sort-container'
     );
-    const desktopSortSelector = el.shadowRoot?.querySelector(
-      '#desktop-sort-selector'
+    const desktopSortContainer = el.shadowRoot?.querySelector(
+      '#desktop-sort-container'
     );
 
-    expect(mobileSortSelector?.classList?.contains('visible')).to.be.true;
-    expect(desktopSortSelector?.classList?.contains('hidden')).to.be.true;
+    expect(mobileSortContainer?.classList?.contains('visible')).to.be.true;
+    expect(desktopSortContainer?.classList?.contains('hidden')).to.be.true;
   });
 
   it('changes selected sort in mobile view', async () => {

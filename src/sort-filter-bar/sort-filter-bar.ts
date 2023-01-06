@@ -854,6 +854,7 @@ export class SortFilterBar
       position: absolute;
       top: -9999px;
       left: -9999px;
+      visibility: hidden;
     }
 
     #mobile-sort-container.hidden {
