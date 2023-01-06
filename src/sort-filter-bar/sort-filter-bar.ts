@@ -935,6 +935,8 @@ export class SortFilterBar
       --dropdownFontSize: 1.3rem;
       --dropdownListZIndex: 2;
       --dropdownCaretColor: #2c2c2c;
+      --caretHeight: 9px;
+      --caretWidth: 14px;
 
       padding-left: 5px;
     }
