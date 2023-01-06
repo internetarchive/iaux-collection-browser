@@ -62,14 +62,14 @@ export class SortFilterBar
 
   @state() viewSortSelectorVisible = false;
 
-  @state() desktopSelectorBarWidth = 0;
+  @state() desktopSortContainerWidth = 0;
 
   @state() selectorBarContainerWidth = 0;
 
   @state() hoveringOverDateSortOptions = false;
 
-  @query('#desktop-sort-selector')
-  private desktopSortSelector!: HTMLUListElement;
+  @query('#desktop-sort-container')
+  private desktopSortContainer!: HTMLUListElement;
 
   @query('#sort-selector-container')
   private sortSelectorContainer!: HTMLDivElement;
@@ -172,7 +172,7 @@ export class SortFilterBar
     });
 
     resizeObserver.removeObserver({
-      target: this.desktopSortSelector,
+      target: this.desktopSortContainer,
       handler: this,
     });
   }
@@ -185,13 +185,13 @@ export class SortFilterBar
     });
 
     this.resizeObserver.addObserver({
-      target: this.desktopSortSelector,
+      target: this.desktopSortContainer,
       handler: this,
     });
   }
 
   private get mobileSelectorVisible() {
-    return this.selectorBarContainerWidth - 10 < this.desktopSelectorBarWidth;
+    return this.selectorBarContainerWidth - 10 < this.desktopSortContainerWidth;
   }
 
   private get alphaBarTemplate(): TemplateResult | typeof nothing {
@@ -210,8 +210,8 @@ export class SortFilterBar
   }
 
   handleResize(entry: ResizeObserverEntry): void {
-    if (entry.target === this.desktopSortSelector) {
-      this.desktopSelectorBarWidth = entry.contentRect.width;
+    if (entry.target === this.desktopSortContainer) {
+      this.desktopSortContainerWidth = entry.contentRect.width;
     } else if (entry.target === this.sortSelectorContainer) {
       this.selectorBarContainerWidth = entry.contentRect.width;
     }
@@ -246,111 +246,113 @@ export class SortFilterBar
 
   private get desktopSortSelectorTemplate() {
     return html`
-      <span id="sort-by-text">Sort by: </span>
-      <div id="sort-direction-container">
-        ${this.sortDirectionSelectorTemplate}
-      </div>
-      <ul
-        id="desktop-sort-selector"
+      <div
+        id="desktop-sort-container"
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
-        <li>
-          ${this.showRelevance
-            ? this.getSortDisplayOption(SortField.relevance)
-            : nothing}
-        </li>
-        <li>
-          ${this.getSortDropdown({
-            optionSelectedHandler: () => {
-              this.viewsDropdown.open = false;
-              this.restoreDateDropdownDefaults();
-              this.dateSortSelectorVisible = false;
-              this.alphaSelectorVisible = null;
-              this.selectedTitleFilter = null;
-              this.selectedCreatorFilter = null;
-              this.emitTitleLetterChangedEvent();
-              this.emitCreatorLetterChangedEvent();
-            },
-            clickHandler: () => {
-              if (!this.viewOptionSelected)
-                this.setSelectedSort(SortField.weeklyview);
-              this.dateDropdown.open = false;
-              this.viewSortSelectorVisible = this.viewsDropdown.open;
-              this.viewsDropdown.classList.toggle(
-                'open',
-                this.viewsDropdown.open
-              );
-            },
-            displayName: html`${this.viewSortField}`,
-            id: 'views-dropdown',
-            isSelected: () => this.viewOptionSelected,
-            dropdownOptions: [
-              this.getDropdownOption(SortField.weeklyview),
-              this.getDropdownOption(SortField.alltimeview),
-            ],
-            selectedOption: SortField.weeklyview,
-          })}
-        </li>
-        <li>
-          ${this.getSortDisplayOption(SortField.title, {
-            clickEvent: () => {
-              this.alphaSelectorVisible = 'title';
-              this.selectedCreatorFilter = null;
-              this.dateSortSelectorVisible = false;
-              this.viewSortSelectorVisible = false;
-              this.setSelectedSort(SortField.title);
-              this.restoreDropdownDefaults();
-              this.emitCreatorLetterChangedEvent();
-            },
-          })}
-        </li>
-        <li>
-          ${this.getSortDropdown({
-            optionSelectedHandler: () => {
-              this.dateDropdown.open = false;
-              this.restoreViewsDropdownDefaults();
-              this.viewSortSelectorVisible = false;
-              this.alphaSelectorVisible = null;
-              this.selectedTitleFilter = null;
-              this.selectedCreatorFilter = null;
-              this.emitTitleLetterChangedEvent();
-              this.emitCreatorLetterChangedEvent();
-            },
-            clickHandler: () => {
-              if (!this.dateOptionSelected)
-                this.setSelectedSort(SortField.date);
-              this.viewsDropdown.open = false;
-              this.dateSortSelectorVisible = this.dateDropdown.open;
-              this.dateDropdown.classList.toggle(
-                'open',
-                this.dateDropdown.open
-              );
-            },
-            displayName: html`${this.dateSortField}`,
-            id: 'date-dropdown',
-            isSelected: () => this.dateOptionSelected,
-            dropdownOptions: [
-              this.getDropdownOption(SortField.date),
-              this.getDropdownOption(SortField.datearchived),
-              this.getDropdownOption(SortField.datereviewed),
-              this.getDropdownOption(SortField.dateadded),
-            ],
-            selectedOption: SortField.date,
-          })}
-        </li>
-        <li>
-          ${this.getSortDisplayOption(SortField.creator, {
-            clickEvent: () => {
-              this.alphaSelectorVisible = 'creator';
-              this.selectedTitleFilter = null;
-              this.dateSortSelectorVisible = false;
-              this.setSelectedSort(SortField.creator);
-              this.restoreDropdownDefaults();
-              this.emitTitleLetterChangedEvent();
-            },
-          })}
-        </li>
-      </ul>
+        <span id="sort-by-text">Sort by: </span>
+        <div id="sort-direction-container">
+          ${this.sortDirectionSelectorTemplate}
+        </div>
+        <ul id="desktop-sort-selector">
+          <li>
+            ${this.showRelevance
+              ? this.getSortDisplayOption(SortField.relevance)
+              : nothing}
+          </li>
+          <li>
+            ${this.getSortDropdown({
+              optionSelectedHandler: () => {
+                this.viewsDropdown.open = false;
+                this.restoreDateDropdownDefaults();
+                this.dateSortSelectorVisible = false;
+                this.alphaSelectorVisible = null;
+                this.selectedTitleFilter = null;
+                this.selectedCreatorFilter = null;
+                this.emitTitleLetterChangedEvent();
+                this.emitCreatorLetterChangedEvent();
+              },
+              clickHandler: () => {
+                if (!this.viewOptionSelected)
+                  this.setSelectedSort(SortField.weeklyview);
+                this.dateDropdown.open = false;
+                this.viewSortSelectorVisible = this.viewsDropdown.open;
+                this.viewsDropdown.classList.toggle(
+                  'open',
+                  this.viewsDropdown.open
+                );
+              },
+              displayName: html`${this.viewSortField}`,
+              id: 'views-dropdown',
+              isSelected: () => this.viewOptionSelected,
+              dropdownOptions: [
+                this.getDropdownOption(SortField.weeklyview),
+                this.getDropdownOption(SortField.alltimeview),
+              ],
+              selectedOption: SortField.weeklyview,
+            })}
+          </li>
+          <li>
+            ${this.getSortDisplayOption(SortField.title, {
+              clickEvent: () => {
+                this.alphaSelectorVisible = 'title';
+                this.selectedCreatorFilter = null;
+                this.dateSortSelectorVisible = false;
+                this.viewSortSelectorVisible = false;
+                this.setSelectedSort(SortField.title);
+                this.restoreDropdownDefaults();
+                this.emitCreatorLetterChangedEvent();
+              },
+            })}
+          </li>
+          <li>
+            ${this.getSortDropdown({
+              optionSelectedHandler: () => {
+                this.dateDropdown.open = false;
+                this.restoreViewsDropdownDefaults();
+                this.viewSortSelectorVisible = false;
+                this.alphaSelectorVisible = null;
+                this.selectedTitleFilter = null;
+                this.selectedCreatorFilter = null;
+                this.emitTitleLetterChangedEvent();
+                this.emitCreatorLetterChangedEvent();
+              },
+              clickHandler: () => {
+                if (!this.dateOptionSelected)
+                  this.setSelectedSort(SortField.date);
+                this.viewsDropdown.open = false;
+                this.dateSortSelectorVisible = this.dateDropdown.open;
+                this.dateDropdown.classList.toggle(
+                  'open',
+                  this.dateDropdown.open
+                );
+              },
+              displayName: html`${this.dateSortField}`,
+              id: 'date-dropdown',
+              isSelected: () => this.dateOptionSelected,
+              dropdownOptions: [
+                this.getDropdownOption(SortField.date),
+                this.getDropdownOption(SortField.datearchived),
+                this.getDropdownOption(SortField.datereviewed),
+                this.getDropdownOption(SortField.dateadded),
+              ],
+              selectedOption: SortField.date,
+            })}
+          </li>
+          <li>
+            ${this.getSortDisplayOption(SortField.creator, {
+              clickEvent: () => {
+                this.alphaSelectorVisible = 'creator';
+                this.selectedTitleFilter = null;
+                this.dateSortSelectorVisible = false;
+                this.setSelectedSort(SortField.creator);
+                this.restoreDropdownDefaults();
+                this.emitTitleLetterChangedEvent();
+              },
+            })}
+          </li>
+        </ul>
+      </div>
     `;
   }
 
@@ -459,19 +461,24 @@ export class SortFilterBar
 
   private get mobileSortSelectorTemplate() {
     return html`
-      <select
-        id="mobile-sort-selector"
-        @change=${this.mobileSortChanged}
+      <div
+        id="mobile-sort-container"
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
-        ${Object.keys(SortField).map(
-          field => html`
-            <option value="${field}" ?selected=${this.selectedSort === field}>
-              ${SortFieldDisplayName[field as SortField]}
-            </option>
-          `
-        )}
-      </select>
+        <span id="sort-by-text">Sort by: </span>
+        <div id="sort-direction-container">
+          ${this.sortDirectionSelectorTemplate}
+        </div>
+        <select id="mobile-sort-selector" @change=${this.mobileSortChanged}>
+          ${Object.keys(SortField).map(
+            field => html`
+              <option value="${field}" ?selected=${this.selectedSort === field}>
+                ${SortFieldDisplayName[field as SortField]}
+              </option>
+            `
+          )}
+        </select>
+      </div>
     `;
   }
 
@@ -728,6 +735,7 @@ export class SortFilterBar
       margin-right: 10px;
       font-size: 1.3rem;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     ul {
@@ -829,19 +837,26 @@ export class SortFilterBar
       align-items: center;
     }
 
+    #desktop-sort-container,
+    #mobile-sort-container {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
     /*
       we move the desktop sort selector offscreen instead of display: none
       because we need to observe the width of it vs its container to determine
-      if it's wide enough to display the desktop version and if you displY: none,
+      if it's wide enough to display the desktop version and if you display: none,
       the width becomes 0
     */
-    #desktop-sort-selector.hidden {
+    #desktop-sort-container.hidden {
       position: absolute;
       top: -9999px;
       left: -9999px;
     }
 
-    #mobile-sort-selector.hidden {
+    #mobile-sort-container.hidden {
       display: none;
     }
 
@@ -925,6 +940,7 @@ export class SortFilterBar
       font-size: 1.4rem;
       line-height: 2;
       color: #2c2c2c;
+      white-space: nowrap;
     }
     .dropdown-label::after {
       content: '▼';
