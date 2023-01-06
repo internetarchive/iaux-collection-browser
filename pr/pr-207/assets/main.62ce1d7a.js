@@ -2520,6 +2520,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       --dropdownFontSize: 1.3rem;
       --dropdownListZIndex: 2;
       --dropdownCaretColor: #2c2c2c;
+      --caretHeight: 9px;
+      --caretWidth: 14px;
 
       padding-left: 5px;
     }
