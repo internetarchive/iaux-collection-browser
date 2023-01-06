@@ -99,8 +99,6 @@ export class SortFilterBar
           ? this.dropdownBackdrop
           : nothing}
         ${this.alphaBarTemplate}
-
-        <div id="bottom-shadow"></div>
       </div>
     `;
   }
@@ -717,7 +715,7 @@ export class SortFilterBar
     #sort-bar {
       display: flex;
       justify-content: space-between;
-      border: 1px solid rgb(232, 232, 232);
+      border-bottom: 1px solid #2c2c2c;
       align-items: center;
       padding: 0.5rem 1.5rem;
     }
@@ -730,13 +728,6 @@ export class SortFilterBar
       margin-right: 10px;
       font-size: 1.3rem;
       font-weight: bold;
-    }
-
-    #bottom-shadow {
-      height: 1px;
-      width: 100%;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-      background-color: #bbb;
     }
 
     ul {
@@ -873,7 +864,7 @@ export class SortFilterBar
       text-decoration: none;
       font-size: 1.4rem;
       color: #333;
-      line-height: 2.5;
+      line-height: 2;
     }
 
     #desktop-sort-selector li a.selected {
@@ -926,13 +917,13 @@ export class SortFilterBar
     }
 
     .dropdown-label {
-      font-size: 1.4rem;
-      color: #2c2c2c;
       margin: 0 -10px 0 0;
+      font-size: 1.4rem;
+      line-height: 2;
+      color: #2c2c2c;
     }
     .dropdown-label::after {
       content: '▼';
-      margin-left: 5px;
       font-size: 1rem;
       line-height: 1;
       vertical-align: middle;
