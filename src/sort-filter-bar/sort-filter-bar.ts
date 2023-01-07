@@ -467,7 +467,7 @@ export class SortFilterBar
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
-        <span id="sort-by-text">Sort by: </span>
+        <span id="sort-by-text">Sort by</span>
         <div id="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
