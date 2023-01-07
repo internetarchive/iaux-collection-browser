@@ -2169,30 +2169,30 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         ${this.alphaBarTemplate}
       </div>
     `}updated(e){if(e.has("displayMode")&&this.displayModeChanged(),e.has("selectedSort")&&this.sortDirection===null&&(this.sortDirection="desc"),e.has("selectedTitleFilter")&&this.selectedTitleFilter&&(this.alphaSelectorVisible="title"),e.has("selectedCreatorFilter")&&this.selectedCreatorFilter&&(this.alphaSelectorVisible="creator"),(e.has("dateSortSelectorVisible")||e.has("viewSortSelectorVisible"))&&this.setupEscapeListeners(),e.has("resizeObserver")){const t=e.get("resizeObserver");t&&this.disconnectResizeObserver(t),this.setupResizeObserver()}}setupEscapeListeners(){this.dateSortSelectorVisible||this.viewSortSelectorVisible?document.addEventListener("keydown",this.boundSortBarSelectorEscapeListener):document.removeEventListener("keydown",this.boundSortBarSelectorEscapeListener)}disconnectedCallback(){this.resizeObserver&&this.disconnectResizeObserver(this.resizeObserver)}disconnectResizeObserver(e){e.removeObserver({target:this.sortSelectorContainer,handler:this}),e.removeObserver({target:this.desktopSortContainer,handler:this})}setupResizeObserver(){!this.resizeObserver||(this.resizeObserver.addObserver({target:this.sortSelectorContainer,handler:this}),this.resizeObserver.addObserver({target:this.desktopSortContainer,handler:this}))}get mobileSelectorVisible(){return this.selectorBarContainerWidth-10<this.desktopSortContainerWidth}get alphaBarTemplate(){if(!["title","creator"].includes(this.selectedSort))return w;if(this.alphaSelectorVisible===null){if(this.selectedSort==="creator")return this.creatorSelectorBar;if(this.selectedSort==="title")return this.titleSelectorBar}else return this.alphaSelectorVisible==="creator"?this.creatorSelectorBar:this.titleSelectorBar;return w}handleResize(e){e.target===this.desktopSortContainer?this.desktopSortContainerWidth=e.contentRect.width:e.target===this.sortSelectorContainer&&(this.selectorBarContainerWidth=e.contentRect.width)}get sortDirectionSelectorTemplate(){return h`
-      <div id="sort-direction-selector">
-        <button
+      <button
+        id="sort-direction-selector"
+        ?disabled=${this.selectedSort==="relevance"}
+        @click=${this.toggleSortDirection}
+      >
+        <div
           id="sort-ascending-btn"
           class="sort-button ${this.sortDirection==="asc"?"selected":""}"
-          ?disabled=${this.selectedSort==="relevance"}
-          @click=${()=>{this.setSortDirections("asc")}}
         >
           ${go}
-        </button>
-        <button
+        </div>
+        <div
           id="sort-descending-btn"
           class="sort-button ${this.sortDirection==="desc"?"selected":""}"
-          ?disabled=${this.selectedSort==="relevance"}
-          @click=${()=>{this.setSortDirections("desc")}}
         >
           ${go}
-        </button>
-      </div>
+        </div>
+      </button>
     `}get desktopSortSelectorTemplate(){return h`
       <div
         id="desktop-sort-container"
         class=${this.mobileSelectorVisible?"hidden":"visible"}
       >
-        <span id="sort-by-text">Sort by: </span>
+        <span id="sort-by-text">Sort by</span>
         <div id="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
@@ -2296,7 +2296,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         @keyup=${this.closeDropdowns}
         @click=${this.closeDropdowns}
       ></div>
-    `}closeDropdowns(){this.viewsDropdown.open=!1,this.dateDropdown.open=!1,this.viewSortSelectorVisible=!1,this.dateSortSelectorVisible=!1}selectDropdownSortField(e){this.dateSortSelectorVisible=!1,this.viewSortSelectorVisible=!1,this.setSelectedSort(e)}setSortDirections(e){this.sortDirection=e,this.emitSortChangedEvent()}setSelectedSort(e){this.selectedSort=e,this.emitSortChangedEvent()}get dateOptionSelected(){return[L.datearchived,L.date,L.datereviewed,L.dateadded].includes(this.selectedSort)}get viewOptionSelected(){return[L.alltimeview,L.weeklyview].includes(this.selectedSort)}get dateSortField(){var e;const t=Xe[L.date];return this.dateOptionSelected&&(e=Xe[this.selectedSort])!==null&&e!==void 0?e:t}get viewSortField(){var e;const t=Xe[L.weeklyview];return this.viewOptionSelected&&(e=Xe[this.selectedSort])!==null&&e!==void 0?e:t}get titleSelectorBar(){var e;return h` <alpha-bar
+    `}closeDropdowns(){this.viewsDropdown.open=!1,this.dateDropdown.open=!1,this.viewSortSelectorVisible=!1,this.dateSortSelectorVisible=!1}selectDropdownSortField(e){this.dateSortSelectorVisible=!1,this.viewSortSelectorVisible=!1,this.setSelectedSort(e)}setSortDirection(e){this.sortDirection=e,this.emitSortChangedEvent()}toggleSortDirection(){this.setSortDirection(this.sortDirection==="desc"?"asc":"desc")}setSelectedSort(e){this.selectedSort=e,this.emitSortChangedEvent()}get dateOptionSelected(){return[L.datearchived,L.date,L.datereviewed,L.dateadded].includes(this.selectedSort)}get viewOptionSelected(){return[L.alltimeview,L.weeklyview].includes(this.selectedSort)}get dateSortField(){var e;const t=Xe[L.date];return this.dateOptionSelected&&(e=Xe[this.selectedSort])!==null&&e!==void 0?e:t}get viewSortField(){var e;const t=Xe[L.weeklyview];return this.viewOptionSelected&&(e=Xe[this.selectedSort])!==null&&e!==void 0?e:t}get titleSelectorBar(){var e;return h` <alpha-bar
       .selectedLetter=${this.selectedTitleFilter}
       .letterCounts=${(e=this.prefixFilterCountMap)===null||e===void 0?void 0:e.title}
       @letterChanged=${this.titleLetterChanged}
@@ -2322,7 +2322,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
     #sort-by-text {
       margin-right: 10px;
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: bold;
       white-space: nowrap;
     }
@@ -2339,15 +2339,31 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding: 0;
     }
 
+    #sort-direction-selector {
+      display: flex;
+      flex-direction: column;
+      margin-right: 5px;
+      padding: 0;
+      border: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    #sort-direction-selector:disabled {
+      cursor: default;
+    }
+
     .sort-button {
+      display: flex;
+      align-items: center;
       background: none;
       color: inherit;
       border: none;
       padding: 0;
-      cursor: pointer;
       outline: inherit;
-      width: 13px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       opacity: 0.5;
     }
 
@@ -2355,13 +2371,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       opacity: 1;
     }
 
-    .sort-button:disabled {
+    #sort-direction-selector:disabled .sort-button {
       opacity: 0.25;
-      cursor: default;
-    }
-
-    .sort-button > svg {
-      display: block;
     }
 
     #date-sort-selector,
@@ -2410,13 +2421,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
     #sort-descending-btn {
       transform: rotate(180deg);
-    }
-
-    #sort-direction-selector {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-right: 5px;
     }
 
     #sort-selector-container {
