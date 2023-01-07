@@ -16,6 +16,7 @@ import type {
   IaDropdown,
   optionInterface,
 } from '@internetarchive/ia-dropdown/dist/src/ia-dropdown';
+import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
   PrefixFilterCounts,
@@ -219,28 +220,24 @@ export class SortFilterBar
 
   private get sortDirectionSelectorTemplate() {
     return html`
-      <div id="sort-direction-selector">
-        <button
+      <button
+        id="sort-direction-selector"
+        ?disabled=${this.selectedSort === 'relevance'}
+        @click=${this.toggleSortDirection}
+      >
+        <div
           id="sort-ascending-btn"
           class="sort-button ${this.sortDirection === 'asc' ? 'selected' : ''}"
-          ?disabled=${this.selectedSort === 'relevance'}
-          @click=${() => {
-            this.setSortDirections('asc');
-          }}
         >
           ${sortIcon}
-        </button>
-        <button
+        </div>
+        <div
           id="sort-descending-btn"
           class="sort-button ${this.sortDirection === 'desc' ? 'selected' : ''}"
-          ?disabled=${this.selectedSort === 'relevance'}
-          @click=${() => {
-            this.setSortDirections('desc');
-          }}
         >
           ${sortIcon}
-        </button>
-      </div>
+        </div>
+      </button>
     `;
   }
 
@@ -250,7 +247,7 @@ export class SortFilterBar
         id="desktop-sort-container"
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
-        <span id="sort-by-text">Sort by: </span>
+        <span id="sort-by-text">Sort by</span>
         <div id="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
@@ -569,9 +566,13 @@ export class SortFilterBar
     this.setSelectedSort(sortField);
   }
 
-  private setSortDirections(sortDirection: 'asc' | 'desc') {
+  private setSortDirection(sortDirection: SortDirection) {
     this.sortDirection = sortDirection;
     this.emitSortChangedEvent();
+  }
+
+  private toggleSortDirection() {
+    this.setSortDirection(this.sortDirection === 'desc' ? 'asc' : 'desc');
   }
 
   private setSelectedSort(sort: SortField) {
@@ -754,15 +755,31 @@ export class SortFilterBar
       padding: 0;
     }
 
+    #sort-direction-selector {
+      display: flex;
+      flex-direction: column;
+      margin-right: 5px;
+      padding: 0;
+      border: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    #sort-direction-selector:disabled {
+      cursor: default;
+    }
+
     .sort-button {
+      display: flex;
+      align-items: center;
       background: none;
       color: inherit;
       border: none;
       padding: 0;
-      cursor: pointer;
       outline: inherit;
-      width: 13px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       opacity: 0.5;
     }
 
@@ -770,13 +787,8 @@ export class SortFilterBar
       opacity: 1;
     }
 
-    .sort-button:disabled {
+    #sort-direction-selector:disabled .sort-button {
       opacity: 0.25;
-      cursor: default;
-    }
-
-    .sort-button > svg {
-      display: block;
     }
 
     #date-sort-selector,
@@ -825,13 +837,6 @@ export class SortFilterBar
 
     #sort-descending-btn {
       transform: rotate(180deg);
-    }
-
-    #sort-direction-selector {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-right: 5px;
     }
 
     #sort-selector-container {
