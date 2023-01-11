@@ -1325,11 +1325,7 @@ export class CollectionBrowser
         snippets: result.highlight?.values ?? [],
         source: result.source?.value,
         subjects: result.subject?.values ?? [],
-        title: this.etreeTitle(
-          result.title?.value,
-          result.mediatype?.value,
-          result.collection?.values
-        ),
+        title: result.title?.value ?? '',
         volume: result.volume?.value,
         viewCount: result.downloads?.value ?? 0,
         weeklyViewCount: result.week?.value,
@@ -1411,28 +1407,6 @@ export class CollectionBrowser
   private refreshLetterCounts(): void {
     this.prefixFilterCountMap = {};
     this.updatePrefixFiltersForCurrentSort();
-  }
-
-  /*
-   * Convert etree titles
-   * "[Creator] Live at [Place] on [Date]" => "[Date]: [Place]"
-   *
-   * Todo: Check collection(s) for etree, need to get as array.
-   * Current search-service only returns first collection as string.
-   */
-  private etreeTitle(
-    title: string | undefined,
-    mediatype: string | undefined,
-    collections: string[] | undefined
-  ): string {
-    if (mediatype === 'etree' || collections?.includes('etree')) {
-      const regex = /^(.*) Live at (.*) on (\d\d\d\d-\d\d-\d\d)$/;
-      const newTitle = title?.replace(regex, '$3: $2');
-      if (newTitle) {
-        return `${newTitle}`;
-      }
-    }
-    return title ?? '';
   }
 
   /**
