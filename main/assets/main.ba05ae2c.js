@@ -1895,6 +1895,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     alpha-bar-tooltip.fade-in {
       opacity: 1;
     }
+
+    /* Make alphabet bar a 2-row container in small screen widths */
+    @media screen and (max-width: 768px) {
+      ul {
+        display: grid;
+        grid-template-columns: repeat(13, 1fr);
+      }
+    }
   `;s([c({type:String})],Oe.prototype,"selectedLetter",void 0);s([c({type:Object})],Oe.prototype,"letterCounts",void 0);s([C()],Oe.prototype,"tooltipShown",void 0);s([C()],Oe.prototype,"hoveredLetter",void 0);s([te("alpha-bar-tooltip")],Oe.prototype,"tooltip",void 0);Oe=s([F("alpha-bar")],Oe);const vo=P`
 <svg viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg"><path d="m50 0 50 55h-100z"/></svg>
 `,sl=P`
