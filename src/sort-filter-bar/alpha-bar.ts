@@ -233,5 +233,13 @@ export class AlphaBar extends LitElement {
     alpha-bar-tooltip.fade-in {
       opacity: 1;
     }
+
+    /* Make alphabet bar a 2-row container in small screen widths */
+    @media screen and (max-width: 768px) {
+      ul {
+        display: grid;
+        grid-template-columns: repeat(13, 1fr);
+      }
+    }
   `;
 }
