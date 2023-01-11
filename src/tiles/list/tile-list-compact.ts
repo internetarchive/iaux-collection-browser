@@ -41,7 +41,9 @@ export class TileListCompact extends LitElement {
           .loggedIn=${this.loggedIn}
         >
         </image-block>
-        <div id="title">${DOMPurify.sanitize(this.model?.title ?? '')}</div>
+        <a href=${this.href} id="title"
+          >${DOMPurify.sanitize(this.model?.title ?? '')}</a
+        >
         <div id="creator">
           ${this.model?.mediatype === 'account'
             ? accountLabel(this.model?.dateAdded)
@@ -58,6 +60,14 @@ export class TileListCompact extends LitElement {
         <div id="views">${formatCount(this.views ?? 0, this.formatSize)}</div>
       </div>
     `;
+  }
+
+  private get href(): string {
+    // Use the server-specified href if available.
+    // Otherwise, construct a details page URL from the item identifier.
+    return this.model?.href
+      ? `${this.baseNavigationUrl}${this.model?.href}`
+      : `${this.baseNavigationUrl}/details/${this.model?.identifier}`;
   }
 
   /*
@@ -145,8 +155,11 @@ export class TileListCompact extends LitElement {
       }
 
       #title {
-        color: #4b64ff;
         text-decoration: none;
+      }
+
+      #title:link {
+        color: var(--ia-theme-link-color, #4b64ff);
       }
 
       #title,

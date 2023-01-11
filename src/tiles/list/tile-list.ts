@@ -453,6 +453,9 @@ export class TileList extends LitElement {
 
       div a {
         text-decoration: none;
+      }
+
+      div a:link {
         color: var(--ia-theme-link-color, #4b64ff);
       }
 
