@@ -1211,8 +1211,11 @@ export class CollectionBrowser
         detailMsg ? `; ${detailMsg}` : ''
       }`;
 
-      if (!this.queryErrorMessage)
+      if (!this.queryErrorMessage) {
         this.queryErrorMessage = 'Missing or malformed response from backend';
+        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
+      }
 
       return;
     }
