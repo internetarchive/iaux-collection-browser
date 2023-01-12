@@ -57,7 +57,7 @@ export class EmptyPlaceholder extends LitElement {
     `;
   }
 
-  private get queryErrorTemplate() {
+  private get queryErrorTemplate(): TemplateResult {
     return html`
       <h2 class="title">
         The search engine encountered an error, which might be related to your
