@@ -1,4 +1,11 @@
-import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  CSSResultGroup,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
 
@@ -22,7 +29,7 @@ export class EmptyPlaceholder extends LitElement {
     return this.placeholderType ? html`${this.placeholderTemplate}` : nothing;
   }
 
-  private get placeholderTemplate() {
+  private get placeholderTemplate(): TemplateResult {
     return html`
       <div
         class="placeholder ${this.placeholderType} ${this.isMobileView
@@ -38,7 +45,7 @@ export class EmptyPlaceholder extends LitElement {
     `;
   }
 
-  private get emptyQueryTemplate() {
+  private get emptyQueryTemplate(): TemplateResult {
     return html`
       <h2 class="title">
         To begin searching, enter a search term in the box above and hit "Go".
@@ -47,7 +54,7 @@ export class EmptyPlaceholder extends LitElement {
     `;
   }
 
-  private get nullResultTemplate() {
+  private get nullResultTemplate(): TemplateResult {
     return html`
       <h2 class="title">
         Your search did not match any items in the Archive. Try different
