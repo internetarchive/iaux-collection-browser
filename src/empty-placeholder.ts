@@ -5,12 +5,18 @@ import { choose } from 'lit/directives/choose.js';
 import emptyQueryIcon from './assets/img/icons/empty-query';
 import nullResultIcon from './assets/img/icons/null-result';
 
-export type PlaceholderType = 'empty-query' | 'null-result' | null;
+export type PlaceholderType =
+  | 'empty-query'
+  | 'null-result'
+  | 'query-error'
+  | null;
 @customElement('empty-placeholder')
 export class EmptyPlaceholder extends LitElement {
   @property({ type: String }) placeholderType: PlaceholderType = null;
 
   @property({ type: Boolean }) isMobileView?: false;
+
+  @property({ type: String }) detailMessage?: string = '';
 
   render() {
     return this.placeholderType ? html`${this.placeholderTemplate}` : nothing;
@@ -26,6 +32,7 @@ export class EmptyPlaceholder extends LitElement {
         ${choose(this.placeholderType, [
           ['empty-query', () => this.emptyQueryTemplate],
           ['null-result', () => this.nullResultTemplate],
+          ['query-error', () => this.queryErrorTemplate],
         ])}
       </div>
     `;
@@ -50,11 +57,37 @@ export class EmptyPlaceholder extends LitElement {
     `;
   }
 
+  private get queryErrorTemplate() {
+    return html`
+      <h2 class="title">
+        The search engine encountered an error, which might be related to your
+        search query.
+        <a
+          href="https://help.archive.org/help/search-building-powerful-complex-queries/"
+        >
+          Tips for constructing search queries.
+        </a>
+      </h2>
+      <div>${nullResultIcon}</div>
+      <p class="error-details">Error details: ${this.detailMessage}</p>
+    `;
+  }
+
   static get styles(): CSSResultGroup {
     return css`
       :host {
         text-align: center;
         width: 100%;
+      }
+
+      a {
+        text-decoration: none;
+      }
+      a:link {
+        color: var(--ia-theme-link-color, #4b64ff);
+      }
+      a:hover {
+        text-decoration: underline;
       }
 
       .placeholder {
@@ -64,15 +97,21 @@ export class EmptyPlaceholder extends LitElement {
       .desktop svg {
         max-height: 40rem;
       }
-      .desktop .title {
+      .desktop .title,
+      .desktop .error-details {
         margin: 4rem 0;
       }
 
       .mobile svg {
         max-height: 20rem;
       }
-      .mobile .title {
+      .mobile .title,
+      .mobile .error-details {
         margin: 2rem 0.5;
+      }
+
+      .error-details {
+        font-size: 1.2rem;
       }
     `;
   }
