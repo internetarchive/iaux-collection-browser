@@ -247,8 +247,8 @@ export class SortFilterBar
         id="desktop-sort-container"
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
-        <span id="sort-by-text">Sort by</span>
-        <div id="sort-direction-container">
+        <span class="sort-by-text">Sort by</span>
+        <div class="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
         <ul id="desktop-sort-selector">
@@ -444,26 +444,32 @@ export class SortFilterBar
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
-        <span id="sort-by-text">Sort by</span>
-        <div id="sort-direction-container">
+        <span class="sort-by-text">Sort by</span>
+        <div class="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
-        <select id="mobile-sort-selector" @change=${this.mobileSortChanged}>
-          ${Object.keys(SortField).map(
-            field => html`
-              <option value="${field}" ?selected=${this.selectedSort === field}>
-                ${SortFieldDisplayName[field as SortField]}
-              </option>
-            `
+        <ia-dropdown
+          id="mobile-sort-selector"
+          class="selected"
+          displayCaret
+          closeOnSelect
+          includeSelectedOption
+          .options=${Object.keys(SortField).map(field =>
+            this.getDropdownOption(field as SortField)
           )}
-        </select>
+          .selectedOption=${this.selectedSort ?? SortField.relevance}
+          @optionSelected=${this.mobileSortChanged}
+        >
+          <span class="dropdown-label" slot="dropdown-label">
+            ${SortFieldDisplayName[this.selectedSort] ?? ''}
+          </span>
+        </ia-dropdown>
       </div>
     `;
   }
 
-  private mobileSortChanged(e: Event) {
-    const target = e.target as HTMLSelectElement;
-    const sortField = target.value as SortField;
+  private mobileSortChanged(e: CustomEvent<optionInterface>) {
+    const sortField = e.detail.id as SortField;
     this.setSelectedSort(sortField);
 
     this.alphaSelectorVisible = null;
@@ -709,11 +715,11 @@ export class SortFilterBar
       align-items: center;
     }
 
-    #sort-direction-container {
+    .sort-direction-container {
       flex: 0;
     }
 
-    #sort-by-text {
+    .sort-by-text {
       margin-right: 10px;
       font-size: 1.4rem;
       font-weight: bold;
@@ -918,7 +924,8 @@ export class SortFilterBar
       --dropdownListZIndex: 2;
       --dropdownCaretColor: #2c2c2c;
       --dropdownSelectedTextColor: white;
-      --dropdownSelectedBgColor: #2c2c2c;
+      --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
+      --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
       --caretHeight: 9px;
       --caretWidth: 14px;
     }
