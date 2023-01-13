@@ -57,14 +57,14 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('should render sort-by label', async () => {
-    const sortByLabel = sortSelectorContainer?.querySelector('#sort-by-text');
+    const sortByLabel = sortSelectorContainer?.querySelector('.sort-by-text');
     expect(sortByLabel).to.exist;
     expect(sortByLabel?.textContent?.trim()).to.equal('Sort by');
   });
 
   it('should render sort direction buttons', async () => {
     const sortDirections = sortSelectorContainer?.querySelector(
-      '#sort-direction-container'
+      '.sort-direction-container'
     );
     expect(sortDirections).to.exist;
     expect(sortDirections?.querySelectorAll('.sort-button').length).to.equal(2);
@@ -281,11 +281,13 @@ describe('Sort/filter bar mobile view', () => {
 
     const mobileSortSelector = el.shadowRoot?.querySelector(
       '#mobile-sort-selector'
-    ) as HTMLSelectElement;
+    ) as IaDropdown;
     expect(mobileSortSelector).to.exist;
 
-    mobileSortSelector.value = 'title';
-    mobileSortSelector.dispatchEvent(new Event('change'));
+    mobileSortSelector.selectedOption = 'title';
+    mobileSortSelector.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { id: 'title' } })
+    );
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('title');
@@ -302,11 +304,13 @@ describe('Sort/filter bar mobile view', () => {
 
     const mobileSortSelector = el.shadowRoot?.querySelector(
       '#mobile-sort-selector'
-    ) as HTMLSelectElement;
+    ) as IaDropdown;
     expect(mobileSortSelector).to.exist;
 
-    mobileSortSelector.value = 'relevance';
-    mobileSortSelector.dispatchEvent(new Event('change'));
+    mobileSortSelector.selectedOption = 'relevance';
+    mobileSortSelector.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { id: 'relevance' } })
+    );
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('relevance');
@@ -324,11 +328,13 @@ describe('Sort/filter bar mobile view', () => {
 
     const mobileSortSelector = el.shadowRoot?.querySelector(
       '#mobile-sort-selector'
-    ) as HTMLSelectElement;
+    ) as IaDropdown;
     expect(mobileSortSelector).to.exist;
 
-    mobileSortSelector.value = 'relevance';
-    mobileSortSelector.dispatchEvent(new Event('change'));
+    mobileSortSelector.selectedOption = 'relevance';
+    mobileSortSelector.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { id: 'relevance' } })
+    );
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('relevance');
