@@ -267,15 +267,17 @@ export class SortFilterBar
                 this.emitTitleLetterChangedEvent();
                 this.emitCreatorLetterChangedEvent();
               },
-              clickHandler: () => {
-                if (!this.viewsDropdown.open && !this.viewOptionSelected)
-                  this.setSelectedSort(SortField.weeklyview);
+              onDropdownClick: () => {
                 this.dateDropdown.open = false;
                 this.viewSortSelectorVisible = this.viewsDropdown.open;
                 this.viewsDropdown.classList.toggle(
                   'open',
                   this.viewsDropdown.open
                 );
+              },
+              onLabelInteraction: () => {
+                if (!this.viewsDropdown.open && !this.viewOptionSelected)
+                  this.setSelectedSort(SortField.weeklyview);
               },
               displayName: html`${this.viewSortField}`,
               id: 'views-dropdown',
@@ -309,15 +311,17 @@ export class SortFilterBar
                 this.emitTitleLetterChangedEvent();
                 this.emitCreatorLetterChangedEvent();
               },
-              clickHandler: () => {
-                if (!this.dateDropdown.open && !this.dateOptionSelected)
-                  this.setSelectedSort(SortField.date);
+              onDropdownClick: () => {
                 this.viewsDropdown.open = false;
                 this.dateSortSelectorVisible = this.dateDropdown.open;
                 this.dateDropdown.classList.toggle(
                   'open',
                   this.dateDropdown.open
                 );
+              },
+              onLabelInteraction: () => {
+                if (!this.dateDropdown.open && !this.dateOptionSelected)
+                  this.setSelectedSort(SortField.date);
               },
               displayName: html`${this.dateSortField}`,
               id: 'date-dropdown',
@@ -397,7 +401,8 @@ export class SortFilterBar
 
   private getSortDropdown(options?: {
     optionSelectedHandler?: (e: Event) => void;
-    clickHandler?: (e: PointerEvent) => void;
+    onDropdownClick?: (e: PointerEvent) => void;
+    onLabelInteraction?: () => void;
     isSelected?: () => boolean;
     displayName?: TemplateResult;
     id?: string;
@@ -415,9 +420,19 @@ export class SortFilterBar
         .options=${options?.dropdownOptions}
         .selectedOption=${options?.selectedOption}
         @optionSelected=${options?.optionSelectedHandler ?? nothing}
-        @click=${options?.clickHandler ?? nothing}
+        @click=${options?.onDropdownClick ?? nothing}
       >
-        <span class="dropdown-label" slot="dropdown-label">
+        <span
+          class="dropdown-label"
+          slot="dropdown-label"
+          @click=${options?.onLabelInteraction ?? nothing}
+          @keydown=${options?.onLabelInteraction
+            ? (e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ')
+                  options?.onLabelInteraction?.();
+              }
+            : nothing}
+        >
           ${options?.displayName ?? ''}
         </span>
       </ia-dropdown>
@@ -537,9 +552,19 @@ export class SortFilterBar
   }
 
   private closeDropdowns() {
+    this.closeViewsDropdown();
+    this.closeDateDropdown();
+  }
+
+  private closeViewsDropdown() {
     this.viewsDropdown.open = false;
-    this.dateDropdown.open = false;
+    this.viewsDropdown.classList.remove('open');
     this.viewSortSelectorVisible = false;
+  }
+
+  private closeDateDropdown() {
+    this.dateDropdown.open = false;
+    this.dateDropdown.classList.remove('open');
     this.dateSortSelectorVisible = false;
   }
 
