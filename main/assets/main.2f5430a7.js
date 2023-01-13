@@ -1267,6 +1267,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       div a {
         text-decoration: none;
+      }
+
+      div a:link {
         color: var(--ia-theme-link-color, #4b64ff);
       }
 
@@ -1473,7 +1476,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           .loggedIn=${this.loggedIn}
         >
         </image-block>
-        <div id="title">${Ht.sanitize((t=(e=this.model)===null||e===void 0?void 0:e.title)!==null&&t!==void 0?t:"")}</div>
+        <a href=${this.href} id="title"
+          >${Ht.sanitize((t=(e=this.model)===null||e===void 0?void 0:e.title)!==null&&t!==void 0?t:"")}</a
+        >
         <div id="creator">
           ${((i=this.model)===null||i===void 0?void 0:i.mediatype)==="account"?Xo((a=this.model)===null||a===void 0?void 0:a.dateAdded):Ht.sanitize((l=(r=this.model)===null||r===void 0?void 0:r.creator)!==null&&l!==void 0?l:"")}
         </div>
@@ -1487,7 +1492,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         </div>
         <div id="views">${Ut((u=this.views)!==null&&u!==void 0?u:0,this.formatSize)}</div>
       </div>
-    `}get date(){var e,t,i,a,r;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"publicdate":return(t=this.model)===null||t===void 0?void 0:t.dateArchived;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(a=this.model)===null||a===void 0?void 0:a.dateAdded;default:return(r=this.model)===null||r===void 0?void 0:r.datePublished}}get views(){var e,t,i;return((e=this.sortParam)===null||e===void 0?void 0:e.field)==="week"?(t=this.model)===null||t===void 0?void 0:t.weeklyViewCount:(i=this.model)===null||i===void 0?void 0:i.viewCount}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return f`
+    `}get href(){var e,t;return!((e=this.model)===null||e===void 0)&&e.href?`${this.baseNavigationUrl}${this.model.href}`:`${this.baseNavigationUrl}/details/${(t=this.model)===null||t===void 0?void 0:t.identifier}`}get date(){var e,t,i,a,r;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"publicdate":return(t=this.model)===null||t===void 0?void 0:t.dateArchived;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(a=this.model)===null||a===void 0?void 0:a.dateAdded;default:return(r=this.model)===null||r===void 0?void 0:r.datePublished}}get views(){var e,t,i;return((e=this.sortParam)===null||e===void 0?void 0:e.field)==="week"?(t=this.model)===null||t===void 0?void 0:t.weeklyViewCount:(i=this.model)===null||i===void 0?void 0:i.viewCount}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return f`
       html {
         font-size: unset;
       }
@@ -1519,8 +1524,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       }
 
       #title {
-        color: #4b64ff;
         text-decoration: none;
+      }
+
+      #title:link {
+        color: var(--ia-theme-link-color, #4b64ff);
       }
 
       #title,
