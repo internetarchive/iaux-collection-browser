@@ -182,6 +182,8 @@ export class CollectionBrowser
 
   @state() private totalResults?: number;
 
+  @state() private queryErrorMessage?: string;
+
   @state() private mobileView = false;
 
   @state() private mobileFacetsVisible = false;
@@ -324,6 +326,10 @@ export class CollectionBrowser
     ) {
       this.placeholderType = 'null-result';
     }
+
+    if (this.queryErrorMessage) {
+      this.placeholderType = 'query-error';
+    }
   }
 
   private get emptyPlaceholderTemplate() {
@@ -331,6 +337,8 @@ export class CollectionBrowser
       <empty-placeholder
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
+        .detailMessage=${this.queryErrorMessage ?? ''}
+        .baseNavigationUrl=${this.baseNavigationUrl}
       ></empty-placeholder>
       ${this.infiniteScrollerTemplate}
     `;
@@ -806,6 +814,7 @@ export class CollectionBrowser
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
     this.pagesToRender = this.initialPageNumber;
+    this.queryErrorMessage = undefined;
 
     // Reset the infinite scroller's item count, so that it
     // shows tile placeholders until the new query's results load in
@@ -1194,7 +1203,22 @@ export class CollectionBrowser
     );
     const success = searchResponse?.success;
 
-    if (!success) return;
+    if (!success) {
+      const errorMsg = searchResponse?.error?.message;
+      const detailMsg = searchResponse?.error?.details?.message;
+
+      this.queryErrorMessage = `${errorMsg ?? ''}${
+        detailMsg ? `; ${detailMsg}` : ''
+      }`;
+
+      if (!this.queryErrorMessage) {
+        this.queryErrorMessage = 'Missing or malformed response from backend';
+        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
+      }
+
+      return;
+    }
 
     this.totalResults = success.response.totalResults;
 
