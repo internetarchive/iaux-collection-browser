@@ -41,7 +41,7 @@ describe('List Tile Compact', () => {
     const el = await fixture<TileListCompact>(html`
       <tile-list-compact
         .baseNavigationUrl=${''}
-        .model=${{ href: '/foo/bar' }}
+        .model=${{ title: 'foo', href: '/foo/bar' }}
       ></tile-list-compact>
     `);
 
