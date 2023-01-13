@@ -26,7 +26,9 @@ import {
 } from '../models';
 import './alpha-bar';
 
-import { sortIcon } from './img/sort-triangle';
+import { sortUpIcon } from './img/sort-toggle-up';
+import { sortDownIcon } from './img/sort-toggle-down';
+import { sortDisabledIcon } from './img/sort-toggle-disabled';
 import { tileIcon } from './img/tile';
 import { listIcon } from './img/list';
 import { compactIcon } from './img/compact';
@@ -225,19 +227,22 @@ export class SortFilterBar
         ?disabled=${this.selectedSort === 'relevance'}
         @click=${this.toggleSortDirection}
       >
-        <div
-          id="sort-ascending-btn"
-          class="sort-button ${this.sortDirection === 'asc' ? 'selected' : ''}"
-        >
-          ${sortIcon}
-        </div>
-        <div
-          id="sort-descending-btn"
-          class="sort-button ${this.sortDirection === 'desc' ? 'selected' : ''}"
-        >
-          ${sortIcon}
-        </div>
+        ${this.sortDirectionIcon}
       </button>
+    `;
+  }
+
+  private get sortDirectionIcon() {
+    // For relevance sort, show a fully disabled icon
+    if (this.selectedSort === 'relevance') {
+      return html`<div class="sort-direction-icon">${sortDisabledIcon}</div>`;
+    }
+
+    // For all other sorts, show the ascending/descending direction
+    return html`
+      <div class="sort-direction-icon">
+        ${this.sortDirection === 'asc' ? sortUpIcon : sortDownIcon}
+      </div>
     `;
   }
 
@@ -778,7 +783,7 @@ export class SortFilterBar
       cursor: default;
     }
 
-    .sort-button {
+    .sort-direction-icon {
       display: flex;
       align-items: center;
       background: none;
@@ -786,17 +791,8 @@ export class SortFilterBar
       border: none;
       padding: 0;
       outline: inherit;
-      width: 12px;
-      height: 12px;
-      opacity: 0.5;
-    }
-
-    .sort-button.selected {
-      opacity: 1;
-    }
-
-    #sort-direction-selector:disabled .sort-button {
-      opacity: 0.25;
+      width: 14px;
+      height: 14px;
     }
 
     #date-sort-selector,
@@ -841,10 +837,6 @@ export class SortFilterBar
     #show-details input {
       margin-right: 0.5rem;
       flex: 0 0 12px;
-    }
-
-    #sort-descending-btn {
-      transform: rotate(180deg);
     }
 
     #sort-selector-container {
@@ -952,7 +944,7 @@ export class SortFilterBar
       --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
       --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
       --caretHeight: 9px;
-      --caretWidth: 14px;
+      --caretWidth: 12px;
     }
     ia-dropdown.selected .dropdown-label {
       font-weight: bold;
