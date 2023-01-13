@@ -66,7 +66,7 @@ export class TileListCompact extends LitElement {
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
     return this.model?.href
-      ? `${this.baseNavigationUrl}${this.model?.href}`
+      ? `${this.baseNavigationUrl}${this.model.href}`
       : `${this.baseNavigationUrl}/details/${this.model?.identifier}`;
   }
 

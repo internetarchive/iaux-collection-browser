@@ -37,6 +37,20 @@ describe('List Tile Compact', () => {
     expect(creator).to.exist;
   });
 
+  it('should render title link with model href if provided', async () => {
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact
+        .baseNavigationUrl=${''}
+        .model=${{ href: '/foo/bar' }}
+      ></tile-list-compact>
+    `);
+
+    const title = el.shadowRoot?.querySelector('#title');
+
+    expect(title).to.exist;
+    expect(title?.getAttribute('href')).to.equal('/foo/bar');
+  });
+
   it('should render weekly views when sorting by week', async () => {
     const el = await fixture<TileListCompact>(html`
       <tile-list-compact
