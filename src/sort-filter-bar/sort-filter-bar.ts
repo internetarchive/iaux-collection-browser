@@ -903,10 +903,6 @@ export class SortFilterBar
       font-weight: bold;
     }
 
-    #desktop-sort-selector li:last-child::after {
-      content: '';
-    }
-
     #display-style-selector {
       flex: 0;
     }
@@ -918,11 +914,11 @@ export class SortFilterBar
       appearance: none;
       cursor: pointer;
       -webkit-appearance: none;
-      opacity: 0.3;
+      fill: #bbbbbb;
     }
 
     #display-style-selector button.active {
-      opacity: 1;
+      fill: var(--ia-theme-primary-text-color, #2c2c2c);
     }
 
     #display-style-selector button svg {
@@ -939,7 +935,7 @@ export class SortFilterBar
       --dropdownBorderTopRightRadius: 0;
       --dropdownWhiteSpace: nowrap;
       --dropdownListZIndex: 2;
-      --dropdownCaretColor: #2c2c2c;
+      --dropdownCaretColor: var(--ia-theme-primary-text-color, #2c2c2c);
       --dropdownSelectedTextColor: white;
       --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
       --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
@@ -959,7 +955,7 @@ export class SortFilterBar
       padding-left: 5px;
       font-size: 1.4rem;
       line-height: 2;
-      color: #2c2c2c;
+      color: var(--ia-theme-primary-text-color, #2c2c2c);
       white-space: nowrap;
     }
   `;
