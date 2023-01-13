@@ -37,6 +37,20 @@ describe('List Tile', () => {
     expect(bottomLine).to.exist;
   });
 
+  it('should render title link with model href if provided', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .baseNavigationUrl=${''}
+        .model=${{ title: 'foo', href: '/foo/bar' }}
+      ></tile-list>
+    `);
+
+    const title = el.shadowRoot?.querySelector('#title > a');
+
+    expect(title).to.exist;
+    expect(title?.getAttribute('href')).to.equal('/foo/bar');
+  });
+
   it('should render with creator element but not dates', async () => {
     const el = await fixture<TileList>(html`
       <tile-list .model=${{ creators: ['someone'] }}></tile-list>
