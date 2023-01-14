@@ -224,7 +224,7 @@ export class SortFilterBar
   private get sortDirectionSelectorTemplate() {
     return html`
       <button
-        id="sort-direction-selector"
+        class="sort-direction-selector"
         ?disabled=${this.selectedSort === 'relevance'}
         @click=${this.toggleSortDirection}
       >
@@ -770,7 +770,7 @@ export class SortFilterBar
       padding: 0;
     }
 
-    #sort-direction-selector {
+    .sort-direction-selector {
       display: flex;
       flex-direction: column;
       margin-right: 5px;
@@ -781,7 +781,7 @@ export class SortFilterBar
       cursor: pointer;
     }
 
-    #sort-direction-selector:disabled {
+    .sort-direction-selector:disabled {
       cursor: default;
     }
 
