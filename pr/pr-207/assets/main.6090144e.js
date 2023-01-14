@@ -2256,7 +2256,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       </div>
     `}updated(e){if(e.has("displayMode")&&this.displayModeChanged(),e.has("selectedSort")&&this.sortDirection===null&&(this.sortDirection=pa[this.selectedSort]),e.has("selectedTitleFilter")&&this.selectedTitleFilter&&(this.alphaSelectorVisible="title"),e.has("selectedCreatorFilter")&&this.selectedCreatorFilter&&(this.alphaSelectorVisible="creator"),(e.has("dateSortSelectorVisible")||e.has("viewSortSelectorVisible"))&&this.setupEscapeListeners(),e.has("resizeObserver")){const t=e.get("resizeObserver");t&&this.disconnectResizeObserver(t),this.setupResizeObserver()}}setupEscapeListeners(){this.dateSortSelectorVisible||this.viewSortSelectorVisible?document.addEventListener("keydown",this.boundSortBarSelectorEscapeListener):document.removeEventListener("keydown",this.boundSortBarSelectorEscapeListener)}disconnectedCallback(){this.resizeObserver&&this.disconnectResizeObserver(this.resizeObserver)}disconnectResizeObserver(e){e.removeObserver({target:this.sortSelectorContainer,handler:this}),e.removeObserver({target:this.desktopSortContainer,handler:this})}setupResizeObserver(){!this.resizeObserver||(this.resizeObserver.addObserver({target:this.sortSelectorContainer,handler:this}),this.resizeObserver.addObserver({target:this.desktopSortContainer,handler:this}))}get mobileSelectorVisible(){return this.selectorBarContainerWidth-10<this.desktopSortContainerWidth}get alphaBarTemplate(){if(!["title","creator"].includes(this.selectedSort))return b;if(this.alphaSelectorVisible===null){if(this.selectedSort==="creator")return this.creatorSelectorBar;if(this.selectedSort==="title")return this.titleSelectorBar}else return this.alphaSelectorVisible==="creator"?this.creatorSelectorBar:this.titleSelectorBar;return b}handleResize(e){e.target===this.desktopSortContainer?this.desktopSortContainerWidth=e.contentRect.width:e.target===this.sortSelectorContainer&&(this.selectorBarContainerWidth=e.contentRect.width)}get sortDirectionSelectorTemplate(){return h`
       <button
-        id="sort-direction-selector"
+        class="sort-direction-selector"
         ?disabled=${this.selectedSort==="relevance"}
         @click=${this.toggleSortDirection}
       >
@@ -2433,7 +2433,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding: 0;
     }
 
-    #sort-direction-selector {
+    .sort-direction-selector {
       display: flex;
       flex-direction: column;
       margin-right: 5px;
@@ -2444,7 +2444,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       cursor: pointer;
     }
 
-    #sort-direction-selector:disabled {
+    .sort-direction-selector:disabled {
       cursor: default;
     }
 
