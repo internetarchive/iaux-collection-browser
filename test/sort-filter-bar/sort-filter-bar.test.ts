@@ -7,39 +7,6 @@ import type { SortField } from '../../src/models';
 
 import '../../src/sort-filter-bar/sort-filter-bar';
 
-describe('Sort direction buttons', () => {
-  it('should render sort direction button', async () => {
-    const el = await fixture<SortFilterBar>(html`
-      <sort-filter-bar> </sort-filter-bar>
-    `);
-
-    el.sortDirection = 'asc'; // selected sort
-    await el.updateComplete;
-
-    const sortDirectionButtonList = el.shadowRoot?.querySelector(
-      '#sort-direction-selector'
-    );
-
-    const sortByAscButton = sortDirectionButtonList?.querySelector(
-      '#sort-ascending-btn'
-    );
-    expect(sortByAscButton).to.exist;
-    // ascending order button is selected
-    expect(sortByAscButton?.getAttribute('class')).to.equal(
-      'sort-button selected'
-    );
-
-    const sortByDescButton = sortDirectionButtonList?.querySelector(
-      '#sort-descending-btn'
-    );
-    expect(sortByDescButton).to.exist;
-    // descending order button is not selected
-    expect(sortByDescButton?.getAttribute('class')).to.not.equal(
-      'sort-button selected'
-    );
-  });
-});
-
 describe('Sort selector default buttons', async () => {
   const el = await fixture<SortFilterBar>(html`
     <sort-filter-bar> </sort-filter-bar>
@@ -62,12 +29,34 @@ describe('Sort selector default buttons', async () => {
     expect(sortByLabel?.textContent?.trim()).to.equal('Sort by');
   });
 
-  it('should render sort direction buttons', async () => {
+  it('should render sort direction button', async () => {
     const sortDirections = sortSelectorContainer?.querySelector(
       '.sort-direction-container'
     );
     expect(sortDirections).to.exist;
-    expect(sortDirections?.querySelectorAll('.sort-button').length).to.equal(2);
+    expect(sortDirections?.querySelector('.sort-direction-icon')).to.exist;
+  });
+
+  it('should disable sort direction button when sorting by relevance', async () => {
+    el.selectedSort = 'relevance' as SortField;
+    await el.updateComplete;
+
+    const sortDirectionButton = sortSelectorContainer?.querySelector(
+      '.sort-direction-selector'
+    ) as HTMLButtonElement;
+    expect(sortDirectionButton).to.exist;
+    expect(sortDirectionButton.disabled).to.be.true;
+  });
+
+  it('should enable sort direction button when not sorting by relevance', async () => {
+    el.selectedSort = 'title' as SortField;
+    await el.updateComplete;
+
+    const sortDirectionButton = sortSelectorContainer?.querySelector(
+      '.sort-direction-selector'
+    ) as HTMLButtonElement;
+    expect(sortDirectionButton).to.exist;
+    expect(sortDirectionButton.disabled).to.be.false;
   });
 
   it('should render default relevance-sort selector', async () => {
@@ -127,7 +116,7 @@ describe('Sort selector default buttons', async () => {
   it('click event on view-sort selector', async () => {
     const defaultSortSelector = desktopSortSelector?.children
       .item(1)
-      ?.querySelector('ia-dropdown') as IaDropdown;
+      ?.querySelector('.dropdown-label') as IaDropdown;
 
     await defaultSortSelector?.click();
     expect(el.selectedSort).to.equal('weeklyview');
@@ -145,7 +134,7 @@ describe('Sort selector default buttons', async () => {
   it('click event on date-sort selector', async () => {
     const defaultSortSelector = desktopSortSelector?.children
       .item(3)
-      ?.querySelector('ia-dropdown') as IaDropdown;
+      ?.querySelector('.dropdown-label') as IaDropdown;
 
     await defaultSortSelector?.click();
     expect(el.selectedSort).to.equal('date');

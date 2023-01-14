@@ -19,6 +19,7 @@ import type {
 import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
+  DefaultSortDirection,
   PrefixFilterCounts,
   PrefixFilterType,
   SortField,
@@ -112,7 +113,7 @@ export class SortFilterBar
     }
 
     if (changed.has('selectedSort') && this.sortDirection === null) {
-      this.sortDirection = 'desc';
+      this.sortDirection = DefaultSortDirection[this.selectedSort];
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {
@@ -590,6 +591,7 @@ export class SortFilterBar
 
   private setSelectedSort(sort: SortField) {
     this.selectedSort = sort;
+    this.sortDirection = DefaultSortDirection[this.selectedSort];
     this.emitSortChangedEvent();
   }
 

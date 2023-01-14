@@ -1,4 +1,5 @@
 import type { MediaType } from '@internetarchive/field-parsers';
+import type { SortDirection } from '@internetarchive/search-service';
 
 export interface TileModel {
   averageRating?: number;
@@ -87,6 +88,20 @@ export const SortFieldDisplayName: {
   datereviewed: 'Date reviewed',
   dateadded: 'Date added',
   creator: 'Creator',
+};
+
+export const DefaultSortDirection: {
+  [key in SortField]: SortDirection;
+} = {
+  relevance: 'desc', // Can't actually change the sort direction for relevance
+  alltimeview: 'desc',
+  weeklyview: 'desc',
+  title: 'asc',
+  date: 'desc',
+  datearchived: 'desc',
+  datereviewed: 'desc',
+  dateadded: 'desc',
+  creator: 'asc',
 };
 
 /**
