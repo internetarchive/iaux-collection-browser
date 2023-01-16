@@ -26,7 +26,7 @@ describe('Sort selector default buttons', async () => {
   it('should render sort-by label', async () => {
     const sortByLabel = sortSelectorContainer?.querySelector('.sort-by-text');
     expect(sortByLabel).to.exist;
-    expect(sortByLabel?.textContent?.trim()).to.equal('Sort by');
+    expect(sortByLabel?.textContent?.trim()).to.equal('Sort by:');
   });
 
   it('should render sort direction button', async () => {
