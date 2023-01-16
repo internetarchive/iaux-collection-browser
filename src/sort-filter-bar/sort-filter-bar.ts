@@ -253,10 +253,10 @@ export class SortFilterBar
         id="desktop-sort-container"
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
-        <span class="sort-by-text">Sort by</span>
         <div class="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
+        <span class="sort-by-text">Sort by:</span>
         <ul id="desktop-sort-selector">
           <li>
             ${this.showRelevance
@@ -465,10 +465,10 @@ export class SortFilterBar
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
-        <span class="sort-by-text">Sort by</span>
         <div class="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
+        <span class="sort-by-text">Sort by:</span>
         <ia-dropdown
           id="mobile-sort-selector"
           class="selected"
@@ -747,17 +747,6 @@ export class SortFilterBar
       align-items: center;
     }
 
-    .sort-direction-container {
-      flex: 0;
-    }
-
-    .sort-by-text {
-      margin-right: 10px;
-      font-size: 1.4rem;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
     ul {
       list-style: none;
       display: flex;
@@ -770,10 +759,21 @@ export class SortFilterBar
       padding: 0;
     }
 
-    .sort-direction-selector {
-      display: flex;
-      flex-direction: column;
+    .sort-by-text {
       margin-right: 5px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .sort-direction-container {
+      display: flex;
+      align-self: stretch;
+      flex: 0;
+      margin: 0 5px;
+    }
+
+    .sort-direction-selector {
       padding: 0;
       border: none;
       appearance: none;
