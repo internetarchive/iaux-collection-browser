@@ -2271,10 +2271,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         id="desktop-sort-container"
         class=${this.mobileSelectorVisible?"hidden":"visible"}
       >
-        <span class="sort-by-text">Sort by</span>
         <div class="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
+        <span class="sort-by-text">Sort by:</span>
         <ul id="desktop-sort-selector">
           <li>
             ${this.showRelevance?this.getSortDisplayOption(D.relevance):b}
@@ -2332,10 +2332,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible?"visible":"hidden"}
       >
-        <span class="sort-by-text">Sort by</span>
         <div class="sort-direction-container">
           ${this.sortDirectionSelectorTemplate}
         </div>
+        <span class="sort-by-text">Sort by:</span>
         <ia-dropdown
           id="mobile-sort-selector"
           class="selected"
@@ -2410,17 +2410,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       align-items: center;
     }
 
-    .sort-direction-container {
-      flex: 0;
-    }
-
-    .sort-by-text {
-      margin-right: 10px;
-      font-size: 1.4rem;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
     ul {
       list-style: none;
       display: flex;
@@ -2433,10 +2422,21 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       padding: 0;
     }
 
-    .sort-direction-selector {
-      display: flex;
-      flex-direction: column;
+    .sort-by-text {
       margin-right: 5px;
+      font-size: 1.4rem;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .sort-direction-container {
+      display: flex;
+      align-self: stretch;
+      flex: 0;
+      margin: 0 5px;
+    }
+
+    .sort-direction-selector {
       padding: 0;
       border: none;
       appearance: none;
