@@ -1818,6 +1818,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       button.click-main {
         background: transparent;
         color: inherit;
+        padding: var(--dropdownMainButtonPadding, 0px);
         border: none;
         cursor: pointer;
         display: flex;
@@ -1826,7 +1827,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         align-content: center;
         flex-wrap: nowrap;
         flex-direction: row;
-        padding-left: 0;
       }
 
       button slot {
@@ -1859,6 +1859,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         display: flex;
         align-self: stretch;
         align-items: center;
+        padding: var(--caretPadding, 0px);
       }
 
       .caret svg {
@@ -2578,6 +2579,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
       --caretHeight: 9px;
       --caretWidth: 12px;
+      --caretPadding: 0 5px 0 0;
     }
     ia-dropdown.selected .dropdown-label {
       font-weight: bold;
