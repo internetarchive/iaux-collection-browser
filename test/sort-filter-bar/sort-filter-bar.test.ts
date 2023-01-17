@@ -2,6 +2,7 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { IaDropdown } from '@internetarchive/ia-dropdown';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
 import type { SortField } from '../../src/models';
 
@@ -17,6 +18,11 @@ describe('Sort selector default buttons', async () => {
   const desktopSortSelector = sortSelectorContainer?.querySelector(
     '#desktop-sort-selector'
   );
+
+  before(async () => {
+    el.resizeObserver = new SharedResizeObserver();
+    await el.updateComplete;
+  });
 
   it('should render basic component', async () => {
     expect(sortSelectorContainer).to.exist;
