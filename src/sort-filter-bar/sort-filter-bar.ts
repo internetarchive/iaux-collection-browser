@@ -408,10 +408,10 @@ export class SortFilterBar
    * @param options.onLabelInteraction A handler for click events and Enter/Space keydown events
    *  on the dropdown's label
    */
-  private getSortDropdown(options?: {
-    displayName?: TemplateResult;
+  private getSortDropdown(options: {
+    displayName: TemplateResult;
     id?: string;
-    dropdownOptions?: optionInterface[];
+    dropdownOptions: optionInterface[];
     selectedOption?: string;
     isSelected?: () => boolean;
     onOptionSelected?: (e: CustomEvent<{ option: optionInterface }>) => void;
@@ -420,29 +420,29 @@ export class SortFilterBar
   }): TemplateResult {
     return html`
       <ia-dropdown
-        id=${options?.id ?? nothing}
-        class=${options?.isSelected?.() ? 'selected' : nothing}
+        id=${options.id ?? nothing}
+        class=${options.isSelected?.() ? 'selected' : nothing}
         displayCaret
         closeOnSelect
         includeSelectedOption
         .openViaButton=${false}
-        .options=${options?.dropdownOptions}
-        .selectedOption=${options?.selectedOption}
-        @optionSelected=${options?.onOptionSelected ?? nothing}
-        @click=${options?.onDropdownClick ?? nothing}
+        .options=${options.dropdownOptions}
+        .selectedOption=${options.selectedOption}
+        @optionSelected=${options.onOptionSelected ?? nothing}
+        @click=${options.onDropdownClick ?? nothing}
       >
         <span
           class="dropdown-label"
           slot="dropdown-label"
-          @click=${options?.onLabelInteraction ?? nothing}
-          @keydown=${options?.onLabelInteraction
+          @click=${options.onLabelInteraction ?? nothing}
+          @keydown=${options.onLabelInteraction
             ? (e: KeyboardEvent) => {
                 if (e.key === 'Enter' || e.key === ' ')
-                  options?.onLabelInteraction?.();
+                  options.onLabelInteraction?.();
               }
             : nothing}
         >
-          ${options?.displayName ?? ''}
+          ${options.displayName}
         </span>
       </ia-dropdown>
     `;
