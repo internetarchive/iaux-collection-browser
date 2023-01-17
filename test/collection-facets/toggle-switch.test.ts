@@ -141,5 +141,14 @@ describe('Toggle switch', () => {
     await el.updateComplete;
 
     expect(changeSpy.callCount).to.equal(1);
+
+    const leftRadio = el.shadowRoot?.querySelector(
+      '#switch-left'
+    ) as HTMLInputElement;
+
+    leftRadio.click();
+    await el.updateComplete;
+
+    expect(changeSpy.callCount).to.equal(2);
   });
 });
