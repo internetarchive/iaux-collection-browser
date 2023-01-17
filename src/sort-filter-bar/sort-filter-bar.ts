@@ -157,10 +157,7 @@ export class SortFilterBar
       this.alphaSelectorVisible = 'creator';
     }
 
-    if (
-      changed.has('dateSortSelectorVisible') ||
-      changed.has('viewSortSelectorVisible')
-    ) {
+    if (changed.has('dropdownBackdropVisible')) {
       this.setupEscapeListeners();
     }
 
@@ -189,7 +186,7 @@ export class SortFilterBar
 
   private boundSortBarSelectorEscapeListener = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      this.dropdownBackdropVisible = false;
+      this.closeDropdowns();
     }
   };
 
