@@ -2301,31 +2301,31 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}getSortDisplayOption(e,t){var i,o;const r=(i=t==null?void 0:t.isSelected)!==null&&i!==void 0?i:()=>this.selectedSort===e,n=(o=t==null?void 0:t.displayName)!==null&&o!==void 0?o:Je[e];return h`
       <a
         href="#"
-        @click=${l=>{l.preventDefault(),t!=null&&t.clickEvent?t.clickEvent(l):(this.dropdownBackdropVisible=!1,this.clearAlphaBarFilters(),this.setSelectedSort(e),this.emitTitleLetterChangedEvent(),this.emitCreatorLetterChangedEvent())}}
+        @click=${l=>{var d;l.preventDefault(),(d=t==null?void 0:t.clickEvent)===null||d===void 0||d.call(t,l)}}
         class=${r()?"selected":b}
       >
         ${n}
       </a>
-    `}getSortDropdown(e){var t,i,o,r,n,l;return h`
+    `}getSortDropdown(e){var t,i,o,r,n;return h`
       <ia-dropdown
-        id=${(t=e==null?void 0:e.id)!==null&&t!==void 0?t:b}
-        class=${!((i=e==null?void 0:e.isSelected)===null||i===void 0)&&i.call(e)?"selected":b}
+        id=${(t=e.id)!==null&&t!==void 0?t:b}
+        class=${!((i=e.isSelected)===null||i===void 0)&&i.call(e)?"selected":b}
         displayCaret
         closeOnSelect
         includeSelectedOption
         .openViaButton=${!1}
-        .options=${e==null?void 0:e.dropdownOptions}
-        .selectedOption=${e==null?void 0:e.selectedOption}
-        @optionSelected=${(o=e==null?void 0:e.onOptionSelected)!==null&&o!==void 0?o:b}
-        @click=${(r=e==null?void 0:e.onDropdownClick)!==null&&r!==void 0?r:b}
+        .options=${e.dropdownOptions}
+        .selectedOption=${e.selectedOption}
+        @optionSelected=${(o=e.onOptionSelected)!==null&&o!==void 0?o:b}
+        @click=${(r=e.onDropdownClick)!==null&&r!==void 0?r:b}
       >
         <span
           class="dropdown-label"
           slot="dropdown-label"
-          @click=${(n=e==null?void 0:e.onLabelInteraction)!==null&&n!==void 0?n:b}
-          @keydown=${e!=null&&e.onLabelInteraction?d=>{var u;(d.key==="Enter"||d.key===" ")&&((u=e==null?void 0:e.onLabelInteraction)===null||u===void 0||u.call(e))}:b}
+          @click=${(n=e.onLabelInteraction)!==null&&n!==void 0?n:b}
+          @keydown=${e.onLabelInteraction?l=>{var d;(l.key==="Enter"||l.key===" ")&&((d=e.onLabelInteraction)===null||d===void 0||d.call(e))}:b}
         >
-          ${(l=e==null?void 0:e.displayName)!==null&&l!==void 0?l:""}
+          ${e.displayName}
         </span>
       </ia-dropdown>
     `}getDropdownOption(e){return{id:e,selectedHandler:()=>{this.selectDropdownSortField(e)},label:h`
