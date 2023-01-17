@@ -62,9 +62,7 @@ export class SortFilterBar
 
   @state() alphaSelectorVisible: AlphaSelector | null = null;
 
-  @state() dateSortSelectorVisible = false;
-
-  @state() viewSortSelectorVisible = false;
+  @state() dropdownBackdropVisible = false;
 
   @state() desktopSortContainerWidth = 0;
 
@@ -84,6 +82,9 @@ export class SortFilterBar
   @query('#date-dropdown')
   private dateDropdown!: IaDropdown;
 
+  @query('#mobile-sort-selector')
+  private mobileDropdown!: IaDropdown;
+
   render() {
     return html`
       <div id="container">
@@ -96,12 +97,7 @@ export class SortFilterBar
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
         </div>
 
-        ${this.viewSortSelectorVisible && !this.mobileSelectorVisible
-          ? this.dropdownBackdrop
-          : nothing}
-        ${this.dateSortSelectorVisible && !this.mobileSelectorVisible
-          ? this.dropdownBackdrop
-          : nothing}
+        ${this.dropdownBackdropVisible ? this.dropdownBackdrop : nothing}
         ${this.alphaBarTemplate}
       </div>
     `;
@@ -141,7 +137,7 @@ export class SortFilterBar
   }
 
   private setupEscapeListeners() {
-    if (this.dateSortSelectorVisible || this.viewSortSelectorVisible) {
+    if (this.dropdownBackdropVisible) {
       document.addEventListener(
         'keydown',
         this.boundSortBarSelectorEscapeListener
@@ -156,8 +152,7 @@ export class SortFilterBar
 
   private boundSortBarSelectorEscapeListener = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      this.viewSortSelectorVisible = false;
-      this.dateSortSelectorVisible = false;
+      this.dropdownBackdropVisible = false;
     }
   };
 
@@ -265,17 +260,26 @@ export class SortFilterBar
           </li>
           <li>
             ${this.getSortDropdown({
-              optionSelectedHandler: () => {
-                this.dateSortSelectorVisible = false;
-                this.alphaSelectorVisible = null;
-                this.selectedTitleFilter = null;
-                this.selectedCreatorFilter = null;
+              displayName: html`${this.viewSortField}`,
+              id: 'views-dropdown',
+              isSelected: () => this.viewOptionSelected,
+              dropdownOptions: [
+                this.getDropdownOption(SortField.weeklyview),
+                this.getDropdownOption(SortField.alltimeview),
+              ],
+              selectedOption: this.viewOptionSelected ? this.selectedSort : '',
+              onOptionSelected: (
+                e: CustomEvent<{ option: optionInterface }>
+              ) => {
+                this.dropdownBackdropVisible = false;
+                this.clearAlphaBarFilters();
+                this.setSelectedSort(e.detail.option.id as SortField);
                 this.emitTitleLetterChangedEvent();
                 this.emitCreatorLetterChangedEvent();
               },
               onDropdownClick: () => {
                 this.dateDropdown.open = false;
-                this.viewSortSelectorVisible = this.viewsDropdown.open;
+                this.dropdownBackdropVisible = this.viewsDropdown.open;
                 this.viewsDropdown.classList.toggle(
                   'open',
                   this.viewsDropdown.open
@@ -285,14 +289,6 @@ export class SortFilterBar
                 if (!this.viewsDropdown.open && !this.viewOptionSelected)
                   this.setSelectedSort(SortField.weeklyview);
               },
-              displayName: html`${this.viewSortField}`,
-              id: 'views-dropdown',
-              isSelected: () => this.viewOptionSelected,
-              dropdownOptions: [
-                this.getDropdownOption(SortField.weeklyview),
-                this.getDropdownOption(SortField.alltimeview),
-              ],
-              selectedOption: this.viewOptionSelected ? this.selectedSort : '',
             })}
           </li>
           <li>
@@ -300,8 +296,7 @@ export class SortFilterBar
               clickEvent: () => {
                 this.alphaSelectorVisible = 'title';
                 this.selectedCreatorFilter = null;
-                this.dateSortSelectorVisible = false;
-                this.viewSortSelectorVisible = false;
+                this.dropdownBackdropVisible = false;
                 this.setSelectedSort(SortField.title);
                 this.emitCreatorLetterChangedEvent();
               },
@@ -309,26 +304,6 @@ export class SortFilterBar
           </li>
           <li>
             ${this.getSortDropdown({
-              optionSelectedHandler: () => {
-                this.viewSortSelectorVisible = false;
-                this.alphaSelectorVisible = null;
-                this.selectedTitleFilter = null;
-                this.selectedCreatorFilter = null;
-                this.emitTitleLetterChangedEvent();
-                this.emitCreatorLetterChangedEvent();
-              },
-              onDropdownClick: () => {
-                this.viewsDropdown.open = false;
-                this.dateSortSelectorVisible = this.dateDropdown.open;
-                this.dateDropdown.classList.toggle(
-                  'open',
-                  this.dateDropdown.open
-                );
-              },
-              onLabelInteraction: () => {
-                if (!this.dateDropdown.open && !this.dateOptionSelected)
-                  this.setSelectedSort(SortField.date);
-              },
               displayName: html`${this.dateSortField}`,
               id: 'date-dropdown',
               isSelected: () => this.dateOptionSelected,
@@ -339,6 +314,27 @@ export class SortFilterBar
                 this.getDropdownOption(SortField.dateadded),
               ],
               selectedOption: this.dateOptionSelected ? this.selectedSort : '',
+              onOptionSelected: (
+                e: CustomEvent<{ option: optionInterface }>
+              ) => {
+                this.dropdownBackdropVisible = false;
+                this.clearAlphaBarFilters();
+                this.setSelectedSort(e.detail.option.id as SortField);
+                this.emitTitleLetterChangedEvent();
+                this.emitCreatorLetterChangedEvent();
+              },
+              onDropdownClick: () => {
+                this.viewsDropdown.open = false;
+                this.dropdownBackdropVisible = this.dateDropdown.open;
+                this.dateDropdown.classList.toggle(
+                  'open',
+                  this.dateDropdown.open
+                );
+              },
+              onLabelInteraction: () => {
+                if (!this.dateDropdown.open && !this.dateOptionSelected)
+                  this.setSelectedSort(SortField.date);
+              },
             })}
           </li>
           <li>
@@ -346,7 +342,7 @@ export class SortFilterBar
               clickEvent: () => {
                 this.alphaSelectorVisible = 'creator';
                 this.selectedTitleFilter = null;
-                this.dateSortSelectorVisible = false;
+                this.dropdownBackdropVisible = false;
                 this.setSelectedSort(SortField.creator);
                 this.emitTitleLetterChangedEvent();
               },
@@ -389,10 +385,8 @@ export class SortFilterBar
           if (options?.clickEvent) {
             options.clickEvent(e);
           } else {
-            this.alphaSelectorVisible = null;
-            this.dateSortSelectorVisible = false;
-            this.selectedTitleFilter = null;
-            this.selectedCreatorFilter = null;
+            this.dropdownBackdropVisible = false;
+            this.clearAlphaBarFilters();
             this.setSelectedSort(sortField);
             this.emitTitleLetterChangedEvent();
             this.emitCreatorLetterChangedEvent();
@@ -406,14 +400,14 @@ export class SortFilterBar
   }
 
   private getSortDropdown(options?: {
-    optionSelectedHandler?: (e: Event) => void;
-    onDropdownClick?: (e: PointerEvent) => void;
-    onLabelInteraction?: () => void;
-    isSelected?: () => boolean;
     displayName?: TemplateResult;
     id?: string;
     dropdownOptions?: optionInterface[];
     selectedOption?: string;
+    isSelected?: () => boolean;
+    onOptionSelected?: (e: CustomEvent<{ option: optionInterface }>) => void;
+    onDropdownClick?: (e: PointerEvent) => void;
+    onLabelInteraction?: () => void;
   }): TemplateResult {
     return html`
       <ia-dropdown
@@ -425,7 +419,7 @@ export class SortFilterBar
         .openViaButton=${false}
         .options=${options?.dropdownOptions}
         .selectedOption=${options?.selectedOption}
-        @optionSelected=${options?.optionSelectedHandler ?? nothing}
+        @optionSelected=${options?.onOptionSelected ?? nothing}
         @click=${options?.onDropdownClick ?? nothing}
       >
         <span
@@ -480,6 +474,13 @@ export class SortFilterBar
           )}
           .selectedOption=${this.selectedSort ?? SortField.relevance}
           @optionSelected=${this.mobileSortChanged}
+          @click=${() => {
+            this.dropdownBackdropVisible = this.mobileDropdown.open;
+            this.mobileDropdown.classList.toggle(
+              'open',
+              this.mobileDropdown.open
+            );
+          }}
         >
           <span class="dropdown-label" slot="dropdown-label">
             ${SortFieldDisplayName[this.selectedSort] ?? ''}
@@ -565,19 +566,24 @@ export class SortFilterBar
   private closeViewsDropdown() {
     this.viewsDropdown.open = false;
     this.viewsDropdown.classList.remove('open');
-    this.viewSortSelectorVisible = false;
+    this.dropdownBackdropVisible = false;
   }
 
   private closeDateDropdown() {
     this.dateDropdown.open = false;
     this.dateDropdown.classList.remove('open');
-    this.dateSortSelectorVisible = false;
+    this.dropdownBackdropVisible = false;
   }
 
   private selectDropdownSortField(sortField: SortField) {
-    this.dateSortSelectorVisible = false;
-    this.viewSortSelectorVisible = false;
+    this.dropdownBackdropVisible = false;
     this.setSelectedSort(sortField);
+  }
+
+  private clearAlphaBarFilters() {
+    this.alphaSelectorVisible = null;
+    this.selectedTitleFilter = null;
+    this.selectedCreatorFilter = null;
   }
 
   private setSortDirection(sortDirection: SortDirection) {
@@ -743,16 +749,16 @@ export class SortFilterBar
     #sort-bar {
       display: flex;
       justify-content: space-between;
-      border-bottom: 1px solid #2c2c2c;
       align-items: center;
+      border-bottom: 1px solid #2c2c2c;
     }
 
     ul {
       list-style: none;
       display: flex;
+      align-items: center;
       margin: 0;
       padding: 0;
-      align-items: center;
     }
 
     li {
@@ -816,9 +822,9 @@ export class SortFilterBar
       border-radius: 15px;
       color: #404142;
       border: none;
+      -webkit-appearance: none;
       appearance: none;
       cursor: pointer;
-      -webkit-appearance: none;
       font-size: 1.4rem;
       font-weight: 400;
       padding: 0.5rem 1.2rem;
@@ -828,17 +834,6 @@ export class SortFilterBar
     #view-sort-selector button.selected {
       background-color: #404142;
       color: white;
-    }
-
-    #show-details {
-      text-transform: uppercase;
-      cursor: pointer;
-      display: flex;
-    }
-
-    #show-details input {
-      margin-right: 0.5rem;
-      flex: 0 0 12px;
     }
 
     #sort-selector-container {
