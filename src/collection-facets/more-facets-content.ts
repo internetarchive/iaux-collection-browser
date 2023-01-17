@@ -60,7 +60,8 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: String }) sortedBy: 'count' | 'alpha' = 'count';
+  @property({ type: String }) sortedBy: AggregationSortType =
+    AggregationSortType.COUNT;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -254,9 +255,7 @@ export class MoreFacetsContent extends LitElement {
 
       // sort facets in specific order
       let castedBuckets = aggregation.getSortedBuckets(
-        this.sortedBy === 'alpha'
-          ? AggregationSortType.ALPHABETICAL
-          : AggregationSortType.COUNT
+        this.sortedBy
       ) as Bucket[];
 
       if (option === 'collection') {
@@ -370,7 +369,7 @@ export class MoreFacetsContent extends LitElement {
     return nothing;
   }
 
-  private sortFacetAggregation(facetSortType: typeof this.sortedBy) {
+  private sortFacetAggregation(facetSortType: AggregationSortType) {
     this.sortedBy = facetSortType;
     this.dispatchEvent(
       new CustomEvent('sortedFacets', { detail: this.sortedBy })
@@ -384,12 +383,12 @@ export class MoreFacetsContent extends LitElement {
         <label class="sort-label">Sort by:</label>
         <toggle-switch
           class="sort-toggle"
-          .leftValue=${'count'}
-          .leftLabel=${'Count'}
-          .rightValue=${'alpha'}
-          .rightLabel=${'Value'}
+          leftValue=${AggregationSortType.COUNT}
+          leftLabel="Count"
+          rightValue=${AggregationSortType.ALPHABETICAL}
+          rightLabel="Value"
           @change=${(e: CustomEvent<string>) => {
-            this.sortFacetAggregation(e.detail as typeof this.sortedBy);
+            this.sortFacetAggregation(Number(e.detail) as AggregationSortType);
           }}
         ></toggle-switch>
       </span>`;

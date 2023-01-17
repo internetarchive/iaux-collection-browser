@@ -8,29 +8,29 @@ export class ToggleSwitch extends LitElement {
   /**
    * The value this switch should have when toggled to the left.
    */
-  @property({ type: String }) leftValue: string = '';
+  @property({ type: String, attribute: true }) leftValue: string = '';
 
   /**
    * The human-readable label to display on the left side of this switch.
    * If none is provided, `leftValue` is used.
    */
-  @property({ type: String }) leftLabel?: string;
+  @property({ type: String, attribute: true }) leftLabel?: string;
 
   /**
    * The value this switch should have when toggled to the right.
    */
-  @property({ type: String }) rightValue: string = '';
+  @property({ type: String, attribute: true }) rightValue: string = '';
 
   /**
    * The human-readable label to display on the right side of this switch.
    * If none is provided, `rightValue` is used.
    */
-  @property({ type: String }) rightLabel?: string;
+  @property({ type: String, attribute: true }) rightLabel?: string;
 
   /**
    * Which side of the switch is selected (`'left'` or `'right'`).
    */
-  @property({ type: String }) side: Side = 'left';
+  @property({ type: String, attribute: true }) side: Side = 'left';
 
   @query('#switch-left')
   private leftRadio!: HTMLInputElement;
