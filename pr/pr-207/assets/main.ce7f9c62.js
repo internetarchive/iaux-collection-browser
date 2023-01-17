@@ -2283,11 +2283,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           </li>
           <li>${this.viewsDropdownTemplate}</li>
           <li>
-            ${this.getSortDisplayOption(D.title,{clickEvent:()=>{this.alphaSelectorVisible="title",this.selectedCreatorFilter=null,this.dropdownBackdropVisible=!1,this.setSelectedSort(D.title),this.emitCreatorLetterChangedEvent()}})}
+            ${this.getSortDisplayOption(D.title,{onClick:()=>{this.alphaSelectorVisible="title",this.selectedCreatorFilter=null,this.dropdownBackdropVisible=!1,this.setSelectedSort(D.title),this.emitCreatorLetterChangedEvent()}})}
           </li>
           <li>${this.dateDropdownTemplate}</li>
           <li>
-            ${this.getSortDisplayOption(D.creator,{clickEvent:()=>{this.alphaSelectorVisible="creator",this.selectedTitleFilter=null,this.dropdownBackdropVisible=!1,this.setSelectedSort(D.creator),this.emitTitleLetterChangedEvent()}})}
+            ${this.getSortDisplayOption(D.creator,{onClick:()=>{this.alphaSelectorVisible="creator",this.selectedTitleFilter=null,this.dropdownBackdropVisible=!1,this.setSelectedSort(D.creator),this.emitTitleLetterChangedEvent()}})}
           </li>
         </ul>
       </div>
@@ -2301,7 +2301,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}getSortDisplayOption(e,t){var i,o;const r=(i=t==null?void 0:t.isSelected)!==null&&i!==void 0?i:()=>this.selectedSort===e,n=(o=t==null?void 0:t.displayName)!==null&&o!==void 0?o:Je[e];return h`
       <a
         href="#"
-        @click=${l=>{var d;l.preventDefault(),(d=t==null?void 0:t.clickEvent)===null||d===void 0||d.call(t,l)}}
+        @click=${l=>{var d;l.preventDefault(),(d=t==null?void 0:t.onClick)===null||d===void 0||d.call(t,l)}}
         class=${r()?"selected":b}
       >
         ${n}
