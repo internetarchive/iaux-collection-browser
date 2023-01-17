@@ -302,7 +302,7 @@ export class SortFilterBar
           <li>${this.viewsDropdownTemplate}</li>
           <li>
             ${this.getSortDisplayOption(SortField.title, {
-              clickEvent: () => {
+              onClick: () => {
                 this.alphaSelectorVisible = 'title';
                 this.selectedCreatorFilter = null;
                 this.dropdownBackdropVisible = false;
@@ -314,7 +314,7 @@ export class SortFilterBar
           <li>${this.dateDropdownTemplate}</li>
           <li>
             ${this.getSortDisplayOption(SortField.creator, {
-              clickEvent: () => {
+              onClick: () => {
                 this.alphaSelectorVisible = 'creator';
                 this.selectedTitleFilter = null;
                 this.dropdownBackdropVisible = false;
@@ -363,7 +363,7 @@ export class SortFilterBar
    *
    * @param sortField
    * @param options {
-   *    clickEvent?: (e: Event) => void; If this is provided, it will also be called when the option is clicked.
+   *    onClick?: (e: Event) => void; If this is provided, it will also be called when the option is clicked.
    *    displayName?: TemplateResult; The name to display for the option. Defaults to the sortField display name.
    *    isSelected?: () => boolean; A function that returns true if the option is selected. Defaults to the selectedSort === sortField.
    * }
@@ -373,7 +373,7 @@ export class SortFilterBar
     sortField: SortField,
     options?: {
       displayName?: TemplateResult;
-      clickEvent?: (e: Event) => void;
+      onClick?: (e: Event) => void;
       isSelected?: () => boolean;
     }
   ): TemplateResult {
@@ -385,7 +385,7 @@ export class SortFilterBar
         href="#"
         @click=${(e: Event) => {
           e.preventDefault();
-          options?.clickEvent?.(e);
+          options?.onClick?.(e);
         }}
         class=${isSelected() ? 'selected' : nothing}
       >
