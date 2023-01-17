@@ -386,7 +386,7 @@ export class MoreFacetsContent extends LitElement {
           leftValue=${AggregationSortType.COUNT}
           leftLabel="Count"
           rightValue=${AggregationSortType.ALPHABETICAL}
-          rightLabel="Value"
+          rightLabel=${this.facetGroupTitle}
           @change=${(e: CustomEvent<string>) => {
             this.sortFacetAggregation(Number(e.detail) as AggregationSortType);
           }}
