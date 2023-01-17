@@ -16,6 +16,8 @@ export class TileStats extends LitElement {
 
   @property({ type: Number }) viewCount?: number;
 
+  @property({ type: String }) viewLabel?: number;
+
   @property({ type: Number }) favCount?: number;
 
   @property({ type: Number }) commentCount?: number;
@@ -31,7 +33,7 @@ export class TileStats extends LitElement {
     const uploadsOrViewsTitle =
       this.mediatype === 'account'
         ? `${this.itemCount} uploads`
-        : `${this.viewCount} all-time views`;
+        : `${this.viewCount} ${this.viewLabel ?? 'all-time views'}`;
 
     return html`
       <div class="item-stats">
