@@ -470,14 +470,15 @@ describe('Sort/filter bar mobile view', () => {
       <sort-filter-bar></sort-filter-bar>
     `);
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
     ) as IaDropdown;
-    expect(mobileSortSelector).to.exist;
+    expect(mobileDropdown).to.exist;
 
-    mobileSortSelector.selectedOption = 'title';
-    mobileSortSelector.dispatchEvent(
-      new CustomEvent('optionSelected', { detail: { id: 'title' } })
+    mobileDropdown.selectedOption = 'title';
+    const option = { id: 'title' };
+    mobileDropdown.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { option } })
     );
     await el.updateComplete;
 
@@ -493,14 +494,15 @@ describe('Sort/filter bar mobile view', () => {
     el.selectedTitleFilter = 'A';
     await el.updateComplete;
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
     ) as IaDropdown;
-    expect(mobileSortSelector).to.exist;
+    expect(mobileDropdown).to.exist;
 
-    mobileSortSelector.selectedOption = 'relevance';
-    mobileSortSelector.dispatchEvent(
-      new CustomEvent('optionSelected', { detail: { id: 'relevance' } })
+    mobileDropdown.selectedOption = 'relevance';
+    const option = { id: 'relevance' };
+    mobileDropdown.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { option } })
     );
     await el.updateComplete;
 
@@ -517,14 +519,15 @@ describe('Sort/filter bar mobile view', () => {
     el.selectedCreatorFilter = 'A';
     await el.updateComplete;
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
     ) as IaDropdown;
-    expect(mobileSortSelector).to.exist;
+    expect(mobileDropdown).to.exist;
 
-    mobileSortSelector.selectedOption = 'relevance';
-    mobileSortSelector.dispatchEvent(
-      new CustomEvent('optionSelected', { detail: { id: 'relevance' } })
+    mobileDropdown.selectedOption = 'relevance';
+    const option = { id: 'relevance' };
+    mobileDropdown.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { option } })
     );
     await el.updateComplete;
 
@@ -537,12 +540,12 @@ describe('Sort/filter bar mobile view', () => {
       <sort-filter-bar></sort-filter-bar>
     `);
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
     ) as IaDropdown;
-    expect(mobileSortSelector).to.exist;
+    expect(mobileDropdown).to.exist;
 
-    const caret = mobileSortSelector?.shadowRoot?.querySelector(
+    const caret = mobileDropdown?.shadowRoot?.querySelector(
       '.caret'
     ) as HTMLElement;
     expect(caret).to.exist;
