@@ -266,6 +266,33 @@ describe('Sort selector default buttons', async () => {
     ) as HTMLElement;
     expect(backdrop).not.to.exist;
   });
+
+  it('closes dropdown by hitting escape key', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown') as IaDropdown;
+
+    const caret = defaultSortSelector?.shadowRoot?.querySelector(
+      '.caret'
+    ) as HTMLElement;
+    expect(caret).to.exist;
+
+    caret?.click();
+    await el.updateComplete;
+
+    let backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).to.exist;
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await el.updateComplete;
+
+    backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).not.to.exist;
+  });
 });
 
 describe('Sort direction button behavior', () => {
