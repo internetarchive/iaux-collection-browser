@@ -3590,7 +3590,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           leftValue=${et.COUNT}
           leftLabel="Count"
           rightValue=${et.ALPHABETICAL}
-          rightLabel="Value"
+          rightLabel=${this.facetGroupTitle}
           @change=${e=>{this.sortFacetAggregation(Number(e.detail))}}
         ></toggle-switch>
       </span>`}render(){return h`
