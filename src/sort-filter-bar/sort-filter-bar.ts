@@ -611,27 +611,16 @@ export class SortFilterBar
 
   /** Closes all of the sorting dropdown components' menus */
   private closeDropdowns() {
-    this.closeViewsDropdown();
-    this.closeDateDropdown();
-    this.closeMobileDropdown();
-  }
-
-  private closeViewsDropdown() {
     this.dropdownBackdropVisible = false;
-    this.viewsDropdown.open = false;
-    this.viewsDropdown.classList.remove('open');
-  }
-
-  private closeDateDropdown() {
-    this.dropdownBackdropVisible = false;
-    this.dateDropdown.open = false;
-    this.dateDropdown.classList.remove('open');
-  }
-
-  private closeMobileDropdown() {
-    this.dropdownBackdropVisible = false;
-    this.mobileDropdown.open = false;
-    this.mobileDropdown.classList.remove('open');
+    const allDropdowns = [
+      this.viewsDropdown,
+      this.dateDropdown,
+      this.mobileDropdown,
+    ];
+    for (const dropdown of allDropdowns) {
+      dropdown.open = false;
+      dropdown.classList.remove('open');
+    }
   }
 
   private selectDropdownSortField(sortField: SortField) {
