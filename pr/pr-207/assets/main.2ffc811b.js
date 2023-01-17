@@ -2243,6 +2243,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 `;let X=class extends M{constructor(){super(...arguments),this.sortDirection=null,this.selectedSort=D.relevance,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.showRelevance=!0,this.alphaSelectorVisible=null,this.dropdownBackdropVisible=!1,this.desktopSortContainerWidth=0,this.selectorBarContainerWidth=0,this.boundSortBarSelectorEscapeListener=e=>{e.key==="Escape"&&(this.dropdownBackdropVisible=!1)}}render(){return h`
       <div id="container">
         <div id="sort-bar">
+          <div class="sort-direction-container">
+            ${this.sortDirectionSelectorTemplate}
+          </div>
+          <span class="sort-by-text">Sort by:</span>
+
           <div id="sort-selector-container">
             ${this.mobileSortSelectorTemplate}
             ${this.desktopSortSelectorTemplate}
@@ -2271,10 +2276,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         id="desktop-sort-container"
         class=${this.mobileSelectorVisible?"hidden":"visible"}
       >
-        <div class="sort-direction-container">
-          ${this.sortDirectionSelectorTemplate}
-        </div>
-        <span class="sort-by-text">Sort by:</span>
         <ul id="desktop-sort-selector">
           <li>
             ${this.showRelevance?this.getSortDisplayOption(D.relevance):b}
@@ -2294,11 +2295,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible?"visible":"hidden"}
       >
-        <div class="sort-direction-container">
-          ${this.sortDirectionSelectorTemplate}
-        </div>
-        <span class="sort-by-text">Sort by:</span>
-
         ${this.getSortDropdown({displayName:h`${(e=Ze[this.selectedSort])!==null&&e!==void 0?e:""}`,id:"mobile-dropdown",isSelected:()=>!0,dropdownOptions:Object.keys(D).map(i=>this.getDropdownOption(i)),selectedOption:(t=this.selectedSort)!==null&&t!==void 0?t:D.relevance,onOptionSelected:this.mobileSortChanged,onDropdownClick:()=>{this.dropdownBackdropVisible=this.mobileDropdown.open,this.mobileDropdown.classList.toggle("open",this.mobileDropdown.open)}})}
       </div>
     `}getSortDisplayOption(e,t){var i,o;const r=(i=t==null?void 0:t.isSelected)!==null&&i!==void 0?i:()=>this.selectedSort===e,n=(o=t==null?void 0:t.displayName)!==null&&o!==void 0?o:Ze[e];return h`
