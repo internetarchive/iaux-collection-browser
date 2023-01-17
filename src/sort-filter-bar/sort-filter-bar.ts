@@ -1004,6 +1004,7 @@ export class SortFilterBar
       --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
       --caretHeight: 9px;
       --caretWidth: 12px;
+      --caretPadding: 0 5px 0 0;
     }
     ia-dropdown.selected .dropdown-label {
       font-weight: bold;
