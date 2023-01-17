@@ -385,15 +385,7 @@ export class SortFilterBar
         href="#"
         @click=${(e: Event) => {
           e.preventDefault();
-          if (options?.clickEvent) {
-            options.clickEvent(e);
-          } else {
-            this.dropdownBackdropVisible = false;
-            this.clearAlphaBarFilters();
-            this.setSelectedSort(sortField);
-            this.emitTitleLetterChangedEvent();
-            this.emitCreatorLetterChangedEvent();
-          }
+          options?.clickEvent?.(e);
         }}
         class=${isSelected() ? 'selected' : nothing}
       >
