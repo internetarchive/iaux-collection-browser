@@ -124,10 +124,10 @@
   dependencies:
     lit "^2.2.2"
 
-"@internetarchive/ia-dropdown@^1.1.0-alpha.5":
-  version "1.1.0-alpha.5"
-  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.1.0-alpha.5.tgz#8b3e03f7d72fa9b68ab2ab1aa30bce7e408e6b6a"
-  integrity sha512-wPWZHx/fxbGZj/uIMvA5+4aOx8axEVHkiP1QiXG4bjT2R8nA7WHlBvz9iZoDkWIM6Wz6Z6wiVO/CGt6m3hBUDA==
+"@internetarchive/ia-dropdown@^1.1.0-alpha.6":
+  version "1.1.0-alpha.6"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.1.0-alpha.6.tgz#e531e682a2ce21cf01259c545677947221243a40"
+  integrity sha512-4NbcWV3Y031Q/mexsAkINlrIh05XveIjmTm1sHp0jjmYJvTz71duuunqsw6k6f85i/NK89K0cfgQqYRs0B5I5A==
   dependencies:
     lit "^2.0.2"
 

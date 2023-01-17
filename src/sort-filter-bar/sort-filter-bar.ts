@@ -12,10 +12,7 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/ia-dropdown';
-import type {
-  IaDropdown,
-  optionInterface,
-} from '@internetarchive/ia-dropdown/dist/src/ia-dropdown';
+import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
@@ -296,7 +293,15 @@ export class SortFilterBar
         <ul id="desktop-sort-selector">
           <li>
             ${this.showRelevance
-              ? this.getSortDisplayOption(SortField.relevance)
+              ? this.getSortDisplayOption(SortField.relevance, {
+                  onClick: () => {
+                    this.clearAlphaBarFilters();
+                    this.dropdownBackdropVisible = false;
+                    this.setSelectedSort(SortField.relevance);
+                    this.emitTitleLetterChangedEvent();
+                    this.emitCreatorLetterChangedEvent();
+                  },
+                })
               : nothing}
           </li>
           <li>${this.viewsDropdownTemplate}</li>
