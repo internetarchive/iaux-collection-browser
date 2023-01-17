@@ -257,17 +257,19 @@ export class MoreFacetsPagination extends LitElement {
       }
       .facets-pagination .arrow-icon svg {
         height: 14px;
+        fill: #2c2c2c;
       }
       .facets-pagination button,
       .facets-pagination i {
         background: none;
         border: 0;
         cursor: pointer;
-        border-radius: 100%;
+        border-radius: 4px;
         margin: 10px 5px;
         padding: 5px;
         font-size: 1.4rem;
-        vertical-align: middle;
+        color: inherit;
+        vertical-align: baseline;
         display: inline-block;
         min-width: 2.5rem;
       }
@@ -276,7 +278,7 @@ export class MoreFacetsPagination extends LitElement {
         display: inline;
       }
       .facets-pagination button.current {
-        background: black;
+        background: #2c2c2c;
         color: white;
       }
       .page-numbers {

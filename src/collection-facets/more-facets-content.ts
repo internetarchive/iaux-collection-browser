@@ -37,6 +37,7 @@ import {
   analyticsActions,
   analyticsCategories,
 } from '../utils/analytics-events';
+import './toggle-switch';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -59,7 +60,8 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: String }) sortedBy: 'count' | 'alpha' = 'count';
+  @property({ type: String }) sortedBy: AggregationSortType =
+    AggregationSortType.COUNT;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -253,9 +255,7 @@ export class MoreFacetsContent extends LitElement {
 
       // sort facets in specific order
       let castedBuckets = aggregation.getSortedBuckets(
-        this.sortedBy === 'alpha'
-          ? AggregationSortType.ALPHABETICAL
-          : AggregationSortType.COUNT
+        this.sortedBy
       ) as Bucket[];
 
       if (option === 'collection') {
@@ -369,28 +369,28 @@ export class MoreFacetsContent extends LitElement {
     return nothing;
   }
 
-  private sortFacetAggregation() {
-    this.sortedBy = this.sortedBy === 'count' ? 'alpha' : 'count';
+  private sortFacetAggregation(facetSortType: AggregationSortType) {
+    this.sortedBy = facetSortType;
     this.dispatchEvent(
       new CustomEvent('sortedFacets', { detail: this.sortedBy })
     );
   }
 
   private get getModalHeaderTemplate(): TemplateResult {
-    const title = this.sortedBy === 'alpha' ? 'Sort by count' : 'Sort by value';
-
     return html`<span class="sr-only">More facets for:</span>
       <span class="title">
         ${this.facetGroupTitle}
-        <button
-          class="sort-button"
-          @click=${(e: Event) => {
-            e.preventDefault();
-            this.sortFacetAggregation();
+        <label class="sort-label">Sort by:</label>
+        <toggle-switch
+          class="sort-toggle"
+          leftValue=${AggregationSortType.COUNT}
+          leftLabel="Count"
+          rightValue=${AggregationSortType.ALPHABETICAL}
+          rightLabel=${this.facetGroupTitle}
+          @change=${(e: CustomEvent<string>) => {
+            this.sortFacetAggregation(Number(e.detail) as AggregationSortType);
           }}
-        >
-          ${title}
-        </button>
+        ></toggle-switch>
       </span>`;
   }
 
@@ -447,7 +447,7 @@ export class MoreFacetsContent extends LitElement {
       }
       section#more-facets {
         overflow: auto;
-        padding: 10px; // leaves room for scroll bar to appear without overlaying on content
+        padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
       }
       .header-content .title {
         display: block;
@@ -456,39 +456,21 @@ export class MoreFacetsContent extends LitElement {
         padding: 0 10px;
         font-weight: bold;
       }
-      .sort-button {
-        margin-left: 0.7rem;
-        padding: 0;
-        border: none;
-        background: transparent;
-        color: var(--ia-theme-link-color, #4b64ff);
+
+      .sort-label {
+        margin-left: 20px;
         font-size: 1.3rem;
+      }
+
+      .sort-toggle {
         font-weight: normal;
-        cursor: pointer;
       }
-      .sort-button:hover {
-        text-decoration: underline;
-      }
+
       .facets-content {
         font-size: 1.2rem;
         max-height: 300px;
         overflow: auto;
         padding: 10px;
-      }
-      .page-number {
-        background: none;
-        border: 0;
-        cursor: pointer;
-        border-radius: 100%;
-        width: 25px;
-        height: 25px;
-        margin: 10px;
-        font-size: 1.4rem;
-        vertical-align: middle;
-      }
-      .current-page {
-        background: black;
-        color: white;
       }
       .facets-loader {
         margin-bottom: 20px;
@@ -506,7 +488,7 @@ export class MoreFacetsContent extends LitElement {
         cursor: pointer;
       }
       .btn-cancel {
-        background-color: #000;
+        background-color: #2c2c2c;
         color: white;
       }
       .btn-submit {
@@ -527,11 +509,6 @@ export class MoreFacetsContent extends LitElement {
         overflow: hidden;
         clip: rect(0, 0, 0, 0);
         border: 0;
-      }
-      .sorting-icon {
-        height: 15px;
-        vertical-align: baseline;
-        cursor: pointer;
       }
     `;
   }
