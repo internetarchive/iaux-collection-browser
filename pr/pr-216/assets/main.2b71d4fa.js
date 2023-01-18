@@ -4460,7 +4460,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       flex: 1;
       position: relative;
       border-left: 1px solid rgb(232, 232, 232);
+      border-right: 1px solid rgb(232, 232, 232);
       padding-left: 1rem;
+      padding-right: 1rem;
+      background: #fff;
     }
 
     .mobile #right-column {
