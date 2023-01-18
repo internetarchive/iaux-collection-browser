@@ -4003,16 +4003,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <div id="container" class="${this.facetsLoading?"loading":""}">
         ${this.showHistogramDatePicker&&(this.fullYearsHistogramAggregation||this.fullYearAggregationLoading)?h`
               <div class="facet-group">
-                <h1>
-                  Year Published
-                  <feature-feedback
-                    featureIdentifier="HistogramDatePicker"
-                    prompt="What do you think of the Histogram Date Picker?"
-                    .featureFeedbackService=${this.featureFeedbackService}
-                    .resizeObserver=${this.resizeObserver}
-                    .recaptchaManager=${this.recaptchaManager}
-                  ></feature-feedback>
-                </h1>
+                <h1>Year Published</h1>
                 ${this.histogramTemplate}
               </div>
             `:b}
@@ -4469,7 +4460,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       flex: 1;
       position: relative;
       border-left: 1px solid rgb(232, 232, 232);
+      border-right: 1px solid rgb(232, 232, 232);
       padding-left: 1rem;
+      padding-right: 1rem;
+      background: #fff;
     }
 
     .mobile #right-column {
