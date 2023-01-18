@@ -2070,12 +2070,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       #tooltip-container {
         width: max-content;
         max-width: 200px;
-        padding-top: ${e};
         pointer-events: none;
       }
 
       #arrow {
-        position: absolute;
+        position: relative;
         left: calc(50% + ${t});
         top: 0;
         width: 0;
