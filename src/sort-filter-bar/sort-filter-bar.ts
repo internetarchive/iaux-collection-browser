@@ -799,6 +799,7 @@ export class SortFilterBar
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #2c2c2c;
+      font-size: 1.4rem;
     }
 
     ul {
@@ -815,7 +816,6 @@ export class SortFilterBar
 
     .sort-by-text {
       margin-right: 5px;
-      font-size: 1.4rem;
       font-weight: bold;
       white-space: nowrap;
     }
@@ -862,26 +862,6 @@ export class SortFilterBar
       background-color: white;
       border-radius: 2.5rem;
       border: 1px solid #404142;
-    }
-
-    #date-sort-selector button,
-    #view-sort-selector button {
-      background: none;
-      border-radius: 15px;
-      color: #404142;
-      border: none;
-      -webkit-appearance: none;
-      appearance: none;
-      cursor: pointer;
-      font-size: 1.4rem;
-      font-weight: 400;
-      padding: 0.5rem 1.2rem;
-    }
-
-    #date-sort-selector button.selected,
-    #view-sort-selector button.selected {
-      background-color: #404142;
-      color: white;
     }
 
     #sort-selector-container {
@@ -939,7 +919,6 @@ export class SortFilterBar
     #desktop-sort-selector li a {
       padding: 0 5px;
       text-decoration: none;
-      font-size: 1.4rem;
       color: #333;
       line-height: 2;
     }
@@ -973,7 +952,6 @@ export class SortFilterBar
 
     ia-dropdown {
       --dropdownTextColor: white;
-      --dropdownFontSize: 1.4rem;
       --dropdownOffsetTop: 0;
       --dropdownBorderTopWidth: 0;
       --dropdownBorderTopLeftRadius: 0;
