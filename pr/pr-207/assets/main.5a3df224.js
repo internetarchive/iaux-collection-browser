@@ -1032,7 +1032,7 @@ var ur=Object.defineProperty,vr=Object.defineProperties;var mr=Object.getOwnProp
         display: block;
         text-align: center;
       }
-    `}};s([c({type:String})],Ie.prototype,"mediatype",void 0);s([c({type:Number})],Ie.prototype,"itemCount",void 0);s([c({type:Number})],Ie.prototype,"viewCount",void 0);s([c({type:String})],Ie.prototype,"viewLabel",void 0);s([c({type:Number})],Ie.prototype,"favCount",void 0);s([c({type:Number})],Ie.prototype,"commentCount",void 0);Ie=s([P("tile-stats")],Ie);let st=class extends M{constructor(){super(...arguments),this.loggedIn=!1,this.showInfoButton=!1}render(){var e,t,i,o,r,n,l;const d=(e=this.model)===null||e===void 0?void 0:e.title,[u,m]=((t=this.sortParam)===null||t===void 0?void 0:t.field)==="week"?[(i=this.model)===null||i===void 0?void 0:i.weeklyViewCount,"weekly views"]:[(o=this.model)===null||o===void 0?void 0:o.viewCount,"all-time-views"];return h`
+    `}};s([c({type:String})],Ie.prototype,"mediatype",void 0);s([c({type:Number})],Ie.prototype,"itemCount",void 0);s([c({type:Number})],Ie.prototype,"viewCount",void 0);s([c({type:String})],Ie.prototype,"viewLabel",void 0);s([c({type:Number})],Ie.prototype,"favCount",void 0);s([c({type:Number})],Ie.prototype,"commentCount",void 0);Ie=s([P("tile-stats")],Ie);let st=class extends M{constructor(){super(...arguments),this.loggedIn=!1,this.showInfoButton=!1}render(){var e,t,i,o,r,n,l;const d=(e=this.model)===null||e===void 0?void 0:e.title,[u,m]=((t=this.sortParam)===null||t===void 0?void 0:t.field)==="week"?[(i=this.model)===null||i===void 0?void 0:i.weeklyViewCount,"weekly views"]:[(o=this.model)===null||o===void 0?void 0:o.viewCount,"all-time views"];return h`
       <div class="container">
         ${this.infoButtonTemplate}
         <div class="tile-details">
@@ -2306,7 +2306,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       >
         ${n}
       </a>
-    `}getSortDropdown(e){var t,i,o,r,n;return h`
+    `}getSortDropdown(e){var t,i,o,r,n,l;return h`
       <ia-dropdown
         id=${(t=e.id)!==null&&t!==void 0?t:b}
         class=${!((i=e.isSelected)===null||i===void 0)&&i.call(e)?"selected":b}
@@ -2315,15 +2315,15 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         includeSelectedOption
         .openViaButton=${!1}
         .options=${e.dropdownOptions}
-        .selectedOption=${e.selectedOption}
-        @optionSelected=${(o=e.onOptionSelected)!==null&&o!==void 0?o:b}
-        @click=${(r=e.onDropdownClick)!==null&&r!==void 0?r:b}
+        .selectedOption=${(o=e.selectedOption)!==null&&o!==void 0?o:""}
+        @optionSelected=${(r=e.onOptionSelected)!==null&&r!==void 0?r:b}
+        @click=${(n=e.onDropdownClick)!==null&&n!==void 0?n:b}
       >
         <span
           class="dropdown-label"
           slot="dropdown-label"
-          @click=${(n=e.onLabelInteraction)!==null&&n!==void 0?n:b}
-          @keydown=${e.onLabelInteraction?l=>{var d;(l.key==="Enter"||l.key===" ")&&((d=e.onLabelInteraction)===null||d===void 0||d.call(e))}:b}
+          @click=${(l=e.onLabelInteraction)!==null&&l!==void 0?l:b}
+          @keydown=${e.onLabelInteraction?d=>{var u;(d.key==="Enter"||d.key===" ")&&((u=e.onLabelInteraction)===null||u===void 0||u.call(e))}:b}
         >
           ${e.displayName}
         </span>
