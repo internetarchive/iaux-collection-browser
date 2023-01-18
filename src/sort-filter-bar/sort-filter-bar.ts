@@ -432,7 +432,7 @@ export class SortFilterBar
         includeSelectedOption
         .openViaButton=${false}
         .options=${options.dropdownOptions}
-        .selectedOption=${options.selectedOption}
+        .selectedOption=${options.selectedOption ?? ''}
         @optionSelected=${options.onOptionSelected ?? nothing}
         @click=${options.onDropdownClick ?? nothing}
       >
@@ -442,8 +442,9 @@ export class SortFilterBar
           @click=${options.onLabelInteraction ?? nothing}
           @keydown=${options.onLabelInteraction
             ? (e: KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ')
+                if (e.key === 'Enter' || e.key === ' ') {
                   options.onLabelInteraction?.();
+                }
               }
             : nothing}
         >
@@ -495,8 +496,9 @@ export class SortFilterBar
         this.viewsDropdown.classList.toggle('open', this.viewsDropdown.open);
       },
       onLabelInteraction: () => {
-        if (!this.viewsDropdown.open && !this.viewOptionSelected)
+        if (!this.viewsDropdown.open && !this.viewOptionSelected) {
           this.setSelectedSort(SortField.weeklyview);
+        }
       },
     });
   }
@@ -521,8 +523,9 @@ export class SortFilterBar
         this.dateDropdown.classList.toggle('open', this.dateDropdown.open);
       },
       onLabelInteraction: () => {
-        if (!this.dateDropdown.open && !this.dateOptionSelected)
+        if (!this.dateDropdown.open && !this.dateOptionSelected) {
           this.setSelectedSort(SortField.date);
+        }
       },
     });
   }

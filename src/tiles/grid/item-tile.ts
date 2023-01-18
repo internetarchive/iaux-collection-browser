@@ -38,7 +38,7 @@ export class ItemTile extends LitElement {
     const [viewCount, viewLabel] =
       this.sortParam?.field === 'week'
         ? [this.model?.weeklyViewCount, 'weekly views']
-        : [this.model?.viewCount, 'all-time-views'];
+        : [this.model?.viewCount, 'all-time views'];
 
     return html`
       <div class="container">
