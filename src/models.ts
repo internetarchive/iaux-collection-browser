@@ -1,4 +1,5 @@
 import type { MediaType } from '@internetarchive/field-parsers';
+import type { SortDirection } from '@internetarchive/search-service';
 
 export interface TileModel {
   averageRating?: number;
@@ -55,8 +56,8 @@ export enum SortField {
   'alltimeview' = 'alltimeview',
   'weeklyview' = 'weeklyview',
   'title' = 'title',
-  'datearchived' = 'datearchived',
   'date' = 'date',
+  'datearchived' = 'datearchived',
   'datereviewed' = 'datereviewed',
   'dateadded' = 'dateadded',
   'creator' = 'creator',
@@ -79,14 +80,28 @@ export const SortFieldDisplayName: {
   [key in SortField]: string;
 } = {
   relevance: 'Relevance',
-  alltimeview: 'All-time Views',
-  weeklyview: 'Weekly Views',
+  alltimeview: 'All-time views',
+  weeklyview: 'Weekly views',
   title: 'Title',
-  datearchived: 'Date Archived',
-  date: 'Date Published',
-  datereviewed: 'Date Reviewed',
-  dateadded: 'Date Added',
+  date: 'Date published',
+  datearchived: 'Date archived',
+  datereviewed: 'Date reviewed',
+  dateadded: 'Date added',
   creator: 'Creator',
+};
+
+export const DefaultSortDirection: {
+  [key in SortField]: SortDirection;
+} = {
+  relevance: 'desc', // Can't actually change the sort direction for relevance
+  alltimeview: 'desc',
+  weeklyview: 'desc',
+  title: 'asc',
+  date: 'desc',
+  datearchived: 'desc',
+  datereviewed: 'desc',
+  dateadded: 'desc',
+  creator: 'asc',
 };
 
 /**
@@ -99,8 +114,8 @@ export const SortFieldToMetadataField: {
   alltimeview: 'downloads',
   weeklyview: 'week',
   title: 'titleSorter',
-  datearchived: 'publicdate',
   date: 'date',
+  datearchived: 'publicdate',
   datereviewed: 'reviewdate',
   dateadded: 'addeddate',
   creator: 'creatorSorter',

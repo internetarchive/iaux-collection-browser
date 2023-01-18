@@ -35,6 +35,10 @@ export class ItemTile extends LitElement {
 
   render() {
     const itemTitle = this.model?.title;
+    const [viewCount, viewLabel] =
+      this.sortParam?.field === 'week'
+        ? [this.model?.weeklyViewCount, 'weekly views']
+        : [this.model?.viewCount, 'all-time views'];
 
     return html`
       <div class="container">
@@ -58,7 +62,8 @@ export class ItemTile extends LitElement {
 
           <tile-stats
             .mediatype=${this.model?.mediatype}
-            .viewCount=${this.model?.viewCount}
+            .viewCount=${viewCount}
+            .viewLabel=${viewLabel}
             .favCount=${this.model?.favCount}
             .commentCount=${this.model?.commentCount}
           >

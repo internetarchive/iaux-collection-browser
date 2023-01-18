@@ -124,6 +124,13 @@
   dependencies:
     lit "^2.2.2"
 
+"@internetarchive/ia-dropdown@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.1.0.tgz#eccf7964a92b49a656231961e51311e4020038b1"
+  integrity sha512-2rhtIWZvmWjz5HDNv1A84VgZUg2p81C+Mc+Ga6MB+2ivsjhHQ4wEaJir5l1xAyJ+Og5jm/ht9WcjpnncLFFufQ==
+  dependencies:
+    lit "^2.0.2"
+
 "@internetarchive/icon-close@^1.3.2":
   version "1.3.2"
   resolved "https://registry.npmjs.org/@internetarchive/icon-close/-/icon-close-1.3.2.tgz"

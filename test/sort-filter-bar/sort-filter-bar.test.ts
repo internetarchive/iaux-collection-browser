@@ -1,146 +1,351 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
+import type { IaDropdown } from '@internetarchive/ia-dropdown';
+import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
 import type { SortField } from '../../src/models';
 
 import '../../src/sort-filter-bar/sort-filter-bar';
-
-describe('Sort direction buttons', () => {
-  it('should render sort direction button', async () => {
-    const el = await fixture<SortFilterBar>(html`
-      <sort-filter-bar> </sort-filter-bar>
-    `);
-
-    el.sortDirection = 'asc'; // selected sort
-    await el.updateComplete;
-
-    const sortDirectionButtonList = el.shadowRoot?.querySelector(
-      '#sort-direction-selector'
-    );
-
-    const sortByAscButton = sortDirectionButtonList?.querySelector(
-      '#sort-ascending-btn'
-    );
-    expect(sortByAscButton).to.exist;
-    // ascending order button is selected
-    expect(sortByAscButton?.getAttribute('class')).to.equal(
-      'sort-button selected'
-    );
-
-    const sortByDescButton = sortDirectionButtonList?.querySelector(
-      '#sort-descending-btn'
-    );
-    expect(sortByDescButton).to.exist;
-    // descending order button is not selected
-    expect(sortByDescButton?.getAttribute('class')).to.not.equal(
-      'sort-button selected'
-    );
-  });
-});
 
 describe('Sort selector default buttons', async () => {
   const el = await fixture<SortFilterBar>(html`
     <sort-filter-bar> </sort-filter-bar>
   `);
   const sortSelectorContainer = el.shadowRoot?.querySelector(
+    '#sort-selector-container'
+  );
+  const desktopSortSelector = sortSelectorContainer?.querySelector(
     '#desktop-sort-selector'
   );
 
+  before(async () => {
+    el.resizeObserver = new SharedResizeObserver();
+    await el.updateComplete;
+  });
+
+  it('should render basic component', async () => {
+    expect(sortSelectorContainer).to.exist;
+    expect(desktopSortSelector).to.exist;
+  });
+
   it('should render sort-by label', async () => {
-    expect(sortSelectorContainer?.children.item(0)?.textContent).to.equal(
-      'Sort By'
+    const sortByLabel = el.shadowRoot?.querySelector('.sort-by-text');
+    expect(sortByLabel).to.exist;
+    expect(sortByLabel?.textContent?.trim()).to.equal('Sort by:');
+  });
+
+  it('should render sort direction button', async () => {
+    const sortDirections = el.shadowRoot?.querySelector(
+      '.sort-direction-container'
     );
+    expect(sortDirections).to.exist;
+    expect(sortDirections?.querySelector('.sort-direction-icon')).to.exist;
   });
 
   it('should render default relevance-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(1)
-      ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Relevance');
-    expect(defaultSortSelector?.getAttribute('class')).to.equal('selected');
+    const defaultSortSelector =
+      desktopSortSelector?.querySelector('a.selected');
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('Relevance');
   });
 
   it('should render default view-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(2)
-      ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Weekly Views');
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('ia-dropdown');
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('Weekly views');
   });
 
   it('should render active view-sort selectors', async () => {
     el.selectedSort = 'alltimeview' as SortField;
     await el.updateComplete;
 
-    const defaultSortSelector =
-      sortSelectorContainer?.querySelector('a.selected');
-    expect(defaultSortSelector?.textContent).to.contain('All-time Views');
+    const defaultSortSelector = desktopSortSelector?.querySelector(
+      'ia-dropdown.selected'
+    );
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('All-time views');
   });
 
   it('should render default title-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(3)
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(2)
       ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Title');
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('Title');
   });
 
   it('should render default date-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(4)
-      ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Date Published');
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown');
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('Date published');
   });
 
   it('should render active date-sort selectors', async () => {
     el.selectedSort = 'datereviewed' as SortField;
     await el.updateComplete;
 
-    const defaultSortSelector =
-      sortSelectorContainer?.querySelector('a.selected');
-    expect(defaultSortSelector?.textContent).to.contain('Date Reviewed');
+    const defaultSortSelector = desktopSortSelector?.querySelector(
+      'ia-dropdown.selected'
+    );
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('Date reviewed');
   });
 
   it('should render default creator-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(5)
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(4)
       ?.querySelector('a');
-    expect(defaultSortSelector?.textContent).to.contain('Creator');
+    expect(defaultSortSelector?.textContent?.trim()).to.equal('Creator');
   });
 
-  it('click event on view-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(2)
-      ?.querySelector('a');
+  it('handles click event on view-sort selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('.dropdown-label') as HTMLElement;
 
-    await defaultSortSelector?.click();
+    defaultSortSelector?.click();
+    await el.updateComplete;
+
     expect(el.selectedSort).to.equal('weeklyview');
   });
 
-  it('click event on title selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(3)
+  it('handles click event on title selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(2)
       ?.querySelector('a');
 
-    await defaultSortSelector?.click();
+    defaultSortSelector?.click();
+    await el.updateComplete;
+
     expect(el.selectedSort).to.equal('title');
   });
 
-  it('click event on date-sort selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(4)
-      ?.querySelector('a');
+  it('handles click event on date-sort selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('.dropdown-label') as HTMLElement;
 
-    await defaultSortSelector?.click();
+    defaultSortSelector?.click();
+    await el.updateComplete;
+
     expect(el.selectedSort).to.equal('date');
   });
 
-  it('click event on creator selector', async () => {
-    const defaultSortSelector = sortSelectorContainer?.children
-      .item(5)
+  it('handles return/space key event on view-sort selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('.dropdown-label') as HTMLElement;
+
+    el.selectedSort = 'relevance' as SortField;
+    const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+    defaultSortSelector?.dispatchEvent(enterEvent);
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('weeklyview');
+
+    el.selectedSort = 'relevance' as SortField;
+    const spaceEvent = new KeyboardEvent('keydown', { key: ' ' });
+    defaultSortSelector?.dispatchEvent(spaceEvent);
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('weeklyview');
+  });
+
+  it('handles return/space key event on date-sort selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('.dropdown-label') as HTMLElement;
+
+    el.selectedSort = 'relevance' as SortField;
+    const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
+    defaultSortSelector?.dispatchEvent(enterEvent);
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('date');
+
+    el.selectedSort = 'relevance' as SortField;
+    const spaceEvent = new KeyboardEvent('keydown', { key: ' ' });
+    defaultSortSelector?.dispatchEvent(spaceEvent);
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('date');
+  });
+
+  it('handles click event on creator selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(4)
       ?.querySelector('a');
 
-    await defaultSortSelector?.click();
+    defaultSortSelector?.click();
+    await el.updateComplete;
+
     expect(el.selectedSort).to.equal('creator');
+  });
+
+  it('handles click event on view-sort dropdown option', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('ia-dropdown') as IaDropdown;
+
+    const firstOption = defaultSortSelector?.shadowRoot?.querySelector(
+      'li > button'
+    ) as HTMLButtonElement;
+    expect(firstOption).to.exist;
+
+    firstOption?.click();
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('weeklyview');
+  });
+
+  it('handles click event on date-sort dropdown option', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown') as IaDropdown;
+
+    const firstOption = defaultSortSelector?.shadowRoot?.querySelector(
+      'li > button'
+    ) as HTMLButtonElement;
+    expect(firstOption).to.exist;
+
+    firstOption?.click();
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('date');
+  });
+
+  it('shows view sort selector backdrop when view sort open', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(1)
+      ?.querySelector('ia-dropdown') as IaDropdown;
+
+    const caret = defaultSortSelector?.shadowRoot?.querySelector(
+      '.caret'
+    ) as HTMLElement;
+    expect(caret).to.exist;
+
+    caret?.click();
+    await el.updateComplete;
+
+    let backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).to.exist;
+
+    backdrop?.click();
+    await el.updateComplete;
+
+    backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).not.to.exist;
+  });
+
+  it('shows date sort selector backdrop when date sort open', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown') as IaDropdown;
+
+    const caret = defaultSortSelector?.shadowRoot?.querySelector(
+      '.caret'
+    ) as HTMLElement;
+    expect(caret).to.exist;
+
+    caret?.click();
+    await el.updateComplete;
+
+    let backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).to.exist;
+
+    backdrop?.click();
+    await el.updateComplete;
+
+    backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).not.to.exist;
+  });
+
+  it('closes dropdown by hitting escape key', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(3)
+      ?.querySelector('ia-dropdown') as IaDropdown;
+
+    const caret = defaultSortSelector?.shadowRoot?.querySelector(
+      '.caret'
+    ) as HTMLElement;
+    expect(caret).to.exist;
+
+    caret?.click();
+    await el.updateComplete;
+
+    let backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).to.exist;
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await el.updateComplete;
+
+    backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).not.to.exist;
+  });
+});
+
+describe('Sort direction button behavior', () => {
+  it('should disable sort direction button when sorting by relevance', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar> </sort-filter-bar>
+    `);
+
+    el.selectedSort = 'relevance' as SortField;
+    await el.updateComplete;
+
+    const sortDirectionButton = el.shadowRoot?.querySelector(
+      '.sort-direction-selector'
+    ) as HTMLButtonElement;
+    expect(sortDirectionButton).to.exist;
+    expect(sortDirectionButton.disabled).to.be.true;
+  });
+
+  it('should enable sort direction button when not sorting by relevance', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar> </sort-filter-bar>
+    `);
+
+    el.selectedSort = 'title' as SortField;
+    await el.updateComplete;
+
+    const sortDirectionButton = el.shadowRoot?.querySelector(
+      '.sort-direction-selector'
+    ) as HTMLButtonElement;
+    expect(sortDirectionButton).to.exist;
+    expect(sortDirectionButton.disabled).to.be.false;
+  });
+
+  it('should toggle sort direction when clicked', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar> </sort-filter-bar>
+    `);
+
+    el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
+    await el.updateComplete;
+
+    const sortDirectionButton = el.shadowRoot?.querySelector(
+      '.sort-direction-selector'
+    ) as HTMLButtonElement;
+
+    sortDirectionButton.click();
+    await el.updateComplete;
+    expect(el.sortDirection).to.equal('desc');
+
+    sortDirectionButton.click();
+    await el.updateComplete;
+    expect(el.sortDirection).to.equal('asc');
   });
 });
 
@@ -183,6 +388,36 @@ describe('Display mode/style buttons', () => {
       ?.querySelector('button.active')
       ?.getAttribute('title');
     expect(displayModeTitle).to.equal('Tile view');
+  });
+
+  it('should change displayMode prop to the one clicked', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar> </sort-filter-bar>
+    `);
+
+    el.displayMode = 'grid';
+    await el.updateComplete;
+
+    const extendedListButton = el.shadowRoot?.querySelector(
+      '#list-detail-button'
+    ) as HTMLElement;
+    extendedListButton.click();
+    await el.updateComplete;
+    expect(el.displayMode).to.equal('list-detail');
+
+    const compactListButton = el.shadowRoot?.querySelector(
+      '#list-compact-button'
+    ) as HTMLElement;
+    compactListButton.click();
+    await el.updateComplete;
+    expect(el.displayMode).to.equal('list-compact');
+
+    const gridModeButton = el.shadowRoot?.querySelector(
+      '#grid-button'
+    ) as HTMLElement;
+    gridModeButton.click();
+    await el.updateComplete;
+    expect(el.displayMode).to.equal('grid');
   });
 });
 
@@ -246,15 +481,15 @@ describe('Sort/filter bar mobile view', () => {
       <sort-filter-bar></sort-filter-bar>
     `);
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
+    const mobileSortContainer = el.shadowRoot?.querySelector(
+      '#mobile-sort-container'
     );
-    const desktopSortSelector = el.shadowRoot?.querySelector(
-      '#desktop-sort-selector'
+    const desktopSortContainer = el.shadowRoot?.querySelector(
+      '#desktop-sort-container'
     );
 
-    expect(mobileSortSelector?.classList?.contains('visible')).to.be.true;
-    expect(desktopSortSelector?.classList?.contains('hidden')).to.be.true;
+    expect(mobileSortContainer?.classList?.contains('visible')).to.be.true;
+    expect(desktopSortContainer?.classList?.contains('hidden')).to.be.true;
   });
 
   it('changes selected sort in mobile view', async () => {
@@ -262,13 +497,16 @@ describe('Sort/filter bar mobile view', () => {
       <sort-filter-bar></sort-filter-bar>
     `);
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
-    ) as HTMLSelectElement;
-    expect(mobileSortSelector).to.exist;
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
+    ) as IaDropdown;
+    expect(mobileDropdown).to.exist;
 
-    mobileSortSelector.value = 'title';
-    mobileSortSelector.dispatchEvent(new Event('change'));
+    mobileDropdown.selectedOption = 'title';
+    const option = { id: 'title' };
+    mobileDropdown.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { option } })
+    );
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('title');
@@ -283,13 +521,16 @@ describe('Sort/filter bar mobile view', () => {
     el.selectedTitleFilter = 'A';
     await el.updateComplete;
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
-    ) as HTMLSelectElement;
-    expect(mobileSortSelector).to.exist;
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
+    ) as IaDropdown;
+    expect(mobileDropdown).to.exist;
 
-    mobileSortSelector.value = 'relevance';
-    mobileSortSelector.dispatchEvent(new Event('change'));
+    mobileDropdown.selectedOption = 'relevance';
+    const option = { id: 'relevance' };
+    mobileDropdown.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { option } })
+    );
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('relevance');
@@ -305,16 +546,51 @@ describe('Sort/filter bar mobile view', () => {
     el.selectedCreatorFilter = 'A';
     await el.updateComplete;
 
-    const mobileSortSelector = el.shadowRoot?.querySelector(
-      '#mobile-sort-selector'
-    ) as HTMLSelectElement;
-    expect(mobileSortSelector).to.exist;
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
+    ) as IaDropdown;
+    expect(mobileDropdown).to.exist;
 
-    mobileSortSelector.value = 'relevance';
-    mobileSortSelector.dispatchEvent(new Event('change'));
+    mobileDropdown.selectedOption = 'relevance';
+    const option = { id: 'relevance' };
+    mobileDropdown.dispatchEvent(
+      new CustomEvent('optionSelected', { detail: { option } })
+    );
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('relevance');
     expect(el.selectedCreatorFilter).to.be.null;
+  });
+
+  it('shows sort selector backdrop when mobile sort open', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    const mobileDropdown = el.shadowRoot?.querySelector(
+      '#mobile-dropdown'
+    ) as IaDropdown;
+    expect(mobileDropdown).to.exist;
+
+    const caret = mobileDropdown?.shadowRoot?.querySelector(
+      '.caret'
+    ) as HTMLElement;
+    expect(caret).to.exist;
+
+    caret?.click();
+    await el.updateComplete;
+
+    let backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).to.exist;
+
+    backdrop?.click();
+    await el.updateComplete;
+
+    backdrop = el.shadowRoot?.querySelector(
+      '#sort-selector-backdrop'
+    ) as HTMLElement;
+    expect(backdrop).not.to.exist;
   });
 });

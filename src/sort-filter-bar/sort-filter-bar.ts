@@ -11,8 +11,12 @@ import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
+import '@internetarchive/ia-dropdown';
+import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
+import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
+  DefaultSortDirection,
   PrefixFilterCounts,
   PrefixFilterType,
   SortField,
@@ -20,7 +24,9 @@ import {
 } from '../models';
 import './alpha-bar';
 
-import { sortIcon } from './img/sort-triangle';
+import { sortUpIcon } from './img/sort-toggle-up';
+import { sortDownIcon } from './img/sort-toggle-down';
+import { sortDisabledIcon } from './img/sort-toggle-disabled';
 import { tileIcon } from './img/tile';
 import { listIcon } from './img/list';
 import { compactIcon } from './img/compact';
@@ -32,18 +38,25 @@ export class SortFilterBar
   extends LitElement
   implements SharedResizeObserverResizeHandlerInterface
 {
+  /** Which display mode the tiles are being rendered with (grid/list-detail/list-compact) */
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
+  /** The current sort direction (asc/desc), or null if none is set */
   @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
 
+  /** The field currently being sorted on (e.g., 'title'). Defaults to relevance. */
   @property({ type: String }) selectedSort: SortField = SortField.relevance;
 
+  /** The currently selected title letter filter, or null if none is set */
   @property({ type: String }) selectedTitleFilter: string | null = null;
 
+  /** The currently selected creator letter filter, or null if none is set */
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
+  /** Whether to show the Relevance sort option (default `true`) */
   @property({ type: Boolean }) showRelevance: boolean = true;
 
+  /** Maps of result counts for letters on the alphabet bar, for each letter filter type */
   @property({ type: Object }) prefixFilterCountMap?: Record<
     PrefixFilterType,
     PrefixFilterCounts
@@ -51,31 +64,64 @@ export class SortFilterBar
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
+  /**
+   * Which of the alphabet bars (title/creator) should be shown, or null if one
+   * should not currently be rendered.
+   */
   @state() alphaSelectorVisible: AlphaSelector | null = null;
 
-  @state() dateSortSelectorVisible = false;
+  /**
+   * Whether the transparent backdrop to catch clicks outside the dropdown menu
+   * should be rendered.
+   */
+  @state() dropdownBackdropVisible = false;
 
-  @state() viewSortSelectorVisible = false;
+  /**
+   * The width of the desktop view sort option container, updated upon each resize.
+   * Used for dynamically determining whether to use desktop or mobile view.
+   */
+  @state() desktopSortContainerWidth = 0;
 
-  @state() desktopSelectorBarWidth = 0;
-
+  /**
+   * The width of the full sort bar, updated upon each resize.
+   * Used for dynamically determining whether to use desktop or mobile view.
+   */
   @state() selectorBarContainerWidth = 0;
 
-  @state() hoveringOverDateSortOptions = false;
+  /**
+   * The container for all the desktop view's sort options.
+   * Used for dynamically determining whether to use desktop or mobile view.
+   */
+  @query('#desktop-sort-container')
+  private desktopSortContainer!: HTMLUListElement;
 
-  @query('#desktop-sort-selector')
-  private desktopSortSelector!: HTMLUListElement;
-
+  /**
+   * The container for the full sort bar.
+   * Used for dynamically determining whether to use desktop or mobile view.
+   */
   @query('#sort-selector-container')
   private sortSelectorContainer!: HTMLDivElement;
+
+  /** The dropdown component containing options for weekly and all-time views */
+  @query('#views-dropdown')
+  private viewsDropdown!: IaDropdown;
+
+  /** The dropdown component containing the four date options */
+  @query('#date-dropdown')
+  private dateDropdown!: IaDropdown;
+
+  /** The single, consolidated dropdown component shown in mobile view */
+  @query('#mobile-dropdown')
+  private mobileDropdown!: IaDropdown;
 
   render() {
     return html`
       <div id="container">
         <div id="sort-bar">
-          <div id="sort-direction-container">
+          <div class="sort-direction-container">
             ${this.sortDirectionSelectorTemplate}
           </div>
+          <span class="sort-by-text">Sort by:</span>
 
           <div id="sort-selector-container">
             ${this.mobileSortSelectorTemplate}
@@ -85,15 +131,8 @@ export class SortFilterBar
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
         </div>
 
-        ${this.viewSortSelectorVisible && !this.mobileSelectorVisible
-          ? this.viewSortSelector
-          : nothing}
-        ${this.dateSortSelectorVisible && !this.mobileSelectorVisible
-          ? this.dateSortSelector
-          : nothing}
+        ${this.dropdownBackdropVisible ? this.dropdownBackdrop : nothing}
         ${this.alphaBarTemplate}
-
-        <div id="bottom-shadow"></div>
       </div>
     `;
   }
@@ -104,7 +143,7 @@ export class SortFilterBar
     }
 
     if (changed.has('selectedSort') && this.sortDirection === null) {
-      this.sortDirection = 'desc';
+      this.sortDirection = DefaultSortDirection[this.selectedSort];
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {
@@ -115,10 +154,7 @@ export class SortFilterBar
       this.alphaSelectorVisible = 'creator';
     }
 
-    if (
-      changed.has('dateSortSelectorVisible') ||
-      changed.has('viewSortSelectorVisible')
-    ) {
+    if (changed.has('dropdownBackdropVisible')) {
       this.setupEscapeListeners();
     }
 
@@ -132,7 +168,7 @@ export class SortFilterBar
   }
 
   private setupEscapeListeners() {
-    if (this.dateSortSelectorVisible || this.viewSortSelectorVisible) {
+    if (this.dropdownBackdropVisible) {
       document.addEventListener(
         'keydown',
         this.boundSortBarSelectorEscapeListener
@@ -147,8 +183,7 @@ export class SortFilterBar
 
   private boundSortBarSelectorEscapeListener = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      this.viewSortSelectorVisible = false;
-      this.dateSortSelectorVisible = false;
+      this.closeDropdowns();
     }
   };
 
@@ -167,7 +202,7 @@ export class SortFilterBar
     });
 
     resizeObserver.removeObserver({
-      target: this.desktopSortSelector,
+      target: this.desktopSortContainer,
       handler: this,
     });
   }
@@ -180,15 +215,31 @@ export class SortFilterBar
     });
 
     this.resizeObserver.addObserver({
-      target: this.desktopSortSelector,
+      target: this.desktopSortContainer,
       handler: this,
     });
   }
 
-  private get mobileSelectorVisible() {
-    return this.selectorBarContainerWidth - 10 < this.desktopSelectorBarWidth;
+  handleResize(entry: ResizeObserverEntry): void {
+    if (entry.target === this.desktopSortContainer) {
+      this.desktopSortContainerWidth = entry.contentRect.width;
+    } else if (entry.target === this.sortSelectorContainer) {
+      this.selectorBarContainerWidth = entry.contentRect.width;
+    }
   }
 
+  /**
+   * Whether to show the mobile sort bar because there is not enough space
+   * for the desktop sort bar.
+   */
+  private get mobileSelectorVisible() {
+    return this.selectorBarContainerWidth - 10 < this.desktopSortContainerWidth;
+  }
+
+  /**
+   * Template to render the alphabet bar, or `nothing` if it should not be rendered
+   * for the current sort
+   */
   private get alphaBarTemplate(): TemplateResult | typeof nothing {
     if (!['title', 'creator'].includes(this.selectedSort)) return nothing;
 
@@ -204,122 +255,120 @@ export class SortFilterBar
     return nothing;
   }
 
-  handleResize(entry: ResizeObserverEntry): void {
-    if (entry.target === this.desktopSortSelector) {
-      this.desktopSelectorBarWidth = entry.contentRect.width;
-    } else if (entry.target === this.sortSelectorContainer) {
-      this.selectorBarContainerWidth = entry.contentRect.width;
-    }
+  /** Template to render the sort direction toggle button */
+  private get sortDirectionSelectorTemplate(): TemplateResult {
+    return html`
+      <button
+        class="sort-direction-selector"
+        ?disabled=${this.selectedSort === 'relevance'}
+        @click=${this.toggleSortDirection}
+      >
+        ${this.sortDirectionIcon}
+      </button>
+    `;
   }
 
-  private get sortDirectionSelectorTemplate() {
+  /** Template to render the sort direction button's icon in the correct current state */
+  private get sortDirectionIcon(): TemplateResult {
+    // For relevance sort, show a fully disabled icon
+    if (this.selectedSort === 'relevance') {
+      return html`<div class="sort-direction-icon">${sortDisabledIcon}</div>`;
+    }
+
+    // For all other sorts, show the ascending/descending direction
     return html`
-      <div id="sort-direction-selector">
-        <button
-          id="sort-ascending-btn"
-          class="sort-button ${this.sortDirection === 'asc' ? 'selected' : ''}"
-          ?disabled=${this.selectedSort === 'relevance'}
-          @click=${() => {
-            this.setSortDirections('asc');
-          }}
-        >
-          ${sortIcon}
-        </button>
-        <button
-          id="sort-descending-btn"
-          class="sort-button ${this.sortDirection === 'desc' ? 'selected' : ''}"
-          ?disabled=${this.selectedSort === 'relevance'}
-          @click=${() => {
-            this.setSortDirections('desc');
-          }}
-        >
-          ${sortIcon}
-        </button>
+      <div class="sort-direction-icon">
+        ${this.sortDirection === 'asc' ? sortUpIcon : sortDownIcon}
       </div>
     `;
   }
 
+  /** The template to render all the sort options in desktop view */
   private get desktopSortSelectorTemplate() {
     return html`
-      <ul
-        id="desktop-sort-selector"
+      <div
+        id="desktop-sort-container"
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
-        <li id="sort-by-text">Sort By</li>
-        <li>
-          ${this.showRelevance
-            ? this.getSortDisplayOption(SortField.relevance)
-            : nothing}
-        </li>
-        <li>
-          ${this.getSortDisplayOption(SortField.weeklyview, {
-            clickEvent: () => {
-              if (!this.viewOptionSelected)
-                this.setSelectedSort(SortField.weeklyview);
-              this.viewSortSelectorVisible = !this.viewSortSelectorVisible;
-              this.dateSortSelectorVisible = false;
-              this.alphaSelectorVisible = null;
-              this.selectedTitleFilter = null;
-              this.selectedCreatorFilter = null;
-              this.emitTitleLetterChangedEvent();
-              this.emitCreatorLetterChangedEvent();
-            },
-            displayName: html`${this.viewSortField}`,
-            isSelected: () => this.viewOptionSelected,
-          })}
-        </li>
-        <li>
-          ${this.getSortDisplayOption(SortField.title, {
-            clickEvent: () => {
-              this.alphaSelectorVisible = 'title';
-              this.selectedCreatorFilter = null;
-              this.dateSortSelectorVisible = false;
-              this.viewSortSelectorVisible = false;
-              this.setSelectedSort(SortField.title);
-              this.emitCreatorLetterChangedEvent();
-            },
-          })}
-        </li>
-        <li>
-          ${this.getSortDisplayOption(SortField.date, {
-            clickEvent: () => {
-              if (!this.dateOptionSelected)
-                this.setSelectedSort(SortField.date);
-              this.dateSortSelectorVisible = !this.dateSortSelectorVisible;
-              this.viewSortSelectorVisible = false;
-              this.alphaSelectorVisible = null;
-              this.selectedTitleFilter = null;
-              this.selectedCreatorFilter = null;
-              this.emitTitleLetterChangedEvent();
-              this.emitCreatorLetterChangedEvent();
-            },
-            displayName: html`${this.dateSortField}`,
-            isSelected: () => this.dateOptionSelected,
-          })}
-        </li>
-        <li>
-          ${this.getSortDisplayOption(SortField.creator, {
-            clickEvent: () => {
-              this.alphaSelectorVisible = 'creator';
-              this.selectedTitleFilter = null;
-              this.dateSortSelectorVisible = false;
-              this.setSelectedSort(SortField.creator);
-              this.emitTitleLetterChangedEvent();
-            },
-          })}
-        </li>
-      </ul>
+        <ul id="desktop-sort-selector">
+          <li>
+            ${this.showRelevance
+              ? this.getSortDisplayOption(SortField.relevance, {
+                  onClick: () => {
+                    this.clearAlphaBarFilters();
+                    this.dropdownBackdropVisible = false;
+                    this.setSelectedSort(SortField.relevance);
+                    this.emitTitleLetterChangedEvent();
+                    this.emitCreatorLetterChangedEvent();
+                  },
+                })
+              : nothing}
+          </li>
+          <li>${this.viewsDropdownTemplate}</li>
+          <li>
+            ${this.getSortDisplayOption(SortField.title, {
+              onClick: () => {
+                this.alphaSelectorVisible = 'title';
+                this.selectedCreatorFilter = null;
+                this.dropdownBackdropVisible = false;
+                this.setSelectedSort(SortField.title);
+                this.emitCreatorLetterChangedEvent();
+              },
+            })}
+          </li>
+          <li>${this.dateDropdownTemplate}</li>
+          <li>
+            ${this.getSortDisplayOption(SortField.creator, {
+              onClick: () => {
+                this.alphaSelectorVisible = 'creator';
+                this.selectedTitleFilter = null;
+                this.dropdownBackdropVisible = false;
+                this.setSelectedSort(SortField.creator);
+                this.emitTitleLetterChangedEvent();
+              },
+            })}
+          </li>
+        </ul>
+      </div>
+    `;
+  }
+
+  /** The template to render all the sort options in mobile view */
+  private get mobileSortSelectorTemplate() {
+    return html`
+      <div
+        id="mobile-sort-container"
+        class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
+      >
+        ${this.getSortDropdown({
+          displayName: html`${SortFieldDisplayName[this.selectedSort] ?? ''}`,
+          id: 'mobile-dropdown',
+          isSelected: () => true,
+          dropdownOptions: Object.keys(SortField).map(field =>
+            this.getDropdownOption(field as SortField)
+          ),
+          selectedOption: this.selectedSort ?? SortField.relevance,
+          onOptionSelected: this.mobileSortChanged,
+          onDropdownClick: () => {
+            this.dropdownBackdropVisible = this.mobileDropdown.open;
+            this.mobileDropdown.classList.toggle(
+              'open',
+              this.mobileDropdown.open
+            );
+          },
+        })}
+      </div>
     `;
   }
 
   /**
-   * This generates each of the sort option links.
+   * This generates each of the non-dropdown sort option links.
    *
    * It manages the display value and the selected state of the option.
    *
    * @param sortField
    * @param options {
-   *    additionalClickEvent?: () => void; If this is provided, it will also be called when the option is clicked.
+   *    onClick?: (e: Event) => void; If this is provided, it will also be called when the option is clicked.
    *    displayName?: TemplateResult; The name to display for the option. Defaults to the sortField display name.
    *    isSelected?: () => boolean; A function that returns true if the option is selected. Defaults to the selectedSort === sortField.
    * }
@@ -328,9 +377,9 @@ export class SortFilterBar
   private getSortDisplayOption(
     sortField: SortField,
     options?: {
-      clickEvent?: (e: Event) => void;
-      isSelected?: () => boolean;
       displayName?: TemplateResult;
+      onClick?: (e: Event) => void;
+      isSelected?: () => boolean;
     }
   ): TemplateResult {
     const isSelected =
@@ -341,46 +390,151 @@ export class SortFilterBar
         href="#"
         @click=${(e: Event) => {
           e.preventDefault();
-          if (options?.clickEvent) {
-            options.clickEvent(e);
-          } else {
-            this.alphaSelectorVisible = null;
-            this.dateSortSelectorVisible = false;
-            this.selectedTitleFilter = null;
-            this.selectedCreatorFilter = null;
-            this.setSelectedSort(sortField);
-            this.emitTitleLetterChangedEvent();
-            this.emitCreatorLetterChangedEvent();
-          }
+          options?.onClick?.(e);
         }}
-        class=${isSelected() ? 'selected' : ''}
+        class=${isSelected() ? 'selected' : nothing}
       >
         ${displayName}
       </a>
     `;
   }
 
-  private get mobileSortSelectorTemplate() {
+  /**
+   * Generates a dropdown component containing multiple grouped sort options.
+   *
+   * @param options.displayName The name to use for the dropdown's visible label
+   * @param options.id The id to apply to the dropdown element
+   * @param options.dropdownOptions An array of option objects used to populate the dropdown
+   * @param options.selectedOption The id of the option that should be initially selected
+   * @param options.isSelected A function returning a boolean indicating whether this dropdown
+   *  should use its selected appearance
+   * @param options.onOptionSelected A handler for optionSelected events coming from the dropdown
+   * @param options.onDropdownClick A handler for click events on the dropdown
+   * @param options.onLabelInteraction A handler for click events and Enter/Space keydown events
+   *  on the dropdown's label
+   */
+  private getSortDropdown(options: {
+    displayName: TemplateResult;
+    id?: string;
+    dropdownOptions: optionInterface[];
+    selectedOption?: string;
+    isSelected?: () => boolean;
+    onOptionSelected?: (e: CustomEvent<{ option: optionInterface }>) => void;
+    onDropdownClick?: (e: PointerEvent) => void;
+    onLabelInteraction?: () => void;
+  }): TemplateResult {
     return html`
-      <select
-        id="mobile-sort-selector"
-        @change=${this.mobileSortChanged}
-        class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
+      <ia-dropdown
+        id=${options.id ?? nothing}
+        class=${options.isSelected?.() ? 'selected' : nothing}
+        displayCaret
+        closeOnSelect
+        includeSelectedOption
+        .openViaButton=${false}
+        .options=${options.dropdownOptions}
+        .selectedOption=${options.selectedOption ?? ''}
+        @optionSelected=${options.onOptionSelected ?? nothing}
+        @click=${options.onDropdownClick ?? nothing}
       >
-        ${Object.keys(SortField).map(
-          field => html`
-            <option value="${field}" ?selected=${this.selectedSort === field}>
-              ${SortFieldDisplayName[field as SortField]}
-            </option>
-          `
-        )}
-      </select>
+        <span
+          class="dropdown-label"
+          slot="dropdown-label"
+          @click=${options.onLabelInteraction ?? nothing}
+          @keydown=${options.onLabelInteraction
+            ? (e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  options.onLabelInteraction?.();
+                }
+              }
+            : nothing}
+        >
+          ${options.displayName}
+        </span>
+      </ia-dropdown>
     `;
   }
 
-  private mobileSortChanged(e: Event) {
-    const target = e.target as HTMLSelectElement;
-    const sortField = target.value as SortField;
+  /** Generates a single dropdown option object for the given sort field */
+  private getDropdownOption(sortField: SortField): optionInterface {
+    return {
+      id: sortField,
+      selectedHandler: () => {
+        this.selectDropdownSortField(sortField);
+      },
+      label: html`
+        <span class="dropdown-option-label">
+          ${SortFieldDisplayName[sortField]}
+        </span>
+      `,
+    };
+  }
+
+  /** Handler for when any sort dropdown option is selected */
+  private dropdownOptionSelected(e: CustomEvent<{ option: optionInterface }>) {
+    this.dropdownBackdropVisible = false;
+    this.clearAlphaBarFilters();
+    this.setSelectedSort(e.detail.option.id as SortField);
+    this.emitTitleLetterChangedEvent();
+    this.emitCreatorLetterChangedEvent();
+  }
+
+  /** The template to render for the views dropdown */
+  private get viewsDropdownTemplate(): TemplateResult {
+    return this.getSortDropdown({
+      displayName: html`${this.viewSortField}`,
+      id: 'views-dropdown',
+      isSelected: () => this.viewOptionSelected,
+      dropdownOptions: [
+        this.getDropdownOption(SortField.weeklyview),
+        this.getDropdownOption(SortField.alltimeview),
+      ],
+      selectedOption: this.viewOptionSelected ? this.selectedSort : '',
+      onOptionSelected: this.dropdownOptionSelected,
+      onDropdownClick: () => {
+        this.dateDropdown.open = false;
+        this.dropdownBackdropVisible = this.viewsDropdown.open;
+        this.viewsDropdown.classList.toggle('open', this.viewsDropdown.open);
+      },
+      onLabelInteraction: () => {
+        if (!this.viewsDropdown.open && !this.viewOptionSelected) {
+          this.setSelectedSort(SortField.weeklyview);
+        }
+      },
+    });
+  }
+
+  /** The template to render for the date dropdown */
+  private get dateDropdownTemplate(): TemplateResult {
+    return this.getSortDropdown({
+      displayName: html`${this.dateSortField}`,
+      id: 'date-dropdown',
+      isSelected: () => this.dateOptionSelected,
+      dropdownOptions: [
+        this.getDropdownOption(SortField.date),
+        this.getDropdownOption(SortField.datearchived),
+        this.getDropdownOption(SortField.datereviewed),
+        this.getDropdownOption(SortField.dateadded),
+      ],
+      selectedOption: this.dateOptionSelected ? this.selectedSort : '',
+      onOptionSelected: this.dropdownOptionSelected,
+      onDropdownClick: () => {
+        this.viewsDropdown.open = false;
+        this.dropdownBackdropVisible = this.dateDropdown.open;
+        this.dateDropdown.classList.toggle('open', this.dateDropdown.open);
+      },
+      onLabelInteraction: () => {
+        if (!this.dateDropdown.open && !this.dateOptionSelected) {
+          this.setSelectedSort(SortField.date);
+        }
+      },
+    });
+  }
+
+  /** Handler for when a new mobile sort dropdown option is selected */
+  private mobileSortChanged(e: CustomEvent<{ option: optionInterface }>) {
+    this.dropdownBackdropVisible = false;
+
+    const sortField = e.detail.option.id as SortField;
     this.setSelectedSort(sortField);
 
     this.alphaSelectorVisible = null;
@@ -394,6 +548,7 @@ export class SortFilterBar
     }
   }
 
+  /** Template for rendering the three display mode options */
   private get displayOptionTemplate() {
     return html`
       <ul>
@@ -437,74 +592,60 @@ export class SortFilterBar
     `;
   }
 
-  private get dateSortSelector() {
+  /**
+   * Template for rendering the transparent backdrop to capture clicks outside the
+   * dropdown menu while it is open.
+   */
+  private get dropdownBackdrop() {
     return html`
       <div
-        id="date-sort-selector-backdrop"
-        @keyup=${() => {
-          this.dateSortSelectorVisible = false;
-        }}
-        @click=${() => {
-          this.dateSortSelectorVisible = false;
-        }}
+        id="sort-selector-backdrop"
+        @keyup=${this.closeDropdowns}
+        @click=${this.closeDropdowns}
       ></div>
-      <div id="date-sort-selector">
-        <ul>
-          <li>${this.getDateSortButton(SortField.datearchived)}</li>
-          <li>${this.getDateSortButton(SortField.date)}</li>
-          <li>${this.getDateSortButton(SortField.datereviewed)}</li>
-          <li>${this.getDateSortButton(SortField.dateadded)}</li>
-        </ul>
-      </div>
     `;
   }
 
-  private get viewSortSelector() {
-    return html`
-      <div
-        id="view-sort-selector-backdrop"
-        @keyup=${() => {
-          this.viewSortSelectorVisible = false;
-        }}
-        @click=${() => {
-          this.viewSortSelectorVisible = false;
-        }}
-      ></div>
-      <div id="view-sort-selector">
-        <ul>
-          <li>${this.getDateSortButton(SortField.alltimeview)}</li>
-          <li>${this.getDateSortButton(SortField.weeklyview)}</li>
-        </ul>
-      </div>
-    `;
+  /** Closes all of the sorting dropdown components' menus */
+  private closeDropdowns() {
+    this.dropdownBackdropVisible = false;
+    const allDropdowns = [
+      this.viewsDropdown,
+      this.dateDropdown,
+      this.mobileDropdown,
+    ];
+    for (const dropdown of allDropdowns) {
+      dropdown.open = false;
+      dropdown.classList.remove('open');
+    }
   }
 
-  private getDateSortButton(sortField: SortField) {
-    return html`
-      <button
-        @click=${() => {
-          this.selectDateSort(sortField);
-        }}
-        class=${this.selectedSort === sortField ? 'selected' : ''}
-      >
-        ${SortFieldDisplayName[sortField]}
-      </button>
-    `;
-  }
-
-  private selectDateSort(sortField: SortField) {
-    this.dateSortSelectorVisible = false;
-    this.viewSortSelectorVisible = false;
+  private selectDropdownSortField(sortField: SortField) {
+    // When a dropdown sort option is selected, we additionally need to clear the backdrop
+    this.dropdownBackdropVisible = false;
     this.setSelectedSort(sortField);
   }
 
-  private setSortDirections(sortDirection: 'asc' | 'desc') {
+  private clearAlphaBarFilters() {
+    this.alphaSelectorVisible = null;
+    this.selectedTitleFilter = null;
+    this.selectedCreatorFilter = null;
+  }
+
+  private setSortDirection(sortDirection: SortDirection) {
     this.sortDirection = sortDirection;
     this.emitSortChangedEvent();
   }
 
+  /** Toggles the current sort direction between 'asc' and 'desc' */
+  private toggleSortDirection() {
+    this.setSortDirection(this.sortDirection === 'desc' ? 'asc' : 'desc');
+  }
+
   private setSelectedSort(sort: SortField) {
     this.selectedSort = sort;
+    // Apply this field's default sort direction
+    this.sortDirection = DefaultSortDirection[this.selectedSort];
     this.emitSortChangedEvent();
   }
 
@@ -656,57 +797,58 @@ export class SortFilterBar
     #sort-bar {
       display: flex;
       justify-content: space-between;
-      border: 1px solid rgb(232, 232, 232);
       align-items: center;
-      padding: 0.5rem 1.5rem;
-    }
-
-    #sort-direction-container {
-      flex: 0;
-    }
-
-    #sort-by-text {
-      text-transform: uppercase;
-    }
-
-    #bottom-shadow {
-      height: 1px;
-      width: 100%;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-      background-color: #bbb;
+      border-bottom: 1px solid #2c2c2c;
+      font-size: 1.4rem;
     }
 
     ul {
       list-style: none;
       display: flex;
+      align-items: center;
       margin: 0;
       padding: 0;
-      align-items: center;
     }
 
     li {
       padding: 0;
     }
 
-    .sort-button {
+    .sort-by-text {
+      margin-right: 5px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .sort-direction-container {
+      display: flex;
+      align-self: stretch;
+      flex: 0;
+      margin: 0 5px;
+    }
+
+    .sort-direction-selector {
+      padding: 0;
+      border: none;
+      appearance: none;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .sort-direction-selector:disabled {
+      cursor: default;
+    }
+
+    .sort-direction-icon {
+      display: flex;
+      align-items: center;
       background: none;
       color: inherit;
       border: none;
       padding: 0;
-      cursor: pointer;
       outline: inherit;
-      width: 12px;
-      height: 12px;
-      opacity: 0.5;
-    }
-
-    .sort-button.selected {
-      opacity: 1;
-    }
-
-    .sort-button:disabled {
-      opacity: 0.25;
-      cursor: default;
+      width: 14px;
+      height: 14px;
     }
 
     #date-sort-selector,
@@ -722,77 +864,45 @@ export class SortFilterBar
       border: 1px solid #404142;
     }
 
-    #date-sort-selector button,
-    #view-sort-selector button {
-      background: none;
-      border-radius: 15px;
-      color: #404142;
-      border: none;
-      appearance: none;
-      cursor: pointer;
-      -webkit-appearance: none;
-      font-size: 1.4rem;
-      font-weight: 400;
-      padding: 0.5rem 1.2rem;
-    }
-
-    #date-sort-selector button.selected,
-    #view-sort-selector button.selected {
-      background-color: #404142;
-      color: white;
-    }
-
-    #show-details {
-      text-transform: uppercase;
-      cursor: pointer;
-      display: flex;
-    }
-
-    #show-details input {
-      margin-right: 0.5rem;
-      flex: 0 0 12px;
-    }
-
-    #sort-descending-btn {
-      transform: rotate(180deg);
-    }
-
-    #sort-direction-selector {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-right: 1rem;
-    }
-
     #sort-selector-container {
       flex: 1;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+    }
+
+    #desktop-sort-container,
+    #mobile-sort-container {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
     }
 
     /*
       we move the desktop sort selector offscreen instead of display: none
       because we need to observe the width of it vs its container to determine
-      if it's wide enough to display the desktop version and if you displY: none,
+      if it's wide enough to display the desktop version and if you display: none,
       the width becomes 0
     */
-    #desktop-sort-selector.hidden {
+    #desktop-sort-container.hidden {
       position: absolute;
       top: -9999px;
       left: -9999px;
+      visibility: hidden;
     }
 
-    #mobile-sort-selector.hidden {
+    #mobile-sort-container.hidden {
       display: none;
     }
 
-    #date-sort-selector-backdrop,
-    #view-sort-selector-backdrop {
+    #sort-selector-backdrop {
       position: fixed;
       top: 0;
       left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100vw;
+      height: 100vh;
       z-index: 1;
-      background-color: rgba(255, 255, 255, 0.5);
+      background-color: transparent;
     }
 
     #desktop-sort-selector {
@@ -802,32 +912,19 @@ export class SortFilterBar
     #desktop-sort-selector li {
       display: flex;
       align-items: center;
+      padding-left: 5px;
+      padding-right: 5px;
     }
 
     #desktop-sort-selector li a {
+      padding: 0 5px;
       text-decoration: none;
-      text-transform: uppercase;
-      font-size: 1.4rem;
       color: #333;
-      line-height: 2.5;
+      line-height: 2;
     }
 
     #desktop-sort-selector li a.selected {
       font-weight: bold;
-    }
-
-    #desktop-sort-selector li::after {
-      content: '•';
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-
-    #desktop-sort-selector li:first-child::after {
-      content: '';
-    }
-
-    #desktop-sort-selector li:last-child::after {
-      content: '';
     }
 
     #display-style-selector {
@@ -841,16 +938,49 @@ export class SortFilterBar
       appearance: none;
       cursor: pointer;
       -webkit-appearance: none;
-      opacity: 0.5;
+      fill: #bbbbbb;
     }
 
     #display-style-selector button.active {
-      opacity: 1;
+      fill: var(--ia-theme-primary-text-color, #2c2c2c);
     }
 
     #display-style-selector button svg {
       width: 24px;
       height: 24px;
+    }
+
+    ia-dropdown {
+      --dropdownTextColor: white;
+      --dropdownOffsetTop: 0;
+      --dropdownBorderTopWidth: 0;
+      --dropdownBorderTopLeftRadius: 0;
+      --dropdownBorderTopRightRadius: 0;
+      --dropdownWhiteSpace: nowrap;
+      --dropdownListZIndex: 2;
+      --dropdownCaretColor: var(--ia-theme-primary-text-color, #2c2c2c);
+      --dropdownSelectedTextColor: white;
+      --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
+      --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
+      --caretHeight: 9px;
+      --caretWidth: 12px;
+      --caretPadding: 0 5px 0 0;
+    }
+    ia-dropdown.selected .dropdown-label {
+      font-weight: bold;
+    }
+    ia-dropdown.open {
+      z-index: 2;
+    }
+
+    .dropdown-label {
+      display: inline-block;
+      height: 100%;
+      padding-left: 5px;
+      font-size: 1.4rem;
+      line-height: 2;
+      color: var(--ia-theme-primary-text-color, #2c2c2c);
+      white-space: nowrap;
     }
   `;
 }

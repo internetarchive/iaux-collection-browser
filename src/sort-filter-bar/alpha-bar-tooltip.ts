@@ -24,12 +24,11 @@ export class AlphaBarTooltip extends LitElement {
       #tooltip-container {
         width: max-content;
         max-width: 200px;
-        padding-top: ${arrowSize};
         pointer-events: none;
       }
 
       #arrow {
-        position: absolute;
+        position: relative;
         left: calc(50% + ${arrowOffset});
         top: 0;
         width: 0;
