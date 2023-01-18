@@ -1791,13 +1791,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         <button @click=${this.mainButtonClicked} class="click-main">
           <span class="cta sr-only">Toggle ${this.optionGroup}</span>
           <slot name="dropdown-label"></slot>
-          ${this.displayCaret?h`<span
-                class="caret"
-                tabindex=${this.openViaCaret&&!this.openViaButton?"0":b}
-                @click=${this.caretClicked}
-                @keydown=${this.caretKeyDown}
-                >${this.caret}</span
-              >`:b}
+          ${this.displayCaret?h`
+                <span
+                  class="caret"
+                  tabindex=${this.openViaCaret&&!this.openViaButton?"0":b}
+                  role=${this.openViaCaret?"button":b}
+                  @click=${this.caretClicked}
+                  @keydown=${this.caretKeyDown}
+                >
+                  ${this.caret}
+                </span>
+              `:b}
         </button>
 
         <ul class="dropdown-main ${this.dropdownState}">
@@ -1884,7 +1888,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin: var(--dropdownOffsetTop, 5px) 0 0 0;
         padding: 0;
         color: ${r};
-        font-size: var(--dropdownFontSize, 1rem);
+        font-size: var(--dropdownFontSize, inherit);
 
         border-top: var(--dropdownBorderTopWidth, ${e}) solid
           ${i};
