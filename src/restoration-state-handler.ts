@@ -159,11 +159,12 @@ export class RestorationStateHandler
       searchParams.append('and[]', state.creatorQuery);
     }
 
-    // Ensure we aren't pushing an identical state to the stack
+    // Ensure we aren't pushing an identical state to the stack.
+    // Note: page number is not included in this condition, because we
+    // don't want a separate history entry for each page scrolled through.
     if (
       oldParams.get('query') === searchParams.get('query') &&
       oldParams.get('sin') === searchParams.get('sin') &&
-      oldParams.get('page') === searchParams.get('page') &&
       oldParams.get('sort') === searchParams.get('sort') &&
       arrayEquals(
         oldParams.getAll('and[]').sort(),
@@ -316,32 +317,6 @@ export class RestorationStateHandler
       return value.substring(1, value.length - 1);
     }
     return value;
-  }
-
-  private selectedFacetStatesEqual(
-    facets1: SelectedFacets,
-    facets2: SelectedFacets
-  ): boolean {
-    if (facets1 === facets2) return true;
-
-    // We can assume they both have the same top-level entries (the allowable facet fields)
-    for (const [key, values] of Object.entries(facets1)) {
-      const facetField = key as keyof SelectedFacets;
-
-      // They must have the same number of bucket entries for each field
-      const bucketEntries1 = Object.entries(values);
-      const bucketEntries2 = Object.entries(facets2[facetField]);
-      if (bucketEntries1.length !== bucketEntries2.length) return false;
-
-      // And since they have the same length, we just ensure every bucket state from the
-      // first object matches a corresponding bucket state in the second object.
-      // If the corresponding bucket doesn't exist or has a different state, we're done.
-      for (const [value, bucket] of bucketEntries1) {
-        if (bucket.state !== facets2[facetField][value]?.state) return false;
-      }
-    }
-
-    return true;
   }
 
   /**
