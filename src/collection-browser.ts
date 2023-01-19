@@ -683,6 +683,9 @@ export class CollectionBrowser
     }
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
+      if (!this.historyPopOccurred) {
+        this.clearFilters();
+      }
     }
     if (changed.has('searchType')) {
       this.emitSearchTypeChanged();
@@ -861,8 +864,8 @@ export class CollectionBrowser
     // persist the state because it overwrites the forward history
     if (!this.historyPopOccurred) {
       this.persistState();
-      this.historyPopOccurred = false;
     }
+    this.historyPopOccurred = false;
 
     await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
   }
