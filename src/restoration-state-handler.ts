@@ -105,11 +105,8 @@ export class RestorationStateHandler
       searchParams.set('query', state.baseQuery);
     }
 
-    if (state.searchType) {
-      searchParams.set(
-        'sin',
-        state.searchType === SearchType.FULLTEXT ? 'TXT' : ''
-      );
+    if (state.searchType === SearchType.FULLTEXT) {
+      searchParams.set('sin', 'TXT');
     }
 
     if (state.currentPage) {
@@ -214,19 +211,22 @@ export class RestorationStateHandler
       },
     };
 
+    if (searchQuery) {
+      restorationState.baseQuery = searchQuery;
+    }
+
     if (searchInside) {
       restorationState.searchType =
         searchInside === 'TXT' ? SearchType.FULLTEXT : SearchType.METADATA;
     }
+
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
       restorationState.currentPage = parsed;
     } else {
       restorationState.currentPage = 1;
     }
-    if (searchQuery) {
-      restorationState.baseQuery = searchQuery;
-    }
+
     if (sortQuery) {
       // check for two different sort formats: `date desc` and `-date`
       const hasSpace = sortQuery.indexOf(' ') > -1;
@@ -251,6 +251,7 @@ export class RestorationStateHandler
         restorationState.sortDirection = sortDirection as SortDirection;
       }
     }
+
     if (facetAnds) {
       facetAnds.forEach(and => {
         const [field, value] = and.split(':');
@@ -297,6 +298,7 @@ export class RestorationStateHandler
         }
       });
     }
+
     if (facetNots) {
       facetNots.forEach(not => {
         const [field, value] = not.split(':');
@@ -308,6 +310,7 @@ export class RestorationStateHandler
         );
       });
     }
+
     return restorationState;
   }
 
@@ -316,6 +319,7 @@ export class RestorationStateHandler
     if (value.startsWith('"') && value.endsWith('"')) {
       return value.substring(1, value.length - 1);
     }
+
     return value;
   }
 
