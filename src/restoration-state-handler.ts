@@ -339,7 +339,7 @@ export class RestorationStateHandler
     state: FacetState
   ): void {
     const facet = selectedFacets[field];
-    if (!facet) return;
+    if (!facet) return; // Unrecognized facet group, ignore it.
 
     const unQuotedValue = this.stripQuotes(value);
     facet[unQuotedValue] ??= this.getDefaultBucket(value);
