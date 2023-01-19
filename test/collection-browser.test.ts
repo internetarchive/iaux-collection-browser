@@ -1,5 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import { expect, fixture } from '@open-wc/testing';
+import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
@@ -29,10 +29,7 @@ import type { CollectionFacets } from '../src/collection-facets';
  * but they are minor enough that waiting for the next tick is a reasonable
  * testing solution for now.
  */
-const nextTick = () =>
-  new Promise(resolve => {
-    setTimeout(resolve, 0);
-  });
+const nextTick = () => aTimeout(0);
 
 describe('Collection Browser', () => {
   beforeEach(async () => {
@@ -654,9 +651,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     // Wait an extra tick
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
+    await aTimeout(0);
 
     expect(searchService.searchParams?.query).to.equal(
       'first-title AND firstTitle:X'
@@ -677,9 +672,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     // Wait an extra tick
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
+    await aTimeout(0);
 
     expect(searchService.searchParams?.query).to.equal(
       'first-creator AND firstCreator:X'
@@ -713,9 +706,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     // Wait an extra tick
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
+    await aTimeout(0);
 
     expect(searchService.searchParams?.query).to.equal(
       'first-creator AND firstCreator:X'
@@ -748,9 +739,7 @@ describe('Collection Browser', () => {
     await facets?.updateComplete;
 
     // Wait for the date picker to be rendered (which may take until the next tick)
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
+    aTimeout(0);
 
     const histogram = facets?.shadowRoot?.querySelector(
       'histogram-date-range'
@@ -770,9 +759,7 @@ describe('Collection Browser', () => {
     minDateInput.dispatchEvent(pressEnterEvent);
 
     // Wait for the histogram's update delay
-    await new Promise(res => {
-      setTimeout(res, histogram.updateDelay + 50);
-    });
+    await aTimeout(histogram.updateDelay + 50);
 
     // Ensure that the histogram change propagated to the collection browser's
     // date query correctly.
