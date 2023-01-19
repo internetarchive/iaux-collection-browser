@@ -1008,7 +1008,7 @@ export class CollectionBrowser
   /** The base query joined with any title/creator letter filters */
   private get filteredQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let filteredQuery = this.baseQuery;
+    let filteredQuery = this.baseQuery.trim();
 
     const { sortFilterQueries } = this;
     if (sortFilterQueries) {
@@ -1040,7 +1040,7 @@ export class CollectionBrowser
   /** The full query without any title/creator letter filters */
   private get fullQueryWithoutAlphaFilters(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery;
+    let fullQuery = this.baseQuery.trim();
 
     const { facetQuery, dateRangeQueryClause } = this;
 
