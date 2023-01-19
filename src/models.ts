@@ -76,6 +76,11 @@ export type MetadataSortField =
   | 'reviewdate'
   | 'addeddate';
 
+/**
+ * All sort strings recognized in search URLs
+ */
+export type URLSortField = MetadataSortField | 'title' | 'creator';
+
 export const SortFieldDisplayName: {
   [key in SortField]: string;
 } = {
@@ -134,6 +139,39 @@ export const MetadataFieldToSortField: {
   publicdate: SortField.datearchived,
   reviewdate: SortField.datereviewed,
   addeddate: SortField.dateadded,
+  creatorSorter: SortField.creator,
+};
+
+/**
+ * Maps the Metadata fields to how they should be presented in URLs.
+ */
+export const MetadataFieldToURLField: {
+  [key in MetadataSortField]: URLSortField;
+} = {
+  week: 'week',
+  downloads: 'downloads',
+  titleSorter: 'title',
+  date: 'date',
+  publicdate: 'publicdate',
+  reviewdate: 'reviewdate',
+  addeddate: 'addeddate',
+  creatorSorter: 'creator',
+};
+
+/**
+ * Maps all allowable sort strings from the URL to their respective
+ * sort fields.
+ */
+export const URLFieldToSortField: Record<URLSortField, SortField> = {
+  week: SortField.weeklyview,
+  downloads: SortField.alltimeview,
+  title: SortField.title,
+  titleSorter: SortField.title,
+  date: SortField.date,
+  publicdate: SortField.datearchived,
+  reviewdate: SortField.datereviewed,
+  addeddate: SortField.dateadded,
+  creator: SortField.creator,
   creatorSorter: SortField.creator,
 };
 

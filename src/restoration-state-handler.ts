@@ -5,7 +5,6 @@ import {
 } from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
 import {
-  MetadataFieldToSortField,
   MetadataSortField,
   FacetOption,
   CollectionBrowserContext,
@@ -14,6 +13,8 @@ import {
   SortField,
   FacetBucket,
   FacetState,
+  URLFieldToSortField,
+  URLSortField,
   getDefaultSelectedFacets,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
@@ -91,37 +92,31 @@ export class RestorationStateHandler
   }
 
   private persistQueryStateToUrl(state: RestorationState) {
-    // console.log('persisting', window.location.href, state);
     const url = new URL(window.location.href);
-    const { searchParams } = url;
-    const oldParams = new URLSearchParams(searchParams);
-
-    searchParams.delete('query');
-    searchParams.delete('sin');
-    searchParams.delete('page');
-    searchParams.delete('sort');
-    searchParams.delete('and[]');
-    searchParams.delete('not[]');
+    const oldParams = new URLSearchParams(url.searchParams);
+    const newParams = this.removeRecognizedParams(url.searchParams);
 
     if (state.baseQuery) {
-      searchParams.set('query', state.baseQuery);
+      newParams.set('query', state.baseQuery);
     }
 
     if (state.searchType === SearchType.FULLTEXT) {
-      searchParams.set('sin', 'TXT');
+      newParams.set('sin', 'TXT');
     }
 
     if (state.currentPage) {
       if (state.currentPage > 1) {
-        searchParams.set('page', state.currentPage.toString());
+        newParams.set('page', state.currentPage.toString());
       } else {
-        searchParams.delete('page');
+        newParams.delete('page');
       }
     }
 
     if (state.sortParam) {
       const prefix = state.sortParam.direction === 'desc' ? '-' : '';
-      searchParams.set('sort', `${prefix}${state.sortParam.field}`);
+      const readableSortField =
+        URLFieldToSortField[state.sortParam.field as MetadataSortField];
+      newParams.set('sort', `${prefix}${readableSortField}`);
     }
 
     if (state.selectedFacets) {
@@ -135,49 +130,58 @@ export class RestorationStateHandler
           const notValue = data.state === 'hidden';
           const paramValue = `${facetName}:"${key}"`;
           if (notValue) {
-            searchParams.append('not[]', paramValue);
+            newParams.append('not[]', paramValue);
           } else {
-            searchParams.append('and[]', paramValue);
+            newParams.append('and[]', paramValue);
           }
         }
       }
     }
 
     if (state.minSelectedDate && state.maxSelectedDate) {
-      searchParams.append(
+      newParams.append(
         'and[]',
         `year:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`
       );
     }
 
     if (state.titleQuery) {
-      searchParams.append('and[]', state.titleQuery);
+      newParams.append('and[]', state.titleQuery);
     }
 
     if (state.creatorQuery) {
-      searchParams.append('and[]', state.creatorQuery);
+      newParams.append('and[]', state.creatorQuery);
     }
 
-    // Ensure we aren't pushing an identical state to the stack.
-    // Note: page number is not included in this condition, because we
-    // don't want a separate history entry for each page scrolled through.
+    // Ensure we aren't pushing consecutive identical states to the history stack.
+    //  - If the state has changed, we push a new history entry.
+    //  - If only the page number has changed, we replace the current history entry.
+    //  - If the state hasn't changed, then do nothing.
+    let historyMethod: 'pushState' | 'replaceState' = 'pushState';
+    const nonQueryParamsMatch = this.paramsMatch(oldParams, newParams, [
+      'sin',
+      'sort',
+      'and[]',
+      'not[]',
+    ]);
+
     if (
-      oldParams.get('query') === searchParams.get('query') &&
-      oldParams.get('sin') === searchParams.get('sin') &&
-      oldParams.get('sort') === searchParams.get('sort') &&
-      arrayEquals(
-        oldParams.getAll('and[]').sort(),
-        searchParams.getAll('and[]').sort()
-      ) &&
-      arrayEquals(
-        oldParams.getAll('not[]').sort(),
-        searchParams.getAll('not[]').sort()
-      )
+      nonQueryParamsMatch &&
+      this.paramsMatch(oldParams, newParams, ['query'])
     ) {
-      return;
+      // For page number, we want to replace the page state when it changes,
+      // not push a new history entry. If it hasn't changed, then we're done.
+      if (this.paramsMatch(oldParams, newParams, ['page'])) {
+        return;
+      }
+      historyMethod = 'replaceState';
+    } else if (nonQueryParamsMatch && this.hasLegacyParam(oldParams)) {
+      // Similarly, if the only non-matching param was a legacy query param, then
+      // we just want to overwrite it.
+      historyMethod = 'replaceState';
     }
 
-    window.history.pushState(
+    window.history[historyMethod]?.(
       {
         query: state.baseQuery,
         searchType: state.searchType,
@@ -190,12 +194,9 @@ export class RestorationStateHandler
       '',
       url
     );
-
-    // console.log('persisted', window.location.href);
   }
 
   private loadQueryStateFromUrl(): RestorationState {
-    // console.log('loading', window.location.href);
     const url = new URL(window.location.href);
     const searchInside = url.searchParams.get('sin');
     const pageNumber = url.searchParams.get('page');
@@ -204,12 +205,21 @@ export class RestorationStateHandler
     const facetAnds = url.searchParams.getAll('and[]');
     const facetNots = url.searchParams.getAll('not[]');
 
+    // Legacy search allowed `q` and `search` params for the query, so in the interest
+    // of backwards-compatibility with old bookmarks, we recognize those here too.
+    // (However, they still get upgraded to a `query` param when we persist our state
+    // to the URL).
+    const legacySearchQuery =
+      url.searchParams.get('q') ?? url.searchParams.get('search');
+
     const restorationState: RestorationState = {
       selectedFacets: getDefaultSelectedFacets(),
     };
 
     if (searchQuery) {
       restorationState.baseQuery = searchQuery;
+    } else if (legacySearchQuery) {
+      restorationState.baseQuery = legacySearchQuery;
     }
 
     if (searchInside) {
@@ -229,8 +239,8 @@ export class RestorationStateHandler
       const hasSpace = sortQuery.indexOf(' ') > -1;
       if (hasSpace) {
         const [field, direction] = sortQuery.split(' ');
-        const metadataField =
-          MetadataFieldToSortField[field as MetadataSortField];
+        const metadataField = URLFieldToSortField[field as URLSortField];
+
         if (metadataField) {
           restorationState.selectedSort = metadataField;
         }
@@ -238,14 +248,16 @@ export class RestorationStateHandler
           restorationState.sortDirection = direction as SortDirection;
         }
       } else {
-        const sortDirection = sortQuery.startsWith('-') ? 'desc' : 'asc';
-        const sortField = sortQuery.startsWith('-')
+        const direction = sortQuery.startsWith('-') ? 'desc' : 'asc';
+        const field = sortQuery.startsWith('-')
           ? sortQuery.slice(1)
           : sortQuery;
-        const metadataField =
-          MetadataFieldToSortField[sortField as MetadataSortField];
-        if (metadataField) restorationState.selectedSort = metadataField;
-        restorationState.sortDirection = sortDirection as SortDirection;
+
+        const metadataField = URLFieldToSortField[field as URLSortField];
+        if (metadataField) {
+          restorationState.selectedSort = metadataField;
+          restorationState.sortDirection = direction as SortDirection;
+        }
       }
     }
 
@@ -313,7 +325,6 @@ export class RestorationStateHandler
       });
     }
 
-    // console.log('loaded', window.location.href, restorationState);
     return restorationState;
   }
 
@@ -324,6 +335,56 @@ export class RestorationStateHandler
     }
 
     return value;
+  }
+
+  /**
+   * Returns whether the two given URLSearchParams objects have
+   * identical values for all of the given param keys. If either
+   * object contains more than one value for a given key, then
+   * all of the values for that key must match (disregarding order).
+   */
+  private paramsMatch(
+    searchParams1: URLSearchParams,
+    searchParams2: URLSearchParams,
+    keys: string[]
+  ): boolean {
+    return keys.every(key =>
+      arrayEquals(
+        searchParams1.getAll(key).sort(),
+        searchParams2.getAll(key).sort()
+      )
+    );
+  }
+
+  /**
+   * Deletes any params from the given URLSearchParams object that are recognized
+   * when loading state from the URL.
+   */
+  private removeRecognizedParams(
+    searchParams: URLSearchParams
+  ): URLSearchParams {
+    // Remove all of our standard params
+    searchParams.delete('query');
+    searchParams.delete('sin');
+    searchParams.delete('page');
+    searchParams.delete('sort');
+    searchParams.delete('and[]');
+    searchParams.delete('not[]');
+
+    // Also remove some legacy params that should have been upgraded to the ones above
+    searchParams.delete('q');
+    searchParams.delete('search');
+
+    return searchParams;
+  }
+
+  /**
+   * Returns whether the given URLSearchParams object contains a param that is
+   * only recognized as a holdover from legacy search, and should not be
+   * persisted to the URL.
+   */
+  private hasLegacyParam(searchParams: URLSearchParams): boolean {
+    return searchParams.has('q') || searchParams.has('search');
   }
 
   /**
