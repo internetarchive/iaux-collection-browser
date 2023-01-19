@@ -609,7 +609,7 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
-        .onFacetClick=${this.facetClickHandler}
+        @facetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
       >
       </collection-facets>

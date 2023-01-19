@@ -99,6 +99,7 @@ export class FacetsTemplate extends LitElement {
   ) {
     const event = new CustomEvent<FacetEventDetails>('facetClick', {
       detail: { key, state, negative },
+      composed: true,
     });
     this.dispatchEvent(event);
   }
