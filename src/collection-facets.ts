@@ -42,6 +42,7 @@ import {
   LendingFacetKey,
   suppressedCollections,
   defaultFacetSort,
+  FacetEventDetails,
 } from './models';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
@@ -101,9 +102,7 @@ export class CollectionFacets extends LitElement {
 
   /** Fires when a facet is clicked */
   @property({ type: Function }) onFacetClick?: (
-    name: FacetOption,
-    facetChecked: boolean,
-    negative: boolean
+    e: CustomEvent<FacetEventDetails>
   ) => void;
 
   @state() openFacets: Record<FacetOption, boolean> = {
@@ -513,6 +512,7 @@ export class CollectionFacets extends LitElement {
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'page'}
         .collectionNameCache=${this.collectionNameCache}
+        @facetClick=${this.onFacetClick}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,
