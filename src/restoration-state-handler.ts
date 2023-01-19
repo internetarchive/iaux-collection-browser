@@ -90,6 +90,7 @@ export class RestorationStateHandler
   }
 
   private persistQueryStateToUrl(state: RestorationState) {
+    // console.log('persisting', window.location.href, state);
     const url = new URL(window.location.href);
     const { searchParams } = url;
     const oldParams = new URLSearchParams(searchParams);
@@ -188,9 +189,12 @@ export class RestorationStateHandler
       '',
       url
     );
+
+    // console.log('persisted', window.location.href);
   }
 
   private loadQueryStateFromUrl(): RestorationState {
+    // console.log('loading', window.location.href);
     const url = new URL(window.location.href);
     const searchInside = url.searchParams.get('sin');
     const pageNumber = url.searchParams.get('page');
@@ -316,6 +320,7 @@ export class RestorationStateHandler
       });
     }
 
+    // console.log('loaded', window.location.href, restorationState);
     return restorationState;
   }
 

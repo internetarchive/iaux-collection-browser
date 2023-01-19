@@ -404,10 +404,10 @@ export class CollectionBrowser
     return html`
       <sort-filter-bar
         .selectedSort=${this.selectedSort}
-        .sortDirection=${this.sortDirection}
+        .sortDirection=${this.sortDirection ?? null}
         .displayMode=${this.displayMode}
-        .selectedTitleFilter=${this.selectedTitleFilter}
-        .selectedCreatorFilter=${this.selectedCreatorFilter}
+        .selectedTitleFilter=${this.selectedTitleFilter ?? null}
+        .selectedCreatorFilter=${this.selectedCreatorFilter ?? null}
         .prefixFilterCountMap=${this.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
         @sortChanged=${this.userChangedSort}
@@ -422,12 +422,12 @@ export class CollectionBrowser
   private userChangedSort(
     e: CustomEvent<{
       selectedSort: SortField;
-      sortDirection?: SortDirection;
+      sortDirection: SortDirection | null;
     }>
   ) {
     const { selectedSort, sortDirection } = e.detail;
     this.selectedSort = selectedSort;
-    this.sortDirection = sortDirection;
+    this.sortDirection = sortDirection ?? undefined;
 
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
@@ -464,8 +464,8 @@ export class CollectionBrowser
   }
 
   private displayModeChanged(
-    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
-  ) {
+    e: CustomEvent<{ displayMode?: CollectionDisplayMode }>
+  ): void {
     this.displayMode = e.detail.displayMode;
 
     if (this.displayMode) {
@@ -525,14 +525,18 @@ export class CollectionBrowser
       : undefined;
   }
 
-  private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+  private titleLetterSelected(
+    e: CustomEvent<{ selectedLetter: string | null }>
+  ): void {
     this.selectedCreatorFilter = undefined;
-    this.selectedTitleFilter = e.detail.selectedLetter;
+    this.selectedTitleFilter = e.detail.selectedLetter ?? undefined;
   }
 
-  private creatorLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+  private creatorLetterSelected(
+    e: CustomEvent<{ selectedLetter: string | null }>
+  ): void {
     this.selectedTitleFilter = undefined;
-    this.selectedCreatorFilter = e.detail.selectedLetter;
+    this.selectedCreatorFilter = e.detail.selectedLetter ?? undefined;
   }
 
   private get mobileFacetsTemplate() {

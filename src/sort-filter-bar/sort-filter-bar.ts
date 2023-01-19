@@ -42,7 +42,7 @@ export class SortFilterBar
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   /** The current sort direction (asc/desc), or null if none is set */
-  @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
+  @property({ type: String }) sortDirection: SortDirection | null = null;
 
   /** The field currently being sorted on (e.g., 'title'). Defaults to relevance. */
   @property({ type: String }) selectedSort: SortField = SortField.relevance;
@@ -770,7 +770,9 @@ export class SortFilterBar
   }
 
   private displayModeChanged() {
-    const event = new CustomEvent('displayModeChanged', {
+    const event = new CustomEvent<{
+      displayMode?: CollectionDisplayMode;
+    }>('displayModeChanged', {
       detail: { displayMode: this.displayMode },
     });
     this.dispatchEvent(event);
@@ -779,7 +781,7 @@ export class SortFilterBar
   private emitSortChangedEvent() {
     const event = new CustomEvent<{
       selectedSort: SortField;
-      sortDirection: 'asc' | 'desc' | null;
+      sortDirection: SortDirection | null;
     }>('sortChanged', {
       detail: {
         selectedSort: this.selectedSort,
