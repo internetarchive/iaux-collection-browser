@@ -8,7 +8,7 @@ import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
-  defaultSelectedFacets,
+  getDefaultSelectedFacets,
   FacetBucket,
   SelectedFacets,
   SortField,
@@ -50,16 +50,37 @@ describe('Collection Browser', () => {
     window.history.replaceState({}, '', url);
   });
 
-  it('clear existing filter for facets & sort-bar', async () => {
+  it('clears existing filters but not sort by default', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
+    await el.updateComplete;
+    el.clearFilters(); // By default, sort is not cleared
+
+    expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
+    expect(el.selectedSort).to.equal('title');
+    expect(el.sortDirection).to.equal('asc');
+    expect(el.sortParam).to.deep.equal({
+      field: 'titleSorter',
+      direction: 'asc',
+    });
+    expect(el.selectedCreatorFilter).to.be.undefined;
+    expect(el.selectedTitleFilter).to.be.undefined;
+  });
+
+  it('clears existing filters for facets & sort via option', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
     );
 
     el.selectedSort = 'title' as SortField;
     await el.updateComplete;
-    el.clearFilters();
+    el.clearFilters({ sort: true }); // Sort is reset too due to the option
 
-    expect(el.selectedFacets).to.equal(defaultSelectedFacets);
+    expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
     expect(el.selectedSort).to.equal('relevance');
     expect(el.sortDirection).to.be.undefined;
     expect(el.sortParam).to.be.undefined;

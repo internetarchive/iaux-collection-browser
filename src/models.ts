@@ -192,7 +192,7 @@ export type SelectedFacets = Record<
   Record<FacetValue, FacetBucket>
 >;
 
-export const defaultSelectedFacets: SelectedFacets = {
+export const getDefaultSelectedFacets = (): SelectedFacets => ({
   subject: {},
   lending: {},
   mediatype: {},
@@ -200,7 +200,7 @@ export const defaultSelectedFacets: SelectedFacets = {
   creator: {},
   collection: {},
   year: {},
-};
+});
 
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',

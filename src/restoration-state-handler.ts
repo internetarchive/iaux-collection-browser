@@ -14,6 +14,7 @@ import {
   SortField,
   FacetBucket,
   FacetState,
+  getDefaultSelectedFacets,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 
@@ -204,15 +205,7 @@ export class RestorationStateHandler
     const facetNots = url.searchParams.getAll('not[]');
 
     const restorationState: RestorationState = {
-      selectedFacets: {
-        subject: {},
-        lending: {},
-        creator: {},
-        mediatype: {},
-        language: {},
-        collection: {},
-        year: {},
-      },
+      selectedFacets: getDefaultSelectedFacets(),
     };
 
     if (searchQuery) {

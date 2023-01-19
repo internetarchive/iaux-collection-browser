@@ -48,7 +48,7 @@ import {
   SortField,
   SortFieldToMetadataField,
   CollectionBrowserContext,
-  defaultSelectedFacets,
+  getDefaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
   FacetBucket,
@@ -281,15 +281,43 @@ export class CollectionBrowser
     return this.scrollToPage(pageNumber);
   }
 
-  clearFilters() {
-    this.selectedFacets = defaultSelectedFacets;
-    this.sortParam = undefined;
-    this.sortDirection = undefined;
-    this.selectedTitleFilter = undefined;
-    this.selectedCreatorFilter = undefined;
-    this.titleQuery = undefined;
-    this.creatorQuery = undefined;
-    this.selectedSort = SortField.relevance;
+  /**
+   * Clears all selected/negated facets, date ranges, and letter filters.
+   *
+   * By default, the current sort field/direction are not cleared,
+   * but this can be overridden by setting the `sort` option to `true`.
+   *
+   * Similarly, it is possible to finely control what is cleared by
+   * setting any of the `facets`, `dateRange`, or `letterFilters` flags
+   * in the options object.
+   */
+  clearFilters({
+    facets = true,
+    dateRange = true,
+    letterFilters = true,
+    sort = false,
+  } = {}): void {
+    if (facets) {
+      this.selectedFacets = getDefaultSelectedFacets();
+    }
+
+    if (dateRange) {
+      this.minSelectedDate = undefined;
+      this.maxSelectedDate = undefined;
+    }
+
+    if (letterFilters) {
+      this.selectedTitleFilter = undefined;
+      this.selectedCreatorFilter = undefined;
+      this.titleQuery = undefined;
+      this.creatorQuery = undefined;
+    }
+
+    if (sort) {
+      this.sortParam = undefined;
+      this.sortDirection = undefined;
+      this.selectedSort = SortField.relevance;
+    }
   }
 
   /**
@@ -882,7 +910,7 @@ export class CollectionBrowser
       sortParam: this.sortParam ?? undefined,
       selectedSort: this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
-      selectedFacets: this.selectedFacets ?? defaultSelectedFacets,
+      selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
       baseQuery: this.baseQuery,
       currentPage: this.currentPage,
       titleQuery: this.titleQuery,
