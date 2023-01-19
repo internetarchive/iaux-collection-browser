@@ -55,7 +55,7 @@ import {
   PrefixFilterType,
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
-  FacetEventDetails,
+  FacetOption,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -1117,26 +1117,26 @@ export class CollectionBrowser
     this.selectedFacets = e.detail;
   }
 
-  facetClickHandler({
-    detail: { key, state: facetState, negative },
-  }: CustomEvent<FacetEventDetails>): void {
+  facetClickHandler(
+    name: FacetOption,
+    facetSelected: boolean,
+    negative: boolean
+  ): void {
     if (negative) {
       this.analyticsHandler?.sendEvent({
         category: this.searchContext,
-        action:
-          facetState !== 'none'
-            ? analyticsActions.facetNegativeSelected
-            : analyticsActions.facetNegativeDeselected,
-        label: key,
+        action: facetSelected
+          ? analyticsActions.facetNegativeSelected
+          : analyticsActions.facetNegativeDeselected,
+        label: name,
       });
     } else {
       this.analyticsHandler?.sendEvent({
         category: this.searchContext,
-        action:
-          facetState !== 'none'
-            ? analyticsActions.facetSelected
-            : analyticsActions.facetDeselected,
-        label: key,
+        action: facetSelected
+          ? analyticsActions.facetSelected
+          : analyticsActions.facetDeselected,
+        label: name,
       });
     }
   }

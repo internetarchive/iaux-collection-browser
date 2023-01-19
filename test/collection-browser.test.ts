@@ -159,20 +159,12 @@ describe('Collection Browser', () => {
     el.selectedFacets = mockedSelectedFacets;
     await el.updateComplete;
 
-    el.facetClickHandler(
-      new CustomEvent('facetClick', {
-        detail: { key: 'mediatype', state: 'selected', negative: false },
-      })
-    );
+    el.facetClickHandler('mediatype', true, false);
     expect(mockAnalyticsHandler.callCategory).to.equal('search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetSelected');
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
 
-    el.facetClickHandler(
-      new CustomEvent('facetClick', {
-        detail: { key: 'mediatype', state: 'none', negative: false },
-      })
-    );
+    el.facetClickHandler('mediatype', false, false);
     expect(el.selectedFacets).to.equal(mockedSelectedFacets);
     expect(mockAnalyticsHandler.callCategory).to.equal('search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetDeselected');
@@ -201,20 +193,12 @@ describe('Collection Browser', () => {
     el.selectedFacets = mockedSelectedFacets;
     await el.updateComplete;
 
-    el.facetClickHandler(
-      new CustomEvent('facetClick', {
-        detail: { key: 'mediatype', state: 'hidden', negative: true },
-      })
-    );
+    el.facetClickHandler('mediatype', true, true);
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeSelected');
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
 
-    el.facetClickHandler(
-      new CustomEvent('facetClick', {
-        detail: { key: 'mediatype', state: 'none', negative: true },
-      })
-    );
+    el.facetClickHandler('mediatype', false, true);
     expect(el.selectedFacets).to.equal(mockedSelectedFacets);
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeDeselected');

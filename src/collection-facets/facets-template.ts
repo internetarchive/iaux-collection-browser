@@ -10,7 +10,6 @@ import {
   FacetBucket,
   SelectedFacets,
   getDefaultSelectedFacets,
-  FacetEventDetails,
   FacetState,
 } from '../models';
 
@@ -33,12 +32,6 @@ export class FacetsTemplate extends LitElement {
     } else {
       this.facetUnchecked(name as FacetOption, value);
     }
-
-    this.dispatchFacetClickEvent(
-      name as FacetOption,
-      this.getFacetState(checked, negative),
-      negative
-    );
   }
 
   private facetChecked(
@@ -90,17 +83,6 @@ export class FacetsTemplate extends LitElement {
       state = 'none';
     }
     return state;
-  }
-
-  private dispatchFacetClickEvent(
-    key: FacetOption,
-    state: FacetState,
-    negative: boolean
-  ) {
-    const event = new CustomEvent<FacetEventDetails>('facetClick', {
-      detail: { key, state, negative },
-    });
-    this.dispatchEvent(event);
   }
 
   private dispatchSelectedFacetsChanged() {

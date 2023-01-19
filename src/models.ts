@@ -217,12 +217,6 @@ export interface FacetGroup {
   buckets: FacetBucket[];
 }
 
-export type FacetEventDetails = {
-  key: FacetOption;
-  state: FacetState;
-  negative: boolean;
-};
-
 export type FacetValue = string;
 
 export type SelectedFacets = Record<
