@@ -254,7 +254,12 @@ export class RestorationStateHandler
 
     if (facetAnds) {
       facetAnds.forEach(and => {
-        const [field, value] = and.split(':');
+        // eslint-disable-next-line prefer-const
+        let [field, value] = and.split(':');
+
+        // Legacy search allowed and[] fields like 'creatorSorter', 'languageSorter', etc.
+        // which we want to normalize to 'creator', 'language', etc. if redirected here.
+        field = field.replace(/Sorter$/, '');
 
         switch (field) {
           case 'year': {
@@ -334,6 +339,8 @@ export class RestorationStateHandler
     state: FacetState
   ): void {
     const facet = selectedFacets[field];
+    if (!facet) return;
+
     const unQuotedValue = this.stripQuotes(value);
     facet[unQuotedValue] ??= this.getDefaultBucket(value);
     facet[unQuotedValue].state = state;
