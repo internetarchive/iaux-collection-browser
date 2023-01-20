@@ -173,13 +173,6 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
-  /**
-   * The search type of the previous search (i.e., the currently displayed
-   * search results), which may differ from the one that is currently selected
-   * to be used for the next search.
-   */
-  @state() private previousSearchType?: SearchType;
-
   @state() private totalResults?: number;
 
   @state() private queryErrorMessage?: string;
@@ -622,7 +615,7 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
-        .moreLinksVisible=${this.previousSearchType !== SearchType.FULLTEXT}
+        .moreLinksVisible=${this.searchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -702,8 +695,11 @@ export class CollectionBrowser
     ) {
       this.infiniteScroller?.reload();
     }
-    if (changed.has('baseQuery')) {
-      this.emitBaseQueryChanged();
+
+    if (changed.has('baseQuery') || changed.has('searchType')) {
+      // Unless this query/search type update is the result of hitting the back button,
+      // we need to clear any existing filters since they may no longer be valid for
+      // the new set of search results.
       if (!this.historyPopOccurred) {
         // Only clear filters that haven't been simultaneously applied in this update
         this.clearFilters({
@@ -718,12 +714,18 @@ export class CollectionBrowser
         });
       }
     }
+
+    if (changed.has('baseQuery')) {
+      this.emitBaseQueryChanged();
+    }
     if (changed.has('searchType')) {
       this.emitSearchTypeChanged();
     }
+
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
     }
+
     if (
       changed.has('baseQuery') ||
       changed.has('minSelectedDate') ||
@@ -732,11 +734,13 @@ export class CollectionBrowser
     ) {
       this.refreshLetterCounts();
     }
+
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
       const prevSortDirection = changed.get('sortDirection') as SortDirection;
       this.sendSortByAnalytics(prevSortDirection);
       this.selectedSortChanged();
     }
+
     if (changed.has('selectedTitleFilter')) {
       this.sendFilterByTitleAnalytics(
         changed.get('selectedTitleFilter') as string
@@ -749,8 +753,10 @@ export class CollectionBrowser
       );
       this.selectedCreatorLetterChanged();
     }
+
     if (
       changed.has('baseQuery') ||
+      changed.has('searchType') ||
       changed.has('selectedTitleFilter') ||
       changed.has('selectedCreatorFilter') ||
       changed.has('minSelectedDate') ||
@@ -761,11 +767,13 @@ export class CollectionBrowser
     ) {
       this.handleQueryChange();
     }
+
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
+
     if (changed.has('resizeObserver')) {
       const oldObserver = changed.get(
         'resizeObserver'
@@ -1183,7 +1191,6 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
-    this.previousSearchType = this.searchType;
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
