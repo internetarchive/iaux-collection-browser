@@ -497,6 +497,7 @@ export class SortFilterBar
       },
       onLabelInteraction: () => {
         if (!this.viewsDropdown.open && !this.viewOptionSelected) {
+          this.clearAlphaBarFilters();
           this.setSelectedSort(SortField.weeklyview);
         }
       },
@@ -524,6 +525,7 @@ export class SortFilterBar
       },
       onLabelInteraction: () => {
         if (!this.dateDropdown.open && !this.dateOptionSelected) {
+          this.clearAlphaBarFilters();
           this.setSelectedSort(SortField.date);
         }
       },
