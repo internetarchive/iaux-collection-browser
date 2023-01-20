@@ -450,7 +450,7 @@ describe('Collection Browser', () => {
     expect(cell.model?.description).to.equal('line1\nline2');
   });
 
-  it('can search on demand if only search type has changed', async () => {
+  it('can change search type', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
@@ -461,15 +461,10 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'collection:foo';
-    await el.updateComplete;
-
     el.searchType = SearchType.FULLTEXT;
     await el.updateComplete;
 
-    // Haven't performed the search yet
-    expect(searchService.searchType).to.equal(SearchType.METADATA);
-
-    el.requestSearch();
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
   });
 
