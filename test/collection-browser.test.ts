@@ -634,9 +634,6 @@ describe('Collection Browser', () => {
     el.selectedTitleFilter = 'X';
     await el.updateComplete;
 
-    // Wait an extra tick
-    await aTimeout(0);
-
     expect(searchService.searchParams?.query).to.equal(
       'first-title AND firstTitle:X'
     );
@@ -654,9 +651,6 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
-
-    // Wait an extra tick
-    await aTimeout(0);
 
     expect(searchService.searchParams?.query).to.equal(
       'first-creator AND firstCreator:X'
@@ -689,9 +683,6 @@ describe('Collection Browser', () => {
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
 
-    // Wait an extra tick
-    await aTimeout(0);
-
     expect(searchService.searchParams?.query).to.equal(
       'first-creator AND firstCreator:X'
     );
@@ -723,7 +714,7 @@ describe('Collection Browser', () => {
     await facets?.updateComplete;
 
     // Wait for the date picker to be rendered (which may take until the next tick)
-    aTimeout(0);
+    await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
       'histogram-date-range'

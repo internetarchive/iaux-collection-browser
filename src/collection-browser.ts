@@ -297,7 +297,9 @@ export class CollectionBrowser
     letterFilters = true,
     sort = false,
   } = {}): void {
-    if (facets) {
+    // Don't bother clearing facets if none are checked, so that we don't
+    // trigger unnecessary update cycles.
+    if (facets && this.hasCheckedFacets) {
       this.selectedFacets = getDefaultSelectedFacets();
     }
 
@@ -318,6 +320,22 @@ export class CollectionBrowser
       this.sortDirection = null;
       this.selectedSort = SortField.relevance;
     }
+  }
+
+  /**
+   * Returns true if the current value of `this.selectedFacets` contains
+   * any facet buckets than have been selected or negated, or false otherwise.
+   */
+  private get hasCheckedFacets(): boolean {
+    if (!this.selectedFacets) return false;
+
+    for (const facetGroup of Object.values(this.selectedFacets)) {
+      for (const bucket of Object.values(facetGroup)) {
+        if (bucket.state !== 'none') return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -559,6 +577,7 @@ export class CollectionBrowser
   ): void {
     this.selectedCreatorFilter = null;
     this.selectedTitleFilter = e.detail.selectedLetter;
+    this.selectedTitleLetterChanged();
   }
 
   private creatorLetterSelected(
@@ -566,6 +585,7 @@ export class CollectionBrowser
   ): void {
     this.selectedTitleFilter = null;
     this.selectedCreatorFilter = e.detail.selectedLetter;
+    this.selectedCreatorLetterChanged();
   }
 
   private get mobileFacetsTemplate() {
@@ -685,7 +705,17 @@ export class CollectionBrowser
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
       if (!this.historyPopOccurred) {
-        this.clearFilters();
+        // Only clear filters that haven't been simultaneously applied in this update
+        this.clearFilters({
+          facets: !changed.has('selectedFacets'),
+          dateRange: !(
+            changed.has('minSelectedDate') || changed.has('maxSelectedDate')
+          ),
+          letterFilters: !(
+            changed.has('selectedTitleFilter') ||
+            changed.has('selectedCreatorFilter')
+          ),
+        });
       }
     }
     if (changed.has('searchType')) {
@@ -693,18 +723,6 @@ export class CollectionBrowser
     }
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
-    }
-    if (
-      changed.has('baseQuery') ||
-      changed.has('titleQuery') ||
-      changed.has('creatorQuery') ||
-      changed.has('minSelectedDate') ||
-      changed.has('maxSelectedDate') ||
-      changed.has('sortParam') ||
-      changed.has('selectedFacets') ||
-      changed.has('searchService')
-    ) {
-      this.handleQueryChange();
     }
     if (
       changed.has('baseQuery') ||
@@ -730,6 +748,18 @@ export class CollectionBrowser
         changed.get('selectedCreatorFilter') as string
       );
       this.selectedCreatorLetterChanged();
+    }
+    if (
+      changed.has('baseQuery') ||
+      changed.has('selectedTitleFilter') ||
+      changed.has('selectedCreatorFilter') ||
+      changed.has('minSelectedDate') ||
+      changed.has('maxSelectedDate') ||
+      changed.has('sortParam') ||
+      changed.has('selectedFacets') ||
+      changed.has('searchService')
+    ) {
+      this.handleQueryChange();
     }
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached && this.infiniteScroller) {
