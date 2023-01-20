@@ -64,8 +64,8 @@ describe('Collection Browser', () => {
       field: 'titleSorter',
       direction: 'asc',
     });
-    expect(el.selectedCreatorFilter).to.be.undefined;
-    expect(el.selectedTitleFilter).to.be.undefined;
+    expect(el.selectedCreatorFilter).to.be.null;
+    expect(el.selectedTitleFilter).to.be.null;
   });
 
   it('clears existing filters for facets & sort via option', async () => {
@@ -79,10 +79,10 @@ describe('Collection Browser', () => {
 
     expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
     expect(el.selectedSort).to.equal('relevance');
-    expect(el.sortDirection).to.be.undefined;
-    expect(el.sortParam).to.be.undefined;
-    expect(el.selectedCreatorFilter).to.be.undefined;
-    expect(el.selectedTitleFilter).to.be.undefined;
+    expect(el.sortDirection).to.be.null;
+    expect(el.sortParam).to.be.null;
+    expect(el.selectedCreatorFilter).to.be.null;
+    expect(el.selectedTitleFilter).to.be.null;
   });
 
   it('filterBy creator with analytics', async () => {
@@ -105,7 +105,7 @@ describe('Collection Browser', () => {
     el.clearFilters();
     await el.updateComplete;
 
-    expect(el.selectedTitleFilter).to.be.undefined;
+    expect(el.selectedTitleFilter).to.be.null;
     expect(mockAnalyticsHandler.callCategory).to.equal('betaSearchService');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
@@ -131,7 +131,7 @@ describe('Collection Browser', () => {
     el.clearFilters();
     await el.updateComplete;
 
-    expect(el.selectedTitleFilter).to.be.undefined;
+    expect(el.selectedTitleFilter).to.be.null;
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
@@ -584,7 +584,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     const fetchPromise = el.fetchPage(2);
-    el.sortParam = undefined;
+    el.sortParam = null;
     await fetchPromise;
 
     // If the different sort param causes the results to be discarded,

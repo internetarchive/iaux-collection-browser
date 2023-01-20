@@ -10,7 +10,6 @@ import {
   FacetBucket,
   SelectedFacets,
   getDefaultSelectedFacets,
-  FacetState,
 } from '../models';
 
 @customElement('facets-template')
@@ -50,7 +49,7 @@ export class FacetsTemplate extends LitElement {
       newFacets = getDefaultSelectedFacets();
     }
     newFacets[key][value] = {
-      state: this.getFacetState(true, negative),
+      state: negative ? 'hidden' : 'selected',
       count,
     } as FacetBucket;
 
@@ -72,17 +71,6 @@ export class FacetsTemplate extends LitElement {
 
     this.selectedFacets = newFacets;
     this.dispatchSelectedFacetsChanged();
-  }
-
-  /** Returns the composed facet state corresponding to a positive or negative facet's checked state */
-  private getFacetState(checked: boolean, negative: boolean): FacetState {
-    let state: FacetState;
-    if (checked) {
-      state = negative ? 'hidden' : 'selected';
-    } else {
-      state = 'none';
-    }
-    return state;
   }
 
   private dispatchSelectedFacetsChanged() {

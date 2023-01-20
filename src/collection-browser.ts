@@ -90,15 +90,15 @@ export class CollectionBrowser
 
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
-  @property({ type: Object }) sortParam?: SortParam;
-
-  @property({ type: String }) sortDirection?: SortDirection;
+  @property({ type: Object }) sortParam: SortParam | null = null;
 
   @property({ type: String }) selectedSort: SortField = SortField.relevance;
 
-  @property({ type: String }) selectedTitleFilter?: string;
+  @property({ type: String }) selectedTitleFilter: string | null = null;
 
-  @property({ type: String }) selectedCreatorFilter?: string;
+  @property({ type: String }) selectedCreatorFilter: string | null = null;
+
+  @property({ type: String }) sortDirection: SortDirection | null = null;
 
   @property({ type: Number }) pageSize = 50;
 
@@ -307,15 +307,15 @@ export class CollectionBrowser
     }
 
     if (letterFilters) {
-      this.selectedTitleFilter = undefined;
-      this.selectedCreatorFilter = undefined;
+      this.selectedTitleFilter = null;
+      this.selectedCreatorFilter = null;
       this.titleQuery = undefined;
       this.creatorQuery = undefined;
     }
 
     if (sort) {
-      this.sortParam = undefined;
-      this.sortDirection = undefined;
+      this.sortParam = null;
+      this.sortDirection = null;
       this.selectedSort = SortField.relevance;
     }
   }
@@ -432,10 +432,10 @@ export class CollectionBrowser
     return html`
       <sort-filter-bar
         .selectedSort=${this.selectedSort}
-        .sortDirection=${this.sortDirection ?? null}
+        .sortDirection=${this.sortDirection}
         .displayMode=${this.displayMode}
-        .selectedTitleFilter=${this.selectedTitleFilter ?? null}
-        .selectedCreatorFilter=${this.selectedCreatorFilter ?? null}
+        .selectedTitleFilter=${this.selectedTitleFilter}
+        .selectedCreatorFilter=${this.selectedCreatorFilter}
         .prefixFilterCountMap=${this.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
         @sortChanged=${this.userChangedSort}
@@ -455,7 +455,7 @@ export class CollectionBrowser
   ) {
     const { selectedSort, sortDirection } = e.detail;
     this.selectedSort = selectedSort;
-    this.sortDirection = sortDirection ?? undefined;
+    this.sortDirection = sortDirection;
 
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
@@ -463,7 +463,7 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
-  private sendSortByAnalytics(prevSortDirection?: SortDirection): void {
+  private sendSortByAnalytics(prevSortDirection: SortDirection | null): void {
     const directionCleared = prevSortDirection && !this.sortDirection;
 
     this.analyticsHandler?.sendEvent({
@@ -477,7 +477,7 @@ export class CollectionBrowser
 
   private selectedSortChanged(): void {
     if (this.selectedSort === 'relevance') {
-      this.sortParam = undefined;
+      this.sortParam = null;
       return;
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
@@ -485,7 +485,6 @@ export class CollectionBrowser
 
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
-    this.requestUpdate();
 
     // Lazy-load the alphabet counts for title/creator sort bar as needed
     this.updatePrefixFiltersForCurrentSort();
@@ -508,7 +507,7 @@ export class CollectionBrowser
   /** Send Analytics when sorting by title's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
-  private sendFilterByTitleAnalytics(prevSelectedLetter?: string): void {
+  private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
     }
@@ -532,7 +531,9 @@ export class CollectionBrowser
   /** Send Analytics when filtering by creator's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
-  private sendFilterByCreatorAnalytics(prevSelectedLetter?: string): void {
+  private sendFilterByCreatorAnalytics(
+    prevSelectedLetter: string | null
+  ): void {
     if (!prevSelectedLetter && !this.selectedCreatorFilter) {
       return;
     }
@@ -556,15 +557,15 @@ export class CollectionBrowser
   private titleLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
-    this.selectedCreatorFilter = undefined;
-    this.selectedTitleFilter = e.detail.selectedLetter ?? undefined;
+    this.selectedCreatorFilter = null;
+    this.selectedTitleFilter = e.detail.selectedLetter;
   }
 
   private creatorLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
-    this.selectedTitleFilter = undefined;
-    this.selectedCreatorFilter = e.detail.selectedLetter ?? undefined;
+    this.selectedTitleFilter = null;
+    this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
   private get mobileFacetsTemplate() {
@@ -890,14 +891,11 @@ export class CollectionBrowser
     if (restorationState.searchType != null)
       this.searchType = restorationState.searchType;
     this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
-    this.sortDirection = restorationState.sortDirection;
-    this.selectedTitleFilter = restorationState.selectedTitleFilter;
-    this.selectedCreatorFilter = restorationState.selectedCreatorFilter;
+    this.sortDirection = restorationState.sortDirection ?? null;
+    this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
+    this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;
     this.baseQuery = restorationState.baseQuery;
-    this.titleQuery = restorationState.titleQuery;
-    this.creatorQuery = restorationState.creatorQuery;
-    this.sortParam = restorationState.sortParam;
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;

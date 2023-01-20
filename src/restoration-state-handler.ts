@@ -16,6 +16,7 @@ import {
   URLFieldToSortField,
   URLSortField,
   getDefaultSelectedFacets,
+  MetadataFieldToURLField,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 
@@ -92,6 +93,7 @@ export class RestorationStateHandler
   }
 
   private persistQueryStateToUrl(state: RestorationState) {
+    console.log('persisting...', window.location.href, state);
     const url = new URL(window.location.href);
     const oldParams = new URLSearchParams(url.searchParams);
     const newParams = this.removeRecognizedParams(url.searchParams);
@@ -115,7 +117,7 @@ export class RestorationStateHandler
     if (state.sortParam) {
       const prefix = state.sortParam.direction === 'desc' ? '-' : '';
       const readableSortField =
-        URLFieldToSortField[state.sortParam.field as MetadataSortField];
+        MetadataFieldToURLField[state.sortParam.field as MetadataSortField];
       newParams.set('sort', `${prefix}${readableSortField}`);
     }
 
@@ -194,9 +196,11 @@ export class RestorationStateHandler
       '',
       url
     );
+    console.log('persisted!', window.location.href);
   }
 
   private loadQueryStateFromUrl(): RestorationState {
+    console.log('restoring from', window.location.href);
     const url = new URL(window.location.href);
     const searchInside = url.searchParams.get('sin');
     const pageNumber = url.searchParams.get('page');
@@ -325,6 +329,7 @@ export class RestorationStateHandler
       });
     }
 
+    console.log('restored!', window.location.href, restorationState);
     return restorationState;
   }
 
