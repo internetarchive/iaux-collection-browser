@@ -73,11 +73,11 @@ export class MockSearchService implements SearchServiceInterface {
     }
 
     const resultFn: () => Result<SearchResponse, SearchServiceError> =
-      responses[this.searchParams?.query] ?? getMockSuccessMultipleResults;
+      responses[this.searchParams.query] ?? getMockSuccessMultipleResults;
     let result = resultFn();
 
     // with-sort query has special handling
-    if (this.searchParams?.query === 'with-sort') {
+    if (this.searchParams.query === 'with-sort') {
       result = getMockSuccessSingleResultWithSort(this.resultsSpy);
     }
 
