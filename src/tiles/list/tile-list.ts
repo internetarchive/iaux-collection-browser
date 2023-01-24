@@ -506,6 +506,11 @@ export class TileList extends LitElement {
         line-height: 20px;
       }
 
+      .inline-wrap {
+        display: inline;
+        margin: 0;
+      }
+
       #description,
       #creator,
       #topics,
@@ -601,10 +606,6 @@ export class TileList extends LitElement {
       #dates-line,
       #views-line {
         flex-wrap: wrap;
-      }
-
-      .inline-wrap {
-        display: inline;
       }
     `;
   }

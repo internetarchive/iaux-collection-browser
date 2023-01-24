@@ -118,6 +118,7 @@ export class TextSnippetBlock extends LitElement {
 
       .inline-wrap {
         display: inline;
+        margin: 0;
       }
 
       mark {
