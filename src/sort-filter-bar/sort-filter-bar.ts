@@ -851,6 +851,11 @@ export class SortFilterBar
       height: 14px;
     }
 
+    .sort-direction-icon > svg {
+      height: -webkit-fit-content;
+      height: fit-content;
+    }
+
     #date-sort-selector,
     #view-sort-selector {
       position: absolute;
