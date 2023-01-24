@@ -2445,8 +2445,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     }
 
     .sort-direction-icon > svg {
-      height: -webkit-fit-content;
-      height: fit-content;
+      flex: 1;
     }
 
     #date-sort-selector,
