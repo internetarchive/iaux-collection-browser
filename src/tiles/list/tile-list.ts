@@ -305,7 +305,7 @@ export class TileList extends LitElement {
     if (!text) return nothing;
     return html`
       <div id=${ifDefined(id)} class="metadata">
-        ${this.labelTemplate(label)} ${text}
+        <p class="inline-wrap">${this.labelTemplate(label)} ${text}</p>
       </div>
     `;
   }
@@ -601,6 +601,10 @@ export class TileList extends LitElement {
       #dates-line,
       #views-line {
         flex-wrap: wrap;
+      }
+
+      .inline-wrap {
+        display: inline;
       }
     `;
   }

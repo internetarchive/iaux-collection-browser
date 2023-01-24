@@ -21,7 +21,7 @@ export class TextSnippetBlock extends LitElement {
     return html`
       <div class="container">
         <div class="snippet-view ${this.viewSize}">
-          ${this.ellipsisJoinedSnippets}
+          <p class="inline-wrap">${this.ellipsisJoinedSnippets}</p>
         </div>
       </div>
     `;
@@ -114,6 +114,10 @@ export class TextSnippetBlock extends LitElement {
         padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
+      }
+
+      .inline-wrap {
+        display: inline;
       }
 
       mark {
