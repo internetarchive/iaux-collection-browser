@@ -576,6 +576,7 @@ var ur=Object.defineProperty,vr=Object.defineProperties;var mr=Object.getOwnProp
 
       .inline-wrap {
         display: inline;
+        margin: 0;
       }
 
       mark {
@@ -1325,6 +1326,11 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         line-height: 20px;
       }
 
+      .inline-wrap {
+        display: inline;
+        margin: 0;
+      }
+
       #description,
       #creator,
       #topics,
@@ -1420,10 +1426,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       #dates-line,
       #views-line {
         flex-wrap: wrap;
-      }
-
-      .inline-wrap {
-        display: inline;
       }
     `}};s([c({type:Object})],fe.prototype,"model",void 0);s([c({type:String})],fe.prototype,"baseNavigationUrl",void 0);s([c({type:Object})],fe.prototype,"collectionNameCache",void 0);s([c({type:Number})],fe.prototype,"currentWidth",void 0);s([c({type:Number})],fe.prototype,"currentHeight",void 0);s([c({type:Object})],fe.prototype,"sortParam",void 0);s([c({type:Number})],fe.prototype,"mobileBreakpoint",void 0);s([S()],fe.prototype,"collectionLinks",void 0);s([c({type:String})],fe.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],fe.prototype,"loggedIn",void 0);fe=s([P("tile-list")],fe);let Re=class extends M{constructor(){super(...arguments),this.loggedIn=!1}render(){return h`
       <div id="container">
