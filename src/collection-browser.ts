@@ -345,7 +345,7 @@ export class CollectionBrowser
 
   private setPlaceholderType() {
     this.placeholderType = null;
-    if (!this.baseQuery) {
+    if (!this.baseQuery?.trim()) {
       this.placeholderType = 'empty-query';
     }
 
@@ -1008,7 +1008,7 @@ export class CollectionBrowser
   /** The base query joined with any title/creator letter filters */
   private get filteredQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let filteredQuery = this.baseQuery;
+    let filteredQuery = this.baseQuery.trim();
 
     const { sortFilterQueries } = this;
     if (sortFilterQueries) {
@@ -1021,7 +1021,7 @@ export class CollectionBrowser
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery;
+    let fullQuery = this.baseQuery.trim();
 
     const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
 
@@ -1040,7 +1040,7 @@ export class CollectionBrowser
   /** The full query without any title/creator letter filters */
   private get fullQueryWithoutAlphaFilters(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery;
+    let fullQuery = this.baseQuery.trim();
 
     const { facetQuery, dateRangeQueryClause } = this;
 
@@ -1190,11 +1190,17 @@ export class CollectionBrowser
     this.facetsLoading = false;
 
     if (!success) {
-      // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
-      window?.Sentry?.captureMessage?.(
-        'Missing or malformed facet response from backend',
-        'error'
-      );
+      const errorMsg = searchResponse?.error?.message;
+      const detailMsg = searchResponse?.error?.details?.message;
+
+      if (!errorMsg && !detailMsg) {
+        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        window?.Sentry?.captureMessage?.(
+          'Missing or malformed facet response from backend',
+          'error'
+        );
+      }
+
       return;
     }
 

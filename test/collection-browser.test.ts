@@ -19,6 +19,7 @@ import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
 import type { CollectionFacets } from '../src/collection-facets';
+import type { EmptyPlaceholder } from '../src/empty-placeholder';
 
 /**
  * Wait for the next tick of the event loop.
@@ -500,6 +501,59 @@ describe('Collection Browser', () => {
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
   });
 
+  it('trims queries of leading/trailing whitespace', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = '   collection:foo   ';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+  });
+
+  it('shows error message when error response received', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'error';
+    await el.updateComplete;
+    await nextTick();
+
+    const errorPlaceholder = el.shadowRoot?.querySelector(
+      'empty-placeholder'
+    ) as EmptyPlaceholder;
+    const errorDetails = errorPlaceholder?.shadowRoot?.querySelector(
+      '.error-details'
+    ) as HTMLParagraphElement;
+
+    expect(errorDetails).to.exist;
+    expect(errorDetails.textContent).to.contain('foo');
+  });
+
+  it('reports malformed response errors to Sentry', async () => {
+    const sentrySpy = sinon.spy();
+    (window as any).Sentry = { captureMessage: sentrySpy };
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'malformed';
+    await el.updateComplete;
+
+    expect(sentrySpy.callCount).to.be.greaterThanOrEqual(1);
+  });
+
   it('queries for collection names after a fetch', async () => {
     const searchService = new MockSearchService();
     const collectionNameCache = new MockCollectionNameCache();
@@ -562,12 +616,16 @@ describe('Collection Browser', () => {
     el.sortParam = { field: 'foo', direction: 'asc' };
     await el.updateComplete;
 
-    const fetchPromise = el.fetchPage(2);
+    // We want to spy exclusively on the first set of results, not the second
+    searchService.asyncResponse = false;
+    searchService.resultsSpy = () => {};
+
     el.sortParam = { field: 'foo', direction: 'desc' };
-    await fetchPromise;
+    await el.updateComplete;
+    await nextTick();
 
     // If the different sort param causes the results to be discarded,
-    // the results array should never be read.
+    // the first results array should never be read.
     expect(resultsSpy.callCount).to.equal(0);
   });
 
@@ -586,12 +644,16 @@ describe('Collection Browser', () => {
     el.baseQuery = 'single-result';
     await el.updateComplete;
 
-    const fetchPromise = el.fetchPage(2);
+    // We want to spy exclusively on the first set of results, not the second
+    searchService.asyncResponse = false;
+    searchService.resultsSpy = () => {};
+
     el.sortParam = { field: 'foo', direction: 'asc' };
-    await fetchPromise;
+    await el.updateComplete;
+    await nextTick();
 
     // If the different sort param causes the results to be discarded,
-    // the results array should never be read.
+    // the first results array should never be read.
     expect(resultsSpy.callCount).to.equal(0);
   });
 
@@ -608,14 +670,19 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
+    el.sortParam = { field: 'foo', direction: 'asc' };
     await el.updateComplete;
 
-    const fetchPromise = el.fetchPage(2);
+    // We want to spy exclusively on the first set of results, not the second
+    searchService.asyncResponse = false;
+    searchService.resultsSpy = () => {};
+
     el.sortParam = null;
-    await fetchPromise;
+    await el.updateComplete;
+    await nextTick();
 
     // If the different sort param causes the results to be discarded,
-    // the results array should never be read.
+    // the first results array should never be read.
     expect(resultsSpy.callCount).to.equal(0);
   });
 
@@ -800,6 +867,37 @@ describe('Collection Browser', () => {
     expect(spy.callCount).to.equal(1);
 
     infiniteScroller.scrollToCell = oldScrollToCell;
+  });
+
+  it('shows mobile facets in mobile view', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .mobileBreakpoint=${9999}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    const contentContainer = el.shadowRoot?.querySelector(
+      '#content-container'
+    ) as HTMLElement;
+
+    el.handleResize({
+      target: contentContainer,
+      contentRect: contentContainer.getBoundingClientRect(),
+      borderBoxSize: [],
+      contentBoxSize: [],
+      devicePixelContentBoxSize: [],
+    });
+    await el.updateComplete;
+
+    const mobileFacets = el.shadowRoot?.querySelector(
+      '#mobile-filter-collapse'
+    );
+    expect(mobileFacets).to.exist;
   });
 
   it('refreshes when certain properties change - with some analytics event sampling', async () => {

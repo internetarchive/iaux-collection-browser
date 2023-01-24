@@ -5,11 +5,12 @@ import {
   SearchResponse,
   SearchServiceError,
 } from '@internetarchive/search-service';
+import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 
-export const mockSuccessSingleResult: Result<
+export const getMockSuccessSingleResult: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -39,12 +40,12 @@ export const mockSuccessSingleResult: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessWithYearHistogramAggs: Result<
+export const getMockSuccessWithYearHistogramAggs: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -84,12 +85,12 @@ export const mockSuccessWithYearHistogramAggs: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessLoggedInResult: Result<
+export const getMockSuccessLoggedInResult: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -121,12 +122,12 @@ export const mockSuccessLoggedInResult: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessNoPreviewResult: Result<
+export const getMockSuccessNoPreviewResult: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -156,12 +157,12 @@ export const mockSuccessNoPreviewResult: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessLoggedInAndNoPreviewResult: Result<
+export const getMockSuccessLoggedInAndNoPreviewResult: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -191,12 +192,12 @@ export const mockSuccessLoggedInAndNoPreviewResult: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessFirstTitleResult: Result<
+export const getMockSuccessFirstTitleResult: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -230,12 +231,12 @@ export const mockSuccessFirstTitleResult: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessFirstCreatorResult: Result<
+export const getMockSuccessFirstCreatorResult: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -269,7 +270,7 @@ export const mockSuccessFirstCreatorResult: Result<
       query_time: 0,
     },
   },
-};
+});
 
 export const getMockSuccessSingleResultWithSort: (
   resultsSpy: Function
@@ -308,10 +309,10 @@ export const getMockSuccessSingleResultWithSort: (
   },
 });
 
-export const mockSuccessMultipleResults: Result<
+export const getMockSuccessMultipleResults: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -347,12 +348,12 @@ export const mockSuccessMultipleResults: Result<
       query_time: 0,
     },
   },
-};
+});
 
-export const mockSuccessMultiLineDescription: Result<
+export const getMockSuccessMultiLineDescription: () => Result<
   SearchResponse,
   SearchServiceError
-> = {
+> = () => ({
   success: {
     request: {
       clientParameters: {
@@ -383,4 +384,18 @@ export const mockSuccessMultiLineDescription: Result<
       query_time: 0,
     },
   },
-};
+});
+
+export const getMockErrorResult: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  error: new SearchServiceError(SearchServiceErrorType.networkError, 'foo', {
+    message: 'bar',
+  }),
+});
+
+export const getMockMalformedResult: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({});
