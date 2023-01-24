@@ -608,7 +608,7 @@ describe('Collection Browser', () => {
     // Click the title sorter
     [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
       .find(child => child.textContent?.trim() === 'Title')
-      ?.querySelector('a[href]')
+      ?.querySelector('button')
       ?.click();
 
     await el.updateComplete;
