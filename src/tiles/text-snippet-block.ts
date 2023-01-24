@@ -27,6 +27,13 @@ export class TextSnippetBlock extends LitElement {
     `;
   }
 
+  updated() {
+    const wrapper = this.shadowRoot?.querySelector(
+      '.inline-wrap'
+    ) as HTMLParagraphElement;
+    if (wrapper) wrapper.style.margin = '0';
+  }
+
   /**
    * An array of HTML templates derived from the snippets, with ellipses inserted
    * at the beginning, end, and between each pair of snippets.
@@ -118,7 +125,6 @@ export class TextSnippetBlock extends LitElement {
 
       .inline-wrap {
         display: inline;
-        margin: 0;
       }
 
       mark {
