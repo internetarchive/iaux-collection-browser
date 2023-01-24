@@ -364,15 +364,6 @@ export class TileList extends LitElement {
   }
 
   protected updated(changed: PropertyValues): void {
-    // tsc has trouble recognizing that NodeLists are iterable
-    // so we any-cast the result to allow iterating it.
-    const wrappers = this.querySelectorAll('.inline-wrap') as any;
-    if (wrappers) {
-      for (const wrapper of wrappers) {
-        (wrapper as HTMLElement).style.margin = '0';
-      }
-    }
-
     if (changed.has('model')) {
       this.fetchCollectionNames();
     }
@@ -531,6 +522,12 @@ export class TileList extends LitElement {
         word-break: break-word;
         -webkit-line-clamp: 3; /* number of lines to show */
         line-clamp: 3;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules above,
+         * so we add this to ensure these fields still get truncated
+         */
+        max-height: 60px;
       }
 
       #collections {

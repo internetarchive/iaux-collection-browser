@@ -27,13 +27,6 @@ export class TextSnippetBlock extends LitElement {
     `;
   }
 
-  updated() {
-    const wrapper = this.shadowRoot?.querySelector(
-      '.inline-wrap'
-    ) as HTMLParagraphElement;
-    if (wrapper) wrapper.style.margin = '0';
-  }
-
   /**
    * An array of HTML templates derived from the snippets, with ellipses inserted
    * at the beginning, end, and between each pair of snippets.
@@ -121,6 +114,12 @@ export class TextSnippetBlock extends LitElement {
         padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules,
+         * so we add this to ensure these fields still get truncated.
+         */
+        max-height: 6rem;
       }
 
       .inline-wrap {
