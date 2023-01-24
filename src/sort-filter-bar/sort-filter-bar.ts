@@ -852,8 +852,7 @@ export class SortFilterBar
     }
 
     .sort-direction-icon > svg {
-      height: -webkit-fit-content;
-      height: fit-content;
+      flex: 1;
     }
 
     #date-sort-selector,
