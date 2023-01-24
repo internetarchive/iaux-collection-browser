@@ -533,7 +533,7 @@ var ur=Object.defineProperty,vr=Object.defineProperties;var mr=Object.getOwnProp
           <p class="inline-wrap">${this.ellipsisJoinedSnippets}</p>
         </div>
       </div>
-    `:h`${b}`}get ellipsisJoinedSnippets(){return h`
+    `:h`${b}`}updated(){var e;const t=(e=this.shadowRoot)===null||e===void 0?void 0:e.querySelector(".inline-wrap");t&&(t.style.margin="0")}get ellipsisJoinedSnippets(){return h`
       &hellip; ${hi(this.snippetTemplates,h` &hellip; `)} &hellip;
     `}get snippetTemplates(){var e;return(e=this.snippets)===null||e===void 0?void 0:e.map(t=>{const i=t.matchAll(/{{{(.+?)}}}/gs),o=[];let r=0;for(const n of i)n.index!=null&&(o.push(h`
             ${t.slice(r,n.index)}
@@ -576,7 +576,6 @@ var ur=Object.defineProperty,vr=Object.defineProperties;var mr=Object.getOwnProp
 
       .inline-wrap {
         display: inline;
-        margin: 0;
       }
 
       mark {
@@ -1262,7 +1261,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     >`}detailsLink(e,t){const i=t!=null?t:e;return h`<a
       href="${this.baseNavigationUrl}/details/${encodeURI(e)}"
       >${jt.sanitize(i)}</a
-    >`}get mediatypeURL(){var e;if(this.baseNavigationUrl===void 0||!(!((e=this.model)===null||e===void 0)&&e.mediatype))return b;switch(this.model.mediatype){case"collection":return`${this.baseNavigationUrl}/search?query=mediatype:collection&sort=-downloads`;case"account":return b;default:return`${this.baseNavigationUrl}/details/${encodeURI(this.model.mediatype)}`}}updated(e){e.has("model")&&this.fetchCollectionNames()}async fetchCollectionNames(){var e,t;if(!(!((e=this.model)===null||e===void 0)&&e.collections)||this.model.collections.length===0||!this.collectionNameCache)return;this.collectionLinks=[];const i=[],o=[];for(const r of this.model.collections)!$o[r]&&!r.startsWith("fav-")&&o.push((t=this.collectionNameCache)===null||t===void 0?void 0:t.collectionNameFor(r).then(n=>{i.push(this.detailsLink(r,n!=null?n:r))}));await Promise.all(o),this.collectionLinks=i}get date(){var e,t,i,o,r;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":return(t=this.model)===null||t===void 0?void 0:t.datePublished;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(o=this.model)===null||o===void 0?void 0:o.dateAdded;default:return(r=this.model)===null||r===void 0?void 0:r.dateArchived}}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return v`
+    >`}get mediatypeURL(){var e;if(this.baseNavigationUrl===void 0||!(!((e=this.model)===null||e===void 0)&&e.mediatype))return b;switch(this.model.mediatype){case"collection":return`${this.baseNavigationUrl}/search?query=mediatype:collection&sort=-downloads`;case"account":return b;default:return`${this.baseNavigationUrl}/details/${encodeURI(this.model.mediatype)}`}}updated(e){const t=this.querySelectorAll(".inline-wrap");if(t)for(const i of t)i.style.margin="0";e.has("model")&&this.fetchCollectionNames()}async fetchCollectionNames(){var e,t;if(!(!((e=this.model)===null||e===void 0)&&e.collections)||this.model.collections.length===0||!this.collectionNameCache)return;this.collectionLinks=[];const i=[],o=[];for(const r of this.model.collections)!$o[r]&&!r.startsWith("fav-")&&o.push((t=this.collectionNameCache)===null||t===void 0?void 0:t.collectionNameFor(r).then(n=>{i.push(this.detailsLink(r,n!=null?n:r))}));await Promise.all(o),this.collectionLinks=i}get date(){var e,t,i,o,r;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"date":return(t=this.model)===null||t===void 0?void 0:t.datePublished;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(o=this.model)===null||o===void 0?void 0:o.dateAdded;default:return(r=this.model)===null||r===void 0?void 0:r.dateArchived}}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return v`
       html {
         font-size: unset;
       }
@@ -1328,7 +1327,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
       .inline-wrap {
         display: inline;
-        margin: 0;
       }
 
       #description,
