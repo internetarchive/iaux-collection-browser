@@ -1252,8 +1252,8 @@ export class CollectionBrowser
    * no longer relevant.
    */
   private get pageFetchQueryKey(): string {
-    const sortField = this.sortParam?.field ?? '';
-    const sortDirection = this.sortParam?.direction ?? '';
+    const sortField = this.sortParam?.field ?? 'none';
+    const sortDirection = this.sortParam?.direction ?? 'none';
     return `${this.fullQuery}-${this.searchType}-${sortField}-${sortDirection}`;
   }
 
