@@ -518,6 +518,12 @@ export class TileList extends LitElement {
         word-break: break-word;
         -webkit-line-clamp: 3; /* number of lines to show */
         line-clamp: 3;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules above,
+         * so we add this to ensure these fields still get truncated
+         */
+        max-height: 60px;
       }
 
       #collections {

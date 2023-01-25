@@ -114,6 +114,12 @@ export class TextSnippetBlock extends LitElement {
         padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules,
+         * so we add this to ensure these fields still get truncated.
+         */
+        max-height: 6rem;
       }
 
       mark {
