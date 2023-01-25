@@ -233,8 +233,18 @@ export class RestorationStateHandler
       restorationState.baseQuery = legacySearchQuery;
     }
 
-    restorationState.searchType =
-      searchInside === 'TXT' ? SearchType.FULLTEXT : SearchType.METADATA;
+    switch (searchInside) {
+      case '':
+        restorationState.searchType = SearchType.METADATA;
+        break;
+      case 'TXT':
+        restorationState.searchType = SearchType.FULLTEXT;
+        break;
+      default:
+        // Don't restore a search type.
+        // Eventually there will be TV/Radio search types here too.
+        break;
+    }
 
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);
