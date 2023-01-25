@@ -572,6 +572,12 @@ var ur=Object.defineProperty,vr=Object.defineProperties;var mr=Object.getOwnProp
         padding-left: 15px;
         font-size: 1.4rem;
         line-height: 2rem;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules,
+         * so we add this to ensure these fields still get truncated.
+         */
+        max-height: 6rem;
       }
 
       mark {
@@ -1333,6 +1339,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         word-break: break-word;
         -webkit-line-clamp: 3; /* number of lines to show */
         line-clamp: 3;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules above,
+         * so we add this to ensure these fields still get truncated
+         */
+        max-height: 60px;
       }
 
       #collections {
