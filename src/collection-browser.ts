@@ -48,14 +48,14 @@ import {
   SortField,
   SortFieldToMetadataField,
   CollectionBrowserContext,
-  defaultSelectedFacets,
+  getDefaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
-  FacetOption,
   FacetBucket,
   PrefixFilterType,
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
+  FacetOption,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -173,13 +173,6 @@ export class CollectionBrowser
 
   @state() private fullYearsHistogramAggregation: Aggregation | undefined;
 
-  /**
-   * The search type of the previous search (i.e., the currently displayed
-   * search results), which may differ from the one that is currently selected
-   * to be used for the next search.
-   */
-  @state() private previousSearchType?: SearchType;
-
   @state() private totalResults?: number;
 
   @state() private queryErrorMessage?: string;
@@ -248,16 +241,6 @@ export class CollectionBrowser
     return this.pagesToRender * this.pageSize;
   }
 
-  // this is the actual number of tiles in the datasource,
-  // which is useful for removing excess placeholder tiles
-  // once we reached the end of the data
-  private get actualTileCount(): number {
-    return Object.keys(this.dataSource).reduce(
-      (acc, page) => acc + this.dataSource[page].length,
-      0
-    );
-  }
-
   /**
    * The results per page so we can paginate.
    *
@@ -281,15 +264,61 @@ export class CollectionBrowser
     return this.scrollToPage(pageNumber);
   }
 
-  clearFilters() {
-    this.selectedFacets = defaultSelectedFacets;
-    this.sortParam = null;
-    this.selectedTitleFilter = null;
-    this.selectedCreatorFilter = null;
-    this.titleQuery = undefined;
-    this.creatorQuery = undefined;
-    this.selectedSort = SortField.relevance;
-    this.sortDirection = null;
+  /**
+   * Clears all selected/negated facets, date ranges, and letter filters.
+   *
+   * By default, the current sort field/direction are not cleared,
+   * but this can be overridden by setting the `sort` option to `true`.
+   *
+   * Similarly, it is possible to finely control what is cleared by
+   * setting any of the `facets`, `dateRange`, or `letterFilters` flags
+   * in the options object.
+   */
+  clearFilters({
+    facets = true,
+    dateRange = true,
+    letterFilters = true,
+    sort = false,
+  } = {}): void {
+    // Don't bother clearing facets if none are checked, so that we don't
+    // trigger unnecessary update cycles.
+    if (facets && this.hasCheckedFacets) {
+      this.selectedFacets = getDefaultSelectedFacets();
+    }
+
+    if (dateRange) {
+      this.minSelectedDate = undefined;
+      this.maxSelectedDate = undefined;
+    }
+
+    if (letterFilters) {
+      this.selectedTitleFilter = null;
+      this.selectedCreatorFilter = null;
+      this.titleQuery = undefined;
+      this.creatorQuery = undefined;
+    }
+
+    if (sort) {
+      this.sortParam = null;
+      this.sortDirection = null;
+      this.selectedSort = SortField.relevance;
+    }
+  }
+
+  /**
+   * Returns true if the current value of `this.selectedFacets` contains
+   * any facet buckets than have been selected or negated, or false otherwise.
+   */
+  private get hasCheckedFacets(): boolean {
+    if (!this.selectedFacets) return false;
+
+    for (const facetGroup of Object.values(this.selectedFacets)) {
+      for (const bucket of Object.values(facetGroup)) {
+        if (bucket.state !== 'none') return true;
+      }
+    }
+
+    return false;
   }
 
   /**
@@ -448,11 +477,12 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    if (this.selectedSort === 'relevance' || this.sortDirection === null) {
+    if (this.selectedSort === 'relevance') {
       this.sortParam = null;
       return;
     }
     const sortField = SortFieldToMetadataField[this.selectedSort];
+    if (!this.sortDirection) this.sortDirection = 'desc';
 
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
@@ -462,8 +492,8 @@ export class CollectionBrowser
   }
 
   private displayModeChanged(
-    e: CustomEvent<{ displayMode: CollectionDisplayMode }>
-  ) {
+    e: CustomEvent<{ displayMode?: CollectionDisplayMode }>
+  ): void {
     this.displayMode = e.detail.displayMode;
 
     if (this.displayMode) {
@@ -482,7 +512,7 @@ export class CollectionBrowser
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
     }
-    const cleared = prevSelectedLetter && this.selectedTitleFilter === null;
+    const cleared = prevSelectedLetter && !this.selectedTitleFilter;
 
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
@@ -508,7 +538,7 @@ export class CollectionBrowser
     if (!prevSelectedLetter && !this.selectedCreatorFilter) {
       return;
     }
-    const cleared = prevSelectedLetter && this.selectedCreatorFilter === null;
+    const cleared = prevSelectedLetter && !this.selectedCreatorFilter;
 
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
@@ -525,14 +555,20 @@ export class CollectionBrowser
       : undefined;
   }
 
-  private titleLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+  private titleLetterSelected(
+    e: CustomEvent<{ selectedLetter: string | null }>
+  ): void {
     this.selectedCreatorFilter = null;
     this.selectedTitleFilter = e.detail.selectedLetter;
+    this.selectedTitleLetterChanged();
   }
 
-  private creatorLetterSelected(e: CustomEvent<{ selectedLetter: string }>) {
+  private creatorLetterSelected(
+    e: CustomEvent<{ selectedLetter: string | null }>
+  ): void {
     this.selectedTitleFilter = null;
     this.selectedCreatorFilter = e.detail.selectedLetter;
+    this.selectedCreatorLetterChanged();
   }
 
   private get mobileFacetsTemplate() {
@@ -569,7 +605,7 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
-        .moreLinksVisible=${this.previousSearchType !== SearchType.FULLTEXT}
+        .moreLinksVisible=${this.searchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -649,27 +685,37 @@ export class CollectionBrowser
     ) {
       this.infiniteScroller?.reload();
     }
+
+    if (changed.has('baseQuery') || changed.has('searchType')) {
+      // Unless this query/search type update is the result of hitting the back button,
+      // we need to clear any existing filters since they may no longer be valid for
+      // the new set of search results.
+      if (!this.historyPopOccurred) {
+        // Only clear filters that haven't been simultaneously applied in this update
+        this.clearFilters({
+          facets: !changed.has('selectedFacets'),
+          dateRange: !(
+            changed.has('minSelectedDate') || changed.has('maxSelectedDate')
+          ),
+          letterFilters: !(
+            changed.has('selectedTitleFilter') ||
+            changed.has('selectedCreatorFilter')
+          ),
+        });
+      }
+    }
+
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
     }
     if (changed.has('searchType')) {
       this.emitSearchTypeChanged();
     }
+
     if (changed.has('currentPage') || changed.has('displayMode')) {
       this.persistState();
     }
-    if (
-      changed.has('baseQuery') ||
-      changed.has('titleQuery') ||
-      changed.has('creatorQuery') ||
-      changed.has('minSelectedDate') ||
-      changed.has('maxSelectedDate') ||
-      changed.has('sortParam') ||
-      changed.has('selectedFacets') ||
-      changed.has('searchService')
-    ) {
-      this.handleQueryChange();
-    }
+
     if (
       changed.has('baseQuery') ||
       changed.has('minSelectedDate') ||
@@ -678,11 +724,13 @@ export class CollectionBrowser
     ) {
       this.refreshLetterCounts();
     }
+
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
       const prevSortDirection = changed.get('sortDirection') as SortDirection;
       this.sendSortByAnalytics(prevSortDirection);
       this.selectedSortChanged();
     }
+
     if (changed.has('selectedTitleFilter')) {
       this.sendFilterByTitleAnalytics(
         changed.get('selectedTitleFilter') as string
@@ -695,11 +743,27 @@ export class CollectionBrowser
       );
       this.selectedCreatorLetterChanged();
     }
+
+    if (
+      changed.has('baseQuery') ||
+      changed.has('searchType') ||
+      changed.has('selectedTitleFilter') ||
+      changed.has('selectedCreatorFilter') ||
+      changed.has('minSelectedDate') ||
+      changed.has('maxSelectedDate') ||
+      changed.has('sortParam') ||
+      changed.has('selectedFacets') ||
+      changed.has('searchService')
+    ) {
+      this.handleQueryChange();
+    }
+
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
+
     if (changed.has('resizeObserver')) {
       const oldObserver = changed.get(
         'resizeObserver'
@@ -824,13 +888,13 @@ export class CollectionBrowser
       this.scrollToPage(this.initialPageNumber);
     }
     this.initialQueryChangeHappened = true;
+
     // if the query changed as part of a window.history pop event, we don't want to
     // persist the state because it overwrites the forward history
-
     if (!this.historyPopOccurred) {
       this.persistState();
-      this.historyPopOccurred = false;
     }
+    this.historyPopOccurred = false;
 
     await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
   }
@@ -860,9 +924,6 @@ export class CollectionBrowser
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;
     this.baseQuery = restorationState.baseQuery;
-    this.titleQuery = restorationState.titleQuery;
-    this.creatorQuery = restorationState.creatorQuery;
-    this.sortParam = restorationState.sortParam ?? null;
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
@@ -878,7 +939,7 @@ export class CollectionBrowser
       sortParam: this.sortParam ?? undefined,
       selectedSort: this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
-      selectedFacets: this.selectedFacets ?? defaultSelectedFacets,
+      selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
       baseQuery: this.baseQuery,
       currentPage: this.currentPage,
       titleQuery: this.titleQuery,
@@ -1120,7 +1181,6 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
-    this.previousSearchType = this.searchType;
     const results = await this.searchService?.search(params, this.searchType);
     this.facetsLoading = false;
 
@@ -1542,7 +1602,7 @@ export class CollectionBrowser
 
     .mobile #right-column {
       border-left: none;
-      padding: 0;
+      padding: 5px 5px 0;
     }
 
     #left-column {
@@ -1574,6 +1634,7 @@ export class CollectionBrowser
     #mobile-header-container {
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
     #facets-container {

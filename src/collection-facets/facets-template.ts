@@ -9,7 +9,7 @@ import {
   FacetOption,
   FacetBucket,
   SelectedFacets,
-  defaultSelectedFacets,
+  getDefaultSelectedFacets,
 } from '../models';
 
 @customElement('facets-template')
@@ -46,7 +46,7 @@ export class FacetsTemplate extends LitElement {
         ...selectedFacets,
       };
     } else {
-      newFacets = defaultSelectedFacets;
+      newFacets = getDefaultSelectedFacets();
     }
     newFacets[key][value] = {
       state: negative ? 'hidden' : 'selected',
@@ -65,7 +65,7 @@ export class FacetsTemplate extends LitElement {
         ...selectedFacets,
       };
     } else {
-      newFacets = defaultSelectedFacets;
+      newFacets = getDefaultSelectedFacets();
     }
     delete newFacets[key][value];
 

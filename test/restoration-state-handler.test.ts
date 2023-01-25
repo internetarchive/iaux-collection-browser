@@ -1,5 +1,6 @@
 import { SearchType } from '@internetarchive/search-service';
 import { expect } from '@open-wc/testing';
+import { getDefaultSelectedFacets } from '../src/models';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 
 describe('Restoration state handler', () => {
@@ -12,6 +13,17 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.baseQuery).to.equal('boop');
+  });
+
+  it('should restore metadata search type from URL without valid sin', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sin=foo';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.searchType).to.equal(SearchType.METADATA);
   });
 
   it('should restore full text search type from URL', async () => {
@@ -46,6 +58,19 @@ describe('Restoration state handler', () => {
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.year['2018'].state).to.equal(
       'selected'
+    );
+  });
+
+  it('should ignore unrecognized facet types in URL', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?and[]=foo:"bar"';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.selectedFacets).to.deep.equal(
+      getDefaultSelectedFacets()
     );
   });
 
@@ -181,5 +206,57 @@ describe('Restoration state handler', () => {
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedSort).to.equal('date');
     expect(restorationState.sortDirection).to.equal('asc');
+  });
+
+  it('should not save current page state to the URL for page 1', async () => {
+    const url = new URL(window.location.href);
+    url.search = '';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+    handler.persistState({
+      currentPage: 1,
+      selectedFacets: getDefaultSelectedFacets(),
+    });
+
+    expect(window.location.search).to.be.empty;
+  });
+
+  it('should save current page state to the URL when page > 1', async () => {
+    const url = new URL(window.location.href);
+    url.search = '';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+    handler.persistState({
+      currentPage: 2,
+      selectedFacets: getDefaultSelectedFacets(),
+    });
+
+    expect(window.location.search).to.equal('?page=2');
+  });
+
+  it('should upgrade legacy search params to new ones', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?q=foo';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.baseQuery).to.equal('foo');
+
+    handler.persistState(restorationState);
+    expect(window.location.search).to.equal('?query=foo');
+  });
+
+  it('should remove empty sin param', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?sin=';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    handler.persistState({ selectedFacets: getDefaultSelectedFacets() });
+    expect(window.location.search).to.equal('');
   });
 });

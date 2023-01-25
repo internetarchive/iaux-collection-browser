@@ -42,7 +42,7 @@ export class SortFilterBar
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   /** The current sort direction (asc/desc), or null if none is set */
-  @property({ type: String }) sortDirection: 'asc' | 'desc' | null = null;
+  @property({ type: String }) sortDirection: SortDirection | null = null;
 
   /** The field currently being sorted on (e.g., 'title'). Defaults to relevance. */
   @property({ type: String }) selectedSort: SortField = SortField.relevance;
@@ -295,11 +295,11 @@ export class SortFilterBar
             ${this.showRelevance
               ? this.getSortDisplayOption(SortField.relevance, {
                   onClick: () => {
-                    this.clearAlphaBarFilters();
                     this.dropdownBackdropVisible = false;
-                    this.setSelectedSort(SortField.relevance);
-                    this.emitTitleLetterChangedEvent();
-                    this.emitCreatorLetterChangedEvent();
+                    if (this.selectedSort !== SortField.relevance) {
+                      this.clearAlphaBarFilters();
+                      this.setSelectedSort(SortField.relevance);
+                    }
                   },
                 })
               : nothing}
@@ -308,11 +308,13 @@ export class SortFilterBar
           <li>
             ${this.getSortDisplayOption(SortField.title, {
               onClick: () => {
-                this.alphaSelectorVisible = 'title';
-                this.selectedCreatorFilter = null;
                 this.dropdownBackdropVisible = false;
-                this.setSelectedSort(SortField.title);
-                this.emitCreatorLetterChangedEvent();
+                if (this.selectedSort !== SortField.title) {
+                  this.alphaSelectorVisible = 'title';
+                  this.selectedCreatorFilter = null;
+                  this.setSelectedSort(SortField.title);
+                  this.emitCreatorLetterChangedEvent();
+                }
               },
             })}
           </li>
@@ -320,11 +322,13 @@ export class SortFilterBar
           <li>
             ${this.getSortDisplayOption(SortField.creator, {
               onClick: () => {
-                this.alphaSelectorVisible = 'creator';
-                this.selectedTitleFilter = null;
                 this.dropdownBackdropVisible = false;
-                this.setSelectedSort(SortField.creator);
-                this.emitTitleLetterChangedEvent();
+                if (this.selectedSort !== SortField.creator) {
+                  this.alphaSelectorVisible = 'creator';
+                  this.selectedTitleFilter = null;
+                  this.setSelectedSort(SortField.creator);
+                  this.emitTitleLetterChangedEvent();
+                }
               },
             })}
           </li>
@@ -343,7 +347,7 @@ export class SortFilterBar
         ${this.getSortDropdown({
           displayName: html`${SortFieldDisplayName[this.selectedSort] ?? ''}`,
           id: 'mobile-dropdown',
-          isSelected: () => true,
+          selected: true,
           dropdownOptions: Object.keys(SortField).map(field =>
             this.getDropdownOption(field as SortField)
           ),
@@ -370,7 +374,7 @@ export class SortFilterBar
    * @param options {
    *    onClick?: (e: Event) => void; If this is provided, it will also be called when the option is clicked.
    *    displayName?: TemplateResult; The name to display for the option. Defaults to the sortField display name.
-   *    isSelected?: () => boolean; A function that returns true if the option is selected. Defaults to the selectedSort === sortField.
+   *    selected?: boolean; true if the option is selected. Defaults to the selectedSort === sortField.
    * }
    * @returns
    */
@@ -378,24 +382,22 @@ export class SortFilterBar
     sortField: SortField,
     options?: {
       displayName?: TemplateResult;
+      selected?: boolean;
       onClick?: (e: Event) => void;
-      isSelected?: () => boolean;
     }
   ): TemplateResult {
-    const isSelected =
-      options?.isSelected ?? (() => this.selectedSort === sortField);
+    const isSelected = options?.selected ?? this.selectedSort === sortField;
     const displayName = options?.displayName ?? SortFieldDisplayName[sortField];
     return html`
-      <a
-        href="#"
+      <button
+        class=${isSelected ? 'selected' : nothing}
         @click=${(e: Event) => {
           e.preventDefault();
           options?.onClick?.(e);
         }}
-        class=${isSelected() ? 'selected' : nothing}
       >
         ${displayName}
-      </a>
+      </button>
     `;
   }
 
@@ -406,8 +408,8 @@ export class SortFilterBar
    * @param options.id The id to apply to the dropdown element
    * @param options.dropdownOptions An array of option objects used to populate the dropdown
    * @param options.selectedOption The id of the option that should be initially selected
-   * @param options.isSelected A function returning a boolean indicating whether this dropdown
-   *  should use its selected appearance
+   * @param options.selected A boolean indicating whether this dropdown should use its
+   *  selected appearance
    * @param options.onOptionSelected A handler for optionSelected events coming from the dropdown
    * @param options.onDropdownClick A handler for click events on the dropdown
    * @param options.onLabelInteraction A handler for click events and Enter/Space keydown events
@@ -418,19 +420,19 @@ export class SortFilterBar
     id?: string;
     dropdownOptions: optionInterface[];
     selectedOption?: string;
-    isSelected?: () => boolean;
+    selected: boolean;
     onOptionSelected?: (e: CustomEvent<{ option: optionInterface }>) => void;
     onDropdownClick?: (e: PointerEvent) => void;
-    onLabelInteraction?: () => void;
+    onLabelInteraction?: (e: Event) => void;
   }): TemplateResult {
     return html`
       <ia-dropdown
         id=${options.id ?? nothing}
-        class=${options.isSelected?.() ? 'selected' : nothing}
+        class=${options.selected ? 'selected' : nothing}
         displayCaret
         closeOnSelect
         includeSelectedOption
-        .openViaButton=${false}
+        .openViaButton=${options.selected}
         .options=${options.dropdownOptions}
         .selectedOption=${options.selectedOption ?? ''}
         @optionSelected=${options.onOptionSelected ?? nothing}
@@ -443,7 +445,7 @@ export class SortFilterBar
           @keydown=${options.onLabelInteraction
             ? (e: KeyboardEvent) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  options.onLabelInteraction?.();
+                  options.onLabelInteraction?.(e);
                 }
               }
             : nothing}
@@ -474,8 +476,6 @@ export class SortFilterBar
     this.dropdownBackdropVisible = false;
     this.clearAlphaBarFilters();
     this.setSelectedSort(e.detail.option.id as SortField);
-    this.emitTitleLetterChangedEvent();
-    this.emitCreatorLetterChangedEvent();
   }
 
   /** The template to render for the views dropdown */
@@ -483,7 +483,7 @@ export class SortFilterBar
     return this.getSortDropdown({
       displayName: html`${this.viewSortField}`,
       id: 'views-dropdown',
-      isSelected: () => this.viewOptionSelected,
+      selected: this.viewOptionSelected,
       dropdownOptions: [
         this.getDropdownOption(SortField.weeklyview),
         this.getDropdownOption(SortField.alltimeview),
@@ -495,8 +495,10 @@ export class SortFilterBar
         this.dropdownBackdropVisible = this.viewsDropdown.open;
         this.viewsDropdown.classList.toggle('open', this.viewsDropdown.open);
       },
-      onLabelInteraction: () => {
+      onLabelInteraction: (e: Event) => {
         if (!this.viewsDropdown.open && !this.viewOptionSelected) {
+          e.stopPropagation();
+          this.clearAlphaBarFilters();
           this.setSelectedSort(SortField.weeklyview);
         }
       },
@@ -508,7 +510,7 @@ export class SortFilterBar
     return this.getSortDropdown({
       displayName: html`${this.dateSortField}`,
       id: 'date-dropdown',
-      isSelected: () => this.dateOptionSelected,
+      selected: this.dateOptionSelected,
       dropdownOptions: [
         this.getDropdownOption(SortField.date),
         this.getDropdownOption(SortField.datearchived),
@@ -522,8 +524,10 @@ export class SortFilterBar
         this.dropdownBackdropVisible = this.dateDropdown.open;
         this.dateDropdown.classList.toggle('open', this.dateDropdown.open);
       },
-      onLabelInteraction: () => {
+      onLabelInteraction: (e: Event) => {
         if (!this.dateDropdown.open && !this.dateOptionSelected) {
+          e.stopPropagation();
+          this.clearAlphaBarFilters();
           this.setSelectedSort(SortField.date);
         }
       },
@@ -630,6 +634,8 @@ export class SortFilterBar
     this.alphaSelectorVisible = null;
     this.selectedTitleFilter = null;
     this.selectedCreatorFilter = null;
+    this.emitTitleLetterChangedEvent();
+    this.emitCreatorLetterChangedEvent();
   }
 
   private setSortDirection(sortDirection: SortDirection) {
@@ -770,7 +776,9 @@ export class SortFilterBar
   }
 
   private displayModeChanged() {
-    const event = new CustomEvent('displayModeChanged', {
+    const event = new CustomEvent<{
+      displayMode?: CollectionDisplayMode;
+    }>('displayModeChanged', {
       detail: { displayMode: this.displayMode },
     });
     this.dispatchEvent(event);
@@ -779,7 +787,7 @@ export class SortFilterBar
   private emitSortChangedEvent() {
     const event = new CustomEvent<{
       selectedSort: SortField;
-      sortDirection: 'asc' | 'desc' | null;
+      sortDirection: SortDirection | null;
     }>('sortChanged', {
       detail: {
         selectedSort: this.selectedSort,
@@ -927,7 +935,18 @@ export class SortFilterBar
       line-height: 2;
     }
 
-    #desktop-sort-selector li a.selected {
+    #desktop-sort-selector li button {
+      padding: 0px 5px;
+      border: none;
+      background: none;
+      font-size: inherit;
+      color: #333;
+      line-height: 2;
+      cursor: pointer;
+      appearance: none;
+    }
+
+    #desktop-sort-selector li button.selected {
       font-weight: bold;
     }
 
@@ -985,6 +1004,7 @@ export class SortFilterBar
       line-height: 2;
       color: var(--ia-theme-primary-text-color, #2c2c2c);
       white-space: nowrap;
+      user-select: none;
     }
   `;
 }

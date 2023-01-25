@@ -43,9 +43,21 @@ describe('Sort selector default buttons', async () => {
     expect(sortDirections?.querySelector('.sort-direction-icon')).to.exist;
   });
 
-  it('should render default relevance-sort selector', async () => {
+  it('should not render relevance-sort selector if showRelevance is false', async () => {
+    el.showRelevance = false;
+    await el.updateComplete;
+
     const defaultSortSelector =
-      desktopSortSelector?.querySelector('a.selected');
+      desktopSortSelector?.querySelector('button.selected');
+    expect(defaultSortSelector?.textContent?.trim()).not.to.equal('Relevance');
+  });
+
+  it('should render default relevance-sort selector', async () => {
+    el.showRelevance = true;
+    await el.updateComplete;
+
+    const defaultSortSelector =
+      desktopSortSelector?.querySelector('button.selected');
     expect(defaultSortSelector?.textContent?.trim()).to.equal('Relevance');
   });
 
@@ -69,7 +81,7 @@ describe('Sort selector default buttons', async () => {
   it('should render default title-sort selector', async () => {
     const defaultSortSelector = desktopSortSelector?.children
       .item(2)
-      ?.querySelector('a');
+      ?.querySelector('button');
     expect(defaultSortSelector?.textContent?.trim()).to.equal('Title');
   });
 
@@ -93,7 +105,7 @@ describe('Sort selector default buttons', async () => {
   it('should render default creator-sort selector', async () => {
     const defaultSortSelector = desktopSortSelector?.children
       .item(4)
-      ?.querySelector('a');
+      ?.querySelector('button');
     expect(defaultSortSelector?.textContent?.trim()).to.equal('Creator');
   });
 
@@ -111,7 +123,7 @@ describe('Sort selector default buttons', async () => {
   it('handles click event on title selector', async () => {
     const defaultSortSelector = desktopSortSelector?.children
       .item(2)
-      ?.querySelector('a');
+      ?.querySelector('button');
 
     defaultSortSelector?.click();
     await el.updateComplete;
@@ -128,6 +140,28 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('date');
+  });
+
+  it('handles click event on creator selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(4)
+      ?.querySelector('button');
+
+    defaultSortSelector?.click();
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('creator');
+  });
+
+  it('handles click event on relevance selector', async () => {
+    const defaultSortSelector = desktopSortSelector?.children
+      .item(0)
+      ?.querySelector('button');
+
+    defaultSortSelector?.click();
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal('relevance');
   });
 
   it('handles return/space key event on view-sort selector', async () => {
@@ -168,17 +202,6 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal('date');
-  });
-
-  it('handles click event on creator selector', async () => {
-    const defaultSortSelector = desktopSortSelector?.children
-      .item(4)
-      ?.querySelector('a');
-
-    defaultSortSelector?.click();
-    await el.updateComplete;
-
-    expect(el.selectedSort).to.equal('creator');
   });
 
   it('handles click event on view-sort dropdown option', async () => {

@@ -1,5 +1,5 @@
 /* eslint-disable import/no-duplicates */
-import { expect, fixture } from '@open-wc/testing';
+import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
@@ -8,7 +8,7 @@ import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
-  defaultSelectedFacets,
+  getDefaultSelectedFacets,
   FacetBucket,
   SelectedFacets,
   SortField,
@@ -29,10 +29,7 @@ import type { CollectionFacets } from '../src/collection-facets';
  * but they are minor enough that waiting for the next tick is a reasonable
  * testing solution for now.
  */
-const nextTick = () =>
-  new Promise(resolve => {
-    setTimeout(resolve, 0);
-  });
+const nextTick = () => aTimeout(0);
 
 describe('Collection Browser', () => {
   beforeEach(async () => {
@@ -50,21 +47,56 @@ describe('Collection Browser', () => {
     window.history.replaceState({}, '', url);
   });
 
-  it('clear existing filter for facets & sort-bar', async () => {
+  it('clears selected facets when requested', async () => {
+    const selectedFacets = getDefaultSelectedFacets();
+    selectedFacets.creator.foo = { count: 1, key: 'foo', state: 'selected' };
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+    el.clearFilters(); // By default, sort is not cleared
+
+    expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
+  });
+
+  it('clears existing filters but not sort by default', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    el.selectedSort = 'title' as SortField;
+    el.sortDirection = 'asc';
+    await el.updateComplete;
+    el.clearFilters(); // By default, sort is not cleared
+
+    expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
+    expect(el.selectedSort).to.equal('title');
+    expect(el.sortDirection).to.equal('asc');
+    expect(el.sortParam).to.deep.equal({
+      field: 'titleSorter',
+      direction: 'asc',
+    });
+    expect(el.selectedCreatorFilter).to.be.null;
+    expect(el.selectedTitleFilter).to.be.null;
+  });
+
+  it('clears existing filters for facets & sort via option', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
     );
 
     el.selectedSort = 'title' as SortField;
     await el.updateComplete;
-    el.clearFilters();
+    el.clearFilters({ sort: true }); // Sort is reset too due to the option
 
-    expect(el.selectedFacets).to.equal(defaultSelectedFacets);
+    expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
     expect(el.selectedSort).to.equal('relevance');
-    expect(el.sortDirection).to.null;
-    expect(el.sortParam).to.null;
-    expect(el.selectedCreatorFilter).to.null;
-    expect(el.selectedTitleFilter).to.null;
+    expect(el.sortDirection).to.be.null;
+    expect(el.sortParam).to.be.null;
+    expect(el.selectedCreatorFilter).to.be.null;
+    expect(el.selectedTitleFilter).to.be.null;
   });
 
   it('filterBy creator with analytics', async () => {
@@ -87,7 +119,7 @@ describe('Collection Browser', () => {
     el.clearFilters();
     await el.updateComplete;
 
-    expect(el.selectedTitleFilter).to.null;
+    expect(el.selectedTitleFilter).to.be.null;
     expect(mockAnalyticsHandler.callCategory).to.equal('betaSearchService');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByCreator');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
@@ -113,7 +145,7 @@ describe('Collection Browser', () => {
     el.clearFilters();
     await el.updateComplete;
 
-    expect(el.selectedTitleFilter).to.null;
+    expect(el.selectedTitleFilter).to.be.null;
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('filterByTitle');
     expect(mockAnalyticsHandler.callLabel).to.equal('clear-A');
@@ -244,6 +276,24 @@ describe('Collection Browser', () => {
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
     ).to.contains('Results');
+  });
+
+  it('can request a search when changing search type', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    el.searchType = SearchType.FULLTEXT;
+    el.requestSearch();
+    await el.updateComplete;
+    await nextTick();
+
+    expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
   });
 
   it('queries the search service with a fulltext search', async () => {
@@ -432,7 +482,7 @@ describe('Collection Browser', () => {
     expect(cell.model?.description).to.equal('line1\nline2');
   });
 
-  it('can search on demand if only search type has changed', async () => {
+  it('can change search type', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
@@ -443,15 +493,10 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'collection:foo';
-    await el.updateComplete;
-
     el.searchType = SearchType.FULLTEXT;
     await el.updateComplete;
 
-    // Haven't performed the search yet
-    expect(searchService.searchType).to.equal(SearchType.METADATA);
-
-    el.requestSearch();
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
   });
 
@@ -595,7 +640,7 @@ describe('Collection Browser', () => {
     // Click the title sorter
     [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
       .find(child => child.textContent?.trim() === 'Title')
-      ?.querySelector('a[href]')
+      ?.querySelector('button')
       ?.click();
 
     await el.updateComplete;
@@ -616,11 +661,6 @@ describe('Collection Browser', () => {
     el.selectedTitleFilter = 'X';
     await el.updateComplete;
 
-    // Wait an extra tick
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
-
     expect(searchService.searchParams?.query).to.equal(
       'first-title AND firstTitle:X'
     );
@@ -638,11 +678,6 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
-
-    // Wait an extra tick
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
 
     expect(searchService.searchParams?.query).to.equal(
       'first-creator AND firstCreator:X'
@@ -675,11 +710,6 @@ describe('Collection Browser', () => {
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
 
-    // Wait an extra tick
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
-
     expect(searchService.searchParams?.query).to.equal(
       'first-creator AND firstCreator:X'
     );
@@ -711,9 +741,7 @@ describe('Collection Browser', () => {
     await facets?.updateComplete;
 
     // Wait for the date picker to be rendered (which may take until the next tick)
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
+    await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
       'histogram-date-range'
@@ -733,9 +761,7 @@ describe('Collection Browser', () => {
     minDateInput.dispatchEvent(pressEnterEvent);
 
     // Wait for the histogram's update delay
-    await new Promise(res => {
-      setTimeout(res, histogram.updateDelay + 50);
-    });
+    await aTimeout(histogram.updateDelay + 50);
 
     // Ensure that the histogram change propagated to the collection browser's
     // date query correctly.

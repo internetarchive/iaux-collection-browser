@@ -88,6 +88,12 @@ export class AppRoot extends LitElement {
   private searchPressed(e: Event) {
     e.preventDefault();
     this.searchQuery = this.baseQueryField.value;
+    this.collectionBrowser.searchType = this.searchType;
+
+    // Need to request a search in cases where the search type was previously changed but not the query.
+    // If the query was changed above, this should be a no-op.
+    this.collectionBrowser.requestSearch();
+
     if ((this.currentPage ?? 1) > 1) {
       this.collectionBrowser.goToPage(this.currentPage ?? 1);
     }
@@ -311,7 +317,6 @@ export class AppRoot extends LitElement {
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
-          .searchType=${this.searchType}
           .resizeObserver=${this.resizeObserver}
           .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
@@ -342,9 +347,6 @@ export class AppRoot extends LitElement {
     const target = e.target as HTMLInputElement;
     this.searchType =
       target.value === 'fulltext' ? SearchType.FULLTEXT : SearchType.METADATA;
-
-    // Re-perform the current search with the new search target
-    this.reperformCurrentSearch();
   }
 
   private loginChanged(e: Event) {
