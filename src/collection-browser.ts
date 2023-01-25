@@ -1602,7 +1602,7 @@ export class CollectionBrowser
 
     .mobile #right-column {
       border-left: none;
-      padding: 0;
+      padding: 5px 5px 0;
     }
 
     #left-column {
@@ -1634,6 +1634,7 @@ export class CollectionBrowser
     #mobile-header-container {
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
 
     #facets-container {

@@ -248,4 +248,15 @@ describe('Restoration state handler', () => {
     handler.persistState(restorationState);
     expect(window.location.search).to.equal('?query=foo');
   });
+
+  it('should remove empty sin param', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?sin=';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    handler.persistState({ selectedFacets: getDefaultSelectedFacets() });
+    expect(window.location.search).to.equal('');
+  });
 });

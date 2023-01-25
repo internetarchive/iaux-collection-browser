@@ -97,12 +97,19 @@ export class RestorationStateHandler
     const oldParams = new URLSearchParams(url.searchParams);
     const newParams = this.removeRecognizedParams(url.searchParams);
 
+    let replaceEmptySin = false;
+
     if (state.baseQuery) {
       newParams.set('query', state.baseQuery);
     }
 
     if (state.searchType === SearchType.FULLTEXT) {
       newParams.set('sin', 'TXT');
+    }
+    if (oldParams.get('sin') === '') {
+      // Treat empty sin the same as no sin at all
+      oldParams.delete('sin');
+      replaceEmptySin = true;
     }
 
     if (state.currentPage) {
@@ -170,9 +177,12 @@ export class RestorationStateHandler
       nonQueryParamsMatch &&
       this.paramsMatch(oldParams, newParams, ['query'])
     ) {
-      // For page number, we want to replace the page state when it changes,
-      // not push a new history entry. If it hasn't changed, then we're done.
-      if (this.paramsMatch(oldParams, newParams, ['page'])) {
+      if (replaceEmptySin) {
+        // Get rid of any empty sin param
+        newParams.delete('sin');
+      } else if (this.paramsMatch(oldParams, newParams, ['page'])) {
+        // For page number, we want to replace the page state when it changes,
+        // not push a new history entry. If it hasn't changed, then we're done.
         return;
       }
       historyMethod = 'replaceState';
