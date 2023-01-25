@@ -305,7 +305,7 @@ export class TileList extends LitElement {
     if (!text) return nothing;
     return html`
       <div id=${ifDefined(id)} class="metadata">
-        <p class="inline-wrap">${this.labelTemplate(label)} ${text}</p>
+        ${this.labelTemplate(label)} ${text}
       </div>
     `;
   }
@@ -504,10 +504,6 @@ export class TileList extends LitElement {
 
       .metadata {
         line-height: 20px;
-      }
-
-      .inline-wrap {
-        display: inline;
       }
 
       #description,

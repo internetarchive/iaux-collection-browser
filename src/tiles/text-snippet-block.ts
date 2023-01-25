@@ -21,7 +21,7 @@ export class TextSnippetBlock extends LitElement {
     return html`
       <div class="container">
         <div class="snippet-view ${this.viewSize}">
-          <p class="inline-wrap">${this.ellipsisJoinedSnippets}</p>
+          ${this.ellipsisJoinedSnippets}
         </div>
       </div>
     `;
@@ -120,10 +120,6 @@ export class TextSnippetBlock extends LitElement {
          * so we add this to ensure these fields still get truncated.
          */
         max-height: 6rem;
-      }
-
-      .inline-wrap {
-        display: inline;
       }
 
       mark {
