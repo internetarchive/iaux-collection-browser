@@ -7,17 +7,35 @@ import type {
   SearchType,
 } from '@internetarchive/search-service';
 import {
-  mockSuccessSingleResult,
-  mockSuccessMultipleResults,
+  getMockSuccessSingleResult,
+  getMockSuccessMultipleResults,
   getMockSuccessSingleResultWithSort,
-  mockSuccessLoggedInResult,
-  mockSuccessNoPreviewResult,
-  mockSuccessLoggedInAndNoPreviewResult,
-  mockSuccessWithYearHistogramAggs,
-  mockSuccessMultiLineDescription,
-  mockSuccessFirstTitleResult,
-  mockSuccessFirstCreatorResult,
+  getMockSuccessLoggedInResult,
+  getMockSuccessNoPreviewResult,
+  getMockSuccessLoggedInAndNoPreviewResult,
+  getMockSuccessWithYearHistogramAggs,
+  getMockSuccessMultiLineDescription,
+  getMockSuccessFirstTitleResult,
+  getMockSuccessFirstCreatorResult,
+  getMockErrorResult,
+  getMockMalformedResult,
 } from './mock-search-responses';
+
+const responses: Record<
+  string,
+  () => Result<SearchResponse, SearchServiceError>
+> = {
+  'single-result': getMockSuccessSingleResult,
+  years: getMockSuccessWithYearHistogramAggs,
+  'multi-line-description': getMockSuccessMultiLineDescription,
+  loggedin: getMockSuccessLoggedInResult,
+  'no-preview': getMockSuccessNoPreviewResult,
+  'loggedin-no-preview': getMockSuccessLoggedInAndNoPreviewResult,
+  'first-title': getMockSuccessFirstTitleResult,
+  'first-creator': getMockSuccessFirstCreatorResult,
+  error: getMockErrorResult,
+  malformed: getMockMalformedResult,
+};
 
 export class MockSearchService implements SearchServiceInterface {
   searchParams?: SearchParams;
@@ -26,10 +44,17 @@ export class MockSearchService implements SearchServiceInterface {
 
   asyncResponse: boolean;
 
+  asyncResponseDelay: number;
+
   resultsSpy: Function;
 
-  constructor({ asyncResponse = false, resultsSpy = () => {} } = {}) {
+  constructor({
+    asyncResponse = false,
+    asyncResponseDelay = 0,
+    resultsSpy = () => {},
+  } = {}) {
     this.asyncResponse = asyncResponse;
+    this.asyncResponseDelay = asyncResponseDelay;
     this.resultsSpy = resultsSpy;
   }
 
@@ -43,31 +68,24 @@ export class MockSearchService implements SearchServiceInterface {
     if (this.asyncResponse) {
       // Add an artificial 1-tick delay
       await new Promise(res => {
-        setTimeout(res, 0);
+        setTimeout(res, this.asyncResponseDelay);
       });
     }
 
-    switch (this.searchParams?.query) {
-      case 'single-result':
-        return mockSuccessSingleResult;
-      case 'years':
-        return mockSuccessWithYearHistogramAggs;
-      case 'multi-line-description':
-        return mockSuccessMultiLineDescription;
-      case 'loggedin':
-        return mockSuccessLoggedInResult;
-      case 'no-preview':
-        return mockSuccessNoPreviewResult;
-      case 'loggedin-no-preview':
-        return mockSuccessLoggedInAndNoPreviewResult;
-      case 'first-title':
-        return mockSuccessFirstTitleResult;
-      case 'first-creator':
-        return mockSuccessFirstCreatorResult;
-      case 'with-sort':
-        return getMockSuccessSingleResultWithSort(this.resultsSpy);
-      default:
-        return mockSuccessMultipleResults;
+    const resultFn: () => Result<SearchResponse, SearchServiceError> =
+      responses[this.searchParams.query] ?? getMockSuccessMultipleResults;
+    let result = resultFn();
+
+    // with-sort query has special handling
+    if (this.searchParams.query === 'with-sort') {
+      result = getMockSuccessSingleResultWithSort(this.resultsSpy);
     }
+
+    // Apply any uid param from the request
+    if (result.success) {
+      (result.success.request.clientParameters as any).uid = params.uid;
+    }
+
+    return result;
   }
 }

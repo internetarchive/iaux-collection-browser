@@ -345,7 +345,7 @@ export class CollectionBrowser
 
   private setPlaceholderType() {
     this.placeholderType = null;
-    if (!this.baseQuery) {
+    if (!this.baseQuery?.trim()) {
       this.placeholderType = 'empty-query';
     }
 
@@ -1008,20 +1008,20 @@ export class CollectionBrowser
   /** The base query joined with any title/creator letter filters */
   private get filteredQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let filteredQuery = this.baseQuery;
+    let filteredQuery = this.baseQuery.trim();
 
     const { sortFilterQueries } = this;
     if (sortFilterQueries) {
       filteredQuery += ` AND ${sortFilterQueries}`;
     }
 
-    return filteredQuery;
+    return filteredQuery.trim();
   }
 
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery;
+    let fullQuery = this.baseQuery.trim();
 
     const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
 
@@ -1034,13 +1034,13 @@ export class CollectionBrowser
     if (sortFilterQueries) {
       fullQuery += ` AND ${sortFilterQueries}`;
     }
-    return fullQuery;
+    return fullQuery.trim();
   }
 
   /** The full query without any title/creator letter filters */
   private get fullQueryWithoutAlphaFilters(): string | undefined {
     if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery;
+    let fullQuery = this.baseQuery.trim();
 
     const { facetQuery, dateRangeQueryClause } = this;
 
@@ -1050,7 +1050,7 @@ export class CollectionBrowser
     if (dateRangeQueryClause) {
       fullQuery += ` AND ${dateRangeQueryClause}`;
     }
-    return fullQuery;
+    return fullQuery.trim();
   }
 
   /**
@@ -1066,7 +1066,7 @@ export class CollectionBrowser
     )) {
       facetClauses.push(this.buildFacetClause(facetName, facetValues));
     }
-    return this.joinFacetClauses(facetClauses);
+    return this.joinFacetClauses(facetClauses)?.trim();
   }
 
   /**
@@ -1178,17 +1178,43 @@ export class CollectionBrowser
       aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
+      uid: this.facetFetchQueryKey,
     };
 
     this.facetsLoading = true;
-    const results = await this.searchService?.search(params, this.searchType);
+    const searchResponse = await this.searchService?.search(
+      params,
+      this.searchType
+    );
+    const success = searchResponse?.success;
     this.facetsLoading = false;
 
-    this.aggregations = results?.success?.response.aggregations;
+    if (!success) {
+      const errorMsg = searchResponse?.error?.message;
+      const detailMsg = searchResponse?.error?.details?.message;
+
+      if (!errorMsg && !detailMsg) {
+        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        window?.Sentry?.captureMessage?.(
+          'Missing or malformed facet response from backend',
+          'error'
+        );
+      }
+
+      return;
+    }
+
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard this set of aggregations because they are
+    // likely no longer valid for the newer query.
+    const returnedUid = (success.request.clientParameters as any).uid;
+    const queryChangedSinceFetch = returnedUid !== this.facetFetchQueryKey;
+    if (queryChangedSinceFetch) return;
+
+    this.aggregations = success?.response.aggregations;
 
     this.fullYearsHistogramAggregation =
-      results?.success?.response?.aggregations?.year_histogram ??
-      results?.success?.response?.aggregations?.['year-histogram']; // Temp fix until PPS FTS key is fixed to use underscore
+      success?.response?.aggregations?.year_histogram;
   }
 
   private scrollToPage(pageNumber: number): Promise<void> {
@@ -1225,8 +1251,18 @@ export class CollectionBrowser
    * This lets us keep track of queries so we don't persist data that's
    * no longer relevant.
    */
-  private get pageFetchQueryKey() {
-    return `${this.fullQuery}-${this.searchType}-${this.sortParam?.field}-${this.sortParam?.direction}`;
+  private get pageFetchQueryKey(): string {
+    const sortField = this.sortParam?.field ?? 'none';
+    const sortDirection = this.sortParam?.direction ?? 'none';
+    return `${this.fullQuery}-${this.searchType}-${sortField}-${sortDirection}`;
+  }
+
+  /**
+   * Similar to `pageFetchQueryKey` above, but excludes sort fields since they
+   * are not relevant in determining aggregation queries.
+   */
+  private get facetFetchQueryKey(): string {
+    return `${this.fullQuery}-${this.searchType}`;
   }
 
   // this maps the query to the pages being fetched for that query
@@ -1256,6 +1292,7 @@ export class CollectionBrowser
       sort: sortParams,
       filters: this.filterMap,
       aggregations: { omit: true },
+      uid: this.pageFetchQueryKey,
     };
     const searchResponse = await this.searchService?.search(
       params,
@@ -1280,35 +1317,14 @@ export class CollectionBrowser
       return;
     }
 
-    this.totalResults = success.response.totalResults;
-
-    // this is checking to see if the query has changed since the data was fetched
-    // if so, we just want to discard the data since there should be a new query
-    // right behind it
-    const searchQuery = success.request.clientParameters.user_query;
-    const searchSort = success.request.clientParameters.sort;
-    let sortChanged = false;
-    if (!searchSort || searchSort.length === 0) {
-      // if we went from no sort to sort, the sort has changed
-      if (this.sortParam) {
-        sortChanged = true;
-      }
-    } else {
-      // check if the sort has changed
-      for (const sortType of searchSort) {
-        const [field, direction] = sortType.split(':');
-        if (
-          field !== this.sortParam?.field ||
-          direction !== this.sortParam?.direction
-        ) {
-          sortChanged = true;
-          break;
-        }
-      }
-    }
-    const queryChangedSinceFetch =
-      searchQuery !== this.filteredQuery || sortChanged;
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard the data since there should be a new query
+    // right behind it.
+    const returnedUid = (success.request.clientParameters as any).uid;
+    const queryChangedSinceFetch = returnedUid !== this.pageFetchQueryKey;
     if (queryChangedSinceFetch) return;
+
+    this.totalResults = success.response.totalResults;
 
     const { results } = success.response;
     if (results && results.length > 0) {
