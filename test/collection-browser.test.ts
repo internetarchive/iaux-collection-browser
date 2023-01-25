@@ -279,7 +279,7 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
-  it('can request a search when changing search type', async () => {
+  it('can change search type', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
@@ -290,7 +290,6 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     el.searchType = SearchType.FULLTEXT;
-    el.requestSearch();
     await el.updateComplete;
     await nextTick();
 

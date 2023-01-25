@@ -321,14 +321,6 @@ export class CollectionBrowser
     return false;
   }
 
-  /**
-   * Manually requests to perform a search, which will only be executed if one of
-   * the query, the search type, or the sort has changed.
-   */
-  requestSearch() {
-    this.handleQueryChange();
-  }
-
   render() {
     this.setPlaceholderType();
     return html`

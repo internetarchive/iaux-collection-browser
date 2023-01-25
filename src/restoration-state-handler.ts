@@ -233,10 +233,8 @@ export class RestorationStateHandler
       restorationState.baseQuery = legacySearchQuery;
     }
 
-    if (searchInside) {
-      restorationState.searchType =
-        searchInside === 'TXT' ? SearchType.FULLTEXT : SearchType.METADATA;
-    }
+    restorationState.searchType =
+      searchInside === 'TXT' ? SearchType.FULLTEXT : SearchType.METADATA;
 
     if (pageNumber) {
       const parsed = parseInt(pageNumber, 10);

@@ -90,10 +90,6 @@ export class AppRoot extends LitElement {
     this.searchQuery = this.baseQueryField.value;
     this.collectionBrowser.searchType = this.searchType;
 
-    // Need to request a search in cases where the search type was previously changed but not the query.
-    // If the query was changed above, this should be a no-op.
-    this.collectionBrowser.requestSearch();
-
     if ((this.currentPage ?? 1) > 1) {
       this.collectionBrowser.goToPage(this.currentPage ?? 1);
     }
@@ -154,7 +150,7 @@ export class AppRoot extends LitElement {
                 id="metadata-search"
                 name="search-type"
                 value="metadata"
-                ?checked=${this.searchType === SearchType.METADATA}
+                .checked=${this.searchType === SearchType.METADATA}
                 @click=${this.searchTypeSelected}
               />
               <label for="metadata-search">Metadata</label>
@@ -165,7 +161,7 @@ export class AppRoot extends LitElement {
                 id="fulltext-search"
                 name="search-type"
                 value="fulltext"
-                ?checked=${this.searchType === SearchType.FULLTEXT}
+                .checked=${this.searchType === SearchType.FULLTEXT}
                 @click=${this.searchTypeSelected}
               />
               <label for="fulltext-search">Full text</label>
