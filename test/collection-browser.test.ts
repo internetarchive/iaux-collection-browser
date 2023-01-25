@@ -47,6 +47,20 @@ describe('Collection Browser', () => {
     window.history.replaceState({}, '', url);
   });
 
+  it('clears selected facets when requested', async () => {
+    const selectedFacets = getDefaultSelectedFacets();
+    selectedFacets.creator.foo = { count: 1, key: 'foo', state: 'selected' };
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser></collection-browser>`
+    );
+
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+    el.clearFilters(); // By default, sort is not cleared
+
+    expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
+  });
+
   it('clears existing filters but not sort by default', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser></collection-browser>`
@@ -262,6 +276,24 @@ describe('Collection Browser', () => {
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent
     ).to.contains('Results');
+  });
+
+  it('can request a search when changing search type', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    el.searchType = SearchType.FULLTEXT;
+    el.requestSearch();
+    await el.updateComplete;
+    await nextTick();
+
+    expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
   });
 
   it('queries the search service with a fulltext search', async () => {

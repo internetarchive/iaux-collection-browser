@@ -241,16 +241,6 @@ export class CollectionBrowser
     return this.pagesToRender * this.pageSize;
   }
 
-  // this is the actual number of tiles in the datasource,
-  // which is useful for removing excess placeholder tiles
-  // once we reached the end of the data
-  private get actualTileCount(): number {
-    return Object.keys(this.dataSource).reduce(
-      (acc, page) => acc + this.dataSource[page].length,
-      0
-    );
-  }
-
   /**
    * The results per page so we can paginate.
    *
