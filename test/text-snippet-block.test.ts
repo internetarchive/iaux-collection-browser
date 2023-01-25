@@ -30,7 +30,7 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
     );
 
-    const container = el.shadowRoot?.querySelector('.snippet-view > p');
+    const container = el.shadowRoot?.querySelector('.snippet-view');
 
     // Has the correct number of snippets and highlights
     expect(container?.children.length).to.equal(snippets.length);
@@ -47,7 +47,7 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
     );
 
-    const container = el.shadowRoot?.querySelector('.snippet-view > p');
+    const container = el.shadowRoot?.querySelector('.snippet-view');
 
     // Has the correct number of snippets and highlights
     expect(container?.children.length).to.equal(snippets.length);
