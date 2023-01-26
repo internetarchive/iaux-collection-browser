@@ -261,12 +261,12 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser
-        .searchService=${searchService}
-        .searchType=${SearchType.METADATA}
-      >
+      html` <collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
+
+    el.searchType = SearchType.METADATA;
+    await el.updateComplete;
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
@@ -300,12 +300,12 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser
-        .searchService=${searchService}
-        .searchType=${SearchType.FULLTEXT}
-      >
+      html` <collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
+
+    el.searchType = SearchType.FULLTEXT;
+    await el.updateComplete;
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;

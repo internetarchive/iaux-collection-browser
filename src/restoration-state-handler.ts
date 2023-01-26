@@ -234,15 +234,12 @@ export class RestorationStateHandler
     }
 
     switch (searchInside) {
-      case '':
-        restorationState.searchType = SearchType.METADATA;
-        break;
+      // Eventually there will be TV/Radio search types here too.
       case 'TXT':
         restorationState.searchType = SearchType.FULLTEXT;
         break;
       default:
-        // Don't restore a search type.
-        // Eventually there will be TV/Radio search types here too.
+        restorationState.searchType = SearchType.METADATA;
         break;
     }
 

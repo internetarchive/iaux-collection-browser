@@ -15,7 +15,7 @@ describe('Restoration state handler', () => {
     expect(restorationState.baseQuery).to.equal('boop');
   });
 
-  it('should not restore any search type from URL without valid sin', async () => {
+  it('should restore metadata search type from URL without valid sin', async () => {
     const handler = new RestorationStateHandler({ context: 'search' });
 
     const url = new URL(window.location.href);
@@ -23,7 +23,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.searchType).to.not.exist;
+    expect(restorationState.searchType).to.equal(SearchType.METADATA);
   });
 
   it('should restore metadata search type if sin explicitly empty in URL', async () => {
