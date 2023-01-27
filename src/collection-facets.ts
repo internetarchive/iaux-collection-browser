@@ -11,6 +11,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import type {
   Aggregation,
+  AggregationSortType,
   Bucket,
   FilterMap,
   SearchServiceInterface,
@@ -40,6 +41,7 @@ import {
   lendingFacetKeysVisibility,
   LendingFacetKey,
   suppressedCollections,
+  defaultFacetSort,
 } from './models';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
@@ -309,7 +311,7 @@ export class CollectionFacets extends LitElement {
    */
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
-    Object.entries(this.aggregations ?? []).forEach(([key, buckets]) => {
+    Object.entries(this.aggregations ?? []).forEach(([key, aggregation]) => {
       // the year_histogram data is in a different format so can't be handled here
       if (key === 'year_histogram') return;
 
@@ -317,7 +319,9 @@ export class CollectionFacets extends LitElement {
       const title = facetTitles[option];
       if (!title) return;
 
-      let castedBuckets = buckets.buckets as Bucket[];
+      let castedBuckets = aggregation.getSortedBuckets(
+        defaultFacetSort[option]
+      ) as Bucket[];
 
       if (option === 'collection') {
         // we are not showing fav- collections or certain deemphasized collections in facets
@@ -433,10 +437,13 @@ export class CollectionFacets extends LitElement {
       return nothing;
     }
 
+    // We sort years in numeric order by default, rather than bucket count
+    const facetSort = defaultFacetSort[facetGroup.key];
+
     return html`<button
       class="more-link"
       @click=${() => {
-        this.showMoreFacetsModal(facetGroup, 'count');
+        this.showMoreFacetsModal(facetGroup, facetSort);
         this.analyticsHandler?.sendEvent({
           category: analyticsCategories.default,
           action: analyticsActions.showMoreFacetsModal,
@@ -453,7 +460,7 @@ export class CollectionFacets extends LitElement {
 
   async showMoreFacetsModal(
     facetGroup: FacetGroup,
-    sortedBy: string
+    sortedBy: AggregationSortType
   ): Promise<void> {
     const facetAggrKey = facetGroup.key;
 
