@@ -321,14 +321,6 @@ export class CollectionBrowser
     return false;
   }
 
-  /**
-   * Manually requests to perform a search, which will only be executed if one of
-   * the query, the search type, or the sort has changed.
-   */
-  requestSearch() {
-    this.handleQueryChange();
-  }
-
   render() {
     this.setPlaceholderType();
     return html`
@@ -687,10 +679,11 @@ export class CollectionBrowser
     }
 
     if (changed.has('baseQuery') || changed.has('searchType')) {
-      // Unless this query/search type update is the result of hitting the back button,
+      // Unless this query/search type update is from the initial page load or the
+      // result of hitting the back button,
       // we need to clear any existing filters since they may no longer be valid for
       // the new set of search results.
-      if (!this.historyPopOccurred) {
+      if (!this.historyPopOccurred && this.initialQueryChangeHappened) {
         // Only clear filters that haven't been simultaneously applied in this update
         this.clearFilters({
           facets: !changed.has('selectedFacets'),

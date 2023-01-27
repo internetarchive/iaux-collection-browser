@@ -29,6 +29,8 @@ import {
   FacetOption,
   facetTitles,
   suppressedCollections,
+  valueFacetSort,
+  defaultFacetSort,
 } from '../models';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
@@ -86,7 +88,13 @@ export class MoreFacetsContent extends LitElement {
   private facetsPerPage = 35;
 
   updated(changed: PropertyValues) {
-    if (changed.has('facetKey')) {
+    if (
+      changed.has('facetKey') ||
+      changed.has('facetAggregationKey') ||
+      changed.has('query') ||
+      changed.has('searchType') ||
+      changed.has('filterMap')
+    ) {
       this.facetsLoading = true;
       this.pageNumber = 1;
 
@@ -377,20 +385,30 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get getModalHeaderTemplate(): TemplateResult {
+    const facetSort = defaultFacetSort[this.facetKey as FacetOption];
+    const defaultSwitchSide =
+      facetSort === AggregationSortType.COUNT ? 'left' : 'right';
+
     return html`<span class="sr-only">More facets for:</span>
       <span class="title">
         ${this.facetGroupTitle}
+
         <label class="sort-label">Sort by:</label>
-        <toggle-switch
-          class="sort-toggle"
-          leftValue=${AggregationSortType.COUNT}
-          leftLabel="Count"
-          rightValue=${AggregationSortType.ALPHABETICAL}
-          rightLabel=${this.facetGroupTitle}
-          @change=${(e: CustomEvent<string>) => {
-            this.sortFacetAggregation(Number(e.detail) as AggregationSortType);
-          }}
-        ></toggle-switch>
+        ${this.facetKey
+          ? html`<toggle-switch
+              class="sort-toggle"
+              leftValue=${AggregationSortType.COUNT}
+              leftLabel="Count"
+              rightValue=${valueFacetSort[this.facetKey]}
+              rightLabel=${this.facetGroupTitle}
+              side=${defaultSwitchSide}
+              @change=${(e: CustomEvent<string>) => {
+                this.sortFacetAggregation(
+                  Number(e.detail) as AggregationSortType
+                );
+              }}
+            ></toggle-switch>`
+          : nothing}
       </span>`;
   }
 

@@ -26,6 +26,17 @@ describe('Restoration state handler', () => {
     expect(restorationState.searchType).to.equal(SearchType.METADATA);
   });
 
+  it('should restore metadata search type if sin explicitly empty in URL', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sin=';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.searchType).to.equal(SearchType.METADATA);
+  });
+
   it('should restore full text search type from URL', async () => {
     const handler = new RestorationStateHandler({ context: 'search' });
 

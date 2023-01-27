@@ -261,12 +261,12 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser
-        .searchService=${searchService}
-        .searchType=${SearchType.METADATA}
-      >
+      html` <collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
+
+    el.searchType = SearchType.METADATA;
+    await el.updateComplete;
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
@@ -279,7 +279,7 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
-  it('can request a search when changing search type', async () => {
+  it('can change search type', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
@@ -290,7 +290,6 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     el.searchType = SearchType.FULLTEXT;
-    el.requestSearch();
     await el.updateComplete;
     await nextTick();
 
@@ -301,12 +300,12 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
-      html` <collection-browser
-        .searchService=${searchService}
-        .searchType=${SearchType.FULLTEXT}
-      >
+      html` <collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
+
+    el.searchType = SearchType.FULLTEXT;
+    await el.updateComplete;
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;

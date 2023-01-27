@@ -1,5 +1,8 @@
 import type { MediaType } from '@internetarchive/field-parsers';
-import type { SortDirection } from '@internetarchive/search-service';
+import {
+  AggregationSortType,
+  SortDirection,
+} from '@internetarchive/search-service';
 
 export interface TileModel {
   averageRating?: number;
@@ -252,6 +255,33 @@ export const facetTitles: Record<FacetOption, string> = {
   creator: 'Creator',
   collection: 'Collection',
   year: 'Year',
+};
+
+/**
+ * The default sort type to use for each facet type
+ */
+export const defaultFacetSort: Record<FacetOption, AggregationSortType> = {
+  subject: AggregationSortType.COUNT,
+  lending: AggregationSortType.COUNT,
+  mediatype: AggregationSortType.COUNT,
+  language: AggregationSortType.COUNT,
+  creator: AggregationSortType.COUNT,
+  collection: AggregationSortType.COUNT,
+  year: AggregationSortType.NUMERIC,
+};
+
+/**
+ * The sort type corresponding to facet bucket values, for each facet type
+ * (i.e., the opposite of "sort by count" for that type).
+ */
+export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
+  subject: AggregationSortType.ALPHABETICAL,
+  lending: AggregationSortType.ALPHABETICAL,
+  mediatype: AggregationSortType.ALPHABETICAL,
+  language: AggregationSortType.ALPHABETICAL,
+  creator: AggregationSortType.ALPHABETICAL,
+  collection: AggregationSortType.ALPHABETICAL,
+  year: AggregationSortType.NUMERIC,
 };
 
 export type LendingFacetKey =
