@@ -713,7 +713,8 @@ export class CollectionBrowser
       changed.has('baseQuery') ||
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
-      changed.has('selectedFacets')
+      changed.has('selectedFacets') ||
+      changed.has('searchService')
     ) {
       this.refreshLetterCounts();
     }
@@ -994,6 +995,22 @@ export class CollectionBrowser
       }
     }
 
+    // Add any letter filters
+    if (this.selectedTitleFilter) {
+      builder.addFilter(
+        'firstTitle',
+        this.selectedTitleFilter,
+        FilterConstraint.INCLUDE
+      );
+    }
+    if (this.selectedCreatorFilter) {
+      builder.addFilter(
+        'firstCreator',
+        this.selectedCreatorFilter,
+        FilterConstraint.INCLUDE
+      );
+    }
+
     const filterMap = builder.build();
     return filterMap;
   }
@@ -1026,22 +1043,6 @@ export class CollectionBrowser
     }
     if (sortFilterQueries) {
       fullQuery += ` AND ${sortFilterQueries}`;
-    }
-    return fullQuery.trim();
-  }
-
-  /** The full query without any title/creator letter filters */
-  private get fullQueryWithoutAlphaFilters(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery.trim();
-
-    const { facetQuery, dateRangeQueryClause } = this;
-
-    if (facetQuery) {
-      fullQuery += ` AND ${facetQuery}`;
-    }
-    if (dateRangeQueryClause) {
-      fullQuery += ` AND ${dateRangeQueryClause}`;
     }
     return fullQuery.trim();
   }
@@ -1439,12 +1440,14 @@ export class CollectionBrowser
   private async fetchPrefixFilterBuckets(
     filterType: PrefixFilterType
   ): Promise<Bucket[]> {
-    if (!this.fullQueryWithoutAlphaFilters) return [];
+    const trimmedQuery = this.baseQuery?.trim();
+    if (!trimmedQuery) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const params: SearchParams = {
-      query: this.fullQueryWithoutAlphaFilters,
+      query: trimmedQuery,
       rows: 0,
+      filters: this.filterMap,
       // Only fetch the firstTitle or firstCreator aggregation
       aggregations: { simpleParams: [filterAggregationKey] },
       // Fetch all 26 letter buckets
@@ -1465,7 +1468,15 @@ export class CollectionBrowser
   private async updatePrefixFilterCounts(
     filterType: PrefixFilterType
   ): Promise<void> {
+    const { facetFetchQueryKey } = this;
     const buckets = await this.fetchPrefixFilterBuckets(filterType);
+
+    // Don't update the filter counts for an outdated query (if it has been changed
+    // since we sent the request)
+    const queryChangedSinceFetch =
+      facetFetchQueryKey !== this.facetFetchQueryKey;
+    if (queryChangedSinceFetch) return;
+
     // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
     this.prefixFilterCountMap = { ...this.prefixFilterCountMap }; // Clone the object to trigger an update
     this.prefixFilterCountMap[filterType] = buckets.reduce(
@@ -1498,7 +1509,9 @@ export class CollectionBrowser
    * Call this whenever the counts are invalidated (e.g., by a query change).
    */
   private refreshLetterCounts(): void {
-    this.prefixFilterCountMap = {};
+    if (Object.keys(this.prefixFilterCountMap).length > 0) {
+      this.prefixFilterCountMap = {};
+    }
     this.updatePrefixFiltersForCurrentSort();
   }
 
