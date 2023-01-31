@@ -1162,10 +1162,12 @@ export class CollectionBrowser
   }
 
   private async fetchFacets() {
-    if (!this.filteredQuery) return;
+    const trimmedQuery = this.baseQuery?.trim();
+    if (!trimmedQuery) return;
+    if (!this.searchService) return;
 
     const params: SearchParams = {
-      query: this.filteredQuery,
+      query: trimmedQuery,
       rows: 0,
       filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
@@ -1176,7 +1178,7 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
-    const searchResponse = await this.searchService?.search(
+    const searchResponse = await this.searchService.search(
       params,
       this.searchType
     );
@@ -1263,7 +1265,9 @@ export class CollectionBrowser
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
-    if (!this.filteredQuery) return;
+    const trimmedQuery = this.baseQuery?.trim();
+    if (!trimmedQuery) return;
+    if (!this.searchService) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1280,7 +1284,7 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: this.filteredQuery,
+      query: trimmedQuery,
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
@@ -1288,7 +1292,7 @@ export class CollectionBrowser
       aggregations: { omit: true },
       uid: this.pageFetchQueryKey,
     };
-    const searchResponse = await this.searchService?.search(
+    const searchResponse = await this.searchService.search(
       params,
       this.searchType
     );
