@@ -3,6 +3,7 @@
  * Override browser timezone to always display same date as in data
  */
 export type DateFormat =
+  | 'year-only' // 2020
   | 'short' // Dec 2020
   | 'long'; // Dec 20, 2020
 
@@ -18,6 +19,9 @@ export function formatDate(
     timeZone: 'UTC', // Override browser timezone
   };
   switch (format) {
+    case 'year-only':
+      options.year = 'numeric';
+      break;
     case 'short':
       options.month = 'short';
       options.year = 'numeric';

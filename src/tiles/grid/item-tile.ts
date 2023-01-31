@@ -11,7 +11,8 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type { SortParam } from '@internetarchive/search-service';
 
-import { formatDate } from '../../utils/format-date';
+import { DateFormat, formatDate } from '../../utils/format-date';
+import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import type { TileModel } from '../../models';
 
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
@@ -104,10 +105,16 @@ export class ItemTile extends LitElement {
 
   private get sortedDateInfoTemplate() {
     let sortedValue;
+    let format: DateFormat = 'long';
     switch (this.sortParam?.field) {
-      case 'date':
-        sortedValue = { field: 'published', value: this.model?.datePublished };
+      case 'date': {
+        const datePublished = this.model?.datePublished;
+        sortedValue = { field: 'published', value: datePublished };
+        if (isFirstMillisecondOfUTCYear(datePublished)) {
+          format = 'year-only';
+        }
         break;
+      }
       case 'reviewdate':
         sortedValue = { field: 'reviewed', value: this.model?.dateReviewed };
         break;
@@ -127,7 +134,7 @@ export class ItemTile extends LitElement {
     return html`
       <div class="date-sorted-by truncated">
         <span>
-          ${sortedValue?.field} ${formatDate(sortedValue?.value, 'long')}
+          ${sortedValue?.field} ${formatDate(sortedValue?.value, format)}
         </span>
       </div>
     `;

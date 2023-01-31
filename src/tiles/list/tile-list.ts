@@ -21,6 +21,7 @@ import { dateLabel } from './date-label';
 import { accountLabel } from './account-label';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
+import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
 import '../mediatype-icon';
@@ -205,10 +206,16 @@ export class TileList extends LitElement {
   }
 
   private get datePublishedTemplate() {
-    return this.metadataTemplate(
-      formatDate(this.model?.datePublished, 'long'),
-      'Published'
-    );
+    // If we're showing a date published of Jan 1 at midnight, only show the year.
+    // This is because items with only a year for their publication date are normalized to
+    // Jan 1 at midnight timestamps in the search engine documents.
+    const date: Date | undefined = this.model?.datePublished;
+    let format: DateFormat = 'long';
+    if (isFirstMillisecondOfUTCYear(date)) {
+      format = 'year-only';
+    }
+
+    return this.metadataTemplate(formatDate(date, format), 'Published');
   }
 
   // Show date label/value when sorted by date type
@@ -430,7 +437,7 @@ export class TileList extends LitElement {
     return 'desktop';
   }
 
-  private get formatSize(): DateFormat | NumberFormat {
+  private get formatSize(): NumberFormat {
     if (
       this.mobileBreakpoint &&
       this.currentWidth &&

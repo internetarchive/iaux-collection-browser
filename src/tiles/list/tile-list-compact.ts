@@ -6,6 +6,7 @@ import type { TileModel } from '../../models';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
+import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { accountLabel } from './account-label';
 
 import '../image-block';
@@ -49,7 +50,7 @@ export class TileListCompact extends LitElement {
             ? accountLabel(this.model?.dateAdded)
             : DOMPurify.sanitize(this.model?.creator ?? '')}
         </div>
-        <div id="date">${formatDate(this.date, this.formatSize)}</div>
+        <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
         <div id="icon">
           <mediatype-icon
             .mediatype=${this.model?.mediatype}
@@ -111,7 +112,20 @@ export class TileListCompact extends LitElement {
     return 'desktop';
   }
 
-  private get formatSize(): DateFormat | NumberFormat {
+  private get dateFormatSize(): DateFormat {
+    // If we're showing a date published of Jan 1 at midnight, only show the year.
+    // This is because items with only a year for their publication date are normalized to
+    // Jan 1 at midnight timestamps in the search engine documents.
+    if (
+      (!this.sortParam?.field || this.sortParam.field === 'date') && // No sort or date published
+      isFirstMillisecondOfUTCYear(this.model?.datePublished)
+    ) {
+      return 'year-only';
+    }
+    return this.formatSize;
+  }
+
+  private get formatSize(): NumberFormat {
     if (
       this.mobileBreakpoint &&
       this.currentWidth &&
