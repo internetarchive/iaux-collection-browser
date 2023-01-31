@@ -78,10 +78,10 @@ describe('List Tile Compact', () => {
 
   it('should render published date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-01'),
-      dateArchived: new Date('2011-01-01'),
-      datePublished: new Date('2012-01-01'),
-      dateReviewed: new Date('2013-01-01'),
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
     };
 
     const el = await fixture<TileListCompact>(html`
@@ -94,15 +94,15 @@ describe('List Tile Compact', () => {
 
     const dateColumn = el.shadowRoot?.getElementById('date');
     expect(dateColumn).to.exist;
-    expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2012');
+    expect(dateColumn?.textContent?.trim()).to.equal('Jan 02, 2012');
   });
 
   it('should render added date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-01'),
-      dateArchived: new Date('2011-01-01'),
-      datePublished: new Date('2012-01-01'),
-      dateReviewed: new Date('2013-01-01'),
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
     };
 
     const el = await fixture<TileListCompact>(html`
@@ -115,15 +115,15 @@ describe('List Tile Compact', () => {
 
     const dateColumn = el.shadowRoot?.getElementById('date');
     expect(dateColumn).to.exist;
-    expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2010');
+    expect(dateColumn?.textContent?.trim()).to.equal('Jan 02, 2010');
   });
 
   it('should render archived date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-01'),
-      dateArchived: new Date('2011-01-01'),
-      datePublished: new Date('2012-01-01'),
-      dateReviewed: new Date('2013-01-01'),
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
     };
 
     const el = await fixture<TileListCompact>(html`
@@ -136,15 +136,15 @@ describe('List Tile Compact', () => {
 
     const dateColumn = el.shadowRoot?.getElementById('date');
     expect(dateColumn).to.exist;
-    expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2011');
+    expect(dateColumn?.textContent?.trim()).to.equal('Jan 02, 2011');
   });
 
   it('should render reviewed date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-01'),
-      dateArchived: new Date('2011-01-01'),
-      datePublished: new Date('2012-01-01'),
-      dateReviewed: new Date('2013-01-01'),
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
     };
 
     const el = await fixture<TileListCompact>(html`
@@ -156,6 +156,57 @@ describe('List Tile Compact', () => {
     `);
 
     const dateColumn = el.shadowRoot?.getElementById('date');
+    expect(dateColumn).to.exist;
+    expect(dateColumn?.textContent?.trim()).to.equal('Jan 02, 2013');
+  });
+
+  it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
+    const model: Partial<TileModel> = {
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+    };
+
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list-compact>
+    `);
+
+    const dateColumn = el.shadowRoot?.getElementById('date');
+    expect(dateColumn).to.exist;
+    expect(dateColumn?.textContent?.trim()).to.equal('2012');
+  });
+
+  it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date(2010, 0, 1, 0, 0, 0, 0),
+      dateArchived: new Date(2011, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      dateReviewed: new Date(2013, 0, 1, 0, 0, 0, 0),
+    };
+
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact
+        .model=${model}
+        .sortParam=${{ field: 'addeddate', direction: 'desc' }}
+      >
+      </tile-list-compact>
+    `);
+
+    let dateColumn = el.shadowRoot?.getElementById('date');
+    expect(dateColumn).to.exist;
+    expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2010');
+
+    el.sortParam = { field: 'publicdate', direction: 'desc' };
+    await el.updateComplete;
+    dateColumn = el.shadowRoot?.getElementById('date');
+    expect(dateColumn).to.exist;
+    expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2011');
+
+    el.sortParam = { field: 'reviewdate', direction: 'desc' };
+    await el.updateComplete;
+    dateColumn = el.shadowRoot?.getElementById('date');
     expect(dateColumn).to.exist;
     expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2013');
   });
