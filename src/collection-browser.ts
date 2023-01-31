@@ -1717,6 +1717,7 @@ export class CollectionBrowser
       width: var(--leftColumnWidth, 18rem);
       /* Prevents Safari from shrinking col at first draw */
       min-width: var(--leftColumnWidth, 18rem);
+      padding-top: 0;
       /* Reduced padding by 0.2rem to add the invisible border in the rule below */
       padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
       border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
@@ -1726,9 +1727,10 @@ export class CollectionBrowser
     .desktop #left-column {
       top: 0;
       position: sticky;
-      height: 100vh;
-      max-height: 100vh;
-      overflow: scroll;
+      height: calc(100vh - 2rem);
+      max-height: calc(100vh - 2rem);
+      overflow-x: hidden;
+      overflow-y: scroll;
 
       /*
        * Firefox doesn't support any of the -webkit-scrollbar stuff below, but
@@ -1767,8 +1769,9 @@ export class CollectionBrowser
     #facets-bottom-fade {
       background: linear-gradient(
         to bottom,
-        transparent 0%,
+        #f5f5f700 0%,
         #f5f5f7c0 50%,
+        #f5f5f7 80%,
         #f5f5f7 100%
       );
       position: fixed;
@@ -1788,7 +1791,7 @@ export class CollectionBrowser
 
     .desktop #left-column-scroll-sentinel {
       width: 1px;
-      height: 2000px;
+      height: 100vh;
       background: transparent;
     }
 
@@ -1807,6 +1810,10 @@ export class CollectionBrowser
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .desktop #mobile-header-container {
+      padding-top: 2rem;
     }
 
     #facets-container {
