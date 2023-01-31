@@ -3,7 +3,7 @@ import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
-import { SearchType } from '@internetarchive/search-service';
+import { FilterConstraint, SearchType } from '@internetarchive/search-service';
 import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
@@ -727,8 +727,9 @@ describe('Collection Browser', () => {
     el.selectedTitleFilter = 'X';
     await el.updateComplete;
 
-    expect(searchService.searchParams?.query).to.equal(
-      'first-title AND firstTitle:X'
+    expect(searchService.searchParams?.query).to.equal('first-title');
+    expect(searchService.searchParams?.filters?.firstTitle?.X).to.equal(
+      FilterConstraint.INCLUDE
     );
   });
 
@@ -745,8 +746,9 @@ describe('Collection Browser', () => {
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
 
-    expect(searchService.searchParams?.query).to.equal(
-      'first-creator AND firstCreator:X'
+    expect(searchService.searchParams?.query).to.equal('first-creator');
+    expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
+      FilterConstraint.INCLUDE
     );
   });
 
@@ -776,9 +778,7 @@ describe('Collection Browser', () => {
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
 
-    expect(searchService.searchParams?.query).to.equal(
-      'first-creator AND firstCreator:X'
-    );
+    expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters).to.deep.equal({
       collection: {
         foo: 'inc',
@@ -786,6 +786,9 @@ describe('Collection Browser', () => {
       year: {
         '1950': 'gte',
         '1970': 'lte',
+      },
+      firstCreator: {
+        X: 'inc',
       },
     });
   });
