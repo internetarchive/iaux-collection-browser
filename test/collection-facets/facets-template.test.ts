@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import { html } from 'lit';
 import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
 import '../../src/collection-facets/facets-template';
-import { defaultSelectedFacets, FacetEventDetails } from '../../src/models';
+import { getDefaultSelectedFacets, FacetEventDetails } from '../../src/models';
 
 const facetGroup = {
   title: 'Media Type',
@@ -114,7 +114,7 @@ describe('Render facets', () => {
         { displayText: 'audio', key: 'audio', count: 42, state: 'none' },
       ],
     };
-    const selectedFacets = { ...defaultSelectedFacets };
+    const selectedFacets = getDefaultSelectedFacets();
     const el = await fixture<FacetsTemplate>(
       html`<facets-template
         .facetGroup=${mediatypeGroup}
@@ -162,7 +162,7 @@ describe('Render facets', () => {
         { displayText: 'audio', key: 'audio', count: 42, state: 'none' },
       ],
     };
-    const selectedFacets = { ...defaultSelectedFacets };
+    const selectedFacets = getDefaultSelectedFacets();
     const el = await fixture<FacetsTemplate>(
       html`<facets-template
         .facetGroup=${mediatypeGroup}
