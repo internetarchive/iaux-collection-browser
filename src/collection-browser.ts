@@ -679,9 +679,12 @@ export class CollectionBrowser
 
   updated(changed: PropertyValues) {
     if (changed.has('placeholderType') && this.placeholderType === null) {
-      if (!this.leftColIntersectionObserver)
+      if (!this.leftColIntersectionObserver) {
         this.setupLeftColumnScrollListeners();
-      if (!this.facetsIntersectionObserver) this.setupFacetsScrollListeners();
+      }
+      if (!this.facetsIntersectionObserver) {
+        this.setupFacetsScrollListeners();
+      }
       this.updateLeftColumnHeight();
     }
 
