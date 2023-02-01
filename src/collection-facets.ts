@@ -99,13 +99,6 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object, attribute: false })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  /** Fires when a facet is clicked */
-  @property({ type: Function }) onFacetClick?: (
-    name: FacetOption,
-    facetChecked: boolean,
-    negative: boolean
-  ) => void;
-
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
     lending: false,

@@ -55,7 +55,7 @@ import {
   PrefixFilterType,
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
-  FacetOption,
+  FacetEventDetails,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -609,7 +609,7 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
-        .onFacetClick=${this.facetClickHandler}
+        @facetClick=${this.facetClickHandler}
         .analyticsHandler=${this.analyticsHandler}
       >
       </collection-facets>
@@ -1136,26 +1136,26 @@ export class CollectionBrowser
     this.selectedFacets = e.detail;
   }
 
-  facetClickHandler(
-    name: FacetOption,
-    facetSelected: boolean,
-    negative: boolean
-  ): void {
+  facetClickHandler({
+    detail: { key, state: facetState, negative },
+  }: CustomEvent<FacetEventDetails>): void {
     if (negative) {
       this.analyticsHandler?.sendEvent({
         category: this.searchContext,
-        action: facetSelected
-          ? analyticsActions.facetNegativeSelected
-          : analyticsActions.facetNegativeDeselected,
-        label: name,
+        action:
+          facetState !== 'none'
+            ? analyticsActions.facetNegativeSelected
+            : analyticsActions.facetNegativeDeselected,
+        label: key,
       });
     } else {
       this.analyticsHandler?.sendEvent({
         category: this.searchContext,
-        action: facetSelected
-          ? analyticsActions.facetSelected
-          : analyticsActions.facetDeselected,
-        label: name,
+        action:
+          facetState !== 'none'
+            ? analyticsActions.facetSelected
+            : analyticsActions.facetDeselected,
+        label: key,
       });
     }
   }
