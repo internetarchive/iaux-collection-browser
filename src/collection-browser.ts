@@ -104,10 +104,6 @@ export class CollectionBrowser
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
-  @property({ type: String }) titleQuery?: string;
-
-  @property({ type: String }) creatorQuery?: string;
-
   @property({ type: Number }) currentPage?: number;
 
   @property({ type: String }) minSelectedDate?: string;
@@ -294,8 +290,6 @@ export class CollectionBrowser
     if (letterFilters) {
       this.selectedTitleFilter = null;
       this.selectedCreatorFilter = null;
-      this.titleQuery = undefined;
-      this.creatorQuery = undefined;
     }
 
     if (sort) {
@@ -497,6 +491,18 @@ export class CollectionBrowser
     }
   }
 
+  private get titleQuery(): string | undefined {
+    return this.selectedTitleFilter
+      ? `firstTitle:${this.selectedTitleFilter}`
+      : undefined;
+  }
+
+  private get creatorQuery(): string | undefined {
+    return this.selectedCreatorFilter
+      ? `firstCreator:${this.selectedCreatorFilter}`
+      : undefined;
+  }
+
   /** Send Analytics when sorting by title's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    * */
@@ -513,12 +519,6 @@ export class CollectionBrowser
         ? `clear-${prevSelectedLetter}`
         : `${prevSelectedLetter || 'start'}-${this.selectedTitleFilter}`,
     });
-  }
-
-  private selectedTitleLetterChanged(): void {
-    this.titleQuery = this.selectedTitleFilter
-      ? `firstTitle:${this.selectedTitleFilter}`
-      : undefined;
   }
 
   /** Send Analytics when filtering by creator's first letter
@@ -541,18 +541,11 @@ export class CollectionBrowser
     });
   }
 
-  private selectedCreatorLetterChanged(): void {
-    this.creatorQuery = this.selectedCreatorFilter
-      ? `firstCreator:${this.selectedCreatorFilter}`
-      : undefined;
-  }
-
   private titleLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
     this.selectedCreatorFilter = null;
     this.selectedTitleFilter = e.detail.selectedLetter;
-    this.selectedTitleLetterChanged();
   }
 
   private creatorLetterSelected(
@@ -560,7 +553,6 @@ export class CollectionBrowser
   ): void {
     this.selectedTitleFilter = null;
     this.selectedCreatorFilter = e.detail.selectedLetter;
-    this.selectedCreatorLetterChanged();
   }
 
   private get mobileFacetsTemplate() {
@@ -729,13 +721,11 @@ export class CollectionBrowser
       this.sendFilterByTitleAnalytics(
         changed.get('selectedTitleFilter') as string
       );
-      this.selectedTitleLetterChanged();
     }
     if (changed.has('selectedCreatorFilter')) {
       this.sendFilterByCreatorAnalytics(
         changed.get('selectedCreatorFilter') as string
       );
-      this.selectedCreatorLetterChanged();
     }
 
     if (
@@ -1013,19 +1003,6 @@ export class CollectionBrowser
 
     const filterMap = builder.build();
     return filterMap;
-  }
-
-  /** The base query joined with any title/creator letter filters */
-  private get filteredQuery(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let filteredQuery = this.baseQuery.trim();
-
-    const { sortFilterQueries } = this;
-    if (sortFilterQueries) {
-      filteredQuery += ` AND ${sortFilterQueries}`;
-    }
-
-    return filteredQuery.trim();
   }
 
   /** The full query, including year facets and date range clauses */

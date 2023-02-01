@@ -793,6 +793,31 @@ describe('Collection Browser', () => {
     });
   });
 
+  it('resets letter filters when query changes', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'first-creator';
+    el.selectedSort = 'creator' as SortField;
+    el.sortDirection = 'asc';
+    el.selectedCreatorFilter = 'X';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('first-creator');
+    expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
+      FilterConstraint.INCLUDE
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchParams?.filters?.firstCreator).not.to.exist;
+  });
+
   it('sets date range query when date picker selection changed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
