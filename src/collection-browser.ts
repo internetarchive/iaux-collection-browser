@@ -191,8 +191,6 @@ export class CollectionBrowser
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
 
-  @query('#scroll-sentinel') private scrollSentinel?: HTMLDivElement;
-
   @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
 
@@ -848,7 +846,7 @@ export class CollectionBrowser
     );
     if (facetsSentinel) {
       this.facetsIntersectionObserver = new IntersectionObserver(
-        this.handleLeftColumnScroll
+        this.updateFacetFadeOut
       );
       this.facetsIntersectionObserver.observe(facetsSentinel);
     }
@@ -871,13 +869,11 @@ export class CollectionBrowser
   };
 
   /**
-   * Toggles whether the fade-out is visible at the bottom of the left column.
-   * It should only be visible if the column is not scrolled to the bottom.
+   * Toggles whether the fade-out is visible at the bottom of the facets.
+   * It should only be visible if the facets are not scrolled to the bottom.
    * Arrow function ensures proper `this` binding.
    */
-  private handleLeftColumnScroll = (
-    entries: IntersectionObserverEntry[]
-  ): void => {
+  private updateFacetFadeOut = (entries: IntersectionObserverEntry[]): void => {
     const fadeElmt = this.shadowRoot?.getElementById('facets-bottom-fade');
     fadeElmt?.classList.toggle('hidden', entries?.[0]?.isIntersecting);
   };
