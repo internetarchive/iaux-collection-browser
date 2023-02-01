@@ -805,6 +805,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
+    await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
