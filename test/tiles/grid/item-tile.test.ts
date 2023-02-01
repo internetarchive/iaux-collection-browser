@@ -5,6 +5,7 @@ import { html } from 'lit';
 import type { ItemTile } from '../../../src/tiles/grid/item-tile';
 
 import '../../../src/tiles/grid/item-tile';
+import type { TileModel } from '../../../src/models';
 
 describe('Item Tile', () => {
   it('should render initial component', async () => {
@@ -115,7 +116,7 @@ describe('Item Tile', () => {
     expect(dateSortedBy).to.not.exist;
   });
 
-  it('should render with created-by when sorting not related to date', async () => {
+  it('should render without created-by when sorting by a date field', async () => {
     const el = await fixture<ItemTile>(
       html`<item-tile .model=${{ dateAdded: new Date() }}></item-tile>`
     );
@@ -135,7 +136,7 @@ describe('Item Tile', () => {
     expect(dateSortedBy).to.exist;
   });
 
-  it('should render with created-by when sort field id not like date', async () => {
+  it('should render with created-by when sort field is not a date', async () => {
     const el = await fixture<ItemTile>(
       html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`
     );
@@ -151,8 +152,149 @@ describe('Item Tile', () => {
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
 
     expect(itemInfo).to.exist;
-    expect(dateSortedBy).to.not.exist; // it should be exist because this is not related to date sort
+    expect(dateSortedBy).to.not.exist; // it should not exist because this is not a date sort
     expect(createdBy).to.exist;
+  });
+
+  it('should render published date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </item-tile>
+    `);
+
+    const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.contain(
+      'published Jan 02, 2012'
+    );
+  });
+
+  it('should render added date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${model}
+        .sortParam=${{ field: 'addeddate', direction: 'desc' }}
+      >
+      </item-tile>
+    `);
+
+    const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.contain('added Jan 02, 2010');
+  });
+
+  it('should render archived date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${model}
+        .sortParam=${{ field: 'publicdate', direction: 'desc' }}
+      >
+      </item-tile>
+    `);
+
+    const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.contain(
+      'archived Jan 02, 2011'
+    );
+  });
+
+  it('should render reviewed date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${model}
+        .sortParam=${{ field: 'reviewdate', direction: 'desc' }}
+      >
+      </item-tile>
+    `);
+
+    const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.contain(
+      'reviewed Jan 02, 2013'
+    );
+  });
+
+  it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
+    const model: Partial<TileModel> = {
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </item-tile>
+    `);
+
+    const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.equal('published 2012');
+  });
+
+  it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date(2010, 0, 1, 0, 0, 0, 0),
+      dateArchived: new Date(2011, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      dateReviewed: new Date(2013, 0, 1, 0, 0, 0, 0),
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${model}
+        .sortParam=${{ field: 'addeddate', direction: 'desc' }}
+      >
+      </item-tile>
+    `);
+
+    let dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.equal('added Jan 01, 2010');
+
+    el.sortParam = { field: 'publicdate', direction: 'desc' };
+    await el.updateComplete;
+    dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.equal('archived Jan 01, 2011');
+
+    el.sortParam = { field: 'reviewdate', direction: 'desc' };
+    await el.updateComplete;
+    dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
+    expect(dateSortedBy).to.exist;
+    expect(dateSortedBy?.textContent?.trim()).to.equal('reviewed Jan 01, 2013');
   });
 
   it('should render with snippet block when it has snippets', async () => {

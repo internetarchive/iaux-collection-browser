@@ -136,12 +136,33 @@ describe('List Tile', () => {
     expect(viewsRow?.textContent?.trim()).to.equal('Views:  10');
   });
 
+  it('should render published date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Published:  Jan 02, 2012');
+  });
+
   it('should render added date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-01'),
-      dateArchived: new Date('2011-01-01'),
-      datePublished: new Date('2012-01-01'),
-      dateReviewed: new Date('2013-01-01'),
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
     };
 
     const el = await fixture<TileList>(html`
@@ -154,7 +175,100 @@ describe('List Tile', () => {
 
     const dateRow = el.shadowRoot?.getElementById('dates-line');
     expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Added:  Jan 02, 2010');
+  });
+
+  it('should render archived date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'publicdate', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Archived:  Jan 02, 2011');
+  });
+
+  it('should render reviewed date when sorting by it', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date('2010-01-02'),
+      dateArchived: new Date('2011-01-02'),
+      datePublished: new Date('2012-01-02'),
+      dateReviewed: new Date('2013-01-02'),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'reviewdate', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Reviewed:  Jan 02, 2013');
+  });
+
+  it('should only show the year for a date published of Jan 1 at midnight', async () => {
+    const model: Partial<TileModel> = {
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Published:  2012');
+  });
+
+  it('should show full date added/archived/reviewed, even on Jan 1 at midnight', async () => {
+    const model: Partial<TileModel> = {
+      dateAdded: new Date(2010, 0, 1, 0, 0, 0, 0),
+      dateArchived: new Date(2011, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      dateReviewed: new Date(2013, 0, 1, 0, 0, 0, 0),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'addeddate', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    let dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
     expect(dateRow?.textContent?.trim()).to.contain('Added:  Jan 01, 2010');
+
+    el.sortParam = { field: 'publicdate', direction: 'desc' };
+    await el.updateComplete;
+    dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Archived:  Jan 01, 2011');
+
+    el.sortParam = { field: 'reviewdate', direction: 'desc' };
+    await el.updateComplete;
+    dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Reviewed:  Jan 01, 2013');
   });
 
   it('should render links to /search pages (not search.php) for subject, creator, and source', async () => {
