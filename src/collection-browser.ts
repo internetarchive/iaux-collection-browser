@@ -333,11 +333,9 @@ export class CollectionBrowser
     this.placeholderType = null;
     if (!this.baseQuery?.trim()) {
       this.placeholderType = 'empty-query';
-    }
-
-    if (
-      (!this.searchResultsLoading && this.totalResults === 0) ||
-      !this.searchService
+    } else if (
+      !this.searchResultsLoading &&
+      (this.totalResults === 0 || !this.searchService)
     ) {
       this.placeholderType = 'null-result';
     }
@@ -611,7 +609,7 @@ export class CollectionBrowser
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
-        .query=${this.filteredQuery}
+        .query=${this.baseQuery}
         .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
@@ -1177,6 +1175,8 @@ export class CollectionBrowser
     if (!trimmedQuery) return;
     if (!this.searchService) return;
 
+    const { facetFetchQueryKey } = this;
+
     const params: SearchParams = {
       query: trimmedQuery,
       rows: 0,
@@ -1194,7 +1194,13 @@ export class CollectionBrowser
       this.searchType
     );
     const success = searchResponse?.success;
-    this.facetsLoading = false;
+
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard this set of aggregations because they are
+    // likely no longer valid for the newer query.
+    const queryChangedSinceFetch =
+      facetFetchQueryKey !== this.facetFetchQueryKey;
+    if (queryChangedSinceFetch) return;
 
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
@@ -1211,17 +1217,12 @@ export class CollectionBrowser
       return;
     }
 
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard this set of aggregations because they are
-    // likely no longer valid for the newer query.
-    const returnedUid = (success.request.clientParameters as any).uid;
-    const queryChangedSinceFetch = returnedUid !== this.facetFetchQueryKey;
-    if (queryChangedSinceFetch) return;
-
     this.aggregations = success?.response.aggregations;
 
     this.fullYearsHistogramAggregation =
       success?.response?.aggregations?.year_histogram;
+
+    this.facetsLoading = false;
   }
 
   private scrollToPage(pageNumber: number): Promise<void> {
@@ -1309,6 +1310,12 @@ export class CollectionBrowser
     );
     const success = searchResponse?.success;
 
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard the data since there should be a new query
+    // right behind it.
+    const queryChangedSinceFetch = pageFetchQueryKey !== this.pageFetchQueryKey;
+    if (queryChangedSinceFetch) return;
+
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
       const detailMsg = searchResponse?.error?.details?.message;
@@ -1323,15 +1330,10 @@ export class CollectionBrowser
         window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
       }
 
+      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
+      this.searchResultsLoading = false;
       return;
     }
-
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard the data since there should be a new query
-    // right behind it.
-    const returnedUid = (success.request.clientParameters as any).uid;
-    const queryChangedSinceFetch = returnedUid !== this.pageFetchQueryKey;
-    if (queryChangedSinceFetch) return;
 
     this.totalResults = success.response.totalResults;
 
@@ -1350,6 +1352,7 @@ export class CollectionBrowser
         this.infiniteScroller.itemCount = this.totalResults;
       }
     }
+
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
   }

@@ -281,6 +281,9 @@ export class MoreFacetsPagination extends LitElement {
         background: #2c2c2c;
         color: white;
       }
+      .page-numbers button:not(.current):hover {
+        background: #d0d0d0;
+      }
       .page-numbers {
         display: inline-block;
       }

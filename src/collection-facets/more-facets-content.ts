@@ -130,13 +130,15 @@ export class MoreFacetsContent extends LitElement {
    * - this.aggregations - hold result of search service and being used for further processing.
    */
   async updateSpecificFacets(): Promise<void> {
+    if (!this.query?.trim()) return;
+
     const aggregations = {
       simpleParams: [this.facetAggregationKey as string],
     };
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
     const params: SearchParams = {
-      query: this.query as string,
+      query: this.query.trim(),
       filters: this.filterMap,
       aggregations,
       aggregationsSize,
