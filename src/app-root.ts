@@ -548,6 +548,18 @@ export class AppRoot extends LitElement {
       --facet-row-border-bottom: 1px solid blue;
     }
 
+    collection-browser {
+      /* Same as production */
+      max-width: 135rem;
+      margin: auto;
+    }
+
+    #collection-browser-container {
+      /* Same as production */
+      padding-left: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
     #base-query-field {
       width: 300px;
     }

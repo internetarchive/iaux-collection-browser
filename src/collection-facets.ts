@@ -547,7 +547,7 @@ export class CollectionFacets extends LitElement {
         transform: rotate(90deg);
       }
 
-      .facet-group {
+      .facet-group:not(:last-child) {
         margin-bottom: 2rem;
       }
 

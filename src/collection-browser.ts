@@ -189,6 +189,8 @@ export class CollectionBrowser
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
+  @query('#left-column') private leftColumn?: HTMLDivElement;
+
   @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
 
@@ -208,6 +210,10 @@ export class CollectionBrowser
    * disable expand/collapse transition when loading.
    */
   private isResizeToMobile = false;
+
+  private leftColIntersectionObserver?: IntersectionObserver;
+
+  private facetsIntersectionObserver?: IntersectionObserver;
 
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
@@ -370,7 +376,8 @@ export class CollectionBrowser
       this.searchResultsLoading || this.totalResults === undefined;
     const resultsCount = this.totalResults?.toLocaleString();
     const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
-    return html`<div
+    return html` <div id="left-column-scroll-sentinel"></div>
+      <div
         id="left-column"
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
@@ -392,7 +399,9 @@ export class CollectionBrowser
             : ''}
         >
           ${this.facetsTemplate}
+          <div id="facets-scroll-sentinel"></div>
         </div>
+        ${this.mobileView ? nothing : html`<div id="facets-bottom-fade"></div>`}
       </div>
       <div id="right-column" class="column">
         ${this.sortFilterBarTemplate}
@@ -669,6 +678,16 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
+    if (changed.has('placeholderType') && this.placeholderType === null) {
+      if (!this.leftColIntersectionObserver) {
+        this.setupLeftColumnScrollListeners();
+      }
+      if (!this.facetsIntersectionObserver) {
+        this.setupFacetsScrollListeners();
+      }
+      this.updateLeftColumnHeight();
+    }
+
     if (
       changed.has('displayMode') ||
       changed.has('baseNavigationUrl') ||
@@ -773,6 +792,10 @@ export class CollectionBrowser
     if (this.boundNavigationHandler) {
       window.removeEventListener('popstate', this.boundNavigationHandler);
     }
+
+    this.leftColIntersectionObserver?.disconnect();
+    this.facetsIntersectionObserver?.disconnect();
+    window.removeEventListener('resize', this.updateLeftColumnHeight);
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -784,7 +807,79 @@ export class CollectionBrowser
         this.isResizeToMobile = true;
       }
     }
+
+    // Ensure the facet sidebar remains sized correctly
+    this.updateLeftColumnHeight();
   }
+
+  /**
+   * Sets up listeners for events that may require updating the left column height.
+   */
+  private setupLeftColumnScrollListeners(): void {
+    // We observe intersections between the left column's scroll sentinel and
+    // the viewport, so that we can ensure the left column is always sized to
+    // match the _available_ viewport height. This should generally be more
+    // performant than listening to scroll events on the page or column.
+    const leftColumnSentinel = this.shadowRoot?.querySelector(
+      '#left-column-scroll-sentinel'
+    );
+    if (leftColumnSentinel) {
+      this.leftColIntersectionObserver = new IntersectionObserver(
+        this.updateLeftColumnHeight,
+        {
+          threshold: [...Array(101).keys()].map(n => n / 100), // Threshold every 1%
+        }
+      );
+      this.leftColIntersectionObserver.observe(leftColumnSentinel);
+    }
+
+    // We also listen for window resize events, as they are not always captured
+    // by the resize observer and can affect the desired height of the left column.
+    window.addEventListener('resize', this.updateLeftColumnHeight);
+  }
+
+  /**
+   * Sets up listeners to control whether the facet sidebar shows its bottom fade-out.
+   * Note this uses a separate IntersectionObserver from the left column, because we
+   * don't need granular intersection thresholds for this.
+   */
+  private setupFacetsScrollListeners(): void {
+    const facetsSentinel = this.shadowRoot?.querySelector(
+      '#facets-scroll-sentinel'
+    );
+    if (facetsSentinel) {
+      this.facetsIntersectionObserver = new IntersectionObserver(
+        this.updateFacetFadeOut
+      );
+      this.facetsIntersectionObserver.observe(facetsSentinel);
+    }
+  }
+
+  /**
+   * Updates the height of the left column according to its position on the page.
+   * Arrow function ensures proper `this` binding.
+   */
+  private updateLeftColumnHeight = (): void => {
+    if (this.mobileView) {
+      this.leftColumn?.style?.removeProperty('height');
+    } else {
+      const clientTop = this.leftColumn?.getBoundingClientRect().top;
+      this.leftColumn?.style?.setProperty(
+        'height',
+        `${window.innerHeight - (clientTop ?? 0) - 3}px`
+      );
+    }
+  };
+
+  /**
+   * Toggles whether the fade-out is visible at the bottom of the facets.
+   * It should only be visible if the facets are not scrolled to the bottom.
+   * Arrow function ensures proper `this` binding.
+   */
+  private updateFacetFadeOut = (entries: IntersectionObserverEntry[]): void => {
+    const fadeElmt = this.shadowRoot?.getElementById('facets-bottom-fade');
+    fadeElmt?.classList.toggle('hidden', entries?.[0]?.isIntersecting);
+  };
 
   private emitBaseQueryChanged() {
     this.dispatchEvent(
@@ -1555,6 +1650,9 @@ export class CollectionBrowser
   static styles = css`
     :host {
       display: block;
+
+      --leftColumnWidth: 18rem;
+      --leftColumnPaddingRight: 2.5rem;
     }
 
     /**
@@ -1615,15 +1713,91 @@ export class CollectionBrowser
     }
 
     #left-column {
-      width: 18rem;
-      min-width: 18rem; /* Prevents Safari from shrinking col at first draw */
-      padding-right: 12px;
-      padding-right: 2.5rem;
+      width: var(--leftColumnWidth, 18rem);
+      /* Prevents Safari from shrinking col at first draw */
+      min-width: var(--leftColumnWidth, 18rem);
+      padding-top: 0;
+      /* Reduced padding by 0.2rem to add the invisible border in the rule below */
+      padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
+      border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
       z-index: 1;
     }
 
+    .desktop #left-column {
+      top: 0;
+      position: sticky;
+      height: calc(100vh - 2rem);
+      max-height: calc(100vh - 2rem);
+      overflow-x: hidden;
+      overflow-y: scroll;
+
+      /*
+       * Firefox doesn't support any of the -webkit-scrollbar stuff below, but
+       * does at least give us a tiny bit of control over width & color.
+       */
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+    }
+    .desktop #left-column:hover {
+      scrollbar-color: auto;
+    }
     .desktop #left-column::-webkit-scrollbar {
-      display: none;
+      appearance: none;
+      width: 6px;
+    }
+    .desktop #left-column::-webkit-scrollbar-button {
+      height: 3px;
+      background: transparent;
+    }
+    .desktop #left-column::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+    .desktop #left-column::-webkit-scrollbar-thumb {
+      border-radius: 4px;
+    }
+    .desktop #left-column:hover::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+    }
+    .desktop #left-column:hover::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .desktop #left-column:hover::-webkit-scrollbar-thumb:active {
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    #facets-bottom-fade {
+      background: linear-gradient(
+        to bottom,
+        #f5f5f700 0%,
+        #f5f5f7c0 50%,
+        #f5f5f7 80%,
+        #f5f5f7 100%
+      );
+      position: fixed;
+      bottom: 0;
+      height: 50px;
+      /* Wide enough to cover the content, but leave the scrollbar uncovered */
+      width: calc(
+        var(--leftColumnWidth) + var(--leftColumnPaddingRight) - 10px
+      );
+      z-index: 2;
+      pointer-events: none;
+      transition: height 0.1s ease;
+    }
+    #facets-bottom-fade.hidden {
+      height: 0;
+    }
+
+    .desktop #left-column-scroll-sentinel {
+      width: 1px;
+      height: 100vh;
+      background: transparent;
+    }
+
+    .desktop #facets-scroll-sentinel {
+      width: 1px;
+      height: 1px;
+      background: transparent;
     }
 
     .mobile #left-column {
@@ -1631,19 +1805,14 @@ export class CollectionBrowser
       padding: 0;
     }
 
-    .desktop #left-column {
-      top: 0;
-      position: sticky;
-      max-height: 100vh;
-      overflow: scroll;
-      -ms-overflow-style: none; /* hide scrollbar IE and Edge */
-      scrollbar-width: none; /* hide scrollbar Firefox */
-    }
-
     #mobile-header-container {
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .desktop #mobile-header-container {
+      padding-top: 2rem;
     }
 
     #facets-container {
