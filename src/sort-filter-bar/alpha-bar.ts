@@ -225,6 +225,7 @@ export class AlphaBar extends LitElement {
       top: 100%;
       left: -9999px;
       margin-top: 3px;
+      z-index: 1;
 
       opacity: 0;
       transition: opacity 0.2s ease;

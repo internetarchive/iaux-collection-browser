@@ -257,12 +257,18 @@ export class SortFilterBar
 
   /** Template to render the sort direction toggle button */
   private get sortDirectionSelectorTemplate(): TemplateResult {
+    const oppositeSortDirectionLabel =
+      this.sortDirection === 'asc' ? 'descending' : 'ascending';
+
     return html`
       <button
         class="sort-direction-selector"
         ?disabled=${this.selectedSort === 'relevance'}
         @click=${this.toggleSortDirection}
       >
+        <span class="sr-only"
+          >Change to ${oppositeSortDirectionLabel} sort</span
+        >
         ${this.sortDirectionIcon}
       </button>
     `;
@@ -1005,6 +1011,20 @@ export class SortFilterBar
       color: var(--ia-theme-primary-text-color, #2c2c2c);
       white-space: nowrap;
       user-select: none;
+    }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      -webkit-clip-path: inset(50%) !important;
+      clip-path: inset(50%) !important;
     }
   `;
 }
