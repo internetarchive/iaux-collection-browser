@@ -491,21 +491,30 @@ export class CollectionBrowser
     }
   }
 
+  /**
+   * Returns a query clause identifying the currently selected title filter,
+   * e.g., `firstTitle:X`.
+   */
   private get titleQuery(): string | undefined {
     return this.selectedTitleFilter
       ? `firstTitle:${this.selectedTitleFilter}`
       : undefined;
   }
 
+  /**
+   * Returns a query clause identifying the currently selected creator filter,
+   * e.g., `firstCreator:X`.
+   */
   private get creatorQuery(): string | undefined {
     return this.selectedCreatorFilter
       ? `firstCreator:${this.selectedCreatorFilter}`
       : undefined;
   }
 
-  /** Send Analytics when sorting by title's first letter
+  /**
+   * Send Analytics when sorting by title's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
-   * */
+   */
   private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
@@ -521,9 +530,10 @@ export class CollectionBrowser
     });
   }
 
-  /** Send Analytics when filtering by creator's first letter
+  /**
+   * Send Analytics when filtering by creator's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
-   * */
+   */
   private sendFilterByCreatorAnalytics(
     prevSelectedLetter: string | null
   ): void {
@@ -541,6 +551,9 @@ export class CollectionBrowser
     });
   }
 
+  /**
+   * Handler for changes to which letter is selected in the title alphabet bar.
+   */
   private titleLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
@@ -548,6 +561,9 @@ export class CollectionBrowser
     this.selectedTitleFilter = e.detail.selectedLetter;
   }
 
+  /**
+   * Handler for changes to which letter is selected in the creator alphabet bar.
+   */
   private creatorLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
@@ -942,6 +958,11 @@ export class CollectionBrowser
     this.searchResultsLoading = false;
   }
 
+  /**
+   * Constructs a search service FilterMap object from the combination of
+   * all the currently-applied filters. This includes any facets, letter
+   * filters, and date range.
+   */
   private get filterMap(): FilterMap {
     const builder = new FilterMapBuilder();
 
