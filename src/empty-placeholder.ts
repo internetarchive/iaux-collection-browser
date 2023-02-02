@@ -119,6 +119,7 @@ export class EmptyPlaceholder extends LitElement {
 
       .error-details {
         font-size: 1.2rem;
+        word-break: break-word;
       }
     `;
   }
