@@ -104,10 +104,6 @@ export class CollectionBrowser
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
-  @property({ type: String }) titleQuery?: string;
-
-  @property({ type: String }) creatorQuery?: string;
-
   @property({ type: Number }) currentPage?: number;
 
   @property({ type: String }) minSelectedDate?: string;
@@ -300,8 +296,6 @@ export class CollectionBrowser
     if (letterFilters) {
       this.selectedTitleFilter = null;
       this.selectedCreatorFilter = null;
-      this.titleQuery = undefined;
-      this.creatorQuery = undefined;
     }
 
     if (sort) {
@@ -345,11 +339,9 @@ export class CollectionBrowser
     this.placeholderType = null;
     if (!this.baseQuery?.trim()) {
       this.placeholderType = 'empty-query';
-    }
-
-    if (
-      (!this.searchResultsLoading && this.totalResults === 0) ||
-      !this.searchService
+    } else if (
+      !this.searchResultsLoading &&
+      (this.totalResults === 0 || !this.searchService)
     ) {
       this.placeholderType = 'null-result';
     }
@@ -506,9 +498,30 @@ export class CollectionBrowser
     }
   }
 
-  /** Send Analytics when sorting by title's first letter
+  /**
+   * Returns a query clause identifying the currently selected title filter,
+   * e.g., `firstTitle:X`.
+   */
+  private get titleQuery(): string | undefined {
+    return this.selectedTitleFilter
+      ? `firstTitle:${this.selectedTitleFilter}`
+      : undefined;
+  }
+
+  /**
+   * Returns a query clause identifying the currently selected creator filter,
+   * e.g., `firstCreator:X`.
+   */
+  private get creatorQuery(): string | undefined {
+    return this.selectedCreatorFilter
+      ? `firstCreator:${this.selectedCreatorFilter}`
+      : undefined;
+  }
+
+  /**
+   * Send Analytics when sorting by title's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
-   * */
+   */
   private sendFilterByTitleAnalytics(prevSelectedLetter: string | null): void {
     if (!prevSelectedLetter && !this.selectedTitleFilter) {
       return;
@@ -524,15 +537,10 @@ export class CollectionBrowser
     });
   }
 
-  private selectedTitleLetterChanged(): void {
-    this.titleQuery = this.selectedTitleFilter
-      ? `firstTitle:${this.selectedTitleFilter}`
-      : undefined;
-  }
-
-  /** Send Analytics when filtering by creator's first letter
+  /**
+   * Send Analytics when filtering by creator's first letter
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
-   * */
+   */
   private sendFilterByCreatorAnalytics(
     prevSelectedLetter: string | null
   ): void {
@@ -550,26 +558,24 @@ export class CollectionBrowser
     });
   }
 
-  private selectedCreatorLetterChanged(): void {
-    this.creatorQuery = this.selectedCreatorFilter
-      ? `firstCreator:${this.selectedCreatorFilter}`
-      : undefined;
-  }
-
+  /**
+   * Handler for changes to which letter is selected in the title alphabet bar.
+   */
   private titleLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
     this.selectedCreatorFilter = null;
     this.selectedTitleFilter = e.detail.selectedLetter;
-    this.selectedTitleLetterChanged();
   }
 
+  /**
+   * Handler for changes to which letter is selected in the creator alphabet bar.
+   */
   private creatorLetterSelected(
     e: CustomEvent<{ selectedLetter: string | null }>
   ): void {
     this.selectedTitleFilter = null;
     this.selectedCreatorFilter = e.detail.selectedLetter;
-    this.selectedCreatorLetterChanged();
   }
 
   private get mobileFacetsTemplate() {
@@ -612,7 +618,7 @@ export class CollectionBrowser
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
-        .query=${this.filteredQuery}
+        .query=${this.baseQuery}
         .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
@@ -732,7 +738,8 @@ export class CollectionBrowser
       changed.has('baseQuery') ||
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
-      changed.has('selectedFacets')
+      changed.has('selectedFacets') ||
+      changed.has('searchService')
     ) {
       this.refreshLetterCounts();
     }
@@ -747,13 +754,11 @@ export class CollectionBrowser
       this.sendFilterByTitleAnalytics(
         changed.get('selectedTitleFilter') as string
       );
-      this.selectedTitleLetterChanged();
     }
     if (changed.has('selectedCreatorFilter')) {
       this.sendFilterByCreatorAnalytics(
         changed.get('selectedCreatorFilter') as string
       );
-      this.selectedCreatorLetterChanged();
     }
 
     if (
@@ -1046,6 +1051,11 @@ export class CollectionBrowser
     this.searchResultsLoading = false;
   }
 
+  /**
+   * Constructs a search service FilterMap object from the combination of
+   * all the currently-applied filters. This includes any facets, letter
+   * filters, and date range.
+   */
   private get filterMap(): FilterMap {
     const builder = new FilterMapBuilder();
 
@@ -1089,21 +1099,24 @@ export class CollectionBrowser
       }
     }
 
-    const filterMap = builder.build();
-    return filterMap;
-  }
-
-  /** The base query joined with any title/creator letter filters */
-  private get filteredQuery(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let filteredQuery = this.baseQuery.trim();
-
-    const { sortFilterQueries } = this;
-    if (sortFilterQueries) {
-      filteredQuery += ` AND ${sortFilterQueries}`;
+    // Add any letter filters
+    if (this.selectedTitleFilter) {
+      builder.addFilter(
+        'firstTitle',
+        this.selectedTitleFilter,
+        FilterConstraint.INCLUDE
+      );
+    }
+    if (this.selectedCreatorFilter) {
+      builder.addFilter(
+        'firstCreator',
+        this.selectedCreatorFilter,
+        FilterConstraint.INCLUDE
+      );
     }
 
-    return filteredQuery.trim();
+    const filterMap = builder.build();
+    return filterMap;
   }
 
   /** The full query, including year facets and date range clauses */
@@ -1121,22 +1134,6 @@ export class CollectionBrowser
     }
     if (sortFilterQueries) {
       fullQuery += ` AND ${sortFilterQueries}`;
-    }
-    return fullQuery.trim();
-  }
-
-  /** The full query without any title/creator letter filters */
-  private get fullQueryWithoutAlphaFilters(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery.trim();
-
-    const { facetQuery, dateRangeQueryClause } = this;
-
-    if (facetQuery) {
-      fullQuery += ` AND ${facetQuery}`;
-    }
-    if (dateRangeQueryClause) {
-      fullQuery += ` AND ${dateRangeQueryClause}`;
     }
     return fullQuery.trim();
   }
@@ -1256,10 +1253,14 @@ export class CollectionBrowser
   }
 
   private async fetchFacets() {
-    if (!this.filteredQuery) return;
+    const trimmedQuery = this.baseQuery?.trim();
+    if (!trimmedQuery) return;
+    if (!this.searchService) return;
+
+    const { facetFetchQueryKey } = this;
 
     const params: SearchParams = {
-      query: this.filteredQuery,
+      query: trimmedQuery,
       rows: 0,
       filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
@@ -1270,12 +1271,18 @@ export class CollectionBrowser
     };
 
     this.facetsLoading = true;
-    const searchResponse = await this.searchService?.search(
+    const searchResponse = await this.searchService.search(
       params,
       this.searchType
     );
     const success = searchResponse?.success;
-    this.facetsLoading = false;
+
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard this set of aggregations because they are
+    // likely no longer valid for the newer query.
+    const queryChangedSinceFetch =
+      facetFetchQueryKey !== this.facetFetchQueryKey;
+    if (queryChangedSinceFetch) return;
 
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
@@ -1292,17 +1299,12 @@ export class CollectionBrowser
       return;
     }
 
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard this set of aggregations because they are
-    // likely no longer valid for the newer query.
-    const returnedUid = (success.request.clientParameters as any).uid;
-    const queryChangedSinceFetch = returnedUid !== this.facetFetchQueryKey;
-    if (queryChangedSinceFetch) return;
-
     this.aggregations = success?.response.aggregations;
 
     this.fullYearsHistogramAggregation =
       success?.response?.aggregations?.year_histogram;
+
+    this.facetsLoading = false;
   }
 
   private scrollToPage(pageNumber: number): Promise<void> {
@@ -1357,7 +1359,9 @@ export class CollectionBrowser
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   async fetchPage(pageNumber: number) {
-    if (!this.filteredQuery) return;
+    const trimmedQuery = this.baseQuery?.trim();
+    if (!trimmedQuery) return;
+    if (!this.searchService) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1374,7 +1378,7 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: this.filteredQuery,
+      query: trimmedQuery,
       page: pageNumber,
       rows: this.pageSize,
       sort: sortParams,
@@ -1382,11 +1386,17 @@ export class CollectionBrowser
       aggregations: { omit: true },
       uid: this.pageFetchQueryKey,
     };
-    const searchResponse = await this.searchService?.search(
+    const searchResponse = await this.searchService.search(
       params,
       this.searchType
     );
     const success = searchResponse?.success;
+
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard the data since there should be a new query
+    // right behind it.
+    const queryChangedSinceFetch = pageFetchQueryKey !== this.pageFetchQueryKey;
+    if (queryChangedSinceFetch) return;
 
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
@@ -1402,15 +1412,10 @@ export class CollectionBrowser
         window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
       }
 
+      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
+      this.searchResultsLoading = false;
       return;
     }
-
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard the data since there should be a new query
-    // right behind it.
-    const returnedUid = (success.request.clientParameters as any).uid;
-    const queryChangedSinceFetch = returnedUid !== this.pageFetchQueryKey;
-    if (queryChangedSinceFetch) return;
 
     this.totalResults = success.response.totalResults;
 
@@ -1429,6 +1434,7 @@ export class CollectionBrowser
         this.infiniteScroller.itemCount = this.totalResults;
       }
     }
+
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
     this.searchResultsLoading = false;
   }
@@ -1534,12 +1540,14 @@ export class CollectionBrowser
   private async fetchPrefixFilterBuckets(
     filterType: PrefixFilterType
   ): Promise<Bucket[]> {
-    if (!this.fullQueryWithoutAlphaFilters) return [];
+    const trimmedQuery = this.baseQuery?.trim();
+    if (!trimmedQuery) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const params: SearchParams = {
-      query: this.fullQueryWithoutAlphaFilters,
+      query: trimmedQuery,
       rows: 0,
+      filters: this.filterMap,
       // Only fetch the firstTitle or firstCreator aggregation
       aggregations: { simpleParams: [filterAggregationKey] },
       // Fetch all 26 letter buckets
@@ -1560,7 +1568,15 @@ export class CollectionBrowser
   private async updatePrefixFilterCounts(
     filterType: PrefixFilterType
   ): Promise<void> {
+    const { facetFetchQueryKey } = this;
     const buckets = await this.fetchPrefixFilterBuckets(filterType);
+
+    // Don't update the filter counts for an outdated query (if it has been changed
+    // since we sent the request)
+    const queryChangedSinceFetch =
+      facetFetchQueryKey !== this.facetFetchQueryKey;
+    if (queryChangedSinceFetch) return;
+
     // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
     this.prefixFilterCountMap = { ...this.prefixFilterCountMap }; // Clone the object to trigger an update
     this.prefixFilterCountMap[filterType] = buckets.reduce(
@@ -1593,7 +1609,9 @@ export class CollectionBrowser
    * Call this whenever the counts are invalidated (e.g., by a query change).
    */
   private refreshLetterCounts(): void {
-    this.prefixFilterCountMap = {};
+    if (Object.keys(this.prefixFilterCountMap).length > 0) {
+      this.prefixFilterCountMap = {};
+    }
     this.updatePrefixFiltersForCurrentSort();
   }
 
