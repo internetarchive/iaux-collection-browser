@@ -1024,19 +1024,6 @@ export class CollectionBrowser
     return filterMap;
   }
 
-  /** The base query joined with any title/creator letter filters */
-  private get filteredQuery(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let filteredQuery = this.baseQuery.trim();
-
-    const { sortFilterQueries } = this;
-    if (sortFilterQueries) {
-      filteredQuery += ` AND ${sortFilterQueries}`;
-    }
-
-    return filteredQuery.trim();
-  }
-
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
     if (!this.baseQuery) return undefined;
