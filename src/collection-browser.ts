@@ -377,7 +377,9 @@ export class CollectionBrowser
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
         <div id="mobile-header-container">
-          ${this.mobileView ? this.mobileFacetsTemplate : nothing}
+          ${this.mobileView
+            ? this.mobileFacetsHeaderTemplate
+            : html`<h2 class="sr-only">Filters</h2>`}
           <div id="results-total">
             <span id="big-results-count">
               ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
@@ -581,24 +583,20 @@ export class CollectionBrowser
     this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
-  private get mobileFacetsTemplate() {
+  private get mobileFacetsHeaderTemplate(): TemplateResult {
+    const toggleFacetsVisible = () => {
+      this.isResizeToMobile = false;
+      this.mobileFacetsVisible = !this.mobileFacetsVisible;
+    };
+
     return html`
       <div id="mobile-filter-collapse">
-        <h1
-          @click=${() => {
-            this.isResizeToMobile = false;
-            this.mobileFacetsVisible = !this.mobileFacetsVisible;
-          }}
-          @keyup=${() => {
-            this.isResizeToMobile = false;
-            this.mobileFacetsVisible = !this.mobileFacetsVisible;
-          }}
-        >
+        <h2 @click=${toggleFacetsVisible} @keyup=${toggleFacetsVisible}>
           <span class="collapser ${this.mobileFacetsVisible ? 'open' : ''}">
             ${chevronIcon}
           </span>
           Filters
-        </h1>
+        </h2>
       </div>
     `;
   }
@@ -1771,7 +1769,7 @@ export class CollectionBrowser
       transform: rotate(90deg);
     }
 
-    #mobile-filter-collapse h1 {
+    #mobile-filter-collapse h2 {
       cursor: pointer;
     }
 
@@ -2033,6 +2031,20 @@ export class CollectionBrowser
 
     infinite-scroller.hidden {
       display: none;
+    }
+
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      border: 0 !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      clip: rect(1px, 1px, 1px, 1px) !important;
+      -webkit-clip-path: inset(50%) !important;
+      clip-path: inset(50%) !important;
     }
   `;
 }

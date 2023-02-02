@@ -68,7 +68,7 @@ export const baseTileStyles = css`
     -webkit-box-orient: vertical;
   }
 
-  h1.truncated {
+  h4.truncated {
     display: -webkit-box;
     margin: 0px;
     line-height: 15px;

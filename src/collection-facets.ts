@@ -121,7 +121,7 @@ export class CollectionFacets extends LitElement {
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
               <div class="facet-group">
-                <h1>Year Published</h1>
+                <h3>Year Published</h3>
                 ${this.histogramTemplate}
               </div>
             `
@@ -367,23 +367,18 @@ export class CollectionFacets extends LitElement {
       <span class="collapser ${isOpen ? 'open' : ''}"> ${chevronIcon} </span>
     `;
 
+    const toggleCollapsed = () => {
+      const newOpenFacets = { ...this.openFacets };
+      newOpenFacets[key] = !isOpen;
+      this.openFacets = newOpenFacets;
+    };
+
     return html`
       <div class="facet-group ${this.collapsableFacets ? 'mobile' : ''}">
         <div class="facet-group-header">
-          <h1
-            @click=${() => {
-              const newOpenFacets = { ...this.openFacets };
-              newOpenFacets[key] = !isOpen;
-              this.openFacets = newOpenFacets;
-            }}
-            @keyup=${() => {
-              const newOpenFacets = { ...this.openFacets };
-              newOpenFacets[key] = !isOpen;
-              this.openFacets = newOpenFacets;
-            }}
-          >
+          <h3 @click=${toggleCollapsed} @keyup=${toggleCollapsed}>
             ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
-          </h1>
+          </h3>
         </div>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.facetsLoading
@@ -551,11 +546,11 @@ export class CollectionFacets extends LitElement {
         margin-bottom: 2rem;
       }
 
-      .facet-group h1 {
+      .facet-group h3 {
         margin-bottom: 0.7rem;
       }
 
-      .facet-group.mobile h1 {
+      .facet-group.mobile h3 {
         cursor: pointer;
       }
 
@@ -579,7 +574,7 @@ export class CollectionFacets extends LitElement {
         max-height: 2000px;
       }
 
-      h1 {
+      h3 {
         font-size: 1.4rem;
         font-weight: 200
         padding-bottom: 3px;

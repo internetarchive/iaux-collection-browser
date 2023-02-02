@@ -49,7 +49,7 @@ export class CollectionTile extends LitElement {
 
   private get getTitleTemplate() {
     return html`<div id="title">
-      <h1 class="truncated">${this.model?.title}</h1>
+      <h4 class="truncated">${this.model?.title}</h4>
     </div>`;
   }
 
@@ -117,7 +117,7 @@ export class CollectionTile extends LitElement {
           flex-grow: initial;
         }
 
-        h1.truncated {
+        h4.truncated {
           color: ${whiteColor};
         }
 

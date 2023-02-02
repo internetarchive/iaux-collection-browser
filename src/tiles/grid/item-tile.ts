@@ -49,9 +49,9 @@ export class ItemTile extends LitElement {
             ${this.imageBlockTemplate}
 
             <div id="title">
-              <h1 class="truncated" title=${ifDefined(itemTitle)}>
+              <h4 class="truncated" title=${ifDefined(itemTitle)}>
                 ${itemTitle}
-              </h1>
+              </h4>
             </div>
 
             ${this.volumeIssueTemplate}

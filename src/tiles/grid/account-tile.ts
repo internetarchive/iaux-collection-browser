@@ -42,7 +42,7 @@ export class AccountTile extends LitElement {
 
   private get getTitleTemplate() {
     return html`<div id="title">
-      <h1 class="truncated">${this.model?.identifier}</h1>
+      <h4 class="truncated">${this.model?.identifier}</h4>
     </div>`;
   }
 
