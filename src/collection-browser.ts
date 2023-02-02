@@ -378,8 +378,8 @@ export class CollectionBrowser
       >
         <div id="mobile-header-container">
           ${this.mobileView
-            ? this.mobileFacetsHeaderTemplate
-            : html`<h2 class="sr-only">Filters</h2>`}
+            ? this.mobileFacetsTemplate
+            : html`<h2 id="facets-header" class="sr-only">Filters</h2>`}
           <div id="results-total">
             <span id="big-results-count">
               ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
@@ -389,15 +389,12 @@ export class CollectionBrowser
             </span>
           </div>
         </div>
-        <div
-          id="facets-container"
-          class=${!this.mobileView || this.mobileFacetsVisible
-            ? 'expanded'
-            : ''}
-        >
-          ${this.facetsTemplate}
-          <div id="facets-scroll-sentinel"></div>
-        </div>
+        ${this.mobileView
+          ? nothing
+          : html`<div id="facets-container" aria-labelledby="facets-header">
+              ${this.facetsTemplate}
+              <div id="facets-scroll-sentinel"></div>
+            </div>`}
         ${this.mobileView ? nothing : html`<div id="facets-bottom-fade"></div>`}
       </div>
       <div id="right-column" class="column">
@@ -583,24 +580,34 @@ export class CollectionBrowser
     this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
-  private get mobileFacetsHeaderTemplate(): TemplateResult {
+  /**
+   * The full template for how the facets should be structured in mobile view,
+   * including the collapsible container (with header) and the facets themselves.
+   */
+  private get mobileFacetsTemplate(): TemplateResult {
     const toggleFacetsVisible = () => {
       this.isResizeToMobile = false;
       this.mobileFacetsVisible = !this.mobileFacetsVisible;
     };
 
     return html`
-      <div id="mobile-filter-collapse">
-        <h2 @click=${toggleFacetsVisible} @keyup=${toggleFacetsVisible}>
-          <span class="collapser ${this.mobileFacetsVisible ? 'open' : ''}">
-            ${chevronIcon}
-          </span>
-          Filters
-        </h2>
-      </div>
+      <details
+        id="mobile-filter-collapse"
+        @click=${toggleFacetsVisible}
+        @keyup=${toggleFacetsVisible}
+      >
+        <summary>
+          <span class="collapser-icon">${chevronIcon}</span>
+          <h2>Filters</h2>
+        </summary>
+        ${this.facetsTemplate}
+      </details>
     `;
   }
 
+  /**
+   * The template for the facets component alone, without any surrounding wrappers.
+   */
   private get facetsTemplate() {
     return html`
       <collection-facets
@@ -1755,22 +1762,34 @@ export class CollectionBrowser
       display: flex;
     }
 
-    .collapser {
+    .collapser-icon {
       display: inline-block;
     }
 
-    .collapser svg {
-      width: 10px;
-      height: 10px;
+    .collapser-icon svg {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
       transition: transform 0.2s ease-out;
     }
 
-    .collapser.open svg {
-      transform: rotate(90deg);
+    #mobile-filter-collapse > summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    #mobile-filter-collapse[open] > summary {
+      margin-bottom: 10px;
     }
 
     #mobile-filter-collapse h2 {
-      cursor: pointer;
+      display: inline-block;
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    #mobile-filter-collapse[open] svg {
+      transform: rotate(90deg);
     }
 
     #content-container.mobile {
@@ -1892,7 +1911,8 @@ export class CollectionBrowser
     #mobile-header-container {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
+      margin: 10px 0;
     }
 
     .desktop #mobile-header-container {
