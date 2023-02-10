@@ -1299,7 +1299,18 @@ export class CollectionBrowser
       return;
     }
 
-    this.aggregations = success?.response.aggregations;
+    const { aggregations, collectionTitles } = success.response;
+    this.aggregations = aggregations;
+
+    if (collectionTitles) {
+      this.collectionNameCache?.addKnownTitles(collectionTitles);
+    } else if (this.aggregations?.collection) {
+      this.collectionNameCache?.preloadIdentifiers(
+        (this.aggregations.collection.buckets as Bucket[]).map(bucket =>
+          bucket.key?.toString()
+        )
+      );
+    }
 
     this.fullYearsHistogramAggregation =
       success?.response?.aggregations?.year_histogram;
@@ -1419,9 +1430,13 @@ export class CollectionBrowser
 
     this.totalResults = success.response.totalResults;
 
-    const { results } = success.response;
+    const { results, collectionTitles } = success.response;
     if (results && results.length > 0) {
-      this.preloadCollectionNames(results);
+      if (collectionTitles) {
+        this.collectionNameCache?.addKnownTitles(collectionTitles);
+      } else {
+        this.preloadCollectionNames(results);
+      }
       this.updateDataSource(pageNumber, results);
     }
 
