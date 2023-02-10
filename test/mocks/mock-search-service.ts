@@ -19,6 +19,8 @@ import {
   getMockSuccessFirstCreatorResult,
   getMockErrorResult,
   getMockMalformedResult,
+  getMockSuccessWithCollectionTitles,
+  getMockSuccessWithCollectionAggregations,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -33,6 +35,8 @@ const responses: Record<
   'loggedin-no-preview': getMockSuccessLoggedInAndNoPreviewResult,
   'first-title': getMockSuccessFirstTitleResult,
   'first-creator': getMockSuccessFirstCreatorResult,
+  'collection-titles': getMockSuccessWithCollectionTitles,
+  'collection-aggregations': getMockSuccessWithCollectionAggregations,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };
