@@ -115,13 +115,20 @@ export class CollectionFacets extends LitElement {
   private allowedFacetCount = 6;
 
   render() {
+    const datePickerLabelId = 'date-picker-label';
     return html`
-      <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
+      <section
+        id="container"
+        class="${this.facetsLoading ? 'loading' : ''}"
+        aria-labelledby=${datePickerLabelId}
+      >
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
               <div class="facet-group">
-                <h3>Year Published</h3>
+                <h3 id=${datePickerLabelId}>
+                  Year Published <span class="sr-only">range filter</span>
+                </h3>
                 ${this.histogramTemplate}
               </div>
             `
@@ -129,7 +136,7 @@ export class CollectionFacets extends LitElement {
         ${this.mergedFacets.map(facetGroup =>
           this.getFacetGroupTemplate(facetGroup)
         )}
-      </div>
+      </section>
     `;
   }
 
@@ -617,6 +624,7 @@ export class CollectionFacets extends LitElement {
         clip: rect(1px, 1px, 1px, 1px) !important;
         -webkit-clip-path: inset(50%) !important;
         clip-path: inset(50%) !important;
+        user-select: none !important;
       }
     `;
   }

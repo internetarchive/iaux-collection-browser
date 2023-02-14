@@ -164,6 +164,7 @@ export class FacetsTemplate extends LitElement {
             const hideText = `Hide ${titleText}`;
             const unhideText = `Unhide ${titleText}`;
             const showHideText = facetHidden ? unhideText : hideText;
+            const ariaLabel = `${titleText}, ${bucket.count} results`;
             return html`
               <div class="facet-row">
                 <div class="facet-checkbox">
@@ -203,6 +204,7 @@ export class FacetsTemplate extends LitElement {
                   for=${showOnlyCheckboxId}
                   class="facet-info-display"
                   title=${onlyShowText}
+                  aria-label=${ariaLabel}
                 >
                   <div class="facet-title">${bucketTextDisplay}</div>
                   <div class="facet-count">
