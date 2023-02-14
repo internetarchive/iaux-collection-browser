@@ -117,26 +117,22 @@ export class CollectionFacets extends LitElement {
   render() {
     const datePickerLabelId = 'date-picker-label';
     return html`
-      <section
-        id="container"
-        class="${this.facetsLoading ? 'loading' : ''}"
-        aria-labelledby=${datePickerLabelId}
-      >
+      <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
-              <div class="facet-group">
+              <section class="facet-group" aria-labelledby=${datePickerLabelId}>
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
                 </h3>
                 ${this.histogramTemplate}
-              </div>
+              </section>
             `
           : nothing}
         ${this.mergedFacets.map(facetGroup =>
           this.getFacetGroupTemplate(facetGroup)
         )}
-      </section>
+      </div>
     `;
   }
 
