@@ -4086,11 +4086,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           ></histogram-date-range>
         `}histogramDateRangeUpdated(e){const{minDate:t,maxDate:i}=e.detail,o=new CustomEvent("histogramDateRangeUpdated",{detail:{minDate:t,maxDate:i}});this.dispatchEvent(o)}get mergedFacets(){const e=[];return pn.forEach(t=>{var i,o;const r=this.selectedFacetGroups.find(v=>v.key===t),n=this.aggregationFacetGroups.find(v=>v.key===t);if(r&&!n){e.push(r);return}if(!n)return;const l=r!=null?r:n;let d=(i=r==null?void 0:r.buckets.map(v=>{const f=n.buckets.find(b=>b.key===v.key);return f?ft(me({},v),{count:f.count}):v}))!==null&&i!==void 0?i:[];n.buckets.forEach(v=>{d.find(b=>b.key===v.key)||d.push(v)}),t==="lending"&&(d=d.filter(v=>vn[v.key]));let u=(o=Object.keys((r==null?void 0:r.buckets)||[]))===null||o===void 0?void 0:o.length;u<this.allowedFacetCount&&(u=this.allowedFacetCount),l.buckets=d.splice(0,u),e.push(l)}),e}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const o=t,r=Ci[o],n=Object.entries(i).map(([l,d])=>{var u;let v=l;return o==="lending"&&(v=(u=ga[l])!==null&&u!==void 0?u:l),{displayText:v,key:l,count:d.count,state:d.state}});return{title:r,key:o,buckets:n}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,o])=>{if(i==="year_histogram")return;const r=i,n=Ci[r];if(!n)return;let l=o.getSortedBuckets(ho[r]);r==="collection"&&(l=l==null?void 0:l.filter(v=>{var f;const b=(f=v==null?void 0:v.key)===null||f===void 0?void 0:f.toString();return!So[b]&&!(b!=null&&b.startsWith("fav-"))}));const d=l.map(v=>{var f;const b=v.key;let x=`${v.key}`;return r==="lending"&&(x=(f=ga[v.key])!==null&&f!==void 0?f:`${v.key}`),{displayText:x,key:`${b}`,count:v.doc_count,state:"none"}}),u={title:n,key:r,buckets:d};t.push(u)}),t}getFacetGroupTemplate(e){if(!this.facetsLoading&&e.buckets.length===0)return y;const{key:t}=e,i=this.openFacets[t],o=h`
       <span class="collapser ${i?"open":""}"> ${or} </span>
-    `,r=()=>{const n=me({},this.openFacets);n[t]=!i,this.openFacets=n};return h`
-      <div class="facet-group ${this.collapsableFacets?"mobile":""}">
+    `,r=()=>{const l=me({},this.openFacets);l[t]=!i,this.openFacets=l},n=`facet-group-header-label-${e.key}`;return h`
+      <section
+        class="facet-group ${this.collapsableFacets?"mobile":""}"
+        aria-labelledby=${n}
+      >
         <div class="facet-group-header">
-          <h3 @click=${r} @keyup=${r}>
+          <h3
+            id=${n}
+            @click=${r}
+            @keyup=${r}
+          >
             ${this.collapsableFacets?o:y} ${e.title}
+            <span class="sr-only">filters</span>
           </h3>
         </div>
         <div class="facet-group-content ${i?"open":""}">
@@ -4099,7 +4107,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 ${this.searchMoreFacetsLink(e)}
               `}
         </div>
-      </div>
+      </section>
     `}getTombstoneFacetGroupTemplate(){return h`
       ${ro(Array(5).fill(null),()=>h`<facet-tombstone-row></facet-tombstone-row>`)}
     `}searchMoreFacetsLink(e){if(!this.moreLinksVisible||e.key==="lending"||Object.keys(e.buckets).length<this.allowedFacetCount)return y;const t=ho[e.key];return h`<button
@@ -4211,6 +4219,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       .sorting-icon {
         height: 15px;
         cursor: pointer;
+      }
+
+      .sr-only {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        overflow: hidden !important;
+        white-space: nowrap !important;
+        clip: rect(1px, 1px, 1px, 1px) !important;
+        -webkit-clip-path: inset(50%) !important;
+        clip-path: inset(50%) !important;
       }
     `}};s([c({type:Object})],V.prototype,"searchService",void 0);s([c({type:String})],V.prototype,"searchType",void 0);s([c({type:Object})],V.prototype,"aggregations",void 0);s([c({type:Object})],V.prototype,"fullYearsHistogramAggregation",void 0);s([c({type:String})],V.prototype,"minSelectedDate",void 0);s([c({type:String})],V.prototype,"maxSelectedDate",void 0);s([c({type:Boolean})],V.prototype,"moreLinksVisible",void 0);s([c({type:Boolean})],V.prototype,"facetsLoading",void 0);s([c({type:Boolean})],V.prototype,"fullYearAggregationLoading",void 0);s([c({type:Object})],V.prototype,"selectedFacets",void 0);s([c({type:Boolean})],V.prototype,"collapsableFacets",void 0);s([c({type:Boolean})],V.prototype,"showHistogramDatePicker",void 0);s([c({type:String})],V.prototype,"query",void 0);s([c({type:Object})],V.prototype,"filterMap",void 0);s([c({type:Object,attribute:!1})],V.prototype,"modalManager",void 0);s([c({type:Object,attribute:!1})],V.prototype,"resizeObserver",void 0);s([c({type:Object,attribute:!1})],V.prototype,"featureFeedbackService",void 0);s([c({type:Object,attribute:!1})],V.prototype,"recaptchaManager",void 0);s([c({type:Object,attribute:!1})],V.prototype,"analyticsHandler",void 0);s([c({type:Object,attribute:!1})],V.prototype,"collectionNameCache",void 0);s([z()],V.prototype,"openFacets",void 0);V=s([A("collection-facets")],V);let za=class extends D{render(){return h`
       <div class="lds-ring">
