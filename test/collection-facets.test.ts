@@ -119,8 +119,10 @@ describe('Collection Facets', () => {
     expect(facetGroups?.length).to.equal(1);
 
     const titleFacetGroup = facetGroups?.[0];
-    const facetGroupHeader = titleFacetGroup?.querySelector('h1');
-    expect(facetGroupHeader?.textContent?.trim()).to.equal('Subject');
+    const facetGroupHeader = titleFacetGroup?.querySelector('h3');
+    expect(
+      facetGroupHeader?.textContent?.trim().replace(/\s*filters$/, '')
+    ).to.equal('Subject');
     const titleFacetRow = titleFacetGroup
       ?.querySelector('facets-template')
       ?.shadowRoot?.querySelector('.facet-row');
