@@ -4064,21 +4064,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         margin: 0;
       }
     `}};Ta=s([A("facet-tombstone-row")],Ta);let V=class extends E{constructor(){super(...arguments),this.moreLinksVisible=!0,this.facetsLoading=!1,this.fullYearAggregationLoading=!1,this.collapsableFacets=!1,this.showHistogramDatePicker=!1,this.openFacets={subject:!1,lending:!1,mediatype:!1,language:!1,creator:!1,collection:!1,year:!1},this.allowedFacetCount=6}render(){const e="date-picker-label";return h`
-      <section
-        id="container"
-        class="${this.facetsLoading?"loading":""}"
-        aria-labelledby=${e}
-      >
+      <div id="container" class="${this.facetsLoading?"loading":""}">
         ${this.showHistogramDatePicker&&(this.fullYearsHistogramAggregation||this.fullYearAggregationLoading)?h`
-              <div class="facet-group">
+              <section class="facet-group" aria-labelledby=${e}>
                 <h3 id=${e}>
                   Year Published <span class="sr-only">range filter</span>
                 </h3>
                 ${this.histogramTemplate}
-              </div>
+              </section>
             `:y}
         ${this.mergedFacets.map(t=>this.getFacetGroupTemplate(t))}
-      </section>
+      </div>
     `}updated(e){e.has("selectedFacets")&&this.dispatchFacetsChangedEvent()}dispatchFacetsChangedEvent(){const e=new CustomEvent("facetsChanged",{detail:this.selectedFacets});this.dispatchEvent(e)}get currentYearsHistogramAggregation(){var e;return(e=this.aggregations)===null||e===void 0?void 0:e.year_histogram}get histogramTemplate(){const{fullYearsHistogramAggregation:e}=this;return this.fullYearAggregationLoading?h`<div class="histogram-loading-indicator">&hellip;</div>`:h`
           <histogram-date-range
             .minDate=${e==null?void 0:e.first_bucket_key}
