@@ -592,6 +592,50 @@ describe('Collection Browser', () => {
     ]);
   });
 
+  it('queries for collection names after an aggregations fetch', async () => {
+    const searchService = new MockSearchService();
+    const collectionNameCache = new MockCollectionNameCache();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .collectionNameCache=${collectionNameCache}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection-aggregations';
+    await el.updateComplete;
+
+    expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
+      'foo',
+      'bar',
+    ]);
+  });
+
+  it('adds collection names to cache when present on response', async () => {
+    const searchService = new MockSearchService();
+    const collectionNameCache = new MockCollectionNameCache();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .collectionNameCache=${collectionNameCache}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'collection-titles';
+    await el.updateComplete;
+
+    expect(collectionNameCache.knownTitlesAdded).to.deep.equal({
+      foo: 'Foo Collection',
+      bar: 'Bar Collection',
+      baz: 'Baz Collection',
+      boop: 'Boop Collection',
+    });
+  });
+
   it('keeps search results from fetch if no change to query or sort param', async () => {
     const resultsSpy = sinon.spy();
     const searchService = new MockSearchService({

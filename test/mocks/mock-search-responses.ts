@@ -272,6 +272,95 @@ export const getMockSuccessFirstCreatorResult: () => Result<
   },
 });
 
+export const getMockSuccessWithCollectionTitles: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 2,
+      returnedCount: 2,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            collection: ['foo', 'bar'],
+          },
+        }),
+        new ItemHit({
+          fields: {
+            identifier: 'bar',
+            collection: ['baz', 'boop'],
+          },
+        }),
+      ],
+      collectionTitles: {
+        foo: 'Foo Collection',
+        bar: 'Bar Collection',
+        baz: 'Baz Collection',
+        boop: 'Boop Collection',
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessWithCollectionAggregations: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 0,
+      returnedCount: 0,
+      results: [],
+      aggregations: {
+        collection: new Aggregation({
+          buckets: [
+            {
+              key: 'foo',
+              doc_count: 10,
+            },
+            {
+              key: 'bar',
+              doc_count: 10,
+            },
+          ],
+        }),
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockSuccessSingleResultWithSort: (
   resultsSpy: Function
 ) => Result<SearchResponse, SearchServiceError> = (resultsSpy: Function) => ({
