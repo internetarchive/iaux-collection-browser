@@ -410,6 +410,7 @@ export class CollectionBrowser
     return html`<infinite-scroller
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
+      ariaLandmarkLabel="Search results"
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}

@@ -945,6 +945,7 @@ export class SortFilterBar
       padding: 0px 5px;
       border: none;
       background: none;
+      font-family: inherit;
       font-size: inherit;
       color: #333;
       line-height: 2;
