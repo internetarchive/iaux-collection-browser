@@ -117,7 +117,7 @@ export class SortFilterBar
   render() {
     return html`
       <div id="container">
-        <div id="sort-bar">
+        <section id="sort-bar" aria-label="Sorting options">
           <div class="sort-direction-container">
             ${this.sortDirectionSelectorTemplate}
           </div>
@@ -129,7 +129,7 @@ export class SortFilterBar
           </div>
 
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
-        </div>
+        </section>
 
         ${this.dropdownBackdropVisible ? this.dropdownBackdrop : nothing}
         ${this.alphaBarTemplate}
@@ -735,6 +735,7 @@ export class SortFilterBar
     return html` <alpha-bar
       .selectedLetter=${this.selectedTitleFilter}
       .letterCounts=${this.prefixFilterCountMap?.title}
+      ariaLandmarkLabel="Filter by title letter"
       @letterChanged=${this.titleLetterChanged}
     ></alpha-bar>`;
   }
@@ -743,6 +744,7 @@ export class SortFilterBar
     return html` <alpha-bar
       .selectedLetter=${this.selectedCreatorFilter}
       .letterCounts=${this.prefixFilterCountMap?.creator}
+      ariaLandmarkLabel="Filter by creator letter"
       @letterChanged=${this.creatorLetterChanged}
     ></alpha-bar>`;
   }

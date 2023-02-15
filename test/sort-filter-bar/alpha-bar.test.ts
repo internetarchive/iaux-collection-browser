@@ -14,30 +14,34 @@ describe('Alphabetical Filter Bar', () => {
     expect(letters?.length).to.equal(26);
   });
 
-  it('renders letters with items as links', async () => {
+  it('renders letters with items as buttons', async () => {
     const el = await fixture<AlphaBar>(html`<alpha-bar></alpha-bar>`);
 
     el.letterCounts = { U: 10, X: 10 };
     await el.updateComplete;
 
-    // Should have exactly two letter links
-    const letterLinks = el.shadowRoot?.querySelectorAll('li > a[href]');
-    expect(letterLinks?.length).to.equal(2);
-    expect(letterLinks?.item(0).textContent?.trim()).to.equal('U');
-    expect(letterLinks?.item(1).textContent?.trim()).to.equal('X');
+    // Should have exactly two letter buttons
+    const letterButtons = el.shadowRoot?.querySelectorAll(
+      'li > button:not(:disabled)'
+    );
+    expect(letterButtons?.length).to.equal(2);
+    expect(letterButtons?.item(0).textContent?.trim()).to.equal('U');
+    expect(letterButtons?.item(1).textContent?.trim()).to.equal('X');
   });
 
-  it('renders letters without items as uninteractive text', async () => {
+  it('renders letters without items as disabled buttons', async () => {
     const el = await fixture<AlphaBar>(html`<alpha-bar></alpha-bar>`);
 
     el.letterCounts = { U: 10, X: 10 };
     await el.updateComplete;
 
-    // All but the two letters above should just be inert spans, not links
-    const letterNonLinks = el.shadowRoot?.querySelectorAll('li > span');
-    expect(letterNonLinks?.length).to.equal(24);
-    expect(letterNonLinks?.item(0).textContent?.trim()).to.equal('A');
-    expect(letterNonLinks?.item(23).textContent?.trim()).to.equal('Z');
+    // All but the two letters above should be disabled
+    const letterButtons = el.shadowRoot?.querySelectorAll(
+      'li > button:disabled'
+    );
+    expect(letterButtons?.length).to.equal(24);
+    expect(letterButtons?.item(0).textContent?.trim()).to.equal('A');
+    expect(letterButtons?.item(23).textContent?.trim()).to.equal('Z');
   });
 
   it('renders the selected letter with the "selected" class', async () => {

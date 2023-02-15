@@ -456,7 +456,7 @@ describe('Sort/filter bar letter behavior', () => {
 
     const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
     const letterLink = alphaBar?.shadowRoot?.querySelector(
-      'li > a[href]'
+      'li > button:not(:disabled)'
     ) as HTMLAnchorElement;
     expect(letterLink?.textContent?.trim()).to.equal('T');
 
@@ -477,7 +477,7 @@ describe('Sort/filter bar letter behavior', () => {
 
     const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
     const letterLink = alphaBar?.shadowRoot?.querySelector(
-      'li > a[href]'
+      'li > button:not(:disabled)'
     ) as HTMLAnchorElement;
     expect(letterLink?.textContent?.trim()).to.equal('C');
 
