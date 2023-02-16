@@ -159,6 +159,9 @@ export class CollectionBrowser
    */
   @state() private pagesToRender = this.initialPageNumber;
 
+  /**
+   * Whether the initial page fetch for a new query is currently in progress.
+   */
   @state() private searchResultsLoading = false;
 
   @state() private facetsLoading = false;
@@ -775,6 +778,10 @@ export class CollectionBrowser
       this.handleQueryChange();
     }
 
+    if (changed.has('searchResultsLoading')) {
+      this.emitSearchResultsLoadingChanged();
+    }
+
     if (changed.has('pagesToRender')) {
       if (!this.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
@@ -1045,10 +1052,20 @@ export class CollectionBrowser
     this.restorationStateHandler.persistState(restorationState);
   }
 
-  private async doInitialPageFetch() {
+  private async doInitialPageFetch(): Promise<void> {
     this.searchResultsLoading = true;
     await this.fetchPage(this.initialPageNumber);
     this.searchResultsLoading = false;
+  }
+
+  private emitSearchResultsLoadingChanged(): void {
+    this.dispatchEvent(
+      new CustomEvent<{ loading: boolean }>('searchResultsLoadingChanged', {
+        detail: {
+          loading: this.searchResultsLoading,
+        },
+      })
+    );
   }
 
   /**
@@ -1451,7 +1468,6 @@ export class CollectionBrowser
     }
 
     this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
-    this.searchResultsLoading = false;
   }
 
   private preloadCollectionNames(results: SearchResult[]) {

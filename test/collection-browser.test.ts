@@ -925,6 +925,27 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).to.equal('2000');
   });
 
+  it('emits event when loading state changes', async () => {
+    const spy = sinon.spy();
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .log=${true}
+        .searchService=${searchService}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.addEventListener('searchResultsLoadingChanged', spy);
+    await el.updateComplete;
+    await nextTick();
+
+    // Should initially emit loading=true, then later emit loading=false
+    expect(spy.callCount).to.equal(2);
+    expect(spy.firstCall.firstArg?.detail?.loading).to.equal(true);
+    expect(spy.secondCall.firstArg?.detail?.loading).to.equal(false);
+  });
+
   it('scrolls to page', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
