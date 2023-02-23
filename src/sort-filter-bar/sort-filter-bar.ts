@@ -257,8 +257,9 @@ export class SortFilterBar
 
   /** Template to render the sort direction toggle button */
   private get sortDirectionSelectorTemplate(): TemplateResult {
-    const oppositeSortDirectionLabel =
+    const oppositeSortDirectionReadable =
       this.sortDirection === 'asc' ? 'descending' : 'ascending';
+    const srLabel = `Change to ${oppositeSortDirectionReadable} sort`;
 
     return html`
       <button
@@ -266,9 +267,7 @@ export class SortFilterBar
         ?disabled=${this.selectedSort === 'relevance'}
         @click=${this.toggleSortDirection}
       >
-        <span class="sr-only"
-          >Change to ${oppositeSortDirectionLabel} sort</span
-        >
+        <span class="sr-only">${srLabel}</span>
         ${this.sortDirectionIcon}
       </button>
     `;
