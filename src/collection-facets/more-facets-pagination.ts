@@ -9,6 +9,7 @@ import {
 import { customElement, property, state } from 'lit/decorators.js';
 import arrowLeftIcon from '../assets/img/icons/arrow-left';
 import arrowRightIcon from '../assets/img/icons/arrow-right';
+import { srOnlyStyle } from '../styles/sr-only';
 
 @customElement('more-facets-pagination')
 export class MoreFacetsPagination extends LitElement {
@@ -240,60 +241,53 @@ export class MoreFacetsPagination extends LitElement {
   }
 
   static get styles(): CSSResultGroup {
-    return css`
-      .facets-pagination {
-        user-select: none;
-        margin-top: 10px;
-        background-color: #eee;
-        text-align: center;
-      }
-      .facets-pagination button {
-        border: none;
-        background: none;
-      }
-      .facets-pagination .arrow-icon {
-        width: 2.5rem;
-        vertical-align: middle;
-      }
-      .facets-pagination .arrow-icon svg {
-        height: 14px;
-        fill: #2c2c2c;
-      }
-      .facets-pagination button,
-      .facets-pagination i {
-        background: none;
-        border: 0;
-        cursor: pointer;
-        border-radius: 4px;
-        margin: 10px 5px;
-        padding: 5px;
-        font-size: 1.4rem;
-        color: inherit;
-        vertical-align: baseline;
-        display: inline-block;
-        min-width: 2.5rem;
-      }
-      .facets-pagination i {
-        cursor: auto;
-        display: inline;
-      }
-      .facets-pagination button.current {
-        background: #2c2c2c;
-        color: white;
-      }
-      .page-numbers {
-        display: inline-block;
-      }
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-      }
-    `;
+    return [
+      srOnlyStyle,
+      css`
+        .facets-pagination {
+          user-select: none;
+          margin-top: 10px;
+          background-color: #eee;
+          text-align: center;
+        }
+        .facets-pagination button {
+          border: none;
+          background: none;
+        }
+        .facets-pagination .arrow-icon {
+          width: 2.5rem;
+          vertical-align: middle;
+        }
+        .facets-pagination .arrow-icon svg {
+          height: 14px;
+          fill: #2c2c2c;
+        }
+        .facets-pagination button,
+        .facets-pagination i {
+          background: none;
+          border: 0;
+          cursor: pointer;
+          border-radius: 4px;
+          margin: 10px 5px;
+          padding: 5px;
+          font-size: 1.4rem;
+          color: inherit;
+          vertical-align: baseline;
+          display: inline-block;
+          min-width: 2.5rem;
+        }
+        .facets-pagination i {
+          cursor: auto;
+          display: inline;
+        }
+        .facets-pagination button.current {
+          background: #2c2c2c;
+          color: white;
+        }
+        .page-numbers {
+          display: inline-block;
+        }
+      `,
+    ];
   }
 }

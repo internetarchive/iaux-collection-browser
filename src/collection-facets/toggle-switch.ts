@@ -1,5 +1,6 @@
 import { css, html, LitElement, CSSResultGroup } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
+import { srOnlyStyle } from '../styles/sr-only';
 
 export type Side = 'left' | 'right';
 
@@ -117,68 +118,57 @@ export class ToggleSwitch extends LitElement {
     const knobTransitionDuration = css`var(--knobTransitionDuration, 0.25s)`;
     const knobTransitionFn = css`var(--knobTransitionFn, ease)`;
 
-    return css`
-      #container {
-        display: inline-flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        font-size: ${labelFontSize};
-      }
-
-      #switch-button {
-        width: ${switchWidth};
-        height: ${switchHeight};
-        margin: 0 ${switchMarginRight} 0 ${switchMarginLeft};
-        padding: 0;
-        border: ${switchBorderWidth} solid ${switchBorderColor};
-        border-radius: ${switchHeight};
-        box-sizing: content-box;
-        background: ${switchBgColor};
-        appearance: none;
-        cursor: pointer;
-      }
-
-      #switch-button.left #knob {
-        transform: translateX(0);
-      }
-
-      #switch-button.right #knob {
-        transform: translateX(calc(${switchWidth} - ${switchHeight}));
-      }
-
-      #switch-button:focus-visible {
-        outline: 2px solid black;
-        outline-offset: 2px;
-      }
-
-      #knob {
-        display: block;
-        width: ${switchHeight};
-        height: ${switchHeight};
-        border-radius: 50%;
-        background: ${knobColor};
-        transition: transform ${knobTransitionDuration} ${knobTransitionFn};
-      }
-
-      .sr-only {
-        position: absolute !important;
-        width: 1px !important;
-        height: 1px !important;
-        margin: -1px !important;
-        padding: 0 !important;
-        border: 0 !important;
-        overflow: hidden !important;
-        white-space: nowrap !important;
-        clip: rect(1px, 1px, 1px, 1px) !important;
-        -webkit-clip-path: inset(50%) !important;
-        clip-path: inset(50%) !important;
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        #knob {
-          transition-duration: 0.001s !important; /* Imperceptibly fast */
+    return [
+      srOnlyStyle,
+      css`
+        #container {
+          display: inline-flex;
+          align-items: center;
+          flex-wrap: nowrap;
+          font-size: ${labelFontSize};
         }
-      }
-    `;
+
+        #switch-button {
+          width: ${switchWidth};
+          height: ${switchHeight};
+          margin: 0 ${switchMarginRight} 0 ${switchMarginLeft};
+          padding: 0;
+          border: ${switchBorderWidth} solid ${switchBorderColor};
+          border-radius: ${switchHeight};
+          box-sizing: content-box;
+          background: ${switchBgColor};
+          appearance: none;
+          cursor: pointer;
+        }
+
+        #switch-button.left #knob {
+          transform: translateX(0);
+        }
+
+        #switch-button.right #knob {
+          transform: translateX(calc(${switchWidth} - ${switchHeight}));
+        }
+
+        #switch-button:focus-visible {
+          outline: 2px solid black;
+          outline-offset: 2px;
+        }
+
+        #knob {
+          display: block;
+          width: ${switchHeight};
+          height: ${switchHeight};
+          border-radius: 50%;
+          background: ${knobColor};
+          transition: transform ${knobTransitionDuration} ${knobTransitionFn};
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          #knob {
+            transition-duration: 0.001s !important; /* Imperceptibly fast */
+          }
+        }
+      `,
+    ];
   }
 }

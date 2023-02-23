@@ -30,6 +30,7 @@ import { sortDisabledIcon } from './img/sort-toggle-disabled';
 import { tileIcon } from './img/tile';
 import { listIcon } from './img/list';
 import { compactIcon } from './img/compact';
+import { srOnlyStyle } from '../styles/sr-only';
 
 type AlphaSelector = 'creator' | 'title';
 
@@ -804,229 +805,220 @@ export class SortFilterBar
     this.dispatchEvent(event);
   }
 
-  static styles = css`
-    #container {
-      position: relative;
-    }
+  static get styles() {
+    return [
+      srOnlyStyle,
+      css`
+        #container {
+          position: relative;
+        }
 
-    #sort-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #2c2c2c;
-      font-size: 1.4rem;
-    }
+        #sort-bar {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          border-bottom: 1px solid #2c2c2c;
+          font-size: 1.4rem;
+        }
 
-    ul {
-      list-style: none;
-      display: flex;
-      align-items: center;
-      margin: 0;
-      padding: 0;
-    }
+        ul {
+          list-style: none;
+          display: flex;
+          align-items: center;
+          margin: 0;
+          padding: 0;
+        }
 
-    li {
-      padding: 0;
-    }
+        li {
+          padding: 0;
+        }
 
-    .sort-by-text {
-      margin-right: 5px;
-      font-weight: bold;
-      white-space: nowrap;
-    }
+        .sort-by-text {
+          margin-right: 5px;
+          font-weight: bold;
+          white-space: nowrap;
+        }
 
-    .sort-direction-container {
-      display: flex;
-      align-self: stretch;
-      flex: 0;
-      margin: 0 5px;
-    }
+        .sort-direction-container {
+          display: flex;
+          align-self: stretch;
+          flex: 0;
+          margin: 0 5px;
+        }
 
-    .sort-direction-selector {
-      padding: 0;
-      border: none;
-      appearance: none;
-      background: transparent;
-      cursor: pointer;
-    }
+        .sort-direction-selector {
+          padding: 0;
+          border: none;
+          appearance: none;
+          background: transparent;
+          cursor: pointer;
+        }
 
-    .sort-direction-selector:disabled {
-      cursor: default;
-    }
+        .sort-direction-selector:disabled {
+          cursor: default;
+        }
 
-    .sort-direction-icon {
-      display: flex;
-      align-items: center;
-      background: none;
-      color: inherit;
-      border: none;
-      padding: 0;
-      outline: inherit;
-      width: 14px;
-      height: 14px;
-    }
+        .sort-direction-icon {
+          display: flex;
+          align-items: center;
+          background: none;
+          color: inherit;
+          border: none;
+          padding: 0;
+          outline: inherit;
+          width: 14px;
+          height: 14px;
+        }
 
-    .sort-direction-icon > svg {
-      flex: 1;
-    }
+        .sort-direction-icon > svg {
+          flex: 1;
+        }
 
-    #date-sort-selector,
-    #view-sort-selector {
-      position: absolute;
-      left: 150px;
-      top: 45px;
+        #date-sort-selector,
+        #view-sort-selector {
+          position: absolute;
+          left: 150px;
+          top: 45px;
 
-      z-index: 1;
-      padding: 1rem;
-      background-color: white;
-      border-radius: 2.5rem;
-      border: 1px solid #404142;
-    }
+          z-index: 1;
+          padding: 1rem;
+          background-color: white;
+          border-radius: 2.5rem;
+          border: 1px solid #404142;
+        }
 
-    #sort-selector-container {
-      flex: 1;
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
+        #sort-selector-container {
+          flex: 1;
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+        }
 
-    #desktop-sort-container,
-    #mobile-sort-container {
-      display: flex;
-      justify-content: flex-start;
-      align-items: center;
-    }
+        #desktop-sort-container,
+        #mobile-sort-container {
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+        }
 
-    /*
-      we move the desktop sort selector offscreen instead of display: none
-      because we need to observe the width of it vs its container to determine
-      if it's wide enough to display the desktop version and if you display: none,
-      the width becomes 0
-    */
-    #desktop-sort-container.hidden {
-      position: absolute;
-      top: -9999px;
-      left: -9999px;
-      visibility: hidden;
-    }
+        /*
+          we move the desktop sort selector offscreen instead of display: none
+          because we need to observe the width of it vs its container to determine
+          if it's wide enough to display the desktop version and if you display: none,
+          the width becomes 0
+        */
+        #desktop-sort-container.hidden {
+          position: absolute;
+          top: -9999px;
+          left: -9999px;
+          visibility: hidden;
+        }
 
-    #mobile-sort-container.hidden {
-      display: none;
-    }
+        #mobile-sort-container.hidden {
+          display: none;
+        }
 
-    #sort-selector-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-      background-color: transparent;
-    }
+        #sort-selector-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: 1;
+          background-color: transparent;
+        }
 
-    #desktop-sort-selector {
-      display: inline-flex;
-    }
+        #desktop-sort-selector {
+          display: inline-flex;
+        }
 
-    #desktop-sort-selector li {
-      display: flex;
-      align-items: center;
-      padding-left: 5px;
-      padding-right: 5px;
-    }
+        #desktop-sort-selector li {
+          display: flex;
+          align-items: center;
+          padding-left: 5px;
+          padding-right: 5px;
+        }
 
-    #desktop-sort-selector li a {
-      padding: 0 5px;
-      text-decoration: none;
-      color: #333;
-      line-height: 2;
-    }
+        #desktop-sort-selector li a {
+          padding: 0 5px;
+          text-decoration: none;
+          color: #333;
+          line-height: 2;
+        }
 
-    #desktop-sort-selector li button {
-      padding: 0px 5px;
-      border: none;
-      background: none;
-      font-family: inherit;
-      font-size: inherit;
-      color: #333;
-      line-height: 2;
-      cursor: pointer;
-      appearance: none;
-    }
+        #desktop-sort-selector li button {
+          padding: 0px 5px;
+          border: none;
+          background: none;
+          font-family: inherit;
+          font-size: inherit;
+          color: #333;
+          line-height: 2;
+          cursor: pointer;
+          appearance: none;
+        }
 
-    #desktop-sort-selector li button.selected {
-      font-weight: bold;
-    }
+        #desktop-sort-selector li button.selected {
+          font-weight: bold;
+        }
 
-    #display-style-selector {
-      flex: 0;
-    }
+        #display-style-selector {
+          flex: 0;
+        }
 
-    #display-style-selector button {
-      background: none;
-      color: inherit;
-      border: none;
-      appearance: none;
-      cursor: pointer;
-      -webkit-appearance: none;
-      fill: #bbbbbb;
-    }
+        #display-style-selector button {
+          background: none;
+          color: inherit;
+          border: none;
+          appearance: none;
+          cursor: pointer;
+          -webkit-appearance: none;
+          fill: #bbbbbb;
+        }
 
-    #display-style-selector button.active {
-      fill: var(--ia-theme-primary-text-color, #2c2c2c);
-    }
+        #display-style-selector button.active {
+          fill: var(--ia-theme-primary-text-color, #2c2c2c);
+        }
 
-    #display-style-selector button svg {
-      width: 24px;
-      height: 24px;
-    }
+        #display-style-selector button svg {
+          width: 24px;
+          height: 24px;
+        }
 
-    ia-dropdown {
-      --dropdownTextColor: white;
-      --dropdownOffsetTop: 0;
-      --dropdownBorderTopWidth: 0;
-      --dropdownBorderTopLeftRadius: 0;
-      --dropdownBorderTopRightRadius: 0;
-      --dropdownWhiteSpace: nowrap;
-      --dropdownListZIndex: 2;
-      --dropdownCaretColor: var(--ia-theme-primary-text-color, #2c2c2c);
-      --dropdownSelectedTextColor: white;
-      --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
-      --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
-      --caretHeight: 9px;
-      --caretWidth: 12px;
-      --caretPadding: 0 5px 0 0;
-    }
-    ia-dropdown.selected .dropdown-label {
-      font-weight: bold;
-    }
-    ia-dropdown.open {
-      z-index: 2;
-    }
+        ia-dropdown {
+          --dropdownTextColor: white;
+          --dropdownOffsetTop: 0;
+          --dropdownBorderTopWidth: 0;
+          --dropdownBorderTopLeftRadius: 0;
+          --dropdownBorderTopRightRadius: 0;
+          --dropdownWhiteSpace: nowrap;
+          --dropdownListZIndex: 2;
+          --dropdownCaretColor: var(--ia-theme-primary-text-color, #2c2c2c);
+          --dropdownSelectedTextColor: white;
+          --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
+          --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
+          --caretHeight: 9px;
+          --caretWidth: 12px;
+          --caretPadding: 0 5px 0 0;
+        }
+        ia-dropdown.selected .dropdown-label {
+          font-weight: bold;
+        }
+        ia-dropdown.open {
+          z-index: 2;
+        }
 
-    .dropdown-label {
-      display: inline-block;
-      height: 100%;
-      padding-left: 5px;
-      font-size: 1.4rem;
-      line-height: 2;
-      color: var(--ia-theme-primary-text-color, #2c2c2c);
-      white-space: nowrap;
-      user-select: none;
-    }
-
-    .sr-only {
-      position: absolute !important;
-      width: 1px !important;
-      height: 1px !important;
-      margin: -1px !important;
-      padding: 0 !important;
-      border: 0 !important;
-      overflow: hidden !important;
-      white-space: nowrap !important;
-      clip: rect(1px, 1px, 1px, 1px) !important;
-      -webkit-clip-path: inset(50%) !important;
-      clip-path: inset(50%) !important;
-    }
-  `;
+        .dropdown-label {
+          display: inline-block;
+          height: 100%;
+          padding-left: 5px;
+          font-size: 1.4rem;
+          line-height: 2;
+          color: var(--ia-theme-primary-text-color, #2c2c2c);
+          white-space: nowrap;
+          user-select: none;
+        }
+      `,
+    ];
+  }
 }

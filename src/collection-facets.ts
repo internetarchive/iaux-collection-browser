@@ -50,6 +50,7 @@ import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+import { srOnlyStyle } from './styles/sr-only';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -526,102 +527,90 @@ export class CollectionFacets extends LitElement {
   }
 
   static get styles() {
-    return css`
-      #container.loading {
-        opacity: 0.5;
-      }
+    return [
+      srOnlyStyle,
+      css`
+        #container.loading {
+          opacity: 0.5;
+        }
 
-      .histogram-loading-indicator {
-        width: 100%;
-        height: 2.25rem;
-        margin-top: 1.75rem;
-        font-size: 1.4rem;
-        text-align: center;
-      }
+        .histogram-loading-indicator {
+          width: 100%;
+          height: 2.25rem;
+          margin-top: 1.75rem;
+          font-size: 1.4rem;
+          text-align: center;
+        }
 
-      .collapser {
-        display: inline-block;
-        cursor: pointer;
-        width: 10px;
-        height: 10px;
-      }
+        .collapser {
+          display: inline-block;
+          cursor: pointer;
+          width: 10px;
+          height: 10px;
+        }
 
-      .collapser svg {
-        transition: transform 0.2s ease-in-out;
-      }
+        .collapser svg {
+          transition: transform 0.2s ease-in-out;
+        }
 
-      .collapser.open svg {
-        transform: rotate(90deg);
-      }
+        .collapser.open svg {
+          transform: rotate(90deg);
+        }
 
-      .facet-group:not(:last-child) {
-        margin-bottom: 2rem;
-      }
+        .facet-group:not(:last-child) {
+          margin-bottom: 2rem;
+        }
 
-      .facet-group h3 {
-        margin-bottom: 0.7rem;
-      }
+        .facet-group h3 {
+          margin-bottom: 0.7rem;
+        }
 
-      .facet-group.mobile h3 {
-        cursor: pointer;
-      }
+        .facet-group.mobile h3 {
+          cursor: pointer;
+        }
 
-      .facet-group-header {
-        display: flex;
-        margin-bottom: 0.7rem;
-        justify-content: space-between;
-        border-bottom: 1px solid rgb(232, 232, 232);
-      }
+        .facet-group-header {
+          display: flex;
+          margin-bottom: 0.7rem;
+          justify-content: space-between;
+          border-bottom: 1px solid rgb(232, 232, 232);
+        }
 
-      .facet-group-content {
-        transition: max-height 0.2s ease-in-out;
-      }
+        .facet-group-content {
+          transition: max-height 0.2s ease-in-out;
+        }
 
-      .facet-group.mobile .facet-group-content {
-        max-height: 0;
-        overflow: hidden;
-      }
+        .facet-group.mobile .facet-group-content {
+          max-height: 0;
+          overflow: hidden;
+        }
 
-      .facet-group.mobile .facet-group-content.open {
-        max-height: 2000px;
-      }
+        .facet-group.mobile .facet-group-content.open {
+          max-height: 2000px;
+        }
 
-      h3 {
-        font-size: 1.4rem;
-        font-weight: 200
-        padding-bottom: 3px;
-        margin: 0;
-      }
+        h3 {
+          font-size: 1.4rem;
+          font-weight: 200
+          padding-bottom: 3px;
+          margin: 0;
+        }
 
-      .more-link {
-        font-size: 1.2rem;
-        text-decoration: none;
-        padding: 0;
-        background: inherit;
-        border: 0;
-        color: var(--ia-theme-link-color, #4b64ff);
-        cursor: pointer;
-      }
+        .more-link {
+          font-size: 1.2rem;
+          text-decoration: none;
+          padding: 0;
+          background: inherit;
+          border: 0;
+          color: var(--ia-theme-link-color, #4b64ff);
+          cursor: pointer;
+        }
 
-      .sorting-icon {
-        height: 15px;
-        cursor: pointer;
-      }
-
-      .sr-only {
-        position: absolute !important;
-        width: 1px !important;
-        height: 1px !important;
-        margin: -1px !important;
-        padding: 0 !important;
-        border: 0 !important;
-        overflow: hidden !important;
-        white-space: nowrap !important;
-        clip: rect(1px, 1px, 1px, 1px) !important;
-        -webkit-clip-path: inset(50%) !important;
-        clip-path: inset(50%) !important;
-        user-select: none !important;
-      }
-    `;
+        .sorting-icon {
+          height: 15px;
+          cursor: pointer;
+        }
+      `,
+    ];
   }
 }
