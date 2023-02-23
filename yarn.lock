@@ -154,7 +154,7 @@
 
 "@internetarchive/infinite-scroller@^0.1.4-alpha.2":
   version "0.1.4-alpha.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.4-alpha.2.tgz#8768ff9616ad4fd434c1717228efb0224bc0bc5f"
+  resolved "https://registry.npmjs.org/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.4-alpha.2.tgz#8768ff9616ad4fd434c1717228efb0224bc0bc5f"
   integrity sha512-jiRQ1B2XB2IkJ6rPwLq8iNuCPanDZ2z8BRY0hN/lwFYxReF9L95AWEdTXNVLPudks8LE8JWIURVQ6lt8XhDUEw==
   dependencies:
     lit "^2.0.2"
