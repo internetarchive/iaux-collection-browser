@@ -125,6 +125,7 @@ export class CollectionFacets extends LitElement {
               <section class="facet-group" aria-labelledby=${datePickerLabelId}>
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
+                  <button @click=${this.showDatePickerModal}>Expand</button>
                 </h3>
                 ${this.histogramTemplate}
               </section>
@@ -135,6 +136,39 @@ export class CollectionFacets extends LitElement {
         )}
       </div>
     `;
+  }
+
+  private showDatePickerModal(): void {
+    const { fullYearsHistogramAggregation } = this;
+    const customModalContent = html`
+      <div style="display:flex; justify-content:center; padding:10px;">
+        <histogram-date-range
+          .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
+          .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
+          .minSelectedDate=${this.minSelectedDate}
+          .maxSelectedDate=${this.maxSelectedDate}
+          .updateDelay=${100}
+          missingDataMessage="..."
+          .width=${580}
+          .height=${120}
+          .bins=${fullYearsHistogramAggregation?.buckets as number[]}
+          @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+        ></histogram-date-range>
+      </div>
+    `;
+
+    const config = new ModalConfig({
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true, // TODO: want to fire analytics
+      title: html`Select a date range`,
+    });
+    this.modalManager?.classList.add('more-search-facets');
+    this.modalManager?.showModal({
+      config,
+      customModalContent,
+    });
   }
 
   updated(changed: PropertyValues) {
