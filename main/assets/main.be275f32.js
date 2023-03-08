@@ -2723,6 +2723,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         0% {
           transform: rotate(-360deg);
         }
+        100% {
+          /* This frame is supposed to be inferred, but Safari doesn't rotate it unless we're explicit */
+          transform: rotate(0deg);
+        }
       }
 
       @keyframes dot {
@@ -3498,7 +3502,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         clip: rect(0, 0, 0, 0);
         border: 0;
       }
-    `}};s([c({type:Object})],mo.prototype,"config",void 0);mo=s([A("modal-template")],mo);function jn(a,e,t){var i=t||{},o=i.noTrailing,r=o===void 0?!1:o,n=i.noLeading,l=n===void 0?!1:n,d=i.debounceMode,u=d===void 0?void 0:d,v,f=!1,b=0;function x(){v&&clearTimeout(v)}function _(E){var B=E||{},U=B.upcomingOnly,te=U===void 0?!1:U;x(),f=!te}function k(){for(var E=arguments.length,B=new Array(E),U=0;U<E;U++)B[U]=arguments[U];var te=this,R=Date.now()-b;if(f)return;function G(){b=Date.now(),e.apply(te,B)}function ie(){v=void 0}!l&&u&&!v&&G(),x(),u===void 0&&R>a?l?(b=Date.now(),r||(v=setTimeout(u?ie:G,a))):G():r!==!0&&(v=setTimeout(u?ie:G,u===void 0?a-R:a))}return k.cancel=_,k}var it;(function(a){a.Open="open",a.Closed="closed"})(it||(it={}));class Vn{constructor(e){this.windowResizeThrottler=jn(100,this.updateModalContainerHeight).bind(this),this.modalManager=e}handleModeChange(e){switch(e){case it.Open:this.startResizeListener(),this.stopDocumentScroll();break;case it.Closed:this.stopResizeListener(),this.resumeDocumentScroll();break}}updateModalContainerHeight(){this.modalManager.style.setProperty("--containerHeight",`${window.innerHeight}px`)}stopDocumentScroll(){document.body.classList.add("modal-manager-open")}resumeDocumentScroll(){document.body.classList.remove("modal-manager-open")}startResizeListener(){window.addEventListener("resize",this.windowResizeThrottler)}stopResizeListener(){window.removeEventListener("resize",this.windowResizeThrottler)}}let St=class extends D{constructor(){super(...arguments),this.mode=it.Closed,this.hostBridge=new Vn(this),this.closeOnBackdropClick=!0}render(){return h`
+    `}};s([c({type:Object})],mo.prototype,"config",void 0);mo=s([A("modal-template")],mo);function jn(a,e,t){var i=t||{},o=i.noTrailing,r=o===void 0?!1:o,n=i.noLeading,l=n===void 0?!1:n,d=i.debounceMode,u=d===void 0?void 0:d,v,f=!1,b=0;function x(){v&&clearTimeout(v)}function _(E){var B=E||{},U=B.upcomingOnly,te=U===void 0?!1:U;x(),f=!te}function k(){for(var E=arguments.length,B=new Array(E),U=0;U<E;U++)B[U]=arguments[U];var te=this,R=Date.now()-b;if(f)return;function G(){b=Date.now(),e.apply(te,B)}function ie(){v=void 0}!l&&u&&!v&&G(),x(),u===void 0&&R>a?l?(b=Date.now(),r||(v=setTimeout(u?ie:G,a))):G():r!==!0&&(v=setTimeout(u?ie:G,u===void 0?a-R:a))}return k.cancel=_,k}var it;(function(a){a.Open="open",a.Closed="closed"})(it||(it={}));class Vn{constructor(e){this.windowResizeThrottler=jn(100,this.updateModalContainerHeight,{noLeading:!1,noTrailing:!1}).bind(this),this.modalManager=e}handleModeChange(e){switch(e){case it.Open:this.startResizeListener(),this.stopDocumentScroll();break;case it.Closed:this.stopResizeListener(),this.resumeDocumentScroll();break}}updateModalContainerHeight(){this.modalManager.style.setProperty("--containerHeight",`${window.innerHeight}px`)}stopDocumentScroll(){document.body.classList.add("modal-manager-open")}resumeDocumentScroll(){document.body.classList.remove("modal-manager-open")}startResizeListener(){window.addEventListener("resize",this.windowResizeThrottler)}stopResizeListener(){window.removeEventListener("resize",this.windowResizeThrottler)}}let St=class extends D{constructor(){super(...arguments),this.mode=it.Closed,this.hostBridge=new Vn(this),this.closeOnBackdropClick=!0}render(){return h`
       <div class="container">
         <div class="backdrop" @click=${this.backdropClicked}></div>
         <modal-template
