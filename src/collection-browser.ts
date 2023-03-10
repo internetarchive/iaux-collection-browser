@@ -325,6 +325,22 @@ export class CollectionBrowser
     return false;
   }
 
+  /**
+   * Returns true if there are any currently selected/negated facet buckets,
+   * any selected date range, or any selected letter filters. False otherwise.
+   *
+   * Ignores sorting options.
+   */
+  private get hasActiveFilters(): boolean {
+    return !!(
+      this.hasCheckedFacets ||
+      this.minSelectedDate ||
+      this.maxSelectedDate ||
+      this.selectedTitleFilter ||
+      this.selectedCreatorFilter
+    );
+  }
+
   render() {
     this.setPlaceholderType();
     return html`
@@ -389,6 +405,7 @@ export class CollectionBrowser
               ${shouldShowSearching ? nothing : resultsLabel}
             </span>
           </div>
+          ${this.mobileView ? nothing : this.clearFiltersBtnTemplate(false)}
         </div>
         ${this.mobileView
           ? nothing
@@ -601,6 +618,7 @@ export class CollectionBrowser
         <summary>
           <span class="collapser-icon">${chevronIcon}</span>
           <h2>Filters</h2>
+          ${this.clearFiltersBtnTemplate(true)}
         </summary>
         ${this.facetsTemplate}
       </details>
@@ -638,6 +656,31 @@ export class CollectionBrowser
         .analyticsHandler=${this.analyticsHandler}
       >
       </collection-facets>
+    `;
+  }
+
+  /**
+   * The HTML template for the "Clear all filters" button, or `nothing` if no
+   * filters are currently active.
+   *
+   * @param mobile Whether to style/shorten the button for mobile view
+   */
+  private clearFiltersBtnTemplate(
+    mobile: boolean
+  ): TemplateResult | typeof nothing {
+    if (!this.hasActiveFilters) return nothing;
+
+    const buttonClasses = classMap({
+      'clear-filters-btn': true,
+      mobile,
+    });
+
+    const buttonText = mobile ? 'Clear all' : 'Clear all filters';
+
+    return html`
+      <button class=${buttonClasses} @click=${this.clearFilters}>
+        ${buttonText}
+      </button>
     `;
   }
 
@@ -1908,16 +1951,40 @@ export class CollectionBrowser
           background: transparent;
         }
 
+        #mobile-header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          margin: 10px 0;
+        }
+
         .mobile #left-column {
           width: 100%;
           padding: 0;
         }
 
-        #mobile-header-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin: 10px 0;
+        .clear-filters-btn {
+          display: block;
+          appearance: none;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          color: var(--ia-theme-link-color);
+          cursor: pointer;
+        }
+
+        .clear-filters-btn:hover {
+          text-decoration: underline;
+        }
+
+        #facets-container {
+          position: relative;
+          max-height: 0;
+          transition: max-height 0.2s ease-in-out;
+          z-index: 1;
+          margin-top: 5rem;
+          padding-bottom: 2rem;
         }
 
         .desktop #mobile-header-container {
