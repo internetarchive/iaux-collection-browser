@@ -393,7 +393,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     // This shouldn't throw an error
-    expect(el.fetchPage(2)).to.exist;
+    expect(el.fetchPage(3)).to.exist;
 
     // Should continue showing the empty placeholder
     expect(el.shadowRoot?.querySelector('empty-placeholder')).to.exist;
@@ -652,7 +652,7 @@ describe('Collection Browser', () => {
     el.sortParam = { field: 'foo', direction: 'asc' };
     await el.updateComplete;
 
-    await el.fetchPage(2);
+    await el.fetchPage(3);
 
     // If there is no change to the query or sort param during the fetch, the results
     // should be read.

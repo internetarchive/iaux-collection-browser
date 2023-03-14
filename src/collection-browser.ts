@@ -977,12 +977,18 @@ export class CollectionBrowser
     this.fullYearsHistogramAggregation = undefined;
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
-    this.pagesToRender = this.initialPageNumber;
+    this.pagesToRender =
+      this.initialPageNumber === 1
+        ? 2 // First two pages are batched into one request when starting from page 1
+        : this.initialPageNumber;
     this.queryErrorMessage = undefined;
 
     // Reset the infinite scroller's item count, so that it
     // shows tile placeholders until the new query's results load in
-    this.infiniteScroller?.reload();
+    if (this.infiniteScroller) {
+      this.infiniteScroller.itemCount = this.estimatedTileCount;
+      this.infiniteScroller.reload();
+    }
 
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
@@ -1054,7 +1060,8 @@ export class CollectionBrowser
 
   private async doInitialPageFetch(): Promise<void> {
     this.searchResultsLoading = true;
-    await this.fetchPage(this.initialPageNumber);
+    // Try to batch 2 initial page requests when possible
+    await this.fetchPage(this.initialPageNumber, 2);
     this.searchResultsLoading = false;
   }
 
@@ -1386,7 +1393,15 @@ export class CollectionBrowser
   // this maps the query to the pages being fetched for that query
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
-  async fetchPage(pageNumber: number) {
+  /**
+   * Fetches one or more pages of results and updates the data source.
+   *
+   * @param pageNumber The page number to fetch
+   * @param numInitialPages If this is an initial page fetch (`pageNumber = 1`),
+   *  specifies how many pages to batch together in one request. Ignored
+   *  if `pageNumber != 1`, defaulting to a single page.
+   */
+  async fetchPage(pageNumber: number, numInitialPages = 1) {
     const trimmedQuery = this.baseQuery?.trim();
     if (!trimmedQuery) return;
     if (!this.searchService) return;
@@ -1396,19 +1411,26 @@ export class CollectionBrowser
 
     if (this.endOfDataReached) return;
 
+    // Batch multiple initial page requests together if needed (e.g., can request
+    // pages 1 and 2 together in a single request).
+    const numPages = pageNumber === 1 ? numInitialPages : 1;
+    const numRows = this.pageSize * numPages;
+
     // if a fetch is already in progress for this query and page, don't fetch again
     const { pageFetchQueryKey } = this;
     const pageFetches =
       this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
     if (pageFetches.has(pageNumber)) return;
-    pageFetches.add(pageNumber);
+    for (let i = 0; i < numPages; i += 1) {
+      pageFetches.add(pageNumber + i);
+    }
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: trimmedQuery,
       page: pageNumber,
-      rows: this.pageSize,
+      rows: numRows,
       sort: sortParams,
       filters: this.filterMap,
       aggregations: { omit: true },
@@ -1440,7 +1462,10 @@ export class CollectionBrowser
         window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
       }
 
-      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
+      for (let i = 0; i < numPages; i += 1) {
+        this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
+      }
+
       this.searchResultsLoading = false;
       return;
     }
@@ -1449,12 +1474,22 @@ export class CollectionBrowser
 
     const { results, collectionTitles } = success.response;
     if (results && results.length > 0) {
+      // Load any collection titles present on the response into the cache,
+      // or queue up preload fetches for them if none were present.
       if (collectionTitles) {
         this.collectionNameCache?.addKnownTitles(collectionTitles);
       } else {
         this.preloadCollectionNames(results);
       }
-      this.updateDataSource(pageNumber, results);
+
+      // Update the data source for each returned page
+      for (let i = 0; i < numPages; i += 1) {
+        const pageStartIndex = this.pageSize * i;
+        this.updateDataSource(
+          pageNumber + i,
+          results.slice(pageStartIndex, pageStartIndex + this.pageSize)
+        );
+      }
     }
 
     // When we reach the end of the data, we can set the infinite scroller's
@@ -1467,7 +1502,9 @@ export class CollectionBrowser
       }
     }
 
-    this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber);
+    for (let i = 0; i < numPages; i += 1) {
+      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
+    }
   }
 
   private preloadCollectionNames(results: SearchResult[]) {
