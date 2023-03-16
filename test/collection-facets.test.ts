@@ -119,8 +119,16 @@ describe('Collection Facets', () => {
     expect(facetGroups?.length).to.equal(1);
 
     const titleFacetGroup = facetGroups?.[0];
-    const facetGroupHeader = titleFacetGroup?.querySelector('h1');
-    expect(facetGroupHeader?.textContent?.trim()).to.equal('Subject');
+    const facetGroupHeader = titleFacetGroup?.querySelector('h3');
+    // Every facet group header has an invisible " filters" suffix for screen-readers
+    expect(
+      facetGroupHeader?.querySelector('span.sr-only')?.textContent?.trim()
+    ).to.equal('filters');
+    // Ignoring the screen-reader suffix, we should be left with only the readable, capitalized title
+    expect(
+      facetGroupHeader?.textContent?.trim().replace(/\s*filters$/, '')
+    ).to.equal('Subject');
+
     const titleFacetRow = titleFacetGroup
       ?.querySelector('facets-template')
       ?.shadowRoot?.querySelector('.facet-row');

@@ -70,6 +70,7 @@ import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+import { srOnlyStyle } from './styles/sr-only';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -377,7 +378,9 @@ export class CollectionBrowser
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
         <div id="mobile-header-container">
-          ${this.mobileView ? this.mobileFacetsTemplate : nothing}
+          ${this.mobileView
+            ? this.mobileFacetsTemplate
+            : html`<h2 id="facets-header" class="sr-only">Filters</h2>`}
           <div id="results-total">
             <span id="big-results-count">
               ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
@@ -387,15 +390,12 @@ export class CollectionBrowser
             </span>
           </div>
         </div>
-        <div
-          id="facets-container"
-          class=${!this.mobileView || this.mobileFacetsVisible
-            ? 'expanded'
-            : ''}
-        >
-          ${this.facetsTemplate}
-          <div id="facets-scroll-sentinel"></div>
-        </div>
+        ${this.mobileView
+          ? nothing
+          : html`<div id="facets-container" aria-labelledby="facets-header">
+              ${this.facetsTemplate}
+              <div id="facets-scroll-sentinel"></div>
+            </div>`}
         ${this.mobileView ? nothing : html`<div id="facets-bottom-fade"></div>`}
       </div>
       <div id="right-column" class="column">
@@ -411,6 +411,7 @@ export class CollectionBrowser
     return html`<infinite-scroller
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
+      ariaLandmarkLabel="Search results"
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
@@ -581,28 +582,34 @@ export class CollectionBrowser
     this.selectedCreatorFilter = e.detail.selectedLetter;
   }
 
-  private get mobileFacetsTemplate() {
+  /**
+   * The full template for how the facets should be structured in mobile view,
+   * including the collapsible container (with header) and the facets themselves.
+   */
+  private get mobileFacetsTemplate(): TemplateResult {
+    const toggleFacetsVisible = () => {
+      this.isResizeToMobile = false;
+      this.mobileFacetsVisible = !this.mobileFacetsVisible;
+    };
+
     return html`
-      <div id="mobile-filter-collapse">
-        <h1
-          @click=${() => {
-            this.isResizeToMobile = false;
-            this.mobileFacetsVisible = !this.mobileFacetsVisible;
-          }}
-          @keyup=${() => {
-            this.isResizeToMobile = false;
-            this.mobileFacetsVisible = !this.mobileFacetsVisible;
-          }}
-        >
-          <span class="collapser ${this.mobileFacetsVisible ? 'open' : ''}">
-            ${chevronIcon}
-          </span>
-          Filters
-        </h1>
-      </div>
+      <details
+        id="mobile-filter-collapse"
+        @click=${toggleFacetsVisible}
+        @keyup=${toggleFacetsVisible}
+      >
+        <summary>
+          <span class="collapser-icon">${chevronIcon}</span>
+          <h2>Filters</h2>
+        </summary>
+        ${this.facetsTemplate}
+      </details>
     `;
   }
 
+  /**
+   * The template for the facets component alone, without any surrounding wrappers.
+   */
   private get facetsTemplate() {
     return html`
       <collection-facets
@@ -1733,306 +1740,328 @@ export class CollectionBrowser
     }
   }
 
-  static styles = css`
-    :host {
-      display: block;
+  static get styles() {
+    return [
+      srOnlyStyle,
+      css`
+        :host {
+          display: block;
 
-      --leftColumnWidth: 18rem;
-      --leftColumnPaddingRight: 2.5rem;
-    }
+          --leftColumnWidth: 18rem;
+          --leftColumnPaddingRight: 2.5rem;
+        }
 
-    /**
-    * When page width resizes from desktop to mobile, use this class to
-    * disable expand/collapse transition when loading.
-    */
-    .preload * {
-      transition: none !important;
-      -webkit-transition: none !important;
-      -moz-transition: none !important;
-      -ms-transition: none !important;
-      -o-transition: none !important;
-    }
+        /**
+        * When page width resizes from desktop to mobile, use this class to
+        * disable expand/collapse transition when loading.
+        */
+        .preload * {
+          transition: none !important;
+          -webkit-transition: none !important;
+          -moz-transition: none !important;
+          -ms-transition: none !important;
+          -o-transition: none !important;
+        }
 
-    #content-container {
-      display: flex;
-    }
+        #content-container {
+          display: flex;
+        }
 
-    .collapser {
-      display: inline-block;
-    }
+        .collapser-icon {
+          display: inline-block;
+        }
 
-    .collapser svg {
-      width: 10px;
-      height: 10px;
-      transition: transform 0.2s ease-out;
-    }
+        .collapser-icon svg {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          transition: transform 0.2s ease-out;
+        }
 
-    .collapser.open svg {
-      transform: rotate(90deg);
-    }
+        #mobile-filter-collapse > summary {
+          cursor: pointer;
+          list-style: none;
+        }
 
-    #mobile-filter-collapse h1 {
-      cursor: pointer;
-    }
+        #mobile-filter-collapse[open] > summary {
+          margin-bottom: 10px;
+        }
 
-    #content-container.mobile {
-      display: block;
-    }
+        #mobile-filter-collapse h2 {
+          display: inline-block;
+          margin: 0;
+          font-size: 2rem;
+        }
 
-    .column {
-      padding-top: 2rem;
-    }
+        #mobile-filter-collapse[open] svg {
+          transform: rotate(90deg);
+        }
 
-    #right-column {
-      flex: 1;
-      position: relative;
-      border-left: 1px solid rgb(232, 232, 232);
-      border-right: 1px solid rgb(232, 232, 232);
-      padding-left: 1rem;
-      padding-right: 1rem;
-      background: #fff;
-    }
+        #content-container.mobile {
+          display: block;
+        }
 
-    .mobile #right-column {
-      border-left: none;
-      padding: 5px 5px 0;
-    }
+        .column {
+          padding-top: 2rem;
+        }
 
-    #left-column {
-      width: var(--leftColumnWidth, 18rem);
-      /* Prevents Safari from shrinking col at first draw */
-      min-width: var(--leftColumnWidth, 18rem);
-      padding-top: 0;
-      /* Reduced padding by 0.2rem to add the invisible border in the rule below */
-      padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
-      border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
-      z-index: 1;
-    }
+        #right-column {
+          flex: 1;
+          position: relative;
+          border-left: 1px solid rgb(232, 232, 232);
+          border-right: 1px solid rgb(232, 232, 232);
+          padding-left: 1rem;
+          padding-right: 1rem;
+          background: #fff;
+        }
 
-    .desktop #left-column {
-      top: 0;
-      position: sticky;
-      height: calc(100vh - 2rem);
-      max-height: calc(100vh - 2rem);
-      overflow-x: hidden;
-      overflow-y: scroll;
+        .mobile #right-column {
+          border-left: none;
+          padding: 5px 5px 0;
+        }
 
-      /*
-       * Firefox doesn't support any of the -webkit-scrollbar stuff below, but
-       * does at least give us a tiny bit of control over width & color.
-       */
-      scrollbar-width: thin;
-      scrollbar-color: transparent transparent;
-    }
-    .desktop #left-column:hover {
-      scrollbar-color: auto;
-    }
-    .desktop #left-column::-webkit-scrollbar {
-      appearance: none;
-      width: 6px;
-    }
-    .desktop #left-column::-webkit-scrollbar-button {
-      height: 3px;
-      background: transparent;
-    }
-    .desktop #left-column::-webkit-scrollbar-corner {
-      background: transparent;
-    }
-    .desktop #left-column::-webkit-scrollbar-thumb {
-      border-radius: 4px;
-    }
-    .desktop #left-column:hover::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.15);
-    }
-    .desktop #left-column:hover::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.2);
-    }
-    .desktop #left-column:hover::-webkit-scrollbar-thumb:active {
-      background: rgba(0, 0, 0, 0.3);
-    }
+        #left-column {
+          width: var(--leftColumnWidth, 18rem);
+          /* Prevents Safari from shrinking col at first draw */
+          min-width: var(--leftColumnWidth, 18rem);
+          padding-top: 0;
+          /* Reduced padding by 0.2rem to add the invisible border in the rule below */
+          padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
+          border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
+          z-index: 1;
+        }
 
-    #facets-bottom-fade {
-      background: linear-gradient(
-        to bottom,
-        #f5f5f700 0%,
-        #f5f5f7c0 50%,
-        #f5f5f7 80%,
-        #f5f5f7 100%
-      );
-      position: fixed;
-      bottom: 0;
-      height: 50px;
-      /* Wide enough to cover the content, but leave the scrollbar uncovered */
-      width: calc(
-        var(--leftColumnWidth) + var(--leftColumnPaddingRight) - 10px
-      );
-      z-index: 2;
-      pointer-events: none;
-      transition: height 0.1s ease;
-    }
-    #facets-bottom-fade.hidden {
-      height: 0;
-    }
+        .desktop #left-column {
+          top: 0;
+          position: sticky;
+          height: calc(100vh - 2rem);
+          max-height: calc(100vh - 2rem);
+          overflow-x: hidden;
+          overflow-y: scroll;
 
-    .desktop #left-column-scroll-sentinel {
-      width: 1px;
-      height: 100vh;
-      background: transparent;
-    }
+          /*
+          * Firefox doesn't support any of the -webkit-scrollbar stuff below, but
+          * does at least give us a tiny bit of control over width & color.
+          */
+          scrollbar-width: thin;
+          scrollbar-color: transparent transparent;
+        }
+        .desktop #left-column:hover {
+          scrollbar-color: auto;
+        }
+        .desktop #left-column::-webkit-scrollbar {
+          appearance: none;
+          width: 6px;
+        }
+        .desktop #left-column::-webkit-scrollbar-button {
+          height: 3px;
+          background: transparent;
+        }
+        .desktop #left-column::-webkit-scrollbar-corner {
+          background: transparent;
+        }
+        .desktop #left-column::-webkit-scrollbar-thumb {
+          border-radius: 4px;
+        }
+        .desktop #left-column:hover::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.15);
+        }
+        .desktop #left-column:hover::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 0, 0, 0.2);
+        }
+        .desktop #left-column:hover::-webkit-scrollbar-thumb:active {
+          background: rgba(0, 0, 0, 0.3);
+        }
 
-    .desktop #facets-scroll-sentinel {
-      width: 1px;
-      height: 1px;
-      background: transparent;
-    }
+        #facets-bottom-fade {
+          background: linear-gradient(
+            to bottom,
+            #f5f5f700 0%,
+            #f5f5f7c0 50%,
+            #f5f5f7 80%,
+            #f5f5f7 100%
+          );
+          position: fixed;
+          bottom: 0;
+          height: 50px;
+          /* Wide enough to cover the content, but leave the scrollbar uncovered */
+          width: calc(
+            var(--leftColumnWidth) + var(--leftColumnPaddingRight) - 10px
+          );
+          z-index: 2;
+          pointer-events: none;
+          transition: height 0.1s ease;
+        }
+        #facets-bottom-fade.hidden {
+          height: 0;
+        }
 
-    .mobile #left-column {
-      width: 100%;
-      padding: 0;
-    }
+        .desktop #left-column-scroll-sentinel {
+          width: 1px;
+          height: 100vh;
+          background: transparent;
+        }
 
-    #mobile-header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .desktop #facets-scroll-sentinel {
+          width: 1px;
+          height: 1px;
+          background: transparent;
+        }
 
-    .desktop #mobile-header-container {
-      padding-top: 2rem;
-    }
+        .mobile #left-column {
+          width: 100%;
+          padding: 0;
+        }
 
-    #facets-container {
-      position: relative;
-      max-height: 0;
-      transition: max-height 0.2s ease-in-out;
-      z-index: 1;
-      padding-bottom: 2rem;
-    }
+        #mobile-header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin: 10px 0;
+        }
 
-    .mobile #facets-container {
-      overflow: hidden;
-      padding-bottom: 0;
-      padding-left: 10px;
-      padding-right: 10px;
-    }
+        .desktop #mobile-header-container {
+          padding-top: 2rem;
+        }
 
-    #facets-container.expanded {
-      max-height: 2000px;
-    }
+        #facets-container {
+          position: relative;
+          max-height: 0;
+          transition: max-height 0.2s ease-in-out;
+          z-index: 1;
+          padding-bottom: 2rem;
+        }
 
-    #results-total {
-      display: flex;
-      align-items: baseline;
-      margin-bottom: 5rem;
-    }
+        .mobile #facets-container {
+          overflow: hidden;
+          padding-bottom: 0;
+          padding-left: 10px;
+          padding-right: 10px;
+        }
 
-    .mobile #results-total {
-      margin-bottom: 0;
-    }
+        #facets-container.expanded {
+          max-height: 2000px;
+        }
 
-    #big-results-count {
-      font-size: 2.4rem;
-      font-weight: 500;
-      margin-right: 5px;
-    }
+        #results-total {
+          display: flex;
+          align-items: baseline;
+          margin-bottom: 5rem;
+        }
 
-    #big-results-label {
-      font-size: 1.4rem;
-      font-weight: 200;
-    }
+        .mobile #results-total {
+          margin-bottom: 0;
+          margin-right: 5px;
+        }
 
-    #list-header {
-      max-height: 4.2rem;
-    }
+        #big-results-count {
+          font-size: 2.4rem;
+          font-weight: 500;
+          margin-right: 5px;
+        }
 
-    .loading-cover {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      z-index: 1;
-      padding-top: 50px;
-    }
+        #big-results-label {
+          font-size: 1.4rem;
+          font-weight: 200;
+        }
 
-    circular-activity-indicator {
-      width: 30px;
-      height: 30px;
-    }
+        #list-header {
+          max-height: 4.2rem;
+        }
 
-    sort-filter-bar {
-      display: block;
-      margin-bottom: 4rem;
-    }
+        .loading-cover {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          z-index: 1;
+          padding-top: 50px;
+        }
 
-    infinite-scroller {
-      display: block;
-      --infiniteScrollerRowGap: var(--collectionBrowserRowGap, 1.7rem);
-      --infiniteScrollerColGap: var(--collectionBrowserColGap, 1.7rem);
-    }
+        circular-activity-indicator {
+          width: 30px;
+          height: 30px;
+        }
 
-    infinite-scroller.list-compact {
-      --infiniteScrollerCellMinWidth: var(
-        --collectionBrowserCellMinWidth,
-        100%
-      );
-      --infiniteScrollerCellMinHeight: 34px; /* override infinite scroller component */
-      --infiniteScrollerCellMaxHeight: 56px;
-      --infiniteScrollerRowGap: 0px;
-    }
+        sort-filter-bar {
+          display: block;
+          margin-bottom: 4rem;
+        }
 
-    infinite-scroller.list-detail {
-      --infiniteScrollerCellMinWidth: var(
-        --collectionBrowserCellMinWidth,
-        100%
-      );
-      --infiniteScrollerCellMinHeight: var(
-        --collectionBrowserCellMinHeight,
-        5rem
-      );
-      /*
-        30px in spec, compensating for a -4px margin
-        to align title with top of item image
-        src/tiles/list/tile-list.ts
-       */
-      --infiniteScrollerRowGap: 34px;
-    }
+        infinite-scroller {
+          display: block;
+          --infiniteScrollerRowGap: var(--collectionBrowserRowGap, 1.7rem);
+          --infiniteScrollerColGap: var(--collectionBrowserColGap, 1.7rem);
+        }
 
-    .mobile infinite-scroller.list-detail {
-      --infiniteScrollerRowGap: 24px;
-    }
+        infinite-scroller.list-compact {
+          --infiniteScrollerCellMinWidth: var(
+            --collectionBrowserCellMinWidth,
+            100%
+          );
+          --infiniteScrollerCellMinHeight: 34px; /* override infinite scroller component */
+          --infiniteScrollerCellMaxHeight: 56px;
+          --infiniteScrollerRowGap: 0px;
+        }
 
-    infinite-scroller.grid {
-      --infiniteScrollerCellMinWidth: var(
-        --collectionBrowserCellMinWidth,
-        17rem
-      );
-      --infiniteScrollerCellMaxWidth: var(--collectionBrowserCellMaxWidth, 1fr);
-    }
+        infinite-scroller.list-detail {
+          --infiniteScrollerCellMinWidth: var(
+            --collectionBrowserCellMinWidth,
+            100%
+          );
+          --infiniteScrollerCellMinHeight: var(
+            --collectionBrowserCellMinHeight,
+            5rem
+          );
+          /*
+            30px in spec, compensating for a -4px margin
+            to align title with top of item image
+            src/tiles/list/tile-list.ts
+          */
+          --infiniteScrollerRowGap: 34px;
+        }
 
-    /* Allow tiles to shrink a bit further at smaller viewport widths */
-    @media screen and (max-width: 880px) {
-      infinite-scroller.grid {
-        --infiniteScrollerCellMinWidth: var(
-          --collectionBrowserCellMinWidth,
-          15rem
-        );
-      }
-    }
-    /* At very small widths, maintain a 2-tile layout as far as it can reasonably go */
-    @media screen and (max-width: 360px) {
-      infinite-scroller.grid {
-        --infiniteScrollerCellMinWidth: var(
-          --collectionBrowserCellMinWidth,
-          12rem
-        );
-      }
-    }
+        .mobile infinite-scroller.list-detail {
+          --infiniteScrollerRowGap: 24px;
+        }
 
-    infinite-scroller.hidden {
-      display: none;
-    }
-  `;
+        infinite-scroller.grid {
+          --infiniteScrollerCellMinWidth: var(
+            --collectionBrowserCellMinWidth,
+            17rem
+          );
+          --infiniteScrollerCellMaxWidth: var(
+            --collectionBrowserCellMaxWidth,
+            1fr
+          );
+        }
+
+        /* Allow tiles to shrink a bit further at smaller viewport widths */
+        @media screen and (max-width: 880px) {
+          infinite-scroller.grid {
+            --infiniteScrollerCellMinWidth: var(
+              --collectionBrowserCellMinWidth,
+              15rem
+            );
+          }
+        }
+        /* At very small widths, maintain a 2-tile layout as far as it can reasonably go */
+        @media screen and (max-width: 360px) {
+          infinite-scroller.grid {
+            --infiniteScrollerCellMinWidth: var(
+              --collectionBrowserCellMinWidth,
+              12rem
+            );
+          }
+        }
+
+        infinite-scroller.hidden {
+          display: none;
+        }
+      `,
+    ];
+  }
 }

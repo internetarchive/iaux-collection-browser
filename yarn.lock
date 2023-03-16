@@ -108,10 +108,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.3.tgz"
   integrity sha512-gN7ivwHWlf8V7fD3VakQ4NtddSou5i3A3TqbIo8EKF+XTxJXaXpNBmzkZEGf2oMVK8rHvrabFxZKVEy9qG7Omw==
 
-"@internetarchive/histogram-date-range@^0.1.10":
-  version "0.1.10"
-  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.10.tgz#d9306d39227a7bf4a291d7ebfcbb6a73e84a0cdd"
-  integrity sha512-QUVUPqSZSqLu90qTNxeeFDBe4JFzWBgKsauFPRNic0dtRHw/1nXy2mgxRQdj7F5+MRIuvGSUWZhOeQnAFtYdow==
+"@internetarchive/histogram-date-range@^0.1.11":
+  version "0.1.11"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-0.1.11.tgz#9ae5f9ae15f497e93fe6615769041d36150a7ede"
+  integrity sha512-P2kIdq/YvBl67va7Z33g7VjcMIY5mKjN9CDNrAuVL009w2cl5AbDVKN+ehUR9p1Hn1NdW/QV6OyLqtaDm8fpug==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.4"
     dayjs "^1.10.7"
@@ -152,10 +152,10 @@
   dependencies:
     lit "^2.0.2"
 
-"@internetarchive/infinite-scroller@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.npmjs.org/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.3.tgz"
-  integrity sha512-gVTiKQwCbeiC1mSzmaY5c0nAM5Ea35jPeSFfihEFpY6Qby1hzF++NjyW1CTbfFelauqJHroAbW3gdKzWuSMvXg==
+"@internetarchive/infinite-scroller@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-0.1.4.tgz#47c3b177f857667f416875b70be86082506f7416"
+  integrity sha512-VWOXBad6avIlmOfQLlhxgXSaMHF4qY0DnGhpRd7KPoSR/tTsaOPLiht0GjjG6ab/bbOQ3cOmkotcnaFme/J4JQ==
   dependencies:
     lit "^2.0.2"
 

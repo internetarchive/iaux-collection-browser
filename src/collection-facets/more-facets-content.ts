@@ -40,6 +40,7 @@ import {
   analyticsCategories,
 } from '../utils/analytics-events';
 import './toggle-switch';
+import { srOnlyStyle } from '../styles/sr-only';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -456,81 +457,73 @@ export class MoreFacetsContent extends LitElement {
   static get styles(): CSSResultGroup {
     const modalSubmitButton = css`var(--primaryButtonBGColor, #194880)`;
 
-    return css`
-      @media (max-width: 560px) {
+    return [
+      srOnlyStyle,
+      css`
+        @media (max-width: 560px) {
+          section#more-facets {
+            max-height: 450px;
+          }
+          .facets-content {
+            overflow-y: auto;
+            height: 300px;
+          }
+        }
         section#more-facets {
-          max-height: 450px;
+          overflow: auto;
+          padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
         }
+        .header-content .title {
+          display: block;
+          text-align: left;
+          font-size: 1.8rem;
+          padding: 0 10px;
+          font-weight: bold;
+        }
+
+        .sort-label {
+          margin-left: 20px;
+          font-size: 1.3rem;
+        }
+
+        .sort-toggle {
+          font-weight: normal;
+        }
+
         .facets-content {
-          overflow-y: auto;
-          height: 300px;
+          font-size: 1.2rem;
+          max-height: 300px;
+          overflow: auto;
+          padding: 10px;
         }
-      }
-      section#more-facets {
-        overflow: auto;
-        padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
-      }
-      .header-content .title {
-        display: block;
-        text-align: left;
-        font-size: 1.8rem;
-        padding: 0 10px;
-        font-weight: bold;
-      }
-
-      .sort-label {
-        margin-left: 20px;
-        font-size: 1.3rem;
-      }
-
-      .sort-toggle {
-        font-weight: normal;
-      }
-
-      .facets-content {
-        font-size: 1.2rem;
-        max-height: 300px;
-        overflow: auto;
-        padding: 10px;
-      }
-      .facets-loader {
-        margin-bottom: 20px;
-        width: 70px;
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-      }
-      .btn {
-        border: none;
-        padding: 10px;
-        margin-bottom: 10px;
-        width: auto;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .btn-cancel {
-        background-color: #2c2c2c;
-        color: white;
-      }
-      .btn-submit {
-        background-color: ${modalSubmitButton};
-        color: white;
-      }
-      .footer {
-        text-align: center;
-        margin-top: 10px;
-      }
-
-      .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
-      }
-    `;
+        .facets-loader {
+          margin-bottom: 20px;
+          width: 70px;
+          display: block;
+          margin-left: auto;
+          margin-right: auto;
+        }
+        .btn {
+          border: none;
+          padding: 10px;
+          margin-bottom: 10px;
+          width: auto;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .btn-cancel {
+          background-color: #2c2c2c;
+          color: white;
+        }
+        .btn-submit {
+          background-color: ${modalSubmitButton};
+          color: white;
+        }
+        .footer {
+          text-align: center;
+          margin-top: 10px;
+        }
+      `,
+    ];
   }
 }

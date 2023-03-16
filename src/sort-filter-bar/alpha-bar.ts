@@ -11,6 +11,8 @@ export class AlphaBar extends LitElement {
 
   @property({ type: Object }) letterCounts?: PrefixFilterCounts;
 
+  @property({ type: String }) ariaLandmarkLabel?: string;
+
   @state()
   private tooltipShown: boolean = false;
 
@@ -28,7 +30,7 @@ export class AlphaBar extends LitElement {
 
   render() {
     return html`
-      <div id="container">
+      <section id="container" aria-label=${this.ariaLandmarkLabel ?? nothing}>
         <ul>
           ${this.alphabet.map(
             letter =>
@@ -40,29 +42,28 @@ export class AlphaBar extends LitElement {
                   @mousemove=${this.handleMouseMove}
                   @mouseleave=${this.handleMouseLeave}
                 >
-                  ${this.letterCounts?.[letter]
-                    ? this.letterLinkTemplate(letter)
-                    : html`<span>${letter}</span>`}
+                  ${this.letterButtonTemplate(letter)}
                   ${this.tooltipTemplate(letter)}
                 </li>
               `
           )}
         </ul>
-      </div>
+      </section>
     `;
   }
 
-  private letterLinkTemplate(letter: string) {
+  private letterButtonTemplate(letter: string) {
+    const ariaLabel = `${letter}: ${this.letterCounts?.[letter] ?? 0} results`;
     return html`
-      <a
-        href="#"
-        @click=${(e: Event) => {
-          e.preventDefault();
+      <button
+        aria-label=${ariaLabel}
+        ?disabled=${!this.letterCounts?.[letter]}
+        @click=${() => {
           this.letterClicked(letter);
         }}
       >
         ${letter}
-      </a>
+      </button>
     `;
   }
 
@@ -189,25 +190,31 @@ export class AlphaBar extends LitElement {
       border-radius: 4px;
     }
 
-    li:hover:not(.selected) a {
+    li:hover:not(.selected) button:not(:disabled) {
       background-color: #c0c0c0;
     }
 
-    a,
-    span {
+    button {
       display: flex;
       justify-content: center;
       align-items: center;
       aspect-ratio: 1 / 1;
     }
 
-    a {
+    button {
+      width: 100%;
+      height: 100%;
       color: #333;
-      text-decoration: none;
+      appearance: none;
+      background: none;
+      border: none;
       border-radius: 4px;
+      font-family: inherit;
+      font-size: inherit;
+      cursor: pointer;
     }
 
-    span {
+    button:disabled {
       color: #aaa;
       cursor: default;
     }
@@ -216,7 +223,7 @@ export class AlphaBar extends LitElement {
       background-color: #2c2c2c;
     }
 
-    .selected a {
+    .selected button {
       color: white;
     }
 
@@ -225,6 +232,7 @@ export class AlphaBar extends LitElement {
       top: 100%;
       left: -9999px;
       margin-top: 3px;
+      z-index: 1;
 
       opacity: 0;
       transition: opacity 0.2s ease;

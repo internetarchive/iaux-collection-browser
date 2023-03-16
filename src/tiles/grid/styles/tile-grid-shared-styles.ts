@@ -1,4 +1,5 @@
 import { css } from 'lit';
+import { srOnlyStyle } from '../../../styles/sr-only';
 
 /**
  * Base tile styles
@@ -8,6 +9,9 @@ const tileBackgroundColor = css`var(--tileBackgroundColor, #ffffff)`;
 const tileCornerRadius = css`var(--tileCornerRadius, 4px)`;
 
 export const baseTileStyles = css`
+  /* Include .sr-only styles for all tiles */
+  ${srOnlyStyle}
+
   .container {
     background-color: ${tileBackgroundColor};
     border: 1px #2c2c2c;
@@ -68,7 +72,7 @@ export const baseTileStyles = css`
     -webkit-box-orient: vertical;
   }
 
-  h1.truncated {
+  h4.truncated {
     display: -webkit-box;
     margin: 0px;
     line-height: 15px;
@@ -121,19 +125,5 @@ export const baseTileStyles = css`
 
   .hidden {
     display: none;
-  }
-
-  .sr-only {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    margin: -1px !important;
-    padding: 0 !important;
-    border: 0 !important;
-    overflow: hidden !important;
-    white-space: nowrap !important;
-    clip: rect(1px, 1px, 1px, 1px) !important;
-    -webkit-clip-path: inset(50%) !important;
-    clip-path: inset(50%) !important;
   }
 `;

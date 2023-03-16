@@ -123,6 +123,7 @@ export class TileDispatcher
     return html`
       <a
         href="${this.linkTileHref}"
+        aria-label=${this.model?.title ?? 'Untitled item'}
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}

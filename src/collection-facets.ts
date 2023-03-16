@@ -50,6 +50,7 @@ import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+import { srOnlyStyle } from './styles/sr-only';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -115,15 +116,18 @@ export class CollectionFacets extends LitElement {
   private allowedFacetCount = 6;
 
   render() {
+    const datePickerLabelId = 'date-picker-label';
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
-              <div class="facet-group">
-                <h1>Year Published</h1>
+              <section class="facet-group" aria-labelledby=${datePickerLabelId}>
+                <h3 id=${datePickerLabelId}>
+                  Year Published <span class="sr-only">range filter</span>
+                </h3>
                 ${this.histogramTemplate}
-              </div>
+              </section>
             `
           : nothing}
         ${this.mergedFacets.map(facetGroup =>
@@ -367,23 +371,27 @@ export class CollectionFacets extends LitElement {
       <span class="collapser ${isOpen ? 'open' : ''}"> ${chevronIcon} </span>
     `;
 
+    const toggleCollapsed = () => {
+      const newOpenFacets = { ...this.openFacets };
+      newOpenFacets[key] = !isOpen;
+      this.openFacets = newOpenFacets;
+    };
+
+    const headerId = `facet-group-header-label-${facetGroup.key}`;
     return html`
-      <div class="facet-group ${this.collapsableFacets ? 'mobile' : ''}">
+      <section
+        class="facet-group ${this.collapsableFacets ? 'mobile' : ''}"
+        aria-labelledby=${headerId}
+      >
         <div class="facet-group-header">
-          <h1
-            @click=${() => {
-              const newOpenFacets = { ...this.openFacets };
-              newOpenFacets[key] = !isOpen;
-              this.openFacets = newOpenFacets;
-            }}
-            @keyup=${() => {
-              const newOpenFacets = { ...this.openFacets };
-              newOpenFacets[key] = !isOpen;
-              this.openFacets = newOpenFacets;
-            }}
+          <h3
+            id=${headerId}
+            @click=${toggleCollapsed}
+            @keyup=${toggleCollapsed}
           >
             ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
-          </h1>
+            <span class="sr-only">filters</span>
+          </h3>
         </div>
         <div class="facet-group-content ${isOpen ? 'open' : ''}">
           ${this.facetsLoading
@@ -393,7 +401,7 @@ export class CollectionFacets extends LitElement {
                 ${this.searchMoreFacetsLink(facetGroup)}
               `}
         </div>
-      </div>
+      </section>
     `;
   }
 
@@ -519,87 +527,90 @@ export class CollectionFacets extends LitElement {
   }
 
   static get styles() {
-    return css`
-      #container.loading {
-        opacity: 0.5;
-      }
+    return [
+      srOnlyStyle,
+      css`
+        #container.loading {
+          opacity: 0.5;
+        }
 
-      .histogram-loading-indicator {
-        width: 100%;
-        height: 2.25rem;
-        margin-top: 1.75rem;
-        font-size: 1.4rem;
-        text-align: center;
-      }
+        .histogram-loading-indicator {
+          width: 100%;
+          height: 2.25rem;
+          margin-top: 1.75rem;
+          font-size: 1.4rem;
+          text-align: center;
+        }
 
-      .collapser {
-        display: inline-block;
-        cursor: pointer;
-        width: 10px;
-        height: 10px;
-      }
+        .collapser {
+          display: inline-block;
+          cursor: pointer;
+          width: 10px;
+          height: 10px;
+        }
 
-      .collapser svg {
-        transition: transform 0.2s ease-in-out;
-      }
+        .collapser svg {
+          transition: transform 0.2s ease-in-out;
+        }
 
-      .collapser.open svg {
-        transform: rotate(90deg);
-      }
+        .collapser.open svg {
+          transform: rotate(90deg);
+        }
 
-      .facet-group:not(:last-child) {
-        margin-bottom: 2rem;
-      }
+        .facet-group:not(:last-child) {
+          margin-bottom: 2rem;
+        }
 
-      .facet-group h1 {
-        margin-bottom: 0.7rem;
-      }
+        .facet-group h3 {
+          margin-bottom: 0.7rem;
+        }
 
-      .facet-group.mobile h1 {
-        cursor: pointer;
-      }
+        .facet-group.mobile h3 {
+          cursor: pointer;
+        }
 
-      .facet-group-header {
-        display: flex;
-        margin-bottom: 0.7rem;
-        justify-content: space-between;
-        border-bottom: 1px solid rgb(232, 232, 232);
-      }
+        .facet-group-header {
+          display: flex;
+          margin-bottom: 0.7rem;
+          justify-content: space-between;
+          border-bottom: 1px solid rgb(232, 232, 232);
+        }
 
-      .facet-group-content {
-        transition: max-height 0.2s ease-in-out;
-      }
+        .facet-group-content {
+          transition: max-height 0.2s ease-in-out;
+        }
 
-      .facet-group.mobile .facet-group-content {
-        max-height: 0;
-        overflow: hidden;
-      }
+        .facet-group.mobile .facet-group-content {
+          max-height: 0;
+          overflow: hidden;
+        }
 
-      .facet-group.mobile .facet-group-content.open {
-        max-height: 2000px;
-      }
+        .facet-group.mobile .facet-group-content.open {
+          max-height: 2000px;
+        }
 
-      h1 {
-        font-size: 1.4rem;
-        font-weight: 200
-        padding-bottom: 3px;
-        margin: 0;
-      }
+        h3 {
+          font-size: 1.4rem;
+          font-weight: 200
+          padding-bottom: 3px;
+          margin: 0;
+        }
 
-      .more-link {
-        font-size: 1.2rem;
-        text-decoration: none;
-        padding: 0;
-        background: inherit;
-        border: 0;
-        color: var(--ia-theme-link-color, #4b64ff);
-        cursor: pointer;
-      }
+        .more-link {
+          font-size: 1.2rem;
+          text-decoration: none;
+          padding: 0;
+          background: inherit;
+          border: 0;
+          color: var(--ia-theme-link-color, #4b64ff);
+          cursor: pointer;
+        }
 
-      .sorting-icon {
-        height: 15px;
-        cursor: pointer;
-      }
-    `;
+        .sorting-icon {
+          height: 15px;
+          cursor: pointer;
+        }
+      `,
+    ];
   }
 }
