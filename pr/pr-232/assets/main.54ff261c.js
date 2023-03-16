@@ -4646,6 +4646,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
         .mobile #results-total {
           margin-bottom: 0;
+          margin-right: 5px;
         }
 
         #big-results-count {
