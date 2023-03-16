@@ -1951,6 +1951,7 @@ export class CollectionBrowser
 
         .mobile #results-total {
           margin-bottom: 0;
+          margin-right: 5px;
         }
 
         #big-results-count {
