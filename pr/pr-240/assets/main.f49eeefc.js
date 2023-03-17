@@ -4616,8 +4616,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          flex-wrap: wrap;
           margin: 10px 0;
+        }
+
+        .desktop #mobile-header-container {
+          padding-top: 2rem;
+          flex-wrap: wrap;
         }
 
         .mobile #left-column {
@@ -4667,10 +4671,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           padding-bottom: 2rem;
         }
 
-        .desktop #mobile-header-container {
-          padding-top: 2rem;
-        }
-
         #facets-container {
           position: relative;
           max-height: 0;
@@ -4704,6 +4704,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           font-size: 2.4rem;
           font-weight: 500;
           margin-right: 5px;
+        }
+
+        .mobile #big-results-count {
+          font-size: 2rem;
         }
 
         #big-results-label {
