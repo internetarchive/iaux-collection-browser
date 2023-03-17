@@ -1960,8 +1960,12 @@ export class CollectionBrowser
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          flex-wrap: wrap;
           margin: 10px 0;
+        }
+
+        .desktop #mobile-header-container {
+          padding-top: 2rem;
+          flex-wrap: wrap;
         }
 
         .mobile #left-column {
@@ -2011,10 +2015,6 @@ export class CollectionBrowser
           padding-bottom: 2rem;
         }
 
-        .desktop #mobile-header-container {
-          padding-top: 2rem;
-        }
-
         #facets-container {
           position: relative;
           max-height: 0;
@@ -2048,6 +2048,10 @@ export class CollectionBrowser
           font-size: 2.4rem;
           font-weight: 500;
           margin-right: 5px;
+        }
+
+        .mobile #big-results-count {
+          font-size: 2rem;
         }
 
         #big-results-label {
