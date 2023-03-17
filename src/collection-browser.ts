@@ -678,9 +678,14 @@ export class CollectionBrowser
     const buttonText = mobile ? 'Clear all' : 'Clear all filters';
 
     return html`
-      <button class=${buttonClasses} @click=${this.clearFilters}>
-        ${buttonText}
-      </button>
+      <div class="clear-filters-btn-row">
+        ${mobile
+          ? html`<span class="clear-filters-btn-separator">&nbsp;</span>`
+          : nothing}
+        <button class=${buttonClasses} @click=${this.clearFilters}>
+          ${buttonText}
+        </button>
+      </div>
     `;
   }
 
@@ -1954,7 +1959,7 @@ export class CollectionBrowser
         #mobile-header-container {
           display: flex;
           justify-content: space-between;
-          align-items: center;
+          align-items: flex-start;
           flex-wrap: wrap;
           margin: 10px 0;
         }
@@ -1964,18 +1969,37 @@ export class CollectionBrowser
           padding: 0;
         }
 
+        .clear-filters-btn-row {
+          display: inline-block;
+        }
+
+        .desktop .clear-filters-btn-row {
+          width: 100%;
+        }
+
         .clear-filters-btn {
-          display: block;
+          display: inline-block;
           appearance: none;
           margin: 0;
           padding: 0;
           border: 0;
+          background: none;
           color: var(--ia-theme-link-color);
+          font-size: 1.4rem;
+          font-family: inherit;
           cursor: pointer;
         }
 
         .clear-filters-btn:hover {
           text-decoration: underline;
+        }
+
+        .clear-filters-btn-separator {
+          display: inline-block;
+          margin-left: 5px;
+          border-left: 1px solid #2c2c2c;
+          font-size: 1.4rem;
+          line-height: 1.3rem;
         }
 
         #facets-container {
@@ -2013,7 +2037,6 @@ export class CollectionBrowser
         #results-total {
           display: flex;
           align-items: baseline;
-          margin-bottom: 5rem;
         }
 
         .mobile #results-total {
