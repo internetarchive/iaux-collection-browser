@@ -325,6 +325,22 @@ export class CollectionBrowser
     return false;
   }
 
+  /**
+   * Returns true if there are any currently selected/negated facet buckets,
+   * any selected date range, or any selected letter filters. False otherwise.
+   *
+   * Ignores sorting options.
+   */
+  private get hasActiveFilters(): boolean {
+    return !!(
+      this.hasCheckedFacets ||
+      this.minSelectedDate ||
+      this.maxSelectedDate ||
+      this.selectedTitleFilter ||
+      this.selectedCreatorFilter
+    );
+  }
+
   render() {
     this.setPlaceholderType();
     return html`
@@ -389,6 +405,7 @@ export class CollectionBrowser
               ${shouldShowSearching ? nothing : resultsLabel}
             </span>
           </div>
+          ${this.mobileView ? nothing : this.clearFiltersBtnTemplate(false)}
         </div>
         ${this.mobileView
           ? nothing
@@ -601,6 +618,7 @@ export class CollectionBrowser
         <summary>
           <span class="collapser-icon">${chevronIcon}</span>
           <h2>Filters</h2>
+          ${this.clearFiltersBtnTemplate(true)}
         </summary>
         ${this.facetsTemplate}
       </details>
@@ -638,6 +656,36 @@ export class CollectionBrowser
         .analyticsHandler=${this.analyticsHandler}
       >
       </collection-facets>
+    `;
+  }
+
+  /**
+   * The HTML template for the "Clear all filters" button, or `nothing` if no
+   * filters are currently active.
+   *
+   * @param mobile Whether to style/shorten the button for mobile view
+   */
+  private clearFiltersBtnTemplate(
+    mobile: boolean
+  ): TemplateResult | typeof nothing {
+    if (!this.hasActiveFilters) return nothing;
+
+    const buttonClasses = classMap({
+      'clear-filters-btn': true,
+      mobile,
+    });
+
+    const buttonText = mobile ? 'Clear all' : 'Clear all filters';
+
+    return html`
+      <div class="clear-filters-btn-row">
+        ${mobile
+          ? html`<span class="clear-filters-btn-separator">&nbsp;</span>`
+          : nothing}
+        <button class=${buttonClasses} @click=${this.clearFilters}>
+          ${buttonText}
+        </button>
+      </div>
     `;
   }
 
@@ -1908,11 +1956,6 @@ export class CollectionBrowser
           background: transparent;
         }
 
-        .mobile #left-column {
-          width: 100%;
-          padding: 0;
-        }
-
         #mobile-header-container {
           display: flex;
           justify-content: space-between;
@@ -1922,6 +1965,54 @@ export class CollectionBrowser
 
         .desktop #mobile-header-container {
           padding-top: 2rem;
+          flex-wrap: wrap;
+        }
+
+        .mobile #left-column {
+          width: 100%;
+          padding: 0;
+        }
+
+        .clear-filters-btn-row {
+          display: inline-block;
+        }
+
+        .desktop .clear-filters-btn-row {
+          width: 100%;
+        }
+
+        .clear-filters-btn {
+          display: inline-block;
+          appearance: none;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          background: none;
+          color: var(--ia-theme-link-color);
+          font-size: 1.4rem;
+          font-family: inherit;
+          cursor: pointer;
+        }
+
+        .clear-filters-btn:hover {
+          text-decoration: underline;
+        }
+
+        .clear-filters-btn-separator {
+          display: inline-block;
+          margin-left: 5px;
+          border-left: 1px solid #2c2c2c;
+          font-size: 1.4rem;
+          line-height: 1.3rem;
+        }
+
+        #facets-container {
+          position: relative;
+          max-height: 0;
+          transition: max-height 0.2s ease-in-out;
+          z-index: 1;
+          margin-top: 5rem;
+          padding-bottom: 2rem;
         }
 
         #facets-container {
@@ -1946,7 +2037,6 @@ export class CollectionBrowser
         #results-total {
           display: flex;
           align-items: baseline;
-          margin-bottom: 5rem;
         }
 
         .mobile #results-total {
@@ -1958,6 +2048,10 @@ export class CollectionBrowser
           font-size: 2.4rem;
           font-weight: 500;
           margin-right: 5px;
+        }
+
+        .mobile #big-results-count {
+          font-size: 2rem;
         }
 
         #big-results-label {
