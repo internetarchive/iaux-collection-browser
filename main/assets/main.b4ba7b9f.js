@@ -4090,7 +4090,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         @facetsChanged=${d=>{const u=new CustomEvent("facetsChanged",{detail:d.detail,bubbles:!0,composed:!0});this.dispatchEvent(u)}}
       >
       </more-facets-content>
-    `,l=new or({bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:h`Select filters`});(i=this.modalManager)===null||i===void 0||i.classList.add("more-search-facets"),(o=this.modalManager)===null||o===void 0||o.showModal({config:l,customModalContent:n})}getFacetTemplate(e){return h`
+    `,l=new or({bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:h`Select filters`});(i=this.modalManager)===null||i===void 0||i.classList.add("more-search-facets"),(o=this.modalManager)===null||o===void 0||o.showModal({config:l,customModalContent:n,userClosedModalCallback:()=>{var d;(d=this.modalManager)===null||d===void 0||d.classList.remove("more-search-facets")}})}getFacetTemplate(e){return h`
       <facets-template
         .facetGroup=${e}
         .selectedFacets=${this.selectedFacets}
