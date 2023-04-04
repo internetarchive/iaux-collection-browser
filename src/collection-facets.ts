@@ -501,6 +501,9 @@ export class CollectionFacets extends LitElement {
     this.modalManager?.showModal({
       config,
       customModalContent,
+      userClosedModalCallback: () => {
+        this.modalManager?.classList.remove('more-search-facets');
+      },
     });
   }
 
