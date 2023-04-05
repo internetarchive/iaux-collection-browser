@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import type {
   Aggregation,
   AggregationSortType,
@@ -30,6 +31,7 @@ import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manag
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import chevronIcon from './assets/img/icons/chevron';
+import expandIcon from './assets/img/icons/expand';
 import {
   FacetOption,
   SelectedFacets,
@@ -125,7 +127,13 @@ export class CollectionFacets extends LitElement {
               <section class="facet-group" aria-labelledby=${datePickerLabelId}>
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
-                  <button @click=${this.showDatePickerModal}>Expand</button>
+                  <button
+                    class="expand-date-picker-btn"
+                    aria-hidden="true"
+                    @click=${this.showDatePickerModal}
+                  >
+                    ${expandIcon}
+                  </button>
                 </h3>
                 ${this.histogramTemplate}
               </section>
@@ -139,9 +147,18 @@ export class CollectionFacets extends LitElement {
   }
 
   private showDatePickerModal(): void {
+    // The modal content will be slotted into a completely separate component elsewhere
+    // in the DOM, so just apply what few inline styles we need here.
+    const wrapperStyles = styleMap({
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '40px 10px 20px',
+      overflow: 'hidden',
+    });
+
     const { fullYearsHistogramAggregation } = this;
     const customModalContent = html`
-      <div style="display:flex; justify-content:center; padding:10px;">
+      <div style=${wrapperStyles}>
         <histogram-date-range
           .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
           .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
@@ -149,7 +166,7 @@ export class CollectionFacets extends LitElement {
           .maxSelectedDate=${this.maxSelectedDate}
           .updateDelay=${100}
           missingDataMessage="..."
-          .width=${580}
+          .width=${560}
           .height=${120}
           .bins=${fullYearsHistogramAggregation?.buckets as number[]}
           @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
@@ -164,7 +181,7 @@ export class CollectionFacets extends LitElement {
       closeOnBackdropClick: true, // TODO: want to fire analytics
       title: html`Select a date range`,
     });
-    this.modalManager?.classList.add('more-search-facets');
+    this.modalManager?.classList.add('expanded-date-picker');
     this.modalManager?.showModal({
       config,
       customModalContent,
@@ -643,11 +660,30 @@ export class CollectionFacets extends LitElement {
           cursor: pointer;
         }
 
+        .date-picker-header {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .expand-date-picker-btn {
+          margin: 0;
+          padding: 0;
+          border: 0;
+          appearance: none;
+          background: none;
+          cursor: pointer;
+        }
+
+        .expand-date-picker-btn > svg {
+          width: 14px;
+          height: 14px;
+        }
+
         .sorting-icon {
           height: 15px;
           cursor: pointer;
         }
-      `,
+      `
     ];
   }
 }
