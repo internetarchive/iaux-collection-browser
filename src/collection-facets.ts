@@ -129,7 +129,7 @@ export class CollectionFacets extends LitElement {
               <section class="facet-group" aria-labelledby=${datePickerLabelId}>
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
-                  ${this.expandDatePickerButtonTemplate}
+                  ${this.expandDatePickerBtnTemplate}
                 </h3>
                 ${this.histogramTemplate}
               </section>
@@ -142,6 +142,9 @@ export class CollectionFacets extends LitElement {
     `;
   }
 
+  /**
+   * Opens a modal dialog containing an enlarged version of the date picker.
+   */
   private showDatePickerModal(): void {
     // The modal content will be slotted into a completely separate component elsewhere
     // in the DOM, so just apply what few inline styles we need here.
@@ -198,9 +201,11 @@ export class CollectionFacets extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private get expandDatePickerButtonTemplate():
-    | TemplateResult
-    | typeof nothing {
+  /**
+   * Template for the "Expand" button to show the date picker modal, or
+   * `nothing` if that button should not be shown.
+   */
+  private get expandDatePickerBtnTemplate(): TemplateResult | typeof nothing {
     return this.allowExpandingDatePicker
       ? html`<button
           class="expand-date-picker-btn"

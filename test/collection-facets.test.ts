@@ -97,6 +97,44 @@ describe('Collection Facets', () => {
     expect(histogram).to.be.null;
   });
 
+  it('renders button to expand the date picker when allowed', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = false;
+    el.showHistogramDatePicker = true;
+    el.allowExpandingDatePicker = true;
+    el.fullYearsHistogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
+    await el.updateComplete;
+
+    const expandBtn = el.shadowRoot?.querySelector('.expand-date-picker-btn');
+    expect(expandBtn).to.exist;
+  });
+
+  it('does not render button to expand the date picker when disallowed', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = false;
+    el.showHistogramDatePicker = true;
+    el.allowExpandingDatePicker = false;
+    el.fullYearsHistogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
+    await el.updateComplete;
+
+    const expandBtn = el.shadowRoot?.querySelector('.expand-date-picker-btn');
+    expect(expandBtn).to.be.null;
+  });
+
   it('renders aggregations as facets', async () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets></collection-facets>`
