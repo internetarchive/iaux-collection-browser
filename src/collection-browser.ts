@@ -646,6 +646,7 @@ export class CollectionBrowser
         .selectedFacets=${this.selectedFacets}
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
+        .allowExpandingDatePicker=${!this.mobileView}
         .query=${this.baseQuery}
         .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
@@ -2015,12 +2016,8 @@ export class CollectionBrowser
           padding-bottom: 2rem;
         }
 
-        #facets-container {
-          position: relative;
-          max-height: 0;
-          transition: max-height 0.2s ease-in-out;
-          z-index: 1;
-          padding-bottom: 2rem;
+        .desktop #facets-container {
+          width: 18rem;
         }
 
         .mobile #facets-container {

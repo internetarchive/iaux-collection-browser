@@ -80,6 +80,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  @property({ type: Boolean }) allowExpandingDatePicker = false;
+
   @property({ type: String }) query?: string;
 
   @property({ type: Object }) filterMap?: FilterMap;
@@ -127,13 +129,7 @@ export class CollectionFacets extends LitElement {
               <section class="facet-group" aria-labelledby=${datePickerLabelId}>
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
-                  <button
-                    class="expand-date-picker-btn"
-                    aria-hidden="true"
-                    @click=${this.showDatePickerModal}
-                  >
-                    ${expandIcon}
-                  </button>
+                  ${this.expandDatePickerButtonTemplate}
                 </h3>
                 ${this.histogramTemplate}
               </section>
@@ -200,6 +196,20 @@ export class CollectionFacets extends LitElement {
       detail: this.selectedFacets,
     });
     this.dispatchEvent(event);
+  }
+
+  private get expandDatePickerButtonTemplate():
+    | TemplateResult
+    | typeof nothing {
+    return this.allowExpandingDatePicker
+      ? html`<button
+          class="expand-date-picker-btn"
+          aria-hidden="true"
+          @click=${this.showDatePickerModal}
+        >
+          ${expandIcon}
+        </button>`
+      : nothing;
   }
 
   private get currentYearsHistogramAggregation(): Aggregation | undefined {
@@ -660,7 +670,7 @@ export class CollectionFacets extends LitElement {
           cursor: pointer;
         }
 
-        .date-picker-header {
+        #date-picker-label {
           display: flex;
           justify-content: space-between;
         }
@@ -683,7 +693,7 @@ export class CollectionFacets extends LitElement {
           height: 15px;
           cursor: pointer;
         }
-      `
+      `,
     ];
   }
 }
