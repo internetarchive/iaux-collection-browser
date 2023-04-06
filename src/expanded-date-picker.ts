@@ -78,12 +78,13 @@ export class ExpandedDatePicker extends LitElement {
       #container {
         display: flex;
         justify-content: center;
-        padding: 40px 10px 20px;
+        padding: 40px 10px 10px;
         overflow: hidden;
       }
 
       #date-picker {
         --histogramDateRangeInputWidth: 50px;
+        --histogramDateRangeInputRowMargin: 5px 0 0 0;
       }
 
       #apply-btn {
