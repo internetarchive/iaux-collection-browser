@@ -192,10 +192,10 @@ export class CollectionFacets extends LitElement {
 
   /**
    * Template for the "Expand" button to show the date picker modal, or
-   * `nothing` if that button should not be shown.
+   * `nothing` if that button should currently not be shown.
    */
   private get expandDatePickerBtnTemplate(): TemplateResult | typeof nothing {
-    return this.allowExpandingDatePicker
+    return this.allowExpandingDatePicker && !this.facetsLoading
       ? html`<button
           class="expand-date-picker-btn"
           aria-hidden="true"
@@ -229,18 +229,24 @@ export class CollectionFacets extends LitElement {
         `;
   }
 
-  private histogramDateRangeUpdated(
+  /**
+   * Dispatches a `histogramDateRangeUpdated` event with the date range copied from the
+   * input event.
+   *
+   * Arrow function to ensure `this` is always bound to the current component.
+   */
+  private histogramDateRangeUpdated = (
     e: CustomEvent<{
       minDate: string;
       maxDate: string;
     }>
-  ) {
+  ): void => {
     const { minDate, maxDate } = e.detail;
     const event = new CustomEvent('histogramDateRangeUpdated', {
       detail: { minDate, maxDate },
     });
     this.dispatchEvent(event);
-  }
+  };
 
   /**
    * Combines the selected facets with the aggregations to create a single list of facets
