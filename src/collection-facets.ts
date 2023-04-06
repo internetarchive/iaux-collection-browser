@@ -147,12 +147,14 @@ export class CollectionFacets extends LitElement {
    */
   private showDatePickerModal(): void {
     const { fullYearsHistogramAggregation } = this;
+    const minDate = fullYearsHistogramAggregation?.first_bucket_key;
+    const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     const customModalContent = html`
       <expanded-date-picker
-        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-        .minSelectedDate=${this.minSelectedDate}
-        .maxSelectedDate=${this.maxSelectedDate}
+        .minDate=${minDate}
+        .maxDate=${maxDate}
+        .minSelectedDate=${this.minSelectedDate ?? minDate}
+        .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
         .buckets=${fullYearsHistogramAggregation?.buckets as number[]}
         .modalManager=${this.modalManager}
         @histogramDateRangeApplied=${this.histogramDateRangeUpdated}
