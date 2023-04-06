@@ -135,6 +135,42 @@ describe('Collection Facets', () => {
     expect(expandBtn).to.be.null;
   });
 
+  it('opens modal when date picker expand button clicked', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .modalManager=${new ModalManager()}
+      ></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = false;
+    el.showHistogramDatePicker = true;
+    el.allowExpandingDatePicker = true;
+    el.fullYearsHistogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
+    await el.updateComplete;
+
+    const expandBtn = el.shadowRoot?.querySelector(
+      '.expand-date-picker-btn'
+    ) as HTMLButtonElement;
+    expect(expandBtn).to.exist;
+
+    const showModalSpy = sinon.spy(
+      el.modalManager as ModalManagerInterface,
+      'showModal'
+    );
+
+    // Click the expand button to open the modal
+    expandBtn?.click();
+    await el.updateComplete;
+
+    expect(showModalSpy.callCount).to.equal(1);
+    expect(el.modalManager?.classList.contains('expanded-date-picker')).to.be
+      .true;
+  });
+
   it('renders aggregations as facets', async () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets></collection-facets>`
