@@ -9,7 +9,6 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
-import { styleMap } from 'lit/directives/style-map.js';
 import type {
   Aggregation,
   AggregationSortType,
@@ -48,6 +47,7 @@ import {
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
+import './expanded-date-picker';
 import {
   analyticsActions,
   analyticsCategories,
@@ -146,31 +146,17 @@ export class CollectionFacets extends LitElement {
    * Opens a modal dialog containing an enlarged version of the date picker.
    */
   private showDatePickerModal(): void {
-    // The modal content will be slotted into a completely separate component elsewhere
-    // in the DOM, so just apply what few inline styles we need here.
-    const wrapperStyles = styleMap({
-      display: 'flex',
-      justifyContent: 'center',
-      padding: '40px 10px 20px',
-      overflow: 'hidden',
-    });
-
     const { fullYearsHistogramAggregation } = this;
     const customModalContent = html`
-      <div style=${wrapperStyles}>
-        <histogram-date-range
-          .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-          .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-          .minSelectedDate=${this.minSelectedDate}
-          .maxSelectedDate=${this.maxSelectedDate}
-          .updateDelay=${100}
-          missingDataMessage="..."
-          .width=${560}
-          .height=${120}
-          .bins=${fullYearsHistogramAggregation?.buckets as number[]}
-          @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-        ></histogram-date-range>
-      </div>
+      <expanded-date-picker
+        .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
+        .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
+        .buckets=${fullYearsHistogramAggregation?.buckets as number[]}
+        .modalManager=${this.modalManager}
+        @histogramDateRangeApplied=${this.histogramDateRangeUpdated}
+      ></expanded-date-picker>
     `;
 
     const config = new ModalConfig({
