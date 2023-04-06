@@ -70,6 +70,7 @@ export class ExpandedDatePicker extends LitElement {
     });
     this.dispatchEvent(event);
     this.modalManager?.closeModal();
+    this.modalManager?.classList.remove('expanded-date-picker');
   }
 
   static get styles(): CSSResultGroup {
