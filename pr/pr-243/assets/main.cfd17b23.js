@@ -4051,7 +4051,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           </button>
         </histogram-date-range>
       </div>
-    `}histogramDateRangeUpdated(e){this.minSelectedDate=e.detail.minDate,this.maxSelectedDate=e.detail.maxDate}applyBtnClicked(){var e;const t=new CustomEvent("histogramDateRangeApplied",{detail:{minDate:this.minSelectedDate,maxDate:this.maxSelectedDate}});this.dispatchEvent(t),(e=this.modalManager)===null||e===void 0||e.closeModal()}static get styles(){return m`
+    `}histogramDateRangeUpdated(e){this.minSelectedDate=e.detail.minDate,this.maxSelectedDate=e.detail.maxDate}applyBtnClicked(){var e,t;const i=new CustomEvent("histogramDateRangeApplied",{detail:{minDate:this.minSelectedDate,maxDate:this.maxSelectedDate}});this.dispatchEvent(i),(e=this.modalManager)===null||e===void 0||e.closeModal(),(t=this.modalManager)===null||t===void 0||t.classList.remove("expanded-date-picker")}static get styles(){return m`
       #container {
         display: flex;
         justify-content: center;
@@ -4085,17 +4085,17 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
             `:y}
         ${this.mergedFacets.map(t=>this.getFacetGroupTemplate(t))}
       </div>
-    `}showDatePickerModal(){var e,t;const{fullYearsHistogramAggregation:i}=this,o=h`
+    `}showDatePickerModal(){var e,t,i,o;const{fullYearsHistogramAggregation:r}=this,n=r==null?void 0:r.first_bucket_key,l=r==null?void 0:r.last_bucket_key,d=h`
       <expanded-date-picker
-        .minDate=${i==null?void 0:i.first_bucket_key}
-        .maxDate=${i==null?void 0:i.last_bucket_key}
-        .minSelectedDate=${this.minSelectedDate}
-        .maxSelectedDate=${this.maxSelectedDate}
-        .buckets=${i==null?void 0:i.buckets}
+        .minDate=${n}
+        .maxDate=${l}
+        .minSelectedDate=${(e=this.minSelectedDate)!==null&&e!==void 0?e:n}
+        .maxSelectedDate=${(t=this.maxSelectedDate)!==null&&t!==void 0?t:l}
+        .buckets=${r==null?void 0:r.buckets}
         .modalManager=${this.modalManager}
         @histogramDateRangeApplied=${this.histogramDateRangeUpdated}
       ></expanded-date-picker>
-    `,r=new go({bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:h`Select a date range`});(e=this.modalManager)===null||e===void 0||e.classList.add("expanded-date-picker"),(t=this.modalManager)===null||t===void 0||t.showModal({config:r,customModalContent:o,userClosedModalCallback:()=>{var n;(n=this.modalManager)===null||n===void 0||n.classList.remove("expanded-date-picker")}})}updated(e){e.has("selectedFacets")&&this.dispatchFacetsChangedEvent()}dispatchFacetsChangedEvent(){const e=new CustomEvent("facetsChanged",{detail:this.selectedFacets});this.dispatchEvent(e)}get expandDatePickerBtnTemplate(){return this.allowExpandingDatePicker&&!this.facetsLoading?h`<button
+    `,u=new go({bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:h`Select a date range`});(i=this.modalManager)===null||i===void 0||i.classList.add("expanded-date-picker"),(o=this.modalManager)===null||o===void 0||o.showModal({config:u,customModalContent:d,userClosedModalCallback:()=>{var v;(v=this.modalManager)===null||v===void 0||v.classList.remove("expanded-date-picker")}})}updated(e){e.has("selectedFacets")&&this.dispatchFacetsChangedEvent()}dispatchFacetsChangedEvent(){const e=new CustomEvent("facetsChanged",{detail:this.selectedFacets});this.dispatchEvent(e)}get expandDatePickerBtnTemplate(){return this.allowExpandingDatePicker&&!this.facetsLoading?h`<button
           class="expand-date-picker-btn"
           aria-hidden="true"
           @click=${this.showDatePickerModal}
