@@ -44,6 +44,40 @@ export class ExpandedDatePicker extends LitElement {
     `;
   }
 
+  connectedCallback(): void {
+    super.connectedCallback?.();
+    this.setupEscapeListener();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback?.();
+    this.removeEscapeListener();
+  }
+
+  /**
+   * Add an event listener to close the date picker modal when the Esc key is pressed
+   */
+  private setupEscapeListener() {
+    document.addEventListener('keydown', this.boundEscapeListener);
+  }
+
+  /**
+   * Remove the Esc key listener that was previously added
+   */
+  private removeEscapeListener() {
+    document.removeEventListener('keydown', this.boundEscapeListener);
+  }
+
+  /**
+   * Closes the modal dialog if the given event is pressing the Esc key.
+   * Arrow function to ensure `this` remains bound to the current component.
+   */
+  private boundEscapeListener = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      this.closeModal();
+    }
+  };
+
   /**
    * When the histogram is updated, keep track of the newly selected date range.
    * We don't commit to the new range until the apply button is clicked.
@@ -69,6 +103,14 @@ export class ExpandedDatePicker extends LitElement {
       },
     });
     this.dispatchEvent(event);
+    this.closeModal();
+  }
+
+  /**
+   * Closes the modal associated with this component (if it exists) and removes the
+   * corresponding class from it.
+   */
+  private closeModal(): void {
     this.modalManager?.closeModal();
     this.modalManager?.classList.remove('expanded-date-picker');
   }
