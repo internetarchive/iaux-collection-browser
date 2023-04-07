@@ -216,6 +216,16 @@ export class RestorationStateHandler
     const facetAnds = url.searchParams.getAll('and[]');
     const facetNots = url.searchParams.getAll('not[]');
 
+    // We also need to check for the presence of params like 'and[0]', 'not[1]', etc.
+    // since Facebook automatically converts URLs with [] into those forms.
+    for (const [key, val] of url.searchParams.entries()) {
+      if (/and\[\d+\]/.test(key)) {
+        facetAnds.push(val);
+      } else if (/not\[\d+\]/.test(key)) {
+        facetNots.push(val);
+      }
+    }
+
     // Legacy search allowed `q` and `search` params for the query, so in the interest
     // of backwards-compatibility with old bookmarks, we recognize those here too.
     // (However, they still get upgraded to a `query` param when we persist our state
