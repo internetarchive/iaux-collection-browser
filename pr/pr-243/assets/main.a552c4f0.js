@@ -4028,7 +4028,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         height: 15px;
         margin: 0;
       }
-    `}};Lo=s([A("facet-tombstone-row")],Lo);let qe=class extends D{render(){return h`
+    `}};Lo=s([A("facet-tombstone-row")],Lo);let qe=class extends D{constructor(){super(...arguments),this.boundEscapeListener=e=>{e.key==="Escape"&&this.closeModal()}}render(){return h`
       <div id="container">
         <histogram-date-range
           id="date-picker"
@@ -4052,7 +4052,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           </button>
         </histogram-date-range>
       </div>
-    `}histogramDateRangeUpdated(e){this.minSelectedDate=e.detail.minDate,this.maxSelectedDate=e.detail.maxDate}applyBtnClicked(){var e,t;const i=new CustomEvent("histogramDateRangeApplied",{detail:{minDate:this.minSelectedDate,maxDate:this.maxSelectedDate}});this.dispatchEvent(i),(e=this.modalManager)===null||e===void 0||e.closeModal(),(t=this.modalManager)===null||t===void 0||t.classList.remove("expanded-date-picker")}static get styles(){return m`
+    `}connectedCallback(){var e;(e=super.connectedCallback)===null||e===void 0||e.call(this),this.setupEscapeListener()}disconnectedCallback(){var e;(e=super.disconnectedCallback)===null||e===void 0||e.call(this),this.removeEscapeListener()}setupEscapeListener(){document.addEventListener("keydown",this.boundEscapeListener)}removeEscapeListener(){document.removeEventListener("keydown",this.boundEscapeListener)}histogramDateRangeUpdated(e){this.minSelectedDate=e.detail.minDate,this.maxSelectedDate=e.detail.maxDate}applyBtnClicked(){const e=new CustomEvent("histogramDateRangeApplied",{detail:{minDate:this.minSelectedDate,maxDate:this.maxSelectedDate}});this.dispatchEvent(e),this.closeModal()}closeModal(){var e,t;(e=this.modalManager)===null||e===void 0||e.closeModal(),(t=this.modalManager)===null||t===void 0||t.classList.remove("expanded-date-picker")}static get styles(){return m`
       #container {
         display: flex;
         justify-content: center;
