@@ -397,6 +397,13 @@ export class RestorationStateHandler
     searchParams.delete('and[]');
     searchParams.delete('not[]');
 
+    // Remove any and/not facet params that contain numbers in their square brackets
+    for (const key of searchParams.keys()) {
+      if (/(and|not)\[\d+\]/.test(key)) {
+        searchParams.delete(key);
+      }
+    }
+
     // Also remove some legacy params that should have been upgraded to the ones above
     searchParams.delete('q');
     searchParams.delete('search');

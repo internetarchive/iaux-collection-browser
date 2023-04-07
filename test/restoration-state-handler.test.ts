@@ -296,4 +296,22 @@ describe('Restoration state handler', () => {
     handler.persistState({ selectedFacets: getDefaultSelectedFacets() });
     expect(window.location.search).to.equal('');
   });
+
+  it('round trip load/persist should erase numbers in square brackets', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?and[0]=subject:"foo"';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    // Load state from the URL and immediately persist it back to the URL
+    const restorationState = handler.getRestorationState();
+    handler.persistState(restorationState);
+
+    // Ensure the new URL includes the "normalized" facet parameter and not the numbered one
+    expect(decodeURIComponent(window.location.search)).to.include(
+      'and[]=subject:"foo"'
+    );
+    expect(new URL(window.location.href).searchParams.get('and[0]')).to.be.null;
+  });
 });
