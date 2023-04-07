@@ -183,6 +183,32 @@ describe('Restoration state handler', () => {
     );
   });
 
+  it('should restore selected facets with numbers in the square brackets', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?and[12]=subject:"foo"';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.selectedFacets.subject.foo.state).to.equal(
+      'selected'
+    );
+  });
+
+  it('should restore negative facets with numbers in the square brackets', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?not[12]=year:2018';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.selectedFacets.year['2018'].state).to.equal(
+      'hidden'
+    );
+  });
+
   it('should restore sort from URL (space format)', async () => {
     const handler = new RestorationStateHandler({ context: 'search' });
 
