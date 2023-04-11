@@ -25,7 +25,8 @@ export class ExpandedDatePicker extends LitElement {
           .maxDate=${this.maxDate}
           .minSelectedDate=${this.minSelectedDate ?? this.minDate}
           .maxSelectedDate=${this.maxSelectedDate ?? this.maxDate}
-          .updateDelay=${100}
+          .updateDelay=${0}
+          updateWhileFocused
           missingDataMessage="..."
           .width=${560}
           .height=${120}
