@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
+import { ref } from 'lit/directives/ref.js';
 import type {
   Aggregation,
   AggregationSortType,
@@ -30,6 +31,7 @@ import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manag
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
 import chevronIcon from './assets/img/icons/chevron';
+import expandIcon from './assets/img/icons/expand';
 import {
   FacetOption,
   SelectedFacets,
@@ -46,11 +48,13 @@ import {
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
+import './expanded-date-picker';
 import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
+import { ExpandedDatePicker } from './expanded-date-picker';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -77,6 +81,8 @@ export class CollectionFacets extends LitElement {
   @property({ type: Boolean }) collapsableFacets = false;
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
+
+  @property({ type: Boolean }) allowExpandingDatePicker = false;
 
   @property({ type: String }) query?: string;
 
@@ -125,6 +131,7 @@ export class CollectionFacets extends LitElement {
               <section class="facet-group" aria-labelledby=${datePickerLabelId}>
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
+                  ${this.expandDatePickerBtnTemplate}
                 </h3>
                 ${this.histogramTemplate}
               </section>
@@ -135,6 +142,61 @@ export class CollectionFacets extends LitElement {
         )}
       </div>
     `;
+  }
+
+  /**
+   * Opens a modal dialog containing an enlarged version of the date picker.
+   */
+  private showDatePickerModal(): void {
+    const { fullYearsHistogramAggregation } = this;
+    const minDate = fullYearsHistogramAggregation?.first_bucket_key;
+    const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
+    const buckets = fullYearsHistogramAggregation?.buckets as number[];
+
+    // Because the modal manager does not clear its DOM content after being closed,
+    // it may try to render the exact same date picker template when it is reopened.
+    // And because it isn't actually a descendent of this collection-facets component,
+    // changes to the template defined here may not trigger a reactive update to the date
+    // picker, resulting in it displaying a stale date range.
+    // This ref callback ensures that every time the date picker modal is opened, it will
+    // always propagate the most recent date range into the date picker regardless of
+    // whether Lit thinks the update is necessary.
+    const expandedDatePickerChanged = (elmt?: Element) => {
+      if (elmt && elmt instanceof ExpandedDatePicker) {
+        const expandedDatePicker = elmt as ExpandedDatePicker;
+        expandedDatePicker.minSelectedDate = this.minSelectedDate;
+        expandedDatePicker.maxSelectedDate = this.maxSelectedDate;
+      }
+    };
+
+    const customModalContent = html`
+      <expanded-date-picker
+        ${ref(expandedDatePickerChanged)}
+        .minDate=${minDate}
+        .maxDate=${maxDate}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
+        .buckets=${buckets}
+        .modalManager=${this.modalManager}
+        @histogramDateRangeApplied=${this.histogramDateRangeUpdated}
+      ></expanded-date-picker>
+    `;
+
+    const config = new ModalConfig({
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true, // TODO: want to fire analytics
+      title: html`Select a date range`,
+    });
+    this.modalManager?.classList.add('expanded-date-picker');
+    this.modalManager?.showModal({
+      config,
+      customModalContent,
+      userClosedModalCallback: () => {
+        this.modalManager?.classList.remove('expanded-date-picker');
+      },
+    });
   }
 
   updated(changed: PropertyValues) {
@@ -149,6 +211,22 @@ export class CollectionFacets extends LitElement {
       detail: this.selectedFacets,
     });
     this.dispatchEvent(event);
+  }
+
+  /**
+   * Template for the "Expand" button to show the date picker modal, or
+   * `nothing` if that button should currently not be shown.
+   */
+  private get expandDatePickerBtnTemplate(): TemplateResult | typeof nothing {
+    return this.allowExpandingDatePicker && !this.facetsLoading
+      ? html`<button
+          class="expand-date-picker-btn"
+          aria-hidden="true"
+          @click=${this.showDatePickerModal}
+        >
+          ${expandIcon}
+        </button>`
+      : nothing;
   }
 
   private get currentYearsHistogramAggregation(): Aggregation | undefined {
@@ -174,18 +252,24 @@ export class CollectionFacets extends LitElement {
         `;
   }
 
-  private histogramDateRangeUpdated(
+  /**
+   * Dispatches a `histogramDateRangeUpdated` event with the date range copied from the
+   * input event.
+   *
+   * Arrow function to ensure `this` is always bound to the current component.
+   */
+  private histogramDateRangeUpdated = (
     e: CustomEvent<{
       minDate: string;
       maxDate: string;
     }>
-  ) {
+  ): void => {
     const { minDate, maxDate } = e.detail;
     const event = new CustomEvent('histogramDateRangeUpdated', {
       detail: { minDate, maxDate },
     });
     this.dispatchEvent(event);
-  }
+  };
 
   /**
    * Combines the selected facets with the aggregations to create a single list of facets
@@ -607,6 +691,25 @@ export class CollectionFacets extends LitElement {
           border: 0;
           color: var(--ia-theme-link-color, #4b64ff);
           cursor: pointer;
+        }
+
+        #date-picker-label {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        .expand-date-picker-btn {
+          margin: 0;
+          padding: 0;
+          border: 0;
+          appearance: none;
+          background: none;
+          cursor: pointer;
+        }
+
+        .expand-date-picker-btn > svg {
+          width: 14px;
+          height: 14px;
         }
 
         .sorting-icon {
