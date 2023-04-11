@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
+import { ref } from 'lit/directives/ref.js';
 import type {
   Aggregation,
   AggregationSortType,
@@ -53,6 +54,7 @@ import {
   analyticsCategories,
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
+import { ExpandedDatePicker } from './expanded-date-picker';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -149,13 +151,32 @@ export class CollectionFacets extends LitElement {
     const { fullYearsHistogramAggregation } = this;
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
+    const buckets = fullYearsHistogramAggregation?.buckets as number[];
+
+    // Because the modal manager does not clear its DOM content after being closed,
+    // it may try to render the exact same date picker template when it is reopened.
+    // And because it isn't actually a descendent of this collection-facets component,
+    // changes to the template defined here may not trigger a reactive update to the date
+    // picker, resulting in it displaying a stale date range.
+    // This ref callback ensures that every time the date picker modal is opened, it will
+    // always propagate the most recent date range into the date picker regardless of
+    // whether Lit thinks the update is necessary.
+    const expandedDatePickerChanged = (elmt?: Element) => {
+      if (elmt && elmt instanceof ExpandedDatePicker) {
+        const expandedDatePicker = elmt as ExpandedDatePicker;
+        expandedDatePicker.minSelectedDate = this.minSelectedDate;
+        expandedDatePicker.maxSelectedDate = this.maxSelectedDate;
+      }
+    };
+
     const customModalContent = html`
       <expanded-date-picker
+        ${ref(expandedDatePickerChanged)}
         .minDate=${minDate}
         .maxDate=${maxDate}
-        .minSelectedDate=${this.minSelectedDate ?? minDate}
-        .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
-        .buckets=${fullYearsHistogramAggregation?.buckets as number[]}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
+        .buckets=${buckets}
         .modalManager=${this.modalManager}
         @histogramDateRangeApplied=${this.histogramDateRangeUpdated}
       ></expanded-date-picker>
