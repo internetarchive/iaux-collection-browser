@@ -229,10 +229,6 @@ export class CollectionFacets extends LitElement {
       : nothing;
   }
 
-  private get currentYearsHistogramAggregation(): Aggregation | undefined {
-    return this.aggregations?.year_histogram;
-  }
-
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
     return this.fullYearAggregationLoading
