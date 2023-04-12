@@ -384,44 +384,75 @@ export class CollectionBrowser
   }
 
   private get collectionBrowserTemplate() {
-    const shouldShowSearching =
-      this.searchResultsLoading || this.totalResults === undefined;
-    const resultsCount = this.totalResults?.toLocaleString();
-    const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
-    return html` <div id="left-column-scroll-sentinel"></div>
+    return html`
+      <div id="left-column-scroll-sentinel"></div>
+      ${this.leftColumnTemplate} ${this.rightColumnTemplate}
+    `;
+  }
+
+  private get leftColumnTemplate(): TemplateResult {
+    if (this.mobileView) {
+      return this.mobileLeftColumnTemplate;
+    }
+    return this.desktopLeftColumnTemplate;
+  }
+
+  private get mobileLeftColumnTemplate(): TemplateResult {
+    return html`
       <div
         id="left-column"
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
-        <div id="mobile-header-container">
-          ${this.mobileView
-            ? this.mobileFacetsTemplate
-            : html`<h2 id="facets-header" class="sr-only">Filters</h2>`}
-          <div id="results-total">
-            <span id="big-results-count">
-              ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
-            </span>
-            <span id="big-results-label">
-              ${shouldShowSearching ? nothing : resultsLabel}
-            </span>
-          </div>
-          ${this.mobileView ? nothing : this.clearFiltersBtnTemplate(false)}
-        </div>
-        ${this.mobileView
-          ? nothing
-          : html`<div id="facets-container" aria-labelledby="facets-header">
-              ${this.facetsTemplate}
-              <div id="facets-scroll-sentinel"></div>
-            </div>`}
-        ${this.mobileView ? nothing : html`<div id="facets-bottom-fade"></div>`}
+        ${this.resultsCountTemplate}
+        <div id="facets-header-container">${this.mobileFacetsTemplate}</div>
       </div>
+    `;
+  }
+
+  private get desktopLeftColumnTemplate(): TemplateResult {
+    return html`
+      <div id="left-column" class="column">
+        <div id="facets-header-container">
+          <h2 id="facets-header" class="sr-only">Filters</h2>
+          ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
+        </div>
+        <div id="facets-container" aria-labelledby="facets-header">
+          ${this.facetsTemplate}
+          <div id="facets-scroll-sentinel"></div>
+        </div>
+        <div id="facets-bottom-fade"></div>
+      </div>
+    `;
+  }
+
+  private get resultsCountTemplate(): TemplateResult {
+    const shouldShowSearching =
+      this.searchResultsLoading || this.totalResults === undefined;
+    const resultsCount = this.totalResults?.toLocaleString();
+    const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
+
+    return html`
+      <div id="results-total">
+        <span id="big-results-count">
+          ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
+        </span>
+        <span id="big-results-label">
+          ${shouldShowSearching ? nothing : resultsLabel}
+        </span>
+      </div>
+    `;
+  }
+
+  private get rightColumnTemplate(): TemplateResult {
+    return html`
       <div id="right-column" class="column">
         ${this.sortFilterBarTemplate}
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
         ${this.infiniteScrollerTemplate}
-      </div>`;
+      </div>
+    `;
   }
 
   private get infiniteScrollerTemplate() {
@@ -1827,6 +1858,10 @@ export class CollectionBrowser
           transition: transform 0.2s ease-out;
         }
 
+        #mobile-filter-collapse {
+          width: 100%;
+        }
+
         #mobile-filter-collapse > summary {
           cursor: pointer;
           list-style: none;
@@ -1957,14 +1992,14 @@ export class CollectionBrowser
           background: transparent;
         }
 
-        #mobile-header-container {
+        #facets-header-container {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
           margin: 10px 0;
         }
 
-        .desktop #mobile-header-container {
+        .desktop #facets-header-container {
           padding-top: 2rem;
           flex-wrap: wrap;
         }
@@ -2037,6 +2072,7 @@ export class CollectionBrowser
         }
 
         .mobile #results-total {
+          float: right;
           margin-bottom: 0;
           margin-right: 5px;
         }
