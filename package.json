@@ -26,7 +26,7 @@
     "@internetarchive/collection-name-cache": "^0.2.7",
     "@internetarchive/feature-feedback": "^0.1.4",
     "@internetarchive/field-parsers": "^0.1.3",
-    "@internetarchive/histogram-date-range": "^1.0.0",
+    "@internetarchive/histogram-date-range": "^1.0.1-alpha.1",
     "@internetarchive/ia-activity-indicator": "^0.0.4",
     "@internetarchive/ia-dropdown": "^1.1.0",
     "@internetarchive/infinite-scroller": "^0.1.4",
