@@ -181,6 +181,8 @@ export class CollectionBrowser
 
   @state() private mobileFacetsVisible = false;
 
+  @state() private contentWidth?: number;
+
   @state() private placeholderType: PlaceholderType = null;
 
   @state() private prefixFilterCountMap: Partial<
@@ -678,6 +680,7 @@ export class CollectionBrowser
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
+        .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
         .filterMap=${this.filterMap}
         .modalManager=${this.modalManager}
@@ -900,7 +903,8 @@ export class CollectionBrowser
   handleResize(entry: ResizeObserverEntry): void {
     const previousView = this.mobileView;
     if (entry.target === this.contentContainer) {
-      this.mobileView = entry.contentRect.width < this.mobileBreakpoint;
+      this.contentWidth = entry.contentRect.width;
+      this.mobileView = this.contentWidth < this.mobileBreakpoint;
       // If changing from desktop to mobile disable transition
       if (this.mobileView && !previousView) {
         this.isResizeToMobile = true;
