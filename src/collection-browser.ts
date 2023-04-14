@@ -385,6 +385,9 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Top-level template for rendering the left (facets) and right (results) columns.
+   */
   private get collectionBrowserTemplate() {
     return html`
       <div id="left-column-scroll-sentinel"></div>
@@ -392,6 +395,10 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Template for either the mobile or desktop version of the left column, depending
+   * on current component state.
+   */
   private get leftColumnTemplate(): TemplateResult {
     if (this.mobileView) {
       return this.mobileLeftColumnTemplate;
@@ -399,6 +406,11 @@ export class CollectionBrowser
     return this.desktopLeftColumnTemplate;
   }
 
+  /**
+   * Template for the mobile version of the "left column" (which in this case, appears
+   * *above* the search results rather than beside them), for rendering the
+   * accordion-style facets.
+   */
   private get mobileLeftColumnTemplate(): TemplateResult {
     return html`
       <div
@@ -411,6 +423,9 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Template for the desktop version of the left column, displaying the facets sidebar.
+   */
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
@@ -427,6 +442,10 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Template for the "X Results" count at the top of the search results.
+   * Changes to the "Searching..." label if the search results are still loading.
+   */
   private get resultsCountTemplate(): TemplateResult {
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
@@ -445,6 +464,10 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Template for the right column of the collection browser, where the result
+   * tiles and sort/filter bar are shown.
+   */
   private get rightColumnTemplate(): TemplateResult {
     return html`
       <div id="right-column" class="column">
