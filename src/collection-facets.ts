@@ -80,6 +80,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) collapsableFacets = false;
 
+  @property({ type: Number }) contentWidth?: number;
+
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
   @property({ type: Boolean }) allowExpandingDatePicker = false;
@@ -229,10 +231,6 @@ export class CollectionFacets extends LitElement {
       : nothing;
   }
 
-  private get currentYearsHistogramAggregation(): Aggregation | undefined {
-    return this.aggregations?.year_histogram;
-  }
-
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
     return this.fullYearAggregationLoading
@@ -245,7 +243,9 @@ export class CollectionFacets extends LitElement {
             .maxSelectedDate=${this.maxSelectedDate}
             .updateDelay=${100}
             missingDataMessage="..."
-            .width=${180}
+            .width=${this.collapsableFacets && this.contentWidth
+              ? this.contentWidth
+              : 180}
             .bins=${fullYearsHistogramAggregation?.buckets as number[]}
             @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
           ></histogram-date-range>
