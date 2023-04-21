@@ -959,7 +959,8 @@ export class SortFilterBar
         }
 
         #desktop-sort-selector li button.selected {
-          font-weight: bold;
+          text-shadow: 0 0.015em #101010, 0 -0.015em #101010, 0.01em 0 #101010,
+            -0.01em 0 #101010;
         }
 
         #display-style-selector {
@@ -1002,7 +1003,8 @@ export class SortFilterBar
           --caretPadding: 0 5px 0 0;
         }
         ia-dropdown.selected .dropdown-label {
-          font-weight: bold;
+          text-shadow: 0 0.015em #101010, 0 -0.015em #101010, 0.01em 0 #101010,
+            -0.01em 0 #101010;
         }
         ia-dropdown.open {
           z-index: 2;
