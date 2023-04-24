@@ -15,9 +15,9 @@ export function formatDate(
   // Return blank if undefined
   if (!date) return '';
 
-  // the date is already in UTC timezone so we should not add timeZone here again.
-  const options: Intl.DateTimeFormatOptions = {};
-
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'UTC', // Override browser timezone
+  };
   switch (format) {
     case 'year-only':
       options.year = 'numeric';
