@@ -174,9 +174,9 @@
     idb-keyval "^6.1.0"
 
 "@internetarchive/modal-manager@^0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.8.tgz#795718fc6b1013ab34416846737065cc07644e84"
-  integrity sha512-T0zpTCXFtlczvHpAs3BWtYkBXOivZTzMXJ5Tzb0rL32ZTXus1lpCdLo36aXml0oteQBXrpyo1wjoZ24+9vx69A==
+  version "0.2.12"
+  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-0.2.12.tgz#e25eadcaf9e5720ae4e13fadfed67382f67b1c88"
+  integrity sha512-9n6fx8kz0TSUCSroemEzznuNtMiTchfVzXkbvueTRLOjNXFMePUl5dmQ376KRcfJZSCBdbMKIgsT383C9I95Tw==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.4"
     "@internetarchive/icon-close" "^1.3.2"
