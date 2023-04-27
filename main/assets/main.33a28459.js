@@ -529,7 +529,7 @@ var _r=Object.defineProperty,$r=Object.defineProperties;var Cr=Object.getOwnProp
           flex-direction: column;
           margin-left: 10px;
         }
-      `]}};s([c({type:Object})],ti.prototype,"model",void 0);s([c({type:String})],ti.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],ti.prototype,"showInfoButton",void 0);ti=s([P("collection-tile")],ti);function Si(a,e="short",t="en-US"){if(!a)return"";const i={timeZone:"UTC"};switch(e){case"year-only":i.year="numeric";break;case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(a)}function ps(a){return new Date(a.getTime()-a.getTimezoneOffset()*1e3*60)}function Lo(a){return a?ps(a).toISOString().endsWith("-01-01T00:00:00.000Z"):!1}/**
+      `]}};s([c({type:Object})],ti.prototype,"model",void 0);s([c({type:String})],ti.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],ti.prototype,"showInfoButton",void 0);ti=s([P("collection-tile")],ti);function Si(a,e="short",t="en-US"){if(!a)return"";const i={};switch(e){case"year-only":i.year="numeric";break;case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(a)}function ps(a){return new Date(a.getTime()-a.getTimezoneOffset()*1e3*60)}function Lo(a){return a?ps(a).toISOString().endsWith("-01-01T00:00:00.000Z"):!1}/**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
