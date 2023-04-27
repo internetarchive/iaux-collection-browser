@@ -71,6 +71,9 @@ import {
   analyticsCategories,
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
+import { sha1 } from './utils/sha1';
+
+type RequestKind = 'full' | 'hits' | 'aggregations';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -260,6 +263,36 @@ export class CollectionBrowser
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
+
+  // Since the session ID is generated asynchronously, set it up as a promise that can be awaited.
+  private setSessionId: (val: string) => void = () => {};
+
+  /** A promise resolving to the session ID for the current browser session */
+  private sessionId: Promise<string> = new Promise(resolve => {
+    this.setSessionId = (val: string) => {
+      resolve(val);
+      this.setSessionId = () => {
+        throw new Error('session ID already set');
+      };
+    };
+    this.initSessionId();
+  });
+
+  /**
+   * Determines the current session ID, either using the existing one if present
+   * or generating a new one otherwise.
+   */
+  private initSessionId() {
+    const storedSessionId = sessionStorage?.getItem('cb-session');
+    if (!storedSessionId) {
+      sha1(Math.random().toString()).then(hash => {
+        sessionStorage?.setItem('cb-session', hash);
+        this.setSessionId(hash);
+      });
+    } else {
+      this.setSessionId(storedSessionId);
+    }
+  }
 
   /**
    * Go to the given page of results
@@ -1397,6 +1430,7 @@ export class CollectionBrowser
 
     const { facetFetchQueryKey } = this;
 
+    const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: trimmedQuery,
       rows: 0,
@@ -1405,8 +1439,11 @@ export class CollectionBrowser
       aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
-      uid: this.facetFetchQueryKey,
     };
+    params.uid = await this.requestUID(
+      { ...params, sort: sortParams },
+      'aggregations'
+    );
 
     this.facetsLoading = true;
     const searchResponse = await this.searchService.search(
@@ -1475,6 +1512,29 @@ export class CollectionBrowser
         }, 500);
       }, 0);
     });
+  }
+
+  private async requestUID(
+    params: SearchParams,
+    kind: RequestKind
+  ): Promise<string> {
+    const paramsToHash = JSON.stringify({
+      pageType: params.pageType,
+      pageTarget: params.pageTarget,
+      query: params.query,
+      fields: params.fields,
+      filters: params.filters,
+      sort: params.sort,
+      searchType: this.searchType,
+    });
+
+    const fullQueryHash = (await sha1(paramsToHash)).slice(0, 20); // First 80 bits of SHA-1 are plenty for this
+    const sessionId = (await this.sessionId).slice(0, 20); // Likewise
+    const page = params.page ?? 0;
+    const kindPrefix = kind.charAt(0); // f = full, h = hits, a = aggregations
+    const currentTime = Date.now();
+
+    return `R:${fullQueryHash}-S:${sessionId}-P:${page}-K:${kindPrefix}-T:${currentTime}`;
   }
 
   /**
@@ -1548,8 +1608,9 @@ export class CollectionBrowser
       sort: sortParams,
       filters: this.filterMap,
       aggregations: { omit: true },
-      uid: this.pageFetchQueryKey,
     };
+    params.uid = await this.requestUID(params, 'hits');
+
     const searchResponse = await this.searchService.search(
       params,
       this.searchType
@@ -1726,6 +1787,7 @@ export class CollectionBrowser
     if (!trimmedQuery) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
+    const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: trimmedQuery,
       rows: 0,
@@ -1735,6 +1797,10 @@ export class CollectionBrowser
       // Fetch all 26 letter buckets
       aggregationsSize: 26,
     };
+    params.uid = await this.requestUID(
+      { ...params, sort: sortParams },
+      'aggregations'
+    );
 
     const searchResponse = await this.searchService?.search(
       params,
