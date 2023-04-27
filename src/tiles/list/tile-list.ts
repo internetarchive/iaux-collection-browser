@@ -127,7 +127,7 @@ export class TileList extends LitElement {
   // Data templates
   private get iconRightTemplate() {
     return html`
-      <a id="icon-right" href=${this.mediatypeURL} target="_blank">
+      <a id="icon-right" href=${this.mediatypeURL}>
         <mediatype-icon
           .mediatype=${this.model?.mediatype}
           .collections=${this.model?.collections}
