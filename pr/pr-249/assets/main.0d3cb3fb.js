@@ -1210,7 +1210,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       ${this.topicsTemplate} ${this.collectionsTemplate}
       ${this.descriptionTemplate} ${this.textSnippetsTemplate}
     `}get iconRightTemplate(){var e,t;return h`
-      <a id="icon-right" href=${this.mediatypeURL} target="_blank">
+      <a id="icon-right" href=${this.mediatypeURL}>
         <mediatype-icon
           .mediatype=${(e=this.model)===null||e===void 0?void 0:e.mediatype}
           .collections=${(t=this.model)===null||t===void 0?void 0:t.collections}
