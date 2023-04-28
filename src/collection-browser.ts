@@ -1102,6 +1102,30 @@ export class CollectionBrowser
   // this lets us store the query key so we know if it's actually changed or not
   private previousQueryKey?: string;
 
+  /**
+   * Internal property to store the `resolve` function for the most recent
+   * `initialSearchComplete` promise, allowing us to resolve it at the appropriate time.
+   */
+  private _initialSearchCompleteResolver!: (val: boolean) => void;
+
+  /**
+   * Internal property to store the private value backing the `initialSearchComplete` getter.
+   */
+  private _initialSearchCompletePromise: Promise<boolean> = new Promise(res => {
+    this._initialSearchCompleteResolver = res;
+  });
+
+  /**
+   * A Promise which, after each query change, resolves once the fetches for the initial
+   * search have completed. Waits for *both* the hits and aggregations fetches to finish.
+   *
+   * Ensure you await this component's `updateComplete` promise before awaiting this
+   * one, to ensure you do not await an obsolete promise from the previous update.
+   */
+  get initialSearchComplete(): Promise<boolean> {
+    return this._initialSearchCompletePromise;
+  }
+
   private async handleQueryChange() {
     // only reset if the query has actually changed
     if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
@@ -1139,7 +1163,16 @@ export class CollectionBrowser
     }
     this.historyPopOccurred = false;
 
+    // Reset the `initialSearchComplete` promise with a new value for the imminent search
+    this._initialSearchCompletePromise = new Promise(res => {
+      this._initialSearchCompleteResolver = res;
+    });
+
+    // Fire the initial page and facets requests
     await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
+
+    // Resolve the `initialSearchComplete` promise for this search
+    this._initialSearchCompleteResolver(true);
   }
 
   private setupStateRestorationObserver() {
@@ -1214,7 +1247,7 @@ export class CollectionBrowser
 
   /**
    * Produces a compact unique ID for a search request that can help with debugging
-   * on the backend by making related requests easily to trace through different services.
+   * on the backend by making related requests easier to trace through different services.
    * (e.g., tying the hits/aggregations requests for the same page back to a single hash).
    *
    * @param params The search service parameters for the request
