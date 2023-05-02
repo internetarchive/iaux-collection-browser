@@ -529,7 +529,7 @@ var _r=Object.defineProperty,$r=Object.defineProperties;var Cr=Object.getOwnProp
           flex-direction: column;
           margin-left: 10px;
         }
-      `]}};s([c({type:Object})],ti.prototype,"model",void 0);s([c({type:String})],ti.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],ti.prototype,"showInfoButton",void 0);ti=s([P("collection-tile")],ti);function Si(a,e="short",t="en-US"){if(!a)return"";const i={timeZone:"UTC"};switch(e){case"year-only":i.year="numeric";break;case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(a)}function ps(a){return new Date(a.getTime()-a.getTimezoneOffset()*1e3*60)}function Lo(a){return a?ps(a).toISOString().endsWith("-01-01T00:00:00.000Z"):!1}/**
+      `]}};s([c({type:Object})],ti.prototype,"model",void 0);s([c({type:String})],ti.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],ti.prototype,"showInfoButton",void 0);ti=s([P("collection-tile")],ti);function Si(a,e="short",t="en-US"){if(!a)return"";const i={};switch(e){case"year-only":i.year="numeric";break;case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(a)}function ps(a){return new Date(a.getTime()-a.getTimezoneOffset()*1e3*60)}function Lo(a){return a?ps(a).toISOString().endsWith("-01-01T00:00:00.000Z"):!1}/**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -1210,7 +1210,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       ${this.topicsTemplate} ${this.collectionsTemplate}
       ${this.descriptionTemplate} ${this.textSnippetsTemplate}
     `}get iconRightTemplate(){var e,t;return h`
-      <a id="icon-right" href=${this.mediatypeURL} target="_blank">
+      <a id="icon-right" href=${this.mediatypeURL}>
         <mediatype-icon
           .mediatype=${(e=this.model)===null||e===void 0?void 0:e.mediatype}
           .collections=${(t=this.model)===null||t===void 0?void 0:t.collections}
@@ -2321,6 +2321,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}getSortDisplayOption(e,t){var i,o;const r=(i=t==null?void 0:t.selected)!==null&&i!==void 0?i:this.selectedSort===e,n=(o=t==null?void 0:t.displayName)!==null&&o!==void 0?o:st[e];return h`
       <button
         class=${r?"selected":y}
+        title="${n}"
         @click=${l=>{var d;l.preventDefault(),(d=t==null?void 0:t.onClick)===null||d===void 0||d.call(t,l)}}
       >
         ${n}
@@ -2341,6 +2342,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         <span
           class="dropdown-label"
           slot="dropdown-label"
+          title="${e.displayName.values}"
           @click=${(n=e.onLabelInteraction)!==null&&n!==void 0?n:y}
           @keydown=${e.onLabelInteraction?l=>{var d;(l.key==="Enter"||l.key===" ")&&((d=e.onLabelInteraction)===null||d===void 0||d.call(e,l))}:y}
         >
@@ -2551,7 +2553,20 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
 
         #desktop-sort-selector li button.selected {
-          text-shadow: rgb(0 0 0) 0.08rem 0 0;
+          font-weight: bold;
+        }
+
+        /**
+         * Fix to not shift the sort-bar options when get selected
+         */
+        #desktop-sort-selector li button::before,
+        #desktop-sort-selector .dropdown-label::before {
+          display: block;
+          content: attr(title);
+          font-weight: bold;
+          height: 0;
+          overflow: hidden;
+          visibility: hidden;
         }
 
         #display-style-selector {
@@ -2594,7 +2609,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           --caretPadding: 0 5px 0 0;
         }
         ia-dropdown.selected .dropdown-label {
-          text-shadow: rgb(0 0 0) 0.08rem 0 0;
+          font-weight: bold;
         }
         ia-dropdown.open {
           z-index: 2;
