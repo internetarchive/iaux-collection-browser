@@ -2321,6 +2321,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     `}getSortDisplayOption(e,t){var i,o;const r=(i=t==null?void 0:t.selected)!==null&&i!==void 0?i:this.selectedSort===e,n=(o=t==null?void 0:t.displayName)!==null&&o!==void 0?o:st[e];return h`
       <button
         class=${r?"selected":y}
+        data-title="${n}"
         @click=${l=>{var d;l.preventDefault(),(d=t==null?void 0:t.onClick)===null||d===void 0||d.call(t,l)}}
       >
         ${n}
@@ -2341,6 +2342,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         <span
           class="dropdown-label"
           slot="dropdown-label"
+          data-title="${e.displayName.values}"
           @click=${(n=e.onLabelInteraction)!==null&&n!==void 0?n:y}
           @keydown=${e.onLabelInteraction?l=>{var d;(l.key==="Enter"||l.key===" ")&&((d=e.onLabelInteraction)===null||d===void 0||d.call(e,l))}:y}
         >
@@ -2552,6 +2554,19 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 
         #desktop-sort-selector li button.selected {
           font-weight: bold;
+        }
+
+        /**
+         * Fix to not shift the sort-bar options when get selected
+         */
+        #desktop-sort-selector li button::before,
+        #desktop-sort-selector .dropdown-label::before {
+          display: block;
+          content: attr(data-title);
+          font-weight: bold;
+          height: 0;
+          overflow: hidden;
+          visibility: hidden;
         }
 
         #display-style-selector {
