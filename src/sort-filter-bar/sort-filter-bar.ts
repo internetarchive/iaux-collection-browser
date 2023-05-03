@@ -397,7 +397,7 @@ export class SortFilterBar
     return html`
       <button
         class=${isSelected ? 'selected' : nothing}
-        title="${displayName}"
+        data-title="${displayName}"
         @click=${(e: Event) => {
           e.preventDefault();
           options?.onClick?.(e);
@@ -448,7 +448,7 @@ export class SortFilterBar
         <span
           class="dropdown-label"
           slot="dropdown-label"
-          title="${options.displayName.values}"
+          data-title="${options.displayName.values}"
           @click=${options.onLabelInteraction ?? nothing}
           @keydown=${options.onLabelInteraction
             ? (e: KeyboardEvent) => {
@@ -970,7 +970,7 @@ export class SortFilterBar
         #desktop-sort-selector li button::before,
         #desktop-sort-selector .dropdown-label::before {
           display: block;
-          content: attr(title);
+          content: attr(data-title);
           font-weight: bold;
           height: 0;
           overflow: hidden;
