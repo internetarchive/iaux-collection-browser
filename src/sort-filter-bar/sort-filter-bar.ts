@@ -397,6 +397,7 @@ export class SortFilterBar
     return html`
       <button
         class=${isSelected ? 'selected' : nothing}
+        data-title="${displayName}"
         @click=${(e: Event) => {
           e.preventDefault();
           options?.onClick?.(e);
@@ -447,6 +448,7 @@ export class SortFilterBar
         <span
           class="dropdown-label"
           slot="dropdown-label"
+          data-title="${options.displayName.values}"
           @click=${options.onLabelInteraction ?? nothing}
           @keydown=${options.onLabelInteraction
             ? (e: KeyboardEvent) => {
@@ -960,6 +962,19 @@ export class SortFilterBar
 
         #desktop-sort-selector li button.selected {
           font-weight: bold;
+        }
+
+        /**
+         * Fix to not shift the sort-bar options when get selected
+         */
+        #desktop-sort-selector li button::before,
+        #desktop-sort-selector .dropdown-label::before {
+          display: block;
+          content: attr(data-title);
+          font-weight: bold;
+          height: 0;
+          overflow: hidden;
+          visibility: hidden;
         }
 
         #display-style-selector {
