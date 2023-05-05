@@ -265,7 +265,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(
@@ -286,7 +286,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.METADATA);
@@ -307,7 +307,7 @@ describe('Collection Browser', () => {
 
     el.searchType = SearchType.FULLTEXT;
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
   });
@@ -371,6 +371,7 @@ describe('Collection Browser', () => {
     el.baseQuery = 'collection:foo';
     el.selectedFacets = selectedFacets;
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchParams?.filters).to.deep.equal({
@@ -425,6 +426,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'loggedin';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     const cellTemplate = el.cellForIndex(0);
     expect(cellTemplate).to.exist;
@@ -445,6 +447,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'no-preview';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     const cellTemplate = el.cellForIndex(0);
     expect(cellTemplate).to.exist;
@@ -465,6 +468,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'loggedin-no-preview';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     const cellTemplate = el.cellForIndex(0);
     expect(cellTemplate).to.exist;
@@ -487,6 +491,7 @@ describe('Collection Browser', () => {
     // This query receives an array description like ['line1', 'line2']
     el.baseQuery = 'multi-line-description';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     const cellTemplate = el.cellForIndex(0);
     expect(cellTemplate).to.exist;
@@ -511,6 +516,7 @@ describe('Collection Browser', () => {
     el.baseQuery = 'collection:foo';
     el.searchType = SearchType.FULLTEXT;
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
@@ -526,6 +532,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = '   collection:foo   ';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
   });
@@ -540,7 +547,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'error';
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     const errorPlaceholder = el.shadowRoot?.querySelector(
       'empty-placeholder'
@@ -565,6 +572,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'malformed';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(sentrySpy.callCount).to.be.greaterThanOrEqual(1);
   });
@@ -583,6 +591,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
       'foo',
@@ -606,6 +615,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection-aggregations';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
       'foo',
@@ -627,6 +637,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection-titles';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(collectionNameCache.knownTitlesAdded).to.deep.equal({
       foo: 'Foo Collection',
@@ -681,7 +692,7 @@ describe('Collection Browser', () => {
 
     el.sortParam = { field: 'foo', direction: 'desc' };
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     // If the different sort param causes the results to be discarded,
     // the first results array should never be read.
@@ -709,7 +720,7 @@ describe('Collection Browser', () => {
 
     el.sortParam = { field: 'foo', direction: 'asc' };
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     // If the different sort param causes the results to be discarded,
     // the first results array should never be read.
@@ -738,7 +749,7 @@ describe('Collection Browser', () => {
 
     el.sortParam = null;
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     // If the different sort param causes the results to be discarded,
     // the first results array should never be read.
@@ -786,6 +797,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedTitleFilter = 'X';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('first-title');
     expect(searchService.searchParams?.filters?.firstTitle?.X).to.equal(
@@ -805,6 +817,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
@@ -837,6 +850,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters).to.deep.equal({
@@ -865,7 +879,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
@@ -874,6 +888,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchParams?.filters?.firstCreator).not.to.exist;
@@ -938,7 +953,7 @@ describe('Collection Browser', () => {
     el.baseQuery = 'collection:foo';
     el.addEventListener('searchResultsLoadingChanged', spy);
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     // Should initially emit loading=true, then later emit loading=false
     expect(spy.callCount).to.equal(2);
@@ -1080,7 +1095,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'single-result';
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     expect(
       el.shadowRoot?.querySelector('#big-results-label')?.textContent

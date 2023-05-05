@@ -71,6 +71,9 @@ import {
   analyticsCategories,
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
+import { sha1 } from './utils/sha1';
+
+type RequestKind = 'full' | 'hits' | 'aggregations';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -260,6 +263,26 @@ export class CollectionBrowser
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
+
+  /**
+   * Returns a promise resolving to a unique string that persists for the current browser session.
+   * Used in generating unique IDs for search requests, so that multiple requests coming from the
+   * same browser session can be identified.
+   */
+  private async getSessionId(): Promise<string> {
+    try {
+      const storedSessionId = sessionStorage?.getItem('cb-session');
+      if (storedSessionId) {
+        return storedSessionId;
+      }
+      const newSessionId = await sha1(Math.random().toString());
+      sessionStorage?.setItem('cb-session', newSessionId);
+      return newSessionId;
+    } catch (err) {
+      // Either we can't generate the hash or we're restricted from accessing sessionStorage
+      return '';
+    }
+  }
 
   /**
    * Go to the given page of results
@@ -1079,6 +1102,30 @@ export class CollectionBrowser
   // this lets us store the query key so we know if it's actually changed or not
   private previousQueryKey?: string;
 
+  /**
+   * Internal property to store the `resolve` function for the most recent
+   * `initialSearchComplete` promise, allowing us to resolve it at the appropriate time.
+   */
+  private _initialSearchCompleteResolver!: (val: boolean) => void;
+
+  /**
+   * Internal property to store the private value backing the `initialSearchComplete` getter.
+   */
+  private _initialSearchCompletePromise: Promise<boolean> = new Promise(res => {
+    this._initialSearchCompleteResolver = res;
+  });
+
+  /**
+   * A Promise which, after each query change, resolves once the fetches for the initial
+   * search have completed. Waits for *both* the hits and aggregations fetches to finish.
+   *
+   * Ensure you await this component's `updateComplete` promise before awaiting this
+   * one, to ensure you do not await an obsolete promise from the previous update.
+   */
+  get initialSearchComplete(): Promise<boolean> {
+    return this._initialSearchCompletePromise;
+  }
+
   private async handleQueryChange() {
     // only reset if the query has actually changed
     if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
@@ -1116,7 +1163,16 @@ export class CollectionBrowser
     }
     this.historyPopOccurred = false;
 
+    // Reset the `initialSearchComplete` promise with a new value for the imminent search
+    this._initialSearchCompletePromise = new Promise(res => {
+      this._initialSearchCompleteResolver = res;
+    });
+
+    // Fire the initial page and facets requests
     await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
+
+    // Resolve the `initialSearchComplete` promise for this search
+    this._initialSearchCompleteResolver(true);
   }
 
   private setupStateRestorationObserver() {
@@ -1187,6 +1243,38 @@ export class CollectionBrowser
         },
       })
     );
+  }
+
+  /**
+   * Produces a compact unique ID for a search request that can help with debugging
+   * on the backend by making related requests easier to trace through different services.
+   * (e.g., tying the hits/aggregations requests for the same page back to a single hash).
+   *
+   * @param params The search service parameters for the request
+   * @param kind The kind of request (hits-only, aggregations-only, or both)
+   * @returns A Promise resolving to the uid to apply to the request
+   */
+  private async requestUID(
+    params: SearchParams,
+    kind: RequestKind
+  ): Promise<string> {
+    const paramsToHash = JSON.stringify({
+      pageType: params.pageType,
+      pageTarget: params.pageTarget,
+      query: params.query,
+      fields: params.fields,
+      filters: params.filters,
+      sort: params.sort,
+      searchType: this.searchType,
+    });
+
+    const fullQueryHash = (await sha1(paramsToHash)).slice(0, 20); // First 80 bits of SHA-1 are plenty for this
+    const sessionId = (await this.getSessionId()).slice(0, 20); // Likewise
+    const page = params.page ?? 0;
+    const kindPrefix = kind.charAt(0); // f = full, h = hits, a = aggregations
+    const currentTime = Date.now();
+
+    return `R:${fullQueryHash}-S:${sessionId}-P:${page}-K:${kindPrefix}-T:${currentTime}`;
   }
 
   /**
@@ -1397,6 +1485,7 @@ export class CollectionBrowser
 
     const { facetFetchQueryKey } = this;
 
+    const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: trimmedQuery,
       rows: 0,
@@ -1405,8 +1494,11 @@ export class CollectionBrowser
       aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
       // The default aggregations for the search_results page type should be what we need here.
-      uid: this.facetFetchQueryKey,
     };
+    params.uid = await this.requestUID(
+      { ...params, sort: sortParams },
+      'aggregations'
+    );
 
     this.facetsLoading = true;
     const searchResponse = await this.searchService.search(
@@ -1548,8 +1640,9 @@ export class CollectionBrowser
       sort: sortParams,
       filters: this.filterMap,
       aggregations: { omit: true },
-      uid: this.pageFetchQueryKey,
     };
+    params.uid = await this.requestUID(params, 'hits');
+
     const searchResponse = await this.searchService.search(
       params,
       this.searchType
@@ -1726,6 +1819,7 @@ export class CollectionBrowser
     if (!trimmedQuery) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
+    const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
       query: trimmedQuery,
       rows: 0,
@@ -1735,6 +1829,10 @@ export class CollectionBrowser
       // Fetch all 26 letter buckets
       aggregationsSize: 26,
     };
+    params.uid = await this.requestUID(
+      { ...params, sort: sortParams },
+      'aggregations'
+    );
 
     const searchResponse = await this.searchService?.search(
       params,
