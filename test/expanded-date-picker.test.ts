@@ -11,6 +11,11 @@ import sinon from 'sinon';
 import '../src/expanded-date-picker';
 
 import type { ExpandedDatePicker } from '../src/expanded-date-picker';
+import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
+import {
+  analyticsActions,
+  analyticsCategories,
+} from '../src/utils/analytics-events';
 
 describe('Expanded Date Picker', () => {
   it('should render with a date picker and Apply button', async () => {
@@ -81,10 +86,11 @@ describe('Expanded Date Picker', () => {
     );
   });
 
-  it('should close and unstyle its modal when date range applied', async () => {
+  it('should close its modal and emit close event when date range applied', async () => {
     const modalManager = new ModalManager();
     modalManager.mode = ModalManagerMode.Open;
-    modalManager.classList.add('expanded-date-picker');
+
+    const modalClosed = sinon.spy();
 
     const el = await fixture<ExpandedDatePicker>(
       html`<expanded-date-picker
@@ -94,6 +100,7 @@ describe('Expanded Date Picker', () => {
         .minSelectedDate=${'1'}
         .maxSelectedDate=${'5'}
         .modalManager=${modalManager}
+        @modalClosed=${modalClosed}
       ></expanded-date-picker>`
     );
 
@@ -106,7 +113,7 @@ describe('Expanded Date Picker', () => {
     await el.updateComplete;
 
     expect(modalManager.getMode()).to.equal(ModalManagerMode.Closed);
-    expect(modalManager.classList.contains('expanded-date-picker')).to.be.false;
+    expect(modalClosed.callCount).to.equal(1);
   });
 
   it('closes the modal when Esc key is pressed', async () => {
@@ -133,5 +140,49 @@ describe('Expanded Date Picker', () => {
     expect(closeModalSpy.callCount).to.equal(1);
     expect(el.modalManager?.classList.contains('expanded-date-picker')).to.be
       .false;
+  });
+
+  it('sends analytics when date range is applied', async () => {
+    const analyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<ExpandedDatePicker>(
+      html`<expanded-date-picker
+        .buckets=${[1, 2, 3, 4, 5]}
+        .minDate=${'1'}
+        .maxDate=${'5'}
+        .minSelectedDate=${'1'}
+        .maxSelectedDate=${'5'}
+        .analyticsHandler=${analyticsHandler}
+      ></expanded-date-picker>`
+    );
+
+    const datePicker = el.shadowRoot?.querySelector(
+      '#date-picker'
+    ) as HistogramDateRange;
+    expect(datePicker).to.exist;
+
+    datePicker.minSelectedDate = '2';
+    datePicker.dispatchEvent(
+      new CustomEvent('histogramDateRangeUpdated', {
+        detail: {
+          minDate: datePicker.minSelectedDate,
+          maxDate: datePicker.maxSelectedDate,
+        },
+      })
+    );
+    await el.updateComplete;
+
+    const applyBtn = el.shadowRoot?.querySelector(
+      '#apply-btn'
+    ) as HTMLButtonElement;
+    expect(applyBtn).to.exist;
+
+    applyBtn.click();
+    await el.updateComplete;
+
+    expect(analyticsHandler.callCategory).to.equal(analyticsCategories.default);
+    expect(analyticsHandler.callAction).to.equal(
+      analyticsActions.histogramChangedFromModal
+    );
+    expect(analyticsHandler.callLabel).to.equal('year:[2 TO 5]');
   });
 });

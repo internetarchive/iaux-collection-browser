@@ -180,7 +180,9 @@ export class CollectionFacets extends LitElement {
         .maxSelectedDate=${this.maxSelectedDate}
         .buckets=${buckets}
         .modalManager=${this.modalManager}
+        .analyticsHandler=${this.analyticsHandler}
         @histogramDateRangeApplied=${this.histogramDateRangeUpdated}
+        @modalClosed=${this.handleExpandedDatePickerClosed}
       ></expanded-date-picker>
     `;
 
@@ -191,15 +193,24 @@ export class CollectionFacets extends LitElement {
       closeOnBackdropClick: true, // TODO: want to fire analytics
       title: html`Select a date range`,
     });
+
     this.modalManager?.classList.add('expanded-date-picker');
     this.modalManager?.showModal({
       config,
       customModalContent,
-      userClosedModalCallback: () => {
-        this.modalManager?.classList.remove('expanded-date-picker');
-      },
+      userClosedModalCallback: this.handleExpandedDatePickerClosed,
+    });
+
+    this.analyticsHandler?.sendEvent({
+      category: analyticsCategories.default,
+      action: analyticsActions.histogramExpanded,
+      label: 'expanded',
     });
   }
+
+  private handleExpandedDatePickerClosed = (): void => {
+    this.modalManager?.classList.remove('expanded-date-picker');
+  };
 
   updated(changed: PropertyValues) {
     if (changed.has('selectedFacets')) {

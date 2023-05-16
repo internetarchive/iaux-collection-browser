@@ -1,6 +1,11 @@
 import { css, html, LitElement, CSSResultGroup, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
+import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
+import {
+  analyticsActions,
+  analyticsCategories,
+} from './utils/analytics-events';
 
 @customElement('expanded-date-picker')
 export class ExpandedDatePicker extends LitElement {
@@ -14,7 +19,11 @@ export class ExpandedDatePicker extends LitElement {
 
   @property({ type: Array }) buckets?: number[];
 
-  @property({ type: Object }) modalManager?: ModalManagerInterface;
+  @property({ type: Object, attribute: false })
+  modalManager?: ModalManagerInterface;
+
+  @property({ type: Object, attribute: false })
+  analyticsHandler?: AnalyticsManagerInterface;
 
   render(): TemplateResult {
     return html`
@@ -105,15 +114,28 @@ export class ExpandedDatePicker extends LitElement {
     });
     this.dispatchEvent(event);
     this.closeModal();
+
+    const yearQuery =
+      this.maxSelectedDate && this.minSelectedDate
+        ? `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`
+        : undefined;
+
+    this.analyticsHandler?.sendEvent({
+      category: analyticsCategories.default,
+      action: analyticsActions.histogramChangedFromModal,
+      label: yearQuery,
+    });
   }
 
   /**
-   * Closes the modal associated with this component (if it exists) and removes the
-   * corresponding class from it.
+   * Closes the modal associated with this component (if it exists) and dispatches a
+   * modalClosed event.
    */
   private closeModal(): void {
-    this.modalManager?.closeModal();
-    this.modalManager?.classList.remove('expanded-date-picker');
+    if (this.modalManager) {
+      this.modalManager.closeModal();
+      this.dispatchEvent(new CustomEvent('modalClosed'));
+    }
   }
 
   static get styles(): CSSResultGroup {
