@@ -149,11 +149,23 @@ describe('Expanded Date Picker', () => {
         .buckets=${[1, 2, 3, 4, 5]}
         .minDate=${'1'}
         .maxDate=${'5'}
-        .minSelectedDate=${'1'}
-        .maxSelectedDate=${'5'}
         .analyticsHandler=${analyticsHandler}
       ></expanded-date-picker>`
     );
+
+    const applyBtn = el.shadowRoot?.querySelector(
+      '#apply-btn'
+    ) as HTMLButtonElement;
+    expect(applyBtn).to.exist;
+
+    applyBtn.click();
+    await el.updateComplete;
+
+    expect(analyticsHandler.callCategory).to.equal(analyticsCategories.default);
+    expect(analyticsHandler.callAction).to.equal(
+      analyticsActions.histogramChangedFromModal
+    );
+    expect(analyticsHandler.callLabel).to.be.undefined;
 
     const datePicker = el.shadowRoot?.querySelector(
       '#date-picker'
@@ -161,6 +173,7 @@ describe('Expanded Date Picker', () => {
     expect(datePicker).to.exist;
 
     datePicker.minSelectedDate = '2';
+    datePicker.maxSelectedDate = '5';
     datePicker.dispatchEvent(
       new CustomEvent('histogramDateRangeUpdated', {
         detail: {
@@ -170,11 +183,6 @@ describe('Expanded Date Picker', () => {
       })
     );
     await el.updateComplete;
-
-    const applyBtn = el.shadowRoot?.querySelector(
-      '#apply-btn'
-    ) as HTMLButtonElement;
-    expect(applyBtn).to.exist;
 
     applyBtn.click();
     await el.updateComplete;
