@@ -720,5 +720,6 @@ describe('Collection Facets', () => {
 
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
     expect(mockAnalyticsHandler.callAction).to.equal('histogramExpanded');
+    expect(mockAnalyticsHandler.callLabel).to.equal(window.location.href);
   });
 });

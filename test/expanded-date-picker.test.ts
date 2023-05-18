@@ -165,7 +165,7 @@ describe('Expanded Date Picker', () => {
     expect(analyticsHandler.callAction).to.equal(
       analyticsActions.histogramChangedFromModal
     );
-    expect(analyticsHandler.callLabel).to.be.undefined;
+    expect(analyticsHandler.callLabel).to.equal(window.location.href);
 
     const datePicker = el.shadowRoot?.querySelector(
       '#date-picker'
@@ -191,6 +191,6 @@ describe('Expanded Date Picker', () => {
     expect(analyticsHandler.callAction).to.equal(
       analyticsActions.histogramChangedFromModal
     );
-    expect(analyticsHandler.callLabel).to.equal('year:[2 TO 5]');
+    expect(analyticsHandler.callLabel).to.equal(window.location.href);
   });
 });

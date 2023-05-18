@@ -204,7 +204,7 @@ export class CollectionFacets extends LitElement {
     this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
       action: analyticsActions.histogramExpanded,
-      label: 'expanded',
+      label: window.location.href,
     });
   }
 

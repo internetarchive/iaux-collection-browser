@@ -115,15 +115,10 @@ export class ExpandedDatePicker extends LitElement {
     this.dispatchEvent(event);
     this.closeModal();
 
-    const yearQuery =
-      this.maxSelectedDate && this.minSelectedDate
-        ? `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`
-        : undefined;
-
     this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
       action: analyticsActions.histogramChangedFromModal,
-      label: yearQuery,
+      label: window.location.href,
     });
   }
 
