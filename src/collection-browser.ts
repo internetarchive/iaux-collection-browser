@@ -384,7 +384,7 @@ export class CollectionBrowser
 
   private setPlaceholderType() {
     this.placeholderType = null;
-    if (!this.baseQuery?.trim()) {
+    if (!this.baseQuery?.trim() && !this.withinCollection) {
       this.placeholderType = 'empty-query';
     } else if (
       !this.searchResultsLoading &&
@@ -911,7 +911,8 @@ export class CollectionBrowser
       changed.has('maxSelectedDate') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
-      changed.has('searchService')
+      changed.has('searchService') ||
+      changed.has('withinCollection')
     ) {
       this.handleQueryChange();
     }
