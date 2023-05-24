@@ -90,6 +90,8 @@ export class CollectionBrowser
 
   @property({ type: String }) searchType: SearchType = SearchType.METADATA;
 
+  @property({ type: String }) withinCollection?: string;
+
   @property({ type: String }) baseQuery?: string;
 
   @property({ type: String }) displayMode?: CollectionDisplayMode;
@@ -1480,14 +1482,19 @@ export class CollectionBrowser
 
   private async fetchFacets() {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery) return;
+    if (!trimmedQuery && !this.withinCollection) return;
     if (!this.searchService) return;
 
     const { facetFetchQueryKey } = this;
 
+    const collectionParams = this.withinCollection
+      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      : null;
+
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...collectionParams,
+      query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
@@ -1609,7 +1616,7 @@ export class CollectionBrowser
    */
   async fetchPage(pageNumber: number, numInitialPages = 1) {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery) return;
+    if (!trimmedQuery && !this.withinCollection) return;
     if (!this.searchService) return;
 
     // if we already have data, don't fetch again
@@ -1632,9 +1639,14 @@ export class CollectionBrowser
     }
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
+    const collectionParams = this.withinCollection
+      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      : null;
+
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...collectionParams,
+      query: trimmedQuery || '',
       page: pageNumber,
       rows: numRows,
       sort: sortParams,
@@ -1830,12 +1842,18 @@ export class CollectionBrowser
     filterType: PrefixFilterType
   ): Promise<Bucket[]> {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery) return [];
+    if (!trimmedQuery && !this.withinCollection) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const sortParams = this.sortParam ? [this.sortParam] : [];
+
+    const collectionParams = this.withinCollection
+      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      : null;
+
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...collectionParams,
+      query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
       // Only fetch the firstTitle or firstCreator aggregation
