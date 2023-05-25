@@ -689,4 +689,37 @@ describe('Collection Facets', () => {
     expect(mockAnalyticsHandler.callAction).to.equal('showMoreFacetsModal');
     expect(mockAnalyticsHandler.callLabel).to.equal('subject');
   });
+
+  it('fires analytics on expanding date picker', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></collection-facets>`
+    );
+
+    el.fullYearAggregationLoading = false;
+    el.showHistogramDatePicker = true;
+    el.allowExpandingDatePicker = true;
+    el.fullYearsHistogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
+    await el.updateComplete;
+
+    const expandBtn = el.shadowRoot?.querySelector(
+      '.expand-date-picker-btn'
+    ) as HTMLButtonElement;
+    expect(expandBtn).to.exist;
+
+    // Click the expand button to open the modal
+    expandBtn?.click();
+    await el.updateComplete;
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('histogramExpanded');
+    expect(mockAnalyticsHandler.callLabel).to.equal(window.location.href);
+  });
 });

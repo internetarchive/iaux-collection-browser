@@ -15,6 +15,8 @@ export enum analyticsActions {
   facetNegativeSelected = 'facetNegativeSelected',
   facetNegativeDeselected = 'facetNegativeDeselected',
   histogramChanged = 'histogramChanged',
+  histogramChangedFromModal = 'histogramChangedFromModal',
+  histogramExpanded = 'histogramExpanded',
   resultSelected = 'resultSelected',
   moreFacetsPageChange = 'moreFacetsPageChange',
   showMoreFacetsModal = 'showMoreFacetsModal',
