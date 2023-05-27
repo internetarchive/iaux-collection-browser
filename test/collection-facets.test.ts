@@ -10,7 +10,11 @@ import {
 import type { CollectionFacets } from '../src/collection-facets';
 import '@internetarchive/modal-manager';
 import '../src/collection-facets';
-import type { FacetOption, SelectedFacets } from '../src/models';
+import {
+  FacetOption,
+  SelectedFacets,
+  getDefaultSelectedFacets,
+} from '../src/models';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 
 describe('Collection Facets', () => {
@@ -531,6 +535,126 @@ describe('Collection Facets', () => {
 
     const moreLink = el.shadowRoot?.querySelector('.more-link');
     expect(moreLink).not.to.exist;
+  });
+
+  it('always renders the mediatype:collection facet when present', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      mediatype: new Aggregation({
+        buckets: [
+          {
+            key: 'texts',
+            doc_count: 10000,
+          },
+          {
+            key: 'image',
+            doc_count: 9000,
+          },
+          {
+            key: 'audio',
+            doc_count: 8000,
+          },
+          {
+            key: 'movies',
+            doc_count: 7000,
+          },
+          {
+            key: 'software',
+            doc_count: 6000,
+          },
+          {
+            key: 'data',
+            doc_count: 5000,
+          },
+          {
+            key: 'etree',
+            doc_count: 4000,
+          },
+          {
+            key: 'collection',
+            doc_count: 1,
+          },
+        ],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const facetTitles =
+      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
+    expect(facetTitles?.length).to.equal(6);
+    expect(facetTitles?.item(5)?.textContent).to.equal('collection');
+  });
+
+  it('renders the mediatype:collection facet even when >=6 other mediatypes are selected', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets></collection-facets>`
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      mediatype: new Aggregation({
+        buckets: [
+          {
+            key: 'texts',
+            doc_count: 10000,
+          },
+          {
+            key: 'image',
+            doc_count: 9000,
+          },
+          {
+            key: 'audio',
+            doc_count: 8000,
+          },
+          {
+            key: 'movies',
+            doc_count: 7000,
+          },
+          {
+            key: 'software',
+            doc_count: 6000,
+          },
+          {
+            key: 'data',
+            doc_count: 5000,
+          },
+          {
+            key: 'etree',
+            doc_count: 4000,
+          },
+          {
+            key: 'collection',
+            doc_count: 1,
+          },
+        ],
+      }),
+    };
+
+    const selectedFacets = getDefaultSelectedFacets();
+    selectedFacets.mediatype = {
+      texts: { key: 'texts', count: 10000, state: 'selected' },
+      image: { key: 'image', count: 9000, state: 'selected' },
+      audio: { key: 'audio', count: 8000, state: 'selected' },
+      movies: { key: 'movies', count: 7000, state: 'selected' },
+      software: { key: 'software', count: 6000, state: 'selected' },
+      data: { key: 'data', count: 5000, state: 'selected' },
+      etree: { key: 'etree', count: 4000, state: 'selected' },
+    };
+
+    el.aggregations = aggs;
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+
+    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
+    const facetTitles =
+      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
+    expect(facetTitles?.length).to.equal(8);
+    expect(facetTitles?.item(7)?.textContent).to.equal('collection');
   });
 
   describe('More Facets', () => {
