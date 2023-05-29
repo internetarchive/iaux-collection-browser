@@ -945,7 +945,6 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
-        .log=${true}
         .searchService=${searchService}
       ></collection-browser>`
     );
@@ -959,6 +958,34 @@ describe('Collection Browser', () => {
     expect(spy.callCount).to.equal(2);
     expect(spy.firstCall.firstArg?.detail?.loading).to.equal(true);
     expect(spy.secondCall.firstArg?.detail?.loading).to.equal(false);
+  });
+
+  it('collapses extra set of quotes around href field', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'extra-quoted-href';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await el.updateComplete;
+    await nextTick();
+
+    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
+    expect(infiniteScroller).to.exist;
+
+    const firstResult =
+      infiniteScroller!.shadowRoot?.querySelector('tile-dispatcher');
+    expect(firstResult).to.exist;
+
+    // Original href q param starts/ends with %22%22, but should be collapsed to %22 before render
+    expect(
+      firstResult!.shadowRoot?.querySelector('a[href]')?.getAttribute('href')
+    ).to.equal('/details/foo?q=%22quoted+query%22');
   });
 
   it('scrolls to page', async () => {
