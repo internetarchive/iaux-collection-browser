@@ -1488,13 +1488,9 @@ export class CollectionBrowser
 
     const { facetFetchQueryKey } = this;
 
-    const collectionParams = this.withinCollection
-      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
-      : null;
-
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      ...collectionParams,
+      ...this.collectionParams,
       query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
@@ -1578,6 +1574,19 @@ export class CollectionBrowser
   }
 
   /**
+   * Additional params to pass to the search service if targeting a collection page,
+   * or null otherwise.
+   */
+  private get collectionParams(): {
+    pageType: string;
+    pageTarget: string;
+  } | null {
+    return this.withinCollection
+      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      : null;
+  }
+
+  /**
    * The query key is a string that uniquely identifies the current search.
    * It consists of:
    *  - The current base query
@@ -1640,13 +1649,9 @@ export class CollectionBrowser
     }
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
 
-    const collectionParams = this.withinCollection
-      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
-      : null;
-
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      ...collectionParams,
+      ...this.collectionParams,
       query: trimmedQuery || '',
       page: pageNumber,
       rows: numRows,
@@ -1848,12 +1853,8 @@ export class CollectionBrowser
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const sortParams = this.sortParam ? [this.sortParam] : [];
 
-    const collectionParams = this.withinCollection
-      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
-      : null;
-
     const params: SearchParams = {
-      ...collectionParams,
+      ...this.collectionParams,
       query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
