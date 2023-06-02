@@ -953,7 +953,8 @@ export class CollectionBrowser
     const previousView = this.mobileView;
     if (entry.target === this.contentContainer) {
       this.contentWidth = entry.contentRect.width;
-      this.mobileView = this.contentWidth < this.mobileBreakpoint;
+      this.mobileView =
+        this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
       // If changing from desktop to mobile disable transition
       if (this.mobileView && !previousView) {
         this.isResizeToMobile = true;
