@@ -329,13 +329,6 @@ export class CollectionFacets extends LitElement {
         bucketsWithCount.push(bucket);
       });
 
-      // For lending facets, only include a specific subset of buckets
-      if (facetKey === 'lending') {
-        bucketsWithCount = bucketsWithCount.filter(
-          bucket => lendingFacetKeysVisibility[bucket.key as LendingFacetKey]
-        );
-      }
-
       /**
        * render limited facet items on page facet area
        *
@@ -347,6 +340,31 @@ export class CollectionFacets extends LitElement {
       )?.length;
       if (allowedFacetCount < this.allowedFacetCount) {
         allowedFacetCount = this.allowedFacetCount; // splice start index from 0th
+      }
+
+      // For lending facets, only include a specific subset of buckets
+      if (facetKey === 'lending') {
+        bucketsWithCount = bucketsWithCount.filter(
+          bucket => lendingFacetKeysVisibility[bucket.key as LendingFacetKey]
+        );
+      }
+
+      // For mediatype facets, ensure the collection bucket is always shown if present
+      if (facetKey === 'mediatype') {
+        const collectionIndex = bucketsWithCount.findIndex(
+          bucket => bucket.key === 'collection'
+        );
+
+        if (collectionIndex >= allowedFacetCount) {
+          const [collectionBucket] = bucketsWithCount.splice(
+            collectionIndex,
+            1
+          );
+          bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
+          // If we're showing lots of selected facets, ensure we're not cutting off the last one
+          if (allowedFacetCount > this.allowedFacetCount)
+            allowedFacetCount += 1;
+        }
       }
 
       // splice how many items we want to show in page facet area
