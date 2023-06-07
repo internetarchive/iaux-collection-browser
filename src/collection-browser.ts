@@ -2056,6 +2056,7 @@ export class CollectionBrowser
           border-right: 1px solid rgb(232, 232, 232);
           padding-left: 1rem;
           padding-right: 1rem;
+          margin-top: var(--rightColumnMarginTop, 0);
           background: #fff;
         }
 
