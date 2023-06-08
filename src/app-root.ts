@@ -39,6 +39,8 @@ export class AppRoot extends LitElement {
 
   @state() private searchQuery?: string;
 
+  @state() private withinCollection?: string;
+
   @state() private cellWidth: number = 18;
 
   @state() private cellHeight: number = 29;
@@ -54,6 +56,9 @@ export class AppRoot extends LitElement {
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
+
+  @query('#base-collection-field')
+  private baseCollectionField!: HTMLInputElement;
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
@@ -89,6 +94,16 @@ export class AppRoot extends LitElement {
     e.preventDefault();
     this.searchQuery = this.baseQueryField.value;
     this.collectionBrowser.searchType = this.searchType;
+
+    if ((this.currentPage ?? 1) > 1) {
+      this.collectionBrowser.goToPage(this.currentPage ?? 1);
+    }
+  }
+
+  private collectionChanged(e: Event) {
+    e.preventDefault();
+    this.withinCollection = this.baseCollectionField.value;
+    this.collectionBrowser.withinCollection = this.withinCollection;
 
     if ((this.currentPage ?? 1) > 1) {
       this.collectionBrowser.goToPage(this.currentPage ?? 1);
@@ -139,6 +154,17 @@ export class AppRoot extends LitElement {
               <label for="page-number-input"> Page: </label>
               <input type="number" value="1" id="page-number-input" />
               <input type="submit" value="Go" />
+            </form>
+          </div>
+          <div>
+            <form @submit=${this.collectionChanged}>
+              <label for="base-collection-field"> Within collection: </label>
+              <input
+                type="text"
+                id="base-collection-field"
+                .value=${this.withinCollection ?? ''}
+              />
+              <input type="submit" value="Search" />
             </form>
           </div>
 

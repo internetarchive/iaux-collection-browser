@@ -1351,8 +1351,7 @@ export class CollectionBrowser
 
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery.trim();
+    let fullQuery = this.baseQuery?.trim() ?? '';
 
     const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
 
@@ -1591,6 +1590,7 @@ export class CollectionBrowser
    * The query key is a string that uniquely identifies the current search.
    * It consists of:
    *  - The current base query
+   *  - The current collection
    *  - The current search type
    *  - Any currently-applied facets
    *  - Any currently-applied date range
@@ -1603,7 +1603,7 @@ export class CollectionBrowser
   private get pageFetchQueryKey(): string {
     const sortField = this.sortParam?.field ?? 'none';
     const sortDirection = this.sortParam?.direction ?? 'none';
-    return `${this.fullQuery}-${this.searchType}-${sortField}-${sortDirection}`;
+    return `${this.fullQuery}-${this.withinCollection}-${this.searchType}-${sortField}-${sortDirection}`;
   }
 
   /**
@@ -1611,7 +1611,7 @@ export class CollectionBrowser
    * are not relevant in determining aggregation queries.
    */
   private get facetFetchQueryKey(): string {
-    return `${this.fullQuery}-${this.searchType}`;
+    return `${this.fullQuery}-${this.withinCollection}-${this.searchType}`;
   }
 
   // this maps the query to the pages being fetched for that query
