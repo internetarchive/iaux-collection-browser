@@ -210,7 +210,7 @@ export class AlphaBar extends LitElement {
       border: none;
       border-radius: 4px;
       font-family: inherit;
-      font-size: inherit;
+      font-size: 1.2rem;
       cursor: pointer;
     }
 

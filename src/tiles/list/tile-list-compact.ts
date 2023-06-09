@@ -30,6 +30,8 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: String }) collectionPagePath: string = '/details/';
+
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
@@ -66,9 +68,14 @@ export class TileListCompact extends LitElement {
   private get href(): string {
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
-    return this.model?.href
-      ? `${this.baseNavigationUrl}${this.model.href}`
-      : `${this.baseNavigationUrl}/details/${this.model?.identifier}`;
+    if (this.model?.href) {
+      return `${this.baseNavigationUrl}${this.model?.href}`;
+    }
+
+    const isCollection = this.model?.mediatype === 'collection';
+    return `${this.baseNavigationUrl}${
+      isCollection ? this.collectionPagePath : '/details/'
+    }${this.model?.identifier}`;
   }
 
   /*

@@ -49,6 +49,8 @@ export class TileList extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: String }) collectionPagePath: string = '/details/';
+
   render() {
     return html`
       <div id="list-line" class="${this.classSize}">
@@ -93,10 +95,11 @@ export class TileList extends LitElement {
   private get imageBlockTemplate() {
     if (!this.model) return nothing;
 
+    const isCollection = this.model.mediatype === 'collection';
     return html`<a
-      href="${this.baseNavigationUrl}/details/${encodeURI(
-        this.model.identifier
-      )}"
+      href="${this.baseNavigationUrl}${isCollection
+        ? this.collectionPagePath
+        : '/details/'}${encodeURI(this.model.identifier)}"
     >
       <image-block
         .model=${this.model}
@@ -148,7 +151,11 @@ export class TileList extends LitElement {
       ? html`<a href="${this.baseNavigationUrl}${this.model.href}"
           >${this.model.title ?? this.model.identifier}</a
         >`
-      : this.detailsLink(this.model.identifier, this.model.title);
+      : this.detailsLink(
+          this.model.identifier,
+          this.model.title,
+          this.model.mediatype === 'collection'
+        );
   }
 
   private get itemLineTemplate() {
@@ -341,12 +348,18 @@ export class TileList extends LitElement {
     /* eslint-enable lit/no-invalid-html */
   }
 
-  private detailsLink(identifier: string, text?: string): TemplateResult {
+  private detailsLink(
+    identifier: string,
+    text?: string,
+    collection = false
+  ): TemplateResult {
     const linkText = text ?? identifier;
     // No whitespace after closing tag
     // identifiers (all ASCII in their creation) should be safe to use in href, but sanitize anyway
     return html`<a
-      href="${this.baseNavigationUrl}/details/${encodeURI(identifier)}"
+      href="${this.baseNavigationUrl}${collection
+        ? this.collectionPagePath
+        : '/details/'}${encodeURI(identifier)}"
       >${DOMPurify.sanitize(linkText)}</a
     >`;
   }
@@ -364,7 +377,7 @@ export class TileList extends LitElement {
       case 'account':
         return nothing;
       default:
-        return `${this.baseNavigationUrl}/details/${encodeURI(
+        return `${this.baseNavigationUrl}${this.collectionPagePath}${encodeURI(
           this.model.mediatype
         )}`;
     }
@@ -398,7 +411,7 @@ export class TileList extends LitElement {
         promises.push(
           this.collectionNameCache?.collectionNameFor(collection).then(name => {
             newCollectionLinks.push(
-              this.detailsLink(collection, name ?? collection)
+              this.detailsLink(collection, name ?? collection, true)
             );
           })
         );

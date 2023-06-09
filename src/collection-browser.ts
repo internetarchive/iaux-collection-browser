@@ -120,6 +120,8 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  @property({ type: String }) collectionPagePath: string = '/details/';
+
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
     analyticsCategories.default;
@@ -714,6 +716,7 @@ export class CollectionBrowser
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+        .collectionPagePath=${this.collectionPagePath}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
         .recaptchaManager=${this.recaptchaManager}
@@ -1953,6 +1956,7 @@ export class CollectionBrowser
 
     return html`
       <tile-dispatcher
+        .collectionPagePath=${this.collectionPagePath}
         .baseNavigationUrl=${this.baseNavigationUrl}
         .baseImageUrl=${this.baseImageUrl}
         .model=${model}

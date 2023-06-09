@@ -22,6 +22,8 @@ export class FacetsTemplate extends LitElement {
 
   @property({ type: String }) renderOn?: string;
 
+  @property({ type: String }) collectionPagePath: string = '/details/';
+
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
@@ -146,7 +148,7 @@ export class FacetsTemplate extends LitElement {
             const bucketTextDisplay =
               facetGroup.key !== 'collection'
                 ? html`${bucket.displayText ?? bucket.key}`
-                : html`<a href="/details/${bucket.key}">
+                : html`<a href="${this.collectionPagePath}${bucket.key}">
                     <async-collection-name
                       .collectionNameCache=${this.collectionNameCache}
                       .identifier=${bucket.key}
