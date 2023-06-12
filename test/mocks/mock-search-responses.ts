@@ -4,6 +4,7 @@ import {
   ItemHit,
   SearchResponse,
   SearchServiceError,
+  TextHit,
 } from '@internetarchive/search-service';
 import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 
@@ -464,6 +465,42 @@ export const getMockSuccessMultiLineDescription: () => Result<
             identifier: 'foo',
             collection: ['foo', 'bar'],
             description: ['line1', 'line2'],
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessExtraQuotedHref: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'extra-quoted-href',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'extra-quoted-href',
+        sort: [],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new TextHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+            __href__: '/details/foo?q=%22%22quoted+query%22%22',
           },
         }),
       ],

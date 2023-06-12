@@ -21,6 +21,7 @@ import {
   getMockMalformedResult,
   getMockSuccessWithCollectionTitles,
   getMockSuccessWithCollectionAggregations,
+  getMockSuccessExtraQuotedHref,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -37,6 +38,7 @@ const responses: Record<
   'first-creator': getMockSuccessFirstCreatorResult,
   'collection-titles': getMockSuccessWithCollectionTitles,
   'collection-aggregations': getMockSuccessWithCollectionAggregations,
+  'extra-quoted-href': getMockSuccessExtraQuotedHref,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };
