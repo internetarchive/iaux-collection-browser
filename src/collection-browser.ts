@@ -1724,10 +1724,12 @@ export class CollectionBrowser
     // When we reach the end of the data, we can set the infinite scroller's
     // item count to the real total number of results (rather than the
     // temporary estimates based on pages rendered so far).
-    if (results.length < this.pageSize) {
+    const resultCountDiscrepancy = numRows - results.length;
+    if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
       if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount = this.totalResults;
+        this.infiniteScroller.itemCount =
+          this.estimatedTileCount - resultCountDiscrepancy;
       }
     }
 
