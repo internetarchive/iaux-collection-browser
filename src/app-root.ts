@@ -95,9 +95,7 @@ export class AppRoot extends LitElement {
     this.searchQuery = this.baseQueryField.value;
     this.collectionBrowser.searchType = this.searchType;
 
-    if ((this.currentPage ?? 1) > 1) {
-      this.collectionBrowser.goToPage(this.currentPage ?? 1);
-    }
+    this.goToCurrentPage();
   }
 
   private collectionChanged(e: Event) {
@@ -105,8 +103,13 @@ export class AppRoot extends LitElement {
     this.withinCollection = this.baseCollectionField.value;
     this.collectionBrowser.withinCollection = this.withinCollection;
 
-    if ((this.currentPage ?? 1) > 1) {
-      this.collectionBrowser.goToPage(this.currentPage ?? 1);
+    this.goToCurrentPage();
+  }
+
+  private goToCurrentPage() {
+    const page = this.currentPage ?? 1;
+    if (page > 1) {
+      this.collectionBrowser.goToPage(page);
     }
   }
 
