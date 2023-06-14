@@ -2013,6 +2013,10 @@ export class CollectionBrowser
           display: flex;
         }
 
+        empty-placeholder {
+          margin-top: var(--placeholderMarginTop, 0);
+        }
+
         .collapser-icon {
           display: inline-block;
         }
