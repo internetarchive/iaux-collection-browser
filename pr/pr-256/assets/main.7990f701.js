@@ -4603,6 +4603,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           display: flex;
         }
 
+        empty-placeholder {
+          margin-top: var(--placeholderMarginTop, 0);
+        }
+
         .collapser-icon {
           display: inline-block;
         }
