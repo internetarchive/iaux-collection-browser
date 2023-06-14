@@ -124,7 +124,7 @@ export class TileDispatcher
   private get linkTileTemplate() {
     return html`
       <a
-        href="${this.linkTileHref}"
+        href=${this.linkTileHref}
         aria-label=${this.model?.title ?? 'Untitled item'}
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
@@ -139,17 +139,19 @@ export class TileDispatcher
     `;
   }
 
-  private get linkTileHref() {
+  private get linkTileHref(): string | typeof nothing {
+    if (!this.model?.identifier || this.baseNavigationUrl == null)
+      return nothing;
+
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
-    if (this.model?.href) {
-      return `${this.baseNavigationUrl}${this.model?.href}`;
+    if (this.model.href) {
+      return `${this.baseNavigationUrl}${this.model.href}`;
     }
 
-    const isCollection = this.model?.mediatype === 'collection';
-    return `${this.baseNavigationUrl}${
-      isCollection ? this.collectionPagePath : '/details/'
-    }${this.model?.identifier}`;
+    const isCollection = this.model.mediatype === 'collection';
+    const basePath = isCollection ? this.collectionPagePath : '/details/';
+    return `${this.baseNavigationUrl}${basePath}${this.model.identifier}`;
   }
 
   /**

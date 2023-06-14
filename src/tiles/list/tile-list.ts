@@ -96,11 +96,15 @@ export class TileList extends LitElement {
     if (!this.model) return nothing;
 
     const isCollection = this.model.mediatype === 'collection';
-    return html`<a
-      href="${this.baseNavigationUrl}${isCollection
-        ? this.collectionPagePath
-        : '/details/'}${encodeURI(this.model.identifier)}"
-    >
+    const hrefBasePath = isCollection ? this.collectionPagePath : '/details/';
+    const href =
+      this.model.identifier && this.baseNavigationUrl != null
+        ? `${this.baseNavigationUrl}${hrefBasePath}${encodeURI(
+            this.model.identifier
+          )}`
+        : nothing;
+
+    return html`<a href=${href}>
       <image-block
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}

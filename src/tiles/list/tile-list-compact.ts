@@ -1,4 +1,4 @@
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import DOMPurify from 'dompurify';
 import type { SortParam } from '@internetarchive/search-service';
@@ -65,17 +65,19 @@ export class TileListCompact extends LitElement {
     `;
   }
 
-  private get href(): string {
+  private get href(): string | typeof nothing {
+    if (!this.model?.identifier || this.baseNavigationUrl == null)
+      return nothing;
+
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
-    if (this.model?.href) {
-      return `${this.baseNavigationUrl}${this.model?.href}`;
+    if (this.model.href) {
+      return `${this.baseNavigationUrl}${this.model.href}`;
     }
 
     const isCollection = this.model?.mediatype === 'collection';
-    return `${this.baseNavigationUrl}${
-      isCollection ? this.collectionPagePath : '/details/'
-    }${this.model?.identifier}`;
+    const basePath = isCollection ? this.collectionPagePath : '/details/';
+    return `${this.baseNavigationUrl}${basePath}${this.model.identifier}`;
   }
 
   /*
