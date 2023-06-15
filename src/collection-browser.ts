@@ -72,6 +72,7 @@ import {
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
+import type { CollectionFacets } from './collection-facets';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -89,6 +90,8 @@ export class CollectionBrowser
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: String }) searchType: SearchType = SearchType.METADATA;
+
+  @property({ type: String }) withinCollection?: string;
 
   @property({ type: String }) baseQuery?: string;
 
@@ -117,6 +120,8 @@ export class CollectionBrowser
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
+
+  @property({ type: String }) collectionPagePath: string = '/details/';
 
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
@@ -196,6 +201,8 @@ export class CollectionBrowser
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
 
+  @query('collection-facets') private collectionFacets?: CollectionFacets;
+
   @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
 
@@ -264,6 +271,8 @@ export class CollectionBrowser
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
+  private sessionIdGenPromise?: Promise<string>;
+
   /**
    * Returns a promise resolving to a unique string that persists for the current browser session.
    * Used in generating unique IDs for search requests, so that multiple requests coming from the
@@ -275,7 +284,16 @@ export class CollectionBrowser
       if (storedSessionId) {
         return storedSessionId;
       }
-      const newSessionId = await sha1(Math.random().toString());
+
+      // If we enter this method a second time while a first session ID is already being generated,
+      // ensure we produce the same ID from both calls instead of generating another one.
+      if (this.sessionIdGenPromise) {
+        return this.sessionIdGenPromise;
+      }
+
+      this.sessionIdGenPromise = sha1(Math.random().toString());
+      const newSessionId = await this.sessionIdGenPromise;
+
       sessionStorage?.setItem('cb-session', newSessionId);
       return newSessionId;
     } catch (err) {
@@ -381,14 +399,20 @@ export class CollectionBrowser
   }
 
   private setPlaceholderType() {
-    this.placeholderType = null;
-    if (!this.baseQuery?.trim()) {
-      this.placeholderType = 'empty-query';
-    } else if (
+    const hasQuery = !!this.baseQuery?.trim();
+    const isCollection = !!this.withinCollection;
+    const noResults =
       !this.searchResultsLoading &&
-      (this.totalResults === 0 || !this.searchService)
-    ) {
-      this.placeholderType = 'null-result';
+      (this.totalResults === 0 || !this.searchService);
+
+    this.placeholderType = null;
+    if (!hasQuery && !isCollection) {
+      this.placeholderType = 'empty-query';
+    } else if (noResults) {
+      // Within a collection, no query + no results means the collection simply has no viewable items.
+      // Otherwise, we must have a user query that produced 0 results.
+      this.placeholderType =
+        !hasQuery && isCollection ? 'empty-collection' : 'no-results';
     }
 
     if (this.queryErrorMessage) {
@@ -401,6 +425,7 @@ export class CollectionBrowser
       <empty-placeholder
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
+        ?isCollection=${!!this.withinCollection}
         .detailMessage=${this.queryErrorMessage ?? ''}
         .baseNavigationUrl=${this.baseNavigationUrl}
       ></empty-placeholder>
@@ -712,6 +737,7 @@ export class CollectionBrowser
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+        .collectionPagePath=${this.collectionPagePath}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
         .recaptchaManager=${this.recaptchaManager}
@@ -719,7 +745,6 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
-        .moreLinksVisible=${this.searchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -909,13 +934,23 @@ export class CollectionBrowser
       changed.has('maxSelectedDate') ||
       changed.has('sortParam') ||
       changed.has('selectedFacets') ||
-      changed.has('searchService')
+      changed.has('searchService') ||
+      changed.has('withinCollection')
     ) {
       this.handleQueryChange();
     }
 
     if (changed.has('searchResultsLoading')) {
       this.emitSearchResultsLoadingChanged();
+    }
+
+    if (
+      changed.has('facetsLoading') &&
+      this.facetsLoading &&
+      this.collectionFacets
+    ) {
+      this.collectionFacets.moreLinksVisible =
+        this.searchType !== SearchType.FULLTEXT;
     }
 
     if (changed.has('pagesToRender')) {
@@ -950,7 +985,8 @@ export class CollectionBrowser
     const previousView = this.mobileView;
     if (entry.target === this.contentContainer) {
       this.contentWidth = entry.contentRect.width;
-      this.mobileView = this.contentWidth < this.mobileBreakpoint;
+      this.mobileView =
+        this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
       // If changing from desktop to mobile disable transition
       if (this.mobileView && !previousView) {
         this.isResizeToMobile = true;
@@ -1130,6 +1166,10 @@ export class CollectionBrowser
     // only reset if the query has actually changed
     if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
       return;
+
+    // If the new state prevents us from updating the search results, don't reset
+    if (!this.canPerformSearch) return;
+
     this.previousQueryKey = this.pageFetchQueryKey;
 
     this.dataSource = {};
@@ -1347,8 +1387,7 @@ export class CollectionBrowser
 
   /** The full query, including year facets and date range clauses */
   private get fullQuery(): string | undefined {
-    if (!this.baseQuery) return undefined;
-    let fullQuery = this.baseQuery.trim();
+    let fullQuery = this.baseQuery?.trim() ?? '';
 
     const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
 
@@ -1480,14 +1519,14 @@ export class CollectionBrowser
 
   private async fetchFacets() {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery) return;
-    if (!this.searchService) return;
+    if (!this.canPerformSearch) return;
 
     const { facetFetchQueryKey } = this;
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...this.collectionParams,
+      query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
@@ -1501,7 +1540,7 @@ export class CollectionBrowser
     );
 
     this.facetsLoading = true;
-    const searchResponse = await this.searchService.search(
+    const searchResponse = await this.searchService?.search(
       params,
       this.searchType
     );
@@ -1570,9 +1609,42 @@ export class CollectionBrowser
   }
 
   /**
+   * Whether a search may be performed in the current state of the component.
+   * This is only true if the search service is defined, and either
+   *   (a) a non-empty query is set, or
+   *   (b) we are on a collection page in metadata search mode.
+   */
+  private get canPerformSearch(): boolean {
+    if (!this.searchService) return false;
+
+    const trimmedQuery = this.baseQuery?.trim();
+    const hasNonEmptyQuery = !!trimmedQuery;
+    const isCollectionSearch = !!this.withinCollection;
+    const isMetadataSearch = this.searchType === SearchType.METADATA;
+
+    // Metadata searches within a collection are allowed to have no query.
+    // Otherwise, a non-empty query must be set.
+    return hasNonEmptyQuery || (isCollectionSearch && isMetadataSearch);
+  }
+
+  /**
+   * Additional params to pass to the search service if targeting a collection page,
+   * or null otherwise.
+   */
+  private get collectionParams(): {
+    pageType: string;
+    pageTarget: string;
+  } | null {
+    return this.withinCollection
+      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      : null;
+  }
+
+  /**
    * The query key is a string that uniquely identifies the current search.
    * It consists of:
    *  - The current base query
+   *  - The current collection
    *  - The current search type
    *  - Any currently-applied facets
    *  - Any currently-applied date range
@@ -1585,7 +1657,7 @@ export class CollectionBrowser
   private get pageFetchQueryKey(): string {
     const sortField = this.sortParam?.field ?? 'none';
     const sortDirection = this.sortParam?.direction ?? 'none';
-    return `${this.fullQuery}-${this.searchType}-${sortField}-${sortDirection}`;
+    return `${this.fullQuery}-${this.withinCollection}-${this.searchType}-${sortField}-${sortDirection}`;
   }
 
   /**
@@ -1593,7 +1665,7 @@ export class CollectionBrowser
    * are not relevant in determining aggregation queries.
    */
   private get facetFetchQueryKey(): string {
-    return `${this.fullQuery}-${this.searchType}`;
+    return `${this.fullQuery}-${this.withinCollection}-${this.searchType}`;
   }
 
   // this maps the query to the pages being fetched for that query
@@ -1609,8 +1681,7 @@ export class CollectionBrowser
    */
   async fetchPage(pageNumber: number, numInitialPages = 1) {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery) return;
-    if (!this.searchService) return;
+    if (!this.canPerformSearch) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1634,7 +1705,8 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...this.collectionParams,
+      query: trimmedQuery || '',
       page: pageNumber,
       rows: numRows,
       sort: sortParams,
@@ -1643,7 +1715,7 @@ export class CollectionBrowser
     };
     params.uid = await this.requestUID(params, 'hits');
 
-    const searchResponse = await this.searchService.search(
+    const searchResponse = await this.searchService?.search(
       params,
       this.searchType
     );
@@ -1702,10 +1774,12 @@ export class CollectionBrowser
     // When we reach the end of the data, we can set the infinite scroller's
     // item count to the real total number of results (rather than the
     // temporary estimates based on pages rendered so far).
-    if (results.length < this.pageSize) {
+    const resultCountDiscrepancy = numRows - results.length;
+    if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
       if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount = this.totalResults;
+        this.infiniteScroller.itemCount =
+          this.estimatedTileCount - resultCountDiscrepancy;
       }
     }
 
@@ -1830,12 +1904,14 @@ export class CollectionBrowser
     filterType: PrefixFilterType
   ): Promise<Bucket[]> {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery) return [];
+    if (!this.canPerformSearch) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const sortParams = this.sortParam ? [this.sortParam] : [];
+
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...this.collectionParams,
+      query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
       // Only fetch the firstTitle or firstCreator aggregation
@@ -1932,6 +2008,7 @@ export class CollectionBrowser
 
     return html`
       <tile-dispatcher
+        .collectionPagePath=${this.collectionPagePath}
         .baseNavigationUrl=${this.baseNavigationUrl}
         .baseImageUrl=${this.baseImageUrl}
         .model=${model}
@@ -1986,6 +2063,10 @@ export class CollectionBrowser
           display: flex;
         }
 
+        empty-placeholder {
+          margin-top: var(--placeholderMarginTop, 0);
+        }
+
         .collapser-icon {
           display: inline-block;
         }
@@ -2035,6 +2116,7 @@ export class CollectionBrowser
           border-right: 1px solid rgb(232, 232, 232);
           padding-left: 1rem;
           padding-right: 1rem;
+          margin-top: var(--rightColumnMarginTop, 0);
           background: #fff;
         }
 

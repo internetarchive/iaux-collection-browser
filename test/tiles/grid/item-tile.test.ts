@@ -158,10 +158,10 @@ describe('Item Tile', () => {
 
   it('should render published date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-02'),
-      dateArchived: new Date('2011-01-02'),
-      datePublished: new Date('2012-01-02'),
-      dateReviewed: new Date('2013-01-02'),
+      dateAdded: new Date(2010, 0, 2),
+      dateArchived: new Date(2011, 0, 2),
+      datePublished: new Date(2012, 0, 2),
+      dateReviewed: new Date(2013, 0, 2),
     };
 
     const el = await fixture<ItemTile>(html`
@@ -181,10 +181,10 @@ describe('Item Tile', () => {
 
   it('should render added date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-02'),
-      dateArchived: new Date('2011-01-02'),
-      datePublished: new Date('2012-01-02'),
-      dateReviewed: new Date('2013-01-02'),
+      dateAdded: new Date(2010, 0, 2),
+      dateArchived: new Date(2011, 0, 2),
+      datePublished: new Date(2012, 0, 2),
+      dateReviewed: new Date(2013, 0, 2),
     };
 
     const el = await fixture<ItemTile>(html`
@@ -202,10 +202,10 @@ describe('Item Tile', () => {
 
   it('should render archived date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-02'),
-      dateArchived: new Date('2011-01-02'),
-      datePublished: new Date('2012-01-02'),
-      dateReviewed: new Date('2013-01-02'),
+      dateAdded: new Date(2010, 0, 2),
+      dateArchived: new Date(2011, 0, 2),
+      datePublished: new Date(2012, 0, 2),
+      dateReviewed: new Date(2013, 0, 2),
     };
 
     const el = await fixture<ItemTile>(html`
@@ -225,10 +225,10 @@ describe('Item Tile', () => {
 
   it('should render reviewed date when sorting by it', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date('2010-01-02'),
-      dateArchived: new Date('2011-01-02'),
-      datePublished: new Date('2012-01-02'),
-      dateReviewed: new Date('2013-01-02'),
+      dateAdded: new Date(2010, 0, 2),
+      dateArchived: new Date(2011, 0, 2),
+      datePublished: new Date(2012, 0, 2),
+      dateReviewed: new Date(2013, 0, 2),
     };
 
     const el = await fixture<ItemTile>(html`

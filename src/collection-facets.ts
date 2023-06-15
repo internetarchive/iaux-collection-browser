@@ -90,6 +90,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) filterMap?: FilterMap;
 
+  @property({ type: String }) collectionPagePath: string = '/details/';
+
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
 
@@ -626,6 +628,7 @@ export class CollectionFacets extends LitElement {
   private getFacetTemplate(facetGroup: FacetGroup): TemplateResult {
     return html`
       <facets-template
+        .collectionPagePath=${this.collectionPagePath}
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'page'}

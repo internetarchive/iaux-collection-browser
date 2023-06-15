@@ -56,6 +56,8 @@ export class TileDispatcher
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
+  @property({ type: String }) collectionPagePath: string = '/details/';
+
   private hoverPaneController?: HoverPaneControllerInterface;
 
   @query('#container')
@@ -122,7 +124,7 @@ export class TileDispatcher
   private get linkTileTemplate() {
     return html`
       <a
-        href="${this.linkTileHref}"
+        href=${this.linkTileHref}
         aria-label=${this.model?.title ?? 'Untitled item'}
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
@@ -137,12 +139,19 @@ export class TileDispatcher
     `;
   }
 
-  private get linkTileHref() {
+  private get linkTileHref(): string | typeof nothing {
+    if (!this.model?.identifier || this.baseNavigationUrl == null)
+      return nothing;
+
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
-    return this.model?.href
-      ? `${this.baseNavigationUrl}${this.model?.href}`
-      : `${this.baseNavigationUrl}/details/${this.model?.identifier}`;
+    if (this.model.href) {
+      return `${this.baseNavigationUrl}${this.model.href}`;
+    }
+
+    const isCollection = this.model.mediatype === 'collection';
+    const basePath = isCollection ? this.collectionPagePath : '/details/';
+    return `${this.baseNavigationUrl}${basePath}${this.model.identifier}`;
   }
 
   /**
@@ -266,6 +275,7 @@ export class TileDispatcher
       case 'list-compact':
         return html`<tile-list-compact
           .model=${model}
+          .collectionPagePath=${this.collectionPagePath}
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
@@ -278,6 +288,7 @@ export class TileDispatcher
       case 'list-detail':
         return html`<tile-list
           .model=${model}
+          .collectionPagePath=${this.collectionPagePath}
           .collectionNameCache=${this.collectionNameCache}
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
