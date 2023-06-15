@@ -72,6 +72,7 @@ import {
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
+import type { CollectionFacets } from './collection-facets';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -200,6 +201,8 @@ export class CollectionBrowser
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
 
+  @query('collection-facets') private collectionFacets?: CollectionFacets;
+
   @property({ type: Object, attribute: false })
   private analyticsHandler?: AnalyticsManagerInterface;
 
@@ -268,6 +271,8 @@ export class CollectionBrowser
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
 
+  private sessionIdGenPromise?: Promise<string>;
+
   /**
    * Returns a promise resolving to a unique string that persists for the current browser session.
    * Used in generating unique IDs for search requests, so that multiple requests coming from the
@@ -279,7 +284,16 @@ export class CollectionBrowser
       if (storedSessionId) {
         return storedSessionId;
       }
-      const newSessionId = await sha1(Math.random().toString());
+
+      // If we enter this method a second time while a first session ID is already being generated,
+      // ensure we produce the same ID from both calls instead of generating another one.
+      if (this.sessionIdGenPromise) {
+        return this.sessionIdGenPromise;
+      }
+
+      this.sessionIdGenPromise = sha1(Math.random().toString());
+      const newSessionId = await this.sessionIdGenPromise;
+
       sessionStorage?.setItem('cb-session', newSessionId);
       return newSessionId;
     } catch (err) {
@@ -385,14 +399,20 @@ export class CollectionBrowser
   }
 
   private setPlaceholderType() {
-    this.placeholderType = null;
-    if (!this.baseQuery?.trim() && !this.withinCollection) {
-      this.placeholderType = 'empty-query';
-    } else if (
+    const hasQuery = !!this.baseQuery?.trim();
+    const isCollection = !!this.withinCollection;
+    const noResults =
       !this.searchResultsLoading &&
-      (this.totalResults === 0 || !this.searchService)
-    ) {
-      this.placeholderType = 'null-result';
+      (this.totalResults === 0 || !this.searchService);
+
+    this.placeholderType = null;
+    if (!hasQuery && !isCollection) {
+      this.placeholderType = 'empty-query';
+    } else if (noResults) {
+      // Within a collection, no query + no results means the collection simply has no viewable items.
+      // Otherwise, we must have a user query that produced 0 results.
+      this.placeholderType =
+        !hasQuery && isCollection ? 'empty-collection' : 'no-results';
     }
 
     if (this.queryErrorMessage) {
@@ -405,6 +425,7 @@ export class CollectionBrowser
       <empty-placeholder
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
+        ?isCollection=${!!this.withinCollection}
         .detailMessage=${this.queryErrorMessage ?? ''}
         .baseNavigationUrl=${this.baseNavigationUrl}
       ></empty-placeholder>
@@ -724,7 +745,6 @@ export class CollectionBrowser
         .searchType=${this.searchType}
         .aggregations=${this.aggregations}
         .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
-        .moreLinksVisible=${this.searchType !== SearchType.FULLTEXT}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -922,6 +942,15 @@ export class CollectionBrowser
 
     if (changed.has('searchResultsLoading')) {
       this.emitSearchResultsLoadingChanged();
+    }
+
+    if (
+      changed.has('facetsLoading') &&
+      this.facetsLoading &&
+      this.collectionFacets
+    ) {
+      this.collectionFacets.moreLinksVisible =
+        this.searchType !== SearchType.FULLTEXT;
     }
 
     if (changed.has('pagesToRender')) {
@@ -1137,6 +1166,10 @@ export class CollectionBrowser
     // only reset if the query has actually changed
     if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
       return;
+
+    // If the new state prevents us from updating the search results, don't reset
+    if (!this.canPerformSearch) return;
+
     this.previousQueryKey = this.pageFetchQueryKey;
 
     this.dataSource = {};
@@ -1486,8 +1519,7 @@ export class CollectionBrowser
 
   private async fetchFacets() {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery && !this.withinCollection) return;
-    if (!this.searchService) return;
+    if (!this.canPerformSearch) return;
 
     const { facetFetchQueryKey } = this;
 
@@ -1508,7 +1540,7 @@ export class CollectionBrowser
     );
 
     this.facetsLoading = true;
-    const searchResponse = await this.searchService.search(
+    const searchResponse = await this.searchService?.search(
       params,
       this.searchType
     );
@@ -1577,6 +1609,25 @@ export class CollectionBrowser
   }
 
   /**
+   * Whether a search may be performed in the current state of the component.
+   * This is only true if the search service is defined, and either
+   *   (a) a non-empty query is set, or
+   *   (b) we are on a collection page in metadata search mode.
+   */
+  private get canPerformSearch(): boolean {
+    if (!this.searchService) return false;
+
+    const trimmedQuery = this.baseQuery?.trim();
+    const hasNonEmptyQuery = !!trimmedQuery;
+    const isCollectionSearch = !!this.withinCollection;
+    const isMetadataSearch = this.searchType === SearchType.METADATA;
+
+    // Metadata searches within a collection are allowed to have no query.
+    // Otherwise, a non-empty query must be set.
+    return hasNonEmptyQuery || (isCollectionSearch && isMetadataSearch);
+  }
+
+  /**
    * Additional params to pass to the search service if targeting a collection page,
    * or null otherwise.
    */
@@ -1630,8 +1681,7 @@ export class CollectionBrowser
    */
   async fetchPage(pageNumber: number, numInitialPages = 1) {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery && !this.withinCollection) return;
-    if (!this.searchService) return;
+    if (!this.canPerformSearch) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource[pageNumber]) return;
@@ -1665,7 +1715,7 @@ export class CollectionBrowser
     };
     params.uid = await this.requestUID(params, 'hits');
 
-    const searchResponse = await this.searchService.search(
+    const searchResponse = await this.searchService?.search(
       params,
       this.searchType
     );
@@ -1854,7 +1904,7 @@ export class CollectionBrowser
     filterType: PrefixFilterType
   ): Promise<Bucket[]> {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!trimmedQuery && !this.withinCollection) return [];
+    if (!this.canPerformSearch) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const sortParams = this.sortParam ? [this.sortParam] : [];

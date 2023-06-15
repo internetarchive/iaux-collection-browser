@@ -15,21 +15,55 @@ describe('Empty Placeholder', () => {
     await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector('.empty-query')).to.exist;
-    expect(el.shadowRoot?.querySelector('.null-result')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('infinite-scroller')).to.not.exist;
+
+    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
   });
 
-  it('should render with null-result placeholder', async () => {
+  it('should render with empty-collection placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
       html`<empty-placeholder></empty-placeholder>`
     );
 
-    el.placeholderType = 'null-result';
+    el.placeholderType = 'empty-collection';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.null-result')).to.exist;
+    expect(el.shadowRoot?.querySelector('.empty-collection')).to.exist;
+
+    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
     expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
+  });
+
+  it('should render with no-results placeholder', async () => {
+    const el = await fixture<EmptyPlaceholder>(
+      html`<empty-placeholder></empty-placeholder>`
+    );
+
+    el.placeholderType = 'no-results';
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.no-results')).to.exist;
+
+    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
+  });
+
+  it('should render with query-error placeholder', async () => {
+    const el = await fixture<EmptyPlaceholder>(
+      html`<empty-placeholder></empty-placeholder>`
+    );
+
+    el.placeholderType = 'query-error';
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.query-error')).to.exist;
+
+    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
   });
 
   it('should not render any empty placeholder', async () => {
@@ -41,7 +75,8 @@ describe('Empty Placeholder', () => {
     await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.null-result')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('collection-facets')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
   });
 });

@@ -1,7 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { formatDate } from '../../src/utils/format-date';
 
-const testDate = new Date(Date.UTC(2020, 11, 9));
+const testDate = new Date(2020, 11, 9);
 
 describe('formatDate', () => {
   it('returns blank when undefined date', () => {
