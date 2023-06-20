@@ -210,4 +210,20 @@ describe('List Tile Compact', () => {
     expect(dateColumn).to.exist;
     expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2013');
   });
+
+  it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
+    const model: Partial<TileModel> = {
+      creator: 'foo',
+      creators: ['foo', 'bar', 'baz'],
+    };
+
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact .model=${model} .selectedCreatorFilter=${'B'}>
+      </tile-list-compact>
+    `);
+
+    const creator = el.shadowRoot?.getElementById('creator');
+    expect(creator).to.exist;
+    expect(creator?.textContent?.trim()).to.equal('bar');
+  });
 });
