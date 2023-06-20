@@ -32,6 +32,8 @@ export class ItemTile extends LitElement {
 
   @property({ type: Object }) sortParam?: SortParam;
 
+  @property({ type: String }) selectedCreatorFilter?: string;
+
   @property({ type: Boolean }) showInfoButton = false;
 
   render() {
@@ -78,12 +80,24 @@ export class ItemTile extends LitElement {
    * Templates
    */
   private get creatorTemplate(): TemplateResult | typeof nothing {
-    if (!this.model?.creator) return nothing;
+    let displayedCreator = this.model?.creator;
+
+    // If we're filtering by creator initial and have multiple creators, we want
+    // to surface the first creator who matches the filter.
+    if (this.selectedCreatorFilter && this.model?.creators.length) {
+      const firstLetter = this.selectedCreatorFilter;
+      displayedCreator =
+        this.model.creators.find(creator =>
+          creator.toUpperCase().startsWith(firstLetter)
+        ) ?? displayedCreator; // Fall back to the original if needed
+    }
+
+    if (!displayedCreator) return nothing;
 
     return html`
       <div class="created-by">
-        <span class="truncated" title=${ifDefined(this.model?.creator)}>
-          by&nbsp;${this.model?.creator}
+        <span class="truncated" title=${displayedCreator}>
+          by&nbsp;${displayedCreator}
         </span>
       </div>
     `;
@@ -171,7 +185,7 @@ export class ItemTile extends LitElement {
     `;
   }
 
-  private get doesSortedByDate() {
+  private get doesSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
       this.sortParam?.field as string
     );

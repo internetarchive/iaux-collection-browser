@@ -24,6 +24,8 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
+  @property({ type: String }) selectedCreatorFilter?: string;
+
   @property({ type: Number }) mobileBreakpoint?: number;
 
   @property({ type: String }) baseImageUrl?: string;
@@ -50,7 +52,7 @@ export class TileListCompact extends LitElement {
         <div id="creator">
           ${this.model?.mediatype === 'account'
             ? accountLabel(this.model?.dateAdded)
-            : DOMPurify.sanitize(this.model?.creator ?? '')}
+            : this.creator}
         </div>
         <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
         <div id="icon">
@@ -78,6 +80,22 @@ export class TileListCompact extends LitElement {
     const isCollection = this.model?.mediatype === 'collection';
     const basePath = isCollection ? this.collectionPagePath : '/details/';
     return `${this.baseNavigationUrl}${basePath}${this.model.identifier}`;
+  }
+
+  private get creator(): string | typeof nothing {
+    let displayedCreator = this.model?.creator;
+
+    // If we're filtering by creator initial and have multiple creators, we want
+    // to surface the first creator who matches the filter.
+    if (this.selectedCreatorFilter && this.model?.creators.length) {
+      const firstLetter = this.selectedCreatorFilter;
+      displayedCreator =
+        this.model.creators.find(creator =>
+          creator.toUpperCase().startsWith(firstLetter)
+        ) ?? displayedCreator; // Fall back to the original if needed
+    }
+
+    return displayedCreator ?? nothing;
   }
 
   /*
