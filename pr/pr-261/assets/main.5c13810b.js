@@ -1061,7 +1061,7 @@ var $r=Object.defineProperty,Sr=Object.defineProperties;var kr=Object.getOwnProp
           </tile-stats>
         </div>
       </div>
-    `}get creatorTemplate(){var e,t,i;let o=(e=this.model)===null||e===void 0?void 0:e.creator;if(this.selectedCreatorFilter&&((t=this.model)===null||t===void 0?void 0:t.creators.length)){const r=this.selectedCreatorFilter;o=(i=this.model.creators.find(n=>n.toUpperCase().startsWith(r)))!==null&&i!==void 0?i:o}return o?h`
+    `}get creatorTemplate(){var e,t,i;let o=(e=this.model)===null||e===void 0?void 0:e.creator;if(this.creatorFilter&&((t=this.model)===null||t===void 0?void 0:t.creators.length)){const r=this.creatorFilter;o=(i=this.model.creators.find(n=>n.toUpperCase().startsWith(r)))!==null&&i!==void 0?i:o}return o?h`
       <div class="created-by">
         <span class="truncated" title=${o}>
           by&nbsp;${o}
@@ -1118,7 +1118,7 @@ var $r=Object.defineProperty,Sr=Object.defineProperties;var kr=Object.getOwnProp
             -webkit-touch-callout: default;
           }
         }
-      `]}};s([c({type:String})],Ze.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],Ze.prototype,"loggedIn",void 0);s([c({type:Object})],Ze.prototype,"model",void 0);s([c({type:Object})],Ze.prototype,"sortParam",void 0);s([c({type:String})],Ze.prototype,"selectedCreatorFilter",void 0);s([c({type:Boolean})],Ze.prototype,"showInfoButton",void 0);Ze=s([F("item-tile")],Ze);let ai=class extends L{constructor(){super(...arguments),this.showInfoButton=!1}render(){return h`
+      `]}};s([c({type:String})],Ze.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],Ze.prototype,"loggedIn",void 0);s([c({type:Object})],Ze.prototype,"model",void 0);s([c({type:Object})],Ze.prototype,"sortParam",void 0);s([c({type:String})],Ze.prototype,"creatorFilter",void 0);s([c({type:Boolean})],Ze.prototype,"showInfoButton",void 0);Ze=s([F("item-tile")],Ze);let ai=class extends L{constructor(){super(...arguments),this.showInfoButton=!1}render(){return h`
       <div class="container">
         ${this.infoButtonTemplate}
         <div class="tile-details">
@@ -1498,7 +1498,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         </div>
         <div id="views">${Qt((l=this.views)!==null&&l!==void 0?l:0,this.formatSize)}</div>
       </div>
-    `}get href(){var e,t;if(!(!((e=this.model)===null||e===void 0)&&e.identifier)||this.baseNavigationUrl==null)return y;if(this.model.href)return`${this.baseNavigationUrl}${this.model.href}`;const o=((t=this.model)===null||t===void 0?void 0:t.mediatype)==="collection"?this.collectionPagePath:"/details/";return`${this.baseNavigationUrl}${o}${this.model.identifier}`}get creator(){var e,t,i;let o=(e=this.model)===null||e===void 0?void 0:e.creator;if(this.selectedCreatorFilter&&((t=this.model)===null||t===void 0?void 0:t.creators.length)){const r=this.selectedCreatorFilter;o=(i=this.model.creators.find(n=>n.toUpperCase().startsWith(r)))!==null&&i!==void 0?i:o}return o!=null?o:y}get date(){var e,t,i,o,r;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"publicdate":return(t=this.model)===null||t===void 0?void 0:t.dateArchived;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(o=this.model)===null||o===void 0?void 0:o.dateAdded;default:return(r=this.model)===null||r===void 0?void 0:r.datePublished}}get views(){var e,t,i;return((e=this.sortParam)===null||e===void 0?void 0:e.field)==="week"?(t=this.model)===null||t===void 0?void 0:t.weeklyViewCount:(i=this.model)===null||i===void 0?void 0:i.viewCount}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get dateFormatSize(){var e,t;return(!(!((e=this.sortParam)===null||e===void 0)&&e.field)||this.sortParam.field==="date")&&Po((t=this.model)===null||t===void 0?void 0:t.datePublished)?"year-only":this.formatSize}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return m`
+    `}get href(){var e,t;if(!(!((e=this.model)===null||e===void 0)&&e.identifier)||this.baseNavigationUrl==null)return y;if(this.model.href)return`${this.baseNavigationUrl}${this.model.href}`;const o=((t=this.model)===null||t===void 0?void 0:t.mediatype)==="collection"?this.collectionPagePath:"/details/";return`${this.baseNavigationUrl}${o}${this.model.identifier}`}get creator(){var e,t,i;let o=(e=this.model)===null||e===void 0?void 0:e.creator;if(this.creatorFilter&&((t=this.model)===null||t===void 0?void 0:t.creators.length)){const r=this.creatorFilter;o=(i=this.model.creators.find(n=>n.toUpperCase().startsWith(r)))!==null&&i!==void 0?i:o}return o!=null?o:y}get date(){var e,t,i,o,r;switch((e=this.sortParam)===null||e===void 0?void 0:e.field){case"publicdate":return(t=this.model)===null||t===void 0?void 0:t.dateArchived;case"reviewdate":return(i=this.model)===null||i===void 0?void 0:i.dateReviewed;case"addeddate":return(o=this.model)===null||o===void 0?void 0:o.dateAdded;default:return(r=this.model)===null||r===void 0?void 0:r.datePublished}}get views(){var e,t,i;return((e=this.sortParam)===null||e===void 0?void 0:e.field)==="week"?(t=this.model)===null||t===void 0?void 0:t.weeklyViewCount:(i=this.model)===null||i===void 0?void 0:i.viewCount}get classSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"mobile":"desktop"}get dateFormatSize(){var e,t;return(!(!((e=this.sortParam)===null||e===void 0)&&e.field)||this.sortParam.field==="date")&&Po((t=this.model)===null||t===void 0?void 0:t.datePublished)?"year-only":this.formatSize}get formatSize(){return this.mobileBreakpoint&&this.currentWidth&&this.currentWidth<this.mobileBreakpoint?"short":"long"}static get styles(){return m`
       html {
         font-size: unset;
       }
@@ -1571,7 +1571,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         --imgHeight: 100%;
         --imgWidth: 100%;
       }
-    `}};s([c({type:Object})],xe.prototype,"model",void 0);s([c({type:String})],xe.prototype,"baseNavigationUrl",void 0);s([c({type:Number})],xe.prototype,"currentWidth",void 0);s([c({type:Number})],xe.prototype,"currentHeight",void 0);s([c({type:Object})],xe.prototype,"sortParam",void 0);s([c({type:String})],xe.prototype,"selectedCreatorFilter",void 0);s([c({type:Number})],xe.prototype,"mobileBreakpoint",void 0);s([c({type:String})],xe.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],xe.prototype,"loggedIn",void 0);s([c({type:String})],xe.prototype,"collectionPagePath",void 0);xe=s([F("tile-list-compact")],xe);let Dt=class extends L{constructor(){super(...arguments),this.sortParam=null}render(){var e;return h`
+    `}};s([c({type:Object})],xe.prototype,"model",void 0);s([c({type:String})],xe.prototype,"baseNavigationUrl",void 0);s([c({type:Number})],xe.prototype,"currentWidth",void 0);s([c({type:Number})],xe.prototype,"currentHeight",void 0);s([c({type:Object})],xe.prototype,"sortParam",void 0);s([c({type:String})],xe.prototype,"creatorFilter",void 0);s([c({type:Number})],xe.prototype,"mobileBreakpoint",void 0);s([c({type:String})],xe.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],xe.prototype,"loggedIn",void 0);s([c({type:String})],xe.prototype,"collectionPagePath",void 0);xe=s([F("tile-list-compact")],xe);let Dt=class extends L{constructor(){super(...arguments),this.sortParam=null}render(){var e;return h`
       <div id="list-line-header" class="${this.classSize}">
         <div id="thumb"></div>
         <div id="title">Title</div>
@@ -1655,7 +1655,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       >
         ${this.tile}
       </a>
-    `}get linkTileHref(){var e;if(!(!((e=this.model)===null||e===void 0)&&e.identifier)||this.baseNavigationUrl==null)return y;if(this.model.href)return`${this.baseNavigationUrl}${this.model.href}`;const i=this.model.mediatype==="collection"?this.collectionPagePath:"/details/";return`${this.baseNavigationUrl}${i}${this.model.identifier}`}get shouldPrepareHoverPane(){return this.enableHoverPane&&!!this.tileDisplayMode&&bo.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode]}get isHoverEnabled(){return window.matchMedia("(hover: hover)").matches}getHoverPane(){return this.hoverPane}getHoverPaneProps(){return this}handleResize(e){this.currentWidth=e.contentRect.width,this.currentHeight=e.contentRect.height}disconnectedCallback(){this.stopResizeObservation(this.resizeObserver)}stopResizeObservation(e){e==null||e.removeObserver({handler:this,target:this.container})}startResizeObservation(){var e;this.stopResizeObservation(this.resizeObserver),(e=this.resizeObserver)===null||e===void 0||e.addObserver({handler:this,target:this.container})}updated(e){if(e.has("resizeObserver")){const t=e.get("resizeObserver");this.stopResizeObservation(t),this.startResizeObservation()}}tileInfoButtonPressed(e){var t;(t=this.hoverPaneController)===null||t===void 0||t.toggleHoverPane({coords:e.detail,enableTouchBackdrop:!0})}get tile(){const{model:e,baseNavigationUrl:t,currentWidth:i,currentHeight:o,sortParam:r,selectedCreatorFilter:n,mobileBreakpoint:l}=this;if(!e)return y;switch(this.tileDisplayMode){case"grid":switch(e.mediatype){case"collection":return h`<collection-tile
+    `}get linkTileHref(){var e;if(!(!((e=this.model)===null||e===void 0)&&e.identifier)||this.baseNavigationUrl==null)return y;if(this.model.href)return`${this.baseNavigationUrl}${this.model.href}`;const i=this.model.mediatype==="collection"?this.collectionPagePath:"/details/";return`${this.baseNavigationUrl}${i}${this.model.identifier}`}get shouldPrepareHoverPane(){return this.enableHoverPane&&!!this.tileDisplayMode&&bo.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode]}get isHoverEnabled(){return window.matchMedia("(hover: hover)").matches}getHoverPane(){return this.hoverPane}getHoverPaneProps(){return this}handleResize(e){this.currentWidth=e.contentRect.width,this.currentHeight=e.contentRect.height}disconnectedCallback(){this.stopResizeObservation(this.resizeObserver)}stopResizeObservation(e){e==null||e.removeObserver({handler:this,target:this.container})}startResizeObservation(){var e;this.stopResizeObservation(this.resizeObserver),(e=this.resizeObserver)===null||e===void 0||e.addObserver({handler:this,target:this.container})}updated(e){if(e.has("resizeObserver")){const t=e.get("resizeObserver");this.stopResizeObservation(t),this.startResizeObservation()}}tileInfoButtonPressed(e){var t;(t=this.hoverPaneController)===null||t===void 0||t.toggleHoverPane({coords:e.detail,enableTouchBackdrop:!0})}get tile(){const{model:e,baseNavigationUrl:t,currentWidth:i,currentHeight:o,sortParam:r,creatorFilter:n,mobileBreakpoint:l}=this;if(!e)return y;switch(this.tileDisplayMode){case"grid":switch(e.mediatype){case"collection":return h`<collection-tile
               .model=${e}
               .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${i}
@@ -1678,7 +1678,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
               .sortParam=${r}
-              .selectedCreatorFilter=${n}
+              .creatorFilter=${n}
               .loggedIn=${this.loggedIn}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
@@ -1690,7 +1690,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           .currentHeight=${o}
           .baseNavigationUrl=${t}
           .sortParam=${r}
-          .selectedCreatorFilter=${n}
+          .creatorFilter=${n}
           .mobileBreakpoint=${l}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
@@ -1769,7 +1769,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         left: -9999px;
         z-index: 2;
       }
-    `}};oe.HOVER_PANE_DISPLAY_MODES={grid:!0,"list-compact":!0,"list-detail":!1,"list-header":!1};s([c({type:String})],oe.prototype,"tileDisplayMode",void 0);s([c({type:Object})],oe.prototype,"model",void 0);s([c({type:String})],oe.prototype,"baseNavigationUrl",void 0);s([c({type:Number})],oe.prototype,"currentWidth",void 0);s([c({type:Number})],oe.prototype,"currentHeight",void 0);s([c({type:Object})],oe.prototype,"resizeObserver",void 0);s([c({type:Object})],oe.prototype,"collectionNameCache",void 0);s([c({type:Object})],oe.prototype,"sortParam",void 0);s([c({type:String})],oe.prototype,"selectedCreatorFilter",void 0);s([c({type:Number})],oe.prototype,"mobileBreakpoint",void 0);s([c({type:String})],oe.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],oe.prototype,"loggedIn",void 0);s([c({type:Boolean})],oe.prototype,"enableHoverPane",void 0);s([c({type:String})],oe.prototype,"collectionPagePath",void 0);s([G("#container")],oe.prototype,"container",void 0);s([G("tile-hover-pane")],oe.prototype,"hoverPane",void 0);oe=bo=s([F("tile-dispatcher")],oe);let Ta=class extends L{render(){return h` <div id="container"></div> `}static get styles(){return m`
+    `}};oe.HOVER_PANE_DISPLAY_MODES={grid:!0,"list-compact":!0,"list-detail":!1,"list-header":!1};s([c({type:String})],oe.prototype,"tileDisplayMode",void 0);s([c({type:Object})],oe.prototype,"model",void 0);s([c({type:String})],oe.prototype,"baseNavigationUrl",void 0);s([c({type:Number})],oe.prototype,"currentWidth",void 0);s([c({type:Number})],oe.prototype,"currentHeight",void 0);s([c({type:Object})],oe.prototype,"resizeObserver",void 0);s([c({type:Object})],oe.prototype,"collectionNameCache",void 0);s([c({type:Object})],oe.prototype,"sortParam",void 0);s([c({type:String})],oe.prototype,"creatorFilter",void 0);s([c({type:Number})],oe.prototype,"mobileBreakpoint",void 0);s([c({type:String})],oe.prototype,"baseImageUrl",void 0);s([c({type:Boolean})],oe.prototype,"loggedIn",void 0);s([c({type:Boolean})],oe.prototype,"enableHoverPane",void 0);s([c({type:String})],oe.prototype,"collectionPagePath",void 0);s([G("#container")],oe.prototype,"container",void 0);s([G("tile-hover-pane")],oe.prototype,"hoverPane",void 0);oe=bo=s([F("tile-dispatcher")],oe);let Ta=class extends L{render(){return h` <div id="container"></div> `}static get styles(){return m`
       :host {
         display: block;
         height: 100%;
@@ -4573,7 +4573,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         .resizeObserver=${this.resizeObserver}
         .collectionNameCache=${this.collectionNameCache}
         .sortParam=${this.sortParam}
-        .selectedCreatorFilter=${this.selectedCreatorFilter}
+        .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
         ?enableHoverPane=${!0}
