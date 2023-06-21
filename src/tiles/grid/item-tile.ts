@@ -57,7 +57,7 @@ export class ItemTile extends LitElement {
             </div>
 
             ${this.volumeIssueTemplate}
-            ${this.doesSortedByDate
+            ${this.isSortedByDate
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
             ${this.textSnippetsTemplate}
@@ -185,7 +185,7 @@ export class ItemTile extends LitElement {
     `;
   }
 
-  private get doesSortedByDate(): boolean {
+  private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
       this.sortParam?.field as string
     );
