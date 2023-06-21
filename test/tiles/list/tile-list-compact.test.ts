@@ -211,14 +211,14 @@ describe('List Tile Compact', () => {
     expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2013');
   });
 
-  it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
+  it('should show the first creator matching the letter filter, if defined', async () => {
     const model: Partial<TileModel> = {
       creator: 'foo',
       creators: ['foo', 'bar', 'baz'],
     };
 
     const el = await fixture<TileListCompact>(html`
-      <tile-list-compact .model=${model} .selectedCreatorFilter=${'B'}>
+      <tile-list-compact .model=${model} .creatorFilter=${'B'}>
       </tile-list-compact>
     `);
 

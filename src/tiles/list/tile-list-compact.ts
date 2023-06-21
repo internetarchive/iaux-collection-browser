@@ -24,7 +24,7 @@ export class TileListCompact extends LitElement {
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @property({ type: String }) selectedCreatorFilter?: string;
+  @property({ type: String }) creatorFilter?: string;
 
   @property({ type: Number }) mobileBreakpoint?: number;
 
@@ -87,8 +87,8 @@ export class TileListCompact extends LitElement {
 
     // If we're filtering by creator initial and have multiple creators, we want
     // to surface the first creator who matches the filter.
-    if (this.selectedCreatorFilter && this.model?.creators.length) {
-      const firstLetter = this.selectedCreatorFilter;
+    if (this.creatorFilter && this.model?.creators.length) {
+      const firstLetter = this.creatorFilter; // This is just to satisfy tsc
       displayedCreator =
         this.model.creators.find(creator =>
           creator.toUpperCase().startsWith(firstLetter)

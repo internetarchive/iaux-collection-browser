@@ -47,7 +47,7 @@ export class TileDispatcher
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @property({ type: String }) selectedCreatorFilter?: string;
+  @property({ type: String }) creatorFilter?: string;
 
   @property({ type: Number }) mobileBreakpoint?: number;
 
@@ -232,7 +232,7 @@ export class TileDispatcher
       currentWidth,
       currentHeight,
       sortParam,
-      selectedCreatorFilter,
+      creatorFilter,
       mobileBreakpoint,
     } = this;
 
@@ -269,7 +269,7 @@ export class TileDispatcher
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
               .sortParam=${sortParam}
-              .selectedCreatorFilter=${selectedCreatorFilter}
+              .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
@@ -284,7 +284,7 @@ export class TileDispatcher
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
-          .selectedCreatorFilter=${selectedCreatorFilter}
+          .creatorFilter=${creatorFilter}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}

@@ -304,7 +304,7 @@ describe('Item Tile', () => {
     };
 
     const el = await fixture<ItemTile>(html`
-      <item-tile .model=${model} .selectedCreatorFilter=${'B'}> </item-tile>
+      <item-tile .model=${model} .creatorFilter=${'B'}> </item-tile>
     `);
 
     const creator = el.shadowRoot?.querySelector('.created-by');

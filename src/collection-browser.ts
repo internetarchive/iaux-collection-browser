@@ -2017,7 +2017,7 @@ export class CollectionBrowser
         .resizeObserver=${this.resizeObserver}
         .collectionNameCache=${this.collectionNameCache}
         .sortParam=${this.sortParam}
-        .selectedCreatorFilter=${this.selectedCreatorFilter}
+        .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
         ?enableHoverPane=${true}
