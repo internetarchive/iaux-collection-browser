@@ -1047,7 +1047,7 @@ var $r=Object.defineProperty,Sr=Object.defineProperties;var kr=Object.getOwnProp
             </div>
 
             ${this.volumeIssueTemplate}
-            ${this.doesSortedByDate?this.sortedDateInfoTemplate:this.creatorTemplate}
+            ${this.isSortedByDate?this.sortedDateInfoTemplate:this.creatorTemplate}
             ${this.textSnippetsTemplate}
           </div>
 
@@ -1095,7 +1095,7 @@ var $r=Object.defineProperty,Sr=Object.defineProperties;var kr=Object.getOwnProp
           Volume&nbsp;${(i=this.model)===null||i===void 0?void 0:i.volume}, Issue&nbsp;${(o=this.model)===null||o===void 0?void 0:o.issue}
         </span>
       </div>
-    `}get doesSortedByDate(){var e;return["date","reviewdate","addeddate","publicdate"].includes((e=this.sortParam)===null||e===void 0?void 0:e.field)}get hasSnippets(){var e,t;return!!(!((t=(e=this.model)===null||e===void 0?void 0:e.snippets)===null||t===void 0)&&t.length)}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=m`var(--tileBorderColor, #dddddd)`;return[Lo,m`
+    `}get isSortedByDate(){var e;return["date","reviewdate","addeddate","publicdate"].includes((e=this.sortParam)===null||e===void 0?void 0:e.field)}get hasSnippets(){var e,t;return!!(!((t=(e=this.model)===null||e===void 0?void 0:e.snippets)===null||t===void 0)&&t.length)}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=m`var(--tileBorderColor, #dddddd)`;return[Lo,m`
         .container {
           border: 1px solid ${e};
         }
