@@ -52,7 +52,7 @@ export class TileDisplayValueProvider {
         // only handle A-Z. The first such letter (if one exists) is what needs to match.
         creator
           .normalize('NFD')
-          .replace(/[^A-Z]/gi, '')
+          .replace(/[^A-Z]+/gi, '')
           .toUpperCase()
           .startsWith(firstLetter)
       );
