@@ -1,23 +1,27 @@
-import {
-  css,
-  CSSResultGroup,
-  html,
-  LitElement,
-  nothing,
-  TemplateResult,
-} from 'lit';
+import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
-import type { TileModel } from '../../models';
 import { formatUnitSize } from '../../utils/format-unit-size';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
+import { BaseTileComponent } from '../base-tile-component';
 import '../image-block';
 
 @customElement('collection-tile')
-export class CollectionTile extends LitElement {
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: String }) baseImageUrl?: string;
+export class CollectionTile extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   @property({ type: Boolean }) showInfoButton = false;
 
@@ -86,7 +90,7 @@ export class CollectionTile extends LitElement {
     return this.showInfoButton
       ? html`<button class="info-button" @click=${this.infoButtonPressed}>
           &#9432;
-          <span class="sr-only">More info</span>
+          <span class="sr-only">${msg('More info')}</span>
         </button>`
       : nothing;
   }

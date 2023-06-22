@@ -1,19 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import {
-  css,
-  CSSResultGroup,
-  html,
-  LitElement,
-  nothing,
-  TemplateResult,
-} from 'lit';
+import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { SortParam } from '@internetarchive/search-service';
+import { msg } from '@lit/localize';
 
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
-import type { TileModel } from '../../models';
+import { BaseTileComponent } from '../base-tile-component';
 
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
@@ -23,16 +16,20 @@ import '../mediatype-icon';
 import './tile-stats';
 
 @customElement('item-tile')
-export class ItemTile extends LitElement {
-  @property({ type: String }) baseImageUrl?: string;
-
-  @property({ type: Boolean }) loggedIn = false;
-
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: Object }) sortParam?: SortParam;
-
-  @property({ type: String }) creatorFilter?: string;
+export class ItemTile extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   @property({ type: Boolean }) showInfoButton = false;
 
@@ -80,18 +77,8 @@ export class ItemTile extends LitElement {
    * Templates
    */
   private get creatorTemplate(): TemplateResult | typeof nothing {
-    let displayedCreator = this.model?.creator;
-
-    // If we're filtering by creator initial and have multiple creators, we want
-    // to surface the first creator who matches the filter.
-    if (this.creatorFilter && this.model?.creators.length) {
-      const firstLetter = this.creatorFilter; // This is just to satisfy tsc
-      displayedCreator =
-        this.model.creators.find(creator =>
-          creator.toUpperCase().startsWith(firstLetter)
-        ) ?? displayedCreator; // Fall back to the original if needed
-    }
-
+    const displayedCreator =
+      this.displayValueProvider.firstCreatorMatchingFilter;
     if (!displayedCreator) return nothing;
 
     return html`
@@ -159,7 +146,7 @@ export class ItemTile extends LitElement {
     return this.showInfoButton
       ? html`<button class="info-button" @click=${this.infoButtonPressed}>
           &#9432;
-          <span class="sr-only">More info</span>
+          <span class="sr-only">${msg('More info')}</span>
         </button>`
       : nothing;
   }

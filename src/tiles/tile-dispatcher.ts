@@ -1,4 +1,4 @@
-import { css, html, LitElement, nothing, PropertyValues } from 'lit';
+import { css, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import type {
@@ -6,8 +6,7 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import type { SortParam } from '@internetarchive/search-service';
-import type { TileDisplayMode, TileModel } from '../models';
+import type { TileDisplayMode } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
@@ -16,6 +15,7 @@ import './list/tile-list';
 import './list/tile-list-compact';
 import './list/tile-list-compact-header';
 import type { TileHoverPane } from './hover/tile-hover-pane';
+import { BaseTileComponent } from './base-tile-component';
 import {
   HoverPaneController,
   HoverPaneControllerInterface,
@@ -25,40 +25,34 @@ import {
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
-  extends LitElement
+  extends BaseTileComponent
   implements
     SharedResizeObserverResizeHandlerInterface,
     HoverPaneProviderInterface
 {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
+
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
-
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: String }) baseNavigationUrl?: string;
-
-  @property({ type: Number }) currentWidth?: number;
-
-  @property({ type: Number }) currentHeight?: number;
 
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  @property({ type: Object }) sortParam: SortParam | null = null;
-
-  @property({ type: String }) creatorFilter?: string;
-
-  @property({ type: Number }) mobileBreakpoint?: number;
-
-  @property({ type: String }) baseImageUrl?: string;
-
-  @property({ type: Boolean }) loggedIn = false;
-
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
-
-  @property({ type: String }) collectionPagePath: string = '/details/';
 
   private hoverPaneController?: HoverPaneControllerInterface;
 
@@ -151,9 +145,10 @@ export class TileDispatcher
       return `${this.baseNavigationUrl}${this.model.href}`;
     }
 
-    const isCollection = this.model.mediatype === 'collection';
-    const basePath = isCollection ? this.collectionPagePath : '/details/';
-    return `${this.baseNavigationUrl}${basePath}${this.model.identifier}`;
+    return this.displayValueProvider.itemPageUrl(
+      this.model.identifier,
+      this.model.mediatype === 'collection'
+    );
   }
 
   /**
@@ -228,6 +223,7 @@ export class TileDispatcher
   private get tile() {
     const {
       model,
+      collectionPagePath,
       baseNavigationUrl,
       currentWidth,
       currentHeight,
@@ -244,9 +240,11 @@ export class TileDispatcher
           case 'collection':
             return html`<collection-tile
               .model=${model}
+              .collectionPagePath=${collectionPagePath}
               .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
+              .creatorFilter=${creatorFilter}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
@@ -254,9 +252,11 @@ export class TileDispatcher
           case 'account':
             return html`<account-tile
               .model=${model}
+              .collectionPagePath=${collectionPagePath}
               .baseImageUrl=${this.baseImageUrl}
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
+              .creatorFilter=${creatorFilter}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
@@ -264,6 +264,7 @@ export class TileDispatcher
           default:
             return html`<item-tile
               .model=${model}
+              .collectionPagePath=${collectionPagePath}
               .currentWidth=${this.currentWidth}
               .currentHeight=${this.currentHeight}
               .collectionNameCache=${this.collectionNameCache}
@@ -279,7 +280,7 @@ export class TileDispatcher
       case 'list-compact':
         return html`<tile-list-compact
           .model=${model}
-          .collectionPagePath=${this.collectionPagePath}
+          .collectionPagePath=${collectionPagePath}
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
@@ -293,12 +294,13 @@ export class TileDispatcher
       case 'list-detail':
         return html`<tile-list
           .model=${model}
-          .collectionPagePath=${this.collectionPagePath}
+          .collectionPagePath=${collectionPagePath}
           .collectionNameCache=${this.collectionNameCache}
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
           .sortParam=${sortParam}
+          .creatorFilter=${creatorFilter}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}

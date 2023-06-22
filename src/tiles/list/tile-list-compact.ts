@@ -1,38 +1,30 @@
-import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { css, html, nothing } from 'lit';
+import { customElement } from 'lit/decorators.js';
 import DOMPurify from 'dompurify';
-import type { SortParam } from '@internetarchive/search-service';
-import type { TileModel } from '../../models';
+import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
-import { accountLabel } from './account-label';
 
 import '../image-block';
 import '../mediatype-icon';
 
 @customElement('tile-list-compact')
-export class TileListCompact extends LitElement {
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: String }) baseNavigationUrl?: string;
-
-  @property({ type: Number }) currentWidth?: number;
-
-  @property({ type: Number }) currentHeight?: number;
-
-  @property({ type: Object }) sortParam: SortParam | null = null;
-
-  @property({ type: String }) creatorFilter?: string;
-
-  @property({ type: Number }) mobileBreakpoint?: number;
-
-  @property({ type: String }) baseImageUrl?: string;
-
-  @property({ type: Boolean }) loggedIn = false;
-
-  @property({ type: String }) collectionPagePath: string = '/details/';
+export class TileListCompact extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   render() {
     return html`
@@ -51,7 +43,7 @@ export class TileListCompact extends LitElement {
         >
         <div id="creator">
           ${this.model?.mediatype === 'account'
-            ? accountLabel(this.model?.dateAdded)
+            ? this.displayValueProvider.accountLabel
             : this.creator}
         </div>
         <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
@@ -77,25 +69,14 @@ export class TileListCompact extends LitElement {
       return `${this.baseNavigationUrl}${this.model.href}`;
     }
 
-    const isCollection = this.model?.mediatype === 'collection';
-    const basePath = isCollection ? this.collectionPagePath : '/details/';
-    return `${this.baseNavigationUrl}${basePath}${this.model.identifier}`;
+    return this.displayValueProvider.itemPageUrl(
+      this.model.identifier,
+      this.model.mediatype === 'collection'
+    );
   }
 
   private get creator(): string | typeof nothing {
-    let displayedCreator = this.model?.creator;
-
-    // If we're filtering by creator initial and have multiple creators, we want
-    // to surface the first creator who matches the filter.
-    if (this.creatorFilter && this.model?.creators.length) {
-      const firstLetter = this.creatorFilter; // This is just to satisfy tsc
-      displayedCreator =
-        this.model.creators.find(creator =>
-          creator.toUpperCase().startsWith(firstLetter)
-        ) ?? displayedCreator; // Fall back to the original if needed
-    }
-
-    return displayedCreator ?? nothing;
+    return this.displayValueProvider.firstCreatorMatchingFilter ?? nothing;
   }
 
   /*
@@ -144,7 +125,7 @@ export class TileListCompact extends LitElement {
     // This is because items with only a year for their publication date are normalized to
     // Jan 1 at midnight timestamps in the search engine documents.
     if (
-      (!this.sortParam?.field || this.sortParam.field === 'date') && // No sort or date published
+      (!this.isSortedByDate || this.sortParam?.field === 'date') && // Any sort except dates that aren't published date
       isFirstMillisecondOfUTCYear(this.model?.datePublished)
     ) {
       return 'year-only';
@@ -161,6 +142,12 @@ export class TileListCompact extends LitElement {
       return 'short';
     }
     return 'long';
+  }
+
+  private get isSortedByDate(): boolean {
+    return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
+      this.sortParam?.field as string
+    );
   }
 
   static get styles() {
