@@ -44,6 +44,30 @@ describe('Tile Display Value Provider', () => {
 
       expect(provider.firstCreatorMatchingFilter).to.equal('bar');
     });
+
+    it('matches letters with diacritics', () => {
+      const provider = new TileDisplayValueProvider({
+        model: {
+          creator: 'foo',
+          creators: ['foo', 'émile', 'ernest'],
+        } as TileModel,
+        creatorFilter: 'E',
+      });
+
+      expect(provider.firstCreatorMatchingFilter).to.equal('émile');
+    });
+
+    it('ignores non-alphabetical characters when matching', () => {
+      const provider = new TileDisplayValueProvider({
+        model: {
+          creator: 'foo',
+          creators: ['foo', '"(bar)"', 'baz'],
+        } as TileModel,
+        creatorFilter: 'B',
+      });
+
+      expect(provider.firstCreatorMatchingFilter).to.equal('"(bar)"');
+    });
   });
 
   describe('accountLabel', () => {
