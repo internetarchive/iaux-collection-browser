@@ -1,28 +1,33 @@
-import { css, html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
-import type { SortParam } from '@internetarchive/search-service';
-import { dateLabel } from './date-label';
-import type { TileModel } from '../../models';
+import { css, html } from 'lit';
+import { customElement } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
+import { BaseTileComponent } from '../base-tile-component';
 
 @customElement('tile-list-compact-header')
-export class TileListCompactHeader extends LitElement {
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: Number }) currentWidth?: number;
-
-  @property({ type: Object }) sortParam: SortParam | null = null;
-
-  @property({ type: Number }) mobileBreakpoint?: number;
+export class TileListCompactHeader extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   render() {
     return html`
       <div id="list-line-header" class="${this.classSize}">
         <div id="thumb"></div>
-        <div id="title">Title</div>
-        <div id="creator">Creator</div>
-        <div id="date">${dateLabel(this.sortParam?.field)}</div>
-        <div id="icon">Type</div>
-        <div id="views">Views</div>
+        <div id="title">${msg('Title')}</div>
+        <div id="creator">${msg('Creator')}</div>
+        <div id="date">${this.displayValueProvider.dateLabel}</div>
+        <div id="icon">${msg('Type')}</div>
+        <div id="views">${msg('Views')}</div>
       </div>
     `;
   }

@@ -1,24 +1,16 @@
-import {
-  css,
-  html,
-  LitElement,
-  nothing,
-  PropertyValues,
-  TemplateResult,
-} from 'lit';
+import { css, html, nothing, PropertyValues, TemplateResult } from 'lit';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import type { SortParam } from '@internetarchive/search-service';
-import { suppressedCollections, TileModel } from '../../models';
+import { suppressedCollections } from '../../models';
+import { BaseTileComponent } from '../base-tile-component';
 
-import { dateLabel } from './date-label';
-import { accountLabel } from './account-label';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import { formatDate, DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
@@ -27,29 +19,25 @@ import '../image-block';
 import '../mediatype-icon';
 
 @customElement('tile-list')
-export class TileList extends LitElement {
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: String }) baseNavigationUrl?: string;
+export class TileList extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  @property({ type: Number }) currentWidth?: number;
-
-  @property({ type: Number }) currentHeight?: number;
-
-  @property({ type: Object }) sortParam: SortParam | null = null;
-
-  @property({ type: Number }) mobileBreakpoint?: number;
-
   @state() private collectionLinks: TemplateResult[] = [];
-
-  @property({ type: String }) baseImageUrl?: string;
-
-  @property({ type: Boolean }) loggedIn = false;
-
-  @property({ type: String }) collectionPagePath: string = '/details/';
 
   render() {
     return html`
@@ -96,13 +84,10 @@ export class TileList extends LitElement {
     if (!this.model) return nothing;
 
     const isCollection = this.model.mediatype === 'collection';
-    const hrefBasePath = isCollection ? this.collectionPagePath : '/details/';
-    const href =
-      this.model.identifier && this.baseNavigationUrl != null
-        ? `${this.baseNavigationUrl}${hrefBasePath}${encodeURI(
-            this.model.identifier
-          )}`
-        : nothing;
+    const href = this.displayValueProvider.itemPageUrl(
+      this.model.identifier,
+      isCollection
+    );
 
     return html`<a href=${href}>
       <image-block
@@ -178,18 +163,18 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="source" class="metadata">
-        ${this.labelTemplate('Source')}
+        ${this.labelTemplate(msg('Source'))}
         ${this.searchLink('source', this.model.source)}
       </div>
     `;
   }
 
   private get volumeTemplate() {
-    return this.metadataTemplate(this.model?.volume, 'Volume');
+    return this.metadataTemplate(this.model?.volume, msg('Volume'));
   }
 
   private get issueTemplate() {
-    return this.metadataTemplate(this.model?.issue, 'Issue');
+    return this.metadataTemplate(this.model?.issue, msg('Issue'));
   }
 
   private get creatorTemplate() {
@@ -197,7 +182,9 @@ export class TileList extends LitElement {
     if (this.model?.mediatype === 'account') {
       return html`
         <div id="creator" class="metadata">
-          <span class="label"> ${accountLabel(this.model?.dateAdded)} </span>
+          <span class="label"
+            >${this.displayValueProvider.accountLabel ?? nothing}</span
+          >
         </div>
       `;
     }
@@ -207,7 +194,7 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="creator" class="metadata">
-        ${this.labelTemplate('By')}
+        ${this.labelTemplate(msg('By'))}
         ${join(
           map(this.model.creators, id => this.searchLink('creator', id)),
           html`, `
@@ -226,7 +213,7 @@ export class TileList extends LitElement {
       format = 'year-only';
     }
 
-    return this.metadataTemplate(formatDate(date, format), 'Published');
+    return this.metadataTemplate(formatDate(date, format), msg('Published'));
   }
 
   // Show date label/value when sorted by date type
@@ -240,7 +227,7 @@ export class TileList extends LitElement {
     ) {
       return this.metadataTemplate(
         formatDate(this.date, 'long'),
-        dateLabel(this.sortParam.field)
+        this.displayValueProvider.dateLabel
       );
     }
     return nothing;
@@ -254,16 +241,16 @@ export class TileList extends LitElement {
 
     return this.metadataTemplate(
       `${formatCount(viewCount ?? 0, this.formatSize)}`,
-      'Views'
+      msg('Views')
     );
   }
 
   private get ratingTemplate() {
-    return this.metadataTemplate(this.model?.averageRating, 'Avg Rating');
+    return this.metadataTemplate(this.model?.averageRating, msg('Avg Rating'));
   }
 
   private get reviewsTemplate() {
-    return this.metadataTemplate(this.model?.commentCount, 'Reviews');
+    return this.metadataTemplate(this.model?.commentCount, msg('Reviews'));
   }
 
   private get topicsTemplate() {
@@ -272,7 +259,7 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="topics" class="metadata">
-        ${this.labelTemplate('Topics')}
+        ${this.labelTemplate(msg('Topics'))}
         ${join(
           map(this.model.subjects, id => this.searchLink('subject', id)),
           html`, `
@@ -287,7 +274,7 @@ export class TileList extends LitElement {
     }
     return html`
       <div id="collections" class="metadata">
-        ${this.labelTemplate('Collections')}
+        ${this.labelTemplate(msg('Collections'))}
         ${join(this.collectionLinks, html`, `)}
       </div>
     `;
@@ -355,17 +342,15 @@ export class TileList extends LitElement {
   private detailsLink(
     identifier: string,
     text?: string,
-    collection = false
+    isCollection = false
   ): TemplateResult {
     const linkText = text ?? identifier;
-    // No whitespace after closing tag
-    // identifiers (all ASCII in their creation) should be safe to use in href, but sanitize anyway
-    return html`<a
-      href="${this.baseNavigationUrl}${collection
-        ? this.collectionPagePath
-        : '/details/'}${encodeURI(identifier)}"
-      >${DOMPurify.sanitize(linkText)}</a
-    >`;
+    const linkHref = this.displayValueProvider.itemPageUrl(
+      identifier,
+      isCollection
+    );
+
+    return html`<a href=${linkHref}> ${DOMPurify.sanitize(linkText)} </a>`;
   }
 
   /** The URL of this item's mediatype collection, if defined. */
@@ -381,9 +366,10 @@ export class TileList extends LitElement {
       case 'account':
         return nothing;
       default:
-        return `${this.baseNavigationUrl}${this.collectionPagePath}${encodeURI(
-          this.model.mediatype
-        )}`;
+        return this.displayValueProvider.itemPageUrl(
+          this.model.mediatype,
+          true
+        );
     }
   }
 

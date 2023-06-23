@@ -1,16 +1,27 @@
-import { css, html, LitElement, nothing, TemplateResult } from 'lit';
+import { css, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { TileModel } from '../../models';
+import { msg } from '@lit/localize';
+import { BaseTileComponent } from '../base-tile-component';
 
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
 import './tile-stats';
 
 @customElement('account-tile')
-export class AccountTile extends LitElement {
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: String }) baseImageUrl?: string;
+export class AccountTile extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   @property({ type: Boolean }) showInfoButton = false;
 
@@ -48,7 +59,7 @@ export class AccountTile extends LitElement {
 
   private get getArchivistTemplate() {
     return html`<div class="archivist-since">
-      <span>Archivist since ${this.model?.dateAdded?.getFullYear()}</span>
+      <span>${this.displayValueProvider.accountLabel}</span>
     </div>`;
   }
 
@@ -67,7 +78,7 @@ export class AccountTile extends LitElement {
     return this.showInfoButton
       ? html`<button class="info-button" @click=${this.infoButtonPressed}>
           &#9432;
-          <span class="sr-only">More info</span>
+          <span class="sr-only">${msg('More info')}</span>
         </button>`
       : nothing;
   }

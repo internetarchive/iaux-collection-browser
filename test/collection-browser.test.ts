@@ -973,7 +973,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     await el.initialSearchComplete;
     await el.updateComplete;
-    await nextTick();
+    await aTimeout(50);
 
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
     expect(infiniteScroller).to.exist;

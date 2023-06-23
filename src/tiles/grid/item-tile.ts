@@ -1,19 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import {
-  css,
-  CSSResultGroup,
-  html,
-  LitElement,
-  nothing,
-  TemplateResult,
-} from 'lit';
+import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import type { SortParam } from '@internetarchive/search-service';
+import { msg } from '@lit/localize';
 
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
-import type { TileModel } from '../../models';
+import { BaseTileComponent } from '../base-tile-component';
 
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
@@ -23,14 +16,20 @@ import '../mediatype-icon';
 import './tile-stats';
 
 @customElement('item-tile')
-export class ItemTile extends LitElement {
-  @property({ type: String }) baseImageUrl?: string;
-
-  @property({ type: Boolean }) loggedIn = false;
-
-  @property({ type: Object }) model?: TileModel;
-
-  @property({ type: Object }) sortParam?: SortParam;
+export class ItemTile extends BaseTileComponent {
+  /*
+   * Reactive properties inherited from BaseTileComponent:
+   *  - model?: TileModel;
+   *  - currentWidth?: number;
+   *  - currentHeight?: number;
+   *  - baseNavigationUrl?: string;
+   *  - baseImageUrl?: string;
+   *  - collectionPagePath?: string;
+   *  - sortParam: SortParam | null = null;
+   *  - creatorFilter?: string;
+   *  - mobileBreakpoint?: number;
+   *  - loggedIn = false;
+   */
 
   @property({ type: Boolean }) showInfoButton = false;
 
@@ -55,7 +54,7 @@ export class ItemTile extends LitElement {
             </div>
 
             ${this.volumeIssueTemplate}
-            ${this.doesSortedByDate
+            ${this.isSortedByDate
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
             ${this.textSnippetsTemplate}
@@ -78,12 +77,14 @@ export class ItemTile extends LitElement {
    * Templates
    */
   private get creatorTemplate(): TemplateResult | typeof nothing {
-    if (!this.model?.creator) return nothing;
+    const displayedCreator =
+      this.displayValueProvider.firstCreatorMatchingFilter;
+    if (!displayedCreator) return nothing;
 
     return html`
       <div class="created-by">
-        <span class="truncated" title=${ifDefined(this.model?.creator)}>
-          by&nbsp;${this.model?.creator}
+        <span class="truncated" title=${displayedCreator}>
+          by&nbsp;${displayedCreator}
         </span>
       </div>
     `;
@@ -145,7 +146,7 @@ export class ItemTile extends LitElement {
     return this.showInfoButton
       ? html`<button class="info-button" @click=${this.infoButtonPressed}>
           &#9432;
-          <span class="sr-only">More info</span>
+          <span class="sr-only">${msg('More info')}</span>
         </button>`
       : nothing;
   }
@@ -171,7 +172,7 @@ export class ItemTile extends LitElement {
     `;
   }
 
-  private get doesSortedByDate() {
+  private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
       this.sortParam?.field as string
     );

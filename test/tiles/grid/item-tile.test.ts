@@ -297,6 +297,21 @@ describe('Item Tile', () => {
     expect(dateSortedBy?.textContent?.trim()).to.equal('reviewed Jan 01, 2013');
   });
 
+  it('should show the first creator matching the letter filter, if defined', async () => {
+    const model: Partial<TileModel> = {
+      creator: 'foo',
+      creators: ['foo', 'bar', 'baz'],
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile .model=${model} .creatorFilter=${'B'}> </item-tile>
+    `);
+
+    const creator = el.shadowRoot?.querySelector('.created-by');
+    expect(creator).to.exist;
+    expect(creator?.textContent?.trim()).to.match(/by\s+bar/);
+  });
+
   it('should render with snippet block when it has snippets', async () => {
     const el = await fixture<ItemTile>(html`
       <item-tile .model=${{ snippets: ['some {{{snippet}}} text'] }}>

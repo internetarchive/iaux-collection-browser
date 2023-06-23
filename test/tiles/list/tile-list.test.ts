@@ -87,6 +87,7 @@ describe('List Tile', () => {
     const el = await fixture<TileList>(html`
       <tile-list
         .model=${{ collections: ['deemphasize', 'community', 'foo'] }}
+        .baseNavigationUrl=${'base'}
         .collectionNameCache=${collectionNameCache}
       >
       </tile-list>
@@ -98,7 +99,7 @@ describe('List Tile', () => {
     const collectionLinks = collectionsRow?.querySelectorAll('a[href]');
     expect(collectionLinks?.length).to.equal(1);
     expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
-      '/details/foo'
+      'base/details/foo'
     );
   });
 
@@ -107,6 +108,7 @@ describe('List Tile', () => {
     const el = await fixture<TileList>(html`
       <tile-list
         .model=${{ collections: ['fav-foo', 'bar'] }}
+        .baseNavigationUrl=${'base'}
         .collectionNameCache=${collectionNameCache}
       >
       </tile-list>
@@ -118,7 +120,7 @@ describe('List Tile', () => {
     const collectionLinks = collectionsRow?.querySelectorAll('a[href]');
     expect(collectionLinks?.length).to.equal(1);
     expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
-      '/details/bar'
+      'base/details/bar'
     );
   });
 

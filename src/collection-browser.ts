@@ -903,7 +903,8 @@ export class CollectionBrowser
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
       changed.has('selectedFacets') ||
-      changed.has('searchService')
+      changed.has('searchService') ||
+      changed.has('withinCollection')
     ) {
       this.refreshLetterCounts();
     }
@@ -2016,6 +2017,7 @@ export class CollectionBrowser
         .resizeObserver=${this.resizeObserver}
         .collectionNameCache=${this.collectionNameCache}
         .sortParam=${this.sortParam}
+        .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
         ?enableHoverPane=${true}
