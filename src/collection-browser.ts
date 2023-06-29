@@ -1754,7 +1754,10 @@ export class CollectionBrowser
     }
 
     this.totalResults = success.response.totalResults;
-    this.collectionInfo = success.response.collectionExtraInfo;
+
+    if (this.withinCollection) {
+      this.collectionInfo = success.response.collectionExtraInfo;
+    }
 
     const { results, collectionTitles } = success.response;
     if (results && results.length > 0) {
