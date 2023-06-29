@@ -18,6 +18,7 @@ import type {
 import {
   Aggregation,
   Bucket,
+  CollectionExtraInfo,
   FilterConstraint,
   FilterMap,
   FilterMapBuilder,
@@ -122,6 +123,8 @@ export class CollectionBrowser
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
   @property({ type: String }) collectionPagePath: string = '/details/';
+
+  @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
 
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
@@ -1751,6 +1754,7 @@ export class CollectionBrowser
     }
 
     this.totalResults = success.response.totalResults;
+    this.collectionInfo = success.response.collectionExtraInfo;
 
     const { results, collectionTitles } = success.response;
     if (results && results.length > 0) {
