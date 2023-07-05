@@ -306,9 +306,9 @@ export class SortFilterBar
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
         <ul id="desktop-sort-selector">
-          <li>
-            ${this.showRelevance
-              ? this.getSortDisplayOption(SortField.relevance, {
+          ${this.showRelevance
+            ? html`<li>
+                ${this.getSortDisplayOption(SortField.relevance, {
                   onClick: () => {
                     this.dropdownBackdropVisible = false;
                     if (this.finalizedSortField !== SortField.relevance) {
@@ -316,9 +316,9 @@ export class SortFilterBar
                       this.setSelectedSort(SortField.relevance);
                     }
                   },
-                })
-              : nothing}
-          </li>
+                })}
+              </li>`
+            : nothing}
           <li>${this.viewsDropdownTemplate}</li>
           <li>
             ${this.getSortDisplayOption(SortField.title, {

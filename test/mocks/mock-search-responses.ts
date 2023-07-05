@@ -619,7 +619,47 @@ export const getMockSuccessWithDefaultSort: () => Result<
       ],
       collectionExtraInfo: {
         public_metadata: {
-          sort_by: 'titleSorter',
+          'sort-by': 'titleSorter',
+        },
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessWithConciseDefaultSort: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'default-sort-concise',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'default-sort-concise',
+        sort: ['addeddate:desc', 'identifier'],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+          },
+        }),
+      ],
+      collectionExtraInfo: {
+        public_metadata: {
+          'sort-by': '-addeddate',
         },
       },
     },

@@ -993,12 +993,62 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
-        .withinCollection=${'foo'}
         .searchService=${searchService}
         .baseNavigationUrl=${''}
       ></collection-browser>`
     );
 
+    el.withinCollection = 'default-sort';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar'
+    ) as SortFilterBar;
+    expect(sortBar).to.exist;
+    expect(sortBar.defaultSortField).to.equal(SortField.title);
+    expect(sortBar.defaultSortDirection).to.equal('asc');
+    expect(sortBar.selectedSort).to.equal(SortField.default);
+    expect(sortBar.sortDirection).to.be.null;
+  });
+
+  it('sets default sort from collection metadata in "-field" format', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      ></collection-browser>`
+    );
+
+    el.withinCollection = 'default-sort-concise';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar'
+    ) as SortFilterBar;
+    expect(sortBar).to.exist;
+    expect(sortBar.defaultSortField).to.equal(SortField.dateadded);
+    expect(sortBar.defaultSortDirection).to.equal('desc');
+    expect(sortBar.selectedSort).to.equal(SortField.default);
+    expect(sortBar.sortDirection).to.be.null;
+  });
+
+  it('uses relevance sort as default when a query is set', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      ></collection-browser>`
+    );
+
+    el.withinCollection = 'default-sort';
     el.baseQuery = 'default-sort';
     await el.updateComplete;
     await el.initialSearchComplete;
@@ -1009,8 +1059,8 @@ describe('Collection Browser', () => {
       'sort-filter-bar'
     ) as SortFilterBar;
     expect(sortBar).to.exist;
-    expect(sortBar.defaultSortField).to.equal('title');
-    expect(sortBar.defaultSortDirection).to.equal('asc');
+    expect(sortBar.defaultSortField).to.equal(SortField.relevance);
+    expect(sortBar.defaultSortDirection).to.be.null;
     expect(sortBar.selectedSort).to.equal(SortField.default);
     expect(sortBar.sortDirection).to.be.null;
   });

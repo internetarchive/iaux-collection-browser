@@ -564,6 +564,7 @@ export class CollectionBrowser
         .defaultSortDirection=${this.defaultSortDirection}
         .selectedSort=${this.selectedSort}
         .sortDirection=${this.sortDirection}
+        .showRelevance=${this.isRelevanceSortAvailable}
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
@@ -1204,6 +1205,11 @@ export class CollectionBrowser
       this.infiniteScroller.reload();
     }
 
+    if (this.withinCollection && this.baseQuery?.trim()) {
+      this.defaultSortField = SortField.relevance;
+      this.defaultSortDirection = null;
+    }
+
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
     }
@@ -1622,6 +1628,14 @@ export class CollectionBrowser
   }
 
   /**
+   * Whether sorting by relevance makes sense for the current state.
+   * Currently equivalent to having a non-empty query.
+   */
+  private get isRelevanceSortAvailable(): boolean {
+    return !!this.baseQuery?.trim();
+  }
+
+  /**
    * Whether a search may be performed in the current state of the component.
    * This is only true if the search service is defined, and either
    *   (a) a non-empty query is set, or
@@ -1823,8 +1837,16 @@ export class CollectionBrowser
    * descending by weekly views.
    */
   private applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
+    if (this.baseQuery) {
+      // If there's a query set, then we default to relevance sorting regardless of
+      // the collection metadata-specified sort.
+      this.defaultSortField = SortField.relevance;
+      this.defaultSortDirection = null;
+      return;
+    }
+
     const defaultSort: string =
-      collectionInfo?.public_metadata?.sort_by ?? '-week';
+      collectionInfo?.public_metadata?.['sort-by'] ?? '-week';
 
     // Account for both -field and field:dir formats
     let [field, dir] = defaultSort.split(':');
