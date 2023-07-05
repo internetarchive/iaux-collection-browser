@@ -42,11 +42,20 @@ export class SortFilterBar
   /** Which display mode the tiles are being rendered with (grid/list-detail/list-compact) */
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
+  /** The default sort direction to use if none is set */
+  @property({ type: String }) defaultSortDirection: SortDirection | null = null;
+
+  /** The default sort field to use if none is set */
+  @property({ type: String }) defaultSortField: Exclude<
+    SortField,
+    SortField.default
+  > = SortField.relevance;
+
   /** The current sort direction (asc/desc), or null if none is set */
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
   /** The field currently being sorted on (e.g., 'title'). Defaults to relevance. */
-  @property({ type: String }) selectedSort: SortField = SortField.relevance;
+  @property({ type: String }) selectedSort: SortField = SortField.default;
 
   /** The currently selected title letter filter, or null if none is set */
   @property({ type: String }) selectedTitleFilter: string | null = null;
@@ -137,6 +146,16 @@ export class SortFilterBar
       </div>
     `;
   }
+
+  // willUpdate(changed: PropertyValues<this>): void {
+  //   if (changed.has('defaultSortField') && !this.selectedSort) {
+  //     this.selectedSort = this.defaultSortField;
+  //   }
+
+  //   if (changed.has('defaultSortDirection') && !this.sortDirection) {
+  //     this.sortDirection = this.defaultSortDirection;
+  //   }
+  // }
 
   updated(changed: PropertyValues) {
     if (changed.has('displayMode')) {
@@ -265,7 +284,7 @@ export class SortFilterBar
     return html`
       <button
         class="sort-direction-selector"
-        ?disabled=${this.selectedSort === 'relevance'}
+        ?disabled=${this.finalizedSortField === SortField.relevance}
         @click=${this.toggleSortDirection}
       >
         <span class="sr-only">${srLabel}</span>
@@ -277,14 +296,14 @@ export class SortFilterBar
   /** Template to render the sort direction button's icon in the correct current state */
   private get sortDirectionIcon(): TemplateResult {
     // For relevance sort, show a fully disabled icon
-    if (this.selectedSort === 'relevance') {
+    if (this.finalizedSortField === SortField.relevance) {
       return html`<div class="sort-direction-icon">${sortDisabledIcon}</div>`;
     }
 
     // For all other sorts, show the ascending/descending direction
     return html`
       <div class="sort-direction-icon">
-        ${this.sortDirection === 'asc' ? sortUpIcon : sortDownIcon}
+        ${this.finalizedSortDirection === 'asc' ? sortUpIcon : sortDownIcon}
       </div>
     `;
   }
@@ -302,7 +321,7 @@ export class SortFilterBar
               ? this.getSortDisplayOption(SortField.relevance, {
                   onClick: () => {
                     this.dropdownBackdropVisible = false;
-                    if (this.selectedSort !== SortField.relevance) {
+                    if (this.finalizedSortField !== SortField.relevance) {
                       this.clearAlphaBarFilters();
                       this.setSelectedSort(SortField.relevance);
                     }
@@ -315,7 +334,7 @@ export class SortFilterBar
             ${this.getSortDisplayOption(SortField.title, {
               onClick: () => {
                 this.dropdownBackdropVisible = false;
-                if (this.selectedSort !== SortField.title) {
+                if (this.finalizedSortField !== SortField.title) {
                   this.alphaSelectorVisible = 'title';
                   this.selectedCreatorFilter = null;
                   this.setSelectedSort(SortField.title);
@@ -329,7 +348,7 @@ export class SortFilterBar
             ${this.getSortDisplayOption(SortField.creator, {
               onClick: () => {
                 this.dropdownBackdropVisible = false;
-                if (this.selectedSort !== SortField.creator) {
+                if (this.finalizedSortField !== SortField.creator) {
                   this.alphaSelectorVisible = 'creator';
                   this.selectedTitleFilter = null;
                   this.setSelectedSort(SortField.creator);
@@ -392,7 +411,8 @@ export class SortFilterBar
       onClick?: (e: Event) => void;
     }
   ): TemplateResult {
-    const isSelected = options?.selected ?? this.selectedSort === sortField;
+    const isSelected =
+      options?.selected ?? this.finalizedSortField === sortField;
     const displayName = options?.displayName ?? SortFieldDisplayName[sortField];
     return html`
       <button
@@ -663,6 +683,20 @@ export class SortFilterBar
     this.emitSortChangedEvent();
   }
 
+  /** The current sort field, or the default one if no explicit sort is set */
+  private get finalizedSortField(): SortField {
+    return this.selectedSort === SortField.default
+      ? this.defaultSortField
+      : this.selectedSort;
+  }
+
+  /** The current sort direction, or the default one if no explicit direction is set */
+  private get finalizedSortDirection(): SortDirection | null {
+    return this.sortDirection === null
+      ? this.defaultSortDirection
+      : this.sortDirection;
+  }
+
   /**
    * There are four date sort options.
    *
@@ -680,7 +714,7 @@ export class SortFilterBar
       SortField.datereviewed,
       SortField.dateadded,
     ];
-    return dateSortFields.includes(this.selectedSort);
+    return dateSortFields.includes(this.finalizedSortField);
   }
 
   /**
@@ -698,7 +732,7 @@ export class SortFilterBar
       SortField.alltimeview,
       SortField.weeklyview,
     ];
-    return viewSortFields.includes(this.selectedSort);
+    return viewSortFields.includes(this.finalizedSortField);
   }
 
   /**
@@ -712,7 +746,7 @@ export class SortFilterBar
   private get dateSortField(): string {
     const defaultSort = SortFieldDisplayName[SortField.date];
     const name = this.dateOptionSelected
-      ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
+      ? SortFieldDisplayName[this.finalizedSortField] ?? defaultSort
       : defaultSort;
     return name;
   }
@@ -728,7 +762,7 @@ export class SortFilterBar
   private get viewSortField(): string {
     const defaultSort = SortFieldDisplayName[SortField.weeklyview];
     const name = this.viewOptionSelected
-      ? SortFieldDisplayName[this.selectedSort] ?? defaultSort
+      ? SortFieldDisplayName[this.finalizedSortField] ?? defaultSort
       : defaultSort;
     return name;
   }
