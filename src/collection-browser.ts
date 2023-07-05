@@ -18,6 +18,7 @@ import type {
 import {
   Aggregation,
   Bucket,
+  CollectionExtraInfo,
   FilterConstraint,
   FilterMap,
   FilterMapBuilder,
@@ -56,6 +57,8 @@ import {
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
   FacetEventDetails,
+  MetadataFieldToSortField,
+  MetadataSortField,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -99,7 +102,7 @@ export class CollectionBrowser
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @property({ type: String }) selectedSort: SortField = SortField.relevance;
+  @property({ type: String }) selectedSort: SortField = SortField.default;
 
   @property({ type: String }) selectedTitleFilter: string | null = null;
 
@@ -190,6 +193,11 @@ export class CollectionBrowser
   @state() private mobileFacetsVisible = false;
 
   @state() private contentWidth?: number;
+
+  @state() private defaultSortField: Exclude<SortField, SortField.default> =
+    SortField.relevance;
+
+  @state() private defaultSortDirection: SortDirection | null = null;
 
   @state() private placeholderType: PlaceholderType = null;
 
@@ -348,7 +356,7 @@ export class CollectionBrowser
     if (sort) {
       this.sortParam = null;
       this.sortDirection = null;
-      this.selectedSort = SortField.relevance;
+      this.selectedSort = SortField.default;
     }
   }
 
@@ -550,6 +558,8 @@ export class CollectionBrowser
   private get sortFilterBarTemplate() {
     return html`
       <sort-filter-bar
+        .defaultSortField=${this.defaultSortField}
+        .defaultSortDirection=${this.defaultSortDirection}
         .selectedSort=${this.selectedSort}
         .sortDirection=${this.sortDirection}
         .displayMode=${this.displayMode}
@@ -595,7 +605,7 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    if (this.selectedSort === 'relevance') {
+    if ([SortField.default, SortField.relevance].includes(this.selectedSort)) {
       this.sortParam = null;
       return;
     }
@@ -1235,7 +1245,7 @@ export class CollectionBrowser
     this.displayMode = restorationState.displayMode;
     if (restorationState.searchType != null)
       this.searchType = restorationState.searchType;
-    this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
+    this.selectedSort = restorationState.selectedSort ?? SortField.default;
     this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
@@ -1752,6 +1762,12 @@ export class CollectionBrowser
 
     this.totalResults = success.response.totalResults;
 
+    if (this.withinCollection) {
+      // For collections, we want the UI to respect the default sort option
+      // which can be specified in metadata, or otherwise assumed to be week:desc
+      this.applyDefaultCollectionSort(success.response.collectionExtraInfo);
+    }
+
     const { results, collectionTitles } = success.response;
     if (results && results.length > 0) {
       // Load any collection titles present on the response into the cache,
@@ -1795,6 +1811,31 @@ export class CollectionBrowser
       .flat();
     const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
+  }
+
+  /**
+   * Applies any default sort option for the current collection, by checking
+   * for one in the collection's metadata. If none is found, defaults to sorting
+   * descending by weekly views.
+   */
+  private applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
+    const defaultSort: string =
+      collectionInfo?.public_metadata?.sort_by ?? '-week';
+
+    // Account for both -field and field:dir formats
+    let [field, dir] = defaultSort.split(':');
+    if (field.startsWith('-')) {
+      field = field.slice(1);
+      dir = 'desc';
+    } else if (!['asc', 'desc'].includes(dir)) {
+      dir = 'asc';
+    }
+
+    const sortField = MetadataFieldToSortField[field as MetadataSortField];
+    if (sortField && sortField !== SortField.default) {
+      this.defaultSortField = sortField;
+      this.defaultSortDirection = dir as SortDirection;
+    }
   }
 
   /**
