@@ -275,7 +275,7 @@ export class SortFilterBar
       <button
         class="sort-direction-selector"
         ?disabled=${this.finalizedSortField === SortField.relevance}
-        @click=${this.toggleSortDirection}
+        @click=${this.handleSortDirectionClicked}
       >
         <span class="sr-only">${srLabel}</span>
         ${this.sortDirectionIcon}
@@ -354,19 +354,24 @@ export class SortFilterBar
 
   /** The template to render all the sort options in mobile view */
   private get mobileSortSelectorTemplate() {
+    const isDisplayableField = (field: string) =>
+      field !== SortField.default &&
+      (field !== SortField.relevance || this.showRelevance);
+
     return html`
       <div
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
         ${this.getSortDropdown({
-          displayName: html`${SortFieldDisplayName[this.selectedSort] ?? ''}`,
+          displayName: html`${SortFieldDisplayName[this.finalizedSortField] ??
+          'Relevance'}`,
           id: 'mobile-dropdown',
           selected: true,
-          dropdownOptions: Object.keys(SortField).map(field =>
-            this.getDropdownOption(field as SortField)
-          ),
-          selectedOption: this.selectedSort ?? SortField.relevance,
+          dropdownOptions: Object.keys(SortField)
+            .filter(field => isDisplayableField(field))
+            .map(field => this.getDropdownOption(field as SortField)),
+          selectedOption: this.finalizedSortField,
           onOptionSelected: this.mobileSortChanged,
           onDropdownClick: () => {
             this.dropdownBackdropVisible = this.mobileDropdown.open;
@@ -663,7 +668,25 @@ export class SortFilterBar
 
   /** Toggles the current sort direction between 'asc' and 'desc' */
   private toggleSortDirection() {
-    this.setSortDirection(this.sortDirection === 'desc' ? 'asc' : 'desc');
+    this.setSortDirection(
+      this.finalizedSortDirection === 'desc' ? 'asc' : 'desc'
+    );
+  }
+
+  private handleSortDirectionClicked(): void {
+    if (
+      !this.sortDirection &&
+      this.defaultSortField &&
+      this.defaultSortDirection
+    ) {
+      // When the sort direction is merely defaulted (not set by the user), clicking
+      // the toggled button should "promote" the default sort to an explicitly-set one
+      // and then toggle it as usual.
+      this.selectedSort = this.defaultSortField;
+      this.sortDirection = this.defaultSortDirection;
+    }
+
+    this.toggleSortDirection();
   }
 
   private setSelectedSort(sort: SortField) {
