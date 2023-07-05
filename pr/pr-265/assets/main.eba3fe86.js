@@ -2290,7 +2290,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       <button
         class="sort-direction-selector"
         ?disabled=${this.finalizedSortField===$.relevance}
-        @click=${this.toggleSortDirection}
+        @click=${this.handleSortDirectionClicked}
       >
         <span class="sr-only">${t}</span>
         ${this.sortDirectionIcon}
@@ -2318,12 +2318,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           </li>
         </ul>
       </div>
-    `}get mobileSortSelectorTemplate(){var e,t;return c`
+    `}get mobileSortSelectorTemplate(){var e;const t=i=>i!==$.default&&(i!==$.relevance||this.showRelevance);return c`
       <div
         id="mobile-sort-container"
         class=${this.mobileSelectorVisible?"visible":"hidden"}
       >
-        ${this.getSortDropdown({displayName:c`${(e=ht[this.selectedSort])!==null&&e!==void 0?e:""}`,id:"mobile-dropdown",selected:!0,dropdownOptions:Object.keys($).map(i=>this.getDropdownOption(i)),selectedOption:(t=this.selectedSort)!==null&&t!==void 0?t:$.relevance,onOptionSelected:this.mobileSortChanged,onDropdownClick:()=>{this.dropdownBackdropVisible=this.mobileDropdown.open,this.mobileDropdown.classList.toggle("open",this.mobileDropdown.open)}})}
+        ${this.getSortDropdown({displayName:c`${(e=ht[this.finalizedSortField])!==null&&e!==void 0?e:"Relevance"}`,id:"mobile-dropdown",selected:!0,dropdownOptions:Object.keys($).filter(i=>t(i)).map(i=>this.getDropdownOption(i)),selectedOption:this.finalizedSortField,onOptionSelected:this.mobileSortChanged,onDropdownClick:()=>{this.dropdownBackdropVisible=this.mobileDropdown.open,this.mobileDropdown.classList.toggle("open",this.mobileDropdown.open)}})}
       </div>
     `}getSortDisplayOption(e,t){var i,o;const r=(i=t==null?void 0:t.selected)!==null&&i!==void 0?i:this.finalizedSortField===e,n=(o=t==null?void 0:t.displayName)!==null&&o!==void 0?o:ht[e];return c`
       <button
@@ -2399,7 +2399,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         @keyup=${this.closeDropdowns}
         @click=${this.closeDropdowns}
       ></div>
-    `}closeDropdowns(){this.dropdownBackdropVisible=!1;const e=[this.viewsDropdown,this.dateDropdown,this.mobileDropdown];for(const t of e)t.open=!1,t.classList.remove("open")}selectDropdownSortField(e){this.dropdownBackdropVisible=!1,this.setSelectedSort(e)}clearAlphaBarFilters(){this.alphaSelectorVisible=null,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.emitTitleLetterChangedEvent(),this.emitCreatorLetterChangedEvent()}setSortDirection(e){this.sortDirection=e,this.emitSortChangedEvent()}toggleSortDirection(){this.setSortDirection(this.sortDirection==="desc"?"asc":"desc")}setSelectedSort(e){this.selectedSort=e,this.sortDirection=Ca[this.selectedSort],this.emitSortChangedEvent()}get finalizedSortField(){return this.selectedSort===$.default?this.defaultSortField:this.selectedSort}get finalizedSortDirection(){return this.sortDirection===null?this.defaultSortDirection:this.sortDirection}get dateOptionSelected(){return[$.datearchived,$.date,$.datereviewed,$.dateadded].includes(this.finalizedSortField)}get viewOptionSelected(){return[$.alltimeview,$.weeklyview].includes(this.finalizedSortField)}get dateSortField(){var e;const t=ht[$.date];return this.dateOptionSelected&&(e=ht[this.finalizedSortField])!==null&&e!==void 0?e:t}get viewSortField(){var e;const t=ht[$.weeklyview];return this.viewOptionSelected&&(e=ht[this.finalizedSortField])!==null&&e!==void 0?e:t}get titleSelectorBar(){var e;return c` <alpha-bar
+    `}closeDropdowns(){this.dropdownBackdropVisible=!1;const e=[this.viewsDropdown,this.dateDropdown,this.mobileDropdown];for(const t of e)t.open=!1,t.classList.remove("open")}selectDropdownSortField(e){this.dropdownBackdropVisible=!1,this.setSelectedSort(e)}clearAlphaBarFilters(){this.alphaSelectorVisible=null,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.emitTitleLetterChangedEvent(),this.emitCreatorLetterChangedEvent()}setSortDirection(e){this.sortDirection=e,this.emitSortChangedEvent()}toggleSortDirection(){this.setSortDirection(this.finalizedSortDirection==="desc"?"asc":"desc")}handleSortDirectionClicked(){!this.sortDirection&&this.defaultSortField&&this.defaultSortDirection&&(this.selectedSort=this.defaultSortField,this.sortDirection=this.defaultSortDirection),this.toggleSortDirection()}setSelectedSort(e){this.selectedSort=e,this.sortDirection=Ca[this.selectedSort],this.emitSortChangedEvent()}get finalizedSortField(){return this.selectedSort===$.default?this.defaultSortField:this.selectedSort}get finalizedSortDirection(){return this.sortDirection===null?this.defaultSortDirection:this.sortDirection}get dateOptionSelected(){return[$.datearchived,$.date,$.datereviewed,$.dateadded].includes(this.finalizedSortField)}get viewOptionSelected(){return[$.alltimeview,$.weeklyview].includes(this.finalizedSortField)}get dateSortField(){var e;const t=ht[$.date];return this.dateOptionSelected&&(e=ht[this.finalizedSortField])!==null&&e!==void 0?e:t}get viewSortField(){var e;const t=ht[$.weeklyview];return this.viewOptionSelected&&(e=ht[this.finalizedSortField])!==null&&e!==void 0?e:t}get titleSelectorBar(){var e;return c` <alpha-bar
       .selectedLetter=${this.selectedTitleFilter}
       .letterCounts=${(e=this.prefixFilterCountMap)===null||e===void 0?void 0:e.title}
       ariaLandmarkLabel="Filter by title letter"
