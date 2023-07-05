@@ -93,7 +93,7 @@ describe('Collection Browser', () => {
     el.clearFilters({ sort: true }); // Sort is reset too due to the option
 
     expect(el.selectedFacets).to.deep.equal(getDefaultSelectedFacets());
-    expect(el.selectedSort).to.equal('relevance');
+    expect(el.selectedSort).to.equal(SortField.default);
     expect(el.sortDirection).to.be.null;
     expect(el.sortParam).to.be.null;
     expect(el.selectedCreatorFilter).to.be.null;
@@ -763,7 +763,7 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    expect(el.selectedSort).to.equal(SortField.relevance);
+    expect(el.selectedSort).to.equal(SortField.default);
 
     el.baseQuery = 'foo';
     await el.updateComplete;
