@@ -20,6 +20,7 @@ import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
 import type { CollectionFacets } from '../src/collection-facets';
 import type { EmptyPlaceholder } from '../src/empty-placeholder';
+import type { SortFilterBar } from '../src/sort-filter-bar/sort-filter-bar';
 
 /**
  * Wait for the next tick of the event loop.
@@ -986,6 +987,32 @@ describe('Collection Browser', () => {
     expect(
       firstResult!.shadowRoot?.querySelector('a[href]')?.getAttribute('href')
     ).to.equal('/details/foo?q=%22quoted+query%22');
+  });
+
+  it('sets default sort from collection metadata', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .withinCollection=${'foo'}
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'default-sort';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar'
+    ) as SortFilterBar;
+    expect(sortBar).to.exist;
+    expect(sortBar.defaultSortField).to.equal('title');
+    expect(sortBar.defaultSortDirection).to.equal('asc');
+    expect(sortBar.selectedSort).to.equal(SortField.default);
+    expect(sortBar.sortDirection).to.be.null;
   });
 
   it('scrolls to page', async () => {

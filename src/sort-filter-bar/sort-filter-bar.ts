@@ -147,23 +147,13 @@ export class SortFilterBar
     `;
   }
 
-  // willUpdate(changed: PropertyValues<this>): void {
-  //   if (changed.has('defaultSortField') && !this.selectedSort) {
-  //     this.selectedSort = this.defaultSortField;
-  //   }
-
-  //   if (changed.has('defaultSortDirection') && !this.sortDirection) {
-  //     this.sortDirection = this.defaultSortDirection;
-  //   }
-  // }
-
   updated(changed: PropertyValues) {
     if (changed.has('displayMode')) {
       this.displayModeChanged();
     }
 
     if (changed.has('selectedSort') && this.sortDirection === null) {
-      this.sortDirection = DefaultSortDirection[this.selectedSort];
+      this.sortDirection = DefaultSortDirection[this.finalizedSortField];
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {

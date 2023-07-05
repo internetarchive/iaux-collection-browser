@@ -101,10 +101,10 @@ export const SortFieldDisplayName: {
 };
 
 export const DefaultSortDirection: {
-  [key in SortField]: SortDirection;
+  [key in SortField]: SortDirection | null;
 } = {
-  default: 'desc',
-  relevance: 'desc', // Can't actually change the sort direction for relevance
+  default: null,
+  relevance: null, // Can't actually change the sort direction for relevance
   alltimeview: 'desc',
   weeklyview: 'desc',
   title: 'asc',

@@ -590,6 +590,46 @@ export const getMockSuccessExtraQuotedHref: () => Result<
   },
 });
 
+export const getMockSuccessWithDefaultSort: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      clientParameters: {
+        user_query: 'default-sort',
+        sort: [],
+      },
+      finalizedParameters: {
+        user_query: 'default-sort',
+        sort: ['titleSorter', 'identifier'],
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+          },
+        }),
+      ],
+      collectionExtraInfo: {
+        public_metadata: {
+          sort_by: 'titleSorter',
+        },
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockErrorResult: () => Result<
   SearchResponse,
   SearchServiceError

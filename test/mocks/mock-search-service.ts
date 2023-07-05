@@ -22,6 +22,7 @@ import {
   getMockSuccessWithCollectionTitles,
   getMockSuccessWithCollectionAggregations,
   getMockSuccessExtraQuotedHref,
+  getMockSuccessWithDefaultSort,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -39,6 +40,7 @@ const responses: Record<
   'collection-titles': getMockSuccessWithCollectionTitles,
   'collection-aggregations': getMockSuccessWithCollectionAggregations,
   'extra-quoted-href': getMockSuccessExtraQuotedHref,
+  'default-sort': getMockSuccessWithDefaultSort,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };
