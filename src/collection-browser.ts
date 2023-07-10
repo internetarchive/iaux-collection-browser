@@ -126,6 +126,8 @@ export class CollectionBrowser
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
+  
+  @property({ type: Array }) partOfCollections: string[] = [];
 
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
@@ -759,6 +761,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
+        .partOfCollections=${this.partOfCollections}
         .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
@@ -1804,7 +1807,13 @@ export class CollectionBrowser
 
       // For collections, we want the UI to respect the default sort option
       // which can be specified in metadata, or otherwise assumed to be week:desc
-      this.applyDefaultCollectionSort(success.response.collectionExtraInfo);
+      this.applyDefaultCollectionSort(this.collectionInfo);
+
+      if (this.collectionInfo) {
+        this.partOfCollections = [].concat(
+          this.collectionInfo.public_metadata?.collection ?? []
+        );
+      }
     }
 
     const { results, collectionTitles } = success.response;

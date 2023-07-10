@@ -10,6 +10,7 @@ import {
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { ref } from 'lit/directives/ref.js';
+import { msg } from '@lit/localize';
 import type {
   Aggregation,
   AggregationSortType,
@@ -88,6 +89,10 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) query?: string;
 
+  @property({ type: String }) withinCollection?: string;
+
+  @property({ type: Array }) partOfCollections: string[] = [];
+
   @property({ type: Object }) filterMap?: FilterMap;
 
   @property({ type: String }) withinCollection?: string;
@@ -131,6 +136,7 @@ export class CollectionFacets extends LitElement {
     const datePickerLabelId = 'date-picker-label';
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
+        ${this.collectionPartOfTemplate}
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
@@ -148,6 +154,48 @@ export class CollectionFacets extends LitElement {
         )}
       </div>
     `;
+  }
+
+  private get collectionPartOfTemplate(): TemplateResult | typeof nothing {
+    // We only display the "Part Of" section on collection pages
+    if (!this.withinCollection || this.partOfCollections.length === 0)
+      return nothing;
+
+    const headingId = 'partof-heading';
+    return html`
+      <section
+        class="facet-group partof-collections"
+        aria-labelledby=${headingId}
+      >
+        <h3 id=${headingId}>${msg('Part Of')}</h3>
+        <ul>
+          ${map(this.partOfCollections, collxn => {
+            const collectionURL = `${this.collectionPagePath}${collxn}`;
+            return html` <li>
+              <a
+                href=${collectionURL}
+                data-id=${collxn}
+                @click=${this.partOfCollectionClicked}
+              >
+                <async-collection-name
+                  .collectionNameCache=${this.collectionNameCache}
+                  .identifier=${collxn}
+                  placeholder=${collxn}
+                ></async-collection-name>
+              </a>
+            </li>`;
+          })}
+        </ul>
+      </section>
+    `;
+  }
+
+  private partOfCollectionClicked(e: Event): void {
+    this.analyticsHandler?.sendEvent({
+      category: analyticsCategories.default,
+      action: analyticsActions.partOfCollectionClicked,
+      label: (e.target as HTMLElement).dataset.id,
+    });
   }
 
   /**
@@ -652,6 +700,14 @@ export class CollectionFacets extends LitElement {
     return [
       srOnlyStyle,
       css`
+        a:link {
+          text-decoration: none;
+          color: var(--ia-theme-link-color, #4b64ff);
+        }
+        a:link:hover {
+          text-decoration: underline;
+        }
+
         #container.loading {
           opacity: 0.5;
         }
@@ -709,6 +765,12 @@ export class CollectionFacets extends LitElement {
 
         .facet-group.mobile .facet-group-content.open {
           max-height: 2000px;
+        }
+
+        .partof-collections ul {
+          list-style-type: none;
+          padding: 0;
+          font-size: 1.2rem;
         }
 
         h3 {
