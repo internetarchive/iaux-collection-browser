@@ -104,7 +104,7 @@ export const DefaultSortDirection: {
   [key in SortField]: SortDirection | null;
 } = {
   default: null,
-  relevance: null, // Can't actually change the sort direction for relevance
+  relevance: null, // Sort direction is disabled entirely for relevance sort (user can't click the button)
   alltimeview: 'desc',
   weeklyview: 'desc',
   title: 'asc',
