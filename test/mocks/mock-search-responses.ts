@@ -14,13 +14,19 @@ export const getMockSuccessSingleResult: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'collection:foo',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'collection:foo',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'collection:foo',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -49,13 +55,19 @@ export const getMockSuccessWithYearHistogramAggs: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'years',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'years',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'years',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -94,13 +106,19 @@ export const getMockSuccessLoggedInResult: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'loggedin',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'loggedin',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'loggedin',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -131,13 +149,19 @@ export const getMockSuccessNoPreviewResult: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'no-preview',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'no-preview',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'no-preview',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -166,13 +190,19 @@ export const getMockSuccessLoggedInAndNoPreviewResult: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'loggedin-no-preview',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'loggedin-no-preview',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'loggedin-no-preview',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -201,13 +231,19 @@ export const getMockSuccessFirstTitleResult: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'first-title',
         sort: ['title', 'asc'],
       },
-      finalizedParameters: {
-        user_query: 'first-title',
-        sort: ['title', 'asc'],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'first-title',
+            sort: ['title', 'asc'],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -240,13 +276,19 @@ export const getMockSuccessFirstCreatorResult: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'first-creator',
         sort: ['creator', 'asc'],
       },
-      finalizedParameters: {
-        user_query: 'first-creator',
-        sort: ['creator', 'asc'],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'first-creator',
+            sort: ['creator', 'asc'],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -279,13 +321,19 @@ export const getMockSuccessWithCollectionTitles: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'collection:foo',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'collection:foo',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'collection:foo',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -326,13 +374,19 @@ export const getMockSuccessWithCollectionAggregations: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'collection:foo',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'collection:foo',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'collection:foo',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -367,13 +421,19 @@ export const getMockSuccessSingleResultWithSort: (
 ) => Result<SearchResponse, SearchServiceError> = (resultsSpy: Function) => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'with-sort',
         sort: ['foo:asc'],
       },
-      finalizedParameters: {
-        user_query: 'with-sort',
-        sort: ['foo:asc'],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'with-sort',
+            sort: ['foo:asc'],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -405,13 +465,19 @@ export const getMockSuccessMultipleResults: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'collection:foo',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'collection:foo',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'collection:foo',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -446,13 +512,19 @@ export const getMockSuccessMultiLineDescription: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'multi-line-description',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'multi-line-description',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'multi-line-description',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -482,13 +554,19 @@ export const getMockSuccessExtraQuotedHref: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'extra-quoted-href',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'extra-quoted-href',
-        sort: [],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'extra-quoted-href',
+            sort: [],
+          },
+        },
       },
     },
     rawResponse: {},
