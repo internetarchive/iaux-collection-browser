@@ -197,7 +197,7 @@ export class TileList extends BaseTileComponent {
         ${this.labelTemplate(msg('By'))}
         ${join(
           map(this.model.creators, id => this.searchLink('creator', id)),
-          html`, `
+          ', '
         )}
       </div>
     `;
@@ -262,7 +262,7 @@ export class TileList extends BaseTileComponent {
         ${this.labelTemplate(msg('Topics'))}
         ${join(
           map(this.model.subjects, id => this.searchLink('subject', id)),
-          html`, `
+          ', '
         )}
       </div>
     `;
@@ -275,7 +275,7 @@ export class TileList extends BaseTileComponent {
     return html`
       <div id="collections" class="metadata">
         ${this.labelTemplate(msg('Collections'))}
-        ${join(this.collectionLinks, html`, `)}
+        ${join(this.collectionLinks, ', ')}
       </div>
     `;
   }
@@ -542,6 +542,10 @@ export class TileList extends BaseTileComponent {
         -webkit-line-clamp: 3;
         overflow: hidden;
         overflow-wrap: anywhere;
+      }
+
+      #collections > a {
+        display: inline-block;
       }
 
       #icon {
