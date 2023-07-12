@@ -596,13 +596,19 @@ export const getMockSuccessWithDefaultSort: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'default-sort',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'default-sort',
-        sort: ['titleSorter', 'identifier'],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'default-sort',
+            sort: ['titleSorter', 'identifier'],
+          },
+        },
       },
     },
     rawResponse: {},
@@ -636,13 +642,19 @@ export const getMockSuccessWithConciseDefaultSort: () => Result<
 > = () => ({
   success: {
     request: {
+      kind: 'hits',
       clientParameters: {
         user_query: 'default-sort-concise',
         sort: [],
       },
-      finalizedParameters: {
-        user_query: 'default-sort-concise',
-        sort: ['addeddate:desc', 'identifier'],
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'default-sort-concise',
+            sort: ['addeddate:desc', 'identifier'],
+          },
+        },
       },
     },
     rawResponse: {},
