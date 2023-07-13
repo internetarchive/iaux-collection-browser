@@ -22,6 +22,8 @@ import {
   getMockSuccessWithCollectionTitles,
   getMockSuccessWithCollectionAggregations,
   getMockSuccessExtraQuotedHref,
+  getMockSuccessWithDefaultSort,
+  getMockSuccessWithConciseDefaultSort,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -39,6 +41,8 @@ const responses: Record<
   'collection-titles': getMockSuccessWithCollectionTitles,
   'collection-aggregations': getMockSuccessWithCollectionAggregations,
   'extra-quoted-href': getMockSuccessExtraQuotedHref,
+  'default-sort': getMockSuccessWithDefaultSort,
+  'default-sort-concise': getMockSuccessWithConciseDefaultSort,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };
@@ -78,8 +82,10 @@ export class MockSearchService implements SearchServiceInterface {
       });
     }
 
+    const responseKey =
+      (this.searchParams.query || this.searchParams.pageTarget) ?? '';
     const resultFn: () => Result<SearchResponse, SearchServiceError> =
-      responses[this.searchParams.query] ?? getMockSuccessMultipleResults;
+      responses[responseKey] ?? getMockSuccessMultipleResults;
     let result = resultFn();
 
     // with-sort query has special handling

@@ -57,6 +57,8 @@ import {
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
   FacetEventDetails,
+  MetadataFieldToSortField,
+  MetadataSortField,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -100,7 +102,7 @@ export class CollectionBrowser
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
-  @property({ type: String }) selectedSort: SortField = SortField.relevance;
+  @property({ type: String }) selectedSort: SortField = SortField.default;
 
   @property({ type: String }) selectedTitleFilter: string | null = null;
 
@@ -193,6 +195,11 @@ export class CollectionBrowser
   @state() private mobileFacetsVisible = false;
 
   @state() private contentWidth?: number;
+
+  @state() private defaultSortField: Exclude<SortField, SortField.default> =
+    SortField.relevance;
+
+  @state() private defaultSortDirection: SortDirection | null = null;
 
   @state() private placeholderType: PlaceholderType = null;
 
@@ -351,7 +358,7 @@ export class CollectionBrowser
     if (sort) {
       this.sortParam = null;
       this.sortDirection = null;
-      this.selectedSort = SortField.relevance;
+      this.selectedSort = SortField.default;
     }
   }
 
@@ -553,8 +560,11 @@ export class CollectionBrowser
   private get sortFilterBarTemplate() {
     return html`
       <sort-filter-bar
+        .defaultSortField=${this.defaultSortField}
+        .defaultSortDirection=${this.defaultSortDirection}
         .selectedSort=${this.selectedSort}
         .sortDirection=${this.sortDirection}
+        .showRelevance=${this.isRelevanceSortAvailable}
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
@@ -598,7 +608,7 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    if (this.selectedSort === 'relevance') {
+    if ([SortField.default, SortField.relevance].includes(this.selectedSort)) {
       this.sortParam = null;
       return;
     }
@@ -1195,6 +1205,11 @@ export class CollectionBrowser
       this.infiniteScroller.reload();
     }
 
+    if (this.withinCollection && this.baseQuery?.trim()) {
+      this.defaultSortField = SortField.relevance;
+      this.defaultSortDirection = null;
+    }
+
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
     }
@@ -1238,7 +1253,7 @@ export class CollectionBrowser
     this.displayMode = restorationState.displayMode;
     if (restorationState.searchType != null)
       this.searchType = restorationState.searchType;
-    this.selectedSort = restorationState.selectedSort ?? SortField.relevance;
+    this.selectedSort = restorationState.selectedSort ?? SortField.default;
     this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
@@ -1613,6 +1628,14 @@ export class CollectionBrowser
   }
 
   /**
+   * Whether sorting by relevance makes sense for the current state.
+   * Currently equivalent to having a non-empty query.
+   */
+  private get isRelevanceSortAvailable(): boolean {
+    return !!this.baseQuery?.trim();
+  }
+
+  /**
    * Whether a search may be performed in the current state of the component.
    * This is only true if the search service is defined, and either
    *   (a) a non-empty query is set, or
@@ -1757,6 +1780,10 @@ export class CollectionBrowser
 
     if (this.withinCollection) {
       this.collectionInfo = success.response.collectionExtraInfo;
+
+      // For collections, we want the UI to respect the default sort option
+      // which can be specified in metadata, or otherwise assumed to be week:desc
+      this.applyDefaultCollectionSort(success.response.collectionExtraInfo);
     }
 
     const { results, collectionTitles } = success.response;
@@ -1802,6 +1829,39 @@ export class CollectionBrowser
       .flat();
     const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
     this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
+  }
+
+  /**
+   * Applies any default sort option for the current collection, by checking
+   * for one in the collection's metadata. If none is found, defaults to sorting
+   * descending by weekly views.
+   */
+  private applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
+    if (this.baseQuery) {
+      // If there's a query set, then we default to relevance sorting regardless of
+      // the collection metadata-specified sort.
+      this.defaultSortField = SortField.relevance;
+      this.defaultSortDirection = null;
+      return;
+    }
+
+    const defaultSort: string =
+      collectionInfo?.public_metadata?.['sort-by'] ?? '-week';
+
+    // Account for both -field and field:dir formats
+    let [field, dir] = defaultSort.split(':');
+    if (field.startsWith('-')) {
+      field = field.slice(1);
+      dir = 'desc';
+    } else if (!['asc', 'desc'].includes(dir)) {
+      dir = 'asc';
+    }
+
+    const sortField = MetadataFieldToSortField[field as MetadataSortField];
+    if (sortField && sortField !== SortField.default) {
+      this.defaultSortField = sortField;
+      this.defaultSortDirection = dir as SortDirection;
+    }
   }
 
   /**

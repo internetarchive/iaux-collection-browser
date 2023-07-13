@@ -590,6 +590,98 @@ export const getMockSuccessExtraQuotedHref: () => Result<
   },
 });
 
+export const getMockSuccessWithDefaultSort: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'default-sort',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'default-sort',
+            sort: ['titleSorter', 'identifier'],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+          },
+        }),
+      ],
+      collectionExtraInfo: {
+        public_metadata: {
+          'sort-by': 'titleSorter',
+        },
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessWithConciseDefaultSort: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'default-sort-concise',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'default-sort-concise',
+            sort: ['addeddate:desc', 'identifier'],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+          },
+        }),
+      ],
+      collectionExtraInfo: {
+        public_metadata: {
+          'sort-by': '-addeddate',
+        },
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockErrorResult: () => Result<
   SearchResponse,
   SearchServiceError

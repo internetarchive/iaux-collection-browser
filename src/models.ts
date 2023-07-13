@@ -55,6 +55,7 @@ export type CollectionBrowserContext = 'collection' | 'search';
  * The sort fields shown in the sort filter bar
  */
 export enum SortField {
+  'default' = 'default',
   'relevance' = 'relevance',
   'alltimeview' = 'alltimeview',
   'weeklyview' = 'weeklyview',
@@ -87,6 +88,7 @@ export type URLSortField = MetadataSortField | 'title' | 'creator';
 export const SortFieldDisplayName: {
   [key in SortField]: string;
 } = {
+  default: '', // Use the default sorting option for the current page context, if none has been selected
   relevance: 'Relevance',
   alltimeview: 'All-time views',
   weeklyview: 'Weekly views',
@@ -99,9 +101,10 @@ export const SortFieldDisplayName: {
 };
 
 export const DefaultSortDirection: {
-  [key in SortField]: SortDirection;
+  [key in SortField]: SortDirection | null;
 } = {
-  relevance: 'desc', // Can't actually change the sort direction for relevance
+  default: null,
+  relevance: null, // Sort direction is disabled entirely for relevance sort (user can't click the button)
   alltimeview: 'desc',
   weeklyview: 'desc',
   title: 'asc',
@@ -118,6 +121,7 @@ export const DefaultSortDirection: {
 export const SortFieldToMetadataField: {
   [key in SortField]: MetadataSortField | null;
 } = {
+  default: null,
   relevance: null,
   alltimeview: 'downloads',
   weeklyview: 'week',
