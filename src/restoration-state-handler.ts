@@ -1,11 +1,6 @@
-import {
-  SearchType,
-  SortDirection,
-  SortParam,
-} from '@internetarchive/search-service';
+import { SearchType, SortDirection } from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
 import {
-  MetadataSortField,
   FacetOption,
   CollectionBrowserContext,
   CollectionDisplayMode,
@@ -13,17 +8,15 @@ import {
   SortField,
   FacetBucket,
   FacetState,
-  URLFieldToSortField,
-  URLSortField,
   getDefaultSelectedFacets,
-  MetadataFieldToURLField,
+  sortOptionFromAPIString,
+  SORT_OPTIONS,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 
 export interface RestorationState {
   displayMode?: CollectionDisplayMode;
   searchType?: SearchType;
-  sortParam?: SortParam;
   selectedSort?: SortField;
   sortDirection?: SortDirection;
   selectedFacets: SelectedFacets;
@@ -120,11 +113,18 @@ export class RestorationStateHandler
       }
     }
 
-    if (state.sortParam) {
-      const prefix = state.sortParam.direction === 'desc' ? '-' : '';
-      const readableSortField =
-        MetadataFieldToURLField[state.sortParam.field as MetadataSortField];
-      newParams.set('sort', `${prefix}${readableSortField}`);
+    if (state.selectedSort) {
+      const prefix = state.sortDirection === 'desc' ? '-' : '';
+      const sortOption = SORT_OPTIONS[state.selectedSort];
+      const canonicalApiSort = sortOption.urlNames[0];
+
+      if (sortOption.field === SortField.unrecognized) {
+        // For unrecognized sorts, just use the param as-is
+        newParams.set('sort', `${oldParams.get('sort')}`);
+      } else if (sortOption.shownInURL) {
+        // Otherwise, use the canonical API form of the sort option
+        newParams.set('sort', `${prefix}${canonicalApiSort}`);
+      }
     }
 
     if (state.selectedFacets) {
@@ -197,7 +197,7 @@ export class RestorationStateHandler
         query: state.baseQuery,
         searchType: state.searchType,
         page: state.currentPage,
-        sort: state.sortParam,
+        sort: { field: state.selectedSort, direction: state.sortDirection },
         minDate: state.minSelectedDate,
         maxDate: state.maxSelectedDate,
         facets: state.selectedFacets,
@@ -263,27 +263,20 @@ export class RestorationStateHandler
     if (sortQuery) {
       // check for two different sort formats: `date desc` and `-date`
       const hasSpace = sortQuery.indexOf(' ') > -1;
+      let field;
+      let direction;
       if (hasSpace) {
-        const [field, direction] = sortQuery.split(' ');
-        const metadataField = URLFieldToSortField[field as URLSortField];
-
-        if (metadataField) {
-          restorationState.selectedSort = metadataField;
-        }
-        if (direction === 'desc' || direction === 'asc') {
-          restorationState.sortDirection = direction as SortDirection;
-        }
+        [field, direction] = sortQuery.split(' ');
       } else {
-        const direction = sortQuery.startsWith('-') ? 'desc' : 'asc';
-        const field = sortQuery.startsWith('-')
-          ? sortQuery.slice(1)
-          : sortQuery;
+        field = sortQuery.startsWith('-') ? sortQuery.slice(1) : sortQuery;
+        direction = sortQuery.startsWith('-') ? 'desc' : 'asc';
+      }
 
-        const metadataField = URLFieldToSortField[field as URLSortField];
-        if (metadataField) {
-          restorationState.selectedSort = metadataField;
-          restorationState.sortDirection = direction as SortDirection;
-        }
+      const sortOption = sortOptionFromAPIString(field);
+      restorationState.selectedSort = sortOption.field;
+
+      if (['asc', 'desc'].includes(direction)) {
+        restorationState.sortDirection = direction as SortDirection;
       }
     }
 
@@ -295,6 +288,13 @@ export class RestorationStateHandler
         // Legacy search allowed and[] fields like 'creatorSorter', 'languageSorter', etc.
         // which we want to normalize to 'creator', 'language', etc. if redirected here.
         field = field.replace(/Sorter$/, '');
+
+        // Legacy search also allowed a form of negative faceting like `and[]=-collection:foo`
+        // which we want to normalize to a not[] param instead
+        if (field.startsWith('-')) {
+          facetNots.push(and.slice(1));
+          return;
+        }
 
         switch (field) {
           case 'year': {

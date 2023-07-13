@@ -47,7 +47,6 @@ import './sort-filter-bar/sort-filter-bar';
 import {
   SelectedFacets,
   SortField,
-  SortFieldToMetadataField,
   CollectionBrowserContext,
   getDefaultSelectedFacets,
   TileModel,
@@ -57,8 +56,8 @@ import {
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
   FacetEventDetails,
-  MetadataFieldToSortField,
-  MetadataSortField,
+  sortOptionFromAPIString,
+  SORT_OPTIONS,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -608,12 +607,20 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    if ([SortField.default, SortField.relevance].includes(this.selectedSort)) {
+    const sortOption = SORT_OPTIONS[this.selectedSort];
+    if (!sortOption.handledBySearchService) {
       this.sortParam = null;
       return;
     }
-    const sortField = SortFieldToMetadataField[this.selectedSort];
-    if (!this.sortDirection) this.sortDirection = 'desc';
+
+    // If the sort option specified in the URL is unrecognized, we just use it as-is
+    const urlSortParam = new URL(window.location.href).searchParams.get('sort');
+    const sortField =
+      sortOption.searchServiceKey ?? urlSortParam?.replace(/^-/, '');
+
+    // If the sort direction is still null at this point, then we assume ascending
+    // (i.e., it was unrecognized and had no directional flag)
+    if (!this.sortDirection) this.sortDirection = 'asc';
 
     if (!sortField) return;
     this.sortParam = { field: sortField, direction: this.sortDirection };
@@ -1271,7 +1278,6 @@ export class CollectionBrowser
     const restorationState: RestorationState = {
       displayMode: this.displayMode,
       searchType: this.searchType,
-      sortParam: this.sortParam ?? undefined,
       selectedSort: this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
       selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
@@ -1857,7 +1863,8 @@ export class CollectionBrowser
       dir = 'asc';
     }
 
-    const sortField = MetadataFieldToSortField[field as MetadataSortField];
+    const sortOption = sortOptionFromAPIString(field);
+    const sortField = sortOption.field;
     if (sortField && sortField !== SortField.default) {
       this.defaultSortField = sortField;
       this.defaultSortDirection = dir as SortDirection;

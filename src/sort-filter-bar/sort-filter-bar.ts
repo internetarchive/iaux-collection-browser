@@ -16,11 +16,10 @@ import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
-  DefaultSortDirection,
   PrefixFilterCounts,
   PrefixFilterType,
+  SORT_OPTIONS,
   SortField,
-  SortFieldDisplayName,
 } from '../models';
 import './alpha-bar';
 
@@ -153,7 +152,8 @@ export class SortFilterBar
     }
 
     if (changed.has('selectedSort') && this.sortDirection === null) {
-      this.sortDirection = DefaultSortDirection[this.finalizedSortField];
+      const sortOption = SORT_OPTIONS[this.finalizedSortField];
+      this.sortDirection = sortOption.defaultSortDirection;
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {
@@ -274,7 +274,7 @@ export class SortFilterBar
     return html`
       <button
         class="sort-direction-selector"
-        ?disabled=${this.finalizedSortField === SortField.relevance}
+        ?disabled=${!this.canChangeSortDirection}
         @click=${this.handleSortDirectionClicked}
       >
         <span class="sr-only">${srLabel}</span>
@@ -285,8 +285,8 @@ export class SortFilterBar
 
   /** Template to render the sort direction button's icon in the correct current state */
   private get sortDirectionIcon(): TemplateResult {
-    // For relevance sort, show a fully disabled icon
-    if (this.finalizedSortField === SortField.relevance) {
+    // Show a fully disabled icon for sort options without direction support
+    if (!this.canChangeSortDirection) {
       return html`<div class="sort-direction-icon">${sortDisabledIcon}</div>`;
     }
 
@@ -354,9 +354,9 @@ export class SortFilterBar
 
   /** The template to render all the sort options in mobile view */
   private get mobileSortSelectorTemplate() {
-    const isDisplayableField = (field: string) =>
-      field !== SortField.default &&
-      (field !== SortField.relevance || this.showRelevance);
+    const displayedOptions = Object.values(SORT_OPTIONS)
+      .filter(opt => opt.shownInSortBar)
+      .filter(opt => this.showRelevance || opt.field !== SortField.relevance);
 
     return html`
       <div
@@ -364,13 +364,13 @@ export class SortFilterBar
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
         ${this.getSortDropdown({
-          displayName: html`${SortFieldDisplayName[this.finalizedSortField] ??
-          'Relevance'}`,
+          displayName: html`${SORT_OPTIONS[this.finalizedSortField]
+            .displayName}`,
           id: 'mobile-dropdown',
           selected: true,
-          dropdownOptions: Object.keys(SortField)
-            .filter(field => isDisplayableField(field))
-            .map(field => this.getDropdownOption(field as SortField)),
+          dropdownOptions: displayedOptions.map(opt =>
+            this.getDropdownOption(opt.field)
+          ),
           selectedOption: this.finalizedSortField,
           onOptionSelected: this.mobileSortChanged,
           onDropdownClick: () => {
@@ -408,7 +408,8 @@ export class SortFilterBar
   ): TemplateResult {
     const isSelected =
       options?.selected ?? this.finalizedSortField === sortField;
-    const displayName = options?.displayName ?? SortFieldDisplayName[sortField];
+    const displayName =
+      options?.displayName ?? SORT_OPTIONS[sortField].displayName;
     return html`
       <button
         class=${isSelected ? 'selected' : nothing}
@@ -488,7 +489,7 @@ export class SortFilterBar
       },
       label: html`
         <span class="dropdown-option-label">
-          ${SortFieldDisplayName[sortField]}
+          ${SORT_OPTIONS[sortField].displayName}
         </span>
       `,
     };
@@ -692,7 +693,8 @@ export class SortFilterBar
   private setSelectedSort(sort: SortField) {
     this.selectedSort = sort;
     // Apply this field's default sort direction
-    this.sortDirection = DefaultSortDirection[this.selectedSort];
+    const sortOption = SORT_OPTIONS[sort];
+    this.sortDirection = sortOption.defaultSortDirection;
     this.emitSortChangedEvent();
   }
 
@@ -708,6 +710,11 @@ export class SortFilterBar
     return this.sortDirection === null
       ? this.defaultSortDirection
       : this.sortDirection;
+  }
+
+  /** Whether the sort direction button should be enabled for the current sort */
+  private get canChangeSortDirection(): boolean {
+    return SORT_OPTIONS[this.finalizedSortField].canSetDirection;
   }
 
   /**
@@ -757,11 +764,11 @@ export class SortFilterBar
    * @memberof SortFilterBar
    */
   private get dateSortField(): string {
-    const defaultSort = SortFieldDisplayName[SortField.date];
-    const name = this.dateOptionSelected
-      ? SortFieldDisplayName[this.finalizedSortField] ?? defaultSort
-      : defaultSort;
-    return name;
+    const defaultDateSort = SORT_OPTIONS[SortField.date];
+    const currentDateSort = this.dateOptionSelected
+      ? SORT_OPTIONS[this.finalizedSortField] ?? defaultDateSort
+      : defaultDateSort;
+    return currentDateSort.displayName;
   }
 
   /**
@@ -773,11 +780,11 @@ export class SortFilterBar
    * @memberof SortFilterBar
    */
   private get viewSortField(): string {
-    const defaultSort = SortFieldDisplayName[SortField.weeklyview];
-    const name = this.viewOptionSelected
-      ? SortFieldDisplayName[this.finalizedSortField] ?? defaultSort
-      : defaultSort;
-    return name;
+    const defaultViewSort = SORT_OPTIONS[SortField.weeklyview];
+    const currentViewSort = this.viewOptionSelected
+      ? SORT_OPTIONS[this.finalizedSortField] ?? defaultViewSort
+      : defaultViewSort;
+    return currentViewSort.displayName;
   }
 
   private get titleSelectorBar() {

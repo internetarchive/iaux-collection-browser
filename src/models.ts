@@ -56,6 +56,7 @@ export type CollectionBrowserContext = 'collection' | 'search';
  */
 export enum SortField {
   'default' = 'default',
+  'unrecognized' = 'unrecognized',
   'relevance' = 'relevance',
   'alltimeview' = 'alltimeview',
   'weeklyview' = 'weeklyview',
@@ -67,120 +68,202 @@ export enum SortField {
   'creator' = 'creator',
 }
 
-/**
- * The metadata fields we sort by that map to the SortFields above
- */
-export type MetadataSortField =
-  | 'downloads'
-  | 'week'
-  | 'titleSorter'
-  | 'date'
-  | 'creatorSorter'
-  | 'publicdate'
-  | 'reviewdate'
-  | 'addeddate';
+export interface SortOption {
+  /**
+   * The SortField enum member corresponding to this option.
+   */
+  field: SortField;
 
-/**
- * All sort strings recognized in search URLs
- */
-export type URLSortField = MetadataSortField | 'title' | 'creator';
+  /**
+   * The default sort direction to apply when this sort option is first selected.
+   */
+  defaultSortDirection: SortDirection | null;
 
-export const SortFieldDisplayName: {
-  [key in SortField]: string;
-} = {
-  default: '', // Use the default sorting option for the current page context, if none has been selected
-  relevance: 'Relevance',
-  alltimeview: 'All-time views',
-  weeklyview: 'Weekly views',
-  title: 'Title',
-  date: 'Date published',
-  datearchived: 'Date archived',
-  datereviewed: 'Date reviewed',
-  dateadded: 'Date added',
-  creator: 'Creator',
+  /**
+   * Whether this sort option allows its sort direction to be changed from the default.
+   */
+  canSetDirection: boolean;
+
+  /**
+   * Whether this sort option may appear in the sort bar.
+   */
+  shownInSortBar: boolean;
+
+  /**
+   * Whether this sort option should be saved to the URL.
+   * If false, then no `sort` param will be added to the URL when this sort option
+   * is selected.
+   */
+  shownInURL: boolean;
+
+  /**
+   * Whether this sort option is passed to the search service.
+   * If false, then no sort param will be passed to the search service at all when
+   * this sort option is selected.
+   */
+  handledBySearchService: boolean;
+
+  /**
+   * The string identifying this sort field to the search service & backend API.
+   */
+  searchServiceKey?: string;
+
+  /**
+   * The human-readable name to use for this option in the sort bar (if applicable).
+   */
+  displayName: string;
+
+  /**
+   * A list of URL param keys that should be mapped to this sort option.
+   * E.g., both `title` and `titleSorter` in the URL map to the `SortField.title` option.
+   */
+  urlNames: (string | null | undefined)[];
+}
+
+export const SORT_OPTIONS: Record<SortField, SortOption> = {
+  // Default sort is the case where the user has not specified a sort option via the sort bar or URL.
+  // In these cases, we defer to whatever sort the backend chooses.
+  // For the search page, the default is always relevance sort.
+  // For collection pages _without a query_, the default is usually weekly views, but this can be
+  // overridden by the collection's `sort-by` metadata entry. If a query _is_ specified, then the
+  // default is again relevance sort.
+  [SortField.default]: {
+    field: SortField.default,
+    defaultSortDirection: null,
+    canSetDirection: false,
+    shownInSortBar: false,
+    shownInURL: false,
+    handledBySearchService: false, // We rely on the PPS default sort handling in these cases
+    displayName: '',
+    urlNames: ['', null, undefined], // Empty or nullish sort params result in default sorting
+  },
+  // Unrecognized sort is the case where the user has specified a sort in the URL, but it is not
+  // one of the options listed in this map. We still want these unrecognized sorts to be applied
+  // when searching, but they are not displayed in the sort bar.
+  [SortField.unrecognized]: {
+    field: SortField.unrecognized,
+    defaultSortDirection: null,
+    canSetDirection: true,
+    shownInSortBar: false,
+    shownInURL: false,
+    handledBySearchService: true, // The unrecognized sort param is passed along as-is
+    displayName: '',
+    urlNames: [],
+  },
+  // Relevance sort is unique in that it does not produce a URL param when it is set.
+  // It is only available when there is a user-specified query that relevancy can be scored against.
+  // Therefore, it does not appear as a sort bar option when browsing a collection with no query set.
+  [SortField.relevance]: {
+    field: SortField.relevance,
+    defaultSortDirection: null,
+    canSetDirection: false,
+    shownInSortBar: true,
+    shownInURL: false,
+    handledBySearchService: false,
+    displayName: 'Relevance',
+    urlNames: ['_score'],
+  },
+  [SortField.alltimeview]: {
+    field: SortField.alltimeview,
+    defaultSortDirection: 'desc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'downloads',
+    displayName: 'All-time views',
+    urlNames: ['downloads'],
+  },
+  [SortField.weeklyview]: {
+    field: SortField.weeklyview,
+    defaultSortDirection: 'desc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'week',
+    displayName: 'Weekly views',
+    urlNames: ['week'],
+  },
+  [SortField.title]: {
+    field: SortField.title,
+    defaultSortDirection: 'asc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'titleSorter',
+    displayName: 'Title',
+    urlNames: ['title', 'titleSorter'],
+  },
+  [SortField.date]: {
+    field: SortField.date,
+    defaultSortDirection: 'desc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'date',
+    displayName: 'Date published',
+    urlNames: ['date'],
+  },
+  [SortField.datearchived]: {
+    field: SortField.datearchived,
+    defaultSortDirection: 'desc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'publicdate',
+    displayName: 'Date archived',
+    urlNames: ['publicdate'],
+  },
+  [SortField.datereviewed]: {
+    field: SortField.datereviewed,
+    defaultSortDirection: 'desc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'reviewdate',
+    displayName: 'Date reviewed',
+    urlNames: ['reviewdate'],
+  },
+  [SortField.dateadded]: {
+    field: SortField.dateadded,
+    defaultSortDirection: 'desc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'addeddate',
+    displayName: 'Date added',
+    urlNames: ['addeddate'],
+  },
+  [SortField.creator]: {
+    field: SortField.creator,
+    defaultSortDirection: 'asc',
+    canSetDirection: true,
+    shownInSortBar: true,
+    shownInURL: true,
+    handledBySearchService: true,
+    searchServiceKey: 'creatorSorter',
+    displayName: 'Creator',
+    urlNames: ['creator', 'creatorSorter'],
+  },
 };
 
-export const DefaultSortDirection: {
-  [key in SortField]: SortDirection | null;
-} = {
-  default: null,
-  relevance: null, // Sort direction is disabled entirely for relevance sort (user can't click the button)
-  alltimeview: 'desc',
-  weeklyview: 'desc',
-  title: 'asc',
-  date: 'desc',
-  datearchived: 'desc',
-  datereviewed: 'desc',
-  dateadded: 'desc',
-  creator: 'asc',
-};
-
 /**
- * Maps the SortField above to the corresponding Metadata field in the API.
+ * Returns the SortOption corresponding to the given API sort name, or
+ * the "unrecognized" SortOption if none matches.
  */
-export const SortFieldToMetadataField: {
-  [key in SortField]: MetadataSortField | null;
-} = {
-  default: null,
-  relevance: null,
-  alltimeview: 'downloads',
-  weeklyview: 'week',
-  title: 'titleSorter',
-  date: 'date',
-  datearchived: 'publicdate',
-  datereviewed: 'reviewdate',
-  dateadded: 'addeddate',
-  creator: 'creatorSorter',
-};
-
-/**
- * Maps the Metadata field to the corresponding SortField field in the API.
- */
-export const MetadataFieldToSortField: {
-  [key in MetadataSortField]: SortField;
-} = {
-  week: SortField.weeklyview,
-  downloads: SortField.alltimeview,
-  titleSorter: SortField.title,
-  date: SortField.date,
-  publicdate: SortField.datearchived,
-  reviewdate: SortField.datereviewed,
-  addeddate: SortField.dateadded,
-  creatorSorter: SortField.creator,
-};
-
-/**
- * Maps the Metadata fields to how they should be presented in URLs.
- */
-export const MetadataFieldToURLField: {
-  [key in MetadataSortField]: URLSortField;
-} = {
-  week: 'week',
-  downloads: 'downloads',
-  titleSorter: 'title',
-  date: 'date',
-  publicdate: 'publicdate',
-  reviewdate: 'reviewdate',
-  addeddate: 'addeddate',
-  creatorSorter: 'creator',
-};
-
-/**
- * Maps all allowable sort strings from the URL to their respective
- * sort fields.
- */
-export const URLFieldToSortField: Record<URLSortField, SortField> = {
-  week: SortField.weeklyview,
-  downloads: SortField.alltimeview,
-  title: SortField.title,
-  titleSorter: SortField.title,
-  date: SortField.date,
-  publicdate: SortField.datearchived,
-  reviewdate: SortField.datereviewed,
-  addeddate: SortField.dateadded,
-  creator: SortField.creator,
-  creatorSorter: SortField.creator,
-};
+export function sortOptionFromAPIString(sortName?: string | null): SortOption {
+  return (
+    Object.values(SORT_OPTIONS).find(opt =>
+      opt.urlNames.some(name => sortName === name)
+    ) ?? SORT_OPTIONS[SortField.unrecognized]
+  );
+}
 
 /** A union of the fields that permit prefix filtering (e.g., alphabetical filtering) */
 export type PrefixFilterType = 'title' | 'creator';
