@@ -751,6 +751,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
+        .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
         .recaptchaManager=${this.recaptchaManager}

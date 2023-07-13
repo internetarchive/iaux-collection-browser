@@ -58,6 +58,8 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: String }) searchType?: SearchType;
 
+  @property({ type: String }) withinCollection?: string;
+
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
@@ -132,15 +134,20 @@ export class MoreFacetsContent extends LitElement {
    */
   async updateSpecificFacets(): Promise<void> {
     const trimmedQuery = this.query?.trim();
-    if (!trimmedQuery) return;
+    if (!trimmedQuery && !this.withinCollection) return;
 
     const aggregations = {
       simpleParams: [this.facetAggregationKey as string],
     };
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
+    const collectionParams = this.withinCollection
+      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      : null;
+
     const params: SearchParams = {
-      query: trimmedQuery,
+      ...collectionParams,
+      query: trimmedQuery || '',
       filters: this.filterMap,
       aggregations,
       aggregationsSize,

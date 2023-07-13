@@ -90,6 +90,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) filterMap?: FilterMap;
 
+  @property({ type: String }) withinCollection?: string;
+
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object, attribute: false })
@@ -587,6 +589,7 @@ export class CollectionFacets extends LitElement {
         .facetAggregationKey=${facetAggrKey}
         .query=${this.query}
         .filterMap=${this.filterMap}
+        .withinCollection=${this.withinCollection}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}
