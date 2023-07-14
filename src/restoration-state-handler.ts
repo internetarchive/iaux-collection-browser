@@ -114,15 +114,26 @@ export class RestorationStateHandler
     }
 
     if (state.selectedSort) {
-      const prefix = state.sortDirection === 'desc' ? '-' : '';
       const sortOption = SORT_OPTIONS[state.selectedSort];
-      const canonicalApiSort = sortOption.urlNames[0];
+      let prefix = this.sortDirectionPrefix(state.sortDirection);
 
       if (sortOption.field === SortField.unrecognized) {
-        // For unrecognized sorts, just use the param as-is
-        newParams.set('sort', `${oldParams.get('sort')}`);
+        // For unrecognized sorts, use the existing param, possibly updating its direction
+        const oldSortParam = oldParams.get('sort') ?? '';
+        const { field, direction } =
+          this.getSortFieldAndDirection(oldSortParam);
+
+        // Use the state-specified direction if available, or extract one from the param if not
+        if (!state.sortDirection) prefix = this.sortDirectionPrefix(direction);
+
+        if (field) {
+          newParams.set('sort', `${prefix}${field}`);
+        } else {
+          newParams.set('sort', oldSortParam);
+        }
       } else if (sortOption.shownInURL) {
         // Otherwise, use the canonical API form of the sort option
+        const canonicalApiSort = sortOption.urlNames[0];
         newParams.set('sort', `${prefix}${canonicalApiSort}`);
       }
     }
@@ -261,16 +272,7 @@ export class RestorationStateHandler
     }
 
     if (sortQuery) {
-      // check for two different sort formats: `date desc` and `-date`
-      const hasSpace = sortQuery.indexOf(' ') > -1;
-      let field;
-      let direction;
-      if (hasSpace) {
-        [field, direction] = sortQuery.split(' ');
-      } else {
-        field = sortQuery.startsWith('-') ? sortQuery.slice(1) : sortQuery;
-        direction = sortQuery.startsWith('-') ? 'desc' : 'asc';
-      }
+      const { field, direction } = this.getSortFieldAndDirection(sortQuery);
 
       const sortOption = sortOptionFromAPIString(field);
       restorationState.selectedSort = sortOption.field;
@@ -354,7 +356,31 @@ export class RestorationStateHandler
     return restorationState;
   }
 
-  // remove optional opening and closing quotes from a string
+  /**
+   * Converts a URL sort param into a field/direction pair, if possible.
+   * Either or both may be undefined if the param is not in a recognized format.
+   */
+  private getSortFieldAndDirection(sortParam: string) {
+    // check for two different sort formats: `date desc` and `-date`
+    const hasSpace = sortParam.indexOf(' ') > -1;
+    let field;
+    let direction;
+    if (hasSpace) {
+      [field, direction] = sortParam.split(' ');
+    } else {
+      field = sortParam.startsWith('-') ? sortParam.slice(1) : sortParam;
+      direction = sortParam.startsWith('-') ? 'desc' : 'asc';
+    }
+
+    return { field, direction };
+  }
+
+  /** Returns the `-` prefix for `desc` sort, or the empty string otherwise. */
+  private sortDirectionPrefix(sortDirection?: string) {
+    return sortDirection === 'desc' ? '-' : '';
+  }
+
+  /** Remove optional opening and closing quotes from a string */
   private stripQuotes(value: string): string {
     if (value.startsWith('"') && value.endsWith('"')) {
       return value.substring(1, value.length - 1);

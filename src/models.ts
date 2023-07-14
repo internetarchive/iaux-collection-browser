@@ -139,7 +139,8 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
   },
   // Unrecognized sort is the case where the user has specified a sort in the URL, but it is not
   // one of the options listed in this map. We still want these unrecognized sorts to be applied
-  // when searching, but they are not displayed in the sort bar.
+  // when searching, but they are not displayed in the sort bar and we do not actively manage
+  // their URL param beyond flipping the direction as needed.
   [SortField.unrecognized]: {
     field: SortField.unrecognized,
     defaultSortDirection: null,
