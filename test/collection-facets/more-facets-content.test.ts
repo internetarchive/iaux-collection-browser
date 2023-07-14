@@ -86,6 +86,41 @@ describe('More facets content', () => {
     expect(searchService.searchParams?.query).to.equal('title:hello');
   });
 
+  it('queries for more facets using search service within a collection (no query)', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+        .withinCollection=${'foobar'}
+      ></more-facets-content>`
+    );
+
+    el.facetKey = 'subject';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.be.empty;
+    expect(searchService.searchParams?.pageTarget).to.equal('foobar');
+  });
+
+  it('queries for more facets using search service within a collection (with query)', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+        .withinCollection=${'foobar'}
+      ></more-facets-content>`
+    );
+
+    el.facetKey = 'subject';
+    el.query = 'title:hello';
+    await el.updateComplete;
+
+    expect(searchService.searchParams?.query).to.equal('title:hello');
+    expect(searchService.searchParams?.pageTarget).to.equal('foobar');
+  });
+
   it('filter raw selectedFacets object', async () => {
     const searchService = new MockSearchService();
 
