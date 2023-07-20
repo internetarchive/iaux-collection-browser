@@ -1,6 +1,6 @@
 import { SearchType } from '@internetarchive/search-service';
 import { expect } from '@open-wc/testing';
-import { getDefaultSelectedFacets } from '../src/models';
+import { SortField, getDefaultSelectedFacets } from '../src/models';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 
 describe('Restoration state handler', () => {
@@ -243,6 +243,73 @@ describe('Restoration state handler', () => {
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedSort).to.equal('date');
     expect(restorationState.sortDirection).to.equal('asc');
+  });
+
+  it('should restore sort from URL (space format)', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sort=foo+desc';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.selectedSort).to.equal('unrecognized');
+    expect(restorationState.sortDirection).to.equal('desc');
+  });
+
+  it('should restore unrecognized sort from URL (prefix format)', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sort=-foo';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.selectedSort).to.equal('unrecognized');
+    expect(restorationState.sortDirection).to.equal('desc');
+  });
+
+  it('should save direction to URL even for unrecognized sort fields', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?sort=foo';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+    handler.persistState({
+      selectedSort: SortField.unrecognized,
+      sortDirection: 'desc',
+      selectedFacets: getDefaultSelectedFacets(),
+    });
+
+    expect(window.location.search).to.equal('?sort=-foo');
+  });
+
+  it('should keep existing direction for unrecognized sort fields when unspecified in state', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?sort=foo+desc';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+    handler.persistState({
+      selectedSort: SortField.unrecognized,
+      selectedFacets: getDefaultSelectedFacets(),
+    });
+
+    expect(window.location.search).to.equal('?sort=-foo');
+  });
+
+  it('should just ignore unrecognized sort fields w/ unknown formats', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?sort=+foo';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+    handler.persistState({
+      selectedSort: SortField.unrecognized,
+      selectedFacets: getDefaultSelectedFacets(),
+    });
+
+    expect(window.location.search).to.equal('?sort=+foo');
   });
 
   it('should not save current page state to the URL for page 1', async () => {
