@@ -65,6 +65,9 @@ export class SortFilterBar
   /** Whether to show the Relevance sort option (default `true`) */
   @property({ type: Boolean }) showRelevance: boolean = true;
 
+  /** Whether to show the Date Favorited sort option instead of Date Published/Archived/Reviewed (default `false`) */
+  @property({ type: Boolean }) showDateFavorited: boolean = false;
+
   /** Maps of result counts for letters on the alphabet bar, for each letter filter type */
   @property({ type: Object }) prefixFilterCountMap?: Record<
     PrefixFilterType,
@@ -356,7 +359,10 @@ export class SortFilterBar
   private get mobileSortSelectorTemplate() {
     const displayedOptions = Object.values(SORT_OPTIONS)
       .filter(opt => opt.shownInSortBar)
-      .filter(opt => this.showRelevance || opt.field !== SortField.relevance);
+      .filter(opt => this.showRelevance || opt.field !== SortField.relevance)
+      .filter(
+        opt => this.showDateFavorited || opt.field !== SortField.datefavorited
+      );
 
     return html`
       <div
@@ -536,6 +542,9 @@ export class SortFilterBar
       id: 'date-dropdown',
       selected: this.dateOptionSelected,
       dropdownOptions: [
+        ...(this.showDateFavorited
+          ? [this.getDropdownOption(SortField.datefavorited)]
+          : []),
         this.getDropdownOption(SortField.date),
         this.getDropdownOption(SortField.datearchived),
         this.getDropdownOption(SortField.datereviewed),
@@ -552,7 +561,7 @@ export class SortFilterBar
         if (!this.dateDropdown.open && !this.dateOptionSelected) {
           e.stopPropagation();
           this.clearAlphaBarFilters();
-          this.setSelectedSort(SortField.date);
+          this.setSelectedSort(this.defaultDateSortField);
         }
       },
     });
@@ -756,6 +765,14 @@ export class SortFilterBar
   }
 
   /**
+   * The default field for the date sort dropdown.
+   * This is Date Favorited when that option is available, or Date Published otherwise.
+   */
+  private get defaultDateSortField(): SortField {
+    return this.showDateFavorited ? SortField.datefavorited : SortField.date;
+  }
+
+  /**
    * The display name of the current date field
    *
    * @readonly
@@ -764,7 +781,7 @@ export class SortFilterBar
    * @memberof SortFilterBar
    */
   private get dateSortField(): string {
-    const defaultDateSort = SORT_OPTIONS[SortField.date];
+    const defaultDateSort = SORT_OPTIONS[this.defaultDateSortField];
     const currentDateSort = this.dateOptionSelected
       ? SORT_OPTIONS[this.finalizedSortField] ?? defaultDateSort
       : defaultDateSort;
