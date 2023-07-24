@@ -24,6 +24,7 @@ import {
   getMockSuccessExtraQuotedHref,
   getMockSuccessWithDefaultSort,
   getMockSuccessWithConciseDefaultSort,
+  getMockSuccessWithDefaultFavSort,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -43,6 +44,7 @@ const responses: Record<
   'extra-quoted-href': getMockSuccessExtraQuotedHref,
   'default-sort': getMockSuccessWithDefaultSort,
   'default-sort-concise': getMockSuccessWithConciseDefaultSort,
+  'fav-sort': getMockSuccessWithDefaultFavSort,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };
