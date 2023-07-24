@@ -2256,12 +2256,15 @@ export class CollectionBrowser
         }
 
         #facets-bottom-fade {
-          background: linear-gradient(
-            to bottom,
-            #f5f5f700 0%,
-            #f5f5f7c0 50%,
-            #f5f5f7 80%,
-            #f5f5f7 100%
+          background: var(
+            --ia-theme-facet-fade-gradient,
+            linear-gradient(
+              to bottom,
+              #f5f5f700 0%,
+              #f5f5f7c0 50%,
+              #f5f5f7 80%,
+              #f5f5f7 100%
+            )
           );
           position: fixed;
           bottom: 0;

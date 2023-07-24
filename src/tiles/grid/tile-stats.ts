@@ -136,7 +136,7 @@ export class TileStats extends LitElement {
         .status-text {
           font-size: 14px;
           height: 15px;
-          color: #2c2c2c;
+          color: var(--ia-theme-primary-text-color, #2c2c2c);
           line-height: 17px;
           margin: auto;
           display: block;

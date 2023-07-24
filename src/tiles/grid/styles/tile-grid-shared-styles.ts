@@ -61,7 +61,7 @@ export const baseTileStyles = css`
 
   .truncated {
     flex: 1;
-    color: #2c2c2c;
+    color: var(--ia-theme-primary-text-color, #2c2c2c);
     min-width: 0; /* Important for long words! */
     text-align: left;
     line-height: 15px;
