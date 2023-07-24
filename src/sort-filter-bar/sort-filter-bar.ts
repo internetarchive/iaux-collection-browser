@@ -1008,7 +1008,7 @@ export class SortFilterBar
           background: none;
           font-family: inherit;
           font-size: inherit;
-          color: #333;
+          color: var(--ia-theme-primary-text-color, #2c2c2c);
           line-height: 2;
           cursor: pointer;
           appearance: none;

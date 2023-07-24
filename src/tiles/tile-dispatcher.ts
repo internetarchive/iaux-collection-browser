@@ -331,7 +331,11 @@ export class TileDispatcher
 
       item-tile {
         --tileBorderColor: #dddddd;
-        --imageBlockBackgroundColor: #f1f1f4;
+        --tileBackgroundColor: var(--ia-theme-secondary-background-color, #fff);
+        --imageBlockBackgroundColor: var(
+          --ia-theme-primary-background-color,
+          #f1f1f4
+        );
       }
 
       #container {

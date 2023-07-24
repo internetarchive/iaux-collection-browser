@@ -2194,7 +2194,7 @@ export class CollectionBrowser
           padding-left: 1rem;
           padding-right: 1rem;
           margin-top: var(--rightColumnMarginTop, 0);
-          background: #fff;
+          background: var(--ia-theme-secondary-background-color, #fff);
         }
 
         .mobile #right-column {
