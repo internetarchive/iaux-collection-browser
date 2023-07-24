@@ -738,6 +738,7 @@ export class SortFilterBar
    */
   private get dateOptionSelected(): boolean {
     const dateSortFields: SortField[] = [
+      SortField.datefavorited,
       SortField.datearchived,
       SortField.date,
       SortField.datereviewed,

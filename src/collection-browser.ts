@@ -948,6 +948,10 @@ export class CollectionBrowser
       );
     }
 
+    if (changed.has('withinCollection')) {
+      this.clearFilters({ sort: true });
+    }
+
     if (
       changed.has('baseQuery') ||
       changed.has('searchType') ||
