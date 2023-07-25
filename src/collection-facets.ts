@@ -95,8 +95,6 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) filterMap?: FilterMap;
 
-  @property({ type: String }) withinCollection?: string;
-
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object, attribute: false })
