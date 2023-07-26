@@ -773,6 +773,7 @@ export class CollectionBrowser
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
+        .baseNavigationUrl=${this.baseNavigationUrl}
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
