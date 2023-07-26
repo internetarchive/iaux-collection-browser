@@ -16,6 +16,7 @@ import {
   getDefaultSelectedFacets,
 } from '../src/models';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
+import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -845,5 +846,39 @@ describe('Collection Facets', () => {
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
     expect(mockAnalyticsHandler.callAction).to.equal('histogramExpanded');
     expect(mockAnalyticsHandler.callLabel).to.equal(window.location.href);
+  });
+
+  it('includes Part Of section for collections', async () => {
+    const mockCollectionNameCache = new MockCollectionNameCache();
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .withinCollection=${'foo'}
+        .partOfCollections=${['bar', 'baz']}
+        .collectionNameCache=${mockCollectionNameCache}
+      ></collection-facets>`
+    );
+
+    const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
+    expect(partOfSection).to.exist;
+
+    const partOfLinks = partOfSection?.querySelectorAll('a[href]');
+    expect(partOfLinks?.length).to.equal(2);
+
+    expect(partOfLinks?.[0]?.textContent?.trim()).to.equal('bar-name');
+    expect(partOfLinks?.[0]?.getAttribute('href')).to.equal('/details/bar');
+    expect(partOfLinks?.[1]?.textContent?.trim()).to.equal('baz-name');
+    expect(partOfLinks?.[1]?.getAttribute('href')).to.equal('/details/baz');
+  });
+
+  it('does not include Part Of section outside of collections', async () => {
+    // No withinCollection prop
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .partOfCollections=${['bar', 'baz']}
+      ></collection-facets>`
+    );
+
+    const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
+    expect(partOfSection).not.to.exist;
   });
 });

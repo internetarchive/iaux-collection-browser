@@ -126,7 +126,7 @@ export class CollectionBrowser
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
-  
+
   @property({ type: Array }) partOfCollections: string[] = [];
 
   /** describes where this component is being used */
