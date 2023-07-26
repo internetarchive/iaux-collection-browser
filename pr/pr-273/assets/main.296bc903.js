@@ -4578,6 +4578,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
+        .baseNavigationUrl=${this.baseNavigationUrl}
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
