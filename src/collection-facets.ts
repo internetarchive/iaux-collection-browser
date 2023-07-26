@@ -91,9 +91,11 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) withinCollection?: string;
 
-  @property({ type: Array }) partOfCollections: string[] = [];
+  @property({ type: Array }) parentCollections: string[] = [];
 
   @property({ type: Object }) filterMap?: FilterMap;
+
+  @property({ type: String }) baseNavigationUrl?: string;
 
   @property({ type: String }) collectionPagePath: string = '/details/';
 
@@ -156,7 +158,7 @@ export class CollectionFacets extends LitElement {
 
   private get collectionPartOfTemplate(): TemplateResult | typeof nothing {
     // We only display the "Part Of" section on collection pages
-    if (!this.withinCollection || this.partOfCollections.length === 0)
+    if (!this.withinCollection || this.parentCollections.length === 0)
       return nothing;
 
     const headingId = 'partof-heading';
@@ -167,8 +169,9 @@ export class CollectionFacets extends LitElement {
       >
         <h3 id=${headingId}>${msg('Part Of')}</h3>
         <ul>
-          ${map(this.partOfCollections, collxn => {
-            const collectionURL = `${this.collectionPagePath}${collxn}`;
+          ${map(this.parentCollections, collxn => {
+            const collectionURL = `${this.baseNavigationUrl}${this.collectionPagePath}${collxn}`;
+
             return html` <li>
               <a
                 href=${collectionURL}

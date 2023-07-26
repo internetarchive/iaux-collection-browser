@@ -127,7 +127,7 @@ export class CollectionBrowser
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
 
-  @property({ type: Array }) partOfCollections: string[] = [];
+  @property({ type: Array }) parentCollections: string[] = [];
 
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
@@ -761,7 +761,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
-        .partOfCollections=${this.partOfCollections}
+        .parentCollections=${this.parentCollections}
         .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
@@ -1810,7 +1810,7 @@ export class CollectionBrowser
       this.applyDefaultCollectionSort(this.collectionInfo);
 
       if (this.collectionInfo) {
-        this.partOfCollections = [].concat(
+        this.parentCollections = [].concat(
           this.collectionInfo.public_metadata?.collection ?? []
         );
       }
