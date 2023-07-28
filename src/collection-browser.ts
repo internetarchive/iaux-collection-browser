@@ -41,9 +41,9 @@ import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manag
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
+import './manage/manage-bar';
 import './collection-facets';
 import './circular-activity-indicator';
-import './sort-filter-bar/sort-filter-bar';
 import {
   SelectedFacets,
   SortField,
@@ -75,6 +75,8 @@ import {
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
+import type { ManageableItem } from './manage/manage-bar';
+import { formatDate } from './utils/format-date';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -531,7 +533,9 @@ export class CollectionBrowser
   private get rightColumnTemplate(): TemplateResult {
     return html`
       <div id="right-column" class="column">
-        ${this.sortFilterBarTemplate}
+        ${this.isManageView
+          ? this.manageBarTemplate
+          : this.sortFilterBarTemplate}
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
@@ -580,6 +584,76 @@ export class CollectionBrowser
       >
       </sort-filter-bar>
     `;
+  }
+
+  private get manageBarTemplate(): TemplateResult {
+    return html`
+      <manage-bar
+        @removeItems=${this.handleRemoveItems}
+        @toggleAll=${this.toggleAllChecks}
+        @cancel=${() => {
+          this.isManageView = false;
+          this.uncheckAllTiles();
+        }}
+      ></manage-bar>
+    `;
+  }
+
+  /**
+   * Handler for when the user requests to remove all checked items via the manage bar.
+   * Emits an `itemRemovalRequested` event with all checked tile models.
+   */
+  private handleRemoveItems(): void {
+    this.dispatchEvent(
+      new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
+        detail: {
+          items: this.checkedTileModels.map(model => ({
+            ...model,
+            date: formatDate(model.datePublished, 'long'),
+          })),
+        },
+      })
+    );
+  }
+
+  /**
+   * Toggles the state of every tile's management checkbox
+   */
+  private toggleAllChecks(): void {
+    this.mapTileModels(model => ({ ...model, checked: !model.checked }));
+  }
+
+  /**
+   * Unchecks every tile's management checkbox
+   */
+  private uncheckAllTiles(): void {
+    this.mapTileModels(model => ({ ...model, checked: false }));
+  }
+
+  /**
+   * Applies the given map function to all of the tile models in every page of the
+   * data source. This method updates the data source object in immutable fashion.
+   *
+   * @param mapFn A callback function to call on every tile model, as with Array.map
+   */
+  private mapTileModels(
+    mapFn: (value: TileModel, index: number, array: TileModel[]) => TileModel
+  ): void {
+    this.dataSource = Object.fromEntries(
+      Object.entries(this.dataSource).map(([page, tileModels]) => [
+        page,
+        tileModels.map(mapFn),
+      ])
+    );
+  }
+
+  /**
+   * An array of all the tile models whose management checkboxes are checked
+   */
+  private get checkedTileModels(): TileModel[] {
+    return Object.values(this.dataSource)
+      .flat()
+      .filter(model => model.checked);
   }
 
   private userChangedSort(
@@ -781,6 +855,7 @@ export class CollectionBrowser
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
         .filterMap=${this.filterMap}
+        .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
@@ -998,6 +1073,10 @@ export class CollectionBrowser
       if (!this.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
+    }
+
+    if (changed.has('isManageView')) {
+      this.infiniteScroller?.reload();
     }
 
     if (changed.has('resizeObserver')) {
@@ -1962,6 +2041,7 @@ export class CollectionBrowser
 
       tiles.push({
         averageRating: result.avg_rating?.value,
+        checked: false,
         collections: result.collection?.values ?? [],
         collectionFilesCount: result.collection_files_count?.value ?? 0,
         collectionSize: result.collection_size?.value ?? 0,
@@ -2103,6 +2183,11 @@ export class CollectionBrowser
    * Callback when a result is selected
    */
   resultSelected(event: CustomEvent<TileModel>): void {
+    if (this.isManageView) {
+      // Checked/unchecked state change -- rerender to ensure it propagates
+      this.dataSource = { ...this.dataSource };
+    }
+
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.resultSelected,
@@ -2133,7 +2218,8 @@ export class CollectionBrowser
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
-        ?enableHoverPane=${true}
+        .isManageView=${this.isManageView}
+        ?enableHoverPane=${!this.isManageView}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >
       </tile-dispatcher>

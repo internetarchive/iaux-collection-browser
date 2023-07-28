@@ -123,6 +123,21 @@ export const baseTileStyles = css`
     z-index: 1;
   }
 
+  .manage-check {
+    position: absolute;
+    right: 0;
+    top: 0;
+    border: 5px solid #2c2c2c;
+    border-radius: 3px;
+    background-color: #2c2c2c;
+    z-index: 2;
+  }
+
+  .manage-check > input[type='checkbox'] {
+    display: block;
+    margin: 0;
+  }
+
   .hidden {
     display: none;
   }
