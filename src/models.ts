@@ -65,6 +65,7 @@ export enum SortField {
   'datearchived' = 'datearchived',
   'datereviewed' = 'datereviewed',
   'dateadded' = 'dateadded',
+  'datefavorited' = 'datefavorited',
   'creator' = 'creator',
 }
 
@@ -127,6 +128,7 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
   // For collection pages _without a query_, the default is usually weekly views, but this can be
   // overridden by the collection's `sort-by` metadata entry. If a query _is_ specified, then the
   // default is again relevance sort.
+  // For fav-* collections only, the default is instead sorting by date favorited.
   [SortField.default]: {
     field: SortField.default,
     defaultSortDirection: null,
@@ -240,6 +242,17 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     searchServiceKey: 'addeddate',
     displayName: 'Date added',
     urlNames: ['addeddate'],
+  },
+  [SortField.datefavorited]: {
+    field: SortField.datefavorited,
+    defaultSortDirection: 'desc',
+    canSetDirection: false,
+    shownInSortBar: true, // But only when viewing fav-* collections
+    shownInURL: false,
+    handledBySearchService: false,
+    searchServiceKey: 'favoritedate',
+    displayName: 'Date favorited',
+    urlNames: ['favoritedate'],
   },
   [SortField.creator]: {
     field: SortField.creator,

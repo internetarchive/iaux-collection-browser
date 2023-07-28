@@ -1065,6 +1065,31 @@ describe('Collection Browser', () => {
     expect(sortBar.sortDirection).to.be.null;
   });
 
+  it('uses date favorited sort as default when targeting fav- collection', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      ></collection-browser>`
+    );
+
+    el.withinCollection = 'fav-sort';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar'
+    ) as SortFilterBar;
+    expect(sortBar).to.exist;
+    expect(sortBar.defaultSortField).to.equal(SortField.datefavorited);
+    expect(sortBar.defaultSortDirection).to.equal('desc');
+    expect(sortBar.selectedSort).to.equal(SortField.default);
+    expect(sortBar.sortDirection).to.be.null;
+  });
+
   it('scrolls to page', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(

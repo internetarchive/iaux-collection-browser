@@ -564,6 +564,7 @@ export class CollectionBrowser
         .selectedSort=${this.selectedSort}
         .sortDirection=${this.sortDirection}
         .showRelevance=${this.isRelevanceSortAvailable}
+        .showDateFavorited=${this.withinCollection?.startsWith('fav-')}
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
@@ -945,6 +946,10 @@ export class CollectionBrowser
       this.sendFilterByCreatorAnalytics(
         changed.get('selectedCreatorFilter') as string
       );
+    }
+
+    if (changed.has('withinCollection')) {
+      this.clearFilters({ sort: true });
     }
 
     if (
@@ -1841,7 +1846,9 @@ export class CollectionBrowser
   /**
    * Applies any default sort option for the current collection, by checking
    * for one in the collection's metadata. If none is found, defaults to sorting
-   * descending by weekly views.
+   * descending by:
+   *  - Date Favorited for fav-* collections
+   *  - Weekly views for all other collections
    */
   private applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
     if (this.baseQuery) {
@@ -1852,11 +1859,22 @@ export class CollectionBrowser
       return;
     }
 
-    const defaultSort: string =
-      collectionInfo?.public_metadata?.['sort-by'] ?? '-week';
+    // Favorite collections sort on Date Favorited by default.
+    // Other collections fall back to sorting on weekly views.
+    const baseDefaultSort: string =
+      collectionInfo?.public_metadata?.identifier?.startsWith('fav-')
+        ? '-favoritedate'
+        : '-week';
+
+    // The collection metadata may override the default sorting with something else
+    const metadataSort: string | undefined =
+      collectionInfo?.public_metadata?.['sort-by'];
+
+    // Prefer the metadata-specified sort if one exists
+    const defaultSortToApply = metadataSort ?? baseDefaultSort;
 
     // Account for both -field and field:dir formats
-    let [field, dir] = defaultSort.split(':');
+    let [field, dir] = defaultSortToApply.split(':');
     if (field.startsWith('-')) {
       field = field.slice(1);
       dir = 'desc';
