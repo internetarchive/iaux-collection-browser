@@ -25,10 +25,16 @@ export class CollectionTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showInfoButton = false;
 
+  @property({ type: Boolean }) isManageView = false;
+
+  @property({ type: String }) manageCheckTitle = msg(
+    'Remove this item from the list'
+  );
+
   render() {
     return html`
       <div class="container">
-        ${this.infoButtonTemplate}
+        ${this.infoButtonTemplate} ${this.manageCheckTemplate}
         <div class="tile-details">
           <div class="item-info">
             ${this.getImageBlockTemplate} ${this.getTitleTemplate}
@@ -86,13 +92,32 @@ export class CollectionTile extends BaseTileComponent {
   }
 
   private get infoButtonTemplate(): TemplateResult | typeof nothing {
+    if (!this.showInfoButton || this.isManageView) return nothing;
+
     // &#9432; is an information icon
-    return this.showInfoButton
-      ? html`<button class="info-button" @click=${this.infoButtonPressed}>
-          &#9432;
-          <span class="sr-only">${msg('More info')}</span>
-        </button>`
-      : nothing;
+    return html`
+      <button class="info-button" @click=${this.infoButtonPressed}>
+        &#9432;
+        <span class="sr-only">${msg('More info')}</span>
+      </button>
+    `;
+  }
+
+  private get manageCheckTemplate(): TemplateResult | typeof nothing {
+    if (!this.isManageView) return nothing;
+
+    return html`
+      <div class="manage-check">
+        <input
+          type="checkbox"
+          title=${this.manageCheckTitle}
+          .checked=${this.model?.checked}
+          @change=${() => {
+            if (this.model) this.model.checked = !this.model.checked;
+          }}
+        />
+      </div>
+    `;
   }
 
   private infoButtonPressed(e: PointerEvent) {

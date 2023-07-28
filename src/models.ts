@@ -6,6 +6,7 @@ import {
 
 export interface TileModel {
   averageRating?: number;
+  checked: boolean; // Whether this tile is currently checked for item management functions
   collectionIdentifier?: string;
   collectionName?: string;
   collectionFilesCount: number;

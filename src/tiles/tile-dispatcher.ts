@@ -46,6 +46,8 @@ export class TileDispatcher
 
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
 
+  @property({ type: Boolean }) isManageView = false;
+
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @property({ type: Object })
@@ -125,10 +127,22 @@ export class TileDispatcher
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
-        @click=${() =>
+        @click=${(e: Event) => {
+          if (this.isManageView) {
+            e.preventDefault();
+            if (this.model) this.model.checked = !this.model.checked;
+          }
+
           this.dispatchEvent(
             new CustomEvent('resultSelected', { detail: this.model })
-          )}
+          );
+        }}
+        @contextmenu=${(e: Event) => {
+          if (this.isManageView && this.linkTileHref !== nothing) {
+            e.preventDefault();
+            window.open(this.linkTileHref, '_blank');
+          }
+        }}
       >
         ${this.tile}
       </a>
@@ -220,6 +234,12 @@ export class TileDispatcher
     });
   }
 
+  private tileChecked(): void {
+    this.dispatchEvent(
+      new CustomEvent('resultSelected', { detail: this.model })
+    );
+  }
+
   private get tile() {
     const {
       model,
@@ -245,8 +265,10 @@ export class TileDispatcher
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
               .creatorFilter=${creatorFilter}
+              .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
+              @tileChecked=${this.tileChecked}
             >
             </collection-tile>`;
           case 'account':
@@ -257,8 +279,10 @@ export class TileDispatcher
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
               .creatorFilter=${creatorFilter}
+              .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
+              @tileChecked=${this.tileChecked}
             >
             </account-tile>`;
           default:
@@ -272,8 +296,10 @@ export class TileDispatcher
               .sortParam=${sortParam}
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
+              .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
+              @tileChecked=${this.tileChecked}
             >
             </item-tile>`;
         }
