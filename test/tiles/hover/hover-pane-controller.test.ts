@@ -35,6 +35,7 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
   getHoverPaneProps(): HoverPaneProperties {
     return {
       model: {
+        checked: false,
         collectionFilesCount: 1,
         collections: ['foo', 'bar'],
         collectionSize: 1,
