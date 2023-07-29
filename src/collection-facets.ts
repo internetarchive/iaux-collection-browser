@@ -136,7 +136,6 @@ export class CollectionFacets extends LitElement {
     const datePickerLabelId = 'date-picker-label';
     return html`
       <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
-        ${this.collectionPartOfTemplate}
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
@@ -149,6 +148,7 @@ export class CollectionFacets extends LitElement {
               </section>
             `
           : nothing}
+        ${this.collectionPartOfTemplate}
         ${this.mergedFacets.map(facetGroup =>
           this.getFacetGroupTemplate(facetGroup)
         )}
@@ -167,7 +167,9 @@ export class CollectionFacets extends LitElement {
         class="facet-group partof-collections"
         aria-labelledby=${headingId}
       >
-        <h3 id=${headingId}>${msg('Part Of')}</h3>
+        <div class="facet-group-header">
+          <h3 id=${headingId}>${msg('Part Of')}</h3>
+        </div>
         <ul>
           ${map(this.parentCollections, collxn => {
             const collectionURL = `${this.baseNavigationUrl}${this.collectionPagePath}${collxn}`;
