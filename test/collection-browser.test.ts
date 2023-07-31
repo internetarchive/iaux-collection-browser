@@ -1246,4 +1246,180 @@ describe('Collection Browser', () => {
     // property is reflected as attribute
     expect(el.getAttribute('searchcontext')).to.equal('unicorn-search');
   });
+
+  it('respects the initial set of URL parameters for a general search', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.set('sin', 'TXT');
+    searchParams.set('sort', 'title');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    expect(el.baseQuery).to.equal('foo');
+    expect(el.searchType).to.equal(SearchType.FULLTEXT);
+    expect(el.selectedSort).to.equal(SortField.title);
+    expect(el.selectedFacets?.mediatype?.data?.state).to.equal('hidden');
+    expect(el.selectedFacets?.subject?.baz?.state).to.equal('selected');
+    expect(el.selectedTitleFilter).to.equal('X');
+    expect(el.minSelectedDate).to.equal('2000');
+    expect(el.maxSelectedDate).to.equal('2010');
+  });
+
+  it('respects the initial set of URL parameters within a collection', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.set('sin', 'TXT');
+    searchParams.set('sort', 'title');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinCollection=${'foobar'}
+      >
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    expect(el.withinCollection).to.equal('foobar');
+    expect(el.baseQuery).to.equal('foo');
+    expect(el.searchType).to.equal(SearchType.FULLTEXT);
+    expect(el.selectedSort).to.equal(SortField.title);
+    expect(el.selectedFacets?.mediatype?.data?.state).to.equal('hidden');
+    expect(el.selectedFacets?.subject?.baz?.state).to.equal('selected');
+    expect(el.selectedTitleFilter).to.equal('X');
+    expect(el.minSelectedDate).to.equal('2000');
+    expect(el.maxSelectedDate).to.equal('2010');
+  });
+
+  it('clears filters except sort when query changes for a general search', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.set('sin', 'TXT');
+    searchParams.set('sort', 'title');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    el.baseQuery = 'bar';
+    await el.updateComplete;
+
+    expect(el.baseQuery).to.equal('bar');
+    expect(el.searchType).to.equal(SearchType.FULLTEXT);
+    expect(el.selectedSort).to.equal(SortField.title);
+    expect(el.selectedFacets?.mediatype?.data).not.to.exist;
+    expect(el.selectedFacets?.subject?.baz).not.to.exist;
+    expect(el.selectedTitleFilter).not.to.exist;
+    expect(el.minSelectedDate).not.to.exist;
+    expect(el.maxSelectedDate).not.to.exist;
+  });
+
+  it('clears filters except sort when query changes within a collection', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.set('sin', 'TXT');
+    searchParams.set('sort', 'title');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinCollection=${'foobar'}
+      >
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    el.baseQuery = 'bar';
+    await el.updateComplete;
+
+    expect(el.withinCollection).to.equal('foobar');
+    expect(el.baseQuery).to.equal('bar');
+    expect(el.searchType).to.equal(SearchType.FULLTEXT);
+    expect(el.selectedSort).to.equal(SortField.title);
+    expect(el.selectedFacets?.mediatype?.data).not.to.exist;
+    expect(el.selectedFacets?.subject?.baz).not.to.exist;
+    expect(el.selectedTitleFilter).not.to.exist;
+    expect(el.minSelectedDate).not.to.exist;
+    expect(el.maxSelectedDate).not.to.exist;
+  });
+
+  it('clears filters *including* sort when target collection changes', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.set('sin', 'TXT');
+    searchParams.set('sort', 'title');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinCollection=${'foobar'}
+      >
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    el.withinCollection = 'bar';
+    await el.updateComplete;
+
+    expect(el.withinCollection).to.equal('bar');
+    expect(el.baseQuery).to.equal('foo');
+    expect(el.searchType).to.equal(SearchType.FULLTEXT);
+    expect(el.selectedSort).to.equal(SortField.default);
+    expect(el.selectedFacets?.mediatype?.data).not.to.exist;
+    expect(el.selectedFacets?.subject?.baz).not.to.exist;
+    expect(el.selectedTitleFilter).not.to.exist;
+    expect(el.minSelectedDate).not.to.exist;
+    expect(el.maxSelectedDate).not.to.exist;
+  });
 });
