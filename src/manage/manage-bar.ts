@@ -1,6 +1,7 @@
 import { msg } from '@lit/localize';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { when } from 'lit/directives/when.js';
 
 export interface ManageableItem {
   identifier: string;
@@ -10,7 +11,20 @@ export interface ManageableItem {
 
 @customElement('manage-bar')
 export class ManageBar extends LitElement {
+  /**
+   * The label displayed in front of the management buttons
+   */
   @property({ type: String }) label = msg('Select items to un-favorite');
+
+  /**
+   * Whether to show the "Select All" button (default false)
+   */
+  @property({ type: Boolean }) showSelectAll = false;
+
+  /**
+   * Whether to show the "Unselect All" button (default false)
+   */
+  @property({ type: Boolean }) showUnselectAll = false;
 
   render(): TemplateResult {
     return html`
@@ -22,12 +36,24 @@ export class ManageBar extends LitElement {
         <button class="remove-btn" @click=${this.removeClicked}>
           ${msg('Remove selected items')}
         </button>
-        <button
-          class="link-styled toggle-all-btn"
-          @click=${this.toggleAllClicked}
-        >
-          ${msg('Toggle all')}
-        </button>
+        ${when(
+          this.showSelectAll,
+          () => html` <button
+            class="link-styled select-all-btn"
+            @click=${this.selectAllClicked}
+          >
+            ${msg('Select all')}
+          </button>`
+        )}
+        ${when(
+          this.showUnselectAll,
+          () => html` <button
+            class="link-styled unselect-all-btn"
+            @click=${this.unselectAllClicked}
+          >
+            ${msg('Unselect all')}
+          </button>`
+        )}
       </div>
     `;
   }
@@ -40,8 +66,12 @@ export class ManageBar extends LitElement {
     this.dispatchEvent(new CustomEvent('removeItems'));
   }
 
-  private toggleAllClicked(): void {
-    this.dispatchEvent(new CustomEvent('toggleAll'));
+  private selectAllClicked(): void {
+    this.dispatchEvent(new CustomEvent('selectAll'));
+  }
+
+  private unselectAllClicked(): void {
+    this.dispatchEvent(new CustomEvent('unselectAll'));
   }
 
   static get styles(): CSSResultGroup {

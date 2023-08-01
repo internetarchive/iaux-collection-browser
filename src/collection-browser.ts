@@ -590,7 +590,8 @@ export class CollectionBrowser
     return html`
       <manage-bar
         @removeItems=${this.handleRemoveItems}
-        @toggleAll=${this.toggleAllChecks}
+        @selectAll=${this.checkAllTiles}
+        @unselectAll=${this.uncheckAllTiles}
         @cancel=${() => {
           this.isManageView = false;
           this.uncheckAllTiles();
@@ -617,10 +618,10 @@ export class CollectionBrowser
   }
 
   /**
-   * Toggles the state of every tile's management checkbox
+   * Checks every tile's management checkbox
    */
-  private toggleAllChecks(): void {
-    this.mapTileModels(model => ({ ...model, checked: !model.checked }));
+  private checkAllTiles(): void {
+    this.mapTileModels(model => ({ ...model, checked: true }));
   }
 
   /**
@@ -645,6 +646,7 @@ export class CollectionBrowser
         tileModels.map(mapFn),
       ])
     );
+    this.infiniteScroller?.reload();
   }
 
   /**
@@ -1924,8 +1926,7 @@ export class CollectionBrowser
     if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
       if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount =
-          this.estimatedTileCount - resultCountDiscrepancy;
+        this.infiniteScroller.itemCount = this.totalResults;
       }
     }
 
@@ -2185,7 +2186,8 @@ export class CollectionBrowser
   resultSelected(event: CustomEvent<TileModel>): void {
     if (this.isManageView) {
       // Checked/unchecked state change -- rerender to ensure it propagates
-      this.dataSource = { ...this.dataSource };
+      this.mapTileModels(model => ({ ...model }));
+      // this.infiniteScroller?.reload();
     }
 
     this.analyticsHandler?.sendEvent({

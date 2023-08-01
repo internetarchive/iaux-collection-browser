@@ -331,6 +331,14 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-date-picker">Enable date picker</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-management"
+                @click=${this.manageModeChanged}
+              />
+              <label for="enable-management">Enable manage mode</label>
+            </div>
           </div>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
@@ -489,6 +497,11 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.minSelectedDate = undefined;
       this.collectionBrowser.maxSelectedDate = undefined;
     }
+  }
+
+  private manageModeChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.isManageView = target.checked;
   }
 
   private rowGapChanged(e: Event) {
