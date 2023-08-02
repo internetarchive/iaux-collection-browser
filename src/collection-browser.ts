@@ -589,6 +589,8 @@ export class CollectionBrowser
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
+        showSelectAll
+        showUnselectAll
         @removeItems=${this.handleRemoveItems}
         @selectAll=${this.checkAllTiles}
         @unselectAll=${this.uncheckAllTiles}
@@ -946,6 +948,17 @@ export class CollectionBrowser
     return `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`;
   }
 
+  /**
+   * Emits an event indicating a change in whether the manage mode is shown.
+   */
+  private emitManageModeChangedEvent(): void {
+    this.dispatchEvent(
+      new CustomEvent<boolean>('manageModeChanged', {
+        detail: this.isManageView,
+      })
+    );
+  }
+
   firstUpdated(): void {
     this.setupStateRestorationObserver();
     this.restoreState();
@@ -1079,6 +1092,7 @@ export class CollectionBrowser
 
     if (changed.has('isManageView')) {
       this.infiniteScroller?.reload();
+      this.emitManageModeChangedEvent();
     }
 
     if (changed.has('resizeObserver')) {

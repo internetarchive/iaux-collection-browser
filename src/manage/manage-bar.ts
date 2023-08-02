@@ -37,24 +37,26 @@ export class ManageBar extends LitElement {
           <button class="remove-btn" @click=${this.removeClicked}>
             ${msg('Remove selected items')}
           </button>
-          ${when(
-            this.showSelectAll,
-            () => html` <button
-              class="link-styled select-all-btn"
-              @click=${this.selectAllClicked}
-            >
-              ${msg('Select all')}
-            </button>`
-          )}
-          ${when(
-            this.showUnselectAll,
-            () => html` <button
-              class="link-styled unselect-all-btn"
-              @click=${this.unselectAllClicked}
-            >
-              ${msg('Unselect all')}
-            </button>`
-          )}
+          <div class="selection-buttons">
+            ${when(
+              this.showSelectAll,
+              () => html` <button
+                class="link-styled select-all-btn"
+                @click=${this.selectAllClicked}
+              >
+                ${msg('Select all')}
+              </button>`
+            )}
+            ${when(
+              this.showUnselectAll,
+              () => html` <button
+                class="link-styled unselect-all-btn"
+                @click=${this.unselectAllClicked}
+              >
+                ${msg('Unselect all')}
+              </button>`
+            )}
+          </div>
         </div>
       </div>
     `;
@@ -108,7 +110,7 @@ export class ManageBar extends LitElement {
 
       button.link-styled {
         margin: 0;
-        padding: 5px;
+        padding: 6px;
         border: 0;
         appearance: none;
         background: none;
@@ -126,6 +128,7 @@ export class ManageBar extends LitElement {
         color: white;
       }
 
+      /* Button styles derived from legacy version */
       .cancel-btn {
         background: #777777;
         border: 1px solid #666666;

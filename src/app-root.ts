@@ -335,7 +335,7 @@ export class AppRoot extends LitElement {
               <input
                 type="checkbox"
                 id="enable-management"
-                @click=${this.manageModeChanged}
+                @click=${this.manageModeCheckboxChanged}
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
@@ -359,6 +359,7 @@ export class AppRoot extends LitElement {
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
+          @manageModeChanged=${this.manageModeChanged}
         >
         </collection-browser>
       </div>
@@ -499,7 +500,22 @@ export class AppRoot extends LitElement {
     }
   }
 
-  private manageModeChanged(e: Event) {
+  /**
+   * Handler for when collection browser's manage mode changes.
+   * This lets us disable the checkbox in the dev panel when the user cancels out
+   * of manage mode from within collection browser.
+   */
+  private manageModeChanged(e: CustomEvent<boolean>): void {
+    const manageCheckbox = this.shadowRoot?.querySelector(
+      '#enable-management'
+    ) as HTMLInputElement;
+    if (manageCheckbox) manageCheckbox.checked = e.detail;
+  }
+
+  /**
+   * Handler for when the dev panel's "Enable manage mode" checkbox is changed.
+   */
+  private manageModeCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.collectionBrowser.isManageView = target.checked;
   }
