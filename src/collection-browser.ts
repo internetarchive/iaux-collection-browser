@@ -636,6 +636,7 @@ export class CollectionBrowser
     // scroller queries for cell contents.
     const { checkedTileModels, uncheckedTileModels } = this;
     const numChecked = checkedTileModels.length;
+    if (numChecked === 0) return;
     this.tileModelOffset += numChecked;
 
     const newDataSource: typeof this.dataSource = {};
@@ -668,7 +669,7 @@ export class CollectionBrowser
     if (this.totalResults) this.totalResults -= numChecked;
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount -= numChecked;
-      this.infiniteScroller.reload();
+      this.infiniteScroller.refreshAllVisibleCells();
     }
   }
 
@@ -703,7 +704,7 @@ export class CollectionBrowser
         ),
       ])
     );
-    this.infiniteScroller?.reload();
+    this.infiniteScroller?.refreshAllVisibleCells();
   }
 
   /**
@@ -713,10 +714,20 @@ export class CollectionBrowser
     return this.getFilteredTileModels(model => model.checked);
   }
 
+  /**
+   * An array of all the tile models whose management checkboxes are unchecked
+   */
   private get uncheckedTileModels(): TileModel[] {
     return this.getFilteredTileModels(model => !model.checked);
   }
 
+  /**
+   * Returns a flattened, filtered array of all the tile models in the data source
+   * for which the given predicate returns a truthy value.
+   *
+   * @param predicate A callback function to apply on each tile model, as with Array.filter
+   * @returns A filtered array of tile models satisfying the predicate
+   */
   private getFilteredTileModels(
     predicate: (model: TileModel, index: number, array: TileModel[]) => unknown
   ): TileModel[] {
@@ -1159,7 +1170,7 @@ export class CollectionBrowser
 
     if (changed.has('isManageView')) {
       if (this.isManageView) this.displayMode = 'grid';
-      this.infiniteScroller?.reload();
+      this.infiniteScroller?.refreshAllVisibleCells();
       this.emitManageModeChangedEvent();
     }
 
@@ -2159,7 +2170,7 @@ export class CollectionBrowser
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.infiniteScroller?.reload();
+      this.infiniteScroller?.refreshAllVisibleCells();
     }
   }
 
@@ -2269,7 +2280,12 @@ export class CollectionBrowser
   resultSelected(event: CustomEvent<TileModel>): void {
     if (this.isManageView) {
       // Checked/unchecked state change -- rerender to ensure it propagates
-      this.mapDataSource(model => ({ ...model }));
+      // this.mapDataSource(model => ({ ...model }));
+      const cellIndex = Object.values(this.dataSource)
+        .flat()
+        .indexOf(event.detail);
+      if (cellIndex >= 0)
+        this.infiniteScroller?.refreshCell(cellIndex - this.tileModelOffset);
     }
 
     this.analyticsHandler?.sendEvent({
