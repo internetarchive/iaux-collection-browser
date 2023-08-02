@@ -1091,6 +1091,7 @@ export class CollectionBrowser
     }
 
     if (changed.has('isManageView')) {
+      if (this.isManageView) this.displayMode = 'grid';
       this.infiniteScroller?.reload();
       this.emitManageModeChangedEvent();
     }
