@@ -130,7 +130,7 @@ export const baseTileStyles = css`
     border: 5px solid #2c2c2c;
     border-radius: 3px;
     background-color: #2c2c2c;
-    z-index: 2;
+    z-index: 1;
   }
 
   .manage-check > input[type='checkbox'] {
