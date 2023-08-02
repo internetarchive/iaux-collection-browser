@@ -30,30 +30,32 @@ export class ManageBar extends LitElement {
     return html`
       <div class="manage-container">
         <span class="manage-label">${this.label}</span>
-        <button class="cancel-btn" @click=${this.cancelClicked}>
-          ${msg('Cancel')}
-        </button>
-        <button class="remove-btn" @click=${this.removeClicked}>
-          ${msg('Remove selected items')}
-        </button>
-        ${when(
-          this.showSelectAll,
-          () => html` <button
-            class="link-styled select-all-btn"
-            @click=${this.selectAllClicked}
-          >
-            ${msg('Select all')}
-          </button>`
-        )}
-        ${when(
-          this.showUnselectAll,
-          () => html` <button
-            class="link-styled unselect-all-btn"
-            @click=${this.unselectAllClicked}
-          >
-            ${msg('Unselect all')}
-          </button>`
-        )}
+        <div class="manage-buttons">
+          <button class="cancel-btn" @click=${this.cancelClicked}>
+            ${msg('Cancel')}
+          </button>
+          <button class="remove-btn" @click=${this.removeClicked}>
+            ${msg('Remove selected items')}
+          </button>
+          ${when(
+            this.showSelectAll,
+            () => html` <button
+              class="link-styled select-all-btn"
+              @click=${this.selectAllClicked}
+            >
+              ${msg('Select all')}
+            </button>`
+          )}
+          ${when(
+            this.showUnselectAll,
+            () => html` <button
+              class="link-styled unselect-all-btn"
+              @click=${this.unselectAllClicked}
+            >
+              ${msg('Unselect all')}
+            </button>`
+          )}
+        </div>
       </div>
     `;
   }
@@ -81,6 +83,7 @@ export class ManageBar extends LitElement {
         align-items: center;
         column-gap: 5px;
         padding: 10px 0 20px;
+        flex-wrap: wrap;
       }
 
       .manage-label {
@@ -90,10 +93,17 @@ export class ManageBar extends LitElement {
         padding-right: 10px;
       }
 
+      .manage-buttons {
+        display: flex;
+        align-items: center;
+        column-gap: 5px;
+      }
+
       button {
         display: inline-block;
         font-size: 1.4rem;
         cursor: pointer;
+        white-space: nowrap;
       }
 
       button.link-styled {
