@@ -613,7 +613,6 @@ export class CollectionBrowser
    * Emits an `itemRemovalRequested` event with all checked tile models.
    */
   private handleRemoveItems(): void {
-    this.removeCheckedTiles(); // TODO for testing
     this.dispatchEvent(
       new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
         detail: {
@@ -624,6 +623,7 @@ export class CollectionBrowser
         },
       })
     );
+    this.removeCheckedTiles(); // TODO for testing
   }
 
   /**
@@ -678,14 +678,14 @@ export class CollectionBrowser
   /**
    * Checks every tile's management checkbox
    */
-  private checkAllTiles(): void {
+  checkAllTiles(): void {
     this.mapDataSource(model => ({ ...model, checked: true }));
   }
 
   /**
    * Unchecks every tile's management checkbox
    */
-  private uncheckAllTiles(): void {
+  uncheckAllTiles(): void {
     this.mapDataSource(model => ({ ...model, checked: false }));
   }
 
@@ -712,14 +712,14 @@ export class CollectionBrowser
   /**
    * An array of all the tile models whose management checkboxes are checked
    */
-  private get checkedTileModels(): TileModel[] {
+  get checkedTileModels(): TileModel[] {
     return this.getFilteredTileModels(model => model.checked);
   }
 
   /**
    * An array of all the tile models whose management checkboxes are unchecked
    */
-  private get uncheckedTileModels(): TileModel[] {
+  get uncheckedTileModels(): TileModel[] {
     return this.getFilteredTileModels(model => !model.checked);
   }
 

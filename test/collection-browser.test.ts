@@ -1463,4 +1463,200 @@ describe('Collection Browser', () => {
     expect(el.minSelectedDate).not.to.exist;
     expect(el.maxSelectedDate).not.to.exist;
   });
+
+  it('shows manage bar interface instead of sort bar when in manage view', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('manage-bar')).to.exist;
+    expect(el.shadowRoot?.querySelector('sort-filter-bar')).not.to.exist;
+
+    el.isManageView = false;
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('manage-bar')).not.to.exist;
+    expect(el.shadowRoot?.querySelector('sort-filter-bar')).to.exist;
+  });
+
+  it('switches to grid display mode when manage view activated', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseQuery=${'foo'}
+        .displayMode=${'list-detail'}
+      >
+      </collection-browser>`
+    );
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    expect(el.displayMode).to.equal('grid');
+  });
+
+  it('can remove all checked tiles', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    el.pageSize = 1; // To hit the edge case of a page break while offsetting tiles
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
+    expect(infiniteScroller).to.exist;
+
+    let tiles =
+      infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
+    expect(tiles).to.exist.and.have.length(2);
+
+    const firstTile = tiles![0] as TileDispatcher;
+    const firstTileLink = firstTile.shadowRoot?.querySelector(
+      'a[href]'
+    ) as HTMLAnchorElement;
+    expect(firstTile.model?.identifier).to.equal('foo');
+    expect(firstTileLink).to.exist;
+
+    // No effect if no tiles checked
+    el.removeCheckedTiles();
+    await el.updateComplete;
+    tiles = infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
+    expect(tiles).to.exist.and.have.length(2);
+
+    // Check the first tile
+    firstTileLink!.click();
+    expect(firstTile.model?.checked).to.be.true;
+
+    // Remove checked tiles and verify that we only kept the second tile
+    el.removeCheckedTiles();
+    await el.updateComplete;
+    tiles = infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
+    expect(tiles).to.exist.and.have.length(1);
+    expect((tiles![0] as TileDispatcher).model?.identifier).to.equal('bar');
+  });
+
+  it('can check/uncheck all tiles', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    expect(el.checkedTileModels.length).to.equal(0);
+    expect(el.uncheckedTileModels.length).to.equal(2);
+
+    el.checkAllTiles();
+    expect(el.checkedTileModels.length).to.equal(2);
+    expect(el.uncheckedTileModels.length).to.equal(0);
+
+    el.uncheckAllTiles();
+    expect(el.checkedTileModels.length).to.equal(0);
+    expect(el.uncheckedTileModels.length).to.equal(2);
+  });
+
+  it('emits event when item removal requested', async () => {
+    const spy = sinon.spy();
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+        @itemRemovalRequested=${spy}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
+    expect(infiniteScroller).to.exist;
+
+    const tiles =
+      infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
+    expect(tiles).to.exist.and.have.length(2);
+
+    const firstTile = tiles![0] as TileDispatcher;
+    const firstTileLink = firstTile.shadowRoot?.querySelector(
+      'a[href]'
+    ) as HTMLAnchorElement;
+    expect(firstTile.model?.identifier).to.equal('foo');
+    expect(firstTileLink).to.exist;
+
+    // Check the first tile
+    firstTileLink!.click();
+    await el.updateComplete;
+
+    const manageBar = el.shadowRoot?.querySelector('manage-bar');
+    expect(manageBar).to.exist;
+
+    // Emit remove event from manage bar
+    manageBar!.dispatchEvent(new CustomEvent('removeItems'));
+
+    await el.updateComplete;
+    expect(spy.callCount).to.equal(1);
+    expect(spy.args[0].length).to.equal(1);
+    expect(spy.args[0][0]?.detail?.items?.[0]?.identifier).to.equal('foo');
+  });
+
+  it('disables manage view when manage bar cancelled', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    const manageBar = el.shadowRoot?.querySelector('manage-bar');
+    expect(manageBar).to.exist;
+
+    // Emit remove event from manage bar
+    manageBar!.dispatchEvent(new CustomEvent('cancel'));
+
+    await el.updateComplete;
+    expect(el.isManageView).to.be.false;
+  });
 });
