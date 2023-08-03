@@ -623,7 +623,6 @@ export class CollectionBrowser
         },
       })
     );
-    this.removeCheckedTiles(); // TODO for testing
   }
 
   /**
