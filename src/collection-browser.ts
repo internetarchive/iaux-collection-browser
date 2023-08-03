@@ -425,7 +425,8 @@ export class CollectionBrowser
     }
 
     if (this.queryErrorMessage) {
-      this.placeholderType = 'query-error';
+      this.placeholderType =
+        !hasQuery && isCollection ? 'collection-error' : 'query-error';
     }
   }
 
