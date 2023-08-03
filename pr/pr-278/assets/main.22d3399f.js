@@ -508,12 +508,10 @@ var $r=Object.defineProperty,kr=Object.defineProperties;var Tr=Object.getOwnProp
       </div>
     `}get getItemsTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.itemCount)===null||t===void 0?void 0:t.toLocaleString();return h`<span id="item-count"
       >${i} item${Number(i)!==1?"s":""}</span
-    >`}get getSizeTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.collectionSize)!==null&&t!==void 0?t:0;return i?h`<span id="item-size">${bs(i,1)}</span>`:""}get infoButtonTemplate(){return this.showInfoButton?h`
-      <button class="info-button" @click=${this.infoButtonPressed}>
-        &#9432;
-        <span class="sr-only">${L("More info")}</span>
-      </button>
-    `:y}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=m`var(--tileBorderColor, #555555)`,t=m`var(--tileBackgroundColor, #666666)`,i=m`#fff`;return[Do,m`
+    >`}get getSizeTemplate(){var e,t;const i=(t=(e=this.model)===null||e===void 0?void 0:e.collectionSize)!==null&&t!==void 0?t:0;return i?h`<span id="item-size">${bs(i,1)}</span>`:""}get infoButtonTemplate(){return this.showInfoButton?h`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#9432;
+          <span class="sr-only">${L("More info")}</span>
+        </button>`:y}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=m`var(--tileBorderColor, #555555)`,t=m`var(--tileBackgroundColor, #666666)`,i=m`#fff`;return[Do,m`
         .container {
           background-color: ${t};
           border: 1px solid ${e};
@@ -1085,12 +1083,10 @@ var $r=Object.defineProperty,kr=Object.defineProperties;var Tr=Object.getOwnProp
           ${n==null?void 0:n.field} ${Jt(n==null?void 0:n.value,l)}
         </span>
       </div>
-    `:y}get infoButtonTemplate(){return this.showInfoButton?h`
-      <button class="info-button" @click=${this.infoButtonPressed}>
-        &#9432;
-        <span class="sr-only">${L("More info")}</span>
-      </button>
-    `:y}get textSnippetsTemplate(){var e;return this.hasSnippets?h`
+    `:y}get infoButtonTemplate(){return this.showInfoButton?h`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#9432;
+          <span class="sr-only">${L("More info")}</span>
+        </button>`:y}get textSnippetsTemplate(){var e;return this.hasSnippets?h`
       <text-snippet-block viewsize="grid" .snippets=${(e=this.model)===null||e===void 0?void 0:e.snippets}>
       </text-snippet-block>
     `:y}get volumeIssueTemplate(){var e,t,i,o;return!(!((e=this.model)===null||e===void 0)&&e.volume)||!(!((t=this.model)===null||t===void 0)&&t.issue)?y:h`
@@ -1150,12 +1146,10 @@ var $r=Object.defineProperty,kr=Object.defineProperties;var Tr=Object.getOwnProp
       .favCount=${(i=this.model)===null||i===void 0?void 0:i.favCount}
       .commentCount=${(o=this.model)===null||o===void 0?void 0:o.commentCount}
     >
-    </tile-stats>`}get infoButtonTemplate(){return this.showInfoButton?h`
-      <button class="info-button" @click=${this.infoButtonPressed}>
-        &#9432;
-        <span class="sr-only">${L("More info")}</span>
-      </button>
-    `:y}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=m`var(--tileBorderColor, #dddddd)`;return[Do,m`
+    </tile-stats>`}get infoButtonTemplate(){return this.showInfoButton?h`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#9432;
+          <span class="sr-only">${L("More info")}</span>
+        </button>`:y}infoButtonPressed(e){e.preventDefault();const t=new CustomEvent("infoButtonPressed",{detail:{x:e.clientX,y:e.clientY}});this.dispatchEvent(t)}static get styles(){const e=m`var(--tileBorderColor, #dddddd)`;return[Do,m`
         .container {
           border: 1px solid ${e};
         }
