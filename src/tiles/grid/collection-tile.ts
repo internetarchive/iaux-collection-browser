@@ -86,15 +86,13 @@ export class CollectionTile extends BaseTileComponent {
   }
 
   private get infoButtonTemplate(): TemplateResult | typeof nothing {
-    if (!this.showInfoButton) return nothing;
-
     // &#9432; is an information icon
-    return html`
-      <button class="info-button" @click=${this.infoButtonPressed}>
-        &#9432;
-        <span class="sr-only">${msg('More info')}</span>
-      </button>
-    `;
+    return this.showInfoButton
+      ? html`<button class="info-button" @click=${this.infoButtonPressed}>
+          &#9432;
+          <span class="sr-only">${msg('More info')}</span>
+        </button>`
+      : nothing;
   }
 
   private infoButtonPressed(e: PointerEvent) {
