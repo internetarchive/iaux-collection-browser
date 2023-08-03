@@ -634,6 +634,8 @@ export class CollectionBrowser
     // To make sure our data source remains page-aligned, we will offset our data source by
     // the number of removed tiles, so that we can just add the offset when the infinite
     // scroller queries for cell contents.
+    // This only matters while we're still viewing the same set of results. If the user changes
+    // their query/filters/sort, then the data source is overwritten and the offset cleared.
     const { checkedTileModels, uncheckedTileModels } = this;
     const numChecked = checkedTileModels.length;
     if (numChecked === 0) return;
@@ -1059,7 +1061,7 @@ export class CollectionBrowser
       changed.has('baseImageUrl') ||
       changed.has('loggedIn')
     ) {
-      this.infiniteScroller?.reload();
+      this.infiniteScroller?.refreshAllVisibleCells();
     }
 
     if (
@@ -1821,7 +1823,7 @@ export class CollectionBrowser
         // giving it 0.5s to finish.
         setTimeout(() => {
           this.isScrollingToCell = false;
-          this.infiniteScroller?.reload();
+          this.infiniteScroller?.refreshAllVisibleCells();
           resolve();
         }, 500);
       }, 0);
