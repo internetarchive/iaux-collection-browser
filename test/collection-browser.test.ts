@@ -1211,7 +1211,8 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
-    (infiniteScroller as InfiniteScroller).reload = infiniteScrollerRefreshSpy;
+    (infiniteScroller as InfiniteScroller).refreshAllVisibleCells =
+      infiniteScrollerRefreshSpy;
     expect(infiniteScrollerRefreshSpy.called).to.be.false;
     expect(infiniteScrollerRefreshSpy.callCount).to.equal(0);
 
