@@ -1,6 +1,7 @@
 import { css, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { msg } from '@lit/localize';
 import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
@@ -56,6 +57,10 @@ export class TileDispatcher
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
+  @property({ type: String }) manageCheckTitle = msg(
+    'Remove this item from the list'
+  );
+
   private hoverPaneController?: HoverPaneControllerInterface;
 
   @query('#container')
@@ -84,7 +89,7 @@ export class TileDispatcher
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
-        ${hoverPaneTemplate}
+        ${this.manageCheckTemplate} ${hoverPaneTemplate}
       </div>
     `;
   }
@@ -127,22 +132,8 @@ export class TileDispatcher
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
-        @click=${(e: Event) => {
-          if (this.isManageView) {
-            e.preventDefault();
-            if (this.model) this.model.checked = !this.model.checked;
-          }
-
-          this.dispatchEvent(
-            new CustomEvent('resultSelected', { detail: this.model })
-          );
-        }}
-        @contextmenu=${(e: Event) => {
-          if (this.isManageView && this.linkTileHref !== nothing) {
-            e.preventDefault();
-            window.open(this.linkTileHref, '_blank');
-          }
-        }}
+        @click=${this.handleLinkClicked}
+        @contextmenu=${this.handleLinkContextMenu}
       >
         ${this.tile}
       </a>
@@ -163,6 +154,23 @@ export class TileDispatcher
       this.model.identifier,
       this.model.mediatype === 'collection'
     );
+  }
+
+  private get manageCheckTemplate() {
+    if (!this.isManageView || this.tileDisplayMode !== 'grid') return nothing;
+
+    return html`
+      <div class="manage-check">
+        <input
+          type="checkbox"
+          title=${this.manageCheckTitle}
+          .checked=${this.model?.checked}
+          @change=${() => {
+            if (this.model) this.model.checked = !this.model.checked;
+          }}
+        />
+      </div>
+    `;
   }
 
   /**
@@ -225,6 +233,32 @@ export class TileDispatcher
     }
   }
 
+  /**
+   * Handler for when the tile link is left-clicked. Emits the `resultSelected` event.
+   * In manage view, it also checks/unchecks the tile.
+   */
+  private handleLinkClicked(e: Event): void {
+    if (this.isManageView) {
+      e.preventDefault();
+      if (this.model) this.model.checked = !this.model.checked;
+    }
+
+    this.dispatchEvent(
+      new CustomEvent('resultSelected', { detail: this.model })
+    );
+  }
+
+  /**
+   * Handler for when the tile link is right-clicked.
+   * In manage view, it opens the item in a new tab. Otherwise, does nothing.
+   */
+  private handleLinkContextMenu(e: Event): void {
+    if (this.isManageView && this.linkTileHref !== nothing) {
+      e.preventDefault();
+      window.open(this.linkTileHref, '_blank');
+    }
+  }
+
   private tileInfoButtonPressed(
     e: CustomEvent<{ x: number; y: number }>
   ): void {
@@ -232,12 +266,6 @@ export class TileDispatcher
       coords: e.detail,
       enableTouchBackdrop: true,
     });
-  }
-
-  private tileChecked(): void {
-    this.dispatchEvent(
-      new CustomEvent('resultSelected', { detail: this.model })
-    );
   }
 
   private get tile() {
@@ -268,7 +296,6 @@ export class TileDispatcher
               .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
-              @tileChecked=${this.tileChecked}
             >
             </collection-tile>`;
           case 'account':
@@ -282,7 +309,6 @@ export class TileDispatcher
               .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
-              @tileChecked=${this.tileChecked}
             >
             </account-tile>`;
           default:
@@ -299,7 +325,6 @@ export class TileDispatcher
               .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
-              @tileChecked=${this.tileChecked}
             >
             </item-tile>`;
         }
@@ -382,6 +407,21 @@ export class TileDispatcher
       a :first-child {
         display: block;
         height: 100%;
+      }
+
+      .manage-check {
+        position: absolute;
+        right: 0;
+        top: 0;
+        border: 5px solid #2c2c2c;
+        border-radius: 3px;
+        background-color: #2c2c2c;
+        z-index: 1;
+      }
+
+      .manage-check > input[type='checkbox'] {
+        display: block;
+        margin: 0;
       }
 
       #touch-backdrop {

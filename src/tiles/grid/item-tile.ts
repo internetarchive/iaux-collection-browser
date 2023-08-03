@@ -33,12 +33,6 @@ export class ItemTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showInfoButton = false;
 
-  @property({ type: Boolean }) isManageView = false;
-
-  @property({ type: String }) manageCheckTitle = msg(
-    'Remove this item from the list'
-  );
-
   render() {
     const itemTitle = this.model?.title;
     const [viewCount, viewLabel] =
@@ -48,7 +42,7 @@ export class ItemTile extends BaseTileComponent {
 
     return html`
       <div class="container">
-        ${this.infoButtonTemplate} ${this.manageCheckTemplate}
+        ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
             ${this.imageBlockTemplate}
@@ -148,7 +142,7 @@ export class ItemTile extends BaseTileComponent {
   }
 
   private get infoButtonTemplate(): TemplateResult | typeof nothing {
-    if (!this.showInfoButton || this.isManageView) return nothing;
+    if (!this.showInfoButton) return nothing;
 
     // &#9432; is an information icon
     return html`
@@ -156,23 +150,6 @@ export class ItemTile extends BaseTileComponent {
         &#9432;
         <span class="sr-only">${msg('More info')}</span>
       </button>
-    `;
-  }
-
-  private get manageCheckTemplate(): TemplateResult | typeof nothing {
-    if (!this.isManageView) return nothing;
-
-    return html`
-      <div class="manage-check">
-        <input
-          type="checkbox"
-          title=${this.manageCheckTitle}
-          .checked=${this.model?.checked}
-          @change=${() => {
-            if (this.model) this.model.checked = !this.model.checked;
-          }}
-        />
-      </div>
     `;
   }
 
