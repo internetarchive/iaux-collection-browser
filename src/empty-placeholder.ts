@@ -48,9 +48,9 @@ export class EmptyPlaceholder extends LitElement {
       Tips for constructing search queries.
     </a> `);
 
-  private static readonly MESSAGE_COLLECTION_ERROR = msg(html` The search engine
-    encountered an error fetching details for this collection. If the problem
-    persists, please let us know at
+  private static readonly MESSAGE_COLLECTION_ERROR = msg(html`The search engine
+    encountered an error while loading this collection. If the problem persists,
+    please let us know at
     <a href="mailto:info@archive.org">info@archive.org</a>.`);
 
   private static readonly QUERY_ERROR_DETAILS_MESSAGE = msg('Error details:');
