@@ -1153,6 +1153,23 @@ describe('Collection Browser', () => {
     expect(mobileFacets).to.exist;
   });
 
+  it('sets parent collections to prop when searching a collection', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinCollection=${'fake'}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'parent-collections';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await aTimeout(0);
+
+    expect(el.parentCollections).to.deep.equal(['foo', 'bar']);
+  });
+
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();

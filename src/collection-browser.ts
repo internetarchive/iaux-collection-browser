@@ -127,6 +127,8 @@ export class CollectionBrowser
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
 
+  @property({ type: Array }) parentCollections: string[] = [];
+
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
     analyticsCategories.default;
@@ -759,6 +761,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
+        .parentCollections=${this.parentCollections}
         .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
@@ -770,6 +773,7 @@ export class CollectionBrowser
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
+        .baseNavigationUrl=${this.baseNavigationUrl}
         .collectionNameCache=${this.collectionNameCache}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
@@ -1804,7 +1808,13 @@ export class CollectionBrowser
 
       // For collections, we want the UI to respect the default sort option
       // which can be specified in metadata, or otherwise assumed to be week:desc
-      this.applyDefaultCollectionSort(success.response.collectionExtraInfo);
+      this.applyDefaultCollectionSort(this.collectionInfo);
+
+      if (this.collectionInfo) {
+        this.parentCollections = [].concat(
+          this.collectionInfo.public_metadata?.collection ?? []
+        );
+      }
     }
 
     const { results, collectionTitles } = success.response;

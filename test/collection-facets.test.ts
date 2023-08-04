@@ -16,6 +16,7 @@ import {
   getDefaultSelectedFacets,
 } from '../src/models';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
+import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -814,6 +815,41 @@ describe('Collection Facets', () => {
     expect(mockAnalyticsHandler.callLabel).to.equal('subject');
   });
 
+  it('includes Part Of section for collections', async () => {
+    const mockCollectionNameCache = new MockCollectionNameCache();
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .baseNavigationUrl=${''}
+        .withinCollection=${'foo'}
+        .parentCollections=${['bar', 'baz']}
+        .collectionNameCache=${mockCollectionNameCache}
+      ></collection-facets>`
+    );
+
+    const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
+    expect(partOfSection).to.exist;
+
+    const partOfLinks = partOfSection?.querySelectorAll('a[href]');
+    expect(partOfLinks?.length).to.equal(2);
+
+    expect(partOfLinks?.[0]?.textContent?.trim()).to.equal('bar-name');
+    expect(partOfLinks?.[0]?.getAttribute('href')).to.equal('/details/bar');
+    expect(partOfLinks?.[1]?.textContent?.trim()).to.equal('baz-name');
+    expect(partOfLinks?.[1]?.getAttribute('href')).to.equal('/details/baz');
+  });
+
+  it('does not include Part Of section outside of collections', async () => {
+    // No withinCollection prop
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .parentCollections=${['bar', 'baz']}
+      ></collection-facets>`
+    );
+
+    const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
+    expect(partOfSection).not.to.exist;
+  });
+
   it('fires analytics on expanding date picker', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
 
@@ -845,5 +881,35 @@ describe('Collection Facets', () => {
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
     expect(mockAnalyticsHandler.callAction).to.equal('histogramExpanded');
     expect(mockAnalyticsHandler.callLabel).to.equal(window.location.href);
+  });
+
+  it('fires analytics on clicking Part Of collection link', async () => {
+    const mockCollectionNameCache = new MockCollectionNameCache();
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .baseNavigationUrl=${''}
+        .withinCollection=${'foo'}
+        .parentCollections=${['bar']}
+        .collectionNameCache=${mockCollectionNameCache}
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></collection-facets>`
+    );
+
+    const partOfLinks = el.shadowRoot?.querySelectorAll(
+      '.partof-collections a[href]'
+    );
+    expect(partOfLinks?.length).to.equal(1);
+
+    // Click the expand button to open the modal
+    const link = partOfLinks?.[0] as HTMLAnchorElement;
+    link?.addEventListener('click', e => e.preventDefault());
+    link?.click();
+    await el.updateComplete;
+
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('partOfCollectionClicked');
+    expect(mockAnalyticsHandler.callLabel).to.equal('bar');
   });
 });

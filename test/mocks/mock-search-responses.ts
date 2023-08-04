@@ -728,6 +728,52 @@ export const getMockSuccessWithDefaultFavSort: () => Result<
   },
 });
 
+export const getMockSuccessWithParentCollections: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'parent-collections',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'parent-collections',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+          },
+        }),
+      ],
+      collectionExtraInfo: {
+        public_metadata: {
+          collection: ['foo', 'bar'],
+        },
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockErrorResult: () => Result<
   SearchResponse,
   SearchServiceError
