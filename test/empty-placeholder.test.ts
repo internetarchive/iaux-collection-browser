@@ -14,11 +14,9 @@ describe('Empty Placeholder', () => {
     el.placeholderType = 'empty-query';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.empty-query')).to.exist;
-
-    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
+    const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
+    expect(placeholderElem).to.exist;
+    expect(placeholderElem).to.have.class('empty-query');
   });
 
   it('should render with empty-collection placeholder', async () => {
@@ -29,11 +27,9 @@ describe('Empty Placeholder', () => {
     el.placeholderType = 'empty-collection';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.empty-collection')).to.exist;
-
-    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
+    const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
+    expect(placeholderElem).to.exist;
+    expect(placeholderElem).to.have.class('empty-collection');
   });
 
   it('should render with no-results placeholder', async () => {
@@ -44,11 +40,9 @@ describe('Empty Placeholder', () => {
     el.placeholderType = 'no-results';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.no-results')).to.exist;
-
-    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
+    const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
+    expect(placeholderElem).to.exist;
+    expect(placeholderElem).to.have.class('no-results');
   });
 
   it('should render with query-error placeholder', async () => {
@@ -59,11 +53,22 @@ describe('Empty Placeholder', () => {
     el.placeholderType = 'query-error';
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.query-error')).to.exist;
+    const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
+    expect(placeholderElem).to.exist;
+    expect(placeholderElem).to.have.class('query-error');
+  });
 
-    expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
-    expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
+  it('should render with collection-error placeholder', async () => {
+    const el = await fixture<EmptyPlaceholder>(
+      html`<empty-placeholder></empty-placeholder>`
+    );
+
+    el.placeholderType = 'collection-error';
+    await el.updateComplete;
+
+    const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
+    expect(placeholderElem).to.exist;
+    expect(placeholderElem).to.have.class('collection-error');
   });
 
   it('should not render any empty placeholder', async () => {
@@ -74,9 +79,11 @@ describe('Empty Placeholder', () => {
     el.placeholderType = null;
     await el.updateComplete;
 
+    expect(el.shadowRoot?.querySelector('.placeholder')).to.not.exist;
     expect(el.shadowRoot?.querySelector('.empty-query')).to.not.exist;
     expect(el.shadowRoot?.querySelector('.empty-collection')).to.not.exist;
     expect(el.shadowRoot?.querySelector('.no-results')).to.not.exist;
     expect(el.shadowRoot?.querySelector('.query-error')).to.not.exist;
+    expect(el.shadowRoot?.querySelector('.collection-error')).to.not.exist;
   });
 });

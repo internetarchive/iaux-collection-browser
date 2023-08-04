@@ -18,6 +18,7 @@ export type PlaceholderType =
   | 'empty-collection'
   | 'no-results'
   | 'query-error'
+  | 'collection-error'
   | null;
 @customElement('empty-placeholder')
 export class EmptyPlaceholder extends LitElement {
@@ -47,6 +48,11 @@ export class EmptyPlaceholder extends LitElement {
       Tips for constructing search queries.
     </a> `);
 
+  private static readonly MESSAGE_COLLECTION_ERROR = msg(html`The search engine
+    encountered an error while loading this collection. If the problem persists,
+    please let us know at
+    <a href="mailto:info@archive.org">info@archive.org</a>.`);
+
   private static readonly QUERY_ERROR_DETAILS_MESSAGE = msg('Error details:');
 
   @property({ type: String }) placeholderType: PlaceholderType = null;
@@ -73,6 +79,7 @@ export class EmptyPlaceholder extends LitElement {
           ['empty-collection', () => this.emptyCollectionTemplate],
           ['no-results', () => this.noResultsTemplate],
           ['query-error', () => this.queryErrorTemplate],
+          ['collection-error', () => this.collectionErrorTemplate],
         ])}
       </div>
     `;
@@ -106,6 +113,16 @@ export class EmptyPlaceholder extends LitElement {
   private get queryErrorTemplate(): TemplateResult {
     return html`
       <h2 class="title">${EmptyPlaceholder.MESSAGE_QUERY_ERROR}</h2>
+      <div>${nullResultIcon}</div>
+      <p class="error-details">
+        ${EmptyPlaceholder.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
+      </p>
+    `;
+  }
+
+  private get collectionErrorTemplate(): TemplateResult {
+    return html`
+      <h2 class="title">${EmptyPlaceholder.MESSAGE_COLLECTION_ERROR}</h2>
       <div>${nullResultIcon}</div>
       <p class="error-details">
         ${EmptyPlaceholder.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
