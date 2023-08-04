@@ -561,6 +561,29 @@ describe('Collection Browser', () => {
     expect(errorDetails.textContent).to.contain('foo');
   });
 
+  it('shows error message when error response received for a collection', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+      ></collection-browser>`
+    );
+
+    el.withinCollection = 'error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const errorPlaceholder = el.shadowRoot?.querySelector(
+      'empty-placeholder'
+    ) as EmptyPlaceholder;
+    const errorDetails = errorPlaceholder?.shadowRoot?.querySelector(
+      '.error-details'
+    ) as HTMLParagraphElement;
+
+    expect(errorDetails).to.exist;
+    expect(errorDetails.textContent).to.contain('foo');
+  });
+
   it('reports malformed response errors to Sentry', async () => {
     const sentrySpy = sinon.spy();
     (window as any).Sentry = { captureMessage: sentrySpy };
