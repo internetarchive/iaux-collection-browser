@@ -1125,6 +1125,14 @@ export class CollectionBrowser
     );
   }
 
+  private emitTabChanged(tabId: string) {
+    this.dispatchEvent(
+      new CustomEvent<String>('tabChanged', {
+        detail: tabId,
+      })
+    );
+  }
+
   private disconnectResizeObserver(
     resizeObserver: SharedResizeObserverInterface
   ) {
@@ -1803,6 +1811,11 @@ export class CollectionBrowser
     }
 
     this.totalResults = success.response.totalResults;
+
+    // switch tab to ?tab=about if this.totalResults is 0
+    if (this.totalResults === 0) {
+      this.emitTabChanged('about');
+    }
 
     if (this.withinCollection) {
       this.collectionInfo = success.response.collectionExtraInfo;
