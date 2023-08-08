@@ -1060,7 +1060,7 @@ export class CollectionBrowser
       changed.has('baseImageUrl') ||
       changed.has('loggedIn')
     ) {
-      this.infiniteScroller?.refreshAllVisibleCells();
+      this.infiniteScroller?.reload();
     }
 
     if (
