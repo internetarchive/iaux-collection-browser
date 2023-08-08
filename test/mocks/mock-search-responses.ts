@@ -489,12 +489,14 @@ export const getMockSuccessMultipleResults: () => Result<
           fields: {
             identifier: 'foo',
             collection: ['foo', 'bar'],
+            __href__: '/foo',
           },
         }),
         new ItemHit({
           fields: {
             identifier: 'bar',
             collection: ['baz', 'boop'],
+            __href__: '/bar',
           },
         }),
       ],

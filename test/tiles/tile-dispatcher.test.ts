@@ -1,5 +1,6 @@
 import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
+import sinon from 'sinon';
 import type { TileDispatcher } from '../../src/tiles/tile-dispatcher';
 
 import '../../src/tiles/tile-dispatcher';
@@ -65,6 +66,57 @@ describe('Tile Dispatcher', () => {
 
     const compactListTile = el.shadowRoot?.querySelector('tile-list-compact');
     expect(compactListTile).to.exist;
+  });
+
+  it('should open item in new tab when right-clicked in manage mode', async () => {
+    const oldWindowOpen = window.open;
+    const spy = sinon.spy();
+    window.open = spy;
+
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher
+        isManageView
+        .model=${{ identifier: 'foo', href: '/foo' }}
+        .baseNavigationUrl=${''}
+      >
+      </tile-dispatcher>
+    `);
+
+    const tileLink = el.shadowRoot?.querySelector(
+      'a[href]'
+    ) as HTMLAnchorElement;
+    expect(tileLink).to.exist;
+
+    tileLink.dispatchEvent(new Event('contextmenu'));
+    await el.updateComplete;
+
+    expect(spy.callCount).to.equal(1);
+    expect(spy.args[0][0]).to.equal('/foo');
+    expect(spy.args[0][1]).to.equal('_blank');
+
+    window.open = oldWindowOpen;
+  });
+
+  it('should toggle model checked state when manage check clicked', async () => {
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher
+        isManageView
+        .model=${{ identifier: 'foo', href: '/foo' }}
+        .tileDisplayMode=${'grid'}
+      ></tile-dispatcher>
+    `);
+
+    const manageCheck = el.shadowRoot?.querySelector(
+      '.manage-check > input[type="checkbox"]'
+    ) as HTMLButtonElement;
+
+    manageCheck.click();
+    await el.updateComplete;
+    expect(el.model?.checked).to.be.true;
+
+    manageCheck.click();
+    await el.updateComplete;
+    expect(el.model?.checked).to.be.false;
   });
 
   it('should return hover pane props', async () => {
