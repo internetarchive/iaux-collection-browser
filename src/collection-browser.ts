@@ -41,9 +41,9 @@ import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manag
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
+import './manage/manage-bar';
 import './collection-facets';
 import './circular-activity-indicator';
-import './sort-filter-bar/sort-filter-bar';
 import {
   SelectedFacets,
   SortField,
@@ -75,6 +75,8 @@ import {
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
+import type { ManageableItem } from './manage/manage-bar';
+import { formatDate } from './utils/format-date';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -241,8 +243,9 @@ export class CollectionBrowser
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
-    const pageNumber = Math.floor(index / this.pageSize) + 1;
-    const itemIndex = index % this.pageSize;
+    const offsetIndex = index + this.tileModelOffset;
+    const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
+    const itemIndex = offsetIndex % this.pageSize;
     const model = this.dataSource[pageNumber]?.[itemIndex];
     /**
      * If we encounter a model we don't have yet and we're not in the middle of an
@@ -278,6 +281,11 @@ export class CollectionBrowser
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
   private dataSource: Record<string, TileModel[]> = {};
+
+  /**
+   * How many tiles to offset the data source by, to account for any removed tiles.
+   */
+  private tileModelOffset = 0;
 
   @query('infinite-scroller')
   private infiniteScroller!: InfiniteScroller;
@@ -531,7 +539,9 @@ export class CollectionBrowser
   private get rightColumnTemplate(): TemplateResult {
     return html`
       <div id="right-column" class="column">
-        ${this.sortFilterBarTemplate}
+        ${this.isManageView
+          ? this.manageBarTemplate
+          : this.sortFilterBarTemplate}
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
@@ -580,6 +590,153 @@ export class CollectionBrowser
       >
       </sort-filter-bar>
     `;
+  }
+
+  private get manageBarTemplate(): TemplateResult {
+    return html`
+      <manage-bar
+        showSelectAll
+        showUnselectAll
+        @removeItems=${this.handleRemoveItems}
+        @selectAll=${this.checkAllTiles}
+        @unselectAll=${this.uncheckAllTiles}
+        @cancel=${() => {
+          this.isManageView = false;
+          this.uncheckAllTiles();
+        }}
+      ></manage-bar>
+    `;
+  }
+
+  /**
+   * Handler for when the user requests to remove all checked items via the manage bar.
+   * Emits an `itemRemovalRequested` event with all checked tile models.
+   */
+  private handleRemoveItems(): void {
+    this.dispatchEvent(
+      new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
+        detail: {
+          items: this.checkedTileModels.map(model => ({
+            ...model,
+            date: formatDate(model.datePublished, 'long'),
+          })),
+        },
+      })
+    );
+  }
+
+  /**
+   * Removes all tile models that are currently checked & adjusts the paging
+   * of the data source to account for any new gaps in the data.
+   */
+  removeCheckedTiles(): void {
+    // To make sure our data source remains page-aligned, we will offset our data source by
+    // the number of removed tiles, so that we can just add the offset when the infinite
+    // scroller queries for cell contents.
+    // This only matters while we're still viewing the same set of results. If the user changes
+    // their query/filters/sort, then the data source is overwritten and the offset cleared.
+    const { checkedTileModels, uncheckedTileModels } = this;
+    const numChecked = checkedTileModels.length;
+    if (numChecked === 0) return;
+    this.tileModelOffset += numChecked;
+
+    const newDataSource: typeof this.dataSource = {};
+
+    // Which page the remaining tile models start on, post-offset
+    let offsetPageNumber = Math.floor(this.tileModelOffset / this.pageSize) + 1;
+    let indexOnPage = this.tileModelOffset % this.pageSize;
+
+    // Fill the pages up to that point with empty models
+    for (let page = 1; page <= offsetPageNumber; page += 1) {
+      const remainingHidden = this.tileModelOffset - this.pageSize * (page - 1);
+      const offsetCellsOnPage = Math.min(this.pageSize, remainingHidden);
+      newDataSource[page] = Array(offsetCellsOnPage).fill(undefined);
+    }
+
+    // Shift all the remaining tiles into their new positions in the data source
+    for (const model of uncheckedTileModels) {
+      if (!newDataSource[offsetPageNumber])
+        newDataSource[offsetPageNumber] = [];
+      newDataSource[offsetPageNumber].push(model);
+      indexOnPage += 1;
+      if (indexOnPage >= this.pageSize) {
+        offsetPageNumber += 1;
+        indexOnPage = 0;
+      }
+    }
+
+    // Swap in the new data source and update the infinite scroller
+    this.dataSource = newDataSource;
+    if (this.totalResults) this.totalResults -= numChecked;
+    if (this.infiniteScroller) {
+      this.infiniteScroller.itemCount -= numChecked;
+      this.infiniteScroller.refreshAllVisibleCells();
+    }
+  }
+
+  /**
+   * Checks every tile's management checkbox
+   */
+  checkAllTiles(): void {
+    this.mapDataSource(model => ({ ...model, checked: true }));
+  }
+
+  /**
+   * Unchecks every tile's management checkbox
+   */
+  uncheckAllTiles(): void {
+    this.mapDataSource(model => ({ ...model, checked: false }));
+  }
+
+  /**
+   * Applies the given map function to all of the tile models in every page of the data
+   * source. This method updates the data source object in immutable fashion.
+   *
+   * @param mapFn A callback function to apply on each tile model, as with Array.map
+   */
+  private mapDataSource(
+    mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
+  ): void {
+    this.dataSource = Object.fromEntries(
+      Object.entries(this.dataSource).map(([page, tileModels]) => [
+        page,
+        tileModels.map((model, index, array) =>
+          model ? mapFn(model, index, array) : model
+        ),
+      ])
+    );
+    this.infiniteScroller?.refreshAllVisibleCells();
+  }
+
+  /**
+   * An array of all the tile models whose management checkboxes are checked
+   */
+  get checkedTileModels(): TileModel[] {
+    return this.getFilteredTileModels(model => model.checked);
+  }
+
+  /**
+   * An array of all the tile models whose management checkboxes are unchecked
+   */
+  get uncheckedTileModels(): TileModel[] {
+    return this.getFilteredTileModels(model => !model.checked);
+  }
+
+  /**
+   * Returns a flattened, filtered array of all the tile models in the data source
+   * for which the given predicate returns a truthy value.
+   *
+   * @param predicate A callback function to apply on each tile model, as with Array.filter
+   * @returns A filtered array of tile models satisfying the predicate
+   */
+  private getFilteredTileModels(
+    predicate: (model: TileModel, index: number, array: TileModel[]) => unknown
+  ): TileModel[] {
+    return Object.values(this.dataSource)
+      .flat()
+      .filter((model, index, array) =>
+        model ? predicate(model, index, array) : false
+      );
   }
 
   private userChangedSort(
@@ -781,6 +938,7 @@ export class CollectionBrowser
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
         .filterMap=${this.filterMap}
+        .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
@@ -867,6 +1025,17 @@ export class CollectionBrowser
     }
 
     return `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`;
+  }
+
+  /**
+   * Emits an event indicating a change in whether the manage mode is shown.
+   */
+  private emitManageModeChangedEvent(): void {
+    this.dispatchEvent(
+      new CustomEvent<boolean>('manageModeChanged', {
+        detail: this.isManageView,
+      })
+    );
   }
 
   firstUpdated(): void {
@@ -998,6 +1167,12 @@ export class CollectionBrowser
       if (!this.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
+    }
+
+    if (changed.has('isManageView')) {
+      if (this.isManageView) this.displayMode = 'grid';
+      this.infiniteScroller?.refreshAllVisibleCells();
+      this.emitManageModeChangedEvent();
     }
 
     if (changed.has('resizeObserver')) {
@@ -1218,6 +1393,7 @@ export class CollectionBrowser
     this.previousQueryKey = this.pageFetchQueryKey;
 
     this.dataSource = {};
+    this.tileModelOffset = 0;
     this.totalResults = undefined;
     this.aggregations = undefined;
     this.fullYearsHistogramAggregation = undefined;
@@ -1650,7 +1826,7 @@ export class CollectionBrowser
         // giving it 0.5s to finish.
         setTimeout(() => {
           this.isScrollingToCell = false;
-          this.infiniteScroller?.reload();
+          this.infiniteScroller?.refreshAllVisibleCells();
           resolve();
         }, 500);
       }, 0);
@@ -1806,7 +1982,7 @@ export class CollectionBrowser
       return;
     }
 
-    this.totalResults = success.response.totalResults;
+    this.totalResults = success.response.totalResults - this.tileModelOffset;
 
     // display event to offshoot when result count is zero.
     if (this.totalResults === 0) {
@@ -1854,8 +2030,7 @@ export class CollectionBrowser
     if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
       if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount =
-          this.estimatedTileCount - resultCountDiscrepancy;
+        this.infiniteScroller.itemCount = this.totalResults;
       }
     }
 
@@ -1971,6 +2146,7 @@ export class CollectionBrowser
 
       tiles.push({
         averageRating: result.avg_rating?.value,
+        checked: false,
         collections: result.collection?.values ?? [],
         collectionFilesCount: result.collection_files_count?.value ?? 0,
         collectionSize: result.collection_size?.value ?? 0,
@@ -2004,7 +2180,7 @@ export class CollectionBrowser
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.infiniteScroller?.reload();
+      this.infiniteScroller?.refreshAllVisibleCells();
     }
   }
 
@@ -2112,6 +2288,16 @@ export class CollectionBrowser
    * Callback when a result is selected
    */
   resultSelected(event: CustomEvent<TileModel>): void {
+    if (this.isManageView) {
+      // Checked/unchecked state change -- rerender to ensure it propagates
+      // this.mapDataSource(model => ({ ...model }));
+      const cellIndex = Object.values(this.dataSource)
+        .flat()
+        .indexOf(event.detail);
+      if (cellIndex >= 0)
+        this.infiniteScroller?.refreshCell(cellIndex - this.tileModelOffset);
+    }
+
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.resultSelected,
@@ -2142,6 +2328,7 @@ export class CollectionBrowser
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        .isManageView=${this.isManageView}
         ?enableHoverPane=${true}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >

@@ -11,6 +11,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { ref } from 'lit/directives/ref.js';
 import { msg } from '@lit/localize';
+import { classMap } from 'lit/directives/class-map.js';
 import type {
   Aggregation,
   AggregationSortType,
@@ -99,6 +100,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) collectionPagePath: string = '/details/';
 
+  @property({ type: Boolean }) isManageView = false;
+
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
 
@@ -133,9 +136,14 @@ export class CollectionFacets extends LitElement {
   private allowedFacetCount = 6;
 
   render() {
+    const containerClasses = classMap({
+      loading: this.facetsLoading,
+      managing: this.isManageView,
+    });
+
     const datePickerLabelId = 'date-picker-label';
     return html`
-      <div id="container" class="${this.facetsLoading ? 'loading' : ''}">
+      <div id="container" class=${containerClasses}>
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
@@ -713,6 +721,10 @@ export class CollectionFacets extends LitElement {
 
         #container.loading {
           opacity: 0.5;
+        }
+
+        #container.managing {
+          opacity: 0.3;
         }
 
         .histogram-loading-indicator {

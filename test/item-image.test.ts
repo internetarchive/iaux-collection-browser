@@ -9,6 +9,7 @@ import '../src/tiles/item-image';
 
 const baseImageUrl = 'https://archive.org';
 const testBookModel: TileModel = {
+  checked: false,
   collections: [],
   commentCount: 0,
   creators: [],
@@ -26,6 +27,7 @@ const testBookModel: TileModel = {
 };
 
 const testAudioModel: TileModel = {
+  checked: false,
   collections: [],
   commentCount: 0,
   creators: [],
