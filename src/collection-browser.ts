@@ -1125,12 +1125,8 @@ export class CollectionBrowser
     );
   }
 
-  private emitTabChanged(tabId: string) {
-    this.dispatchEvent(
-      new CustomEvent<String>('tabChanged', {
-        detail: tabId,
-      })
-    );
+  private emitEmptyResults() {
+    this.dispatchEvent(new Event('emptyResults'));
   }
 
   private disconnectResizeObserver(
@@ -1812,9 +1808,9 @@ export class CollectionBrowser
 
     this.totalResults = success.response.totalResults;
 
-    // switch tab to ?tab=about if this.totalResults is 0
+    // display event to offshoot when result count is zero.
     if (this.totalResults === 0) {
-      this.emitTabChanged('about');
+      this.emitEmptyResults();
     }
 
     if (this.withinCollection) {
