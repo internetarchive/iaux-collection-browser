@@ -1300,6 +1300,10 @@ export class CollectionBrowser
     );
   }
 
+  private emitEmptyResults() {
+    this.dispatchEvent(new Event('emptyResults'));
+  }
+
   private disconnectResizeObserver(
     resizeObserver: SharedResizeObserverInterface
   ) {
@@ -1979,6 +1983,11 @@ export class CollectionBrowser
     }
 
     this.totalResults = success.response.totalResults - this.tileModelOffset;
+
+    // display event to offshoot when result count is zero.
+    if (this.totalResults === 0) {
+      this.emitEmptyResults();
+    }
 
     if (this.withinCollection) {
       this.collectionInfo = success.response.collectionExtraInfo;
