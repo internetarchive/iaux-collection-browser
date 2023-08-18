@@ -84,13 +84,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
-"@internetarchive/collection-name-cache@0.2.13-alpha1":
-  version "0.2.13-alpha1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.13-alpha1.tgz#9e877bc22a6e883f62e7a850747e48d4b503fbe3"
-  integrity sha512-ABFV7i2DXLQEFVKXdTNLUb/7rEipzFajWwrB6bgL5XFF6HK4m6NiWv+V7xM5Lw7Brz/UMlMXWD+SY4egf37LTw==
+"@internetarchive/collection-name-cache@0.2.13-alpha3":
+  version "0.2.13-alpha3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.13-alpha3.tgz#9d37d1d4ad093097d167368bf23a53871bb2c10e"
+  integrity sha512-mNp746w9fY8uosiYUsAbWqOSb/GZFIBgX2oZamUR806qK/inDdO9fC9y1GhX8QH0YUpWEBWSNpXiI+TLzPOQLg==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
-    "@internetarchive/search-service" "1.2.0-alpha1"
+    "@internetarchive/search-service" "1.2.0-alpha3"
     lit "^2.0.2"
 
 "@internetarchive/feature-feedback@^0.1.4":
@@ -103,10 +103,10 @@
     "@internetarchive/shared-resize-observer" "^0.2.0"
     lit "^2.2.7"
 
-"@internetarchive/field-parsers@^0.1.3":
-  version "0.1.3"
-  resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.3.tgz"
-  integrity sha512-gN7ivwHWlf8V7fD3VakQ4NtddSou5i3A3TqbIo8EKF+XTxJXaXpNBmzkZEGf2oMVK8rHvrabFxZKVEy9qG7Omw==
+"@internetarchive/field-parsers@0.1.3-alpha1":
+  version "0.1.3-alpha1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.3-alpha1.tgz#1e3bf31105c06efe85077040bac1913e12690037"
+  integrity sha512-JlJnZNYh7OuUPycgeXbpdnO4otr7eLHZz8nYXSDuz2hKt7QcWDN1DiKu2seOXKdAkamFnRLz5qQ8Vj/+1nqJ6g==
 
 "@internetarchive/histogram-date-range@^1.1.0":
   version "1.1.0"
@@ -198,12 +198,12 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@1.2.0-alpha1":
-  version "1.2.0-alpha1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.0-alpha1.tgz#5de89fd00d28aa606202f0d520b4acaf529421f1"
-  integrity sha512-TJbIehuONJbH39Skn0MWAkLGYekHGdwriX29G3OeGnZNHcPHa1yWoVFu+uCTZfyt1+LWdZbQDW564J/QyUOQ4w==
+"@internetarchive/search-service@1.2.0-alpha3":
+  version "1.2.0-alpha3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.0-alpha3.tgz#28065054715b6362fab616c5a2e2d1698011db67"
+  integrity sha512-4hJTLTOJpQhUvPGQljqwbylQCrbeV7f7w99vpb5fjygHcyZYCQxAifZqnNczG1TV4lvGvsGxOBDgGg22n3W11Q==
   dependencies:
-    "@internetarchive/field-parsers" "^0.1.3"
+    "@internetarchive/field-parsers" "0.1.3-alpha1"
     "@internetarchive/result-type" "^0.0.1"
     decorator-cache-getter "^1.0.0"
     typescript-memoize "^1.1.0"
