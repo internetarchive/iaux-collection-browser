@@ -11,6 +11,7 @@ import { textsIcon } from '../assets/img/icons/mediatype/texts';
 import { tvIcon } from '../assets/img/icons/mediatype/tv';
 import { videoIcon } from '../assets/img/icons/mediatype/video';
 import { webIcon } from '../assets/img/icons/mediatype/web';
+import { searchIcon } from '../assets/img/icons/mediatype/search';
 
 export const mediatypeConfig: { [key: string]: any } = {
   account: {
@@ -82,5 +83,10 @@ export const mediatypeConfig: { [key: string]: any } = {
     color: '#ffcd27',
     icon: webIcon,
     text: 'Web',
+  },
+  search: {
+    color: '#000000',
+    icon: searchIcon,
+    text: 'Search',
   },
 };

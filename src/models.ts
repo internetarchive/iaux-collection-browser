@@ -21,7 +21,6 @@ export interface TileModel {
   dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
   description?: string;
   favCount: number;
-  favoritedSearch?: boolean;
   href?: string;
   identifier: string;
   issue?: string;
