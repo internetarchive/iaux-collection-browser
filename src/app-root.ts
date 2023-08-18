@@ -165,7 +165,7 @@ export class AppRoot extends LitElement {
               <input
                 type="text"
                 id="base-collection-field"
-                .value=${this.withinCollection ?? ''}
+                .value=${this.withinCollection ?? 'fav-neeraj-archive'}
               />
               <input type="submit" value="Search" />
             </form>

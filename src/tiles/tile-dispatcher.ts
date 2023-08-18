@@ -11,6 +11,7 @@ import type { TileDisplayMode } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
+import './grid/search-tile';
 import './hover/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
@@ -311,6 +312,19 @@ export class TileDispatcher
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </account-tile>`;
+          case 'favorited_search':
+            return html`<search-tile
+              .model=${model}
+              .collectionPagePath=${collectionPagePath}
+              .baseImageUrl=${this.baseImageUrl}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
+              .creatorFilter=${creatorFilter}
+              .isManageView=${this.isManageView}
+              ?showInfoButton=${!this.isHoverEnabled}
+              @infoButtonPressed=${this.tileInfoButtonPressed}
+            >
+            </search-tile>`;
           default:
             return html`<item-tile
               .model=${model}
@@ -383,6 +397,12 @@ export class TileDispatcher
       item-tile {
         --tileBorderColor: #dddddd;
         --imageBlockBackgroundColor: #f1f1f4;
+      }
+
+      search-tile {
+        --tileBorderColor: #555555;
+        --tileBackgroundColor: #666666;
+        --imageBlockBackgroundColor: #666666;
       }
 
       #container {

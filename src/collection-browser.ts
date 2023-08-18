@@ -2163,7 +2163,7 @@ export class CollectionBrowser
         identifier: result.identifier,
         issue: result.issue?.value,
         itemCount: result.item_count?.value ?? 0,
-        mediatype: result.mediatype?.value ?? 'data',
+        mediatype: this.getMediatype(result),
         snippets: result.highlight?.values ?? [],
         source: result.source?.value,
         subjects: result.subject?.values ?? [],
@@ -2182,6 +2182,14 @@ export class CollectionBrowser
     if (needsReload) {
       this.infiniteScroller?.refreshAllVisibleCells();
     }
+  }
+
+  private getMediatype(result: SearchResult) {
+    if (result?.rawMetadata?.hit_type === 'favorited_search') {
+      return result?.rawMetadata?.hit_type;
+    }
+
+    return result.mediatype?.value ?? 'data';
   }
 
   /**
