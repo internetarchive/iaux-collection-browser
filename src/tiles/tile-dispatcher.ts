@@ -312,7 +312,7 @@ export class TileDispatcher
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </account-tile>`;
-          case 'favorited_search':
+          case 'search':
             return html`<search-tile
               .model=${model}
               .collectionPagePath=${collectionPagePath}

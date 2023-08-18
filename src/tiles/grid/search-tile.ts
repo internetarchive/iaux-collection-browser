@@ -1,6 +1,5 @@
-import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
+import { css, CSSResultGroup, html, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { msg } from '@lit/localize';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import { BaseTileComponent } from '../base-tile-component';
 import '../image-block';
@@ -26,7 +25,6 @@ export class SearchTile extends BaseTileComponent {
   render() {
     return html`
       <div class="container">
-        ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
             ${this.getImageBlockTemplate} ${this.getTitleTemplate}
@@ -53,25 +51,6 @@ export class SearchTile extends BaseTileComponent {
     </div>`;
   }
 
-  private get infoButtonTemplate(): TemplateResult | typeof nothing {
-    // &#9432; is an information icon
-    return this.showInfoButton
-      ? html`<button class="info-button" @click=${this.infoButtonPressed}>
-          &#9432;
-          <span class="sr-only">${msg('More info')}</span>
-        </button>`
-      : nothing;
-  }
-
-  private infoButtonPressed(e: PointerEvent) {
-    e.preventDefault();
-    const event = new CustomEvent<{ x: number; y: number }>(
-      'infoButtonPressed',
-      { detail: { x: e.clientX, y: e.clientY } }
-    );
-    this.dispatchEvent(event);
-  }
-
   static get styles(): CSSResultGroup {
     const tileBorderColor = css`var(--tileBorderColor, #555555)`;
     const tileBackgroundColor = css`var(--tileBackgroundColor, #666666)`;
@@ -91,6 +70,7 @@ export class SearchTile extends BaseTileComponent {
 
         h4.truncated {
           color: ${whiteColor};
+          -webkit-line-clamp: 4;
         }
 
         .container:hover > #title {

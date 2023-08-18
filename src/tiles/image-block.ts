@@ -46,7 +46,7 @@ export class ImageBlock extends LitElement {
       'list-compact': this.isListTile && this.isCompactTile,
       collection: this.model?.mediatype === 'collection', // fill the image in container
       [this.viewSize]: true,
-      'search-image': this.model?.mediatype === 'favorited_search',
+      'search-image': this.model?.mediatype === 'search',
     };
   }
 

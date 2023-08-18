@@ -2185,8 +2185,19 @@ export class CollectionBrowser
   }
 
   private getMediatype(result: SearchResult) {
+    /**
+     * hit_type == 'favorited_search' is basically a new hit_type
+     * - we are getting from PPS.
+     * - which gives response for fav- collection
+     * - having favorited items like account/collection/item etc..
+     * - as user can also favorite a search result (a search page)
+     * - so we need to have response (having fav- items and fav- search results)
+     *
+     * if backend hit_type == 'favorited_search'
+     * - let's assume a "search" as new mediatype
+     */
     if (result?.rawMetadata?.hit_type === 'favorited_search') {
-      return result?.rawMetadata?.hit_type;
+      return 'search';
     }
 
     return result.mediatype?.value ?? 'data';
