@@ -84,7 +84,7 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
-"@internetarchive/collection-name-cache@0.2.14":
+"@internetarchive/collection-name-cache@^0.2.14":
   version "0.2.14"
   resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.14.tgz#7382081285b75848b56e4456a37f55991edbda2f"
   integrity sha512-VG/eg4JGSnGDJeTUgb7zCOMS04TmLaqnVZOuU3Ue8VNw9wDUOqgs1unKLPwe0mt3IbDMELaFGnpnGDsInDU2vA==
@@ -103,7 +103,7 @@
     "@internetarchive/shared-resize-observer" "^0.2.0"
     lit "^2.2.7"
 
-"@internetarchive/field-parsers@0.1.4", "@internetarchive/field-parsers@^0.1.4":
+"@internetarchive/field-parsers@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.4.tgz#560343693245a5af893de522cc5581e7fbb9ccad"
   integrity sha512-J5nhMsIU91eXnfoApa6SE0PffPbwK1Cd3YTLX/HjgayzMbXVkQvfebfVKSaoPmzHRRttbtY3Sg9FjviCwBq6qg==
@@ -198,7 +198,7 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@1.2.2":
+"@internetarchive/search-service@1.2.2", "@internetarchive/search-service@^1.2.2":
   version "1.2.2"
   resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.2.tgz#005093040c3a257ecc2cf54158c137292e0e0371"
   integrity sha512-kpR1h6eVBh2ZfvrLqcNx+uSxugNpc8B9yTryUvAkhxbX8CNKR378RknJF1NR54/DrUl9GEgHStxVNv5/jbg0qw==
