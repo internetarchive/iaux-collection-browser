@@ -239,6 +239,11 @@ export class TileList extends BaseTileComponent {
         ? this.model?.weeklyViewCount // weekly views
         : this.model?.viewCount; // all-time views
 
+    // when its a search-tile, we don't have any stats to show
+    if (this.model?.mediatype === 'search') {
+      return this.metadataTemplate('(Favorited search query)', '');
+    }
+
     return this.metadataTemplate(
       `${formatCount(viewCount ?? 0, this.formatSize)}`,
       msg('Views')

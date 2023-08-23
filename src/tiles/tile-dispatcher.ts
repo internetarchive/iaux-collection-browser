@@ -182,7 +182,8 @@ export class TileDispatcher
     return (
       this.enableHoverPane &&
       !!this.tileDisplayMode &&
-      TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode]
+      TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode] &&
+      this.model?.mediatype !== 'search' // don't show hover panes on search tiles
     );
   }
 
@@ -321,7 +322,7 @@ export class TileDispatcher
               .currentHeight=${currentHeight}
               .creatorFilter=${creatorFilter}
               .isManageView=${this.isManageView}
-              ?showInfoButton=${!this.isHoverEnabled}
+              ?showInfoButton=${false}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </search-tile>`;
@@ -403,6 +404,7 @@ export class TileDispatcher
         --tileBorderColor: #555555;
         --tileBackgroundColor: #666666;
         --imageBlockBackgroundColor: #666666;
+        --iconFillColor: #2c2c2c;
       }
 
       #container {
