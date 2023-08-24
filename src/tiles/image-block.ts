@@ -46,6 +46,7 @@ export class ImageBlock extends LitElement {
       'list-compact': this.isListTile && this.isCompactTile,
       collection: this.model?.mediatype === 'collection', // fill the image in container
       [this.viewSize]: true,
+      'search-image': this.model?.mediatype === 'search',
     };
   }
 
@@ -101,7 +102,8 @@ export class ImageBlock extends LitElement {
         border-radius: 4px 4px 0 0;
       }
 
-      .collection.grid {
+      .collection.grid,
+      .grid.search-image {
         display: block;
       }
 

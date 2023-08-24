@@ -8,6 +8,7 @@ import {
   baseItemImageStyles,
   waveformGradientStyles,
 } from '../styles/item-image-styles';
+import { searchIcon } from '../assets/img/icons/mediatype/search';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
@@ -27,14 +28,22 @@ export class ItemImage extends LitElement {
 
   render() {
     return html`
-      <div class=${classMap(this.itemBaseClass)}>
-        <img
-          class=${classMap(this.itemImageClass)}
-          src="${this.imageSrc}"
-          alt=""
-          @load=${this.onLoad}
-        />
-      </div>
+      <div class=${classMap(this.itemBaseClass)}>${this.imageTemplate}</div>
+    `;
+  }
+
+  private get imageTemplate() {
+    if (this.model?.mediatype === 'search') {
+      return html`${searchIcon}`;
+    }
+
+    return html`
+      <img
+        class=${classMap(this.itemImageClass)}
+        src="${this.imageSrc}"
+        alt=""
+        @load=${this.onLoad}
+      />
     `;
   }
 
@@ -69,6 +78,7 @@ export class ItemImage extends LitElement {
     return {
       'drop-shadow': true,
       'list-box': this.isListTile,
+      'search-image': this.model?.mediatype === 'search',
       [this.hashBasedGradient]: this.isWaveform,
     };
   }
@@ -121,6 +131,19 @@ export class ItemImage extends LitElement {
         img {
           height: var(--imgHeight, 16rem);
           width: var(--imgWidth, 16rem);
+        }
+
+        .search-image {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgb(245, 245, 247);
+          border-radius: 4px;
+        }
+
+        svg {
+          height: 10rem;
+          width: 10rem;
         }
       `,
     ];

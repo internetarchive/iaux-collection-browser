@@ -50,6 +50,10 @@ export const baseItemImageStyles = css`
     width: 100%;
     height: 160px;
   }
+
+  .list-box.search-image svg {
+    margin: 10px;
+  }
 `;
 
 /**
