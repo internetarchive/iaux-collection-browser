@@ -105,12 +105,13 @@ export class TileDispatcher
   }
 
   private get headerTemplate() {
-    const { currentWidth, sortParam, mobileBreakpoint } = this;
+    const { currentWidth, sortParam, defaultSortParam, mobileBreakpoint } =
+      this;
     return html`
       <tile-list-compact-header
         class="header"
         .currentWidth=${currentWidth}
-        .sortParam=${sortParam}
+        .sortParam=${sortParam || defaultSortParam}
         .mobileBreakpoint=${mobileBreakpoint}
       >
       </tile-list-compact-header>
@@ -280,6 +281,7 @@ export class TileDispatcher
       sortParam,
       creatorFilter,
       mobileBreakpoint,
+      defaultSortParam,
     } = this;
 
     if (!model) return nothing;
@@ -334,7 +336,7 @@ export class TileDispatcher
               .currentHeight=${this.currentHeight}
               .collectionNameCache=${this.collectionNameCache}
               .baseImageUrl=${this.baseImageUrl}
-              .sortParam=${sortParam}
+              .sortParam=${sortParam || defaultSortParam}
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
               .isManageView=${this.isManageView}
@@ -350,7 +352,7 @@ export class TileDispatcher
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
-          .sortParam=${sortParam}
+          .sortParam=${sortParam || defaultSortParam}
           .creatorFilter=${creatorFilter}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
@@ -365,7 +367,7 @@ export class TileDispatcher
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
-          .sortParam=${sortParam}
+          .sortParam=${sortParam || defaultSortParam}
           .creatorFilter=${creatorFilter}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}

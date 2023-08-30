@@ -19,6 +19,8 @@ export abstract class BaseTileComponent extends LitElement {
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
+  @property({ type: Object }) defaultSortParam: SortParam | null = null;
+
   @property({ type: String }) creatorFilter?: string;
 
   @property({ type: Number }) mobileBreakpoint?: number;

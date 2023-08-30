@@ -103,6 +103,8 @@ export class CollectionBrowser
 
   @property({ type: Object }) sortParam: SortParam | null = null;
 
+  @property({ type: Object }) defaultSortParam: SortParam | null = null;
+
   @property({ type: String }) selectedSort: SortField = SortField.default;
 
   @property({ type: String }) selectedTitleFilter: string | null = null;
@@ -995,6 +997,7 @@ export class CollectionBrowser
           .tileDisplayMode=${'list-header'}
           .resizeObserver=${this.resizeObserver}
           .sortParam=${this.sortParam}
+          .defaultSortParam=${this.defaultSortParam}
           .mobileBreakpoint=${this.mobileBreakpoint}
           .loggedIn=${this.loggedIn}
         >
@@ -2091,15 +2094,10 @@ export class CollectionBrowser
     if (sortField && sortField !== SortField.default) {
       this.defaultSortField = sortField;
       this.defaultSortDirection = dir as SortDirection;
-
-      if (!this.sortParam) {
-        this.sortParam = {
-          field: this.defaultSortField,
-          direction: this.defaultSortDirection,
-        };
-        this.selectedSort = this.defaultSortField;
-        this.sortDirection = this.defaultSortDirection;
-      }
+      this.defaultSortParam = {
+        field: this.defaultSortField,
+        direction: this.defaultSortDirection,
+      };
     }
   }
 
@@ -2353,6 +2351,7 @@ export class CollectionBrowser
         .resizeObserver=${this.resizeObserver}
         .collectionNameCache=${this.collectionNameCache}
         .sortParam=${this.sortParam}
+        .defaultSortParam=${this.defaultSortParam}
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
