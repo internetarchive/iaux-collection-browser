@@ -2091,6 +2091,15 @@ export class CollectionBrowser
     if (sortField && sortField !== SortField.default) {
       this.defaultSortField = sortField;
       this.defaultSortDirection = dir as SortDirection;
+
+      if (!this.sortParam) {
+        this.sortParam = {
+          field: this.defaultSortField,
+          direction: this.defaultSortDirection,
+        };
+        this.selectedSort = this.defaultSortField;
+        this.sortDirection = this.defaultSortDirection;
+      }
     }
   }
 
