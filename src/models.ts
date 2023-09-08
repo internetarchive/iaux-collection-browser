@@ -295,6 +295,9 @@ export const prefixFilterAggregationKeys: Record<PrefixFilterType, string> = {
   creator: 'firstCreator',
 };
 
+/**
+ * Union of the facet types that are available in the sidebar.
+ */
 export type FacetOption =
   | 'subject'
   | 'lending'
@@ -322,9 +325,22 @@ export interface FacetGroup {
   buckets: FacetBucket[];
 }
 
+/**
+ * Information about a user interaction event on a facet.
+ */
 export type FacetEventDetails = {
-  key: FacetOption;
-  state: FacetState;
+  /**
+   * The type of facet that was interacted with (e.g., 'mediatype', 'language', ...).
+   */
+  facetType: FacetOption;
+  /**
+   * The bucket corresponding to the facet that was interacted with, including the
+   * updated state of the facet after the interaction.
+   */
+  bucket: FacetBucket;
+  /**
+   * Whether the interaction occurred on a negative facet.
+   */
   negative: boolean;
 };
 
