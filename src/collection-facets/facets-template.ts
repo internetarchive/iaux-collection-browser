@@ -1,9 +1,14 @@
-import { css, html, LitElement, TemplateResult, CSSResultGroup } from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  TemplateResult,
+  CSSResultGroup,
+  nothing,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import eyeIcon from '../assets/img/icons/eye';
-import eyeClosedIcon from '../assets/img/icons/eye-closed';
 import {
   FacetGroup,
   FacetOption,
@@ -13,6 +18,7 @@ import {
   FacetEventDetails,
   FacetState,
 } from '../models';
+import './facet-row';
 
 @customElement('facets-template')
 export class FacetsTemplate extends LitElement {
@@ -22,25 +28,22 @@ export class FacetsTemplate extends LitElement {
 
   @property({ type: String }) renderOn?: string;
 
-  @property({ type: String }) collectionPagePath: string = '/details/';
-
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
-  private facetClicked(e: Event, count: number, negative: boolean) {
-    const target = e.target as HTMLInputElement;
-    const { checked, name, value } = target;
-    if (checked) {
-      this.facetChecked(name as FacetOption, value, count, negative);
+  private facetClicked(e: CustomEvent<FacetEventDetails>) {
+    const { facetType, bucket, negative } = e.detail;
+    if (bucket.state === 'none') {
+      this.facetUnchecked(facetType, bucket.key);
     } else {
-      this.facetUnchecked(name as FacetOption, value);
+      this.facetChecked(facetType, bucket.key, bucket.count, negative);
     }
 
-    this.dispatchFacetClickEvent(
-      name as FacetOption,
-      this.getFacetState(checked, negative),
-      negative
-    );
+    this.dispatchFacetClickEvent({
+      facetType,
+      bucket,
+      negative,
+    });
   }
 
   private facetChecked(
@@ -94,13 +97,9 @@ export class FacetsTemplate extends LitElement {
     return state;
   }
 
-  private dispatchFacetClickEvent(
-    key: FacetOption,
-    state: FacetState,
-    negative: boolean
-  ) {
+  private dispatchFacetClickEvent(detail: FacetEventDetails) {
     const event = new CustomEvent<FacetEventDetails>('facetClick', {
-      detail: { key, state, negative },
+      detail,
       composed: true,
     });
     this.dispatchEvent(event);
@@ -115,8 +114,11 @@ export class FacetsTemplate extends LitElement {
     this.dispatchEvent(event);
   }
 
-  private getFacetsTemplate(facetGroup: FacetGroup): TemplateResult {
-    let facetsBucket = facetGroup?.buckets as FacetBucket[];
+  private get facetsTemplate(): TemplateResult | typeof nothing {
+    const { facetGroup } = this;
+    if (!facetGroup) return nothing;
+
+    let facetBuckets = facetGroup.buckets as FacetBucket[];
 
     /**
      * sorting FacetBucket before render page / modal
@@ -124,105 +126,34 @@ export class FacetsTemplate extends LitElement {
      * - second, suppressed/hidden items should be after selected having sorted
      * - and then no-selected / not suppressed items should render having sorted
      */
-    facetsBucket = [
-      ...facetsBucket
+    facetBuckets = [
+      ...facetBuckets
         .filter(x => x.state === 'selected')
         .sort((a, b) => (a.count < b.count ? 1 : -1)),
-      ...facetsBucket
+      ...facetBuckets
         .filter(x => x.state === 'hidden')
         .sort((a, b) => (a.count < b.count ? 1 : -1)),
-      ...facetsBucket.filter(x => x.state === 'none'),
+      ...facetBuckets.filter(x => x.state === 'none'),
     ];
 
     return html`
       <div class="facets-on-${this.renderOn}">
         ${repeat(
-          facetsBucket,
+          facetBuckets,
           bucket => `${facetGroup.key}:${bucket.key}`,
-          bucket => {
-            const showOnlyCheckboxId = `${facetGroup.key}:${bucket.key}-show-only`;
-            const negativeCheckboxId = `${facetGroup.key}:${bucket.key}-negative`;
-            // for collections, we need to asynchronously load the collection name
-            // so we use the `async-collection-name` widget and for the rest, we have
-            // a static value to use
-            const bucketTextDisplay =
-              facetGroup.key !== 'collection'
-                ? html`${bucket.displayText ?? bucket.key}`
-                : html`<a href="${this.collectionPagePath}${bucket.key}">
-                    <async-collection-name
-                      .collectionNameCache=${this.collectionNameCache}
-                      .identifier=${bucket.key}
-                      placeholder="-"
-                    ></async-collection-name>
-                  </a> `;
-            const facetHidden = bucket.state === 'hidden';
-            const facetSelected = bucket.state === 'selected';
-            const titleText = `${facetGroup.key}: ${
-              bucket.displayText ?? bucket.key
-            }`;
-            const onlyShowText = facetSelected
-              ? `Show all ${facetGroup.key}s`
-              : `Only show ${titleText}`;
-            const hideText = `Hide ${titleText}`;
-            const unhideText = `Unhide ${titleText}`;
-            const showHideText = facetHidden ? unhideText : hideText;
-            const ariaLabel = `${titleText}, ${bucket.count} results`;
-            return html`
-              <div class="facet-row">
-                <div class="facet-checkbox">
-                  <input
-                    type="checkbox"
-                    .name=${facetGroup.key}
-                    .value=${bucket.key}
-                    @click=${(e: Event) => {
-                      this.facetClicked(e, bucket.count, false);
-                    }}
-                    .checked=${facetSelected}
-                    class="select-facet-checkbox"
-                    title=${onlyShowText}
-                    id=${showOnlyCheckboxId}
-                  />
-                  <input
-                    type="checkbox"
-                    id=${negativeCheckboxId}
-                    .name=${facetGroup.key}
-                    .value=${bucket.key}
-                    @click=${(e: Event) => {
-                      this.facetClicked(e, bucket.count, true);
-                    }}
-                    .checked=${facetHidden}
-                    class="hide-facet-checkbox"
-                  />
-                  <label
-                    for=${negativeCheckboxId}
-                    class="hide-facet-icon${facetHidden ? ' active' : ''}"
-                    title=${showHideText}
-                  >
-                    <span class="eye">${eyeIcon}</span>
-                    <span class="eye-closed">${eyeClosedIcon}</span>
-                  </label>
-                </div>
-                <label
-                  for=${showOnlyCheckboxId}
-                  class="facet-info-display"
-                  title=${onlyShowText}
-                  aria-label=${ariaLabel}
-                >
-                  <div class="facet-title">${bucketTextDisplay}</div>
-                  <div class="facet-count">
-                    ${bucket.count.toLocaleString()}
-                  </div>
-                </label>
-              </div>
-            `;
-          }
+          bucket => html`<facet-row
+            .facetType=${facetGroup.key}
+            .bucket=${bucket}
+            .collectionNameCache=${this.collectionNameCache}
+            @facetClick=${this.facetClicked}
+          ></facet-row>`
         )}
       </div>
     `;
   }
 
   render() {
-    return html`${this.getFacetsTemplate(this.facetGroup as FacetGroup)}`;
+    return html`${this.facetsTemplate}`;
   }
 
   static get styles(): CSSResultGroup {
@@ -236,9 +167,7 @@ export class FacetsTemplate extends LitElement {
         column-gap: 15px;
         column-count: 3;
       }
-      async-collection-name {
-        display: contents;
-      }
+
       ul.facet-list {
         list-style: none;
         margin: 0;
@@ -248,19 +177,7 @@ export class FacetsTemplate extends LitElement {
         margin-bottom: 0.2rem;
         display: grid;
       }
-      .facet-checkbox {
-        margin: 0 5px 0 0;
-        display: flex;
-        height: 15px;
-      }
-      .facet-checkbox input:first-child {
-        margin-right: 5px;
-      }
-      .facet-checkbox input {
-        height: 15px;
-        width: 15px;
-        margin: 0;
-      }
+
       .facet-row {
         display: flex;
         font-weight: 500;
@@ -270,52 +187,6 @@ export class FacetsTemplate extends LitElement {
         border-top: var(--facet-row-border-top, 1px solid transparent);
         border-bottom: var(--facet-row-border-bottom, 1px solid transparent);
         overflow: hidden;
-      }
-      .facet-info-display {
-        display: flex;
-        flex: 1 1 0%;
-        cursor: pointer;
-        flex-wrap: wrap;
-      }
-      .facet-title {
-        word-break: break-word;
-        display: inline-block;
-        flex: 1 1 0%;
-      }
-      .facet-count {
-        text-align: right;
-      }
-      .select-facet-checkbox {
-        cursor: pointer;
-        display: inline-block;
-      }
-      .hide-facet-checkbox {
-        display: none;
-      }
-      .hide-facet-icon {
-        width: 15px;
-        height: 15px;
-        cursor: pointer;
-        opacity: 0.3;
-        display: inline-block;
-      }
-      .hide-facet-icon:hover,
-      .active {
-        opacity: 1;
-      }
-      .hide-facet-icon:hover .eye,
-      .hide-facet-icon .eye-closed {
-        display: none;
-      }
-      .hide-facet-icon:hover .eye-closed,
-      .hide-facet-icon.active .eye-closed {
-        display: inline;
-      }
-      .hide-facet-icon.active .eye {
-        display: none;
-      }
-      .sorting-icon {
-        cursor: pointer;
       }
 
       a:link,
