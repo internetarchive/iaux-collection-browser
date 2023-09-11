@@ -339,6 +339,14 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-user-facet-list"
+                @click=${this.userFacetListCheckboxChanged}
+              />
+              <label for="enable-management">Show user facet list</label>
+            </div>
           </div>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
@@ -518,6 +526,26 @@ export class AppRoot extends LitElement {
   private manageModeCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.collectionBrowser.isManageView = target.checked;
+  }
+
+  /**
+   * Handler for when collection browser's user facet list.
+   * This lets us disable the checkbox in the dev panel when the user cancels out
+   * of user facet list from within collection browser.
+   */
+  private userFacetListModeChanged(e: CustomEvent<boolean>): void {
+    const manageCheckbox = this.shadowRoot?.querySelector(
+      '#enable-userfacetlist'
+    ) as HTMLInputElement;
+    if (manageCheckbox) manageCheckbox.checked = e.detail;
+  }
+
+  /**
+   * Handler for when the dev panel's "Enable manage mode" checkbox is changed.
+   */
+  private userFacetListCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.isUserFacetView = target.checked;
   }
 
   private rowGapChanged(e: Event) {
