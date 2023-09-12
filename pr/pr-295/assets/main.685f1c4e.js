@@ -4723,7 +4723,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         <div id="facets-header-container">${this.mobileFacetsTemplate}</div>
       </div>
     `}get facetTopTemplate(){return h`
-      <div id="facet-top-view" slot="facet-top" --facetTopViewHeight="2100px">
+      <div id="facet-top-view" slot="facet-top">
         load adjustable div height and width
       </div>
     `}get desktopLeftColumnTemplate(){return h`
@@ -4889,11 +4889,13 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
 
         #facet-top-view {
+          --facetTopViewHeight: 200px;
+          --facetTopViewWidth: 180px;
           display: block;
           margin-top: 10px;
           margin-bottom: 10px;
           height: var(--facetTopViewHeight, 200px);
-          width: var(--facetTopViewWidth, 180px);
+          width: var(--facetTopViewWidth, 100px);
           border: 1px solid rgb(0, 0, 0);
           background: gray;
           color: #fff;
