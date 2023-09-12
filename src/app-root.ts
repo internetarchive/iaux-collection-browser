@@ -529,13 +529,13 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when collection browser's user facet list.
+   * Handler for when collection browser's facet top list.
    * This lets us disable the checkbox in the dev panel when the user cancels out
-   * of user facet list from within collection browser.
+   * of facet top list from within collection browser.
    */
-  private userFacetListModeChanged(e: CustomEvent<boolean>): void {
+  private facetTopModeChanged(e: CustomEvent<boolean>): void {
     const manageCheckbox = this.shadowRoot?.querySelector(
-      '#enable-userfacetlist'
+      '#enable-facettop'
     ) as HTMLInputElement;
     if (manageCheckbox) manageCheckbox.checked = e.detail;
   }
@@ -545,7 +545,7 @@ export class AppRoot extends LitElement {
    */
   private userFacetListCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
-    this.collectionBrowser.isUserFacetView = target.checked;
+    this.collectionBrowser.isFacetTopView = target.checked;
   }
 
   private rowGapChanged(e: Event) {

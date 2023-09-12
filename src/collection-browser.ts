@@ -34,8 +34,6 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
-import '@internetarchive/ia-dropdown';
-// import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
@@ -168,9 +166,9 @@ export class CollectionBrowser
   @property({ type: Boolean }) isManageView = false;
 
   /**
-   * If user facet list UI active
+   * If facet-top view UI active
    */
-  @property({ type: Boolean }) isUserFacetView = false;
+  @property({ type: Boolean }) isFacetTopView = false;
 
   /**
    * The page that the consumer wants to load.
@@ -250,27 +248,6 @@ export class CollectionBrowser
   private facetsIntersectionObserver?: IntersectionObserver;
 
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
-
-  private dropdownOptions = [
-    {
-      id: 'option-1',
-      url: 'https://archive.org',
-      selectedHandler: () => alert('option'),
-      label: html`<p>Testing 1</p>`,
-    },
-    {
-      id: 'option-2',
-      url: 'https://archive.org',
-      selectedHandler: () => alert('option'),
-      label: html`<p>Testing 2</p>`,
-    },
-    {
-      id: 'option-3',
-      url: 'https://archive.org',
-      selectedHandler: () => alert('option'),
-      label: html`<p>Testing 3</p>`,
-    },
-  ];
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
     const offsetIndex = index + this.tileModelOffset;
@@ -521,15 +498,10 @@ export class CollectionBrowser
     `;
   }
 
-  private get userFacetListTemplate(): TemplateResult {
+  private get facetTopTemplate(): TemplateResult {
     return html`
-      <div id="facets-user-list" slot="facets-user-list">
-        <ia-dropdown
-          .options=${this.dropdownOptions}
-          displayCaret
-          @optionSelected=${() => console.log('changed')}
-        >
-        </ia-dropdown>
+      <div id="facet-top-view" slot="facet-top" --facetTopViewHeight="2100px">
+        load adjustable div height and width
       </div>
     `;
   }
@@ -540,7 +512,7 @@ export class CollectionBrowser
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
-        ${this.isUserFacetView ? this.userFacetListTemplate : nothing}
+        ${this.isFacetTopView ? this.facetTopTemplate : nothing}
 
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
@@ -2428,6 +2400,17 @@ export class CollectionBrowser
           --leftColumnPaddingRight: 2.5rem;
         }
 
+        #facet-top-view {
+          display: block;
+          margin-top: 10px;
+          margin-bottom: 10px;
+          height: var(--facetTopViewHeight, 200px);
+          width: var(--facetTopViewWidth, 180px);
+          border: 1px solid rgb(0, 0, 0);
+          background: gray;
+          color: #fff;
+        }
+
         /**
         * When page width resizes from desktop to mobile, use this class to
         * disable expand/collapse transition when loading.
@@ -2771,29 +2754,6 @@ export class CollectionBrowser
         #facets-user-list {
           display: block;
           margin-bottom: 4rem;
-        }
-
-        ia-dropdown {
-          --dropdownTextColor: white;
-          --dropdownOffsetTop: 0;
-          --dropdownBorderTopWidth: 0;
-          --dropdownBorderTopLeftRadius: 0;
-          --dropdownBorderTopRightRadius: 0;
-          --dropdownWhiteSpace: nowrap;
-          --dropdownListZIndex: 2;
-          --dropdownCaretColor: var(--ia-theme-primary-text-color, #2c2c2c);
-          --dropdownSelectedTextColor: white;
-          --dropdownSelectedBgColor: rgba(255, 255, 255, 0.3);
-          --dropdownHoverBgColor: rgba(255, 255, 255, 0.3);
-          --caretHeight: 9px;
-          --caretWidth: 12px;
-          --caretPadding: 0 5px 0 0;
-        }
-        ia-dropdown.selected .dropdown-label {
-          font-weight: bold;
-        }
-        ia-dropdown.open {
-          z-index: 2;
         }
 
         /* Allow tiles to shrink a bit further at smaller viewport widths */
