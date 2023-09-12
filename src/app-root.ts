@@ -533,7 +533,13 @@ export class AppRoot extends LitElement {
    */
   private facetTopViewCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
-    this.collectionBrowser.isFacetTopView = target.checked;
+    if (target.checked) {
+      this.collectionBrowser.style.setProperty('--facetTopViewHeight', `200px`);
+      this.collectionBrowser.style.setProperty('--facetTopViewWidth', `180px`);
+    } else {
+      this.collectionBrowser.style.removeProperty('--facetTopViewHeight');
+      this.collectionBrowser.style.removeProperty('--facetTopViewWidth');
+    }
   }
 
   private rowGapChanged(e: Event) {

@@ -166,11 +166,6 @@ export class CollectionBrowser
   @property({ type: Boolean }) isManageView = false;
 
   /**
-   * If facet-top view UI active
-   */
-  @property({ type: Boolean }) isFacetTopView = false;
-
-  /**
    * The page that the consumer wants to load.
    */
   private initialPageNumber = 1;
@@ -498,10 +493,10 @@ export class CollectionBrowser
     `;
   }
 
-  private get facetTopTemplate(): TemplateResult {
+  private get facetTopViewTemplate(): TemplateResult {
     return html`
-      <div id="facet-top-view" slot="facet-top">
-        load adjustable div height and width
+      <div id="facet-top-view">
+        <slot name="facet-top"></slot>
       </div>
     `;
   }
@@ -512,7 +507,7 @@ export class CollectionBrowser
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
-        ${this.isFacetTopView ? this.facetTopTemplate : nothing}
+        ${this.facetTopViewTemplate}
 
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
@@ -2395,22 +2390,18 @@ export class CollectionBrowser
       css`
         :host {
           display: block;
-
           --leftColumnWidth: 18rem;
           --leftColumnPaddingRight: 2.5rem;
         }
 
         #facet-top-view {
-          --facetTopViewHeight: 200px;
-          --facetTopViewWidth: 180px;
-          display: block;
+          display: flex;
           margin-top: 10px;
           margin-bottom: 10px;
-          height: var(--facetTopViewHeight, 200px);
-          width: var(--facetTopViewWidth, 100px);
-          border: 1px solid rgb(0, 0, 0);
-          background: gray;
+          height: var(--facetTopViewHeight, 0px);
+          width: var(--facetTopViewWidth, 0px);
           color: #fff;
+          border: 1px solid #000;
         }
 
         /**
