@@ -5241,11 +5241,6 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           );
         }
 
-        #facets-user-list {
-          display: block;
-          margin-bottom: 4rem;
-        }
-
         /* Allow tiles to shrink a bit further at smaller viewport widths */
         @media screen and (max-width: 880px) {
           infinite-scroller.grid {
