@@ -500,7 +500,7 @@ export class CollectionBrowser
 
   private get facetTopTemplate(): TemplateResult {
     return html`
-      <div id="facet-top-view" slot="facet-top" --facetTopViewHeight="2100px">
+      <div id="facet-top-view" slot="facet-top">
         load adjustable div height and width
       </div>
     `;
@@ -2401,11 +2401,13 @@ export class CollectionBrowser
         }
 
         #facet-top-view {
+          --facetTopViewHeight: 200px;
+          --facetTopViewWidth: 180px;
           display: block;
           margin-top: 10px;
           margin-bottom: 10px;
           height: var(--facetTopViewHeight, 200px);
-          width: var(--facetTopViewWidth, 180px);
+          width: var(--facetTopViewWidth, 100px);
           border: 1px solid rgb(0, 0, 0);
           background: gray;
           color: #fff;
@@ -2749,11 +2751,6 @@ export class CollectionBrowser
             --collectionBrowserCellMaxWidth,
             1fr
           );
-        }
-
-        #facets-user-list {
-          display: block;
-          margin-bottom: 4rem;
         }
 
         /* Allow tiles to shrink a bit further at smaller viewport widths */
