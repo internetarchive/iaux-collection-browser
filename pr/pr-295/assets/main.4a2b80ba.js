@@ -5456,7 +5456,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 id="enable-facet-top-view"
                 @click=${this.facetTopViewCheckboxChanged}
               />
-              <label for="enable-management">Show facet top view</label>
+              <label for="enable-facet-top-view">Show facet top view</label>
             </div>
           </div>
         </div>
