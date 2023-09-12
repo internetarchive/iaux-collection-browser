@@ -529,7 +529,7 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when the dev panel's "Enable facet top view mode" checkbox is changed.
+   * Handler for when the dev panel's "Show facet top view" checkbox is changed.
    */
   private facetTopViewCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
