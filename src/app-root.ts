@@ -533,12 +533,24 @@ export class AppRoot extends LitElement {
    */
   private facetTopViewCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
+    // const facetTopSlot =
+    // document.querySelector('div#facet-top-view');
+    // console.log('facetTopSlot: ', facetTopSlot)
+    const p = document.createElement('p');
+    p.style.setProperty('border', '1px solid #000');
+    p.textContent = 'New stuff as a child.';
+    p.style.setProperty('height', '20rem');
+    p.style.backgroundColor = '#00000';
+    p.setAttribute('slot', 'facet-top-slot');
+
     if (target.checked) {
-      this.collectionBrowser.style.setProperty('--facetTopViewHeight', `200px`);
-      this.collectionBrowser.style.setProperty('--facetTopViewWidth', `180px`);
+      console.log('should append child');
+      this.collectionBrowser.appendChild(p);
+      // facetTopSlot?.appendChild(p);
     } else {
-      this.collectionBrowser.style.removeProperty('--facetTopViewHeight');
-      this.collectionBrowser.style.removeProperty('--facetTopViewWidth');
+      this.collectionBrowser.removeChild(p);
+      console.log('should not append child');
+      // facetTopSlot?.removeChild(p);
     }
   }
 

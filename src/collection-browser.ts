@@ -493,21 +493,15 @@ export class CollectionBrowser
     `;
   }
 
-  private get facetTopViewTemplate(): TemplateResult {
-    return html`
-      <div id="facet-top-view">
-        <slot name="facet-top"></slot>
-      </div>
-    `;
-  }
-
   /**
    * Template for the desktop version of the left column, displaying the facets sidebar.
    */
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
-        ${this.facetTopViewTemplate}
+        <div id="facet-top-view">
+          <slot name="facet-top-slot"></slot>
+        </div>
 
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
@@ -2398,10 +2392,6 @@ export class CollectionBrowser
           display: flex;
           margin-top: 10px;
           margin-bottom: 10px;
-          height: var(--facetTopViewHeight, 0px);
-          width: var(--facetTopViewWidth, 0px);
-          color: #fff;
-          border: 1px solid #000;
         }
 
         /**
