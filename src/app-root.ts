@@ -339,6 +339,14 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-facet-top-view"
+                @click=${this.facetTopViewCheckboxChanged}
+              />
+              <label for="enable-facet-top-view">Show facet top view</label>
+            </div>
           </div>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
@@ -518,6 +526,28 @@ export class AppRoot extends LitElement {
   private manageModeCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.collectionBrowser.isManageView = target.checked;
+  }
+
+  /**
+   * Handler for when the dev panel's "Show facet top view" checkbox is changed.
+   */
+  private facetTopViewCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    const p = document.createElement('p');
+    p.style.setProperty('border', '1px solid #000');
+    p.textContent = 'New stuff as a child.';
+    p.style.setProperty('height', '20rem');
+    p.style.backgroundColor = '#00000';
+    p.setAttribute('slot', 'facet-top-slot');
+
+    if (target.checked) {
+      this.collectionBrowser.appendChild(p);
+    } else {
+      this.collectionBrowser.removeChild(
+        this.collectionBrowser.lastElementChild as Element
+      );
+    }
   }
 
   private rowGapChanged(e: Event) {

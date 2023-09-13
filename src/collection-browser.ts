@@ -499,6 +499,10 @@ export class CollectionBrowser
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
+        <div id="facet-top-view">
+          <slot name="facet-top-slot"></slot>
+        </div>
+
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
           ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
@@ -2380,9 +2384,12 @@ export class CollectionBrowser
       css`
         :host {
           display: block;
-
           --leftColumnWidth: 18rem;
           --leftColumnPaddingRight: 2.5rem;
+        }
+
+        #facet-top-view {
+          display: flex;
         }
 
         /**
