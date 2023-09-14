@@ -9,7 +9,7 @@ import { MockCollectionNameCache } from '../mocks/mock-collection-name-cache';
 describe('Facet row', () => {
   it('renders nothing if no bucket provided', async () => {
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetGroupKey=${'subject'}></facet-row>`
+      html`<facet-row .facetType=${'subject'}></facet-row>`
     );
 
     expect(el.shadowRoot?.querySelector('.facet-row-container')).not.to.exist;
@@ -37,10 +37,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row
-        .facetGroupKey=${'subject'}
-        .bucket=${bucket}
-      ></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
     );
 
     expect(el.shadowRoot?.querySelector('.facet-row-container')).to.exist;
@@ -60,10 +57,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row
-        .facetGroupKey=${'subject'}
-        .bucket=${bucket}
-      ></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
     );
 
     const facetCount = el.shadowRoot?.querySelector('.facet-count');
@@ -78,10 +72,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row
-        .facetGroupKey=${'subject'}
-        .bucket=${bucket}
-      ></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
     );
 
     // "Positive" checkbox is checked; "Negative" checkbox is not checked
@@ -110,10 +101,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row
-        .facetGroupKey=${'subject'}
-        .bucket=${bucket}
-      ></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
     );
 
     // "Positive" checkbox is not checked; "Negative" checkbox is checked
@@ -144,7 +132,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'collection'}
+        .facetType=${'collection'}
         .bucket=${bucket}
         .collectionNameCache=${collectionNameCache}
       ></facet-row>`
@@ -169,7 +157,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'subject'}
+        .facetType=${'subject'}
         .bucket=${bucket}
         .collectionNameCache=${collectionNameCache}
       ></facet-row>`
@@ -188,7 +176,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'subject'}
+        .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
       ></facet-row>`
@@ -202,11 +190,9 @@ describe('Facet row', () => {
 
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
-      key: 'subject',
-      value: 'foo',
-      state: 'selected',
+      facetType: 'subject',
+      bucket,
       negative: false,
-      count: 5,
     });
   });
 
@@ -220,7 +206,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'subject'}
+        .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
       ></facet-row>`
@@ -234,11 +220,9 @@ describe('Facet row', () => {
 
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
-      key: 'subject',
-      value: 'foo',
-      state: 'none',
+      facetType: 'subject',
+      bucket,
       negative: false,
-      count: 5,
     });
   });
 
@@ -252,7 +236,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'subject'}
+        .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
       ></facet-row>`
@@ -266,11 +250,9 @@ describe('Facet row', () => {
 
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
-      key: 'subject',
-      value: 'foo',
-      state: 'hidden',
+      facetType: 'subject',
+      bucket,
       negative: true,
-      count: 5,
     });
   });
 
@@ -284,7 +266,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'subject'}
+        .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
       ></facet-row>`
@@ -298,11 +280,9 @@ describe('Facet row', () => {
 
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
-      key: 'subject',
-      value: 'foo',
-      state: 'none',
+      facetType: 'subject',
+      bucket,
       negative: true,
-      count: 5,
     });
   });
 
@@ -316,7 +296,7 @@ describe('Facet row', () => {
 
     const el = await fixture<FacetRow>(
       html`<facet-row
-        .facetGroupKey=${'subject'}
+        .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
       ></facet-row>`
@@ -331,22 +311,18 @@ describe('Facet row', () => {
     facetLabel.click();
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
-      key: 'subject',
-      value: 'foo',
-      state: 'selected',
+      facetType: 'subject',
+      bucket,
       negative: false,
-      count: 5,
     });
 
     // Deselect facet by clicking label
     facetLabel.click();
     expect(facetClickSpy.callCount).to.equal(2);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
-      key: 'subject',
-      value: 'foo',
-      state: 'none',
+      facetType: 'subject',
+      bucket,
       negative: false,
-      count: 5,
     });
   });
 });
