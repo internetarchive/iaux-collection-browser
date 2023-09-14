@@ -30,18 +30,14 @@ export class FacetsTemplate extends LitElement {
   collectionNameCache?: CollectionNameCacheInterface;
 
   private facetClicked(e: CustomEvent<FacetEventDetails>) {
-    const { facetType, bucket, negative } = e.detail;
+    const { bucket, negative } = e.detail;
     if (bucket.state === 'none') {
       this.facetUnchecked(bucket);
     } else {
       this.facetChecked(bucket, negative);
     }
 
-    this.dispatchFacetClickEvent({
-      facetType,
-      bucket,
-      negative,
-    });
+    this.dispatchFacetClickEvent(e.detail);
   }
 
   private facetChecked(bucket: FacetBucket, negative: boolean) {
