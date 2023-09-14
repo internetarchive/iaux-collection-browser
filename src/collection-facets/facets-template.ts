@@ -11,14 +11,12 @@ import { repeat } from 'lit/directives/repeat.js';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import {
   FacetGroup,
-  FacetOption,
   FacetBucket,
   SelectedFacets,
   getDefaultSelectedFacets,
   FacetEventDetails,
-  FacetState,
 } from '../models';
-import './facet-row';
+import { FacetRow } from './facet-row';
 
 @customElement('facets-template')
 export class FacetsTemplate extends LitElement {
@@ -34,9 +32,9 @@ export class FacetsTemplate extends LitElement {
   private facetClicked(e: CustomEvent<FacetEventDetails>) {
     const { facetType, bucket, negative } = e.detail;
     if (bucket.state === 'none') {
-      this.facetUnchecked(facetType, bucket.key);
+      this.facetUnchecked(bucket);
     } else {
-      this.facetChecked(facetType, bucket.key, bucket.count, negative);
+      this.facetChecked(bucket, negative);
     }
 
     this.dispatchFacetClickEvent({
@@ -46,13 +44,10 @@ export class FacetsTemplate extends LitElement {
     });
   }
 
-  private facetChecked(
-    key: FacetOption,
-    value: string,
-    count: number,
-    negative: boolean
-  ) {
-    const { selectedFacets } = this;
+  private facetChecked(bucket: FacetBucket, negative: boolean) {
+    const { facetGroup, selectedFacets } = this;
+    if (!facetGroup) return;
+
     let newFacets: SelectedFacets;
     if (selectedFacets) {
       newFacets = {
@@ -61,17 +56,19 @@ export class FacetsTemplate extends LitElement {
     } else {
       newFacets = getDefaultSelectedFacets();
     }
-    newFacets[key][value] = {
-      state: this.getFacetState(true, negative),
-      count,
-    } as FacetBucket;
+    newFacets[facetGroup.key][bucket.key] = {
+      ...bucket,
+      state: FacetRow.getFacetState(true, negative),
+    };
 
     this.selectedFacets = newFacets;
     this.dispatchSelectedFacetsChanged();
   }
 
-  private facetUnchecked(key: FacetOption, value: string) {
-    const { selectedFacets } = this;
+  private facetUnchecked(bucket: FacetBucket) {
+    const { facetGroup, selectedFacets } = this;
+    if (!facetGroup) return;
+
     let newFacets: SelectedFacets;
     if (selectedFacets) {
       newFacets = {
@@ -80,21 +77,10 @@ export class FacetsTemplate extends LitElement {
     } else {
       newFacets = getDefaultSelectedFacets();
     }
-    delete newFacets[key][value];
+    delete newFacets[facetGroup.key][bucket.key];
 
     this.selectedFacets = newFacets;
     this.dispatchSelectedFacetsChanged();
-  }
-
-  /** Returns the composed facet state corresponding to a positive or negative facet's checked state */
-  private getFacetState(checked: boolean, negative: boolean): FacetState {
-    let state: FacetState;
-    if (checked) {
-      state = negative ? 'hidden' : 'selected';
-    } else {
-      state = 'none';
-    }
-    return state;
   }
 
   private dispatchFacetClickEvent(detail: FacetEventDetails) {

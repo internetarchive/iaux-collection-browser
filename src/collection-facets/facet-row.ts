@@ -143,7 +143,7 @@ export class FacetRow extends LitElement {
 
     const target = e.target as HTMLInputElement;
     const { checked } = target;
-    bucket.state = this.getFacetState(checked, negative);
+    bucket.state = FacetRow.getFacetState(checked, negative);
 
     this.dispatchFacetClickEvent({
       facetType,
@@ -169,7 +169,7 @@ export class FacetRow extends LitElement {
   /**
    * Returns the composed facet state corresponding to a positive or negative facet's checked state
    */
-  private getFacetState(checked: boolean, negative: boolean): FacetState {
+  static getFacetState(checked: boolean, negative: boolean): FacetState {
     let state: FacetState;
     if (checked) {
       state = negative ? 'hidden' : 'selected';
