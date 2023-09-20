@@ -545,6 +545,9 @@ export class CollectionBrowser
   private get rightColumnTemplate(): TemplateResult {
     return html`
       <div id="right-column" class="column">
+        <div id="cb-top-view">
+          <slot name="cb-top-slot"></slot>
+        </div>
         ${this.isManageView
           ? this.manageBarTemplate
           : this.sortFilterBarTemplate}
@@ -2474,7 +2477,6 @@ export class CollectionBrowser
           width: var(--leftColumnWidth, 18rem);
           /* Prevents Safari from shrinking col at first draw */
           min-width: var(--leftColumnWidth, 18rem);
-          padding-top: 0;
           /* Reduced padding by 0.2rem to add the invisible border in the rule below */
           padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
           border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
@@ -2562,11 +2564,9 @@ export class CollectionBrowser
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin: 10px 0;
         }
 
         .desktop #facets-header-container {
-          padding-top: 2rem;
           flex-wrap: wrap;
         }
 
