@@ -487,7 +487,7 @@ export class CollectionBrowser
         id="left-column"
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
-        ${this.resultsCountTemplate}
+        ${this.facetTopViewSlot} ${this.resultsCountTemplate}
         <div id="facets-header-container">${this.mobileFacetsTemplate}</div>
       </div>
     `;
@@ -499,10 +499,7 @@ export class CollectionBrowser
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
-        <div id="facet-top-view">
-          <slot name="facet-top-slot"></slot>
-        </div>
-
+        ${this.facetTopViewSlot}
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
           ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
@@ -514,6 +511,16 @@ export class CollectionBrowser
         <div id="facets-bottom-fade"></div>
       </div>
     `;
+  }
+
+  /**
+   * Slot which is placed at top of the facets area for user-profile page
+   * - mainly used to render userlists
+   */
+  private get facetTopViewSlot(): TemplateResult {
+    return html`<div id="facet-top-view">
+      <slot name="facet-top-slot"></slot>
+    </div>`;
   }
 
   /**
