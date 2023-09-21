@@ -487,7 +487,7 @@ export class CollectionBrowser
         id="left-column"
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
-        ${this.resultsCountTemplate}
+        ${this.facetTopViewSlot} ${this.resultsCountTemplate}
         <div id="facets-header-container">${this.mobileFacetsTemplate}</div>
       </div>
     `;
@@ -499,10 +499,7 @@ export class CollectionBrowser
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
       <div id="left-column" class="column">
-        <div id="facet-top-view">
-          <slot name="facet-top-slot"></slot>
-        </div>
-
+        ${this.facetTopViewSlot}
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
           ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
@@ -514,6 +511,16 @@ export class CollectionBrowser
         <div id="facets-bottom-fade"></div>
       </div>
     `;
+  }
+
+  /**
+   * Slot which is placed at top of the facets area for user-profile page
+   * - mainly used to render userlists
+   */
+  private get facetTopViewSlot(): TemplateResult {
+    return html`<div id="facet-top-view">
+      <slot name="facet-top-slot"></slot>
+    </div>`;
   }
 
   /**
@@ -545,6 +552,9 @@ export class CollectionBrowser
   private get rightColumnTemplate(): TemplateResult {
     return html`
       <div id="right-column" class="column">
+        <div id="cb-top-view">
+          <slot name="cb-top-slot"></slot>
+        </div>
         ${this.isManageView
           ? this.manageBarTemplate
           : this.sortFilterBarTemplate}
@@ -2474,7 +2484,6 @@ export class CollectionBrowser
           width: var(--leftColumnWidth, 18rem);
           /* Prevents Safari from shrinking col at first draw */
           min-width: var(--leftColumnWidth, 18rem);
-          padding-top: 0;
           /* Reduced padding by 0.2rem to add the invisible border in the rule below */
           padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
           border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
@@ -2562,11 +2571,9 @@ export class CollectionBrowser
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin: 10px 0;
         }
 
         .desktop #facets-header-container {
-          padding-top: 2rem;
           flex-wrap: wrap;
         }
 

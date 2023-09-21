@@ -347,6 +347,14 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-facet-top-view">Show facet top view</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-cb-top-view"
+                @click=${this.cbToViewCheckboxChanged}
+              />
+              <label for="enable-cb-top-view">Show CB top view</label>
+            </div>
           </div>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
@@ -540,6 +548,28 @@ export class AppRoot extends LitElement {
     p.style.setProperty('height', '20rem');
     p.style.backgroundColor = '#00000';
     p.setAttribute('slot', 'facet-top-slot');
+
+    if (target.checked) {
+      this.collectionBrowser.appendChild(p);
+    } else {
+      this.collectionBrowser.removeChild(
+        this.collectionBrowser.lastElementChild as Element
+      );
+    }
+  }
+
+  /**
+   * Handler for when the dev panel's "Show cb top view" checkbox is changed.
+   */
+  private cbToViewCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    const p = document.createElement('p');
+    p.style.setProperty('border', '1px solid #000');
+    p.textContent = 'My Favorite list header.';
+    p.style.setProperty('height', '10rem');
+    p.style.backgroundColor = '#00000';
+    p.setAttribute('slot', 'cb-top-slot');
 
     if (target.checked) {
       this.collectionBrowser.appendChild(p);
