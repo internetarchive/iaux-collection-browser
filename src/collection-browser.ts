@@ -78,6 +78,7 @@ import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
+import { CollectionBrowserDataSource } from './state/collection-browser-data-source';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -258,8 +259,7 @@ export class CollectionBrowser
   private tileModelAtCellIndex(index: number): TileModel | undefined {
     const offsetIndex = index + this.tileModelOffset;
     const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
-    const itemIndex = offsetIndex % this.pageSize;
-    const model = this.dataSource[pageNumber]?.[itemIndex];
+    const model = this.dataSource.getTileModelAt(offsetIndex);
     /**
      * If we encounter a model we don't have yet and we're not in the middle of an
      * automated scroll, fetch the page and just return undefined.
@@ -293,7 +293,7 @@ export class CollectionBrowser
    * fetch data before or after the current page. If we don't have a key
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
-  private dataSource: Record<string, TileModel[]> = {};
+  @property() dataSource = new CollectionBrowserDataSource(this.pageSize);
 
   /**
    * How many tiles to offset the data source by, to account for any removed tiles.
@@ -678,43 +678,38 @@ export class CollectionBrowser
     // scroller queries for cell contents.
     // This only matters while we're still viewing the same set of results. If the user changes
     // their query/filters/sort, then the data source is overwritten and the offset cleared.
-    const { checkedTileModels, uncheckedTileModels } = this;
-    const numChecked = checkedTileModels.length;
-    if (numChecked === 0) return;
-    this.tileModelOffset += numChecked;
-
-    const newDataSource: typeof this.dataSource = {};
-
-    // Which page the remaining tile models start on, post-offset
-    let offsetPageNumber = Math.floor(this.tileModelOffset / this.pageSize) + 1;
-    let indexOnPage = this.tileModelOffset % this.pageSize;
-
-    // Fill the pages up to that point with empty models
-    for (let page = 1; page <= offsetPageNumber; page += 1) {
-      const remainingHidden = this.tileModelOffset - this.pageSize * (page - 1);
-      const offsetCellsOnPage = Math.min(this.pageSize, remainingHidden);
-      newDataSource[page] = Array(offsetCellsOnPage).fill(undefined);
-    }
-
-    // Shift all the remaining tiles into their new positions in the data source
-    for (const model of uncheckedTileModels) {
-      if (!newDataSource[offsetPageNumber])
-        newDataSource[offsetPageNumber] = [];
-      newDataSource[offsetPageNumber].push(model);
-      indexOnPage += 1;
-      if (indexOnPage >= this.pageSize) {
-        offsetPageNumber += 1;
-        indexOnPage = 0;
-      }
-    }
-
-    // Swap in the new data source and update the infinite scroller
-    this.dataSource = newDataSource;
-    if (this.totalResults) this.totalResults -= numChecked;
-    if (this.infiniteScroller) {
-      this.infiniteScroller.itemCount -= numChecked;
-      this.infiniteScroller.refreshAllVisibleCells();
-    }
+    // const { checkedTileModels, uncheckedTileModels } = this;
+    // const numChecked = checkedTileModels.length;
+    // if (numChecked === 0) return;
+    // this.tileModelOffset += numChecked;
+    // const newDataSource: typeof this.dataSource = {};
+    // // Which page the remaining tile models start on, post-offset
+    // let offsetPageNumber = Math.floor(this.tileModelOffset / this.pageSize) + 1;
+    // let indexOnPage = this.tileModelOffset % this.pageSize;
+    // // Fill the pages up to that point with empty models
+    // for (let page = 1; page <= offsetPageNumber; page += 1) {
+    //   const remainingHidden = this.tileModelOffset - this.pageSize * (page - 1);
+    //   const offsetCellsOnPage = Math.min(this.pageSize, remainingHidden);
+    //   newDataSource[page] = Array(offsetCellsOnPage).fill(undefined);
+    // }
+    // // Shift all the remaining tiles into their new positions in the data source
+    // for (const model of uncheckedTileModels) {
+    //   if (!newDataSource[offsetPageNumber])
+    //     newDataSource[offsetPageNumber] = [];
+    //   newDataSource[offsetPageNumber].push(model);
+    //   indexOnPage += 1;
+    //   if (indexOnPage >= this.pageSize) {
+    //     offsetPageNumber += 1;
+    //     indexOnPage = 0;
+    //   }
+    // }
+    // // Swap in the new data source and update the infinite scroller
+    // this.dataSource = newDataSource;
+    // if (this.totalResults) this.totalResults -= numChecked;
+    // if (this.infiniteScroller) {
+    //   this.infiniteScroller.itemCount -= numChecked;
+    //   this.infiniteScroller.refreshAllVisibleCells();
+    // }
   }
 
   /**
@@ -738,17 +733,18 @@ export class CollectionBrowser
    * @param mapFn A callback function to apply on each tile model, as with Array.map
    */
   private mapDataSource(
+    // eslint-disable-next-line
     mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
   ): void {
-    this.dataSource = Object.fromEntries(
-      Object.entries(this.dataSource).map(([page, tileModels]) => [
-        page,
-        tileModels.map((model, index, array) =>
-          model ? mapFn(model, index, array) : model
-        ),
-      ])
-    );
-    this.infiniteScroller?.refreshAllVisibleCells();
+    // this.dataSource = Object.fromEntries(
+    //   Object.entries(this.dataSource).map(([page, tileModels]) => [
+    //     page,
+    //     tileModels.map((model, index, array) =>
+    //       model ? mapFn(model, index, array) : model
+    //     ),
+    //   ])
+    // );
+    // this.infiniteScroller?.refreshAllVisibleCells();
   }
 
   /**
@@ -1448,7 +1444,7 @@ export class CollectionBrowser
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
-    this.dataSource = {};
+    this.dataSource.reset();
     this.tileModelOffset = 0;
     this.totalResults = undefined;
     this.aggregations = undefined;
@@ -1975,7 +1971,7 @@ export class CollectionBrowser
     if (!this.canPerformSearch) return;
 
     // if we already have data, don't fetch again
-    if (this.dataSource[pageNumber]) return;
+    if (this.dataSource.hasPage(pageNumber)) return;
 
     if (this.endOfDataReached) return;
 
@@ -2182,7 +2178,7 @@ export class CollectionBrowser
     // copy our existing datasource so when we set it below, it gets set
     // instead of modifying the existing dataSource since object changes
     // don't trigger a re-render
-    const datasource = { ...this.dataSource };
+    // const datasource = { ...this.dataSource };
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
@@ -2237,8 +2233,7 @@ export class CollectionBrowser
         contentWarning,
       });
     });
-    datasource[pageNumber] = tiles;
-    this.dataSource = datasource;
+    this.dataSource.addPage(pageNumber, tiles);
     const visiblePages = this.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
