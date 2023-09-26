@@ -184,6 +184,9 @@ export class FacetRow extends LitElement {
   //
 
   static get styles(): CSSResultGroup {
+    const facetRowBorderTop = css`var(--facet-row-border-top, 1px solid transparent)`;
+    const facetRowBorderBottom = css`var(--facet-row-border-bottom, 1px solid transparent)`;
+
     return css`
       async-collection-name {
         display: contents;
@@ -207,8 +210,8 @@ export class FacetRow extends LitElement {
         font-size: 1.2rem;
         margin: 2.5px auto;
         height: auto;
-        border-top: var(--facet-row-border-top, 1px solid transparent);
-        border-bottom: var(--facet-row-border-bottom, 1px solid transparent);
+        border-top: ${facetRowBorderTop};
+        border-bottom: ${facetRowBorderBottom};
         overflow: hidden;
       }
       .facet-info-display {
