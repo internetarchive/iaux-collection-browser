@@ -1,7 +1,26 @@
 import type { ReactiveController } from 'lit';
 import type { TileModel } from '../models';
 
-export class CollectionBrowserDataSource implements ReactiveController {
+export interface CollectionBrowserDataSourceInterface
+  extends ReactiveController {
+  hostConnected(): void;
+
+  addPage(pageNumber: number, pageTiles: TileModel[]): void;
+
+  getPage(pageNum: number): TileModel[];
+
+  hasPage(pageNum: number): boolean;
+
+  getTileModelAt(index: number): TileModel | undefined;
+
+  setPageSize(pageSize: number): void;
+
+  reset(): void;
+}
+
+export class CollectionBrowserDataSource
+  implements CollectionBrowserDataSourceInterface
+{
   private pages: Record<string, TileModel[]> = {};
 
   // eslint-disable-next-line no-useless-constructor

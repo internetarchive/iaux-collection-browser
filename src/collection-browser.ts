@@ -78,7 +78,10 @@ import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
-import { CollectionBrowserDataSource } from './state/collection-browser-data-source';
+import {
+  CollectionBrowserDataSource,
+  CollectionBrowserDataSourceInterface,
+} from './state/collection-browser-data-source';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -293,7 +296,8 @@ export class CollectionBrowser
    * fetch data before or after the current page. If we don't have a key
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
-  @property() dataSource = new CollectionBrowserDataSource(this.pageSize);
+  @property() dataSource: CollectionBrowserDataSourceInterface =
+    new CollectionBrowserDataSource(this.pageSize);
 
   /**
    * How many tiles to offset the data source by, to account for any removed tiles.
