@@ -11,6 +11,7 @@ import { BaseTileComponent } from '../base-tile-component';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
 import '../text-snippet-block';
+import '../review-block';
 import '../item-image';
 import '../mediatype-icon';
 import './tile-stats';
@@ -57,7 +58,7 @@ export class ItemTile extends BaseTileComponent {
             ${this.isSortedByDate
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
-            ${this.textSnippetsTemplate}
+            ${this.textSnippetsTemplate} ${this.reviewBlockTemplate}
           </div>
 
           <tile-stats
@@ -160,6 +161,23 @@ export class ItemTile extends BaseTileComponent {
     `;
   }
 
+  private get reviewBlockTemplate(): TemplateResult | typeof nothing {
+    if (!this.model?.review) return nothing;
+
+    const { id, title, body, starRating } = this.model.review;
+    return html`
+      <review-block
+        viewsize="grid"
+        .identifier=${this.model.identifier}
+        .reviewId=${id}
+        .reviewTitle=${title}
+        .reviewBody=${body}
+        .starRating=${starRating}
+      >
+      </review-block>
+    `;
+  }
+
   private get volumeIssueTemplate(): TemplateResult | typeof nothing {
     if (!this.model?.volume || !this.model?.issue) return nothing;
 
@@ -204,7 +222,8 @@ export class ItemTile extends BaseTileComponent {
           border: 1px solid ${tileBorderColor};
         }
 
-        text-snippet-block {
+        text-snippet-block,
+        review-block {
           --containerLeftMargin: 5px;
           --containerTopMargin: 5px;
         }

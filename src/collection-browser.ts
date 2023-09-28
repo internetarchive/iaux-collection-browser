@@ -2185,6 +2185,8 @@ export class CollectionBrowser
         issue: result.issue?.value,
         itemCount: result.item_count?.value ?? 0,
         mediatype: this.getMediatype(result),
+        // @ts-ignore (temp until review added to search result model)
+        review: result.review,
         snippets: result.highlight?.values ?? [],
         source: result.source?.value,
         subjects: result.subject?.values ?? [],

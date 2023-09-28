@@ -325,6 +325,14 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
+                id="show-dummy-reviews"
+                @click=${this.reviewsChanged}
+              />
+              <label for="show-dummy-snippets">Show dummy reviews</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
                 id="enable-date-picker"
                 checked
                 @click=${this.datePickerChanged}
@@ -494,9 +502,44 @@ export class AppRoot extends LitElement {
     this.reperformCurrentSearch();
   }
 
+  private async reviewsChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.checked) {
+      // Decorate the default search service with a wrapper that adds
+      // dummy reviews to any successful searches
+      this.searchService = {
+        async search(params, searchType) {
+          const searchResponse = await SearchService.default.search(
+            params,
+            searchType
+          );
+          searchResponse.success?.response.results.forEach(result => {
+            Object.defineProperty(result, 'review', {
+              value: {
+                id: '12345',
+                title: 'My Great Review',
+                body: 'This item is really great and that is why I am leaving this review on it and giving it all five of the review stars. '.repeat(
+                  10
+                ),
+                starRating: 5,
+              },
+            });
+          });
+          return searchResponse;
+        },
+      };
+    } else {
+      // Restore the default seach service
+      this.searchService = SearchService.default;
+    }
+
+    // Re-perform the current search to show/hide the reviews immediately
+    this.reperformCurrentSearch();
+  }
+
   private async reperformCurrentSearch(): Promise<void> {
     const oldQuery = this.searchQuery;
-    this.searchQuery = ''; // Should just reset to the placeholder
+    this.searchQuery = '-'; // Should just reset to the placeholder
     await this.updateComplete;
     // For unclear reasons, Safari refuses to re-apply the old query until the next tick, hence:
     await new Promise(res => {

@@ -4,6 +4,13 @@ import {
   SortDirection,
 } from '@internetarchive/search-service';
 
+export interface Review {
+  id: string;
+  title: string;
+  body: string;
+  starRating: number;
+}
+
 export interface TileModel {
   averageRating?: number;
   checked: boolean; // Whether this tile is currently checked for item management functions
@@ -27,6 +34,7 @@ export interface TileModel {
   itemCount: number;
   mediatype: MediaType;
   source?: string;
+  review?: Review;
   snippets?: string[];
   subjects: string[];
   title: string;

@@ -113,6 +113,7 @@ export class TileList extends BaseTileComponent {
       </div>
       ${this.topicsTemplate} ${this.collectionsTemplate}
       ${this.descriptionTemplate} ${this.textSnippetsTemplate}
+      ${this.reviewBlockTemplate}
     `;
   }
 
@@ -303,6 +304,23 @@ export class TileList extends BaseTileComponent {
       viewsize="list"
       .snippets=${this.model?.snippets}
     ></text-snippet-block>`;
+  }
+
+  private get reviewBlockTemplate(): TemplateResult | typeof nothing {
+    if (!this.model?.review) return nothing;
+
+    const { id, title, body, starRating } = this.model.review;
+    return html`
+      <review-block
+        viewsize="list"
+        .identifier=${this.model.identifier}
+        .reviewId=${id}
+        .reviewTitle=${title}
+        .reviewBody=${body}
+        .starRating=${starRating}
+      >
+      </review-block>
+    `;
   }
 
   private get hasSnippets(): boolean {
