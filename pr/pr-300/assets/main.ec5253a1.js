@@ -5524,7 +5524,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                 id="show-dummy-reviews"
                 @click=${this.reviewsChanged}
               />
-              <label for="show-dummy-snippets">Show dummy reviews</label>
+              <label for="show-dummy-reviews">Show dummy reviews</label>
             </div>
             <div class="checkbox-control">
               <input
