@@ -328,7 +328,7 @@ export class AppRoot extends LitElement {
                 id="show-dummy-reviews"
                 @click=${this.reviewsChanged}
               />
-              <label for="show-dummy-snippets">Show dummy reviews</label>
+              <label for="show-dummy-reviews">Show dummy reviews</label>
             </div>
             <div class="checkbox-control">
               <input
