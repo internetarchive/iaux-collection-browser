@@ -8,6 +8,7 @@ import {
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { favoriteFilledIcon } from '../assets/img/icons/favorite-filled';
+import { favoriteUnfilledIcon } from '../assets/img/icons/favorite-unfilled';
 import { srOnlyStyle } from '../styles/sr-only';
 
 @customElement('review-block')
@@ -44,19 +45,27 @@ export class ReviewBlock extends LitElement {
   private get starsTemplate(): TemplateResult | typeof nothing {
     if (this.starRating <= 0) return nothing;
 
+    const numFilledStars = Math.min(5, this.starRating);
+    const numUnfilledStars = Math.min(5, 5 - this.starRating);
     return html`
       <div class="star-rating">
         <span class="sr-only">${this.starRating} out of 5 stars</span>
-        ${Array(this.starRating).fill(
-          html`<span aria-hidden="true">${favoriteFilledIcon}</span>`
-        )}
+        ${Array(numFilledStars).fill(this.filledStarTemplate)}
+        ${Array(numUnfilledStars).fill(this.unfilledStarTemplate)}
       </div>
     `;
   }
 
-  private get reviewUrl(): string {
-    if (!this.identifier) return '';
-    return `https://archive.org/details/${this.identifier}#review-${this.reviewId}`;
+  private get filledStarTemplate(): TemplateResult {
+    return html`<span aria-hidden="true">${favoriteFilledIcon}</span>`;
+  }
+
+  private get unfilledStarTemplate(): TemplateResult {
+    return html`
+      <span class="unfilled-star" aria-hidden="true">
+        ${favoriteUnfilledIcon}
+      </span>
+    `;
   }
 
   static get styles(): CSSResultGroup {
@@ -108,12 +117,15 @@ export class ReviewBlock extends LitElement {
         }
 
         .star-rating {
-          margin-left: 5px;
         }
 
         .star-rating svg {
           width: 10px;
           height: 10px;
+        }
+
+        .unfilled-star {
+          fill: #ccc;
         }
 
         .grid {

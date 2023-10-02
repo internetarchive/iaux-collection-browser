@@ -521,7 +521,7 @@ export class AppRoot extends LitElement {
                 body: 'This item is really great and that is why I am leaving this review on it and giving it all five of the review stars. '.repeat(
                   10
                 ),
-                starRating: 5,
+                starRating: 3,
               },
             });
           });
