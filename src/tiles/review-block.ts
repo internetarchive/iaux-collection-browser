@@ -77,10 +77,10 @@ export class ReviewBlock extends LitElement {
           flex-direction: row;
           flex-wrap: wrap;
           width: calc(100% - 10px);
-          border-left: 5px solid #194880;
+          border: 1px solid #ccc;
           margin-top: var(--containerTopMargin, 10px);
           margin-left: var(--containerLeftMargin, 0px);
-          border-radius: 3px;
+          padding: 5px;
           box-sizing: border-box;
         }
 
@@ -92,7 +92,7 @@ export class ReviewBlock extends LitElement {
           overflow-wrap: break-word;
           -webkit-line-clamp: var(--maxLines, 3);
           -webkit-box-orient: vertical;
-          margin: 0 0 0 5px;
+          margin: 0;
         }
 
         .review-title {
