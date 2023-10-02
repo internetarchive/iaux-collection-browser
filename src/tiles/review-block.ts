@@ -33,9 +33,7 @@ export class ReviewBlock extends LitElement {
       <div class="review-container">
         <div class="snippet-view ${this.viewSize}">
           ${this.starsTemplate}
-          <p class="review-title">
-            <a href=${this.reviewUrl}>${this.reviewTitle}</a>
-          </p>
+          <p class="review-title">${this.reviewTitle}</p>
           <p class="review-body">${this.reviewBody}</p>
         </div>
       </div>

@@ -146,15 +146,22 @@ export class TileDispatcher
     if (!this.model?.identifier || this.baseNavigationUrl == null)
       return nothing;
 
+    // If the tile includes a review, we want to append the review id as a URL fragment
+    let reviewFragment = '';
+    if (this.model.review?.id) {
+      reviewFragment = `#review-${this.model.review.id}`;
+    }
+
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
     if (this.model.href) {
-      return `${this.baseNavigationUrl}${this.model.href}`;
+      return `${this.baseNavigationUrl}${this.model.href}${reviewFragment}`;
     }
 
     return this.displayValueProvider.itemPageUrl(
       this.model.identifier,
-      this.model.mediatype === 'collection'
+      this.model.mediatype === 'collection',
+      reviewFragment
     );
   }
 

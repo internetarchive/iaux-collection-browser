@@ -97,10 +97,11 @@ export class TileDisplayValueProvider {
    */
   itemPageUrl(
     identifier: string,
-    isCollection = false
+    isCollection = false,
+    fragment = ''
   ): string | typeof nothing {
     if (!identifier || this.baseNavigationUrl == null) return nothing;
     const basePath = isCollection ? this.collectionPagePath : '/details/';
-    return `${this.baseNavigationUrl}${basePath}${identifier}`;
+    return `${this.baseNavigationUrl}${basePath}${identifier}${fragment}`;
   }
 }
