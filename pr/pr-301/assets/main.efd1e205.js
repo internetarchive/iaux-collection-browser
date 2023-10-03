@@ -2022,7 +2022,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         flex-direction: var(--dropdownMainButtonFlexDirection, row);
       }
 
-      button slot {
+      button slot[name='dropdown-label'] {
         /* Set var to 0px for column layout */
         padding-right: var(--buttonSlotPaddingRight, 5px);
         display: inline-block;
