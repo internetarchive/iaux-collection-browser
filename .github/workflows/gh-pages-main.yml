@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -23,7 +23,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-  
+
       - name: Create build files for gh-pages deploy
         run: yarn prepare:ghpages
 
