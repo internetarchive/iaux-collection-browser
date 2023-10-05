@@ -2185,8 +2185,15 @@ export class CollectionBrowser
         issue: result.issue?.value,
         itemCount: result.item_count?.value ?? 0,
         mediatype: this.getMediatype(result),
-        // @ts-ignore (temp until review added to search result model)
-        review: result.review,
+        review:
+          result.reviewtitle && result.reviewbody
+            ? {
+                id: '', // TODO ensure this is received from the PPS
+                title: result.reviewtitle.value ?? '',
+                body: result.reviewbody.value ?? '',
+                starRating: 5, // TODO ensure this is received from the PPS
+              }
+            : undefined,
         snippets: result.highlight?.values ?? [],
         source: result.source?.value,
         subjects: result.subject?.values ?? [],
