@@ -10,7 +10,7 @@ import {
   StringField,
 } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
-import { html, css, LitElement, PropertyValues } from 'lit';
+import { html, css, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
@@ -34,6 +34,8 @@ export class AppRoot extends LitElement {
     searchService: this.searchService,
     localCache: this.localCache,
   });
+
+  @state() private toggleSlots: boolean = false;
 
   @state() private currentPage?: number;
 
@@ -350,6 +352,14 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
+                id="toggle-slots"
+                @click=${this.toggleSlotOptions}
+              />
+              <label for="toggle-slots">Toggle Slots</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
                 id="enable-cb-top-view"
                 @click=${this.cbToViewCheckboxChanged}
               />
@@ -377,6 +387,12 @@ export class AppRoot extends LitElement {
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
         >
+          ${this.toggleSlots
+            ? html`<div slot="sort-slot-left">Sort Slot</div>`
+            : nothing}
+          ${this.toggleSlots
+            ? html`<div slot="facet-top-slot">Facet Slot</div>`
+            : nothing}
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
@@ -556,6 +572,10 @@ export class AppRoot extends LitElement {
         this.collectionBrowser.lastElementChild as Element
       );
     }
+  }
+
+  private toggleSlotOptions() {
+    this.toggleSlots = !this.toggleSlots;
   }
 
   /**
@@ -798,6 +818,24 @@ export class AppRoot extends LitElement {
       margin: 5px auto;
       background-color: aliceblue;
       font-size: 1.6rem;
+    }
+
+    // slots
+    div[slot='cb-top-slot'] {
+      height: 50px;
+      border: 1px solid red;
+      background: bisque;
+    }
+    div[slot='facet-top-slot'] {
+      border: 1px solid red;
+      width: 100%;
+      height: 150px;
+      background-color: darkseagreen;
+    }
+    div[slot='sort-slot-left'] {
+      height: 50px;
+      border: 1px solid red;
+      background: bisque;
     }
   `;
 }
