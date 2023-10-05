@@ -23,7 +23,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@internetarchive/analytics-manager": "^0.1.2",
-    "@internetarchive/collection-name-cache": "^0.2.15",
+    "@internetarchive/collection-name-cache": "^0.2.16-alpha.1",
     "@internetarchive/feature-feedback": "^0.1.4",
     "@internetarchive/field-parsers": "^0.1.4",
     "@internetarchive/histogram-date-range": "^1.1.0",
@@ -32,7 +32,7 @@
     "@internetarchive/infinite-scroller": "^1.0.0",
     "@internetarchive/local-cache": "^0.2.1",
     "@internetarchive/modal-manager": "^0.2.8",
-    "@internetarchive/search-service": "^1.2.3",
+    "@internetarchive/search-service": "^1.2.4-alpha.1",
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.11.2",
     "dompurify": "^2.3.6",

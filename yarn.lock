@@ -84,13 +84,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
-"@internetarchive/collection-name-cache@^0.2.15":
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.15.tgz#de9b4ab9117829495ad84684e8e7fecf187cc9e3"
-  integrity sha512-bg3uzwrQO28rVm668sS/wzhPvucDsCCsLIn73AmyKpJtkF7eRjBxj4kfwoZSDgnOz/T3gPufSiJXucoeLI4bXA==
+"@internetarchive/collection-name-cache@^0.2.16-alpha.1":
+  version "0.2.16-alpha.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.16-alpha.1.tgz#2c08e8c233e93b7c41f2f47028aa3b0625856a5d"
+  integrity sha512-KcpXo9OzJRRpieGkNzDCUMGRl1Wq3W3T8oYLHsRNpgIsfueWmsNpyjQWK6RDXLaSggCKLJwJHMqIfMkbUMjekg==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
-    "@internetarchive/search-service" "^1.2.3"
+    "@internetarchive/search-service" "^1.2.4-alpha.1"
     lit "^2.0.2"
 
 "@internetarchive/feature-feedback@^0.1.4":
@@ -198,10 +198,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.3.tgz#0a7f38730f3fe8747b4076eef26ddf0e6b3f4d8e"
-  integrity sha512-Yfn+MGWC8Qr1KqlwoJ6oowYnzFXIr7UCyurP+kXTCYzW4pkcC30synGbGUznyuXkSh5FwZMYkH9+UvYHtgHd2Q==
+"@internetarchive/search-service@^1.2.4-alpha.1":
+  version "1.2.4-alpha.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.4-alpha.1.tgz#a24e8bf783ba73d9b573c7491c71bf647073aba8"
+  integrity sha512-BEGlKDrbD2bkvNmEE+N6Wcis7n9UXnZlJSeNJtZAMiaAQZ5c5XT6Ta2Fx0xE4aquwlV+NooR1TBs4NFfLvZBYw==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.4"
     "@internetarchive/result-type" "^0.0.1"
