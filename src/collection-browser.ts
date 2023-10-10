@@ -127,6 +127,8 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  @property({ type: Boolean }) suppressPlaceholders = false;
+
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
@@ -427,6 +429,8 @@ export class CollectionBrowser
       (this.totalResults === 0 || !this.searchService);
 
     this.placeholderType = null;
+    if (this.suppressPlaceholders) return;
+
     if (!hasQuery && !isCollection) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
