@@ -127,6 +127,10 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  @property({ type: Boolean }) suppressPlaceholders = false;
+
+  @property({ type: Boolean }) suppressResultCount = false;
+
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
@@ -427,6 +431,8 @@ export class CollectionBrowser
       (this.totalResults === 0 || !this.searchService);
 
     this.placeholderType = null;
+    if (this.suppressPlaceholders) return;
+
     if (!hasQuery && !isCollection) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
@@ -527,7 +533,9 @@ export class CollectionBrowser
    * Template for the "X Results" count at the top of the search results.
    * Changes to the "Searching..." label if the search results are still loading.
    */
-  private get resultsCountTemplate(): TemplateResult {
+  private get resultsCountTemplate(): TemplateResult | typeof nothing {
+    if (this.suppressResultCount) return nothing;
+
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
     const resultsCount = this.totalResults?.toLocaleString();
@@ -558,6 +566,7 @@ export class CollectionBrowser
         ${this.isManageView
           ? this.manageBarTemplate
           : this.sortFilterBarTemplate}
+        <slot name="cb-results"></slot>
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
