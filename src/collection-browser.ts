@@ -131,6 +131,8 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) suppressResultCount = false;
 
+  @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
+
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
@@ -1414,7 +1416,11 @@ export class CollectionBrowser
       return;
 
     // If the new state prevents us from updating the search results, don't reset
-    if (!this.canPerformSearch) return;
+    if (
+      !this.canPerformSearch &&
+      !(this.clearResultsOnEmptyQuery && this.baseQuery === '')
+    )
+      return;
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
