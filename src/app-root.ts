@@ -10,7 +10,7 @@ import {
   StringField,
 } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
-import { html, css, LitElement, PropertyValues } from 'lit';
+import { html, css, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
@@ -34,6 +34,8 @@ export class AppRoot extends LitElement {
     searchService: this.searchService,
     localCache: this.localCache,
   });
+
+  @state() private toggleSlots: boolean = false;
 
   @state() private currentPage?: number;
 
@@ -287,6 +289,7 @@ export class AppRoot extends LitElement {
               </div>
             </div>
           </div>
+          <hr>
           <div id="checkbox-controls">
             <div class="checkbox-control">
               <input
@@ -339,21 +342,42 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="enable-facet-top-view"
-                @click=${this.facetTopViewCheckboxChanged}
-              />
-              <label for="enable-facet-top-view">Show facet top view</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="enable-cb-top-view"
-                @click=${this.cbToViewCheckboxChanged}
-              />
-              <label for="enable-cb-top-view">Show CB top view</label>
+            <fieldset class="dev-tools">
+              <legend>Slots</legend>
+              <div class="checkbox-control">
+                <input
+                  type="checkbox"
+                  id="toggle-slots"
+                  @click=${() => {
+                    this.toggleSlots = !this.toggleSlots;
+                  }}
+                />
+                <label for="toggle-slots">Toggle Slots</label>
+              </div>
+              <div class="checkbox-control">
+                <input
+                  type="checkbox"
+                  id="enable-facet-top-view"
+                  @click=${this.facetTopViewCheckboxChanged}
+                />
+                <label for="enable-facet-top-view">Show facet top view</label>
+              </div>
+              <div class="checkbox-control">
+                <input
+                  type="checkbox"
+                  id="enable-cb-top-view"
+                  @click=${this.cbTopViewCheckboxChanged}
+                />
+                <label for="enable-cb-top-view">Show CB top view</label>
+              </div>
+              <div class="checkbox-control">
+                <input
+                  type="checkbox"
+                  id="enable-result-cta-tile"
+                  @click=${this.resultCtaTileCheckboxChanged}
+                />
+                <label for="enable-result-cta-tile">Show Result CTA Tile</label>
+              </div>
             </div>
           </div>
         </div>
@@ -377,9 +401,19 @@ export class AppRoot extends LitElement {
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
         >
+          ${this.toggleSlots ? this.showAllSlotsTemplate : nothing}
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
+    `;
+  }
+
+  private get showAllSlotsTemplate() {
+    return html`
+      <div slot="sort-slot-left">Sort Left Slot</div>
+      <div slot="facet-top-slot">Facet Top Slot</div>
+      <div slot="cb-top-slot">CB Top Slot</div>
+      <div slot="result-cta-tile-slot">In-Result CTA Slot</div>
     `;
   }
 
@@ -542,15 +576,10 @@ export class AppRoot extends LitElement {
   private facetTopViewCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
-    const p = document.createElement('p');
-    p.style.setProperty('border', '1px solid #000');
-    p.textContent = 'New stuff as a child.';
-    p.style.setProperty('height', '20rem');
-    p.style.backgroundColor = '#00000';
-    p.setAttribute('slot', 'facet-top-slot');
-
+    const div = document.createElement('div');
+    div.setAttribute('slot', 'facet-top-slot');
     if (target.checked) {
-      this.collectionBrowser.appendChild(p);
+      this.collectionBrowser.appendChild(div);
     } else {
       this.collectionBrowser.removeChild(
         this.collectionBrowser.lastElementChild as Element
@@ -561,18 +590,31 @@ export class AppRoot extends LitElement {
   /**
    * Handler for when the dev panel's "Show cb top view" checkbox is changed.
    */
-  private cbToViewCheckboxChanged(e: Event) {
+  private cbTopViewCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
-    const p = document.createElement('p');
-    p.style.setProperty('border', '1px solid #000');
-    p.textContent = 'My Favorite list header.';
-    p.style.setProperty('height', '10rem');
-    p.style.backgroundColor = '#00000';
-    p.setAttribute('slot', 'cb-top-slot');
-
+    const div = document.createElement('div');
+    div.setAttribute('slot', 'cb-top-slot');
     if (target.checked) {
-      this.collectionBrowser.appendChild(p);
+      this.collectionBrowser.appendChild(div);
+    } else {
+      this.collectionBrowser.removeChild(
+        this.collectionBrowser.lastElementChild as Element
+      );
+    }
+  }
+
+  /**
+   * Handler for when the dev panel's "Show cb top view" checkbox is changed.
+   */
+  private resultCtaTileCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    const div = document.createElement('div');
+    div.setAttribute('slot', 'result-cta-tile-slot');
+    div.textContent = '<p>Result CTA tile.</p>';
+    if (target.checked) {
+      this.collectionBrowser.appendChild(div);
     } else {
       this.collectionBrowser.removeChild(
         this.collectionBrowser.lastElementChild as Element
@@ -778,6 +820,10 @@ export class AppRoot extends LitElement {
       flex-basis: 50%;
     }
 
+    .checkbox-control label {
+      user-select: none;
+    }
+
     #last-event {
       background-color: aliceblue;
       padding: 5px;
@@ -798,6 +844,32 @@ export class AppRoot extends LitElement {
       margin: 5px auto;
       background-color: aliceblue;
       font-size: 1.6rem;
+    }
+
+    /* slots styling */
+    div[slot='cb-top-slot'] {
+      height: 50px;
+      width: 100%;
+      border: 1px solid red;
+      background: bisque;
+    }
+    div[slot='facet-top-slot'] {
+      height: 150px;
+      width: 100%;
+      border: 1px solid red;
+      background-color: darkseagreen;
+    }
+    div[slot='sort-slot-left'] {
+      height: 50px;
+      width: 100px;
+      border: 1px solid red;
+      background: bisque;
+    }
+    div[slot='result-cta-tile-slot'] {
+      height: 50px;
+      width: 100px;
+      border: 1px solid red;
+      background: bisque;
     }
   `;
 }

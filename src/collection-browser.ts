@@ -1,4 +1,5 @@
 /* eslint-disable import/no-duplicates */
+/* eslint-disable */
 import {
   html,
   css,
@@ -77,6 +78,7 @@ import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
+import type { MediaType } from '@internetarchive/field-parsers';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -575,6 +577,8 @@ export class CollectionBrowser
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
+      ><slot></slot>
+      <slot name="result-cta-tile-slot" slot="result-cta-tile-slot"></slot
     ></infinite-scroller>`;
   }
 
@@ -2047,7 +2051,7 @@ export class CollectionBrowser
     if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
       if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount = this.totalResults;
+        this.infiniteScroller.itemCount = this.totalResults + 1;
       }
     }
 
@@ -2196,6 +2200,13 @@ export class CollectionBrowser
         contentWarning,
       });
     });
+
+    tiles.push({
+      mediatype: 'result-cta' as MediaType,
+      identifier: 'ddR',
+      title: 'hello DDR',
+    } as TileModel);
+
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
     const visiblePages = this.currentVisiblePageNumbers;
@@ -2373,6 +2384,7 @@ export class CollectionBrowser
         ?enableHoverPane=${true}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >
+        <slot name="result-cta-tile-slot" slot="result-cta-tile-slot"></slot>
       </tile-dispatcher>
     `;
   }

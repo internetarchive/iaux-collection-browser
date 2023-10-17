@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { css, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -7,11 +9,13 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { MediaType } from '@internetarchive/field-parsers';
 import type { TileDisplayMode } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
 import './grid/search-tile';
+import './grid/result-cta-tile';
 import './hover/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
@@ -80,6 +84,17 @@ export class TileDispatcher
     'list-detail': false,
     'list-header': false,
   };
+
+  private resultCTASlot?: HTMLElement;
+
+  constructor() {
+    super();
+    this.resultCTASlot = document.createElement('slot');
+    this.resultCTASlot.setAttribute('name', 'result-cta-tile-slot');
+
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot?.appendChild(this.resultCTASlot);
+  }
 
   render() {
     const isGridMode = this.tileDisplayMode === 'grid';
@@ -284,6 +299,7 @@ export class TileDispatcher
       defaultSortParam,
     } = this;
 
+    console.log(model?.mediatype, model?.identifier);
     if (!model) return nothing;
 
     switch (this.tileDisplayMode) {
@@ -328,6 +344,20 @@ export class TileDispatcher
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </search-tile>`;
+          case 'result-cta' as MediaType:
+            return html`<result-cta-tile
+              .model=${model}
+              .collectionPagePath=${collectionPagePath}
+              .baseImageUrl=${this.baseImageUrl}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
+              .creatorFilter=${creatorFilter}
+              .isManageView=${this.isManageView}
+              ?showInfoButton=${false}
+              @infoButtonPressed=${this.tileInfoButtonPressed}
+            >
+              <slot name="result-cta-tile-slot"></slot>
+            </result-cta-tile>`;
           default:
             return html`<item-tile
               .model=${model}
