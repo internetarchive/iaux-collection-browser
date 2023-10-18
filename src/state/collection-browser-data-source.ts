@@ -1,4 +1,4 @@
-import type { ReactiveController } from 'lit';
+import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { TileModel } from '../models';
 
 export interface CollectionBrowserDataSourceInterface
@@ -24,8 +24,13 @@ export class CollectionBrowserDataSource
   private pages: Record<string, TileModel[]> = {};
 
   // eslint-disable-next-line no-useless-constructor
-  constructor(private pageSize: number) {
-    // No behavior, just setting properties
+  constructor(
+    /** The host element to which this controller should attach listeners */
+    private readonly host: ReactiveControllerHost,
+    /** Default size of result pages */
+    private pageSize: number
+  ) {
+    this.host.addController(this);
   }
 
   hostConnected(): void {}
