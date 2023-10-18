@@ -1,4 +1,8 @@
 export { CollectionBrowser } from './src/collection-browser';
+export {
+  CollectionBrowserDataSource,
+  CollectionBrowserDataSourceInterface,
+} from './src/state/collection-browser-data-source';
 export { SortFilterBar } from './src/sort-filter-bar/sort-filter-bar';
 export { CollectionDisplayMode, SortField } from './src/models';
 export { CollectionBrowserLoadingTile } from './src/tiles/collection-browser-loading-tile';
