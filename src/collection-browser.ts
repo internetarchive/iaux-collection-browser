@@ -297,7 +297,7 @@ export class CollectionBrowser
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
   @property() dataSource: CollectionBrowserDataSourceInterface =
-    new CollectionBrowserDataSource(this.pageSize);
+    new CollectionBrowserDataSource(this, this.pageSize);
 
   /**
    * How many tiles to offset the data source by, to account for any removed tiles.
