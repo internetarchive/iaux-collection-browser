@@ -1751,27 +1751,26 @@ export class CollectionBrowser
   }
 
   facetClickHandler({
-    detail: { key, state: facetState, negative },
+    detail: { facetType, bucket, negative },
   }: CustomEvent<FacetEventDetails>): void {
+    let action: analyticsActions;
     if (negative) {
-      this.analyticsHandler?.sendEvent({
-        category: this.searchContext,
-        action:
-          facetState !== 'none'
-            ? analyticsActions.facetNegativeSelected
-            : analyticsActions.facetNegativeDeselected,
-        label: key,
-      });
+      action =
+        bucket.state !== 'none'
+          ? analyticsActions.facetNegativeSelected
+          : analyticsActions.facetNegativeDeselected;
     } else {
-      this.analyticsHandler?.sendEvent({
-        category: this.searchContext,
-        action:
-          facetState !== 'none'
-            ? analyticsActions.facetSelected
-            : analyticsActions.facetDeselected,
-        label: key,
-      });
+      action =
+        bucket.state !== 'none'
+          ? analyticsActions.facetSelected
+          : analyticsActions.facetDeselected;
     }
+
+    this.analyticsHandler?.sendEvent({
+      category: this.searchContext,
+      action,
+      label: facetType,
+    });
   }
 
   private async fetchFacets() {

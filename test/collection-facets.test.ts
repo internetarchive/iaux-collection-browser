@@ -17,6 +17,8 @@ import {
 } from '../src/models';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
+import type { FacetRow } from '../src/collection-facets/facet-row';
+import type { FacetsTemplate } from '../src/collection-facets/facets-template';
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -210,10 +212,11 @@ describe('Collection Facets', () => {
 
     const titleFacetRow = titleFacetGroup
       ?.querySelector('facets-template')
-      ?.shadowRoot?.querySelector('.facet-row');
+      ?.shadowRoot?.querySelector('facet-row') as FacetRow;
+    await titleFacetRow.updateComplete;
 
-    expect(titleFacetRow?.textContent?.trim()).to.satisfy((text: string) =>
-      /^foo\s*5$/.test(text)
+    expect(titleFacetRow?.shadowRoot?.textContent?.trim()).to.satisfy(
+      (text: string) => /^foo\s*5$/.test(text)
     );
   });
 
@@ -248,61 +251,6 @@ describe('Collection Facets', () => {
     expect(facetGroups?.length).to.equal(2);
   });
 
-  it('renders collection facets as links', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
-
-    const aggs: Record<string, Aggregation> = {
-      collection: new Aggregation({
-        buckets: [
-          {
-            key: 'foo',
-            doc_count: 5,
-          },
-        ],
-      }),
-    };
-
-    el.aggregations = aggs;
-    await el.updateComplete;
-
-    const collectionName = el.shadowRoot
-      ?.querySelector('facets-template')
-      ?.shadowRoot?.querySelector('async-collection-name');
-    expect(collectionName?.parentElement).to.be.instanceOf(HTMLAnchorElement);
-    expect(collectionName?.parentElement?.getAttribute('href')).to.equal(
-      '/details/foo'
-    );
-  });
-
-  it('renders non-collection facets without links', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
-
-    const aggs: Record<string, Aggregation> = {
-      subject: new Aggregation({
-        buckets: [
-          {
-            key: 'foo',
-            doc_count: 5,
-          },
-        ],
-      }),
-    };
-
-    el.aggregations = aggs;
-    await el.updateComplete;
-
-    const collectionName = el.shadowRoot
-      ?.querySelector('facets-template')
-      ?.shadowRoot?.querySelector('async-collection-name');
-    expect(collectionName?.parentElement).to.not.be.instanceOf(
-      HTMLAnchorElement
-    );
-  });
-
   it('does not render suppressed collection facets', async () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets></collection-facets>`
@@ -332,14 +280,11 @@ describe('Collection Facets', () => {
 
     const collectionFacets = el.shadowRoot
       ?.querySelector('facets-template')
-      ?.shadowRoot?.querySelectorAll('.facet-row');
+      ?.shadowRoot?.querySelectorAll('facet-row') as ArrayLike<FacetRow>;
     expect(collectionFacets?.length).to.equal(1);
 
     // The first (and only) collection link should be for 'foo'
-    const collectionLink = collectionFacets
-      ?.item(0)
-      .querySelector(`a[href='/details/foo']`);
-    expect(collectionLink).to.exist;
+    expect(collectionFacets[0].bucket?.key).to.equal('foo');
   });
 
   it('renders lending facets with human-readable names', async () => {
@@ -369,18 +314,24 @@ describe('Collection Facets', () => {
     el.aggregations = aggs;
     await el.updateComplete;
 
-    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const lendingTitles =
-      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
-    expect(lendingTitles?.length).to.equal(3);
-    expect(lendingTitles?.item(0).textContent?.trim()).to.equal(
-      'Lending Library'
+    const facetsTemplate = el.shadowRoot?.querySelector(
+      'facets-template'
+    ) as FacetsTemplate;
+    await facetsTemplate?.updateComplete;
+
+    const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
+      'facet-row'
+    ) as ArrayLike<FacetRow>;
+    expect(lendingFacets?.length).to.equal(3);
+
+    expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
+      /^Lending Library\s*3$/
     );
-    expect(lendingTitles?.item(1).textContent?.trim()).to.equal(
-      'Borrow 14 Days'
+    expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
+      /^Borrow 14 Days\s*2$/
     );
-    expect(lendingTitles?.item(2).textContent?.trim()).to.equal(
-      'Always Available'
+    expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
+      /^Always Available\s*1$/
     );
   });
 
@@ -418,18 +369,24 @@ describe('Collection Facets', () => {
     el.selectedFacets = selectedFacets;
     await el.updateComplete;
 
-    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const lendingTitles =
-      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
-    expect(lendingTitles?.length).to.equal(3);
-    expect(lendingTitles?.item(0).textContent?.trim()).to.equal(
-      'Lending Library'
+    const facetsTemplate = el.shadowRoot?.querySelector(
+      'facets-template'
+    ) as FacetsTemplate;
+    await facetsTemplate?.updateComplete;
+
+    const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
+      'facet-row'
+    ) as ArrayLike<FacetRow>;
+    expect(lendingFacets?.length).to.equal(3);
+
+    expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
+      /^Lending Library\s*5$/
     );
-    expect(lendingTitles?.item(1).textContent?.trim()).to.equal(
-      'Borrow 14 Days'
+    expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
+      /^Borrow 14 Days\s*4$/
     );
-    expect(lendingTitles?.item(2).textContent?.trim()).to.equal(
-      'Always Available'
+    expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
+      /^Always Available\s*3$/
     );
   });
 
@@ -476,18 +433,27 @@ describe('Collection Facets', () => {
     el.aggregations = aggs;
     await el.updateComplete;
 
-    const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const lendingTitles =
-      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
-    expect(lendingTitles?.length).to.equal(3);
-    expect(lendingTitles?.item(0).textContent?.trim()).to.equal(
-      'Lending Library'
+    const facetsTemplate = el.shadowRoot?.querySelector(
+      'facets-template'
+    ) as FacetsTemplate;
+    await facetsTemplate?.updateComplete;
+    await new Promise(res => {
+      setTimeout(res, 100);
+    });
+
+    const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
+      'facet-row'
+    ) as ArrayLike<FacetRow>;
+    expect(lendingFacets?.length).to.equal(3);
+
+    expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
+      /^Lending Library\s*5$/
     );
-    expect(lendingTitles?.item(1).textContent?.trim()).to.equal(
-      'Borrow 14 Days'
+    expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
+      /^Borrow 14 Days\s*5$/
     );
-    expect(lendingTitles?.item(2).textContent?.trim()).to.equal(
-      'Always Available'
+    expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
+      /^Always Available\s*4$/
     );
   });
 
@@ -586,10 +552,11 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const facetTitles =
-      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
-    expect(facetTitles?.length).to.equal(6);
-    expect(facetTitles?.item(5)?.textContent).to.equal('collection');
+    const facetRows = facetsTemplate?.shadowRoot?.querySelectorAll(
+      'facet-row'
+    ) as ArrayLike<FacetRow>;
+    expect(facetRows?.length).to.equal(6);
+    expect(facetRows?.[5]?.bucket?.key).to.equal('collection');
   });
 
   it('renders the mediatype:collection facet even when >=6 other mediatypes are selected', async () => {
@@ -652,10 +619,11 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
-    const facetTitles =
-      facetsTemplate?.shadowRoot?.querySelectorAll('.facet-title');
-    expect(facetTitles?.length).to.equal(8);
-    expect(facetTitles?.item(7)?.textContent).to.equal('collection');
+    const facetRows = facetsTemplate?.shadowRoot?.querySelectorAll(
+      'facet-row'
+    ) as ArrayLike<FacetRow>;
+    expect(facetRows?.length).to.equal(8);
+    expect(facetRows?.[7]?.bucket?.key).to.equal('collection');
   });
 
   describe('More Facets', () => {

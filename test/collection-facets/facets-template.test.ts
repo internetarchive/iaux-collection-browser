@@ -3,9 +3,10 @@ import sinon from 'sinon';
 import { html } from 'lit';
 import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
 import '../../src/collection-facets/facets-template';
-import { getDefaultSelectedFacets, FacetEventDetails } from '../../src/models';
+import type { FacetRow } from '../../src/collection-facets/facet-row';
+import type { FacetGroup } from '../../src/models';
 
-const facetGroup = {
+const facetGroup: FacetGroup = {
   title: 'Media Type',
   key: 'mediatype',
   buckets: [
@@ -24,7 +25,7 @@ describe('Render facets', () => {
     );
     await el.updateComplete;
 
-    expect(el.shadowRoot?.querySelector('.facet-row')).to.exist;
+    expect(el.shadowRoot?.querySelector('facet-row')).to.exist;
   });
 
   it('facets render on page', async () => {
@@ -34,7 +35,6 @@ describe('Render facets', () => {
         .renderOn=${'page'}
       ></facets-template>`
     );
-    await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector('.facets-on-page')).to.exist;
   });
@@ -46,158 +46,120 @@ describe('Render facets', () => {
         .renderOn=${'modal'}
       ></facets-template>`
     );
-    await el.updateComplete;
 
     expect(el.shadowRoot?.querySelector('.facets-on-modal')).to.exist;
   });
 
-  it('find facet-title and facet-count for particular facet group', async () => {
+  it('applies correct bucket values to facet row', async () => {
     const el = await fixture<FacetsTemplate>(
       html`<facets-template .facetGroup=${facetGroup}></facets-template>`
     );
-    await el.updateComplete;
 
-    const facetInfo = el.shadowRoot?.querySelector('.facet-info-display');
-    expect(facetInfo?.querySelector('.facet-title')?.textContent).to.equal(
-      'audio'
-    );
-    expect(
-      facetInfo?.querySelector('.facet-count')?.textContent?.trim()
-    ).to.equal('1,001');
+    const facetRows = el.shadowRoot?.querySelectorAll('facet-row');
+    expect(facetRows?.length).to.equal(facetGroup.buckets.length);
+
+    facetRows?.forEach((elmt, i) => {
+      const facetRow = elmt as FacetRow;
+      expect(facetRow).to.exist;
+      expect(facetRow.bucket).to.equal(facetGroup.buckets[i]);
+      expect(facetRow.facetType).to.equal(facetGroup.key);
+    });
   });
 
-  it('find the hidden facet item', async () => {
-    const selectedFacets = { ...facetGroup };
-    selectedFacets.buckets[2].state = 'hidden'; // hide 'texts' mediatype
-
-    const el = await fixture<FacetsTemplate>(
-      html`<facets-template
-        .facetGroup=${facetGroup}
-        .selectedFacets=${selectedFacets}
-      ></facets-template>`
-    );
-    await el.updateComplete;
-
-    const hiddenFacet = el.shadowRoot?.querySelectorAll('.hide-facet-icon')[0];
-
-    // check title attribute for 'texts' mediatype
-    expect(hiddenFacet?.getAttribute('title')).equal('Unhide mediatype: texts');
-  });
-
-  it('find the selected facet item', async () => {
-    const selectedFacets = { ...facetGroup };
-    selectedFacets.buckets[1].state = 'selected'; // select 'movies' mediatype
-
-    const el = await fixture<FacetsTemplate>(
-      html`<facets-template
-        .facetGroup=${facetGroup}
-        .selectedFacets=${selectedFacets}
-      ></facets-template>`
-    );
-    await el.updateComplete;
-
-    const selectedFacet =
-      el.shadowRoot?.querySelectorAll('.hide-facet-icon')[0];
-
-    // check title attribute for 'movies' mediatype
-    expect(selectedFacet?.getAttribute('title')).equal(
-      'Hide mediatype: movies'
-    );
-  });
-
-  it('emits facetClick events for normal facets', async () => {
+  it('emits facet click and change events when a facet is selected/deselected', async () => {
     const facetClickSpy = sinon.spy();
-    const mediatypeGroup = {
-      title: 'Media Type',
-      key: 'mediatype',
-      buckets: [
-        { displayText: 'audio', key: 'audio', count: 42, state: 'none' },
-      ],
-    };
-    const selectedFacets = getDefaultSelectedFacets();
+    const facetChangeSpy = sinon.spy();
     const el = await fixture<FacetsTemplate>(
       html`<facets-template
-        .facetGroup=${mediatypeGroup}
-        .selectedFacets=${selectedFacets}
+        .facetGroup=${facetGroup}
         @facetClick=${facetClickSpy}
+        @selectedFacetsChanged=${facetChangeSpy}
       ></facets-template>`
     );
 
-    const checkbox = el.shadowRoot?.querySelector(
+    const facetRow = el.shadowRoot?.querySelector('facet-row') as FacetRow;
+    expect(facetRow).to.exist;
+
+    const facetSelectCheck = facetRow.shadowRoot?.querySelector(
       '.select-facet-checkbox'
     ) as HTMLInputElement;
-    expect(checkbox).to.exist;
+    expect(facetSelectCheck).to.exist;
 
-    // Select it
-    checkbox.click();
-    await el.updateComplete;
+    facetSelectCheck.click();
     expect(facetClickSpy.callCount).to.equal(1);
+    expect(facetChangeSpy.callCount).to.equal(1);
+    expect(facetRow.bucket?.state).to.equal('selected');
 
-    const selectEvent = facetClickSpy
-      .args[0][0] as CustomEvent<FacetEventDetails>;
-    expect(selectEvent).to.exist;
-    expect(selectEvent?.detail?.key).to.equal('mediatype');
-    expect(selectEvent?.detail?.state).to.equal('selected');
-    expect(selectEvent?.detail?.negative).to.be.false;
-
-    // Unselect it
-    checkbox.click();
-    await el.updateComplete;
+    facetSelectCheck.click();
     expect(facetClickSpy.callCount).to.equal(2);
-
-    const unselectEvent = facetClickSpy
-      .args[1][0] as CustomEvent<FacetEventDetails>;
-    expect(unselectEvent).to.exist;
-    expect(unselectEvent?.detail?.key).to.equal('mediatype');
-    expect(unselectEvent?.detail?.state).to.equal('none');
-    expect(unselectEvent?.detail?.negative).to.be.false;
+    expect(facetChangeSpy.callCount).to.equal(2);
+    expect(facetRow.bucket?.state).to.equal('none');
   });
 
-  it('emits facetClick events for negative facets', async () => {
+  it('emits facet click and change events when a facet is negated/un-negated', async () => {
     const facetClickSpy = sinon.spy();
-    const mediatypeGroup = {
-      title: 'Media Type',
-      key: 'mediatype',
-      buckets: [
-        { displayText: 'audio', key: 'audio', count: 42, state: 'none' },
-      ],
-    };
-    const selectedFacets = getDefaultSelectedFacets();
+    const facetChangeSpy = sinon.spy();
     const el = await fixture<FacetsTemplate>(
       html`<facets-template
-        .facetGroup=${mediatypeGroup}
-        .selectedFacets=${selectedFacets}
+        .facetGroup=${facetGroup}
         @facetClick=${facetClickSpy}
+        @selectedFacetsChanged=${facetChangeSpy}
       ></facets-template>`
     );
 
-    const checkbox = el.shadowRoot?.querySelector(
+    const facetRow = el.shadowRoot?.querySelector('facet-row') as FacetRow;
+    expect(facetRow).to.exist;
+
+    const facetNegateCheck = facetRow.shadowRoot?.querySelector(
       '.hide-facet-checkbox'
     ) as HTMLInputElement;
-    expect(checkbox).to.exist;
+    expect(facetNegateCheck).to.exist;
 
-    // Select it
-    checkbox.click();
-    await el.updateComplete;
+    facetNegateCheck.click();
     expect(facetClickSpy.callCount).to.equal(1);
+    expect(facetChangeSpy.callCount).to.equal(1);
+    expect(facetRow.bucket?.state).to.equal('hidden');
 
-    const selectEvent = facetClickSpy
-      .args[0][0] as CustomEvent<FacetEventDetails>;
-    expect(selectEvent).to.exist;
-    expect(selectEvent?.detail?.key).to.equal('mediatype');
-    expect(selectEvent?.detail?.state).to.equal('hidden');
-    expect(selectEvent?.detail?.negative).to.be.true;
-
-    // Unselect it
-    checkbox.click();
-    await el.updateComplete;
+    facetNegateCheck.click();
     expect(facetClickSpy.callCount).to.equal(2);
+    expect(facetChangeSpy.callCount).to.equal(2);
+    expect(facetRow.bucket?.state).to.equal('none');
+  });
 
-    const unselectEvent = facetClickSpy
-      .args[1][0] as CustomEvent<FacetEventDetails>;
-    expect(unselectEvent).to.exist;
-    expect(unselectEvent?.detail?.key).to.equal('mediatype');
-    expect(unselectEvent?.detail?.state).to.equal('none');
-    expect(unselectEvent?.detail?.negative).to.be.true;
+  it('emits facet click and change events when a pre-selected facet is deselected', async () => {
+    const facetClickSpy = sinon.spy();
+    const facetChangeSpy = sinon.spy();
+    const facetGroupWithSelection = { ...facetGroup };
+    facetGroupWithSelection.buckets = [
+      { ...facetGroup.buckets[0], state: 'selected' },
+      ...facetGroup.buckets.slice(1),
+    ];
+
+    const el = await fixture<FacetsTemplate>(
+      html`<facets-template
+        .facetGroup=${facetGroupWithSelection}
+        @facetClick=${facetClickSpy}
+        @selectedFacetsChanged=${facetChangeSpy}
+      ></facets-template>`
+    );
+
+    const facetRow = el.shadowRoot?.querySelector('facet-row') as FacetRow;
+    expect(facetRow).to.exist;
+
+    const facetSelectCheck = facetRow.shadowRoot?.querySelector(
+      '.select-facet-checkbox'
+    ) as HTMLInputElement;
+    expect(facetSelectCheck).to.exist;
+    expect(facetSelectCheck.checked).to.be.true;
+
+    facetSelectCheck.click();
+    expect(facetClickSpy.callCount).to.equal(1);
+    expect(facetChangeSpy.callCount).to.equal(1);
+    expect(facetRow.bucket?.state).to.equal('none');
+
+    facetSelectCheck.click();
+    expect(facetClickSpy.callCount).to.equal(2);
+    expect(facetChangeSpy.callCount).to.equal(2);
+    expect(facetRow.bucket?.state).to.equal('selected');
   });
 });
