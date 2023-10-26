@@ -1416,10 +1416,11 @@ export class CollectionBrowser
       return;
 
     // If the new state prevents us from updating the search results, don't reset
-    const shouldUpdate =
-      this.canPerformSearch ||
-      (this.clearResultsOnEmptyQuery && !this.baseQuery);
-    if (!shouldUpdate) return;
+    if (
+      !this.canPerformSearch &&
+      !(this.clearResultsOnEmptyQuery && this.baseQuery === '')
+    )
+      return;
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
@@ -1432,8 +1433,8 @@ export class CollectionBrowser
     this.endOfDataReached = false;
     this.queryErrorMessage = undefined;
 
-    if (!this.canPerformSearch) {
-      // If we can't actually perform a search, then there are no pages to fetch anyway
+    if (!this.baseQuery) {
+      // If we have no query, then there are no pages to fetch anyway
       this.pagesToRender = 0;
     } else {
       this.pagesToRender =
