@@ -1416,11 +1416,10 @@ export class CollectionBrowser
       return;
 
     // If the new state prevents us from updating the search results, don't reset
-    if (
-      !this.canPerformSearch &&
-      !(this.clearResultsOnEmptyQuery && this.baseQuery === '')
-    )
-      return;
+    const shouldUpdate =
+      this.canPerformSearch ||
+      (this.clearResultsOnEmptyQuery && !this.baseQuery);
+    if (!shouldUpdate) return;
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
@@ -1431,11 +1430,17 @@ export class CollectionBrowser
     this.fullYearsHistogramAggregation = undefined;
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
-    this.pagesToRender =
-      this.initialPageNumber === 1
-        ? 2 // First two pages are batched into one request when starting from page 1
-        : this.initialPageNumber;
     this.queryErrorMessage = undefined;
+
+    if (!this.canPerformSearch) {
+      // If we can't actually perform a search, then there are no pages to fetch anyway
+      this.pagesToRender = 0;
+    } else {
+      this.pagesToRender =
+        this.initialPageNumber === 1
+          ? 2 // First two pages are batched into one request when starting from page 1
+          : this.initialPageNumber;
+    }
 
     // Reset the infinite scroller's item count, so that it
     // shows tile placeholders until the new query's results load in
