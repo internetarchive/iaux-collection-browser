@@ -7,11 +7,13 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
+import type { MediaType } from '@internetarchive/field-parsers';
 import type { TileDisplayMode } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
 import './grid/search-tile';
+import './grid/result-cta-tile';
 import './hover/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
@@ -184,7 +186,7 @@ export class TileDispatcher
       this.enableHoverPane &&
       !!this.tileDisplayMode &&
       TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode] &&
-      this.model?.mediatype !== 'search' // don't show hover panes on search tiles
+      !['search', 'result-cta'].includes(this.model?.mediatype as MediaType) // don't show hover panes on search tiles
     );
   }
 
@@ -328,6 +330,8 @@ export class TileDispatcher
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </search-tile>`;
+          case 'result-cta' as MediaType:
+            return html`<result-cta-tile .model=${model}> </result-cta-tile>`;
           default:
             return html`<item-tile
               .model=${model}

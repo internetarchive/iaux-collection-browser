@@ -372,6 +372,8 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
+          .activeTabId=${'uploads'}
+          ?isProfileOwner=${true}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}

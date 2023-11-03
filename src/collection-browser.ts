@@ -38,6 +38,7 @@ import type { CollectionNameCacheInterface } from '@internetarchive/collection-n
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
+import type { MediaType } from '@internetarchive/field-parsers';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
 import './sort-filter-bar/sort-filter-bar';
@@ -143,6 +144,8 @@ export class CollectionBrowser
   @property({ type: String, reflect: true }) searchContext: string =
     analyticsCategories.default;
 
+  @property({ type: String }) activeTabId: string = '';
+
   @property({ type: Object })
   collectionNameCache?: CollectionNameCacheInterface;
 
@@ -158,6 +161,8 @@ export class CollectionBrowser
   @property({ type: Number }) mobileBreakpoint = 600;
 
   @property({ type: Boolean }) loggedIn = false;
+
+  @property({ type: Boolean }) isProfileOwner = false;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface = undefined;
 
@@ -2061,7 +2066,7 @@ export class CollectionBrowser
     if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
       if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount = this.totalResults;
+        this.infiniteScroller.itemCount = this.totalResults + 1;
       }
     }
 
@@ -2210,6 +2215,15 @@ export class CollectionBrowser
         contentWarning,
       });
     });
+
+    // New result-cta tile on /@user/uploads and /@user/web-archive pages to upload new content
+    if (
+      ['uploads', 'web-archive'].includes(this.activeTabId) &&
+      this.isProfileOwner
+    ) {
+      tiles.push(this.resultCTATile as TileModel);
+    }
+
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
     const visiblePages = this.currentVisiblePageNumbers;
@@ -2217,6 +2231,24 @@ export class CollectionBrowser
     if (needsReload) {
       this.infiniteScroller?.refreshAllVisibleCells();
     }
+  }
+
+  /**
+   * Content for <result-cta-tile> on uploads and web-archive tabs on user-profile-page
+   */
+  private get resultCTATile() {
+    if (this.activeTabId === 'uploads') {
+      return {
+        mediatype: 'result-cta' as MediaType,
+        identifier: 'uploads',
+        title: 'Uploads',
+      };
+    }
+    return {
+      mediatype: 'result-cta' as MediaType,
+      identifier: 'save-and-share',
+      title: 'Save & Share',
+    };
   }
 
   private getMediatype(result: SearchResult) {
