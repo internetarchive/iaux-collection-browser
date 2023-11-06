@@ -740,15 +740,8 @@ export class CollectionBrowser
     // eslint-disable-next-line
     mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
   ): void {
-    // this.dataSource = Object.fromEntries(
-    //   Object.entries(this.dataSource).map(([page, tileModels]) => [
-    //     page,
-    //     tileModels.map((model, index, array) =>
-    //       model ? mapFn(model, index, array) : model
-    //     ),
-    //   ])
-    // );
-    // this.infiniteScroller?.refreshAllVisibleCells();
+    this.dataSource.mapDataSource(mapFn);
+    this.infiniteScroller?.refreshAllVisibleCells();
   }
 
   /**
