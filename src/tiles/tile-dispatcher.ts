@@ -148,6 +148,14 @@ export class TileDispatcher
     if (!this.model?.identifier || this.baseNavigationUrl == null)
       return nothing;
 
+    // URL for result-cta tiles to add new content from /details/@user page
+    if (this.model.identifier === 'uploads') {
+      return `${this.baseNavigationUrl}/create`;
+    }
+    if (this.model.identifier === 'web-archive') {
+      return `${this.baseNavigationUrl}/web`;
+    }
+
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
     if (this.model.href) {
@@ -350,34 +358,44 @@ export class TileDispatcher
             </item-tile>`;
         }
       case 'list-compact':
-        return html`<tile-list-compact
-          .model=${model}
-          .collectionPagePath=${collectionPagePath}
-          .currentWidth=${currentWidth}
-          .currentHeight=${currentHeight}
-          .baseNavigationUrl=${baseNavigationUrl}
-          .sortParam=${sortParam || defaultSortParam}
-          .creatorFilter=${creatorFilter}
-          .mobileBreakpoint=${mobileBreakpoint}
-          .baseImageUrl=${this.baseImageUrl}
-          .loggedIn=${this.loggedIn}
-        >
-        </tile-list-compact>`;
+        switch (model.mediatype) {
+          case 'result-cta' as MediaType:
+            return nothing;
+          default:
+            return html`<tile-list-compact
+              .model=${model}
+              .collectionPagePath=${collectionPagePath}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
+              .baseNavigationUrl=${baseNavigationUrl}
+              .sortParam=${sortParam || defaultSortParam}
+              .creatorFilter=${creatorFilter}
+              .mobileBreakpoint=${mobileBreakpoint}
+              .baseImageUrl=${this.baseImageUrl}
+              .loggedIn=${this.loggedIn}
+            >
+            </tile-list-compact>`;
+        }
       case 'list-detail':
-        return html`<tile-list
-          .model=${model}
-          .collectionPagePath=${collectionPagePath}
-          .collectionNameCache=${this.collectionNameCache}
-          .currentWidth=${currentWidth}
-          .currentHeight=${currentHeight}
-          .baseNavigationUrl=${baseNavigationUrl}
-          .sortParam=${sortParam || defaultSortParam}
-          .creatorFilter=${creatorFilter}
-          .mobileBreakpoint=${mobileBreakpoint}
-          .baseImageUrl=${this.baseImageUrl}
-          .loggedIn=${this.loggedIn}
-        >
-        </tile-list>`;
+        switch (model.mediatype) {
+          case 'result-cta' as MediaType:
+            return nothing;
+          default:
+            return html`<tile-list
+              .model=${model}
+              .collectionPagePath=${collectionPagePath}
+              .collectionNameCache=${this.collectionNameCache}
+              .currentWidth=${currentWidth}
+              .currentHeight=${currentHeight}
+              .baseNavigationUrl=${baseNavigationUrl}
+              .sortParam=${sortParam || defaultSortParam}
+              .creatorFilter=${creatorFilter}
+              .mobileBreakpoint=${mobileBreakpoint}
+              .baseImageUrl=${this.baseImageUrl}
+              .loggedIn=${this.loggedIn}
+            >
+            </tile-list>`;
+        }
       default:
         return nothing;
     }

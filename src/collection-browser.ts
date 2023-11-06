@@ -2241,12 +2241,13 @@ export class CollectionBrowser
       return {
         mediatype: 'result-cta' as MediaType,
         identifier: 'uploads',
-        title: 'Uploads',
+        title: 'Upload',
       };
     }
+
     return {
       mediatype: 'result-cta' as MediaType,
-      identifier: 'save-and-share',
+      identifier: 'web-archive',
       title: 'Save & Share',
     };
   }
