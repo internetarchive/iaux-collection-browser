@@ -16,6 +16,16 @@ export interface CollectionBrowserDataSourceInterface
   setPageSize(pageSize: number): void;
 
   reset(): void;
+
+  /**
+   * Applies the given map function to all of the tile models in every page of the data
+   * source. This method updates the data source object in immutable fashion.
+   *
+   * @param mapFn A callback function to apply on each tile model, as with Array.map
+   */
+  mapDataSource(
+    mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
+  ): void;
 }
 
 export class CollectionBrowserDataSource
@@ -60,5 +70,18 @@ export class CollectionBrowserDataSource
 
   reset(): void {
     this.pages = {};
+  }
+
+  mapDataSource(
+    mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
+  ): void {
+    this.pages = Object.fromEntries(
+      Object.entries(this.pages).map(([page, tileModels]) => [
+        page,
+        tileModels.map((model, index, array) =>
+          model ? mapFn(model, index, array) : model
+        ),
+      ])
+    );
   }
 }
