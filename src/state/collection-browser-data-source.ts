@@ -21,11 +21,37 @@ export interface CollectionBrowserDataSourceInterface
    * Applies the given map function to all of the tile models in every page of the data
    * source. This method updates the data source object in immutable fashion.
    *
-   * @param mapFn A callback function to apply on each tile model, as with Array.map
+   * @param callback A callback function to apply on each tile model, as with Array.map
    */
-  mapDataSource(
-    mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
+  map(
+    callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
   ): void;
+
+  /**
+   * Checks every tile's management checkbox
+   */
+  checkAllTiles(): void;
+
+  /**
+   * Unchecks every tile's management checkbox
+   */
+  uncheckAllTiles(): void;
+
+  /**
+   * Removes all tile models that are currently checked & adjusts the paging
+   * of the data source to account for any new gaps in the data.
+   */
+  removeCheckedTiles(): void;
+
+  /**
+   * An array of all the tile models whose management checkboxes are checked
+   */
+  readonly checkedTileModels: TileModel[];
+
+  /**
+   * An array of all the tile models whose management checkboxes are unchecked
+   */
+  readonly uncheckedTileModels: TileModel[];
 }
 
 export class CollectionBrowserDataSource
