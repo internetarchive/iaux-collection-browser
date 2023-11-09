@@ -51,6 +51,10 @@ export class AppRoot extends LitElement {
 
   @state() private loggedIn: boolean = false;
 
+  @state() private isProfileOwner: boolean = false;
+
+  @state() private activeTabId: string = '';
+
   @state() private searchType: SearchType = SearchType.METADATA;
 
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
@@ -229,83 +233,64 @@ export class AppRoot extends LitElement {
             >
           </div>
 
-          <div id="cell-controls" class="hidden">
-            <div id="cell-size-control">
-              <div>
-                <label for="cell-width-slider">Min cell width:</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="18"
-                  step="0.1"
-                  id="cell-width-slider"
-                  @input=${this.widthChanged}
-                />
-                <span>${this.cellWidth}rem</span>
-              </div>
-              <div>
-                <label for="cell-height-slider">Cell height:</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="29"
-                  step="0.1"
-                  id="cell-height-slider"
-                  @input=${this.heightChanged}
-                />
-                <span>${this.cellHeight}rem</span>
-              </div>
-            </div>
-            <div id="cell-gap-control">
-              <div>
-                <label for="cell-row-gap-slider">Row gap:</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-row-gap-slider"
-                  @input=${this.rowGapChanged}
-                />
-                <span>${this.rowGap}rem</span>
-              </div>
-              <div>
-                <label for="cell-col-gap-slider">Col gap:</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-col-gap-slider"
-                  @input=${this.colGapChanged}
-                />
-                <span>${this.colGap}rem</span>
-              </div>
-            </div>
-          </div>
-          <div id="checkbox-controls">
-            <div class="checkbox-control">
+          <fieldset class="cell-controls">
+            <legend>Cell Controls</legend>
+            <div>
+              <label for="cell-width-slider">Cell width:</label>
               <input
-                type="checkbox"
-                id="show-outline-check"
-                @click=${this.outlineChanged}
+                type="range"
+                min="10"
+                max="100"
+                value="18"
+                step="0.1"
+                id="cell-width-slider"
+                @input=${this.widthChanged}
               />
-              <label for="show-outline-check">Show cell outlines</label>
+              <span>${this.cellWidth}rem</span>
             </div>
-            <div class="checkbox-control">
+            <div>
+              <label for="cell-height-slider">Cell height:</label>
               <input
-                type="checkbox"
-                id="show-facet-group-outline-check"
-                @click=${this.toggleFacetGroupOutline}
+                type="range"
+                min="10"
+                max="100"
+                value="29"
+                step="0.1"
+                id="cell-height-slider"
+                @input=${this.heightChanged}
               />
-              <label for="show-facet-group-outline-check">
-                Show facet group outlines
-              </label>
+              <span>${this.cellHeight}rem</span>
             </div>
+            <div>
+              <label for="cell-row-gap-slider">Row gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-row-gap-slider"
+                @input=${this.rowGapChanged}
+              />
+              <span>${this.rowGap}rem</span>
+            </div>
+            <div>
+              <label for="cell-col-gap-slider">Col gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-col-gap-slider"
+                @input=${this.colGapChanged}
+              />
+              <span>${this.colGap}rem</span>
+            </div>
+          </fieldset>
+
+          <fieldset class="other-controls">
+            <legend>Other Controls</legend>
             <div class="checkbox-control">
               <input
                 type="checkbox"
@@ -313,14 +298,6 @@ export class AppRoot extends LitElement {
                 @click=${this.loginChanged}
               />
               <label for="simulate-login">Simulate login</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
-              <label for="show-dummy-snippets">Show dummy snippets</label>
             </div>
             <div class="checkbox-control">
               <input
@@ -339,13 +316,67 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
+          </fieldset>
+
+          <fieldset class="cb-visual-appearance">
+            <legend>CB Visual Appearance</legend>
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="enable-facet-top-view"
-                @click=${this.facetTopViewCheckboxChanged}
+                id="show-dummy-snippets"
+                @click=${this.snippetsChanged}
               />
-              <label for="enable-facet-top-view">Show facet top view</label>
+              <label for="show-dummy-snippets">Show dummy snippets</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="show-facet-group-outline-check"
+                @click=${this.toggleFacetGroupOutline}
+              />
+              <label for="show-facet-group-outline-check">
+                Show facet group outlines
+              </label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="show-outline-check"
+                @click=${this.outlineChanged}
+              />
+              <label for="show-outline-check">Show cell outlines</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="user-profile-controls">
+            <legend>User Profile Controls</legend>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="profile-owner"
+                @click=${this.isProfileOwnerChanged}
+                .checked=${true}
+              />
+              <label for="profile-owner">Profile Owner</label>
+              (<label for="profile-owner">Tab:-</label>
+              <input
+                type="radio"
+                id="upload-tab"
+                @click="${this.switchUserProfileTab}"
+                name="active-tab"
+                value="uploads"
+                .checked=${this.getActiveTabId === 'uploads'}
+              />
+              <label for="upload-tab">Uploads</label>
+              <input
+                type="radio"
+                id="web-archive-tab"
+                @click="${this.switchUserProfileTab}"
+                name="active-tab"
+                value="web-archive"
+                .checked=${this.getActiveTabId === 'web-archive'}
+              />
+              <label for="web-archive-tab">WebArchive</label>)
             </div>
             <div class="checkbox-control">
               <input
@@ -355,7 +386,15 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-cb-top-view">Show CB top view</label>
             </div>
-          </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-facet-top-view"
+                @click=${this.facetTopViewCheckboxChanged}
+              />
+              <label for="enable-facet-top-view">Show facet top view</label>
+            </div>
+          </fieldset>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
           Toggle Search Controls
@@ -372,7 +411,7 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
-          .activeTabId=${'web-archive'}
+          .activeTabId=${this.getActiveTabId}
           ?isProfileOwner=${true}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
@@ -383,6 +422,17 @@ export class AppRoot extends LitElement {
       </div>
       <modal-manager></modal-manager>
     `;
+  }
+
+  private get getActiveTabId() {
+    const pageUrl = new URL(window.location.href);
+    const { searchParams } = pageUrl;
+
+    if (searchParams.get('tab')) {
+      this.activeTabId = searchParams.get('tab') as string;
+    }
+
+    return this.activeTabId;
   }
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>): void {
@@ -407,6 +457,15 @@ export class AppRoot extends LitElement {
       this.loggedIn = true;
     } else {
       this.loggedIn = false;
+    }
+  }
+
+  private isProfileOwnerChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (target.checked) {
+      this.isProfileOwner = true;
+    } else {
+      this.isProfileOwner = false;
     }
   }
 
@@ -445,6 +504,22 @@ export class AppRoot extends LitElement {
         pageUrl.toString()
       );
     }
+  }
+
+  private switchUserProfileTab(e: Event) {
+    const pageUrl = new URL(window.location.href);
+    const { searchParams } = pageUrl;
+
+    const target = e.target as HTMLInputElement;
+    if (target.checked && target.value === 'uploads') {
+      searchParams.set('tab', 'uploads');
+    }
+
+    if (target.checked && target.value === 'web-archive') {
+      searchParams.set('tab', 'web-archive');
+    }
+
+    window.location.href = pageUrl.href;
   }
 
   private toggleFacetGroupOutline(e: Event) {
@@ -708,7 +783,6 @@ export class AppRoot extends LitElement {
       padding: 0.5rem 1rem;
       border: 1px solid black;
       font-size: 1.4rem;
-      width: 75%;
       background: #ffffffb3;
     }
 
@@ -751,11 +825,17 @@ export class AppRoot extends LitElement {
       margin-right: 1rem;
     }
 
-    #cell-controls {
+    .cell-controls {
       display: flex;
       flex-wrap: wrap;
     }
-
+    .cell-controls div {
+      display: flex;
+      align-items: center;
+    }
+    .cell-controls input[type='range'] {
+      width: 120px;
+    }
     #cell-controls label {
       display: inline-block;
       width: 10rem;
@@ -779,6 +859,9 @@ export class AppRoot extends LitElement {
     .checkbox-control {
       flex-basis: 50%;
     }
+    .checkbox-control label {
+      user-select: none;
+    }
 
     #last-event {
       background-color: aliceblue;
@@ -800,6 +883,15 @@ export class AppRoot extends LitElement {
       margin: 5px auto;
       background-color: aliceblue;
       font-size: 1.6rem;
+    }
+
+    /* user profile controls */
+    .user-profile-controls {
+      width: fit-content;
+    }
+
+    fieldset {
+      display: inline-block !important;
     }
   `;
 }
