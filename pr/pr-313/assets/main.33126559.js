@@ -71,6 +71,7 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
               @keyup=${l=>{l.key==="Enter"&&this.cellSelected(l,r)}}
             ></article>
           `)}
+        <slot name="result-last-tile"></slot>
       </section>
     `}cellSelected(e,t){const i=new CustomEvent("cellSelected",{detail:{index:t,originalEvent:e}});this.dispatchEvent(i)}get bufferRange(){const e=Math.max(10,this.visibleCellIndices.size),t=this.visibleCellIndices.size===0,i=Math.min(...this.visibleCellIndices),o=Math.max(...this.visibleCellIndices),r=t?0:Math.max(i-e,0),l=t?e:Math.min(o+e,this.itemCount-1);return ui(r,l,1)}processVisibleCells(){const e=Array.from(this.visibleCellIndices),{bufferRange:t}=this;this.renderCellBuffer(t),this.removeCellsOutsideBufferRange(t);const i=new CustomEvent("visibleCellsChanged",{detail:{visibleCellIndices:e}});this.dispatchEvent(i)}renderCellBuffer(e){e.forEach(t=>{var i;if(this.renderedCellIndices.has(t))return;const o=this.cellContainerForIndex(t);if(!o)return;const r=(i=this.cellProvider)===null||i===void 0?void 0:i.cellForIndex(t);if(o.style.height="auto",r)bi(r,o),this.renderedCellIndices.add(t),this.placeholderCellIndices.delete(t);else{if(this.placeholderCellIndices.has(t))return;bi(this.placeholderCellTemplate,o),this.placeholderCellIndices.add(t)}})}removeCellsOutsideBufferRange(e){Array.from(this.renderedCellIndices).filter(i=>!e.includes(i)).forEach(i=>{this.removeCell(i)})}removeCell(e){const t=this.cellContainerForIndex(e);if(!t)return;const i=t.offsetHeight;t.style.height=`${i}px`,bi(y,t),this.renderedCellIndices.delete(e)}cellContainerForIndex(e){var t;return(t=this.shadowRoot)===null||t===void 0?void 0:t.querySelector(`.cell-container[data-cell-index="${e}"]`)}static get styles(){const e=m`var(--infiniteScrollerSentinelDistanceFromEnd, 200rem)`,t=m`var(--infiniteScrollerRowGap, 1.7rem)`,i=m`var(--infiniteScrollerColGap, 1.7rem)`,o=m`var(--infiniteScrollerCellMinWidth, 16rem)`,r=m`var(--infiniteScrollerCellMaxWidth, 1fr)`,l=m`var(--infiniteScrollerCellMinHeight, 22.5rem)`,n=m`var(--infiniteScrollerCellMaxHeight, none)`,d=m`var(--infiniteScrollerCellOutline, 0)`;return m`
       #container {
@@ -4788,7 +4789,8 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
-    ></infinite-scroller>`}get infiniteScrollerClasses(){var e;return Et({[(e=this.displayMode)!==null&&e!==void 0?e:""]:!!this.displayMode,hidden:!!this.placeholderType})}get sortFilterBarTemplate(){var e;return h`
+      >${this.displayMode==="grid"?h`<slot name="result-last-tile" slot="result-last-tile"></slot>`:y}
+    </infinite-scroller>`}get infiniteScrollerClasses(){var e;return Et({[(e=this.displayMode)!==null&&e!==void 0?e:""]:!!this.displayMode,hidden:!!this.placeholderType})}get sortFilterBarTemplate(){var e;return h`
       <sort-filter-bar
         .defaultSortField=${this.defaultSortField}
         .defaultSortDirection=${this.defaultSortDirection}
@@ -5352,83 +5354,64 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
             >
           </div>
 
-          <div id="cell-controls" class="hidden">
-            <div id="cell-size-control">
-              <div>
-                <label for="cell-width-slider">Min cell width:</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="18"
-                  step="0.1"
-                  id="cell-width-slider"
-                  @input=${this.widthChanged}
-                />
-                <span>${this.cellWidth}rem</span>
-              </div>
-              <div>
-                <label for="cell-height-slider">Cell height:</label>
-                <input
-                  type="range"
-                  min="10"
-                  max="100"
-                  value="29"
-                  step="0.1"
-                  id="cell-height-slider"
-                  @input=${this.heightChanged}
-                />
-                <span>${this.cellHeight}rem</span>
-              </div>
-            </div>
-            <div id="cell-gap-control">
-              <div>
-                <label for="cell-row-gap-slider">Row gap:</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-row-gap-slider"
-                  @input=${this.rowGapChanged}
-                />
-                <span>${this.rowGap}rem</span>
-              </div>
-              <div>
-                <label for="cell-col-gap-slider">Col gap:</label>
-                <input
-                  type="range"
-                  min="0"
-                  max="5"
-                  value="1.7"
-                  step="0.1"
-                  id="cell-col-gap-slider"
-                  @input=${this.colGapChanged}
-                />
-                <span>${this.colGap}rem</span>
-              </div>
-            </div>
-          </div>
-          <div id="checkbox-controls">
-            <div class="checkbox-control">
+          <fieldset class="cell-controls">
+            <legend>Cell Controls</legend>
+            <div>
+              <label for="cell-width-slider">Cell width:</label>
               <input
-                type="checkbox"
-                id="show-outline-check"
-                @click=${this.outlineChanged}
+                type="range"
+                min="10"
+                max="100"
+                value="18"
+                step="0.1"
+                id="cell-width-slider"
+                @input=${this.widthChanged}
               />
-              <label for="show-outline-check">Show cell outlines</label>
+              <span>${this.cellWidth}rem</span>
             </div>
-            <div class="checkbox-control">
+            <div>
+              <label for="cell-height-slider">Cell height:</label>
               <input
-                type="checkbox"
-                id="show-facet-group-outline-check"
-                @click=${this.toggleFacetGroupOutline}
+                type="range"
+                min="10"
+                max="100"
+                value="29"
+                step="0.1"
+                id="cell-height-slider"
+                @input=${this.heightChanged}
               />
-              <label for="show-facet-group-outline-check">
-                Show facet group outlines
-              </label>
+              <span>${this.cellHeight}rem</span>
             </div>
+            <div>
+              <label for="cell-row-gap-slider">Row gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-row-gap-slider"
+                @input=${this.rowGapChanged}
+              />
+              <span>${this.rowGap}rem</span>
+            </div>
+            <div>
+              <label for="cell-col-gap-slider">Col gap:</label>
+              <input
+                type="range"
+                min="0"
+                max="5"
+                value="1.7"
+                step="0.1"
+                id="cell-col-gap-slider"
+                @input=${this.colGapChanged}
+              />
+              <span>${this.colGap}rem</span>
+            </div>
+          </fieldset>
+
+          <fieldset class="other-controls">
+            <legend>Other Controls</legend>
             <div class="checkbox-control">
               <input
                 type="checkbox"
@@ -5436,14 +5419,6 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
                 @click=${this.loginChanged}
               />
               <label for="simulate-login">Simulate login</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
-              <label for="show-dummy-snippets">Show dummy snippets</label>
             </div>
             <div class="checkbox-control">
               <input
@@ -5462,13 +5437,49 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
+          </fieldset>
+
+          <fieldset class="cb-visual-appearance">
+            <legend>CB Visual Appearance</legend>
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="enable-facet-top-view"
-                @click=${this.facetTopViewCheckboxChanged}
+                id="show-dummy-snippets"
+                @click=${this.snippetsChanged}
               />
-              <label for="enable-facet-top-view">Show facet top view</label>
+              <label for="show-dummy-snippets">Show dummy snippets</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="show-facet-group-outline-check"
+                @click=${this.toggleFacetGroupOutline}
+              />
+              <label for="show-facet-group-outline-check">
+                Show facet group outlines
+              </label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="show-outline-check"
+                @click=${this.outlineChanged}
+              />
+              <label for="show-outline-check">Show cell outlines</label>
+            </div>
+          </fieldset>
+
+          <fieldset class="user-profile-controls">
+            <legend>User Profile Controls</legend>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-result-last-tile-view"
+                @click=${this.resultLastTileViewCheckboxChanged}
+              />
+              <label for="enable-result-last-tile-view"
+                >Show result last tile view</label
+              >
             </div>
             <div class="checkbox-control">
               <input
@@ -5478,7 +5489,15 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
               />
               <label for="enable-cb-top-view">Show CB top view</label>
             </div>
-          </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-facet-top-view"
+                @click=${this.facetTopViewCheckboxChanged}
+              />
+              <label for="enable-facet-top-view">Show facet top view</label>
+            </div>
+          </fieldset>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
           Toggle Search Controls
@@ -5503,7 +5522,7 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
-    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}searchTypeChanged(e){this.searchType=e.detail}searchTypeSelected(e){const t=e.target;this.searchType=t.value==="fulltext"?me.FULLTEXT:me.METADATA}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}toggleDevTools(){var e,t;const i=new URL(window.location.href),{searchParams:o}=i;o.get("hide-dev-tools")?o.delete("hide-dev-tools"):o.set("hide-dev-tools","true"),(t=(e=this.shadowRoot)===null||e===void 0?void 0:e.getElementById("dev-tools"))===null||t===void 0||t.classList.toggle("hidden"),window.history.replaceState&&window.history.replaceState({path:i.toString()},"",i.toString())}toggleFacetGroupOutline(e){e.target.checked?(this.collectionBrowser.classList.add("showFacetGroupOutlines"),this.modalManager.classList.add("showFacetGroupOutlines")):(this.collectionBrowser.classList.remove("showFacetGroupOutlines"),this.modalManager.classList.remove("showFacetGroupOutlines"))}async snippetsChanged(e){e.target.checked?this.searchService={async search(i,o){var r;const l=await qe.default.search(i,o);return(r=l.success)===null||r===void 0||r.response.results.forEach(n=>{Object.defineProperty(n,"highlight",{value:new T(["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])})}),l}}:this.searchService=qe.default,this.reperformCurrentSearch()}async reperformCurrentSearch(){const e=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(t=>{setTimeout(t,0)}),this.searchQuery=e}datePickerChanged(e){const t=e.target;this.collectionBrowser.showHistogramDatePicker=t.checked,this.collectionBrowser.showHistogramDatePicker||(this.collectionBrowser.minSelectedDate=void 0,this.collectionBrowser.maxSelectedDate=void 0)}manageModeChanged(e){var t;const i=(t=this.shadowRoot)===null||t===void 0?void 0:t.querySelector("#enable-management");i&&(i.checked=e.detail)}manageModeCheckboxChanged(e){const t=e.target;this.collectionBrowser.isManageView=t.checked}facetTopViewCheckboxChanged(e){const t=e.target,i=document.createElement("p");i.style.setProperty("border","1px solid #000"),i.textContent="New stuff as a child.",i.style.setProperty("height","20rem"),i.style.backgroundColor="#00000",i.setAttribute("slot","facet-top-slot"),t.checked?this.collectionBrowser.appendChild(i):this.collectionBrowser.removeChild(this.collectionBrowser.lastElementChild)}cbToViewCheckboxChanged(e){const t=e.target,i=document.createElement("p");i.style.setProperty("border","1px solid #000"),i.textContent="My Favorite list header.",i.style.setProperty("height","10rem"),i.style.backgroundColor="#00000",i.setAttribute("slot","cb-top-slot"),t.checked?this.collectionBrowser.appendChild(i):this.collectionBrowser.removeChild(this.collectionBrowser.lastElementChild)}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};he.styles=m`
+    `}baseQueryChanged(e){this.searchQuery=e.detail.baseQuery}searchTypeChanged(e){this.searchType=e.detail}searchTypeSelected(e){const t=e.target;this.searchType=t.value==="fulltext"?me.FULLTEXT:me.METADATA}loginChanged(e){e.target.checked?this.loggedIn=!0:this.loggedIn=!1}outlineChanged(e){e.target.checked?this.collectionBrowser.style.setProperty("--infiniteScrollerCellOutline","1px solid #33D1FF"):this.collectionBrowser.style.removeProperty("--infiniteScrollerCellOutline")}toggleDevTools(){var e,t;const i=new URL(window.location.href),{searchParams:o}=i;o.get("hide-dev-tools")?o.delete("hide-dev-tools"):o.set("hide-dev-tools","true"),(t=(e=this.shadowRoot)===null||e===void 0?void 0:e.getElementById("dev-tools"))===null||t===void 0||t.classList.toggle("hidden"),window.history.replaceState&&window.history.replaceState({path:i.toString()},"",i.toString())}toggleFacetGroupOutline(e){e.target.checked?(this.collectionBrowser.classList.add("showFacetGroupOutlines"),this.modalManager.classList.add("showFacetGroupOutlines")):(this.collectionBrowser.classList.remove("showFacetGroupOutlines"),this.modalManager.classList.remove("showFacetGroupOutlines"))}async snippetsChanged(e){e.target.checked?this.searchService={async search(i,o){var r;const l=await qe.default.search(i,o);return(r=l.success)===null||r===void 0||r.response.results.forEach(n=>{Object.defineProperty(n,"highlight",{value:new T(["this is a text {{{snippet}}} block with potentially","multiple {{{snippets}}} and such","but the {{{snippet}}} block may be quite long perhaps","depending on how many {{{snippet}}} matches there are","there may be multiple lines of {{{snippets}}} to show","but each {{{snippet}}} should be relatively short","and {{{snippets}}} are each a {{{snippet}}} of text","but every {{{snippet}}} might have multiple matches","the {{{snippets}}} should be separated and surrounded by ellipses"])})}),l}}:this.searchService=qe.default,this.reperformCurrentSearch()}async reperformCurrentSearch(){const e=this.searchQuery;this.searchQuery="",await this.updateComplete,await new Promise(t=>{setTimeout(t,0)}),this.searchQuery=e}datePickerChanged(e){const t=e.target;this.collectionBrowser.showHistogramDatePicker=t.checked,this.collectionBrowser.showHistogramDatePicker||(this.collectionBrowser.minSelectedDate=void 0,this.collectionBrowser.maxSelectedDate=void 0)}manageModeChanged(e){var t;const i=(t=this.shadowRoot)===null||t===void 0?void 0:t.querySelector("#enable-management");i&&(i.checked=e.detail)}manageModeCheckboxChanged(e){const t=e.target;this.collectionBrowser.isManageView=t.checked}facetTopViewCheckboxChanged(e){const t=e.target,i=document.createElement("p");i.style.setProperty("border","1px solid #000"),i.textContent="New stuff as a child.",i.style.setProperty("height","20rem"),i.style.backgroundColor="#00000",i.setAttribute("slot","facet-top-slot"),t.checked?this.collectionBrowser.appendChild(i):this.collectionBrowser.removeChild(this.collectionBrowser.lastElementChild)}resultLastTileViewCheckboxChanged(e){const t=e.target,i=document.createElement("div"),o=document.createElement("h3");o.textContent="Upload",i.setAttribute("slot","result-last-tile"),i.setAttribute("class","result-last-tile"),i.appendChild(o),t.checked?this.collectionBrowser.appendChild(i):this.collectionBrowser.removeChild(this.collectionBrowser.lastElementChild)}cbToViewCheckboxChanged(e){const t=e.target,i=document.createElement("p");i.style.setProperty("border","1px solid #000"),i.textContent="My Favorite list header.",i.style.setProperty("height","10rem"),i.style.backgroundColor="#00000",i.setAttribute("slot","cb-top-slot"),t.checked?this.collectionBrowser.appendChild(i):this.collectionBrowser.removeChild(this.collectionBrowser.lastElementChild)}rowGapChanged(e){const t=e.target;this.rowGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserRowGap",`${t.value}rem`)}colGapChanged(e){const t=e.target;this.colGap=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserColGap",`${t.value}rem`)}widthChanged(e){const t=e.target;this.cellWidth=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinWidth",`${t.value}rem`)}heightChanged(e){const t=e.target;this.cellHeight=parseFloat(t.value),this.collectionBrowser.style.setProperty("--collectionBrowserCellMinHeight",`${t.value}rem`),this.collectionBrowser.style.setProperty("--collectionBrowserCellMaxHeight",`${t.value}rem`)}visiblePageChanged(e){const{pageNumber:t}=e.detail;t!==this.currentPage&&(this.currentPage=t)}};he.styles=m`
     :host {
       display: block;
       --primaryButtonBGColor: #194880;
@@ -5583,7 +5602,6 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
       padding: 0.5rem 1rem;
       border: 1px solid black;
       font-size: 1.4rem;
-      width: 75%;
       background: #ffffffb3;
     }
 
@@ -5626,11 +5644,17 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
       margin-right: 1rem;
     }
 
-    #cell-controls {
+    .cell-controls {
       display: flex;
       flex-wrap: wrap;
     }
-
+    .cell-controls div {
+      display: flex;
+      align-items: center;
+    }
+    .cell-controls input[type='range'] {
+      width: 120px;
+    }
     #cell-controls label {
       display: inline-block;
       width: 10rem;
@@ -5654,6 +5678,9 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
     .checkbox-control {
       flex-basis: 50%;
     }
+    .checkbox-control label {
+      user-select: none;
+    }
 
     #last-event {
       background-color: aliceblue;
@@ -5675,5 +5702,37 @@ var Ir=Object.defineProperty,Br=Object.defineProperties;var Rr=Object.getOwnProp
       margin: 5px auto;
       background-color: aliceblue;
       font-size: 1.6rem;
+    }
+
+    /* user profile controls */
+    .user-profile-controls {
+      width: fit-content;
+    }
+
+    fieldset {
+      display: inline-block !important;
+    }
+
+    .result-last-tile {
+      border-radius: 4px;
+      background-color: white;
+      border: 3px dashed #555;
+      box-shadow: none;
+      display: grid;
+      align-content: center;
+    }
+    .result-last-tile:hover {
+      box-shadow: rgba(8, 8, 32, 0.8) 0 0 6px 2px;
+      transition: box-shadow 0.1s ease 0s;
+      cursor: pointer;
+      border: 3px dashed #4b64ff;
+    }
+    .result-last-tile h3 {
+      margin-bottom: 4rem;
+      margin: 0px auto;
+      font-size: 2.8rem;
+      color: rgb(44, 44, 44);
+      font-weight: 200;
+      text-align: center;
     }
   `;s([z()],he.prototype,"currentPage",void 0);s([z()],he.prototype,"searchQuery",void 0);s([z()],he.prototype,"withinCollection",void 0);s([z()],he.prototype,"cellWidth",void 0);s([z()],he.prototype,"cellHeight",void 0);s([z()],he.prototype,"rowGap",void 0);s([z()],he.prototype,"colGap",void 0);s([z()],he.prototype,"loggedIn",void 0);s([z()],he.prototype,"searchType",void 0);s([c({type:Object,reflect:!1})],he.prototype,"latestAction",void 0);s([K("#base-query-field")],he.prototype,"baseQueryField",void 0);s([K("#base-collection-field")],he.prototype,"baseCollectionField",void 0);s([K("#page-number-input")],he.prototype,"pageNumberInput",void 0);s([K("collection-browser")],he.prototype,"collectionBrowser",void 0);s([K("modal-manager")],he.prototype,"modalManager",void 0);he=s([D("app-root")],he);
