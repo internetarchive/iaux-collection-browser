@@ -2213,7 +2213,6 @@ export class CollectionBrowser
         contentWarning,
       });
     });
-
     datasource[pageNumber] = tiles;
     this.dataSource = datasource;
     const visiblePages = this.currentVisiblePageNumbers;

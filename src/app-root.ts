@@ -51,10 +51,6 @@ export class AppRoot extends LitElement {
 
   @state() private loggedIn: boolean = false;
 
-  @state() private isProfileOwner: boolean = false;
-
-  @state() private activeTabId: string = '';
-
   @state() private searchType: SearchType = SearchType.METADATA;
 
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;

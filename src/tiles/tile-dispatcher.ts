@@ -12,7 +12,6 @@ import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
 import './grid/search-tile';
-import './grid/result-cta-tile';
 import './hover/tile-hover-pane';
 import './list/tile-list';
 import './list/tile-list-compact';
