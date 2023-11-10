@@ -7,7 +7,6 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
-import type { MediaType } from '@internetarchive/field-parsers';
 import type { TileDisplayMode } from '../models';
 import './grid/collection-tile';
 import './grid/item-tile';
@@ -148,14 +147,6 @@ export class TileDispatcher
     if (!this.model?.identifier || this.baseNavigationUrl == null)
       return nothing;
 
-    // URL for result-cta tiles to add new content from /details/@user page
-    if (this.model.identifier === 'uploads') {
-      return `${this.baseNavigationUrl}/create`;
-    }
-    if (this.model.identifier === 'web-archive') {
-      return `${this.baseNavigationUrl}/web`;
-    }
-
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
     if (this.model.href) {
@@ -194,7 +185,7 @@ export class TileDispatcher
       this.enableHoverPane &&
       !!this.tileDisplayMode &&
       TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode] &&
-      !['search', 'result-cta'].includes(this.model?.mediatype as MediaType) // don't show hover panes on search tiles
+      this.model?.mediatype !== 'search' // don't show hover panes on search tiles
     );
   }
 
@@ -338,8 +329,6 @@ export class TileDispatcher
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </search-tile>`;
-          case 'result-cta' as MediaType:
-            return html`<result-cta-tile .model=${model}> </result-cta-tile>`;
           default:
             return html`<item-tile
               .model=${model}
@@ -358,44 +347,34 @@ export class TileDispatcher
             </item-tile>`;
         }
       case 'list-compact':
-        switch (model.mediatype) {
-          case 'result-cta' as MediaType:
-            return nothing;
-          default:
-            return html`<tile-list-compact
-              .model=${model}
-              .collectionPagePath=${collectionPagePath}
-              .currentWidth=${currentWidth}
-              .currentHeight=${currentHeight}
-              .baseNavigationUrl=${baseNavigationUrl}
-              .sortParam=${sortParam || defaultSortParam}
-              .creatorFilter=${creatorFilter}
-              .mobileBreakpoint=${mobileBreakpoint}
-              .baseImageUrl=${this.baseImageUrl}
-              .loggedIn=${this.loggedIn}
-            >
-            </tile-list-compact>`;
-        }
+        return html`<tile-list-compact
+          .model=${model}
+          .collectionPagePath=${collectionPagePath}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam || defaultSortParam}
+          .creatorFilter=${creatorFilter}
+          .mobileBreakpoint=${mobileBreakpoint}
+          .baseImageUrl=${this.baseImageUrl}
+          .loggedIn=${this.loggedIn}
+        >
+        </tile-list-compact>`;
       case 'list-detail':
-        switch (model.mediatype) {
-          case 'result-cta' as MediaType:
-            return nothing;
-          default:
-            return html`<tile-list
-              .model=${model}
-              .collectionPagePath=${collectionPagePath}
-              .collectionNameCache=${this.collectionNameCache}
-              .currentWidth=${currentWidth}
-              .currentHeight=${currentHeight}
-              .baseNavigationUrl=${baseNavigationUrl}
-              .sortParam=${sortParam || defaultSortParam}
-              .creatorFilter=${creatorFilter}
-              .mobileBreakpoint=${mobileBreakpoint}
-              .baseImageUrl=${this.baseImageUrl}
-              .loggedIn=${this.loggedIn}
-            >
-            </tile-list>`;
-        }
+        return html`<tile-list
+          .model=${model}
+          .collectionPagePath=${collectionPagePath}
+          .collectionNameCache=${this.collectionNameCache}
+          .currentWidth=${currentWidth}
+          .currentHeight=${currentHeight}
+          .baseNavigationUrl=${baseNavigationUrl}
+          .sortParam=${sortParam || defaultSortParam}
+          .creatorFilter=${creatorFilter}
+          .mobileBreakpoint=${mobileBreakpoint}
+          .baseImageUrl=${this.baseImageUrl}
+          .loggedIn=${this.loggedIn}
+        >
+        </tile-list>`;
       default:
         return nothing;
     }

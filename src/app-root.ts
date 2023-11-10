@@ -353,30 +353,12 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="profile-owner"
-                @click=${this.isProfileOwnerChanged}
-                .checked=${true}
+                id="enable-result-last-tile-view"
+                @click=${this.resultLastTileViewCheckboxChanged}
               />
-              <label for="profile-owner">Profile Owner</label>
-              (<label for="profile-owner">Tab:-</label>
-              <input
-                type="radio"
-                id="upload-tab"
-                @click="${this.switchUserProfileTab}"
-                name="active-tab"
-                value="uploads"
-                .checked=${this.getActiveTabId === 'uploads'}
-              />
-              <label for="upload-tab">Uploads</label>
-              <input
-                type="radio"
-                id="web-archive-tab"
-                @click="${this.switchUserProfileTab}"
-                name="active-tab"
-                value="web-archive"
-                .checked=${this.getActiveTabId === 'web-archive'}
-              />
-              <label for="web-archive-tab">WebArchive</label>)
+              <label for="enable-result-last-tile-view"
+                >Show result last tile view</label
+              >
             </div>
             <div class="checkbox-control">
               <input
@@ -411,8 +393,6 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
-          .activeTabId=${this.getActiveTabId}
-          ?isProfileOwner=${true}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
@@ -422,17 +402,6 @@ export class AppRoot extends LitElement {
       </div>
       <modal-manager></modal-manager>
     `;
-  }
-
-  private get getActiveTabId() {
-    const pageUrl = new URL(window.location.href);
-    const { searchParams } = pageUrl;
-
-    if (searchParams.get('tab')) {
-      this.activeTabId = searchParams.get('tab') as string;
-    }
-
-    return this.activeTabId;
   }
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>): void {
@@ -457,15 +426,6 @@ export class AppRoot extends LitElement {
       this.loggedIn = true;
     } else {
       this.loggedIn = false;
-    }
-  }
-
-  private isProfileOwnerChanged(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.checked) {
-      this.isProfileOwner = true;
-    } else {
-      this.isProfileOwner = false;
     }
   }
 
@@ -504,22 +464,6 @@ export class AppRoot extends LitElement {
         pageUrl.toString()
       );
     }
-  }
-
-  private switchUserProfileTab(e: Event) {
-    const pageUrl = new URL(window.location.href);
-    const { searchParams } = pageUrl;
-
-    const target = e.target as HTMLInputElement;
-    if (target.checked && target.value === 'uploads') {
-      searchParams.set('tab', 'uploads');
-    }
-
-    if (target.checked && target.value === 'web-archive') {
-      searchParams.set('tab', 'web-archive');
-    }
-
-    window.location.href = pageUrl.href;
   }
 
   private toggleFacetGroupOutline(e: Event) {
@@ -628,6 +572,26 @@ export class AppRoot extends LitElement {
 
     if (target.checked) {
       this.collectionBrowser.appendChild(p);
+    } else {
+      this.collectionBrowser.removeChild(
+        this.collectionBrowser.lastElementChild as Element
+      );
+    }
+  }
+
+  private resultLastTileViewCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    const div = document.createElement('div');
+    const title = document.createElement('h3');
+    title.textContent = 'Upload';
+
+    div.setAttribute('slot', 'result-last-tile');
+    div.setAttribute('class', 'result-last-tile');
+    div.appendChild(title);
+
+    if (target.checked) {
+      this.collectionBrowser.appendChild(div);
     } else {
       this.collectionBrowser.removeChild(
         this.collectionBrowser.lastElementChild as Element
@@ -892,6 +856,28 @@ export class AppRoot extends LitElement {
 
     fieldset {
       display: inline-block !important;
+    }
+
+    .result-last-tile {
+      border-radius: 4px;
+      background-color: white;
+      border: 3px dashed #555;
+      box-shadow: none;
+      display: grid;
+      align-content: center;
+    }
+    .result-last-tile:hover {
+      box-shadow: rgba(8, 8, 32, 0.8) 0px 0px 6px 2px;
+      transition: box-shadow 0.1s ease 0s;
+      cursor: pointer;
+    }
+    .result-last-tile h3 {
+      margin-bottom: 4rem;
+      margin: 0px auto;
+      font-size: 2.8rem;
+      color: rgb(44, 44, 44);
+      font-weight: 200;
+      text-align: center;
     }
   `;
 }
