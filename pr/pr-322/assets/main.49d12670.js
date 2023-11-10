@@ -71,8 +71,7 @@ var Er=Object.defineProperty,Dr=Object.defineProperties;var Lr=Object.getOwnProp
               @keyup=${l=>{l.key==="Enter"&&this.cellSelected(l,r)}}
             ></article>
           `)}
-          <slot name="result-last-tile"></slot>
-        </div>
+        <slot name="result-last-tile"></slot>
       </section>
     `}cellSelected(e,t){const i=new CustomEvent("cellSelected",{detail:{index:t,originalEvent:e}});this.dispatchEvent(i)}get bufferRange(){const e=Math.max(10,this.visibleCellIndices.size),t=this.visibleCellIndices.size===0,i=Math.min(...this.visibleCellIndices),o=Math.max(...this.visibleCellIndices),r=t?0:Math.max(i-e,0),l=t?e:Math.min(o+e,this.itemCount-1);return pi(r,l,1)}processVisibleCells(){const e=Array.from(this.visibleCellIndices),{bufferRange:t}=this;this.renderCellBuffer(t),this.removeCellsOutsideBufferRange(t);const i=new CustomEvent("visibleCellsChanged",{detail:{visibleCellIndices:e}});this.dispatchEvent(i)}renderCellBuffer(e){e.forEach(t=>{var i;if(this.renderedCellIndices.has(t))return;const o=this.cellContainerForIndex(t);if(!o)return;const r=(i=this.cellProvider)===null||i===void 0?void 0:i.cellForIndex(t);if(o.style.height="auto",r)fi(r,o),this.renderedCellIndices.add(t),this.placeholderCellIndices.delete(t);else{if(this.placeholderCellIndices.has(t))return;fi(this.placeholderCellTemplate,o),this.placeholderCellIndices.add(t)}})}removeCellsOutsideBufferRange(e){Array.from(this.renderedCellIndices).filter(i=>!e.includes(i)).forEach(i=>{this.removeCell(i)})}removeCell(e){const t=this.cellContainerForIndex(e);if(!t)return;const i=t.offsetHeight;t.style.height=`${i}px`,fi(y,t),this.renderedCellIndices.delete(e)}cellContainerForIndex(e){var t;return(t=this.shadowRoot)===null||t===void 0?void 0:t.querySelector(`.cell-container[data-cell-index="${e}"]`)}static get styles(){const e=m`var(--infiniteScrollerSentinelDistanceFromEnd, 200rem)`,t=m`var(--infiniteScrollerRowGap, 1.7rem)`,i=m`var(--infiniteScrollerColGap, 1.7rem)`,o=m`var(--infiniteScrollerCellMinWidth, 16rem)`,r=m`var(--infiniteScrollerCellMaxWidth, 1fr)`,l=m`var(--infiniteScrollerCellMinHeight, 22.5rem)`,n=m`var(--infiniteScrollerCellMaxHeight, none)`,d=m`var(--infiniteScrollerCellOutline, 0)`;return m`
       #container {
@@ -5724,9 +5723,10 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       align-content: center;
     }
     .result-last-tile:hover {
-      box-shadow: rgba(8, 8, 32, 0.8) 0px 0px 6px 2px;
+      box-shadow: rgba(8, 8, 32, 0.8) 0 0 6px 2px;
       transition: box-shadow 0.1s ease 0s;
       cursor: pointer;
+      border: 3px dashed #4b64ff;
     }
     .result-last-tile h3 {
       margin-bottom: 4rem;
