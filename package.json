@@ -3,7 +3,7 @@
   "description": "The Internet Archive Collection Browser.",
   "license": "AGPL-3.0-only",
   "author": "Internet Archive",
-  "version": "1.14.9",
+  "version": "1.14.10",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
@@ -29,7 +29,7 @@
     "@internetarchive/histogram-date-range": "^1.1.0",
     "@internetarchive/ia-activity-indicator": "^0.0.4",
     "@internetarchive/ia-dropdown": "^1.1.0",
-    "@internetarchive/infinite-scroller": "1.0.0-alpha7",
+    "@internetarchive/infinite-scroller": "1.0.1",
     "@internetarchive/local-cache": "^0.2.1",
     "@internetarchive/modal-manager": "^0.2.8",
     "@internetarchive/search-service": "^1.2.3",
