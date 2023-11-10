@@ -586,7 +586,10 @@ export class CollectionBrowser
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
-    ></infinite-scroller>`;
+      >${this.displayMode === 'grid'
+        ? html`<slot name="result-last-tile" slot="result-last-tile"></slot>`
+        : nothing}
+    </infinite-scroller>`;
   }
 
   private get infiniteScrollerClasses() {
