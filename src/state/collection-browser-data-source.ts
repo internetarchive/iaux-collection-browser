@@ -5,7 +5,7 @@ export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
   hostConnected(): void;
 
-  addPage(pageNumber: number, pageTiles: TileModel[]): void;
+  addPage(pageNum: number, pageTiles: TileModel[]): void;
 
   getPage(pageNum: number): TileModel[];
 
@@ -59,6 +59,8 @@ export class CollectionBrowserDataSource
 {
   private pages: Record<string, TileModel[]> = {};
 
+  private offset = 0;
+
   // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
@@ -71,8 +73,8 @@ export class CollectionBrowserDataSource
 
   hostConnected(): void {}
 
-  addPage(pageNumber: number, pageTiles: TileModel[]): void {
-    this.pages[pageNumber] = pageTiles;
+  addPage(pageNum: number, pageTiles: TileModel[]): void {
+    this.pages[pageNum] = pageTiles;
   }
 
   getPage(pageNum: number): TileModel[] {
@@ -98,16 +100,102 @@ export class CollectionBrowserDataSource
     this.pages = {};
   }
 
-  mapDataSource(
-    mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
+  map(
+    callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
   ): void {
     this.pages = Object.fromEntries(
       Object.entries(this.pages).map(([page, tileModels]) => [
         page,
         tileModels.map((model, index, array) =>
-          model ? mapFn(model, index, array) : model
+          model ? callback(model, index, array) : model
         ),
       ])
     );
+  }
+
+  /**
+   * @inheritdoc
+   */
+  checkAllTiles(): void {
+    this.map(model => ({ ...model, checked: true }));
+  }
+
+  /**
+   * @inheritdoc
+   */
+  uncheckAllTiles(): void {
+    this.map(model => ({ ...model, checked: false }));
+  }
+
+  /**
+   * @inheritdoc
+   */
+  removeCheckedTiles(): void {
+    // To make sure our data source remains page-aligned, we will offset our data source by
+    // the number of removed tiles, so that we can just add the offset when the infinite
+    // scroller queries for cell contents.
+    // This only matters while we're still viewing the same set of results. If the user changes
+    // their query/filters/sort, then the data source is overwritten and the offset cleared.
+    const { checkedTileModels, uncheckedTileModels } = this;
+    const numChecked = checkedTileModels.length;
+    if (numChecked === 0) return;
+    this.offset += numChecked;
+    const newPages: typeof this.pages = {};
+
+    // Which page the remaining tile models start on, post-offset
+    let offsetPageNumber = Math.floor(this.offset / this.pageSize) + 1;
+    let indexOnPage = this.offset % this.pageSize;
+
+    // Fill the pages up to that point with empty models
+    for (let page = 1; page <= offsetPageNumber; page += 1) {
+      const remainingHidden = this.offset - this.pageSize * (page - 1);
+      const offsetCellsOnPage = Math.min(this.pageSize, remainingHidden);
+      newPages[page] = Array(offsetCellsOnPage).fill(undefined);
+    }
+
+    // Shift all the remaining tiles into their new positions in the data source
+    for (const model of uncheckedTileModels) {
+      if (!newPages[offsetPageNumber]) newPages[offsetPageNumber] = [];
+      newPages[offsetPageNumber].push(model);
+      indexOnPage += 1;
+      if (indexOnPage >= this.pageSize) {
+        offsetPageNumber += 1;
+        indexOnPage = 0;
+      }
+    }
+
+    // Swap in the new pages
+    this.pages = newPages;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  get checkedTileModels(): TileModel[] {
+    return this.getFilteredTileModels(model => model.checked);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  get uncheckedTileModels(): TileModel[] {
+    return this.getFilteredTileModels(model => !model.checked);
+  }
+
+  /**
+   * Returns a flattened, filtered array of all the tile models in the data source
+   * for which the given predicate returns a truthy value.
+   *
+   * @param predicate A callback function to apply on each tile model, as with Array.filter
+   * @returns A filtered array of tile models satisfying the predicate
+   */
+  private getFilteredTileModels(
+    predicate: (model: TileModel, index: number, array: TileModel[]) => unknown
+  ): TileModel[] {
+    return Object.values(this.pages)
+      .flat()
+      .filter((model, index, array) =>
+        model ? predicate(model, index, array) : false
+      );
   }
 }
