@@ -863,9 +863,10 @@ export class AppRoot extends LitElement {
       align-content: center;
     }
     .result-last-tile:hover {
-      box-shadow: rgba(8, 8, 32, 0.8) 0px 0px 6px 2px;
+      box-shadow: rgba(8, 8, 32, 0.8) 0 0 6px 2px;
       transition: box-shadow 0.1s ease 0s;
       cursor: pointer;
+      border: 3px dashed #4b64ff;
     }
     .result-last-tile h3 {
       margin-bottom: 4rem;
