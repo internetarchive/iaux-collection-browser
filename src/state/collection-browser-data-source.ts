@@ -61,6 +61,8 @@ export class CollectionBrowserDataSource
 
   private offset = 0;
 
+  private numTileModels = 0;
+
   // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
@@ -73,8 +75,13 @@ export class CollectionBrowserDataSource
 
   hostConnected(): void {}
 
+  get size(): number {
+    return this.numTileModels;
+  }
+
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
+    this.numTileModels += pageTiles.length;
   }
 
   getPage(pageNum: number): TileModel[] {
@@ -98,6 +105,7 @@ export class CollectionBrowserDataSource
 
   reset(): void {
     this.pages = {};
+    this.numTileModels = 0;
   }
 
   map(
@@ -166,6 +174,7 @@ export class CollectionBrowserDataSource
 
     // Swap in the new pages
     this.pages = newPages;
+    this.numTileModels -= numChecked;
   }
 
   /**
