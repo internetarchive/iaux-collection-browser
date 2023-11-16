@@ -645,11 +645,11 @@ export class CollectionBrowser
         showSelectAll
         showUnselectAll
         @removeItems=${this.handleRemoveItems}
-        @selectAll=${this.checkAllTiles}
-        @unselectAll=${this.uncheckAllTiles}
+        @selectAll=${this.dataSource.checkAllTiles}
+        @unselectAll=${this.dataSource.uncheckAllTiles}
         @cancel=${() => {
           this.isManageView = false;
-          this.uncheckAllTiles();
+          this.dataSource.uncheckAllTiles();
         }}
       ></manage-bar>
     `;
@@ -663,7 +663,7 @@ export class CollectionBrowser
     this.dispatchEvent(
       new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
         detail: {
-          items: this.checkedTileModels.map(model => ({
+          items: this.dataSource.checkedTileModels.map(model => ({
             ...model,
             date: formatDate(model.datePublished, 'long'),
           })),
@@ -677,102 +677,7 @@ export class CollectionBrowser
    * of the data source to account for any new gaps in the data.
    */
   removeCheckedTiles(): void {
-    // To make sure our data source remains page-aligned, we will offset our data source by
-    // the number of removed tiles, so that we can just add the offset when the infinite
-    // scroller queries for cell contents.
-    // This only matters while we're still viewing the same set of results. If the user changes
-    // their query/filters/sort, then the data source is overwritten and the offset cleared.
-    // const { checkedTileModels, uncheckedTileModels } = this;
-    // const numChecked = checkedTileModels.length;
-    // if (numChecked === 0) return;
-    // this.tileModelOffset += numChecked;
-    // const newDataSource: typeof this.dataSource = {};
-    // // Which page the remaining tile models start on, post-offset
-    // let offsetPageNumber = Math.floor(this.tileModelOffset / this.pageSize) + 1;
-    // let indexOnPage = this.tileModelOffset % this.pageSize;
-    // // Fill the pages up to that point with empty models
-    // for (let page = 1; page <= offsetPageNumber; page += 1) {
-    //   const remainingHidden = this.tileModelOffset - this.pageSize * (page - 1);
-    //   const offsetCellsOnPage = Math.min(this.pageSize, remainingHidden);
-    //   newDataSource[page] = Array(offsetCellsOnPage).fill(undefined);
-    // }
-    // // Shift all the remaining tiles into their new positions in the data source
-    // for (const model of uncheckedTileModels) {
-    //   if (!newDataSource[offsetPageNumber])
-    //     newDataSource[offsetPageNumber] = [];
-    //   newDataSource[offsetPageNumber].push(model);
-    //   indexOnPage += 1;
-    //   if (indexOnPage >= this.pageSize) {
-    //     offsetPageNumber += 1;
-    //     indexOnPage = 0;
-    //   }
-    // }
-    // // Swap in the new data source and update the infinite scroller
-    // this.dataSource = newDataSource;
-    // if (this.totalResults) this.totalResults -= numChecked;
-    // if (this.infiniteScroller) {
-    //   this.infiniteScroller.itemCount -= numChecked;
-    //   this.infiniteScroller.refreshAllVisibleCells();
-    // }
-  }
-
-  /**
-   * Checks every tile's management checkbox
-   */
-  checkAllTiles(): void {
-    this.mapDataSource(model => ({ ...model, checked: true }));
-  }
-
-  /**
-   * Unchecks every tile's management checkbox
-   */
-  uncheckAllTiles(): void {
-    this.mapDataSource(model => ({ ...model, checked: false }));
-  }
-
-  /**
-   * Applies the given map function to all of the tile models in every page of the data
-   * source. This method updates the data source object in immutable fashion.
-   *
-   * @param mapFn A callback function to apply on each tile model, as with Array.map
-   */
-  private mapDataSource(
-    // eslint-disable-next-line
-    mapFn: (model: TileModel, index: number, array: TileModel[]) => TileModel
-  ): void {
-    this.dataSource.mapDataSource(mapFn);
-    this.infiniteScroller?.refreshAllVisibleCells();
-  }
-
-  /**
-   * An array of all the tile models whose management checkboxes are checked
-   */
-  get checkedTileModels(): TileModel[] {
-    return this.getFilteredTileModels(model => model.checked);
-  }
-
-  /**
-   * An array of all the tile models whose management checkboxes are unchecked
-   */
-  get uncheckedTileModels(): TileModel[] {
-    return this.getFilteredTileModels(model => !model.checked);
-  }
-
-  /**
-   * Returns a flattened, filtered array of all the tile models in the data source
-   * for which the given predicate returns a truthy value.
-   *
-   * @param predicate A callback function to apply on each tile model, as with Array.filter
-   * @returns A filtered array of tile models satisfying the predicate
-   */
-  private getFilteredTileModels(
-    predicate: (model: TileModel, index: number, array: TileModel[]) => unknown
-  ): TileModel[] {
-    return Object.values(this.dataSource)
-      .flat()
-      .filter((model, index, array) =>
-        model ? predicate(model, index, array) : false
-      );
+    this.dataSource.removeCheckedTiles();
   }
 
   private userChangedSort(
