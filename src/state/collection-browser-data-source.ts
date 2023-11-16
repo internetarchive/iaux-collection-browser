@@ -5,6 +5,8 @@ export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
   hostConnected(): void;
 
+  readonly size: number;
+
   addPage(pageNum: number, pageTiles: TileModel[]): void;
 
   getPage(pageNum: number): TileModel[];
