@@ -181,6 +181,16 @@ export class CollectionBrowser
   @property({ type: Boolean }) isLoansTab = false;
 
   /**
+   * The results per page so we can paginate.
+   *
+   * This allows us to start in the middle of the search results and
+   * fetch data before or after the current page. If we don't have a key
+   * for the previous/next page, we'll fetch the next/previous page to populate it
+   */
+  @property() dataSource: CollectionBrowserDataSourceInterface =
+    new CollectionBrowserDataSource(this, this.pageSize);
+
+  /**
    * The page that the consumer wants to load.
    */
   private initialPageNumber = 1;
@@ -288,16 +298,6 @@ export class CollectionBrowser
   private get estimatedTileCount(): number {
     return this.pagesToRender * this.pageSize;
   }
-
-  /**
-   * The results per page so we can paginate.
-   *
-   * This allows us to start in the middle of the search results and
-   * fetch data before or after the current page. If we don't have a key
-   * for the previous/next page, we'll fetch the next/previous page to populate it
-   */
-  @property() dataSource: CollectionBrowserDataSourceInterface =
-    new CollectionBrowserDataSource(this, this.pageSize);
 
   /**
    * How many tiles to offset the data source by, to account for any removed tiles.
