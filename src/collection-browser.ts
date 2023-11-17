@@ -261,17 +261,17 @@ export class CollectionBrowser
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
     const offsetIndex = index + this.tileModelOffset;
-    const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
     const model = this.dataSource.getTileModelAt(offsetIndex);
     /**
      * If we encounter a model we don't have yet and we're not in the middle of an
      * automated scroll, fetch the page and just return undefined.
      * The datasource will be updated once the page is loaded and the cell will be rendered.
      *
-     * We disable it during the automated scroll since we may fetch pages for cells the
+     * We disable it during the automated scroll since we don't want to fetch pages for intervening cells the
      * user may never see.
      */
     if (!model && !this.isScrollingToCell) {
+      const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
       this.fetchPage(pageNumber);
     }
     return model;
