@@ -3,8 +3,6 @@ import type { TileModel } from '../models';
 
 export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
-  hostConnected(): void;
-
   readonly size: number;
 
   addPage(pageNum: number, pageTiles: TileModel[]): void;
@@ -65,7 +63,6 @@ export class CollectionBrowserDataSource
 
   private numTileModels = 0;
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost,
@@ -77,6 +74,8 @@ export class CollectionBrowserDataSource
 
   hostConnected(): void {}
 
+  hostUpdated(): void {}
+
   get size(): number {
     return this.numTileModels;
   }
@@ -84,6 +83,7 @@ export class CollectionBrowserDataSource
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
     this.numTileModels += pageTiles.length;
+    this.host.requestUpdate();
   }
 
   getPage(pageNum: number): TileModel[] {
@@ -108,6 +108,7 @@ export class CollectionBrowserDataSource
   reset(): void {
     this.pages = {};
     this.numTileModels = 0;
+    this.host.requestUpdate();
   }
 
   map(
@@ -121,6 +122,7 @@ export class CollectionBrowserDataSource
         ),
       ])
     );
+    this.host.requestUpdate();
   }
 
   /**
@@ -177,6 +179,7 @@ export class CollectionBrowserDataSource
     // Swap in the new pages
     this.pages = newPages;
     this.numTileModels -= numChecked;
+    this.host.requestUpdate();
   }
 
   /**
