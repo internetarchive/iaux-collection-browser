@@ -1577,7 +1577,8 @@ describe('Collection Browser', () => {
 
     let tiles =
       infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
-    expect(tiles).to.exist.and.have.length(2);
+    expect(tiles).to.exist;
+    expect(tiles?.length).to.equal(2);
 
     const firstTile = tiles![0] as TileDispatcher;
     const firstTileLink = firstTile.shadowRoot?.querySelector(
@@ -1590,7 +1591,8 @@ describe('Collection Browser', () => {
     el.removeCheckedTiles();
     await el.updateComplete;
     tiles = infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
-    expect(tiles).to.exist.and.have.length(2);
+    expect(tiles).to.exist;
+    expect(tiles?.length).to.equal(2);
 
     // Check the first tile
     firstTileLink!.click();
@@ -1600,7 +1602,8 @@ describe('Collection Browser', () => {
     el.removeCheckedTiles();
     await el.updateComplete;
     tiles = infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
-    expect(tiles).to.exist.and.have.length(1);
+    expect(tiles).to.exist;
+    expect(tiles?.length).to.equal(1);
     expect((tiles![0] as TileDispatcher).model?.identifier).to.equal('bar');
   });
 
@@ -1621,16 +1624,16 @@ describe('Collection Browser', () => {
     el.isManageView = true;
     await el.updateComplete;
 
-    expect(el.checkedTileModels.length).to.equal(0);
-    expect(el.uncheckedTileModels.length).to.equal(2);
+    expect(el.dataSource.checkedTileModels.length).to.equal(0);
+    expect(el.dataSource.uncheckedTileModels.length).to.equal(2);
 
-    el.checkAllTiles();
-    expect(el.checkedTileModels.length).to.equal(2);
-    expect(el.uncheckedTileModels.length).to.equal(0);
+    el.dataSource.checkAllTiles();
+    expect(el.dataSource.checkedTileModels.length).to.equal(2);
+    expect(el.dataSource.uncheckedTileModels.length).to.equal(0);
 
-    el.uncheckAllTiles();
-    expect(el.checkedTileModels.length).to.equal(0);
-    expect(el.uncheckedTileModels.length).to.equal(2);
+    el.dataSource.uncheckAllTiles();
+    expect(el.dataSource.checkedTileModels.length).to.equal(0);
+    expect(el.dataSource.uncheckedTileModels.length).to.equal(2);
   });
 
   it('emits event when item removal requested', async () => {

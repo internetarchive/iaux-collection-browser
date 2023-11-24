@@ -97,7 +97,7 @@ export class CollectionBrowserDataSource
   getTileModelAt(index: number): TileModel | undefined {
     const pageNum = Math.floor(index / this.pageSize) + 1;
     const indexOnPage = index % this.pageSize;
-    return this.pages[pageNum][indexOnPage];
+    return this.pages[pageNum]?.[indexOnPage];
   }
 
   setPageSize(pageSize: number): void {
