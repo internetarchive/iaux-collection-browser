@@ -2,9 +2,9 @@ import type {
   SearchType,
   SortDirection,
 } from '@internetarchive/search-service';
-import type { SelectedFacets, SortField, TileModel } from '../models';
+import type { SelectedFacets, SortField } from '../models';
 
-export interface CollectionBrowserState {
+export interface CollectionBrowserSearchState {
   baseQuery: string;
   withinCollection?: string;
   searchType: SearchType;
@@ -15,8 +15,4 @@ export interface CollectionBrowserState {
   sortDirection?: SortDirection;
   selectedTitlePrefix?: string;
   selectedCreatorPrefix?: string;
-}
-
-export interface CollectionBrowserDataModel {
-  tiles: TileModel[];
 }
