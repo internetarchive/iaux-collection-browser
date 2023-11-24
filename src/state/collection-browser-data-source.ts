@@ -1,5 +1,6 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import type { TileModel } from '../models';
+import type { CollectionBrowserSearchState } from './models';
 
 export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
@@ -65,7 +66,8 @@ export class CollectionBrowserDataSource
 
   constructor(
     /** The host element to which this controller should attach listeners */
-    private readonly host: ReactiveControllerHost,
+    private readonly host: ReactiveControllerHost &
+      CollectionBrowserSearchState,
     /** Default size of result pages */
     private pageSize: number
   ) {
