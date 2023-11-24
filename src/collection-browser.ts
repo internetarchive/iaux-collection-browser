@@ -127,6 +127,12 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  @property({ type: Boolean }) suppressPlaceholders = false;
+
+  @property({ type: Boolean }) suppressResultCount = false;
+
+  @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
+
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
@@ -427,6 +433,8 @@ export class CollectionBrowser
       (this.totalResults === 0 || !this.searchService);
 
     this.placeholderType = null;
+    if (this.suppressPlaceholders) return;
+
     if (!hasQuery && !isCollection) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
@@ -527,7 +535,9 @@ export class CollectionBrowser
    * Template for the "X Results" count at the top of the search results.
    * Changes to the "Searching..." label if the search results are still loading.
    */
-  private get resultsCountTemplate(): TemplateResult {
+  private get resultsCountTemplate(): TemplateResult | typeof nothing {
+    if (this.suppressResultCount) return nothing;
+
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
     const resultsCount = this.totalResults?.toLocaleString();
@@ -558,6 +568,7 @@ export class CollectionBrowser
         ${this.isManageView
           ? this.manageBarTemplate
           : this.sortFilterBarTemplate}
+        <slot name="cb-results"></slot>
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
@@ -575,7 +586,10 @@ export class CollectionBrowser
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
       @visibleCellsChanged=${this.visibleCellsChanged}
-    ></infinite-scroller>`;
+      >${this.displayMode === 'grid'
+        ? html`<slot name="result-last-tile" slot="result-last-tile"></slot>`
+        : nothing}
+    </infinite-scroller>`;
   }
 
   private get infiniteScrollerClasses() {
@@ -604,8 +618,8 @@ export class CollectionBrowser
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
       >
-        <div slot="sort-slot-left">
-          <slot name="sort-slot-left"></slot>
+        <div slot="sortbar-left-slot">
+          <slot name="sortbar-left-slot"></slot>
         </div>
       </sort-filter-bar>
     `;
@@ -1408,7 +1422,11 @@ export class CollectionBrowser
       return;
 
     // If the new state prevents us from updating the search results, don't reset
-    if (!this.canPerformSearch) return;
+    if (
+      !this.canPerformSearch &&
+      !(this.clearResultsOnEmptyQuery && this.baseQuery === '')
+    )
+      return;
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
@@ -1739,27 +1757,26 @@ export class CollectionBrowser
   }
 
   facetClickHandler({
-    detail: { key, state: facetState, negative },
+    detail: { facetType, bucket, negative },
   }: CustomEvent<FacetEventDetails>): void {
+    let action: analyticsActions;
     if (negative) {
-      this.analyticsHandler?.sendEvent({
-        category: this.searchContext,
-        action:
-          facetState !== 'none'
-            ? analyticsActions.facetNegativeSelected
-            : analyticsActions.facetNegativeDeselected,
-        label: key,
-      });
+      action =
+        bucket.state !== 'none'
+          ? analyticsActions.facetNegativeSelected
+          : analyticsActions.facetNegativeDeselected;
     } else {
-      this.analyticsHandler?.sendEvent({
-        category: this.searchContext,
-        action:
-          facetState !== 'none'
-            ? analyticsActions.facetSelected
-            : analyticsActions.facetDeselected,
-        label: key,
-      });
+      action =
+        bucket.state !== 'none'
+          ? analyticsActions.facetSelected
+          : analyticsActions.facetDeselected;
     }
+
+    this.analyticsHandler?.sendEvent({
+      category: this.searchContext,
+      action,
+      label: facetType,
+    });
   }
 
   private async fetchFacets() {
