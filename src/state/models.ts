@@ -5,14 +5,14 @@ import type {
 import type { SelectedFacets, SortField } from '../models';
 
 export interface CollectionBrowserSearchState {
-  baseQuery: string;
+  baseQuery?: string;
   withinCollection?: string;
   searchType: SearchType;
-  selectedFacets: SelectedFacets;
+  selectedFacets?: SelectedFacets;
   minSelectedYear?: string;
   maxSelectedYear?: string;
   selectedSort?: SortField;
-  sortDirection?: SortDirection;
+  sortDirection: SortDirection | null;
   selectedTitlePrefix?: string;
   selectedCreatorPrefix?: string;
 }
