@@ -360,7 +360,7 @@ export class AppRoot extends LitElement {
               <input
                 type="checkbox"
                 id="enable-cb-top-slot"
-                @click=${this.cbToSlotCheckboxChanged}
+                @click=${this.cbTopSlotCheckboxChanged}
               />
               <label for="enable-cb-top-slot">Show CB top slot</label>
             </div>
@@ -370,7 +370,9 @@ export class AppRoot extends LitElement {
                 id="enable-sortbar-left-slot"
                 @click=${this.sortBarSlotCheckboxChanged}
               />
-              <label for="enable-sortbar-left-slot">Show sortbar slot</label>
+              <label for="enable-sortbar-left-slot"
+                >Show sortbar left slot</label
+              >
             </div>
             <div class="checkbox-control">
               <input
@@ -379,7 +381,7 @@ export class AppRoot extends LitElement {
                 @click=${this.resultLastTileSlotCheckboxChanged}
               />
               <label for="enable-result-last-tile-slot"
-                >Show result last tile view</label
+                >Show result last tile slot</label
               >
             </div>
           </fieldset>
@@ -618,7 +620,7 @@ export class AppRoot extends LitElement {
   /**
    * Handler for when the dev panel's "Show cb top slot" checkbox is changed.
    */
-  private cbToSlotCheckboxChanged(e: Event) {
+  private cbTopSlotCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
     const p = document.createElement('p');
