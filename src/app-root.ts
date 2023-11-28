@@ -10,7 +10,7 @@ import {
   StringField,
 } from '@internetarchive/search-service';
 import { LocalCache } from '@internetarchive/local-cache';
-import { html, css, LitElement, PropertyValues } from 'lit';
+import { html, css, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { CollectionNameCache } from '@internetarchive/collection-name-cache';
@@ -34,6 +34,8 @@ export class AppRoot extends LitElement {
     searchService: this.searchService,
     localCache: this.localCache,
   });
+
+  @state() private toggleSlots: boolean = false;
 
   @state() private currentPage?: number;
 
@@ -349,28 +351,38 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="enable-result-last-tile-view"
-                @click=${this.resultLastTileViewCheckboxChanged}
+                id="enable-facet-top-slot"
+                @click=${this.facetTopSlotCheckboxChanged}
               />
-              <label for="enable-result-last-tile-view"
-                >Show result last tile view</label
+              <label for="enable-facet-top-slot">Show facet top slot</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-cb-top-slot"
+                @click=${this.cbTopSlotCheckboxChanged}
+              />
+              <label for="enable-cb-top-slot">Show CB top slot</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-sortbar-left-slot"
+                @click=${this.sortBarSlotCheckboxChanged}
+              />
+              <label for="enable-sortbar-left-slot"
+                >Show sortbar left slot</label
               >
             </div>
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="enable-cb-top-view"
-                @click=${this.cbToViewCheckboxChanged}
+                id="enable-result-last-tile-slot"
+                @click=${this.resultLastTileSlotCheckboxChanged}
               />
-              <label for="enable-cb-top-view">Show CB top view</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="enable-facet-top-view"
-                @click=${this.facetTopViewCheckboxChanged}
-              />
-              <label for="enable-facet-top-view">Show facet top view</label>
+              <label for="enable-result-last-tile-slot"
+                >Show result last tile slot</label
+              >
             </div>
           </fieldset>
         </div>
@@ -394,6 +406,12 @@ export class AppRoot extends LitElement {
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
         >
+          ${this.toggleSlots
+            ? html`<div slot="sortbar-left-slot">Sort Slot</div>`
+            : nothing}
+          ${this.toggleSlots
+            ? html`<div slot="facet-top-slot">Facet Slot</div>`
+            : nothing}
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
@@ -554,9 +572,9 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when the dev panel's "Show facet top view" checkbox is changed.
+   * Handler for when the dev panel's "Show facet top slot" checkbox is changed.
    */
-  private facetTopViewCheckboxChanged(e: Event) {
+  private facetTopSlotCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
     const p = document.createElement('p');
@@ -575,7 +593,11 @@ export class AppRoot extends LitElement {
     }
   }
 
-  private resultLastTileViewCheckboxChanged(e: Event) {
+  private toggleSlotOptions() {
+    this.toggleSlots = !this.toggleSlots;
+  }
+
+  private resultLastTileSlotCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
     const div = document.createElement('div');
@@ -596,9 +618,9 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when the dev panel's "Show cb top view" checkbox is changed.
+   * Handler for when the dev panel's "Show cb top slot" checkbox is changed.
    */
-  private cbToViewCheckboxChanged(e: Event) {
+  private cbTopSlotCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
     const p = document.createElement('p');
@@ -610,6 +632,29 @@ export class AppRoot extends LitElement {
 
     if (target.checked) {
       this.collectionBrowser.appendChild(p);
+    } else {
+      this.collectionBrowser.removeChild(
+        this.collectionBrowser.lastElementChild as Element
+      );
+    }
+  }
+
+  /**
+   * Handler for when the dev panel's "Show facet top slot" checkbox is changed.
+   */
+  private sortBarSlotCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    const div = document.createElement('div');
+    div.style.setProperty('border', '1px solid #000');
+    div.textContent = 'Btn';
+    div.style.setProperty('height', '3rem');
+    div.style.setProperty('width', '3rem');
+    div.style.backgroundColor = '#00000';
+    div.setAttribute('slot', 'sortbar-left-slot');
+
+    if (target.checked) {
+      this.collectionBrowser.appendChild(div);
     } else {
       this.collectionBrowser.removeChild(
         this.collectionBrowser.lastElementChild as Element
@@ -843,6 +888,24 @@ export class AppRoot extends LitElement {
       margin: 5px auto;
       background-color: aliceblue;
       font-size: 1.6rem;
+    }
+
+    // slots
+    div[slot='cb-top-slot'] {
+      height: 50px;
+      border: 1px solid red;
+      background: bisque;
+    }
+    div[slot='facet-top-slot'] {
+      border: 1px solid red;
+      width: 100%;
+      height: 150px;
+      background-color: darkseagreen;
+    }
+    div[slot='sort-slot-left'] {
+      height: 50px;
+      border: 1px solid red;
+      background: bisque;
     }
 
     /* user profile controls */

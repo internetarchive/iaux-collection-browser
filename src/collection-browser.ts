@@ -618,6 +618,9 @@ export class CollectionBrowser
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
       >
+        <div slot="sortbar-left-slot">
+          <slot name="sortbar-left-slot"></slot>
+        </div>
       </sort-filter-bar>
     `;
   }
