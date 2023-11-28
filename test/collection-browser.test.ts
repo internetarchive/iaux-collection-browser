@@ -716,7 +716,8 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
 
     await el.fetchPage(3);
@@ -739,14 +740,15 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
 
     // We want to spy exclusively on the first set of results, not the second
     searchService.asyncResponse = false;
     searchService.resultsSpy = () => {};
 
-    el.sortParam = { field: 'foo', direction: 'desc' };
+    el.sortDirection = 'desc';
     await el.updateComplete;
     await el.initialSearchComplete;
 
@@ -774,7 +776,8 @@ describe('Collection Browser', () => {
     searchService.asyncResponse = false;
     searchService.resultsSpy = () => {};
 
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
     await el.initialSearchComplete;
 
@@ -796,14 +799,15 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
 
     // We want to spy exclusively on the first set of results, not the second
     searchService.asyncResponse = false;
     searchService.resultsSpy = () => {};
 
-    el.sortParam = null;
+    el.selectedSort = SortField.default;
     await el.updateComplete;
     await el.initialSearchComplete;
 
