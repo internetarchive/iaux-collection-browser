@@ -106,7 +106,7 @@ export class CollectionBrowser
 
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
-  @property({ type: Object }) sortParam: SortParam | null = null;
+  // @property({ type: Object }) sortParam: SortParam | null = null;
 
   @property({ type: Object }) defaultSortParam: SortParam | null = null;
 
@@ -382,7 +382,7 @@ export class CollectionBrowser
     }
 
     if (sort) {
-      this.sortParam = null;
+      // this.sortParam = null;
       this.sortDirection = null;
       this.selectedSort = SortField.default;
     }
@@ -709,10 +709,32 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
+    // const sortOption = SORT_OPTIONS[this.selectedSort];
+    // if (!sortOption.handledBySearchService) {
+    //   this.sortParam = null;
+    //   return;
+    // }
+
+    // // If the sort option specified in the URL is unrecognized, we just use it as-is
+    // const urlSortParam = new URL(window.location.href).searchParams.get('sort');
+    // const sortField =
+    //   sortOption.searchServiceKey ?? urlSortParam?.replace(/^-/, '');
+
+    // // If the sort direction is still null at this point, then we assume ascending
+    // // (i.e., it was unrecognized and had no directional flag)
+    // if (!this.sortDirection) this.sortDirection = 'asc';
+
+    // if (!sortField) return;
+    // this.sortParam = { field: sortField, direction: this.sortDirection };
+
+    // Lazy-load the alphabet counts for title/creator sort bar as needed
+    this.updatePrefixFiltersForCurrentSort();
+  }
+
+  get sortParam(): SortParam | null {
     const sortOption = SORT_OPTIONS[this.selectedSort];
-    if (!sortOption.handledBySearchService) {
-      this.sortParam = null;
-      return;
+    if (!sortOption?.handledBySearchService) {
+      return null;
     }
 
     // If the sort option specified in the URL is unrecognized, we just use it as-is
@@ -724,11 +746,8 @@ export class CollectionBrowser
     // (i.e., it was unrecognized and had no directional flag)
     if (!this.sortDirection) this.sortDirection = 'asc';
 
-    if (!sortField) return;
-    this.sortParam = { field: sortField, direction: this.sortDirection };
-
-    // Lazy-load the alphabet counts for title/creator sort bar as needed
-    this.updatePrefixFiltersForCurrentSort();
+    if (!sortField) return null;
+    return { field: sortField, direction: this.sortDirection };
   }
 
   private displayModeChanged(
