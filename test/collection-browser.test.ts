@@ -1690,4 +1690,15 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(el.isManageView).to.be.false;
   });
+
+  it('loans-tab sort-filter-bar', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .baseNavigationUrl=${''} .isLoansTab=${true}>
+      </collection-browser>`
+    );
+    const loansTabSlot = el?.shadowRoot?.querySelector('slot');
+
+    expect(el.isLoansTab).to.equal(true);
+    expect(loansTabSlot).to.exist;
+  });
 });

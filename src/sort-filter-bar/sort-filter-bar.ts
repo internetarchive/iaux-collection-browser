@@ -68,6 +68,9 @@ export class SortFilterBar
   /** Whether to show the Date Favorited sort option instead of Date Published/Archived/Reviewed (default `false`) */
   @property({ type: Boolean }) showDateFavorited: boolean = false;
 
+  /** Whether to show the Loans filter for ProfilePage (default `false`) */
+  @property({ type: Boolean }) showLoansTopBar: boolean = false;
+
   /** Maps of result counts for letters on the alphabet bar, for each letter filter type */
   @property({ type: Object }) prefixFilterCountMap?: Record<
     PrefixFilterType,
@@ -131,15 +134,18 @@ export class SortFilterBar
       <div id="container">
         <section id="sort-bar" aria-label="Sorting options">
           <slot name="sortbar-left-slot"></slot>
-          <div class="sort-direction-container">
-            ${this.sortDirectionSelectorTemplate}
-          </div>
-          <span class="sort-by-text">Sort by:</span>
-
-          <div id="sort-selector-container">
-            ${this.mobileSortSelectorTemplate}
-            ${this.desktopSortSelectorTemplate}
-          </div>
+          ${!this.showLoansTopBar
+            ? html`
+                <div class="sort-direction-container">
+                  ${this.sortDirectionSelectorTemplate}
+                </div>
+                <span class="sort-by-text">Sort by:</span>
+                <div id="sort-selector-container">
+                  ${this.mobileSortSelectorTemplate}
+                  ${this.desktopSortSelectorTemplate}
+                </div>
+              `
+            : html`<slot name="loans-tab-filter-bar-options-slot"></slot>`}
 
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
         </section>

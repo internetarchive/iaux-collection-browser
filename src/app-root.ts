@@ -380,9 +380,19 @@ export class AppRoot extends LitElement {
                 id="enable-result-last-tile-slot"
                 @click=${this.resultLastTileSlotCheckboxChanged}
               />
-              <label for="enable-result-last-tile-slot"
-                >Show result last tile slot</label
-              >
+              <label for="enable-result-last-tile-slot">
+                Show result last tile slot
+              </label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-loanstab-topbar-view"
+                @click=${this.loansTabTopBarViewCheckboxChanged}
+              />
+              <label for="enable-loanstab-topbar-view">
+                Show loans-tab top-bar view
+              </label>
             </div>
           </fieldset>
         </div>
@@ -706,6 +716,30 @@ export class AppRoot extends LitElement {
     const { pageNumber } = e.detail;
     if (pageNumber === this.currentPage) return;
     this.currentPage = pageNumber;
+  }
+
+  /**
+   * Handler for when the dev panel's "Show loanstab topbar view" checkbox is changed.
+   */
+  private loansTabTopBarViewCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    const p = document.createElement('p');
+    p.style.setProperty('border', '1px solid #000');
+    p.textContent = 'New stuff as a child.';
+    p.style.setProperty('height', '20px');
+    p.style.backgroundColor = '#00000';
+    p.setAttribute('slot', 'loans-tab-filter-bar-options-slot');
+
+    if (target.checked) {
+      this.collectionBrowser.isLoansTab = true;
+      this.collectionBrowser.appendChild(p);
+    } else {
+      this.collectionBrowser.isLoansTab = false;
+      this.collectionBrowser.removeChild(
+        this.collectionBrowser.lastElementChild as Element
+      );
+    }
   }
 
   static styles = css`
