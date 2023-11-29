@@ -2514,8 +2514,8 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
 `;let X=class extends O{constructor(){super(...arguments),this.defaultSortDirection=null,this.defaultSortField=_.relevance,this.sortDirection=null,this.selectedSort=_.default,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.showRelevance=!0,this.showDateFavorited=!1,this.showLoansTopBar=!1,this.alphaSelectorVisible=null,this.dropdownBackdropVisible=!1,this.desktopSortContainerWidth=0,this.selectorBarContainerWidth=0,this.boundSortBarSelectorEscapeListener=e=>{e.key==="Escape"&&this.closeDropdowns()}}render(){return c`
       <div id="container">
         <section id="sort-bar" aria-label="Sorting options">
-          <slot name="sortbar-left-slot"></slot>
           ${this.showLoansTopBar?c`<slot name="loans-tab-filter-bar-options-slot"></slot>`:c`
+                <slot name="sortbar-left-slot"></slot>
                 <div class="sort-direction-container">
                   ${this.sortDirectionSelectorTemplate}
                 </div>
