@@ -133,9 +133,9 @@ export class SortFilterBar
     return html`
       <div id="container">
         <section id="sort-bar" aria-label="Sorting options">
-          <slot name="sortbar-left-slot"></slot>
           ${!this.showLoansTopBar
             ? html`
+                <slot name="sortbar-left-slot"></slot>
                 <div class="sort-direction-container">
                   ${this.sortDirectionSelectorTemplate}
                 </div>
