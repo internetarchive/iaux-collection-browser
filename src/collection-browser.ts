@@ -171,6 +171,8 @@ export class CollectionBrowser
    */
   @property({ type: Boolean }) isManageView = false;
 
+  @property({ type: Boolean }) isLoansTab = false;
+
   /**
    * The page that the consumer wants to load.
    */
@@ -617,10 +619,15 @@ export class CollectionBrowser
         @displayModeChanged=${this.displayModeChanged}
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
+        .showLoansTopBar=${this.isLoansTab}
       >
         <div slot="sortbar-left-slot">
           <slot name="sortbar-left-slot"></slot>
         </div>
+        <slot
+          name="loans-tab-filter-bar-options-slot"
+          slot="loans-tab-filter-bar-options-slot"
+        ></slot>
       </sort-filter-bar>
     `;
   }

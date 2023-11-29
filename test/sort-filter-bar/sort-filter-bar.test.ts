@@ -616,4 +616,16 @@ describe('Sort/filter bar mobile view', () => {
     ) as HTMLElement;
     expect(backdrop).not.to.exist;
   });
+
+  it('shows loansTab top-bar slot', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+
+    el.showLoansTopBar = true;
+    await el.updateComplete;
+
+    const loansTabSlot = el?.shadowRoot?.querySelector('slot');
+    expect(loansTabSlot).to.exist;
+  });
 });
