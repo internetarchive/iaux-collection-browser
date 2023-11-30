@@ -1111,7 +1111,8 @@ export class CollectionBrowser
       changed.has('selectedCreatorFilter') ||
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
-      changed.has('sortParam') ||
+      changed.has('selectedSort') ||
+      changed.has('sortDirection') ||
       changed.has('selectedFacets') ||
       changed.has('searchService') ||
       changed.has('withinCollection')
@@ -1365,7 +1366,7 @@ export class CollectionBrowser
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
-    this.dataSource.reset();
+    this.dataSource.handleQueryChange();
     this.tileModelOffset = 0;
     this.totalResults = undefined;
     this.aggregations = undefined;
