@@ -18,6 +18,8 @@ export interface CollectionBrowserDataSourceInterface
 
   reset(): void;
 
+  handleQueryChange(): void;
+
   /**
    * Applies the given map function to all of the tile models in every page of the data
    * source. This method updates the data source object in immutable fashion.
@@ -111,6 +113,10 @@ export class CollectionBrowserDataSource
     this.pages = {};
     this.numTileModels = 0;
     this.host.requestUpdate();
+  }
+
+  handleQueryChange(): void {
+    this.reset();
   }
 
   map(
