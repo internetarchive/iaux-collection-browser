@@ -1,4 +1,5 @@
 import type {
+  SearchServiceInterface,
   SearchType,
   SortDirection,
 } from '@internetarchive/search-service';
@@ -9,10 +10,11 @@ export interface CollectionBrowserSearchState {
   withinCollection?: string;
   searchType: SearchType;
   selectedFacets?: SelectedFacets;
-  minSelectedYear?: string;
-  maxSelectedYear?: string;
+  minSelectedDate?: string;
+  maxSelectedDate?: string;
   selectedSort?: SortField;
   sortDirection: SortDirection | null;
-  selectedTitlePrefix?: string;
-  selectedCreatorPrefix?: string;
+  selectedTitleFilter: string | null;
+  selectedCreatorFilter: string | null;
+  searchService?: SearchServiceInterface;
 }
