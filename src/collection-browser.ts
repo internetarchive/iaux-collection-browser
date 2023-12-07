@@ -65,6 +65,11 @@ import {
   RestorationStateHandler,
   RestorationState,
 } from './restoration-state-handler';
+import {
+  CollectionBrowserDataSource,
+  CollectionBrowserDataSourceInterface,
+} from './state/collection-browser-data-source';
+import type { CollectionBrowserSearchState } from './state/models';
 import chevronIcon from './assets/img/icons/chevron';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
@@ -78,10 +83,6 @@ import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
-import {
-  CollectionBrowserDataSource,
-  CollectionBrowserDataSourceInterface,
-} from './state/collection-browser-data-source';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -90,7 +91,8 @@ export class CollectionBrowser
   extends LitElement
   implements
     InfiniteScrollerCellProviderInterface,
-    SharedResizeObserverResizeHandlerInterface
+    SharedResizeObserverResizeHandlerInterface,
+    CollectionBrowserSearchState
 {
   @property({ type: String }) baseNavigationUrl?: string;
 
@@ -314,7 +316,7 @@ export class CollectionBrowser
    * Used in generating unique IDs for search requests, so that multiple requests coming from the
    * same browser session can be identified.
    */
-  private async getSessionId(): Promise<string> {
+  async getSessionId(): Promise<string> {
     try {
       const storedSessionId = sessionStorage?.getItem('cb-session');
       if (storedSessionId) {
@@ -347,6 +349,14 @@ export class CollectionBrowser
     this.initialPageNumber = pageNumber;
     this.pagesToRender = pageNumber;
     return this.scrollToPage(pageNumber);
+  }
+
+  setSearchResultsLoading(loading: boolean) {
+    this.searchResultsLoading = loading;
+  }
+
+  setFacetsLoading(loading: boolean) {
+    this.facetsLoading = loading;
   }
 
   /**
@@ -1366,7 +1376,6 @@ export class CollectionBrowser
 
     this.previousQueryKey = this.pageFetchQueryKey;
 
-    this.dataSource.handleQueryChange();
     this.tileModelOffset = 0;
     this.totalResults = undefined;
     this.aggregations = undefined;
@@ -1409,10 +1418,11 @@ export class CollectionBrowser
     });
 
     // Fire the initial page and facets requests
-    await Promise.all([
-      this.doInitialPageFetch(),
-      this.suppressFacets ? null : this.fetchFacets(),
-    ]);
+    await this.dataSource.handleQueryChange();
+    // await Promise.all([
+    //   this.doInitialPageFetch(),
+    //   this.suppressFacets ? null : this.fetchFacets(),
+    // ]);
 
     // Resolve the `initialSearchComplete` promise for this search
     this._initialSearchCompleteResolver(true);
@@ -1524,7 +1534,7 @@ export class CollectionBrowser
    * all the currently-applied filters. This includes any facets, letter
    * filters, and date range.
    */
-  private get filterMap(): FilterMap {
+  get filterMap(): FilterMap {
     const builder = new FilterMapBuilder();
 
     // Add the date range, if applicable

@@ -21,6 +21,7 @@ export interface CollectionBrowserSearchState {
   selectedCreatorFilter: string | null;
   searchService?: SearchServiceInterface;
   readonly filterMap: FilterMap;
+  readonly suppressFacets?: boolean;
 
   getSessionId(): Promise<string>;
   setSearchResultsLoading(loading: boolean): void;
