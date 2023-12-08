@@ -84,13 +84,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.2.tgz"
   integrity sha512-6hSf5NQZJsTNSmV6q6dUSVZmS/Aq5uE3rzyDFQgETJRVC21jJ7kLiVEcmxVIrmIY4NVMcTodwE3srE0BeTDzNg==
 
-"@internetarchive/collection-name-cache@^0.2.15":
-  version "0.2.15"
-  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.15.tgz#de9b4ab9117829495ad84684e8e7fecf187cc9e3"
-  integrity sha512-bg3uzwrQO28rVm668sS/wzhPvucDsCCsLIn73AmyKpJtkF7eRjBxj4kfwoZSDgnOz/T3gPufSiJXucoeLI4bXA==
+"@internetarchive/collection-name-cache@^0.2.16":
+  version "0.2.16"
+  resolved "https://registry.yarnpkg.com/@internetarchive/collection-name-cache/-/collection-name-cache-0.2.16.tgz#3c3b4b7caafe062db8950a28462b1668ea6ca817"
+  integrity sha512-a+ZgPhjYJ3/ItS7j4yERfzO+MpSU2uc7yLT4ZGf9nbbWFBk1n/lzkU6MiKnXVJ1fPn/Vse7yfOiL9peSNuH7cA==
   dependencies:
     "@internetarchive/local-cache" "^0.2.1"
-    "@internetarchive/search-service" "^1.2.3"
+    "@internetarchive/search-service" "^1.2.4"
     lit "^2.0.2"
 
 "@internetarchive/feature-feedback@^0.1.4":
@@ -108,13 +108,13 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.4.tgz#560343693245a5af893de522cc5581e7fbb9ccad"
   integrity sha512-J5nhMsIU91eXnfoApa6SE0PffPbwK1Cd3YTLX/HjgayzMbXVkQvfebfVKSaoPmzHRRttbtY3Sg9FjviCwBq6qg==
 
-"@internetarchive/histogram-date-range@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-1.1.0.tgz#d6f5ff58e23ad97efff7623952342b60819f8e75"
-  integrity sha512-iuFA4GZYnsoD3dVkQswqFsLnxBrJlpRFcbcOnHHw05ynRs/s0Xc7rTwDVMljc2heLFUUFtYIf4icVXyUoUJKXg==
+"@internetarchive/histogram-date-range@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.0.tgz#3c5b7f76d16e68c8e78dc48a6e98b51518f0a278"
+  integrity sha512-RGYp+UlcuxvLairk3eenIdITYErD4zMoYbRYGpF6AvoeqpiVRdgFFx+PafTMPT6n2z0nA0JmyD7fFvV+z8y0hw==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.4"
-    dayjs "^1.10.7"
+    dayjs "1.11.10"
     lit "^2.2.7"
 
 "@internetarchive/ia-activity-indicator@^0.0.4":
@@ -198,10 +198,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^1.2.3":
-  version "1.2.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.3.tgz#0a7f38730f3fe8747b4076eef26ddf0e6b3f4d8e"
-  integrity sha512-Yfn+MGWC8Qr1KqlwoJ6oowYnzFXIr7UCyurP+kXTCYzW4pkcC30synGbGUznyuXkSh5FwZMYkH9+UvYHtgHd2Q==
+"@internetarchive/search-service@^1.2.4":
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.4.tgz#1dccc2249936de8588a4f4e1c94ce21c3b0a64fe"
+  integrity sha512-GZF0HjFMaXjko38kgsmNYp6ndmcIfz1qtxNwiIGq2sHHb/Xi58vRFCAwCenoPtCGCO29D0lY7DNHuOEqcv3hLA==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.4"
     "@internetarchive/result-type" "^0.0.1"
@@ -1419,10 +1419,10 @@ date-fns@^2.16.1:
   resolved "https://registry.npmjs.org/date-fns/-/date-fns-2.28.0.tgz"
   integrity sha512-8d35hViGYx/QH0icHYCeLmsLmMUheMmTyV9Fcm6gvNwdw31yXXH+O85sOBJ+OLnLQMKZowvpKb6FgMIQjcpvQw==
 
-dayjs@^1.10.7:
-  version "1.11.2"
-  resolved "https://registry.npmjs.org/dayjs/-/dayjs-1.11.2.tgz"
-  integrity sha512-F4LXf1OeU9hrSYRPTTj/6FbO4HTjPKXvEIC1P2kcnFurViINCVk3ZV0xAS3XVx9MkMsXbbqlK6hjseaYbgKEHw==
+dayjs@1.11.10:
+  version "1.11.10"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.10.tgz#68acea85317a6e164457d6d6947564029a6a16a0"
+  integrity sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==
 
 debounce@^1.2.0:
   version "1.2.1"
