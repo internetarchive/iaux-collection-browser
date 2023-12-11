@@ -195,7 +195,7 @@ export class CollectionBrowser
   /**
    * The page that the consumer wants to load.
    */
-  private initialPageNumber = 1;
+  initialPageNumber = 1;
 
   /**
    * This the the number of pages that we want to show.
