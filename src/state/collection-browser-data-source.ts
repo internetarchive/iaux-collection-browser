@@ -128,6 +128,7 @@ export class CollectionBrowserDataSource
 
   async handleQueryChange(): Promise<void> {
     this.reset();
+    await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
   }
 
   map(
@@ -528,5 +529,12 @@ export class CollectionBrowserDataSource
       success?.response?.aggregations?.year_histogram;
 
     this.host.setFacetsLoading(false);
+  }
+
+  private async doInitialPageFetch(): Promise<void> {
+    this.host.setSearchResultsLoading(true);
+    // Try to batch 2 initial page requests when possible
+    await this.host.fetchPage(this.host.initialPageNumber, 2);
+    this.host.setSearchResultsLoading(false);
   }
 }
