@@ -20,10 +20,13 @@ export interface CollectionBrowserSearchState {
   selectedTitleFilter: string | null;
   selectedCreatorFilter: string | null;
   searchService?: SearchServiceInterface;
+
   readonly filterMap: FilterMap;
   readonly suppressFacets?: boolean;
+  readonly initialPageNumber: number;
 
   getSessionId(): Promise<string>;
   setSearchResultsLoading(loading: boolean): void;
   setFacetsLoading(loading: boolean): void;
+  fetchPage(pageNumber: number, numInitialPages?: number): Promise<void>;
 }
