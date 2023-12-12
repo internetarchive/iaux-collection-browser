@@ -17,12 +17,8 @@ import type {
   InfiniteScrollerCellProviderInterface,
 } from '@internetarchive/infinite-scroller';
 import {
-  Aggregation,
   Bucket,
   CollectionExtraInfo,
-  FilterConstraint,
-  FilterMap,
-  FilterMapBuilder,
   SearchParams,
   SearchResult,
   SearchServiceInterface,
@@ -52,7 +48,6 @@ import {
   getDefaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
-  FacetBucket,
   PrefixFilterType,
   PrefixFilterCounts,
   prefixFilterAggregationKeys,
@@ -182,6 +177,8 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) isLoansTab = false;
 
+  @property({ type: String }) queryErrorMessage?: string;
+
   /**
    * The results per page so we can paginate.
    *
@@ -189,7 +186,7 @@ export class CollectionBrowser
    * fetch data before or after the current page. If we don't have a key
    * for the previous/next page, we'll fetch the next/previous page to populate it
    */
-  @property() dataSource: CollectionBrowserDataSourceInterface =
+  @property({ type: Object }) dataSource: CollectionBrowserDataSourceInterface =
     new CollectionBrowserDataSource(this, this.pageSize);
 
   /**
@@ -212,15 +209,7 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
-  @state() private fullYearAggregationLoading = false;
-
-  @state() private aggregations?: Record<string, Aggregation>;
-
-  @state() private fullYearsHistogramAggregation: Aggregation | undefined;
-
   @state() private totalResults?: number;
-
-  @state() private queryErrorMessage?: string;
 
   @state() private mobileView = false;
 
@@ -284,14 +273,9 @@ export class CollectionBrowser
      */
     if (!model && !this.isScrollingToCell) {
       const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
-      this.fetchPage(pageNumber);
+      this.dataSource.fetchPage(pageNumber);
     }
     return model;
-  }
-
-  private get sortFilterQueries(): string {
-    const queries = [this.titleQuery, this.creatorQuery];
-    return queries.filter(q => q).join(' AND ');
   }
 
   // this is the total number of tiles we expect if
@@ -904,8 +888,9 @@ export class CollectionBrowser
         .recaptchaManager=${this.recaptchaManager}
         .resizeObserver=${this.resizeObserver}
         .searchType=${this.searchType}
-        .aggregations=${this.aggregations}
-        .fullYearsHistogramAggregation=${this.fullYearsHistogramAggregation}
+        .aggregations=${this.dataSource.aggregations}
+        .fullYearsHistogramAggregation=${this.dataSource
+          .yearHistogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -915,7 +900,7 @@ export class CollectionBrowser
         .allowExpandingDatePicker=${!this.mobileView}
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
-        .filterMap=${this.filterMap}
+        .filterMap=${this.dataSource.filterMap}
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
         ?collapsableFacets=${this.mobileView}
@@ -1280,7 +1265,7 @@ export class CollectionBrowser
     );
   }
 
-  private emitEmptyResults() {
+  emitEmptyResults() {
     this.dispatchEvent(new Event('emptyResults'));
   }
 
@@ -1364,22 +1349,23 @@ export class CollectionBrowser
 
   private async handleQueryChange() {
     // only reset if the query has actually changed
-    if (!this.searchService || this.pageFetchQueryKey === this.previousQueryKey)
+    if (
+      !this.searchService ||
+      this.dataSource.pageFetchQueryKey === this.previousQueryKey
+    )
       return;
 
     // If the new state prevents us from updating the search results, don't reset
     if (
-      !this.canPerformSearch &&
+      !this.dataSource.canPerformSearch &&
       !(this.clearResultsOnEmptyQuery && this.baseQuery === '')
     )
       return;
 
-    this.previousQueryKey = this.pageFetchQueryKey;
+    this.previousQueryKey = this.dataSource.pageFetchQueryKey;
 
     this.tileModelOffset = 0;
     this.totalResults = undefined;
-    this.aggregations = undefined;
-    this.fullYearsHistogramAggregation = undefined;
     this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
     this.pagesToRender =
@@ -1480,13 +1466,6 @@ export class CollectionBrowser
     this.restorationStateHandler.persistState(restorationState);
   }
 
-  private async doInitialPageFetch(): Promise<void> {
-    this.searchResultsLoading = true;
-    // Try to batch 2 initial page requests when possible
-    await this.fetchPage(this.initialPageNumber, 2);
-    this.searchResultsLoading = false;
-  }
-
   private emitSearchResultsLoadingChanged(): void {
     this.dispatchEvent(
       new CustomEvent<{ loading: boolean }>('searchResultsLoadingChanged', {
@@ -1529,178 +1508,6 @@ export class CollectionBrowser
     return `R:${fullQueryHash}-S:${sessionId}-P:${page}-K:${kindPrefix}-T:${currentTime}`;
   }
 
-  /**
-   * Constructs a search service FilterMap object from the combination of
-   * all the currently-applied filters. This includes any facets, letter
-   * filters, and date range.
-   */
-  get filterMap(): FilterMap {
-    const builder = new FilterMapBuilder();
-
-    // Add the date range, if applicable
-    if (this.minSelectedDate) {
-      builder.addFilter(
-        'year',
-        this.minSelectedDate,
-        FilterConstraint.GREATER_OR_EQUAL
-      );
-    }
-    if (this.maxSelectedDate) {
-      builder.addFilter(
-        'year',
-        this.maxSelectedDate,
-        FilterConstraint.LESS_OR_EQUAL
-      );
-    }
-
-    // Add any selected facets
-    if (this.selectedFacets) {
-      for (const [facetName, facetValues] of Object.entries(
-        this.selectedFacets
-      )) {
-        const { name, values } = this.prepareFacetForFetch(
-          facetName,
-          facetValues
-        );
-        for (const [value, bucket] of Object.entries(values)) {
-          let constraint;
-          if (bucket.state === 'selected') {
-            constraint = FilterConstraint.INCLUDE;
-          } else if (bucket.state === 'hidden') {
-            constraint = FilterConstraint.EXCLUDE;
-          }
-
-          if (constraint) {
-            builder.addFilter(name, value, constraint);
-          }
-        }
-      }
-    }
-
-    // Add any letter filters
-    if (this.selectedTitleFilter) {
-      builder.addFilter(
-        'firstTitle',
-        this.selectedTitleFilter,
-        FilterConstraint.INCLUDE
-      );
-    }
-    if (this.selectedCreatorFilter) {
-      builder.addFilter(
-        'firstCreator',
-        this.selectedCreatorFilter,
-        FilterConstraint.INCLUDE
-      );
-    }
-
-    const filterMap = builder.build();
-    return filterMap;
-  }
-
-  /** The full query, including year facets and date range clauses */
-  private get fullQuery(): string | undefined {
-    let fullQuery = this.baseQuery?.trim() ?? '';
-
-    const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
-
-    if (facetQuery) {
-      fullQuery += ` AND ${facetQuery}`;
-    }
-    if (dateRangeQueryClause) {
-      fullQuery += ` AND ${dateRangeQueryClause}`;
-    }
-    if (sortFilterQueries) {
-      fullQuery += ` AND ${sortFilterQueries}`;
-    }
-    return fullQuery.trim();
-  }
-
-  /**
-   * Generates a query string for the given facets
-   *
-   * Example: `mediatype:("collection" OR "audio" OR -"etree") AND year:("2000" OR "2001")`
-   */
-  private get facetQuery(): string | undefined {
-    if (!this.selectedFacets) return undefined;
-    const facetClauses = [];
-    for (const [facetName, facetValues] of Object.entries(
-      this.selectedFacets
-    )) {
-      facetClauses.push(this.buildFacetClause(facetName, facetValues));
-    }
-    return this.joinFacetClauses(facetClauses)?.trim();
-  }
-
-  /**
-   * Builds an OR-joined facet clause for the given facet name and values.
-   *
-   * E.g., for name `subject` and values
-   * `{ foo: { state: 'selected' }, bar: { state: 'hidden' } }`
-   * this will produce the clause
-   * `subject:("foo" OR -"bar")`.
-   *
-   * @param facetName The facet type (e.g., 'collection')
-   * @param facetValues The facet buckets, mapped by their keys
-   */
-  private buildFacetClause(
-    facetName: string,
-    facetValues: Record<string, FacetBucket>
-  ): string {
-    const { name: facetQueryName, values } = this.prepareFacetForFetch(
-      facetName,
-      facetValues
-    );
-    const facetEntries = Object.entries(values);
-    if (facetEntries.length === 0) return '';
-
-    const facetValuesArray: string[] = [];
-    for (const [key, facetData] of facetEntries) {
-      const plusMinusPrefix = facetData.state === 'hidden' ? '-' : '';
-      facetValuesArray.push(`${plusMinusPrefix}"${key}"`);
-    }
-
-    const valueQuery = facetValuesArray.join(` OR `);
-    return `${facetQueryName}:(${valueQuery})`;
-  }
-
-  /**
-   * Handles some special pre-request normalization steps for certain facet types
-   * that require them.
-   *
-   * @param facetName The name of the facet type (e.g., 'language')
-   * @param facetValues An array of values for that facet type
-   */
-  private prepareFacetForFetch(
-    facetName: string,
-    facetValues: Record<string, FacetBucket>
-  ): { name: string; values: Record<string, FacetBucket> } {
-    // eslint-disable-next-line prefer-const
-    let [normalizedName, normalizedValues] = [facetName, facetValues];
-
-    // The full "search engine" name of the lending field is "lending___status"
-    if (facetName === 'lending') {
-      normalizedName = 'lending___status';
-    }
-
-    return {
-      name: normalizedName,
-      values: normalizedValues,
-    };
-  }
-
-  /**
-   * Takes an array of facet clauses, and combines them into a
-   * full AND-joined facet query string. Empty clauses are ignored.
-   */
-  private joinFacetClauses(facetClauses: string[]): string | undefined {
-    const nonEmptyFacetClauses = facetClauses.filter(
-      clause => clause.length > 0
-    );
-    return nonEmptyFacetClauses.length > 0
-      ? `(${nonEmptyFacetClauses.join(' AND ')})`
-      : undefined;
-  }
-
   facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
   }
@@ -1726,76 +1533,6 @@ export class CollectionBrowser
       action,
       label: facetType,
     });
-  }
-
-  private async fetchFacets() {
-    const trimmedQuery = this.baseQuery?.trim();
-    if (!this.canPerformSearch) return;
-
-    const { facetFetchQueryKey } = this;
-
-    const sortParams = this.sortParam ? [this.sortParam] : [];
-    const params: SearchParams = {
-      ...this.collectionParams,
-      query: trimmedQuery || '',
-      rows: 0,
-      filters: this.filterMap,
-      // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
-      aggregationsSize: 10,
-      // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
-      // The default aggregations for the search_results page type should be what we need here.
-    };
-    params.uid = await this.requestUID(
-      { ...params, sort: sortParams },
-      'aggregations'
-    );
-
-    this.facetsLoading = true;
-    const searchResponse = await this.searchService?.search(
-      params,
-      this.searchType
-    );
-    const success = searchResponse?.success;
-
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard this set of aggregations because they are
-    // likely no longer valid for the newer query.
-    const queryChangedSinceFetch =
-      facetFetchQueryKey !== this.facetFetchQueryKey;
-    if (queryChangedSinceFetch) return;
-
-    if (!success) {
-      const errorMsg = searchResponse?.error?.message;
-      const detailMsg = searchResponse?.error?.details?.message;
-
-      if (!errorMsg && !detailMsg) {
-        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
-        window?.Sentry?.captureMessage?.(
-          'Missing or malformed facet response from backend',
-          'error'
-        );
-      }
-
-      return;
-    }
-
-    const { aggregations, collectionTitles } = success.response;
-    this.aggregations = aggregations;
-
-    if (collectionTitles) {
-      this.collectionNameCache?.addKnownTitles(collectionTitles);
-    } else if (this.aggregations?.collection) {
-      this.collectionNameCache?.preloadIdentifiers(
-        (this.aggregations.collection.buckets as Bucket[]).map(bucket =>
-          bucket.key?.toString()
-        )
-      );
-    }
-
-    this.fullYearsHistogramAggregation =
-      success?.response?.aggregations?.year_histogram;
-
-    this.facetsLoading = false;
   }
 
   private scrollToPage(pageNumber: number): Promise<void> {
@@ -1827,66 +1564,6 @@ export class CollectionBrowser
     return !!this.baseQuery?.trim();
   }
 
-  /**
-   * Whether a search may be performed in the current state of the component.
-   * This is only true if the search service is defined, and either
-   *   (a) a non-empty query is set, or
-   *   (b) we are on a collection page in metadata search mode.
-   */
-  private get canPerformSearch(): boolean {
-    if (!this.searchService) return false;
-
-    const trimmedQuery = this.baseQuery?.trim();
-    const hasNonEmptyQuery = !!trimmedQuery;
-    const isCollectionSearch = !!this.withinCollection;
-    const isMetadataSearch = this.searchType === SearchType.METADATA;
-
-    // Metadata searches within a collection are allowed to have no query.
-    // Otherwise, a non-empty query must be set.
-    return hasNonEmptyQuery || (isCollectionSearch && isMetadataSearch);
-  }
-
-  /**
-   * Additional params to pass to the search service if targeting a collection page,
-   * or null otherwise.
-   */
-  private get collectionParams(): {
-    pageType: string;
-    pageTarget: string;
-  } | null {
-    return this.withinCollection
-      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
-      : null;
-  }
-
-  /**
-   * The query key is a string that uniquely identifies the current search.
-   * It consists of:
-   *  - The current base query
-   *  - The current collection
-   *  - The current search type
-   *  - Any currently-applied facets
-   *  - Any currently-applied date range
-   *  - Any currently-applied prefix filters
-   *  - The current sort options
-   *
-   * This lets us keep track of queries so we don't persist data that's
-   * no longer relevant.
-   */
-  private get pageFetchQueryKey(): string {
-    const sortField = this.sortParam?.field ?? 'none';
-    const sortDirection = this.sortParam?.direction ?? 'none';
-    return `${this.fullQuery}-${this.withinCollection}-${this.searchType}-${sortField}-${sortDirection}`;
-  }
-
-  /**
-   * Similar to `pageFetchQueryKey` above, but excludes sort fields since they
-   * are not relevant in determining aggregation queries.
-   */
-  private get facetFetchQueryKey(): string {
-    return `${this.fullQuery}-${this.withinCollection}-${this.searchType}`;
-  }
-
   // this maps the query to the pages being fetched for that query
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
@@ -1900,7 +1577,7 @@ export class CollectionBrowser
    */
   async fetchPage(pageNumber: number, numInitialPages = 1) {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!this.canPerformSearch) return;
+    if (!this.dataSource.canPerformSearch) return;
 
     // if we already have data, don't fetch again
     if (this.dataSource.hasPage(pageNumber)) return;
@@ -1913,7 +1590,7 @@ export class CollectionBrowser
     const numRows = this.pageSize * numPages;
 
     // if a fetch is already in progress for this query and page, don't fetch again
-    const { pageFetchQueryKey } = this;
+    const { pageFetchQueryKey } = this.dataSource;
     const pageFetches =
       this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
     if (pageFetches.has(pageNumber)) return;
@@ -1924,12 +1601,12 @@ export class CollectionBrowser
 
     const sortParams = this.sortParam ? [this.sortParam] : [];
     const params: SearchParams = {
-      ...this.collectionParams,
+      ...this.dataSource.collectionParams,
       query: trimmedQuery || '',
       page: pageNumber,
       rows: numRows,
       sort: sortParams,
-      filters: this.filterMap,
+      filters: this.dataSource.filterMap,
       aggregations: { omit: true },
     };
     params.uid = await this.requestUID(params, 'hits');
@@ -1943,7 +1620,8 @@ export class CollectionBrowser
     // This is checking to see if the query has changed since the data was fetched.
     // If so, we just want to discard the data since there should be a new query
     // right behind it.
-    const queryChangedSinceFetch = pageFetchQueryKey !== this.pageFetchQueryKey;
+    const queryChangedSinceFetch =
+      pageFetchQueryKey !== this.dataSource.pageFetchQueryKey;
     if (queryChangedSinceFetch) return;
 
     if (!success) {
@@ -2025,6 +1703,12 @@ export class CollectionBrowser
     }
   }
 
+  setTotalResultCount(count: number): void {
+    if (this.infiniteScroller) {
+      this.infiniteScroller.itemCount = count;
+    }
+  }
+
   private preloadCollectionNames(results: SearchResult[]) {
     const collectionIds = results
       .map(result => result.collection?.values)
@@ -2040,7 +1724,7 @@ export class CollectionBrowser
    *  - Date Favorited for fav-* collections
    *  - Weekly views for all other collections
    */
-  private applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
+  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
     if (this.baseQuery) {
       // If there's a query set, then we default to relevance sorting regardless of
       // the collection metadata-specified sort.
@@ -2090,7 +1774,7 @@ export class CollectionBrowser
    * When the fetch completes, we need to reload the scroller if the cells for that
    * page are visible, but if the page is not currenlty visible, we don't need to reload
    */
-  private get currentVisiblePageNumbers(): number[] {
+  get currentVisiblePageNumbers(): number[] {
     const visibleCells = this.infiniteScroller?.getVisibleCellIndices() ?? [];
     const visiblePages = new Set<number>();
     visibleCells.forEach(cellIndex => {
@@ -2098,6 +1782,10 @@ export class CollectionBrowser
       visiblePages.add(visiblePage);
     });
     return Array.from(visiblePages);
+  }
+
+  refreshVisibleResults(): void {
+    this.infiniteScroller?.refreshAllVisibleCells();
   }
 
   /**
@@ -2211,16 +1899,16 @@ export class CollectionBrowser
     filterType: PrefixFilterType
   ): Promise<Bucket[]> {
     const trimmedQuery = this.baseQuery?.trim();
-    if (!this.canPerformSearch) return [];
+    if (!this.dataSource.canPerformSearch) return [];
 
     const filterAggregationKey = prefixFilterAggregationKeys[filterType];
     const sortParams = this.sortParam ? [this.sortParam] : [];
 
     const params: SearchParams = {
-      ...this.collectionParams,
+      ...this.dataSource.collectionParams,
       query: trimmedQuery || '',
       rows: 0,
-      filters: this.filterMap,
+      filters: this.dataSource.filterMap,
       // Only fetch the firstTitle or firstCreator aggregation
       aggregations: { simpleParams: [filterAggregationKey] },
       // Fetch all 26 letter buckets
@@ -2245,13 +1933,13 @@ export class CollectionBrowser
   private async updatePrefixFilterCounts(
     filterType: PrefixFilterType
   ): Promise<void> {
-    const { facetFetchQueryKey } = this;
+    const { facetFetchQueryKey } = this.dataSource;
     const buckets = await this.fetchPrefixFilterBuckets(filterType);
 
     // Don't update the filter counts for an outdated query (if it has been changed
     // since we sent the request)
     const queryChangedSinceFetch =
-      facetFetchQueryKey !== this.facetFetchQueryKey;
+      facetFetchQueryKey !== this.dataSource.facetFetchQueryKey;
     if (queryChangedSinceFetch) return;
 
     // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
@@ -2352,7 +2040,7 @@ export class CollectionBrowser
   private scrollThresholdReached() {
     if (!this.endOfDataReached) {
       this.pagesToRender += 1;
-      this.fetchPage(this.pagesToRender);
+      this.dataSource.fetchPage(this.pagesToRender);
     }
   }
 
