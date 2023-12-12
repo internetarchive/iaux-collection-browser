@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { msg } from '@lit/localize';
 
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type {
@@ -130,6 +131,8 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressPlaceholders = false;
 
   @property({ type: Boolean }) suppressResultCount = false;
+
+  @property({ type: Boolean }) suppressFacets = false;
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -954,6 +957,13 @@ export class CollectionBrowser
    * The template for the facets component alone, without any surrounding wrappers.
    */
   private get facetsTemplate() {
+    if (this.suppressFacets)
+      return html`
+        <p class="facets-message">
+          ${msg('Facets are temporarily unavailable.')}
+        </p>
+      `;
+
     return html`
       <collection-facets
         @facetsChanged=${this.facetsChanged}
@@ -1480,7 +1490,10 @@ export class CollectionBrowser
     });
 
     // Fire the initial page and facets requests
-    await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
+    await Promise.all([
+      this.doInitialPageFetch(),
+      this.suppressFacets ? null : this.fetchFacets(),
+    ]);
 
     // Resolve the `initialSearchComplete` promise for this search
     this._initialSearchCompleteResolver(true);
@@ -2580,6 +2593,11 @@ export class CollectionBrowser
         }
         #facets-bottom-fade.hidden {
           height: 0;
+        }
+
+        .facets-message {
+          text-align: center;
+          font-size: 1.2rem;
         }
 
         .desktop #left-column-scroll-sentinel {
