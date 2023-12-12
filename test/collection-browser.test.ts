@@ -14,7 +14,6 @@ import {
   SortField,
 } from '../src/models';
 import { MockSearchService } from './mocks/mock-search-service';
-import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
@@ -633,61 +632,11 @@ describe('Collection Browser', () => {
     expect(sentrySpy.callCount).to.be.greaterThanOrEqual(1);
   });
 
-  it('queries for collection names after a fetch', async () => {
-    const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
-
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
-      >
-      </collection-browser>`
-    );
-
-    el.baseQuery = 'collection:foo';
-    await el.updateComplete;
-    await el.initialSearchComplete;
-
-    expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
-      'foo',
-      'bar',
-      'baz',
-      'boop',
-    ]);
-  });
-
-  it('queries for collection names after an aggregations fetch', async () => {
-    const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
-
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
-      >
-      </collection-browser>`
-    );
-
-    el.baseQuery = 'collection-aggregations';
-    await el.updateComplete;
-    await el.initialSearchComplete;
-
-    expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
-      'foo',
-      'bar',
-    ]);
-  });
-
   it('adds collection names to cache when present on response', async () => {
     const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
 
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
-      >
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -695,12 +644,18 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     await el.initialSearchComplete;
 
-    expect(collectionNameCache.knownTitlesAdded).to.deep.equal({
-      foo: 'Foo Collection',
-      bar: 'Bar Collection',
-      baz: 'Baz Collection',
-      boop: 'Boop Collection',
-    });
+    expect(el.dataSource.collectionTitles.get('foo')).to.equal(
+      'Foo Collection'
+    );
+    expect(el.dataSource.collectionTitles.get('bar')).to.equal(
+      'Bar Collection'
+    );
+    expect(el.dataSource.collectionTitles.get('baz')).to.equal(
+      'Baz Collection'
+    );
+    expect(el.dataSource.collectionTitles.get('boop')).to.equal(
+      'Boop Collection'
+    );
   });
 
   it('keeps search results from fetch if no change to query or sort param', async () => {
@@ -1232,12 +1187,10 @@ describe('Collection Browser', () => {
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .analyticsHandler=${mockAnalyticsHandler}
         .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
       ></collection-browser>`
     );
     const infiniteScrollerRefreshSpy = sinon.spy();

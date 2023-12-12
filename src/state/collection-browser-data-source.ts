@@ -5,6 +5,7 @@ import {
   FilterConstraint,
   FilterMap,
   FilterMapBuilder,
+  PageType,
   SearchParams,
   SearchResult,
   SearchType,
@@ -12,6 +13,7 @@ import {
 import type { FacetBucket, TileModel } from '../models';
 import type { CollectionBrowserSearchState } from './models';
 import { sha1 } from '../utils/sha1';
+import { CollectionTitlesMap } from './collection-titles-map';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 export interface CollectionBrowserDataSourceInterface
@@ -77,7 +79,7 @@ export interface CollectionBrowserDataSourceInterface
   readonly facetFetchQueryKey: string;
 
   readonly collectionParams: {
-    pageType: string;
+    pageType: PageType;
     pageTarget: string;
   } | null;
 
@@ -87,7 +89,7 @@ export interface CollectionBrowserDataSourceInterface
 
   readonly yearHistogramAggregation?: Aggregation;
 
-  readonly collectionTitles: Record<string, string>;
+  readonly collectionTitles: CollectionTitlesMap;
 
   readonly collectionExtraInfo?: CollectionExtraInfo;
 
@@ -116,7 +118,7 @@ export class CollectionBrowserDataSource
 
   yearHistogramAggregation?: Aggregation;
 
-  collectionTitles: Record<string, string> = {};
+  collectionTitles = new CollectionTitlesMap();
 
   collectionExtraInfo?: CollectionExtraInfo;
 
@@ -426,7 +428,7 @@ export class CollectionBrowserDataSource
    * or null otherwise.
    */
   get collectionParams(): {
-    pageType: string;
+    pageType: PageType;
     pageTarget: string;
   } | null {
     return this.host.withinCollection
@@ -629,10 +631,9 @@ export class CollectionBrowserDataSource
     this.aggregations = aggregations;
 
     if (collectionTitles) {
-      this.collectionTitles = {
-        ...this.collectionTitles,
-        ...collectionTitles,
-      };
+      for (const [id, title] of Object.entries(collectionTitles)) {
+        this.collectionTitles.set(id, title);
+      }
     }
 
     this.yearHistogramAggregation =
@@ -753,10 +754,9 @@ export class CollectionBrowserDataSource
       // Load any collection titles present on the response into the cache,
       // or queue up preload fetches for them if none were present.
       if (collectionTitles) {
-        this.collectionTitles = {
-          ...this.collectionTitles,
-          ...collectionTitles,
-        };
+        for (const [id, title] of Object.entries(collectionTitles)) {
+          this.collectionTitles.set(id, title);
+        }
       }
 
       // Update the data source for each returned page

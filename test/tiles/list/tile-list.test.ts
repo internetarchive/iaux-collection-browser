@@ -4,7 +4,6 @@ import { html } from 'lit';
 import type { TileList } from '../../../src/tiles/list/tile-list';
 
 import '../../../src/tiles/list/tile-list';
-import { MockCollectionNameCache } from '../../mocks/mock-collection-name-cache';
 import type { TileModel } from '../../../src/models';
 
 describe('List Tile', () => {
@@ -83,12 +82,10 @@ describe('List Tile', () => {
   });
 
   it('should not render suppressed collections', async () => {
-    const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<TileList>(html`
       <tile-list
         .model=${{ collections: ['deemphasize', 'community', 'foo'] }}
         .baseNavigationUrl=${'base'}
-        .collectionNameCache=${collectionNameCache}
       >
       </tile-list>
     `);
@@ -104,12 +101,10 @@ describe('List Tile', () => {
   });
 
   it('should not render fav- collections', async () => {
-    const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<TileList>(html`
       <tile-list
         .model=${{ collections: ['fav-foo', 'bar'] }}
         .baseNavigationUrl=${'base'}
-        .collectionNameCache=${collectionNameCache}
       >
       </tile-list>
     `);

@@ -22,8 +22,6 @@ import type {
 } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
-import '@internetarchive/collection-name-cache';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import {
   ModalConfig,
   ModalManagerInterface,
@@ -57,6 +55,7 @@ import {
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
 import { ExpandedDatePicker } from './expanded-date-picker';
+import type { CollectionBrowserDataSourceInterface } from './state/collection-browser-data-source';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -118,7 +117,7 @@ export class CollectionFacets extends LitElement {
   analyticsHandler?: AnalyticsManagerInterface;
 
   @property({ type: Object, attribute: false })
-  collectionNameCache?: CollectionNameCacheInterface;
+  dataSource?: CollectionBrowserDataSourceInterface;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -188,11 +187,7 @@ export class CollectionFacets extends LitElement {
                 data-id=${collxn}
                 @click=${this.partOfCollectionClicked}
               >
-                <async-collection-name
-                  .collectionNameCache=${this.collectionNameCache}
-                  .identifier=${collxn}
-                  placeholder=${collxn}
-                ></async-collection-name>
+                ${this.dataSource?.collectionTitles.get(collxn) ?? collxn}
               </a>
             </li>`;
           })}
@@ -652,7 +647,7 @@ export class CollectionFacets extends LitElement {
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}
-        .collectionNameCache=${this.collectionNameCache}
+        .dataSource=${this.dataSource}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
         @facetsChanged=${(e: CustomEvent) => {
@@ -694,7 +689,7 @@ export class CollectionFacets extends LitElement {
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'page'}
-        .collectionNameCache=${this.collectionNameCache}
+        .dataSource=${this.dataSource}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,

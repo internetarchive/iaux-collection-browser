@@ -7,7 +7,6 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import eyeIcon from '../assets/img/icons/eye';
 import eyeClosedIcon from '../assets/img/icons/eye-closed';
 import type {
@@ -16,6 +15,7 @@ import type {
   FacetEventDetails,
   FacetState,
 } from '../models';
+import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
 
 @customElement('facet-row')
 export class FacetRow extends LitElement {
@@ -31,7 +31,7 @@ export class FacetRow extends LitElement {
 
   /** The collection name cache for converting collection identifiers to titles */
   @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  dataSource?: CollectionBrowserDataSourceInterface;
 
   //
   // COMPONENT LIFECYCLE METHODS
@@ -63,11 +63,7 @@ export class FacetRow extends LitElement {
       facetType !== 'collection'
         ? html`${bucket.displayText ?? bucket.key}`
         : html`<a href="/details/${bucket.key}">
-            <async-collection-name
-              .collectionNameCache=${this.collectionNameCache}
-              .identifier=${bucket.key}
-              placeholder="-"
-            ></async-collection-name>
+            ${this.dataSource?.collectionTitles.get(bucket.key) ?? bucket.key}
           </a> `;
 
     const facetHidden = bucket.state === 'hidden';
