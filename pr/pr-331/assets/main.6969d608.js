@@ -5211,8 +5211,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         }
 
         .facets-message {
-          text-align: center;
-          font-size: 1.2rem;
+          font-size: 1.4rem;
         }
 
         .desktop #left-column-scroll-sentinel {
