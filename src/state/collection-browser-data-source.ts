@@ -13,7 +13,6 @@ import {
 import type { FacetBucket, TileModel } from '../models';
 import type { CollectionBrowserSearchState } from './models';
 import { sha1 } from '../utils/sha1';
-import { CollectionTitlesMap } from './collection-titles-map';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 export interface CollectionBrowserDataSourceInterface
@@ -89,7 +88,7 @@ export interface CollectionBrowserDataSourceInterface
 
   readonly yearHistogramAggregation?: Aggregation;
 
-  readonly collectionTitles: CollectionTitlesMap;
+  readonly collectionTitles: Map<string, string>;
 
   readonly collectionExtraInfo?: CollectionExtraInfo;
 
@@ -118,7 +117,7 @@ export class CollectionBrowserDataSource
 
   yearHistogramAggregation?: Aggregation;
 
-  collectionTitles = new CollectionTitlesMap();
+  collectionTitles = new Map<string, string>();
 
   collectionExtraInfo?: CollectionExtraInfo;
 
