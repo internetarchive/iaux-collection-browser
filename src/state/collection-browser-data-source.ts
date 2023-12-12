@@ -1,7 +1,12 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import {
   Aggregation,
+  CollectionExtraInfo,
+  FilterConstraint,
+  FilterMap,
+  FilterMapBuilder,
   SearchParams,
+  SearchResult,
   SearchType,
 } from '@internetarchive/search-service';
 import type { FacetBucket, TileModel } from '../models';
@@ -20,6 +25,8 @@ export interface CollectionBrowserDataSourceInterface
   hasPage(pageNum: number): boolean;
 
   getTileModelAt(index: number): TileModel | undefined;
+
+  fetchPage(pageNumber: number, numInitialPages?: number): Promise<void>;
 
   setPageSize(pageSize: number): void;
 
@@ -62,6 +69,29 @@ export interface CollectionBrowserDataSourceInterface
    * An array of all the tile models whose management checkboxes are unchecked
    */
   readonly uncheckedTileModels: TileModel[];
+
+  readonly canPerformSearch: boolean;
+
+  readonly pageFetchQueryKey: string;
+
+  readonly facetFetchQueryKey: string;
+
+  readonly collectionParams: {
+    pageType: string;
+    pageTarget: string;
+  } | null;
+
+  readonly filterMap: FilterMap;
+
+  readonly aggregations?: Record<string, Aggregation>;
+
+  readonly yearHistogramAggregation?: Aggregation;
+
+  readonly collectionTitles: Record<string, string>;
+
+  readonly collectionExtraInfo?: CollectionExtraInfo;
+
+  readonly parentCollections?: string[];
 }
 
 export class CollectionBrowserDataSource
@@ -69,13 +99,28 @@ export class CollectionBrowserDataSource
 {
   private pages: Record<string, TileModel[]> = {};
 
-  private aggregations?: Record<string, Aggregation>;
-
-  private fullYearsHistogramAggregation: Aggregation | undefined;
-
   private offset = 0;
 
   private numTileModels = 0;
+
+  /**
+   * Maps the full query to the pages being fetched for that query
+   */
+  private pageFetchesInProgress: Record<string, Set<number>> = {};
+
+  totalResults = 0;
+
+  endOfDataReached = false;
+
+  aggregations?: Record<string, Aggregation>;
+
+  yearHistogramAggregation?: Aggregation;
+
+  collectionTitles: Record<string, string> = {};
+
+  collectionExtraInfo?: CollectionExtraInfo;
+
+  parentCollections?: string[] = [];
 
   constructor(
     /** The host element to which this controller should attach listeners */
@@ -235,7 +280,7 @@ export class CollectionBrowserDataSource
 
   // DATA FETCHES
 
-  private get canPerformSearch(): boolean {
+  get canPerformSearch(): boolean {
     if (!this.host.searchService) return false;
 
     const trimmedQuery = this.host.baseQuery?.trim();
@@ -262,7 +307,7 @@ export class CollectionBrowserDataSource
    * This lets us keep track of queries so we don't persist data that's
    * no longer relevant.
    */
-  private get pageFetchQueryKey(): string {
+  get pageFetchQueryKey(): string {
     const sortField = this.host.sortParam?.field ?? 'none';
     const sortDirection = this.host.sortParam?.direction ?? 'none';
     return `${this.fullQuery}-${this.host.withinCollection}-${this.host.searchType}-${sortField}-${sortDirection}`;
@@ -272,8 +317,76 @@ export class CollectionBrowserDataSource
    * Similar to `pageFetchQueryKey` above, but excludes sort fields since they
    * are not relevant in determining aggregation queries.
    */
-  private get facetFetchQueryKey(): string {
+  get facetFetchQueryKey(): string {
     return `${this.fullQuery}-${this.host.withinCollection}-${this.host.searchType}`;
+  }
+
+  /**
+   * Constructs a search service FilterMap object from the combination of
+   * all the currently-applied filters. This includes any facets, letter
+   * filters, and date range.
+   */
+  get filterMap(): FilterMap {
+    const builder = new FilterMapBuilder();
+
+    // Add the date range, if applicable
+    if (this.host.minSelectedDate) {
+      builder.addFilter(
+        'year',
+        this.host.minSelectedDate,
+        FilterConstraint.GREATER_OR_EQUAL
+      );
+    }
+    if (this.host.maxSelectedDate) {
+      builder.addFilter(
+        'year',
+        this.host.maxSelectedDate,
+        FilterConstraint.LESS_OR_EQUAL
+      );
+    }
+
+    // Add any selected facets
+    if (this.host.selectedFacets) {
+      for (const [facetName, facetValues] of Object.entries(
+        this.host.selectedFacets
+      )) {
+        const { name, values } = this.prepareFacetForFetch(
+          facetName,
+          facetValues
+        );
+        for (const [value, bucket] of Object.entries(values)) {
+          let constraint;
+          if (bucket.state === 'selected') {
+            constraint = FilterConstraint.INCLUDE;
+          } else if (bucket.state === 'hidden') {
+            constraint = FilterConstraint.EXCLUDE;
+          }
+
+          if (constraint) {
+            builder.addFilter(name, value, constraint);
+          }
+        }
+      }
+    }
+
+    // Add any letter filters
+    if (this.host.selectedTitleFilter) {
+      builder.addFilter(
+        'firstTitle',
+        this.host.selectedTitleFilter,
+        FilterConstraint.INCLUDE
+      );
+    }
+    if (this.host.selectedCreatorFilter) {
+      builder.addFilter(
+        'firstCreator',
+        this.host.selectedCreatorFilter,
+        FilterConstraint.INCLUDE
+      );
+    }
+
+    const filterMap = builder.build();
+    return filterMap;
   }
 
   /**
@@ -312,7 +425,7 @@ export class CollectionBrowserDataSource
    * Additional params to pass to the search service if targeting a collection page,
    * or null otherwise.
    */
-  private get collectionParams(): {
+  get collectionParams(): {
     pageType: string;
     pageTarget: string;
   } | null {
@@ -472,7 +585,7 @@ export class CollectionBrowserDataSource
       ...this.collectionParams,
       query: trimmedQuery || '',
       rows: 0,
-      filters: this.host.filterMap,
+      filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
       aggregationsSize: 10,
       // Note: we don't need an aggregations param to fetch the default aggregations from the PPS.
@@ -512,20 +625,17 @@ export class CollectionBrowserDataSource
       return;
     }
 
-    const { aggregations /* , collectionTitles */ } = success.response;
+    const { aggregations, collectionTitles } = success.response;
     this.aggregations = aggregations;
 
-    // if (collectionTitles) {
-    //   this.collectionNameCache?.addKnownTitles(collectionTitles);
-    // } else if (this.aggregations?.collection) {
-    //   this.collectionNameCache?.preloadIdentifiers(
-    //     (this.aggregations.collection.buckets as Bucket[]).map(bucket =>
-    //       bucket.key?.toString()
-    //     )
-    //   );
-    // }
+    if (collectionTitles) {
+      this.collectionTitles = {
+        ...this.collectionTitles,
+        ...collectionTitles,
+      };
+    }
 
-    this.fullYearsHistogramAggregation =
+    this.yearHistogramAggregation =
       success?.response?.aggregations?.year_histogram;
 
     this.host.setFacetsLoading(false);
@@ -534,7 +644,248 @@ export class CollectionBrowserDataSource
   private async doInitialPageFetch(): Promise<void> {
     this.host.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
-    await this.host.fetchPage(this.host.initialPageNumber, 2);
+    await this.fetchPage(this.host.initialPageNumber, 2);
     this.host.setSearchResultsLoading(false);
+  }
+
+  /**
+   * Fetches one or more pages of results and updates the data source.
+   *
+   * @param pageNumber The page number to fetch
+   * @param numInitialPages If this is an initial page fetch (`pageNumber = 1`),
+   *  specifies how many pages to batch together in one request. Ignored
+   *  if `pageNumber != 1`, defaulting to a single page.
+   */
+  async fetchPage(pageNumber: number, numInitialPages = 1) {
+    const trimmedQuery = this.host.baseQuery?.trim();
+    if (!this.canPerformSearch) return;
+
+    // if we already have data, don't fetch again
+    if (this.hasPage(pageNumber)) return;
+
+    if (this.endOfDataReached) return;
+
+    // Batch multiple initial page requests together if needed (e.g., can request
+    // pages 1 and 2 together in a single request).
+    const numPages = pageNumber === 1 ? numInitialPages : 1;
+    const numRows = this.pageSize * numPages;
+
+    // if a fetch is already in progress for this query and page, don't fetch again
+    const { pageFetchQueryKey } = this;
+    const pageFetches =
+      this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
+    if (pageFetches.has(pageNumber)) return;
+    for (let i = 0; i < numPages; i += 1) {
+      pageFetches.add(pageNumber + i);
+    }
+    this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
+
+    const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
+    const params: SearchParams = {
+      ...this.collectionParams,
+      query: trimmedQuery || '',
+      page: pageNumber,
+      rows: numRows,
+      sort: sortParams,
+      filters: this.filterMap,
+      aggregations: { omit: true },
+    };
+    params.uid = await this.requestUID(params, 'hits');
+
+    const searchResponse = await this.host.searchService?.search(
+      params,
+      this.host.searchType
+    );
+    const success = searchResponse?.success;
+
+    // This is checking to see if the query has changed since the data was fetched.
+    // If so, we just want to discard the data since there should be a new query
+    // right behind it.
+    const queryChangedSinceFetch = pageFetchQueryKey !== this.pageFetchQueryKey;
+    if (queryChangedSinceFetch) return;
+
+    if (!success) {
+      const errorMsg = searchResponse?.error?.message;
+      const detailMsg = searchResponse?.error?.details?.message;
+
+      this.host.queryErrorMessage = `${errorMsg ?? ''}${
+        detailMsg ? `; ${detailMsg}` : ''
+      }`;
+
+      if (!this.host.queryErrorMessage) {
+        this.host.queryErrorMessage =
+          'Missing or malformed response from backend';
+        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
+      }
+
+      for (let i = 0; i < numPages; i += 1) {
+        this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
+      }
+
+      this.host.setSearchResultsLoading(false);
+      return;
+    }
+
+    this.totalResults = success.response.totalResults - this.offset;
+
+    // display event to offshoot when result count is zero.
+    if (this.totalResults === 0) {
+      this.host.emitEmptyResults();
+    }
+
+    if (this.host.withinCollection) {
+      this.collectionExtraInfo = success.response.collectionExtraInfo;
+
+      // For collections, we want the UI to respect the default sort option
+      // which can be specified in metadata, or otherwise assumed to be week:desc
+      this.host.applyDefaultCollectionSort(this.collectionExtraInfo);
+
+      if (this.collectionExtraInfo) {
+        this.parentCollections = [].concat(
+          this.collectionExtraInfo.public_metadata?.collection ?? []
+        );
+      }
+    }
+
+    const { results, collectionTitles } = success.response;
+    if (results && results.length > 0) {
+      // Load any collection titles present on the response into the cache,
+      // or queue up preload fetches for them if none were present.
+      if (collectionTitles) {
+        this.collectionTitles = {
+          ...this.collectionTitles,
+          ...collectionTitles,
+        };
+      }
+
+      // Update the data source for each returned page
+      for (let i = 0; i < numPages; i += 1) {
+        const pageStartIndex = this.pageSize * i;
+        this.addTilesToDataSource(
+          pageNumber + i,
+          results.slice(pageStartIndex, pageStartIndex + this.pageSize)
+        );
+      }
+    }
+
+    // When we reach the end of the data, we can set the infinite scroller's
+    // item count to the real total number of results (rather than the
+    // temporary estimates based on pages rendered so far).
+    const resultCountDiscrepancy = numRows - results.length;
+    if (resultCountDiscrepancy > 0) {
+      this.endOfDataReached = true;
+      this.host.setTotalResultCount(this.totalResults);
+    }
+
+    for (let i = 0; i < numPages; i += 1) {
+      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
+    }
+  }
+
+  /**
+   * Update the datasource from the fetch response
+   *
+   * @param pageNumber
+   * @param results
+   */
+  private addTilesToDataSource(pageNumber: number, results: SearchResult[]) {
+    // copy our existing datasource so when we set it below, it gets set
+    // instead of modifying the existing dataSource since object changes
+    // don't trigger a re-render
+    // const datasource = { ...this.dataSource };
+    const tiles: TileModel[] = [];
+    results?.forEach(result => {
+      if (!result.identifier) return;
+
+      let loginRequired = false;
+      let contentWarning = false;
+      // Check if item and item in "modifying" collection, setting above flags
+      if (
+        result.collection?.values.length &&
+        result.mediatype?.value !== 'collection'
+      ) {
+        for (const collection of result.collection?.values ?? []) {
+          if (collection === 'loggedin') {
+            loginRequired = true;
+            if (contentWarning) break;
+          }
+          if (collection === 'no-preview') {
+            contentWarning = true;
+            if (loginRequired) break;
+          }
+        }
+      }
+
+      tiles.push({
+        averageRating: result.avg_rating?.value,
+        checked: false,
+        collections: result.collection?.values ?? [],
+        collectionFilesCount: result.collection_files_count?.value ?? 0,
+        collectionSize: result.collection_size?.value ?? 0,
+        commentCount: result.num_reviews?.value ?? 0,
+        creator: result.creator?.value,
+        creators: result.creator?.values ?? [],
+        dateAdded: result.addeddate?.value,
+        dateArchived: result.publicdate?.value,
+        datePublished: result.date?.value,
+        dateReviewed: result.reviewdate?.value,
+        description: result.description?.values.join('\n'),
+        favCount: result.num_favorites?.value ?? 0,
+        href: this.collapseRepeatedQuotes(result.__href__?.value),
+        identifier: result.identifier,
+        issue: result.issue?.value,
+        itemCount: result.item_count?.value ?? 0,
+        mediatype: this.getMediatype(result),
+        snippets: result.highlight?.values ?? [],
+        source: result.source?.value,
+        subjects: result.subject?.values ?? [],
+        title: result.title?.value ?? '',
+        volume: result.volume?.value,
+        viewCount: result.downloads?.value ?? 0,
+        weeklyViewCount: result.week?.value,
+        loginRequired,
+        contentWarning,
+      });
+    });
+    this.addPage(pageNumber, tiles);
+    const visiblePages = this.host.currentVisiblePageNumbers;
+    const needsReload = visiblePages.includes(pageNumber);
+    if (needsReload) {
+      this.host.refreshVisibleResults();
+    }
+  }
+
+  private getMediatype(result: SearchResult) {
+    /**
+     * hit_type == 'favorited_search' is basically a new hit_type
+     * - we are getting from PPS.
+     * - which gives response for fav- collection
+     * - having favorited items like account/collection/item etc..
+     * - as user can also favorite a search result (a search page)
+     * - so we need to have response (having fav- items and fav- search results)
+     *
+     * if backend hit_type == 'favorited_search'
+     * - let's assume a "search" as new mediatype
+     */
+    if (result?.rawMetadata?.hit_type === 'favorited_search') {
+      return 'search';
+    }
+
+    return result.mediatype?.value ?? 'data';
+  }
+
+  /**
+   * Returns the input string, but removing one set of quotes from all instances of
+   * ""clauses wrapped in two sets of quotes"". This assumes the quotes are already
+   * URL-encoded.
+   *
+   * This should be a temporary measure to address the fact that the __href__ field
+   * sometimes acquires extra quotation marks during query rewriting. Once there is a
+   * full Lucene parser in place that handles quoted queries correctly, this can likely
+   * be removed.
+   */
+  private collapseRepeatedQuotes(str?: string): string | undefined {
+    return str?.replace(/%22%22(?!%22%22)(.+?)%22%22/g, '%22$1%22');
   }
 }
