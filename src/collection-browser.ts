@@ -2597,8 +2597,7 @@ export class CollectionBrowser
         }
 
         .facets-message {
-          text-align: center;
-          font-size: 1.2rem;
+          font-size: 1.4rem;
         }
 
         .desktop #left-column-scroll-sentinel {
