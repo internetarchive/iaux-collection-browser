@@ -957,12 +957,13 @@ export class CollectionBrowser
    * The template for the facets component alone, without any surrounding wrappers.
    */
   private get facetsTemplate() {
-    if (this.suppressFacets)
+    if (this.suppressFacets) {
       return html`
         <p class="facets-message">
           ${msg('Facets are temporarily unavailable.')}
         </p>
       `;
+    }
 
     return html`
       <collection-facets
