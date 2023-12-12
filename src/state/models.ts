@@ -1,4 +1,5 @@
 import type {
+  CollectionExtraInfo,
   FilterMap,
   SearchServiceInterface,
   SearchType,
@@ -24,9 +25,14 @@ export interface CollectionBrowserSearchState {
   readonly filterMap: FilterMap;
   readonly suppressFacets?: boolean;
   readonly initialPageNumber: number;
+  readonly currentVisiblePageNumbers: number[];
+  queryErrorMessage?: string;
 
   getSessionId(): Promise<string>;
   setSearchResultsLoading(loading: boolean): void;
   setFacetsLoading(loading: boolean): void;
-  fetchPage(pageNumber: number, numInitialPages?: number): Promise<void>;
+  setTotalResultCount(count: number): void;
+  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void;
+  emitEmptyResults(): void;
+  refreshVisibleResults(): void;
 }
