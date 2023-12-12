@@ -4,7 +4,6 @@ import { html } from 'lit';
 import type { FacetRow } from '../../src/collection-facets/facet-row';
 import '../../src/collection-facets/facet-row';
 import type { FacetState } from '../../src/models';
-import { MockCollectionNameCache } from '../mocks/mock-collection-name-cache';
 
 describe('Facet row', () => {
   it('renders nothing if no bucket provided', async () => {
@@ -123,7 +122,6 @@ describe('Facet row', () => {
   });
 
   it('renders collection facets as links', async () => {
-    const collectionNameCache = new MockCollectionNameCache();
     const bucket = {
       key: 'foo',
       state: 'none' as FacetState,
@@ -131,24 +129,17 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row
-        .facetType=${'collection'}
-        .bucket=${bucket}
-        .collectionNameCache=${collectionNameCache}
-      ></facet-row>`
+      html`<facet-row .facetType=${'collection'} .bucket=${bucket}></facet-row>`
     );
 
     const collectionName = el.shadowRoot?.querySelector(
-      'async-collection-name'
+      '.facet-title > a:link'
     );
-    expect(collectionName?.parentElement).to.be.instanceOf(HTMLAnchorElement);
-    expect(collectionName?.parentElement?.getAttribute('href')).to.equal(
-      '/details/foo'
-    );
+    expect(collectionName).to.exist;
+    expect(collectionName?.getAttribute('href')).to.equal('/details/foo');
   });
 
   it('does not render non-collection facets as links', async () => {
-    const collectionNameCache = new MockCollectionNameCache();
     const bucket = {
       key: 'foo',
       state: 'none' as FacetState,
@@ -156,11 +147,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row
-        .facetType=${'subject'}
-        .bucket=${bucket}
-        .collectionNameCache=${collectionNameCache}
-      ></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
     );
 
     expect(el.shadowRoot?.querySelector('a:link')).not.to.exist;

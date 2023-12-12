@@ -31,7 +31,6 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import '@internetarchive/infinite-scroller';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
@@ -146,9 +145,6 @@ export class CollectionBrowser
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
     analyticsCategories.default;
-
-  @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
 
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
 
@@ -895,7 +891,7 @@ export class CollectionBrowser
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
         .baseNavigationUrl=${this.baseNavigationUrl}
-        .collectionNameCache=${this.collectionNameCache}
+        .dataSource=${this.dataSource}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
         .contentWidth=${this.contentWidth}
@@ -1667,15 +1663,15 @@ export class CollectionBrowser
       }
     }
 
-    const { results, collectionTitles } = success.response;
+    const { results } = success.response;
     if (results && results.length > 0) {
       // Load any collection titles present on the response into the cache,
       // or queue up preload fetches for them if none were present.
-      if (collectionTitles) {
-        this.collectionNameCache?.addKnownTitles(collectionTitles);
-      } else {
-        this.preloadCollectionNames(results);
-      }
+      // if (collectionTitles) {
+      //   this.collectionNameCache?.addKnownTitles(collectionTitles);
+      // } else {
+      //   this.preloadCollectionNames(results);
+      // }
 
       // Update the data source for each returned page
       for (let i = 0; i < numPages; i += 1) {
@@ -1707,14 +1703,6 @@ export class CollectionBrowser
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
-  }
-
-  private preloadCollectionNames(results: SearchResult[]) {
-    const collectionIds = results
-      .map(result => result.collection?.values)
-      .flat();
-    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
-    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
   }
 
   /**
@@ -2019,7 +2007,7 @@ export class CollectionBrowser
         .model=${model}
         .tileDisplayMode=${this.displayMode}
         .resizeObserver=${this.resizeObserver}
-        .collectionNameCache=${this.collectionNameCache}
+        .dataSource=${this.dataSource}
         .sortParam=${this.sortParam}
         .defaultSortParam=${this.defaultSortParam}
         .creatorFilter=${this.selectedCreatorFilter}

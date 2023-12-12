@@ -8,7 +8,6 @@ import {
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import {
   FacetGroup,
   FacetBucket,
@@ -17,6 +16,7 @@ import {
   FacetEventDetails,
 } from '../models';
 import { FacetRow } from './facet-row';
+import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
 
 @customElement('facets-template')
 export class FacetsTemplate extends LitElement {
@@ -27,7 +27,7 @@ export class FacetsTemplate extends LitElement {
   @property({ type: String }) renderOn?: string;
 
   @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  dataSource?: CollectionBrowserDataSourceInterface;
 
   private facetClicked(e: CustomEvent<FacetEventDetails>) {
     const { bucket, negative } = e.detail;
@@ -126,7 +126,7 @@ export class FacetsTemplate extends LitElement {
           bucket => html`<facet-row
             .facetType=${facetGroup.key}
             .bucket=${bucket}
-            .collectionNameCache=${this.collectionNameCache}
+            .dataSource=${this.dataSource}
             @facetClick=${this.facetClicked}
           ></facet-row>`
         )}

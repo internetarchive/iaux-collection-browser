@@ -7,7 +7,6 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { msg } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { suppressedCollections } from '../../models';
 import { BaseTileComponent } from '../base-tile-component';
 
@@ -17,6 +16,7 @@ import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
 import '../mediatype-icon';
+import type { CollectionBrowserDataSourceInterface } from '../../state/collection-browser-data-source';
 
 @customElement('tile-list')
 export class TileList extends BaseTileComponent {
@@ -35,7 +35,7 @@ export class TileList extends BaseTileComponent {
    */
 
   @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  dataSource?: CollectionBrowserDataSourceInterface;
 
   @state() private collectionLinks: TemplateResult[] = [];
 
@@ -388,7 +388,7 @@ export class TileList extends BaseTileComponent {
     if (
       !this.model?.collections ||
       this.model.collections.length === 0 ||
-      !this.collectionNameCache
+      !this.dataSource
     ) {
       return;
     }
@@ -396,23 +396,21 @@ export class TileList extends BaseTileComponent {
     // otherwise it will not re-render. Can't simply alter the array.
     this.collectionLinks = [];
     const newCollectionLinks: TemplateResult[] = [];
-    const promises: Promise<void>[] = [];
     for (const collection of this.model.collections) {
       // Don't include favorites or collections that are meant to be suppressed
       if (
         !suppressedCollections[collection] &&
         !collection.startsWith('fav-')
       ) {
-        promises.push(
-          this.collectionNameCache?.collectionNameFor(collection).then(name => {
-            newCollectionLinks.push(
-              this.detailsLink(collection, name ?? collection, true)
-            );
-          })
+        newCollectionLinks.push(
+          this.detailsLink(
+            collection,
+            this.dataSource?.collectionTitles.get(collection) ?? collection,
+            true
+          )
         );
       }
     }
-    await Promise.all(promises);
     this.collectionLinks = newCollectionLinks;
   }
 
