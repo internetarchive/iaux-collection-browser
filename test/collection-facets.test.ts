@@ -16,7 +16,6 @@ import {
   getDefaultSelectedFacets,
 } from '../src/models';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
-import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import type { FacetRow } from '../src/collection-facets/facet-row';
 import type { FacetsTemplate } from '../src/collection-facets/facets-template';
 
@@ -784,13 +783,11 @@ describe('Collection Facets', () => {
   });
 
   it('includes Part Of section for collections', async () => {
-    const mockCollectionNameCache = new MockCollectionNameCache();
     const el = await fixture<CollectionFacets>(
       html`<collection-facets
         .baseNavigationUrl=${''}
         .withinCollection=${'foo'}
         .parentCollections=${['bar', 'baz']}
-        .collectionNameCache=${mockCollectionNameCache}
       ></collection-facets>`
     );
 
@@ -852,7 +849,6 @@ describe('Collection Facets', () => {
   });
 
   it('fires analytics on clicking Part Of collection link', async () => {
-    const mockCollectionNameCache = new MockCollectionNameCache();
     const mockAnalyticsHandler = new MockAnalyticsHandler();
 
     const el = await fixture<CollectionFacets>(
@@ -860,7 +856,6 @@ describe('Collection Facets', () => {
         .baseNavigationUrl=${''}
         .withinCollection=${'foo'}
         .parentCollections=${['bar']}
-        .collectionNameCache=${mockCollectionNameCache}
         .analyticsHandler=${mockAnalyticsHandler}
       ></collection-facets>`
     );

@@ -13,13 +13,13 @@ import { customElement, property, state } from 'lit/decorators.js';
 import {
   Aggregation,
   Bucket,
+  PageType,
   SearchServiceInterface,
   SearchParams,
   SearchType,
   AggregationSortType,
   FilterMap,
 } from '@internetarchive/search-service';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import {
@@ -41,6 +41,7 @@ import {
 } from '../utils/analytics-events';
 import './toggle-switch';
 import { srOnlyStyle } from '../styles/sr-only';
+import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -61,7 +62,7 @@ export class MoreFacetsContent extends LitElement {
   @property({ type: String }) withinCollection?: string;
 
   @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  dataSource?: CollectionBrowserDataSourceInterface;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
@@ -142,7 +143,10 @@ export class MoreFacetsContent extends LitElement {
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
     const collectionParams = this.withinCollection
-      ? { pageType: 'collection_details', pageTarget: this.withinCollection }
+      ? {
+          pageType: 'collection_details' as PageType,
+          pageTarget: this.withinCollection,
+        }
       : null;
 
     const params: SearchParams = {
@@ -159,6 +163,13 @@ export class MoreFacetsContent extends LitElement {
 
     this.facetGroup = this.aggregationFacetGroups;
     this.facetsLoading = false;
+
+    const collectionTitles = results?.success?.response?.collectionTitles;
+    if (collectionTitles) {
+      for (const [id, title] of Object.entries(collectionTitles)) {
+        this.dataSource?.collectionTitles.set(id, title);
+      }
+    }
   }
 
   private pageNumberClicked(e: CustomEvent<{ page: number }>) {
@@ -285,9 +296,6 @@ export class MoreFacetsContent extends LitElement {
             !suppressedCollections[bucketKey] && !bucketKey?.startsWith('fav-')
           );
         });
-
-        // asynchronously load the collection name
-        this.preloadCollectionNames(castedBuckets);
       }
 
       // find length and pagination size for modal pagination
@@ -320,26 +328,13 @@ export class MoreFacetsContent extends LitElement {
     return facetGroups;
   }
 
-  /**
-   * for collections, we need to asynchronously load the collection name
-   * so we use the `async-collection-name` widget and for the rest, we have a static value to use
-   *
-   * @param castedBuckets
-   */
-  private preloadCollectionNames(castedBuckets: any[]) {
-    const collectionIds = castedBuckets?.map(option => option.key);
-    const collectionIdsArray = Array.from(new Set(collectionIds)) as string[];
-
-    this.collectionNameCache?.preloadIdentifiers(collectionIdsArray);
-  }
-
   private get getMoreFacetsTemplate(): TemplateResult {
     return html`
       <facets-template
         .facetGroup=${this.mergedFacets?.shift()}
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'modal'}
-        .collectionNameCache=${this.collectionNameCache}
+        .dataSource=${this.dataSource}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           this.selectedFacets = e.detail;
         }}

@@ -9,11 +9,9 @@ import {
   SearchType,
   StringField,
 } from '@internetarchive/search-service';
-import { LocalCache } from '@internetarchive/local-cache';
 import { html, css, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
-import { CollectionNameCache } from '@internetarchive/collection-name-cache';
 
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
@@ -27,13 +25,6 @@ export class AppRoot extends LitElement {
     this.initSearchServiceFromUrlParams();
 
   private resizeObserver = new SharedResizeObserver();
-
-  private localCache = new LocalCache();
-
-  private collectionNameCache = new CollectionNameCache({
-    searchService: this.searchService,
-    localCache: this.localCache,
-  });
 
   @state() private toggleSlots: boolean = false;
 
@@ -415,7 +406,6 @@ export class AppRoot extends LitElement {
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
-          .collectionNameCache=${this.collectionNameCache}
           .showHistogramDatePicker=${true}
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
