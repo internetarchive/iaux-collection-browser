@@ -15,8 +15,8 @@ import {
   getDefaultSelectedFacets,
   FacetEventDetails,
 } from '../models';
+import type { CollectionTitles } from '../data-source/models';
 import { FacetRow } from './facet-row';
-import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
 
 @customElement('facets-template')
 export class FacetsTemplate extends LitElement {
@@ -27,7 +27,7 @@ export class FacetsTemplate extends LitElement {
   @property({ type: String }) renderOn?: string;
 
   @property({ type: Object })
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 
   private facetClicked(e: CustomEvent<FacetEventDetails>) {
     const { bucket, negative } = e.detail;
@@ -126,7 +126,7 @@ export class FacetsTemplate extends LitElement {
           bucket => html`<facet-row
             .facetType=${facetGroup.key}
             .bucket=${bucket}
-            .dataSource=${this.dataSource}
+            .collectionTitles=${this.collectionTitles}
             @facetClick=${this.facetClicked}
           ></facet-row>`
         )}

@@ -7,6 +7,8 @@ import type {
 } from '@internetarchive/search-service';
 import type { SelectedFacets, SortField } from '../models';
 
+export type CollectionTitles = Map<string, string>;
+
 export interface CollectionBrowserSearchState {
   baseQuery?: string;
   withinCollection?: string;

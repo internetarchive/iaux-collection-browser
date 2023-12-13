@@ -62,8 +62,8 @@ import {
 import {
   CollectionBrowserDataSource,
   CollectionBrowserDataSourceInterface,
-} from './state/collection-browser-data-source';
-import type { CollectionBrowserSearchState } from './state/models';
+} from './data-source/collection-browser-data-source';
+import type { CollectionBrowserSearchState } from './data-source/models';
 import chevronIcon from './assets/img/icons/chevron';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
@@ -891,7 +891,7 @@ export class CollectionBrowser
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
         .baseNavigationUrl=${this.baseNavigationUrl}
-        .dataSource=${this.dataSource}
+        .collectionTitles=${this.dataSource.collectionTitles}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
         .contentWidth=${this.contentWidth}
@@ -2007,7 +2007,7 @@ export class CollectionBrowser
         .model=${model}
         .tileDisplayMode=${this.displayMode}
         .resizeObserver=${this.resizeObserver}
-        .dataSource=${this.dataSource}
+        .collectionTitles=${this.dataSource.collectionTitles}
         .sortParam=${this.sortParam}
         .defaultSortParam=${this.defaultSortParam}
         .creatorFilter=${this.selectedCreatorFilter}
