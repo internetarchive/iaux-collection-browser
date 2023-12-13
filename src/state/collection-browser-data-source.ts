@@ -174,7 +174,10 @@ export class CollectionBrowserDataSource
 
   async handleQueryChange(): Promise<void> {
     this.reset();
-    await Promise.all([this.doInitialPageFetch(), this.fetchFacets()]);
+    await Promise.all([
+      this.doInitialPageFetch(),
+      this.host.suppressFacets ? null : this.fetchFacets(),
+    ]);
   }
 
   map(
