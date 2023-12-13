@@ -8,6 +8,7 @@ import { msg } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
 import { suppressedCollections } from '../../models';
+import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
@@ -16,7 +17,6 @@ import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
 import '../mediatype-icon';
-import type { CollectionBrowserDataSourceInterface } from '../../state/collection-browser-data-source';
 
 @customElement('tile-list')
 export class TileList extends BaseTileComponent {
@@ -35,7 +35,7 @@ export class TileList extends BaseTileComponent {
    */
 
   @property({ type: Object })
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 
   @state() private collectionLinks: TemplateResult[] = [];
 
@@ -379,19 +379,16 @@ export class TileList extends BaseTileComponent {
   }
 
   protected updated(changed: PropertyValues): void {
-    if (changed.has('model')) {
-      this.fetchCollectionNames();
+    if (changed.has('model') || changed.has('collectionTitles')) {
+      this.buildCollectionLinks();
     }
   }
 
-  private async fetchCollectionNames() {
-    if (
-      !this.model?.collections ||
-      this.model.collections.length === 0 ||
-      !this.dataSource
-    ) {
+  private async buildCollectionLinks() {
+    if (!this.model?.collections || this.model.collections.length === 0) {
       return;
     }
+
     // Note: quirk of Lit: need to replace collectionLinks array,
     // otherwise it will not re-render. Can't simply alter the array.
     this.collectionLinks = [];
@@ -405,7 +402,7 @@ export class TileList extends BaseTileComponent {
         newCollectionLinks.push(
           this.detailsLink(
             collection,
-            this.dataSource?.collectionTitles.get(collection) ?? collection,
+            this.collectionTitles?.get(collection) ?? collection,
             true
           )
         );

@@ -7,7 +7,7 @@ import {
   ReactiveControllerHost,
 } from 'lit';
 import type { TileModel } from '../../models';
-import type { CollectionBrowserDataSourceInterface } from '../../state/collection-browser-data-source';
+import type { CollectionTitles } from '../../data-source/models';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
@@ -17,7 +17,7 @@ export interface HoverPaneProperties {
   baseImageUrl?: string;
   loggedIn: boolean;
   sortParam: SortParam | null;
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 }
 
 export interface HoverPaneControllerOptions {
@@ -187,7 +187,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
             .loggedIn=${this.hoverPaneProps?.loggedIn}
             .sortParam=${this.hoverPaneProps?.sortParam}
-            .dataSource=${this.hoverPaneProps?.dataSource}
+            .collectionTitles=${this.hoverPaneProps?.collectionTitles}
           ></tile-hover-pane>`
       : nothing;
   }

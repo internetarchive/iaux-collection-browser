@@ -7,6 +7,7 @@ import type {
   SharedResizeObserverResizeHandlerInterface,
 } from '@internetarchive/shared-resize-observer';
 import type { TileDisplayMode } from '../models';
+import type { CollectionTitles } from '../data-source/models';
 import './grid/collection-tile';
 import './grid/item-tile';
 import './grid/account-tile';
@@ -23,7 +24,6 @@ import {
   HoverPaneProperties,
   HoverPaneProviderInterface,
 } from './hover/hover-pane-controller';
-import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -53,7 +53,7 @@ export class TileDispatcher
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @property({ type: Object })
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
@@ -362,7 +362,7 @@ export class TileDispatcher
         return html`<tile-list
           .model=${model}
           .collectionPagePath=${collectionPagePath}
-          .dataSource=${this.dataSource}
+          .collectionTitles=${this.collectionTitles}
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
