@@ -130,12 +130,8 @@ export class CollectionBrowserDataSource
     /** Default size of result pages */
     private pageSize: number
   ) {
-    this.host.addController(this);
+    this.host.addController(this as CollectionBrowserDataSourceInterface);
   }
-
-  hostConnected(): void {}
-
-  hostUpdated(): void {}
 
   get size(): number {
     return this.numTileModels;
@@ -168,7 +164,14 @@ export class CollectionBrowserDataSource
 
   reset(): void {
     this.pages = {};
+    this.aggregations = {};
+    this.yearHistogramAggregation = undefined;
+    this.pageFetchesInProgress = {};
+
+    this.offset = 0;
     this.numTileModels = 0;
+    this.totalResults = 0;
+
     this.host.requestUpdate();
   }
 
