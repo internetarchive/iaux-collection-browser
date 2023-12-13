@@ -20,7 +20,6 @@ import {
   Bucket,
   CollectionExtraInfo,
   SearchParams,
-  SearchResult,
   SearchServiceInterface,
   SearchType,
   SortDirection,
@@ -102,8 +101,6 @@ export class CollectionBrowser
 
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
-  // @property({ type: Object }) sortParam: SortParam | null = null;
-
   @property({ type: Object }) defaultSortParam: SortParam | null = null;
 
   @property({ type: String }) selectedSort: SortField = SortField.default;
@@ -115,8 +112,6 @@ export class CollectionBrowser
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
   @property({ type: Number }) pageSize = 50;
-
-  @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @property({ type: Number }) currentPage?: number;
 
@@ -158,6 +153,8 @@ export class CollectionBrowser
   @property({ type: Number }) mobileBreakpoint = 600;
 
   @property({ type: Boolean }) loggedIn = false;
+
+  @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface = undefined;
 
@@ -372,7 +369,6 @@ export class CollectionBrowser
     }
 
     if (sort) {
-      // this.sortParam = null;
       this.sortDirection = null;
       this.selectedSort = SortField.default;
     }
@@ -699,24 +695,6 @@ export class CollectionBrowser
   }
 
   private selectedSortChanged(): void {
-    // const sortOption = SORT_OPTIONS[this.selectedSort];
-    // if (!sortOption.handledBySearchService) {
-    //   this.sortParam = null;
-    //   return;
-    // }
-
-    // // If the sort option specified in the URL is unrecognized, we just use it as-is
-    // const urlSortParam = new URL(window.location.href).searchParams.get('sort');
-    // const sortField =
-    //   sortOption.searchServiceKey ?? urlSortParam?.replace(/^-/, '');
-
-    // // If the sort direction is still null at this point, then we assume ascending
-    // // (i.e., it was unrecognized and had no directional flag)
-    // if (!this.sortDirection) this.sortDirection = 'asc';
-
-    // if (!sortField) return;
-    // this.sortParam = { field: sortField, direction: this.sortDirection };
-
     // Lazy-load the alphabet counts for title/creator sort bar as needed
     this.updatePrefixFiltersForCurrentSort();
   }
@@ -1362,7 +1340,6 @@ export class CollectionBrowser
 
     this.tileModelOffset = 0;
     this.totalResults = undefined;
-    this.pageFetchesInProgress = {};
     this.endOfDataReached = false;
     this.pagesToRender =
       this.initialPageNumber === 1
@@ -1401,10 +1378,6 @@ export class CollectionBrowser
 
     // Fire the initial page and facets requests
     await this.dataSource.handleQueryChange();
-    // await Promise.all([
-    //   this.doInitialPageFetch(),
-    //   this.suppressFacets ? null : this.fetchFacets(),
-    // ]);
 
     // Resolve the `initialSearchComplete` promise for this search
     this._initialSearchCompleteResolver(true);
@@ -1560,145 +1533,6 @@ export class CollectionBrowser
     return !!this.baseQuery?.trim();
   }
 
-  // this maps the query to the pages being fetched for that query
-  private pageFetchesInProgress: Record<string, Set<number>> = {};
-
-  /**
-   * Fetches one or more pages of results and updates the data source.
-   *
-   * @param pageNumber The page number to fetch
-   * @param numInitialPages If this is an initial page fetch (`pageNumber = 1`),
-   *  specifies how many pages to batch together in one request. Ignored
-   *  if `pageNumber != 1`, defaulting to a single page.
-   */
-  async fetchPage(pageNumber: number, numInitialPages = 1) {
-    const trimmedQuery = this.baseQuery?.trim();
-    if (!this.dataSource.canPerformSearch) return;
-
-    // if we already have data, don't fetch again
-    if (this.dataSource.hasPage(pageNumber)) return;
-
-    if (this.endOfDataReached) return;
-
-    // Batch multiple initial page requests together if needed (e.g., can request
-    // pages 1 and 2 together in a single request).
-    const numPages = pageNumber === 1 ? numInitialPages : 1;
-    const numRows = this.pageSize * numPages;
-
-    // if a fetch is already in progress for this query and page, don't fetch again
-    const { pageFetchQueryKey } = this.dataSource;
-    const pageFetches =
-      this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
-    if (pageFetches.has(pageNumber)) return;
-    for (let i = 0; i < numPages; i += 1) {
-      pageFetches.add(pageNumber + i);
-    }
-    this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
-
-    const sortParams = this.sortParam ? [this.sortParam] : [];
-    const params: SearchParams = {
-      ...this.dataSource.collectionParams,
-      query: trimmedQuery || '',
-      page: pageNumber,
-      rows: numRows,
-      sort: sortParams,
-      filters: this.dataSource.filterMap,
-      aggregations: { omit: true },
-    };
-    params.uid = await this.requestUID(params, 'hits');
-
-    const searchResponse = await this.searchService?.search(
-      params,
-      this.searchType
-    );
-    const success = searchResponse?.success;
-
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard the data since there should be a new query
-    // right behind it.
-    const queryChangedSinceFetch =
-      pageFetchQueryKey !== this.dataSource.pageFetchQueryKey;
-    if (queryChangedSinceFetch) return;
-
-    if (!success) {
-      const errorMsg = searchResponse?.error?.message;
-      const detailMsg = searchResponse?.error?.details?.message;
-
-      this.queryErrorMessage = `${errorMsg ?? ''}${
-        detailMsg ? `; ${detailMsg}` : ''
-      }`;
-
-      if (!this.queryErrorMessage) {
-        this.queryErrorMessage = 'Missing or malformed response from backend';
-        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
-        window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
-      }
-
-      for (let i = 0; i < numPages; i += 1) {
-        this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
-      }
-
-      this.searchResultsLoading = false;
-      return;
-    }
-
-    this.totalResults = success.response.totalResults - this.tileModelOffset;
-
-    // display event to offshoot when result count is zero.
-    if (this.totalResults === 0) {
-      this.emitEmptyResults();
-    }
-
-    if (this.withinCollection) {
-      this.collectionInfo = success.response.collectionExtraInfo;
-
-      // For collections, we want the UI to respect the default sort option
-      // which can be specified in metadata, or otherwise assumed to be week:desc
-      this.applyDefaultCollectionSort(this.collectionInfo);
-
-      if (this.collectionInfo) {
-        this.parentCollections = [].concat(
-          this.collectionInfo.public_metadata?.collection ?? []
-        );
-      }
-    }
-
-    const { results } = success.response;
-    if (results && results.length > 0) {
-      // Load any collection titles present on the response into the cache,
-      // or queue up preload fetches for them if none were present.
-      // if (collectionTitles) {
-      //   this.collectionNameCache?.addKnownTitles(collectionTitles);
-      // } else {
-      //   this.preloadCollectionNames(results);
-      // }
-
-      // Update the data source for each returned page
-      for (let i = 0; i < numPages; i += 1) {
-        const pageStartIndex = this.pageSize * i;
-        this.updateDataSource(
-          pageNumber + i,
-          results.slice(pageStartIndex, pageStartIndex + this.pageSize)
-        );
-      }
-    }
-
-    // When we reach the end of the data, we can set the infinite scroller's
-    // item count to the real total number of results (rather than the
-    // temporary estimates based on pages rendered so far).
-    const resultCountDiscrepancy = numRows - results.length;
-    if (resultCountDiscrepancy > 0) {
-      this.endOfDataReached = true;
-      if (this.infiniteScroller) {
-        this.infiniteScroller.itemCount = this.totalResults;
-      }
-    }
-
-    for (let i = 0; i < numPages; i += 1) {
-      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
-    }
-  }
-
   setTotalResultCount(count: number): void {
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
@@ -1774,112 +1608,6 @@ export class CollectionBrowser
 
   refreshVisibleResults(): void {
     this.infiniteScroller?.refreshAllVisibleCells();
-  }
-
-  /**
-   * Update the datasource from the fetch response
-   *
-   * @param pageNumber
-   * @param results
-   */
-  private updateDataSource(pageNumber: number, results: SearchResult[]) {
-    // copy our existing datasource so when we set it below, it gets set
-    // instead of modifying the existing dataSource since object changes
-    // don't trigger a re-render
-    // const datasource = { ...this.dataSource };
-    const tiles: TileModel[] = [];
-    results?.forEach(result => {
-      if (!result.identifier) return;
-
-      let loginRequired = false;
-      let contentWarning = false;
-      // Check if item and item in "modifying" collection, setting above flags
-      if (
-        result.collection?.values.length &&
-        result.mediatype?.value !== 'collection'
-      ) {
-        for (const collection of result.collection?.values ?? []) {
-          if (collection === 'loggedin') {
-            loginRequired = true;
-            if (contentWarning) break;
-          }
-          if (collection === 'no-preview') {
-            contentWarning = true;
-            if (loginRequired) break;
-          }
-        }
-      }
-
-      tiles.push({
-        averageRating: result.avg_rating?.value,
-        checked: false,
-        collections: result.collection?.values ?? [],
-        collectionFilesCount: result.collection_files_count?.value ?? 0,
-        collectionSize: result.collection_size?.value ?? 0,
-        commentCount: result.num_reviews?.value ?? 0,
-        creator: result.creator?.value,
-        creators: result.creator?.values ?? [],
-        dateAdded: result.addeddate?.value,
-        dateArchived: result.publicdate?.value,
-        datePublished: result.date?.value,
-        dateReviewed: result.reviewdate?.value,
-        description: result.description?.values.join('\n'),
-        favCount: result.num_favorites?.value ?? 0,
-        href: this.collapseRepeatedQuotes(result.__href__?.value),
-        identifier: result.identifier,
-        issue: result.issue?.value,
-        itemCount: result.item_count?.value ?? 0,
-        mediatype: this.getMediatype(result),
-        snippets: result.highlight?.values ?? [],
-        source: result.source?.value,
-        subjects: result.subject?.values ?? [],
-        title: result.title?.value ?? '',
-        volume: result.volume?.value,
-        viewCount: result.downloads?.value ?? 0,
-        weeklyViewCount: result.week?.value,
-        loginRequired,
-        contentWarning,
-      });
-    });
-    this.dataSource.addPage(pageNumber, tiles);
-    const visiblePages = this.currentVisiblePageNumbers;
-    const needsReload = visiblePages.includes(pageNumber);
-    if (needsReload) {
-      this.infiniteScroller?.refreshAllVisibleCells();
-    }
-  }
-
-  private getMediatype(result: SearchResult) {
-    /**
-     * hit_type == 'favorited_search' is basically a new hit_type
-     * - we are getting from PPS.
-     * - which gives response for fav- collection
-     * - having favorited items like account/collection/item etc..
-     * - as user can also favorite a search result (a search page)
-     * - so we need to have response (having fav- items and fav- search results)
-     *
-     * if backend hit_type == 'favorited_search'
-     * - let's assume a "search" as new mediatype
-     */
-    if (result?.rawMetadata?.hit_type === 'favorited_search') {
-      return 'search';
-    }
-
-    return result.mediatype?.value ?? 'data';
-  }
-
-  /**
-   * Returns the input string, but removing one set of quotes from all instances of
-   * ""clauses wrapped in two sets of quotes"". This assumes the quotes are already
-   * URL-encoded.
-   *
-   * This should be a temporary measure to address the fact that the __href__ field
-   * sometimes acquires extra quotation marks during query rewriting. Once there is a
-   * full Lucene parser in place that handles quoted queries correctly, this can likely
-   * be removed.
-   */
-  private collapseRepeatedQuotes(str?: string): string | undefined {
-    return str?.replace(/%22%22(?!%22%22)(.+?)%22%22/g, '%22$1%22');
   }
 
   /** Fetches the aggregation buckets for the given prefix filter type. */
