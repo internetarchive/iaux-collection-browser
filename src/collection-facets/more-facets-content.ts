@@ -32,6 +32,7 @@ import {
   valueFacetSort,
   defaultFacetSort,
 } from '../models';
+import type { CollectionTitles } from '../data-source/models';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -41,7 +42,6 @@ import {
 } from '../utils/analytics-events';
 import './toggle-switch';
 import { srOnlyStyle } from '../styles/sr-only';
-import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -62,7 +62,7 @@ export class MoreFacetsContent extends LitElement {
   @property({ type: String }) withinCollection?: string;
 
   @property({ type: Object })
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
@@ -167,7 +167,7 @@ export class MoreFacetsContent extends LitElement {
     const collectionTitles = results?.success?.response?.collectionTitles;
     if (collectionTitles) {
       for (const [id, title] of Object.entries(collectionTitles)) {
-        this.dataSource?.collectionTitles.set(id, title);
+        this.collectionTitles?.set(id, title);
       }
     }
   }
@@ -334,7 +334,7 @@ export class MoreFacetsContent extends LitElement {
         .facetGroup=${this.mergedFacets?.shift()}
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'modal'}
-        .dataSource=${this.dataSource}
+        .collectionTitles=${this.collectionTitles}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           this.selectedFacets = e.detail;
         }}

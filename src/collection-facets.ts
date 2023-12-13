@@ -45,6 +45,7 @@ import {
   suppressedCollections,
   defaultFacetSort,
 } from './models';
+import type { CollectionTitles } from './data-source/models';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
@@ -55,7 +56,6 @@ import {
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
 import { ExpandedDatePicker } from './expanded-date-picker';
-import type { CollectionBrowserDataSourceInterface } from './state/collection-browser-data-source';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -117,7 +117,7 @@ export class CollectionFacets extends LitElement {
   analyticsHandler?: AnalyticsManagerInterface;
 
   @property({ type: Object, attribute: false })
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -187,7 +187,7 @@ export class CollectionFacets extends LitElement {
                 data-id=${collxn}
                 @click=${this.partOfCollectionClicked}
               >
-                ${this.dataSource?.collectionTitles.get(collxn) ?? collxn}
+                ${this.collectionTitles?.get(collxn) ?? collxn}
               </a>
             </li>`;
           })}
@@ -647,7 +647,7 @@ export class CollectionFacets extends LitElement {
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}
-        .dataSource=${this.dataSource}
+        .collectionTitles=${this.collectionTitles}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
         @facetsChanged=${(e: CustomEvent) => {
@@ -689,7 +689,7 @@ export class CollectionFacets extends LitElement {
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'page'}
-        .dataSource=${this.dataSource}
+        .collectionTitles=${this.collectionTitles}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,

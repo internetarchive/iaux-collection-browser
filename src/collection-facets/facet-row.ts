@@ -15,7 +15,7 @@ import type {
   FacetEventDetails,
   FacetState,
 } from '../models';
-import type { CollectionBrowserDataSourceInterface } from '../state/collection-browser-data-source';
+import type { CollectionTitles } from '../data-source/models';
 
 @customElement('facet-row')
 export class FacetRow extends LitElement {
@@ -31,7 +31,7 @@ export class FacetRow extends LitElement {
 
   /** The collection name cache for converting collection identifiers to titles */
   @property({ type: Object })
-  dataSource?: CollectionBrowserDataSourceInterface;
+  collectionTitles?: CollectionTitles;
 
   //
   // COMPONENT LIFECYCLE METHODS
@@ -56,14 +56,13 @@ export class FacetRow extends LitElement {
     const showOnlyCheckboxId = `${facetType}:${bucket.key}-show-only`;
     const negativeCheckboxId = `${facetType}:${bucket.key}-negative`;
 
-    // For collections, we need to asynchronously load the collection name
-    // so we use the `async-collection-name` widget.
+    // For collections, we render the collection title as a link.
     // For other facet types, we just have a static value to use.
     const bucketTextDisplay =
       facetType !== 'collection'
         ? html`${bucket.displayText ?? bucket.key}`
         : html`<a href="/details/${bucket.key}">
-            ${this.dataSource?.collectionTitles.get(bucket.key) ?? bucket.key}
+            ${this.collectionTitles?.get(bucket.key) ?? bucket.key}
           </a> `;
 
     const facetHidden = bucket.state === 'hidden';
