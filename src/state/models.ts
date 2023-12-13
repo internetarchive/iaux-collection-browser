@@ -1,6 +1,5 @@
 import type {
   CollectionExtraInfo,
-  FilterMap,
   SearchServiceInterface,
   SearchType,
   SortDirection,
@@ -22,7 +21,6 @@ export interface CollectionBrowserSearchState {
   selectedCreatorFilter: string | null;
   searchService?: SearchServiceInterface;
 
-  readonly filterMap: FilterMap;
   readonly suppressFacets?: boolean;
   readonly initialPageNumber: number;
   readonly currentVisiblePageNumbers: number[];
