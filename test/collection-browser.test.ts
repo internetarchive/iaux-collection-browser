@@ -1495,6 +1495,24 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).not.to.exist;
   });
 
+  it('shows temporarily unavailable message when facets suppressed', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService} suppressFacets>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const facetsMsg = el.shadowRoot?.querySelector('.facets-message');
+    expect(facetsMsg).to.exist;
+    expect(facetsMsg?.textContent?.trim()).to.equal(
+      'Facets are temporarily unavailable.'
+    );
+  });
+
   it('shows manage bar interface instead of sort bar when in manage view', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(

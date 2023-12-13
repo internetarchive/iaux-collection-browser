@@ -309,6 +309,15 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
+                id="enable-facets"
+                checked
+                @click=${this.facetsChanged}
+              />
+              <label for="enable-facets">Enable facets</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
                 id="enable-management"
                 @click=${this.manageModeCheckboxChanged}
               />
@@ -559,6 +568,11 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.minSelectedDate = undefined;
       this.collectionBrowser.maxSelectedDate = undefined;
     }
+  }
+
+  private facetsChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.suppressFacets = !target.checked;
   }
 
   /**
