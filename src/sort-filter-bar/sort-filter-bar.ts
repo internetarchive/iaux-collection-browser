@@ -216,6 +216,9 @@ export class SortFilterBar
   private disconnectResizeObserver(
     resizeObserver: SharedResizeObserverInterface
   ) {
+    // return if element not defined
+    if (!this.sortSelectorContainer || !this.desktopSortContainer) return;
+
     resizeObserver.removeObserver({
       target: this.sortSelectorContainer,
       handler: this,
@@ -229,6 +232,10 @@ export class SortFilterBar
 
   private setupResizeObserver() {
     if (!this.resizeObserver) return;
+
+    // return if element not defined
+    if (!this.sortSelectorContainer || !this.desktopSortContainer) return;
+
     this.resizeObserver.addObserver({
       target: this.sortSelectorContainer,
       handler: this,
