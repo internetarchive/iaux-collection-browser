@@ -17,7 +17,6 @@ import type {
   InfiniteScrollerCellProviderInterface,
 } from '@internetarchive/infinite-scroller';
 import {
-  Bucket,
   CollectionExtraInfo,
   SearchParams,
   SearchServiceInterface,
@@ -48,7 +47,6 @@ import {
   CollectionDisplayMode,
   PrefixFilterType,
   PrefixFilterCounts,
-  prefixFilterAggregationKeys,
   FacetEventDetails,
   sortOptionFromAPIString,
   SORT_OPTIONS,
@@ -606,7 +604,7 @@ export class CollectionBrowser
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
-        .prefixFilterCountMap=${this.prefixFilterCountMap}
+        .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
@@ -1610,65 +1608,6 @@ export class CollectionBrowser
     this.infiniteScroller?.refreshAllVisibleCells();
   }
 
-  /** Fetches the aggregation buckets for the given prefix filter type. */
-  private async fetchPrefixFilterBuckets(
-    filterType: PrefixFilterType
-  ): Promise<Bucket[]> {
-    const trimmedQuery = this.baseQuery?.trim();
-    if (!this.dataSource.canPerformSearch) return [];
-
-    const filterAggregationKey = prefixFilterAggregationKeys[filterType];
-    const sortParams = this.sortParam ? [this.sortParam] : [];
-
-    const params: SearchParams = {
-      ...this.dataSource.collectionParams,
-      query: trimmedQuery || '',
-      rows: 0,
-      filters: this.dataSource.filterMap,
-      // Only fetch the firstTitle or firstCreator aggregation
-      aggregations: { simpleParams: [filterAggregationKey] },
-      // Fetch all 26 letter buckets
-      aggregationsSize: 26,
-    };
-    params.uid = await this.requestUID(
-      { ...params, sort: sortParams },
-      'aggregations'
-    );
-
-    const searchResponse = await this.searchService?.search(
-      params,
-      this.searchType
-    );
-
-    return (searchResponse?.success?.response?.aggregations?.[
-      filterAggregationKey
-    ]?.buckets ?? []) as Bucket[];
-  }
-
-  /** Fetches and caches the prefix filter counts for the given filter type. */
-  private async updatePrefixFilterCounts(
-    filterType: PrefixFilterType
-  ): Promise<void> {
-    const { facetFetchQueryKey } = this.dataSource;
-    const buckets = await this.fetchPrefixFilterBuckets(filterType);
-
-    // Don't update the filter counts for an outdated query (if it has been changed
-    // since we sent the request)
-    const queryChangedSinceFetch =
-      facetFetchQueryKey !== this.dataSource.facetFetchQueryKey;
-    if (queryChangedSinceFetch) return;
-
-    // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
-    this.prefixFilterCountMap = { ...this.prefixFilterCountMap }; // Clone the object to trigger an update
-    this.prefixFilterCountMap[filterType] = buckets.reduce(
-      (acc: Record<string, number>, bucket: Bucket) => {
-        acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
-        return acc;
-      },
-      {}
-    );
-  }
-
   /**
    * Fetches and caches the prefix filter counts for the current sort type,
    * provided it is one that permits prefix filtering. (If not, this does nothing).
@@ -1677,7 +1616,7 @@ export class CollectionBrowser
     if (['title', 'creator'].includes(this.selectedSort)) {
       const filterType = this.selectedSort as PrefixFilterType;
       if (!this.prefixFilterCountMap[filterType]) {
-        this.updatePrefixFilterCounts(filterType);
+        this.dataSource.updatePrefixFilterCounts(filterType);
       }
     }
   }
