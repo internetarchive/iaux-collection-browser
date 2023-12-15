@@ -18,7 +18,6 @@ import type {
 } from '@internetarchive/infinite-scroller';
 import {
   CollectionExtraInfo,
-  SearchParams,
   SearchServiceInterface,
   SearchType,
   SortDirection,
@@ -74,8 +73,6 @@ import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
-
-type RequestKind = 'full' | 'hits' | 'aggregations';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -1441,38 +1438,6 @@ export class CollectionBrowser
         },
       })
     );
-  }
-
-  /**
-   * Produces a compact unique ID for a search request that can help with debugging
-   * on the backend by making related requests easier to trace through different services.
-   * (e.g., tying the hits/aggregations requests for the same page back to a single hash).
-   *
-   * @param params The search service parameters for the request
-   * @param kind The kind of request (hits-only, aggregations-only, or both)
-   * @returns A Promise resolving to the uid to apply to the request
-   */
-  private async requestUID(
-    params: SearchParams,
-    kind: RequestKind
-  ): Promise<string> {
-    const paramsToHash = JSON.stringify({
-      pageType: params.pageType,
-      pageTarget: params.pageTarget,
-      query: params.query,
-      fields: params.fields,
-      filters: params.filters,
-      sort: params.sort,
-      searchType: this.searchType,
-    });
-
-    const fullQueryHash = (await sha1(paramsToHash)).slice(0, 20); // First 80 bits of SHA-1 are plenty for this
-    const sessionId = (await this.getSessionId()).slice(0, 20); // Likewise
-    const page = params.page ?? 0;
-    const kindPrefix = kind.charAt(0); // f = full, h = hits, a = aggregations
-    const currentTime = Date.now();
-
-    return `R:${fullQueryHash}-S:${sessionId}-P:${page}-K:${kindPrefix}-T:${currentTime}`;
   }
 
   facetsChanged(e: CustomEvent<SelectedFacets>) {
