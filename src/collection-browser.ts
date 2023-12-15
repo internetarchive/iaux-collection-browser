@@ -1604,6 +1604,9 @@ export class CollectionBrowser
     return Array.from(visiblePages);
   }
 
+  /**
+   * Refreshes all visible result cells in the infinite scroller.
+   */
   refreshVisibleResults(): void {
     this.infiniteScroller?.refreshAllVisibleCells();
   }

@@ -11,6 +11,7 @@ import {
   SearchResult,
   SearchType,
 } from '@internetarchive/search-service';
+import type { MediaType } from '@internetarchive/field-parsers';
 import {
   prefixFilterAggregationKeys,
   type FacetBucket,
@@ -22,9 +23,77 @@ import type { CollectionBrowserSearchState } from './models';
 import { sha1 } from '../utils/sha1';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
+
 export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
+  /**
+   * How many tile models are present in this data source
+   */
   readonly size: number;
+
+  /**
+   * Whether the host has a valid set of properties for performing a search.
+   * For instance, on the search page this requires a valid search service and a
+   * non-empty query, while collection pages allow searching with an empty query
+   * for MDS but not FTS.
+   */
+  readonly canPerformSearch: boolean;
+
+  /**
+   * A string key compactly representing the current full search state, which can
+   * be used to determine, e.g., when a new search is required or whether an arriving
+   * response is outdated.
+   */
+  readonly pageFetchQueryKey: string;
+
+  /**
+   * Similar to `pageFetchQueryKey`, but excluding properties that do not affect
+   * the validity of a set of facets (e.g., sort).
+   */
+  readonly facetFetchQueryKey: string;
+
+  /**
+   * An object representing any collection-specific properties to be passed along
+   * to the search service.
+   */
+  readonly collectionParams: {
+    pageType: PageType;
+    pageTarget: string;
+  } | null;
+
+  /**
+   * A FilterMap object representing all filters applied to the current search,
+   * including any facets, letter filters, and date ranges.
+   */
+  readonly filterMap: FilterMap;
+
+  /**
+   * The full set of aggregations retrieved for the current search.
+   */
+  readonly aggregations?: Record<string, Aggregation>;
+
+  /**
+   * The `year_histogram` aggregation retrieved for the current search.
+   */
+  readonly yearHistogramAggregation?: Aggregation;
+
+  /**
+   * A map from collection identifiers that appear on hits or aggregations for the
+   * current search, to their human-readable collection titles.
+   */
+  readonly collectionTitles: Map<string, string>;
+
+  /**
+   * The "extra info" package provided by the PPS for collection pages, including details
+   * used to populate the target collection header & About tab content.
+   */
+  readonly collectionExtraInfo?: CollectionExtraInfo;
+
+  /**
+   * An array of the current target collection's parent collections. Should include *all*
+   * ancestors in the collection hierarchy, not just the immediate parent.
+   */
+  readonly parentCollections?: string[];
 
   /**
    * An object storing result counts for the current search bucketed by letter prefix.
@@ -34,15 +103,52 @@ export interface CollectionBrowserDataSourceInterface
   readonly prefixFilterCountMap: Partial<
     Record<PrefixFilterType, PrefixFilterCounts>
   >;
+
+  /**
+   * An array of all the tile models whose management checkboxes are checked
+   */
+  readonly checkedTileModels: TileModel[];
+
+  /**
+   * An array of all the tile models whose management checkboxes are unchecked
+   */
+  readonly uncheckedTileModels: TileModel[];
+
+  /**
+   * Adds the given page of tile models to the data source.
+   * If the given page number already exists, that page will be overwritten.
+   * @param pageNum Which page number to add (indexed starting from 1)
+   * @param pageTiles The array of tile models for the new page
+   */
   addPage(pageNum: number, pageTiles: TileModel[]): void;
 
+  /**
+   * Returns the given page of tile models from the data source.
+   * @param pageNum Which page number to get (indexed starting from 1)
+   */
   getPage(pageNum: number): TileModel[];
 
+  /**
+   * Whether the data source contains any tiles for the given page number.
+   * @param pageNum Which page number to query (indexed starting from 1)
+   */
   hasPage(pageNum: number): boolean;
 
+  /**
+   * Returns the single tile model appearing at the given index in the
+   * data source, with respect to the current page size. Returns `undefined` if
+   * the corresponding page is not present on the data source or if it does not
+   * contain a tile model at the corresponding index.
+   * @param index The 0-based index (within the full data source) of the tile to get
+   */
   getTileModelAt(index: number): TileModel | undefined;
 
-  fetchPage(pageNumber: number, numInitialPages?: number): Promise<void>;
+  /**
+   * Requests that the data source fire a backend request for the given page of results.
+   * @param pageNum Which page number to fetch results for
+   * @param numInitialPages How many pages should be batched together on an initial fetch
+   */
+  fetchPage(pageNum: number, numInitialPages?: number): Promise<void>;
 
   /**
    * Requests that the data source update its prefix bucket result counts for the given
@@ -50,16 +156,29 @@ export interface CollectionBrowserDataSourceInterface
    * @param filterType Which prefixable field to update the buckets for (e.g., title/creator)
    */
   updatePrefixFilterCounts(filterType: PrefixFilterType): Promise<void>;
+
+  /**
+   * Changes the page size used by the data source, discarding any previously-fetched pages.
+   *
+   * **Note: this operation will reset any data stored in the data source!**
+   * @param pageSize
+   */
   setPageSize(pageSize: number): void;
 
+  /**
+   * Resets the data source to its empty state, with no result pages, aggregations, etc.
+   */
   reset(): void;
 
+  /**
+   * Notifies the data source that a query change has occurred, which may trigger a data
+   * reset & new fetches.
+   */
   handleQueryChange(): void;
 
   /**
    * Applies the given map function to all of the tile models in every page of the data
-   * source. This method updates the data source object in immutable fashion.
-   *
+   * source.
    * @param callback A callback function to apply on each tile model, as with Array.map
    */
   map(
@@ -81,39 +200,6 @@ export interface CollectionBrowserDataSourceInterface
    * of the data source to account for any new gaps in the data.
    */
   removeCheckedTiles(): void;
-
-  /**
-   * An array of all the tile models whose management checkboxes are checked
-   */
-  readonly checkedTileModels: TileModel[];
-
-  /**
-   * An array of all the tile models whose management checkboxes are unchecked
-   */
-  readonly uncheckedTileModels: TileModel[];
-
-  readonly canPerformSearch: boolean;
-
-  readonly pageFetchQueryKey: string;
-
-  readonly facetFetchQueryKey: string;
-
-  readonly collectionParams: {
-    pageType: PageType;
-    pageTarget: string;
-  } | null;
-
-  readonly filterMap: FilterMap;
-
-  readonly aggregations?: Record<string, Aggregation>;
-
-  readonly yearHistogramAggregation?: Aggregation;
-
-  readonly collectionTitles: Map<string, string>;
-
-  readonly collectionExtraInfo?: CollectionExtraInfo;
-
-  readonly parentCollections?: string[];
 }
 
 export class CollectionBrowserDataSource
@@ -126,7 +212,7 @@ export class CollectionBrowserDataSource
   private numTileModels = 0;
 
   /**
-   * Maps the full query to the pages being fetched for that query
+   * Maps the full query key to the pages being fetched for that query
    */
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
@@ -134,15 +220,36 @@ export class CollectionBrowserDataSource
 
   endOfDataReached = false;
 
+  /**
+   * @inheritdoc
+   */
   aggregations?: Record<string, Aggregation>;
 
+  /**
+   * @inheritdoc
+   */
   yearHistogramAggregation?: Aggregation;
 
+  /**
+   * @inheritdoc
+   */
   collectionTitles = new Map<string, string>();
 
+  /**
+   * @inheritdoc
+   */
   collectionExtraInfo?: CollectionExtraInfo;
 
+  /**
+   * @inheritdoc
+   */
   parentCollections?: string[] = [];
+
+  /**
+   * @inheritdoc
+   */
+  prefixFilterCountMap: Partial<Record<PrefixFilterType, PrefixFilterCounts>> =
+    {};
 
   constructor(
     /** The host element to which this controller should attach listeners */
@@ -154,35 +261,56 @@ export class CollectionBrowserDataSource
     this.host.addController(this as CollectionBrowserDataSourceInterface);
   }
 
+  /**
+   * @inheritdoc
+   */
   get size(): number {
     return this.numTileModels;
   }
 
+  /**
+   * @inheritdoc
+   */
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
     this.numTileModels += pageTiles.length;
     this.host.requestUpdate();
   }
 
+  /**
+   * @inheritdoc
+   */
   getPage(pageNum: number): TileModel[] {
     return this.pages[pageNum];
   }
 
+  /**
+   * @inheritdoc
+   */
   hasPage(pageNum: number): boolean {
     return !!this.pages[pageNum];
   }
 
+  /**
+   * @inheritdoc
+   */
   getTileModelAt(index: number): TileModel | undefined {
     const pageNum = Math.floor(index / this.pageSize) + 1;
     const indexOnPage = index % this.pageSize;
     return this.pages[pageNum]?.[indexOnPage];
   }
 
+  /**
+   * @inheritdoc
+   */
   setPageSize(pageSize: number): void {
     this.reset();
     this.pageSize = pageSize;
   }
 
+  /**
+   * @inheritdoc
+   */
   reset(): void {
     this.pages = {};
     this.aggregations = {};
@@ -196,6 +324,9 @@ export class CollectionBrowserDataSource
     this.host.requestUpdate();
   }
 
+  /**
+   * @inheritdoc
+   */
   async handleQueryChange(): Promise<void> {
     this.reset();
     await Promise.all([
@@ -204,6 +335,9 @@ export class CollectionBrowserDataSource
     ]);
   }
 
+  /**
+   * @inheritdoc
+   */
   map(
     callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
   ): void {
@@ -308,6 +442,9 @@ export class CollectionBrowserDataSource
 
   // DATA FETCHES
 
+  /**
+   * @inheritdoc
+   */
   get canPerformSearch(): boolean {
     if (!this.host.searchService) return false;
 
@@ -450,8 +587,7 @@ export class CollectionBrowserDataSource
   }
 
   /**
-   * Additional params to pass to the search service if targeting a collection page,
-   * or null otherwise.
+   * @inheritdoc
    */
   get collectionParams(): {
     pageType: PageType;
@@ -465,7 +601,9 @@ export class CollectionBrowserDataSource
       : null;
   }
 
-  /** The full query, including year facets and date range clauses */
+  /**
+   * The full query, including year facets and date range clauses
+   */
   private get fullQuery(): string | undefined {
     let fullQuery = this.host.baseQuery?.trim() ?? '';
 
@@ -484,7 +622,7 @@ export class CollectionBrowserDataSource
   }
 
   /**
-   * Generates a query string for the given facets
+   * Generates a query string representing the current set of applied facets
    *
    * Example: `mediatype:("collection" OR "audio" OR -"etree") AND year:("2000" OR "2001")`
    */
@@ -602,7 +740,11 @@ export class CollectionBrowserDataSource
       : undefined;
   }
 
-  private async fetchFacets() {
+  /**
+   * Fires a backend request to fetch a set of aggregations (representing UI facets) for
+   * the current search state.
+   */
+  private async fetchFacets(): Promise<void> {
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
 
@@ -668,6 +810,9 @@ export class CollectionBrowserDataSource
     this.host.setFacetsLoading(false);
   }
 
+  /**
+   * Performs the initial page fetch(es) for the current search state.
+   */
   private async doInitialPageFetch(): Promise<void> {
     this.host.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
@@ -683,7 +828,7 @@ export class CollectionBrowserDataSource
    *  specifies how many pages to batch together in one request. Ignored
    *  if `pageNumber != 1`, defaulting to a single page.
    */
-  async fetchPage(pageNumber: number, numInitialPages = 1) {
+  async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
 
@@ -815,7 +960,10 @@ export class CollectionBrowserDataSource
    * @param pageNumber
    * @param results
    */
-  private addTilesToDataSource(pageNumber: number, results: SearchResult[]) {
+  private addTilesToDataSource(
+    pageNumber: number,
+    results: SearchResult[]
+  ): void {
     // copy our existing datasource so when we set it below, it gets set
     // instead of modifying the existing dataSource since object changes
     // don't trigger a re-render
@@ -882,7 +1030,12 @@ export class CollectionBrowserDataSource
     }
   }
 
-  private getMediatype(result: SearchResult) {
+  /**
+   * Returns the mediatype string for the given search result, taking into account
+   * the special `favorited_search` hit type.
+   * @param result The search result to extract a mediatype from
+   */
+  private getMediatype(result: SearchResult): MediaType {
     /**
      * hit_type == 'favorited_search' is basically a new hit_type
      * - we are getting from PPS.
