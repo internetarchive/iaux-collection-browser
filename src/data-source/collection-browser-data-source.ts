@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import {
   Aggregation,
+  Bucket,
   CollectionExtraInfo,
   FilterConstraint,
   FilterMap,
@@ -10,7 +11,13 @@ import {
   SearchResult,
   SearchType,
 } from '@internetarchive/search-service';
-import type { FacetBucket, TileModel } from '../models';
+import {
+  prefixFilterAggregationKeys,
+  type FacetBucket,
+  type PrefixFilterType,
+  type TileModel,
+  PrefixFilterCounts,
+} from '../models';
 import type { CollectionBrowserSearchState } from './models';
 import { sha1 } from '../utils/sha1';
 
@@ -19,6 +26,14 @@ export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
   readonly size: number;
 
+  /**
+   * An object storing result counts for the current search bucketed by letter prefix.
+   * Keys are the result field on which the prefixes are considered (e.g., title/creator)
+   * and values are a Record mapping letters to their counts.
+   */
+  readonly prefixFilterCountMap: Partial<
+    Record<PrefixFilterType, PrefixFilterCounts>
+  >;
   addPage(pageNum: number, pageTiles: TileModel[]): void;
 
   getPage(pageNum: number): TileModel[];
@@ -29,6 +44,12 @@ export interface CollectionBrowserDataSourceInterface
 
   fetchPage(pageNumber: number, numInitialPages?: number): Promise<void>;
 
+  /**
+   * Requests that the data source update its prefix bucket result counts for the given
+   * type of prefix filter.
+   * @param filterType Which prefixable field to update the buckets for (e.g., title/creator)
+   */
+  updatePrefixFilterCounts(filterType: PrefixFilterType): Promise<void>;
   setPageSize(pageSize: number): void;
 
   reset(): void;
@@ -892,5 +913,68 @@ export class CollectionBrowserDataSource
    */
   private collapseRepeatedQuotes(str?: string): string | undefined {
     return str?.replace(/%22%22(?!%22%22)(.+?)%22%22/g, '%22$1%22');
+  }
+
+  /**
+   * Fetches the aggregation buckets for the given prefix filter type.
+   */
+  private async fetchPrefixFilterBuckets(
+    filterType: PrefixFilterType
+  ): Promise<Bucket[]> {
+    const trimmedQuery = this.host.baseQuery?.trim();
+    if (!this.canPerformSearch) return [];
+
+    const filterAggregationKey = prefixFilterAggregationKeys[filterType];
+    const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
+
+    const params: SearchParams = {
+      ...this.collectionParams,
+      query: trimmedQuery || '',
+      rows: 0,
+      filters: this.filterMap,
+      // Only fetch the firstTitle or firstCreator aggregation
+      aggregations: { simpleParams: [filterAggregationKey] },
+      // Fetch all 26 letter buckets
+      aggregationsSize: 26,
+    };
+    params.uid = await this.requestUID(
+      { ...params, sort: sortParams },
+      'aggregations'
+    );
+
+    const searchResponse = await this.host.searchService?.search(
+      params,
+      this.host.searchType
+    );
+
+    return (searchResponse?.success?.response?.aggregations?.[
+      filterAggregationKey
+    ]?.buckets ?? []) as Bucket[];
+  }
+
+  /**
+   * Fetches and caches the prefix filter counts for the given filter type.
+   */
+  async updatePrefixFilterCounts(filterType: PrefixFilterType): Promise<void> {
+    const { facetFetchQueryKey } = this;
+    const buckets = await this.fetchPrefixFilterBuckets(filterType);
+
+    // Don't update the filter counts for an outdated query (if it has been changed
+    // since we sent the request)
+    const queryChangedSinceFetch =
+      facetFetchQueryKey !== this.facetFetchQueryKey;
+    if (queryChangedSinceFetch) return;
+
+    // Unpack the aggregation buckets into a simple map like { 'A': 50, 'B': 25, ... }
+    this.prefixFilterCountMap = { ...this.prefixFilterCountMap }; // Clone the object to trigger an update
+    this.prefixFilterCountMap[filterType] = buckets.reduce(
+      (acc: Record<string, number>, bucket: Bucket) => {
+        acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
+        return acc;
+      },
+      {}
+    );
+
+    this.host.requestUpdate();
   }
 }
