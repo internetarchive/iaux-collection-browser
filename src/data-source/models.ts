@@ -7,8 +7,15 @@ import type {
 } from '@internetarchive/search-service';
 import type { SelectedFacets, SortField } from '../models';
 
+/**
+ * A Map from collection identifiers to their corresponding collection titles.
+ */
 export type CollectionTitles = Map<string, string>;
 
+/**
+ * Interface representing search-related state and operations required by the
+ * data source on its host component.
+ */
 export interface CollectionBrowserSearchState {
   baseQuery?: string;
   withinCollection?: string;
