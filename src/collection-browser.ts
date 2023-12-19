@@ -59,7 +59,7 @@ import {
   CollectionBrowserDataSource,
   CollectionBrowserDataSourceInterface,
 } from './data-source/collection-browser-data-source';
-import type { CollectionBrowserSearchState } from './data-source/models';
+import type { CollectionBrowserSearchInterface } from './data-source/models';
 import chevronIcon from './assets/img/icons/chevron';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
@@ -80,7 +80,7 @@ export class CollectionBrowser
   implements
     InfiniteScrollerCellProviderInterface,
     SharedResizeObserverResizeHandlerInterface,
-    CollectionBrowserSearchState
+    CollectionBrowserSearchInterface
 {
   @property({ type: String }) baseNavigationUrl?: string;
 
@@ -91,6 +91,10 @@ export class CollectionBrowser
   @property({ type: String }) searchType: SearchType = SearchType.METADATA;
 
   @property({ type: String }) withinCollection?: string;
+
+  @property({ type: String }) withinProfile?: string;
+
+  @property({ type: String }) profileElement?: string;
 
   @property({ type: String }) baseQuery?: string;
 

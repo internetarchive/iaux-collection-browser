@@ -13,27 +13,35 @@ import type { SelectedFacets, SortField } from '../models';
 export type CollectionTitles = Map<string, string>;
 
 /**
- * Interface representing search-related state and operations required by the
- * data source on its host component.
+ * Properties of collection browser that affect the overall search query
  */
-export interface CollectionBrowserSearchState {
+export interface CollectionBrowserQueryState {
   baseQuery?: string;
   withinCollection?: string;
+  withinProfile?: string;
+  profileElement?: string;
   searchType: SearchType;
   selectedFacets?: SelectedFacets;
   minSelectedDate?: string;
   maxSelectedDate?: string;
+  selectedTitleFilter: string | null;
+  selectedCreatorFilter: string | null;
   selectedSort?: SortField;
   sortDirection: SortDirection | null;
   readonly sortParam: SortParam | null;
-  selectedTitleFilter: string | null;
-  selectedCreatorFilter: string | null;
-  searchService?: SearchServiceInterface;
+}
 
+/**
+ * Interface representing search-related state and operations required by the
+ * data source on its host component.
+ */
+export interface CollectionBrowserSearchInterface
+  extends CollectionBrowserQueryState {
+  searchService?: SearchServiceInterface;
+  queryErrorMessage?: string;
   readonly suppressFacets?: boolean;
   readonly initialPageNumber: number;
   readonly currentVisiblePageNumbers: number[];
-  queryErrorMessage?: string;
 
   getSessionId(): Promise<string>;
   setSearchResultsLoading(loading: boolean): void;
