@@ -3,6 +3,7 @@ export {
   CollectionBrowserDataSource,
   CollectionBrowserDataSourceInterface,
 } from './src/data-source/collection-browser-data-source';
+export { CollectionBrowserQueryState } from './src/data-source/models';
 export { SortFilterBar } from './src/sort-filter-bar/sort-filter-bar';
 export { CollectionDisplayMode, SortField } from './src/models';
 export { CollectionBrowserLoadingTile } from './src/tiles/collection-browser-loading-tile';
