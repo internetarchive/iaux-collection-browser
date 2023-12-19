@@ -1,5 +1,6 @@
 import type {
   CollectionExtraInfo,
+  PageType,
   SearchServiceInterface,
   SearchType,
   SortDirection,
@@ -11,6 +12,26 @@ import type { SelectedFacets, SortField } from '../models';
  * A Map from collection identifiers to their corresponding collection titles.
  */
 export type CollectionTitles = Map<string, string>;
+
+/**
+ * The subset of search service params that uniquely specify the type of results
+ * that are sought by an instance of collection browser.
+ */
+export type PageSpecifierParams = {
+  /**
+   * What high-level type of page is being fetched for (search results, collection, or profile)
+   */
+  pageType: PageType;
+  /**
+   * The target identifier for collection or profile pages (e.g., "prelinger", "@brewster", ...)
+   */
+  pageTarget: string;
+  /**
+   * Which specific elements of a profile page to fetch. Corresponds to individual tab data
+   * (e.g., "uploads", "reviews", ...)
+   */
+  pageElements?: string[];
+};
 
 /**
  * Properties of collection browser that affect the overall search query
@@ -28,7 +49,6 @@ export interface CollectionBrowserQueryState {
   selectedCreatorFilter: string | null;
   selectedSort?: SortField;
   sortDirection: SortDirection | null;
-  readonly sortParam: SortParam | null;
 }
 
 /**
@@ -39,6 +59,7 @@ export interface CollectionBrowserSearchInterface
   extends CollectionBrowserQueryState {
   searchService?: SearchServiceInterface;
   queryErrorMessage?: string;
+  readonly sortParam: SortParam | null;
   readonly suppressFacets?: boolean;
   readonly initialPageNumber: number;
   readonly currentVisiblePageNumbers: number[];
