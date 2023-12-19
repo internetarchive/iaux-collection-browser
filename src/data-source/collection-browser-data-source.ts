@@ -19,7 +19,7 @@ import {
   type TileModel,
   PrefixFilterCounts,
 } from '../models';
-import type { CollectionBrowserSearchState } from './models';
+import type { CollectionBrowserSearchInterface } from './models';
 import { sha1 } from '../utils/sha1';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
@@ -254,7 +254,7 @@ export class CollectionBrowserDataSource
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost &
-      CollectionBrowserSearchState,
+      CollectionBrowserSearchInterface,
     /** Default size of result pages */
     private pageSize: number
   ) {
@@ -563,10 +563,7 @@ export class CollectionBrowserDataSource
    * @param kind The kind of request (hits-only, aggregations-only, or both)
    * @returns A Promise resolving to the uid to apply to the request
    */
-  private async requestUID(
-    params: SearchParams,
-    kind: RequestKind
-  ): Promise<string> {
+  async requestUID(params: SearchParams, kind: RequestKind): Promise<string> {
     const paramsToHash = JSON.stringify({
       pageType: params.pageType,
       pageTarget: params.pageTarget,
@@ -592,13 +589,24 @@ export class CollectionBrowserDataSource
   get collectionParams(): {
     pageType: PageType;
     pageTarget: string;
+    pageElements?: string[];
   } | null {
-    return this.host.withinCollection
-      ? {
-          pageType: 'collection_details',
-          pageTarget: this.host.withinCollection,
-        }
-      : null;
+    if (this.host.withinCollection) {
+      return {
+        pageType: 'collection_details',
+        pageTarget: this.host.withinCollection,
+      };
+    }
+    if (this.host.withinProfile) {
+      return {
+        pageType: 'account_details',
+        pageTarget: this.host.withinProfile,
+        pageElements: this.host.profileElement
+          ? [this.host.profileElement]
+          : [],
+      };
+    }
+    return null;
   }
 
   /**
