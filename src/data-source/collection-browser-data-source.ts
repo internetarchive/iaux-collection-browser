@@ -6,7 +6,6 @@ import {
   FilterConstraint,
   FilterMap,
   FilterMapBuilder,
-  PageType,
   SearchParams,
   SearchResult,
   SearchType,
@@ -19,7 +18,11 @@ import {
   type TileModel,
   PrefixFilterCounts,
 } from '../models';
-import type { CollectionBrowserSearchInterface } from './models';
+import type {
+  CollectionBrowserSearchInterface,
+  CollectionTitles,
+  PageSpecifierParams,
+} from './models';
 import { sha1 } from '../utils/sha1';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
@@ -53,13 +56,10 @@ export interface CollectionBrowserDataSourceInterface
   readonly facetFetchQueryKey: string;
 
   /**
-   * An object representing any collection-specific properties to be passed along
-   * to the search service.
+   * An object representing any collection- or profile-specific properties to be passed along
+   * to the search service, specifying the exact page/tab to fetch results for.
    */
-  readonly collectionParams: {
-    pageType: PageType;
-    pageTarget: string;
-  } | null;
+  readonly pageSpecifierParams: PageSpecifierParams | null;
 
   /**
    * A FilterMap object representing all filters applied to the current search,
@@ -81,7 +81,7 @@ export interface CollectionBrowserDataSourceInterface
    * A map from collection identifiers that appear on hits or aggregations for the
    * current search, to their human-readable collection titles.
    */
-  readonly collectionTitles: Map<string, string>;
+  readonly collectionTitles: CollectionTitles;
 
   /**
    * The "extra info" package provided by the PPS for collection pages, including details
@@ -127,6 +127,11 @@ export interface CollectionBrowserDataSourceInterface
    * @param pageNum Which page number to get (indexed starting from 1)
    */
   getPage(pageNum: number): TileModel[];
+
+  /**
+   * Returns the full set of paged tile models stored in this data source.
+   */
+  getAllPages(): Record<string, TileModel[]>;
 
   /**
    * Whether the data source contains any tiles for the given page number.
@@ -282,6 +287,13 @@ export class CollectionBrowserDataSource
    */
   getPage(pageNum: number): TileModel[] {
     return this.pages[pageNum];
+  }
+
+  /**
+   * @inheritdoc
+   */
+  getAllPages(): Record<string, TileModel[]> {
+    return this.pages;
   }
 
   /**
@@ -586,11 +598,7 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
-  get collectionParams(): {
-    pageType: PageType;
-    pageTarget: string;
-    pageElements?: string[];
-  } | null {
+  get pageSpecifierParams(): PageSpecifierParams | null {
     if (this.host.withinCollection) {
       return {
         pageType: 'collection_details',
@@ -760,7 +768,7 @@ export class CollectionBrowserDataSource
 
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     const params: SearchParams = {
-      ...this.collectionParams,
+      ...this.pageSpecifierParams,
       query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
@@ -862,7 +870,7 @@ export class CollectionBrowserDataSource
 
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     const params: SearchParams = {
-      ...this.collectionParams,
+      ...this.pageSpecifierParams,
       query: trimmedQuery || '',
       page: pageNumber,
       rows: numRows,
@@ -1089,7 +1097,7 @@ export class CollectionBrowserDataSource
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
 
     const params: SearchParams = {
-      ...this.collectionParams,
+      ...this.pageSpecifierParams,
       query: trimmedQuery || '',
       rows: 0,
       filters: this.filterMap,
