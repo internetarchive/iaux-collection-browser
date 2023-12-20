@@ -487,11 +487,16 @@ export class CollectionBrowserDataSource
     const trimmedQuery = this.host.baseQuery?.trim();
     const hasNonEmptyQuery = !!trimmedQuery;
     const isCollectionSearch = !!this.host.withinCollection;
+    const isProfileSearch = !!this.host.withinProfile;
     const isMetadataSearch = this.host.searchType === SearchType.METADATA;
 
-    // Metadata searches within a collection are allowed to have no query.
+    // Metadata searches within a collection/profile are allowed to have no query.
     // Otherwise, a non-empty query must be set.
-    return hasNonEmptyQuery || (isCollectionSearch && isMetadataSearch);
+    return (
+      hasNonEmptyQuery ||
+      (isCollectionSearch && isMetadataSearch) ||
+      (isProfileSearch && isMetadataSearch)
+    );
   }
 
   /**
