@@ -488,6 +488,7 @@ export class CollectionBrowserDataSource
     const hasNonEmptyQuery = !!trimmedQuery;
     const isCollectionSearch = !!this.host.withinCollection;
     const isProfileSearch = !!this.host.withinProfile;
+    const hasProfileElement = !!this.host.profileElement;
     const isMetadataSearch = this.host.searchType === SearchType.METADATA;
 
     // Metadata searches within a collection/profile are allowed to have no query.
@@ -495,7 +496,7 @@ export class CollectionBrowserDataSource
     return (
       hasNonEmptyQuery ||
       (isCollectionSearch && isMetadataSearch) ||
-      (isProfileSearch && isMetadataSearch)
+      (isProfileSearch && hasProfileElement && isMetadataSearch)
     );
   }
 
@@ -503,7 +504,7 @@ export class CollectionBrowserDataSource
    * The query key is a string that uniquely identifies the current search.
    * It consists of:
    *  - The current base query
-   *  - The current collection/profile target
+   *  - The current collection/profile target & page element
    *  - The current search type
    *  - Any currently-applied facets
    *  - Any currently-applied date range
@@ -514,7 +515,8 @@ export class CollectionBrowserDataSource
    * no longer relevant.
    */
   get pageFetchQueryKey(): string {
-    const pageTarget = this.host.withinCollection ?? this.host.withinProfile;
+    const profileKey = `${this.host.withinProfile}--${this.host.profileElement}`;
+    const pageTarget = this.host.withinCollection ?? profileKey;
     const sortField = this.host.sortParam?.field ?? 'none';
     const sortDirection = this.host.sortParam?.direction ?? 'none';
     return `${this.fullQuery}-${pageTarget}-${this.host.searchType}-${sortField}-${sortDirection}`;
@@ -525,7 +527,8 @@ export class CollectionBrowserDataSource
    * are not relevant in determining aggregation queries.
    */
   get facetFetchQueryKey(): string {
-    const pageTarget = this.host.withinCollection ?? this.host.withinProfile;
+    const profileKey = `${this.host.withinProfile}--${this.host.profileElement}`;
+    const pageTarget = this.host.withinCollection ?? profileKey;
     return `${this.fullQuery}-${pageTarget}-${this.host.searchType}`;
   }
 

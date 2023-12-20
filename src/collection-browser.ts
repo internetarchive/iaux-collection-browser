@@ -1083,7 +1083,9 @@ export class CollectionBrowser
       changed.has('sortDirection') ||
       changed.has('selectedFacets') ||
       changed.has('searchService') ||
-      changed.has('withinCollection')
+      changed.has('withinCollection') ||
+      changed.has('withinProfile') ||
+      changed.has('profileElement')
     ) {
       this.handleQueryChange();
     }
