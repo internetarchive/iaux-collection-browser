@@ -1,11 +1,13 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit';
 import {
+  AccountExtraInfo,
   Aggregation,
   Bucket,
   CollectionExtraInfo,
   FilterConstraint,
   FilterMap,
   FilterMapBuilder,
+  PageElementMap,
   SearchParams,
   SearchResult,
   SearchType,
@@ -88,6 +90,18 @@ export interface CollectionBrowserDataSourceInterface
    * used to populate the target collection header & About tab content.
    */
   readonly collectionExtraInfo?: CollectionExtraInfo;
+
+  /**
+   * The "extra info" package provided by the PPS for profile pages, including details
+   * used to populate the profile header.
+   */
+  readonly accountExtraInfo?: AccountExtraInfo;
+
+  /**
+   * The set of requested page elements for profile pages, if applicable. These represent
+   * any content specific to the current profile tab.
+   */
+  readonly pageElements?: PageElementMap;
 
   /**
    * An array of the current target collection's parent collections. Should include *all*
@@ -244,6 +258,16 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   collectionExtraInfo?: CollectionExtraInfo;
+
+  /**
+   * @inheritdoc
+   */
+  accountExtraInfo?: AccountExtraInfo;
+
+  /**
+   * @inheritdoc
+   */
+  pageElements?: PageElementMap;
 
   /**
    * @inheritdoc
