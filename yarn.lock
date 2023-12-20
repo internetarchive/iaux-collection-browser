@@ -189,10 +189,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^1.2.5-alpha.5":
-  version "1.2.5-alpha.5"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.5-alpha.5.tgz#e2f806774a6abc23dae6516b0db6751eff9f7f24"
-  integrity sha512-rKhmZNIK2aLlNTKlIZ5zfXDI/u8+J0KIeUijuJDQE0mb79CP2p4L/Ksa06dtRVuHziCeBtUd8NsRVNnMgPbLpw==
+"@internetarchive/search-service@^1.2.5-alpha.6":
+  version "1.2.5-alpha.6"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-1.2.5-alpha.6.tgz#ba0b3a99ceed9177164842c8709e1b59a0086e34"
+  integrity sha512-E9CveaOTsIf0jT2s+C8+xqIORJgMS0N/PL78SIO3UmyORCMNxxK3JiVUMEfY5O8zVvoopjQ3uvdq51RxgWrz8Q==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.4"
     "@internetarchive/result-type" "^0.0.1"

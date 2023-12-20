@@ -13,7 +13,6 @@ import {
   SearchType,
 } from '@internetarchive/search-service';
 import type { MediaType } from '@internetarchive/field-parsers';
-import type { PageElementName } from '@internetarchive/search-service/dist/src/responses/page-elements';
 import {
   prefixFilterAggregationKeys,
   type FacetBucket,
@@ -847,19 +846,7 @@ export class CollectionBrowserDataSource
     }
 
     const { aggregations, collectionTitles } = success.response;
-
-    if (this.host.withinProfile) {
-      const { pageElements } = success.response;
-      if (pageElements && this.host.profileElement) {
-        const currentPageElement =
-          pageElements[this.host.profileElement as PageElementName];
-        if (currentPageElement && 'aggregations' in currentPageElement) {
-          this.aggregations = currentPageElement.aggregations;
-        }
-      }
-    } else {
-      this.aggregations = aggregations;
-    }
+    this.aggregations = aggregations;
 
     if (collectionTitles) {
       for (const [id, title] of Object.entries(collectionTitles)) {
@@ -871,6 +858,7 @@ export class CollectionBrowserDataSource
       success?.response?.aggregations?.year_histogram;
 
     this.host.setFacetsLoading(false);
+    this.host.requestUpdate();
   }
 
   /**
@@ -969,7 +957,6 @@ export class CollectionBrowserDataSource
       this.host.emitEmptyResults();
     }
 
-    let results;
     if (this.host.withinCollection) {
       this.collectionExtraInfo = success.response.collectionExtraInfo;
 
@@ -985,18 +972,9 @@ export class CollectionBrowserDataSource
     } else if (this.host.withinProfile) {
       this.accountExtraInfo = success.response.accountExtraInfo;
       this.pageElements = success.response.pageElements;
-
-      if (this.pageElements && this.host.profileElement) {
-        const currentPageElement =
-          this.pageElements[this.host.profileElement as PageElementName];
-        if (currentPageElement && 'hits' in currentPageElement) {
-          results = currentPageElement.hits?.hits;
-        }
-      }
     }
 
-    if (!results) results = success.response.results;
-    const { collectionTitles } = success.response;
+    const { results, collectionTitles } = success.response;
     if (results && results.length > 0) {
       // Load any collection titles present on the response into the cache,
       // or queue up preload fetches for them if none were present.
@@ -1028,6 +1006,8 @@ export class CollectionBrowserDataSource
     for (let i = 0; i < numPages; i += 1) {
       this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
     }
+
+    this.host.requestUpdate();
   }
 
   /**
