@@ -59,7 +59,10 @@ import {
   CollectionBrowserDataSource,
   CollectionBrowserDataSourceInterface,
 } from './data-source/collection-browser-data-source';
-import type { CollectionBrowserSearchInterface } from './data-source/models';
+import type {
+  CollectionBrowserQueryState,
+  CollectionBrowserSearchInterface,
+} from './data-source/models';
 import chevronIcon from './assets/img/icons/chevron';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
@@ -125,6 +128,8 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressPlaceholders = false;
 
   @property({ type: Boolean }) suppressResultCount = false;
+
+  @property({ type: Boolean }) suppressURLQuery = false;
 
   @property({ type: Boolean }) suppressFacets = false;
 
@@ -1240,6 +1245,27 @@ export class CollectionBrowser
     );
   }
 
+  private emitQueryStateChanged() {
+    this.dispatchEvent(
+      new CustomEvent<CollectionBrowserQueryState>('queryStateChanged', {
+        detail: {
+          baseQuery: this.baseQuery,
+          withinCollection: this.withinCollection,
+          withinProfile: this.withinProfile,
+          profileElement: this.profileElement,
+          searchType: this.searchType,
+          selectedFacets: this.selectedFacets,
+          minSelectedDate: this.minSelectedDate,
+          maxSelectedDate: this.maxSelectedDate,
+          selectedSort: this.selectedSort,
+          sortDirection: this.sortDirection,
+          selectedTitleFilter: this.selectedTitleFilter,
+          selectedCreatorFilter: this.selectedCreatorFilter,
+        },
+      })
+    );
+  }
+
   emitEmptyResults() {
     this.dispatchEvent(new Event('emptyResults'));
   }
@@ -1338,6 +1364,7 @@ export class CollectionBrowser
       return;
 
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
+    this.emitQueryStateChanged();
 
     this.tileModelOffset = 0;
     this.totalResults = undefined;
@@ -1408,7 +1435,7 @@ export class CollectionBrowser
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;
-    this.baseQuery = restorationState.baseQuery;
+    if (!this.suppressURLQuery) this.baseQuery = restorationState.baseQuery;
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
@@ -1424,7 +1451,7 @@ export class CollectionBrowser
       selectedSort: this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
       selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
-      baseQuery: this.baseQuery,
+      baseQuery: this.suppressURLQuery ? undefined : this.baseQuery,
       currentPage: this.currentPage,
       titleQuery: this.titleQuery,
       creatorQuery: this.creatorQuery,
