@@ -503,7 +503,7 @@ export class CollectionBrowserDataSource
    * The query key is a string that uniquely identifies the current search.
    * It consists of:
    *  - The current base query
-   *  - The current collection
+   *  - The current collection/profile target
    *  - The current search type
    *  - Any currently-applied facets
    *  - Any currently-applied date range
@@ -514,9 +514,10 @@ export class CollectionBrowserDataSource
    * no longer relevant.
    */
   get pageFetchQueryKey(): string {
+    const pageTarget = this.host.withinCollection ?? this.host.withinProfile;
     const sortField = this.host.sortParam?.field ?? 'none';
     const sortDirection = this.host.sortParam?.direction ?? 'none';
-    return `${this.fullQuery}-${this.host.withinCollection}-${this.host.searchType}-${sortField}-${sortDirection}`;
+    return `${this.fullQuery}-${pageTarget}-${this.host.searchType}-${sortField}-${sortDirection}`;
   }
 
   /**
@@ -524,7 +525,8 @@ export class CollectionBrowserDataSource
    * are not relevant in determining aggregation queries.
    */
   get facetFetchQueryKey(): string {
-    return `${this.fullQuery}-${this.host.withinCollection}-${this.host.searchType}`;
+    const pageTarget = this.host.withinCollection ?? this.host.withinProfile;
+    return `${this.fullQuery}-${pageTarget}-${this.host.searchType}`;
   }
 
   /**
