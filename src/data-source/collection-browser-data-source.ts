@@ -897,7 +897,12 @@ export class CollectionBrowserDataSource
     const { pageFetchQueryKey } = this;
     const pageFetches =
       this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
-    if (pageFetches.has(pageNumber)) return;
+    if (pageFetches.has(pageNumber)) {
+      console.log(
+        `Skipping fetch for page ${pageNumber} because one is already in progress`
+      );
+      return;
+    }
     for (let i = 0; i < numPages; i += 1) {
       pageFetches.add(pageNumber + i);
     }
@@ -915,10 +920,12 @@ export class CollectionBrowserDataSource
     };
     params.uid = await this.requestUID(params, 'hits');
 
+    console.log('=== FIRING PAGE REQUEST ===');
     const searchResponse = await this.host.searchService?.search(
       params,
       this.host.searchType
     );
+    console.log('=== RECEIVED PAGE RESPONS IN CB === ');
     const success = searchResponse?.success;
 
     // This is checking to see if the query has changed since the data was fetched.
@@ -947,10 +954,12 @@ export class CollectionBrowserDataSource
       }
 
       this.host.setSearchResultsLoading(false);
+      this.host.requestUpdate();
       return;
     }
 
     this.totalResults = success.response.totalResults - this.offset;
+    this.host.setTotalResultCount(this.totalResults);
 
     // display event to offshoot when result count is zero.
     if (this.totalResults === 0) {
@@ -970,6 +979,10 @@ export class CollectionBrowserDataSource
         );
       }
     } else if (this.host.withinProfile) {
+      console.log(
+        'host is within profile, setting acct info:',
+        success.response.accountExtraInfo
+      );
       this.accountExtraInfo = success.response.accountExtraInfo;
       this.pageElements = success.response.pageElements;
     }
@@ -1000,7 +1013,7 @@ export class CollectionBrowserDataSource
     const resultCountDiscrepancy = numRows - results.length;
     if (resultCountDiscrepancy > 0) {
       this.endOfDataReached = true;
-      this.host.setTotalResultCount(this.totalResults);
+      this.host.setTileCount(this.totalResults);
     }
 
     for (let i = 0; i < numPages; i += 1) {
