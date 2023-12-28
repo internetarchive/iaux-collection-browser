@@ -1181,7 +1181,7 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
     await aTimeout(0);
 
-    expect(el.parentCollections).to.deep.equal(['foo', 'bar']);
+    expect(el.dataSource.parentCollections).to.deep.equal(['foo', 'bar']);
   });
 
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
