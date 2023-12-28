@@ -68,6 +68,7 @@ export interface CollectionBrowserSearchInterface
   setSearchResultsLoading(loading: boolean): void;
   setFacetsLoading(loading: boolean): void;
   setTotalResultCount(count: number): void;
+  setTileCount(count: number): void;
   applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void;
   emitEmptyResults(): void;
   refreshVisibleResults(): void;

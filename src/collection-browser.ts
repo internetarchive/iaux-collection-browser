@@ -137,10 +137,6 @@ export class CollectionBrowser
 
   @property({ type: String }) collectionPagePath: string = '/details/';
 
-  @property({ type: Object }) collectionInfo?: CollectionExtraInfo;
-
-  @property({ type: Array }) parentCollections: string[] = [];
-
   /** describes where this component is being used */
   @property({ type: String, reflect: true }) searchContext: string =
     analyticsCategories.default;
@@ -332,12 +328,25 @@ export class CollectionBrowser
     return this.scrollToPage(pageNumber);
   }
 
-  setSearchResultsLoading(loading: boolean) {
+  /**
+   * Sets the state for whether the initial set of search results is loading in.
+   */
+  setSearchResultsLoading(loading: boolean): void {
     this.searchResultsLoading = loading;
   }
 
-  setFacetsLoading(loading: boolean) {
+  /**
+   * Sets the state for whether facet data is loading in
+   */
+  setFacetsLoading(loading: boolean): void {
     this.facetsLoading = loading;
+  }
+
+  /**
+   * Sets the total number of results to be displayed for the current search
+   */
+  setTotalResultCount(totalResults: number): void {
+    this.totalResults = totalResults;
   }
 
   /**
@@ -427,14 +436,15 @@ export class CollectionBrowser
   private setPlaceholderType() {
     const hasQuery = !!this.baseQuery?.trim();
     const isCollection = !!this.withinCollection;
+    const isProfile = !!this.withinProfile;
     const noResults =
       !this.searchResultsLoading &&
-      (this.totalResults === 0 || !this.searchService);
+      (this.dataSource.size === 0 || !this.searchService);
 
     this.placeholderType = null;
     if (this.suppressPlaceholders) return;
 
-    if (!hasQuery && !isCollection) {
+    if (!hasQuery && !isCollection && !isProfile) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
       // Within a collection, no query + no results means the collection simply has no viewable items.
@@ -859,7 +869,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
-        .parentCollections=${this.parentCollections}
+        .parentCollections=${this.dataSource.parentCollections}
         .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
@@ -1529,7 +1539,10 @@ export class CollectionBrowser
     return !!this.baseQuery?.trim();
   }
 
-  setTotalResultCount(count: number): void {
+  /**
+   * Sets the total number of tiles displayed in the infinite scroller.
+   */
+  setTileCount(count: number): void {
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
