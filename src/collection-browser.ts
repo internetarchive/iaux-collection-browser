@@ -645,8 +645,8 @@ export class CollectionBrowser
         showSelectAll
         showUnselectAll
         @removeItems=${this.handleRemoveItems}
-        @selectAll=${this.dataSource.checkAllTiles}
-        @unselectAll=${this.dataSource.uncheckAllTiles}
+        @selectAll=${() => this.dataSource.checkAllTiles()}
+        @unselectAll=${() => this.dataSource.uncheckAllTiles()}
         @cancel=${() => {
           this.isManageView = false;
           this.dataSource.uncheckAllTiles();
