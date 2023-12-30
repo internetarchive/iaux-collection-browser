@@ -163,6 +163,13 @@ export interface CollectionBrowserDataSourceInterface
   getTileModelAt(index: number): TileModel | undefined;
 
   /**
+   * Returns the first numeric tile index corresponding to the given tile model object,
+   * or -1 if the given tile model is not present.
+   * @param tile The tile model to search for in the data source
+   */
+  indexOf(tile: TileModel): number;
+
+  /**
    * Requests that the data source fire a backend request for the given page of results.
    * @param pageNum Which page number to fetch results for
    * @param numInitialPages How many pages should be batched together on an initial fetch
@@ -334,6 +341,10 @@ export class CollectionBrowserDataSource
     const pageNum = Math.floor(index / this.pageSize) + 1;
     const indexOnPage = index % this.pageSize;
     return this.pages[pageNum]?.[indexOnPage];
+  }
+
+  indexOf(tile: TileModel): number {
+    return Object.values(this.pages).flat().indexOf(tile);
   }
 
   /**
@@ -937,7 +948,7 @@ export class CollectionBrowserDataSource
       params,
       this.host.searchType
     );
-    console.log('=== RECEIVED PAGE RESPONS IN CB === ');
+    console.log('=== RECEIVED PAGE RESPONSE IN CB === ');
     const success = searchResponse?.success;
 
     // This is checking to see if the query has changed since the data was fetched.
