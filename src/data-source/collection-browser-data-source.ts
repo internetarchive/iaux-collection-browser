@@ -352,10 +352,14 @@ export class CollectionBrowserDataSource
     this.aggregations = {};
     this.yearHistogramAggregation = undefined;
     this.pageFetchesInProgress = {};
+    this.pageElements = undefined;
+    this.parentCollections = [];
+    this.prefixFilterCountMap = {};
 
     this.offset = 0;
     this.numTileModels = 0;
     this.totalResults = 0;
+    this.endOfDataReached = false;
 
     this.host.requestUpdate();
   }
@@ -880,6 +884,14 @@ export class CollectionBrowserDataSource
    *  if `pageNumber != 1`, defaulting to a single page.
    */
   async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
+    console.log(
+      `fetchPage(${pageNumber})`,
+      this.canPerformSearch,
+      this.hasPage(pageNumber),
+      this.endOfDataReached,
+      this.host.baseQuery,
+      JSON.stringify(this.host.selectedFacets)
+    );
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
 

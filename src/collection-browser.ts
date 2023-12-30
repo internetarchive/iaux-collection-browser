@@ -1359,6 +1359,12 @@ export class CollectionBrowser
   }
 
   private async handleQueryChange() {
+    console.log(
+      'CB: handling query change',
+      this.previousQueryKey,
+      this.dataSource.pageFetchQueryKey,
+      this.dataSource.canPerformSearch
+    );
     // only reset if the query has actually changed
     if (
       !this.searchService ||
@@ -1373,6 +1379,11 @@ export class CollectionBrowser
     )
       return;
 
+    console.log(
+      'CB will reset',
+      this.baseQuery,
+      JSON.stringify(this.selectedFacets)
+    );
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
     this.emitQueryStateChanged();
 
