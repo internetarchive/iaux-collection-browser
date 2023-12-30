@@ -343,6 +343,9 @@ export class CollectionBrowserDataSource
     return this.pages[pageNum]?.[indexOnPage];
   }
 
+  /**
+   * @inheritdoc
+   */
   indexOf(tile: TileModel): number {
     return Object.values(this.pages).flat().indexOf(tile);
   }
@@ -401,26 +404,27 @@ export class CollectionBrowserDataSource
       ])
     );
     this.host.requestUpdate();
+    this.host.refreshVisibleResults();
   }
 
   /**
    * @inheritdoc
    */
-  checkAllTiles(): void {
+  checkAllTiles = (): void => {
     this.map(model => ({ ...model, checked: true }));
-  }
+  };
 
   /**
    * @inheritdoc
    */
-  uncheckAllTiles(): void {
+  uncheckAllTiles = (): void => {
     this.map(model => ({ ...model, checked: false }));
-  }
+  };
 
   /**
    * @inheritdoc
    */
-  removeCheckedTiles(): void {
+  removeCheckedTiles = (): void => {
     // To make sure our data source remains page-aligned, we will offset our data source by
     // the number of removed tiles, so that we can just add the offset when the infinite
     // scroller queries for cell contents.
@@ -458,7 +462,7 @@ export class CollectionBrowserDataSource
     this.pages = newPages;
     this.numTileModels -= numChecked;
     this.host.requestUpdate();
-  }
+  };
 
   /**
    * @inheritdoc
