@@ -1667,9 +1667,7 @@ export class CollectionBrowser
     if (this.isManageView) {
       // Checked/unchecked state change -- rerender to ensure it propagates
       // this.mapDataSource(model => ({ ...model }));
-      const cellIndex = Object.values(this.dataSource)
-        .flat()
-        .indexOf(event.detail);
+      const cellIndex = this.dataSource.indexOf(event.detail);
       if (cellIndex >= 0)
         this.infiniteScroller?.refreshCell(cellIndex - this.tileModelOffset);
     }
