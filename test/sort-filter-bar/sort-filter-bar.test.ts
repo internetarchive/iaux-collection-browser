@@ -1,5 +1,6 @@
 /* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
+import sinon from 'sinon';
 import { html } from 'lit';
 import type { IaDropdown } from '@internetarchive/ia-dropdown';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
@@ -19,8 +20,13 @@ describe('Sort selector default buttons', async () => {
     '#desktop-sort-selector'
   );
 
-  before(async () => {
+  beforeEach(async () => {
     el.resizeObserver = new SharedResizeObserver();
+    await el.updateComplete;
+  });
+
+  afterEach(async () => {
+    el.resizeObserver = undefined;
     await el.updateComplete;
   });
 
@@ -617,15 +623,55 @@ describe('Sort/filter bar mobile view', () => {
     expect(backdrop).not.to.exist;
   });
 
-  it('shows loansTab top-bar slot', async () => {
+  it('shows loansTab top-bar slot Default View', async () => {
+    const resizeStub = new SharedResizeObserver();
+    const addSpy = sinon.spy(resizeStub, 'addObserver');
+    const removeSpy = sinon.spy(resizeStub, 'removeObserver');
+
     const el = await fixture<SortFilterBar>(html`
-      <sort-filter-bar></sort-filter-bar>
+      <sort-filter-bar .resizeObserver=${resizeStub}></sort-filter-bar>
     `);
 
-    el.showLoansTopBar = true;
+    // this element exists
+    expect(el?.shadowRoot?.querySelector('#sort-selector-container')).to.exist;
+
+    // loads & unloads twice when [re]setting ResizeObserver
+    expect(addSpy.callCount).to.equal(2);
+
+    const resizeStub2 = new SharedResizeObserver();
+    el.resizeObserver = resizeStub2;
+    await el.updateComplete;
+    expect(removeSpy.callCount).to.equal(2);
+  });
+
+  it('shows loansTab top-bar slot Custom Slotted View', async () => {
+    const resizeStub = new SharedResizeObserver();
+    const addSpy = sinon.spy(resizeStub, 'addObserver');
+    const removeSpy = sinon.spy(resizeStub, 'removeObserver');
+
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar
+        .resizeObserver=${resizeStub}
+        .showLoansTopBar=${true}
+      ></sort-filter-bar>
+    `);
+
     await el.updateComplete;
 
+    // slot exists
     const loansTabSlot = el?.shadowRoot?.querySelector('slot');
     expect(loansTabSlot).to.exist;
+
+    // sort bar does not exist
+    expect(el?.shadowRoot?.querySelector('#sort-selector-container')).to.not
+      .exist;
+
+    const resizeStub2 = new SharedResizeObserver();
+    el.resizeObserver = resizeStub2;
+    await el.updateComplete;
+
+    // there's no need for resize observer
+    expect(addSpy.callCount).to.equal(0);
+    expect(removeSpy.callCount).to.equal(0);
   });
 });
