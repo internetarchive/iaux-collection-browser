@@ -216,28 +216,37 @@ export class SortFilterBar
   private disconnectResizeObserver(
     resizeObserver: SharedResizeObserverInterface
   ) {
-    resizeObserver.removeObserver({
-      target: this.sortSelectorContainer,
-      handler: this,
-    });
+    if (this.sortSelectorContainer) {
+      resizeObserver.removeObserver({
+        target: this.sortSelectorContainer,
+        handler: this,
+      });
+    }
 
-    resizeObserver.removeObserver({
-      target: this.desktopSortContainer,
-      handler: this,
-    });
+    if (this.desktopSortContainer) {
+      resizeObserver.removeObserver({
+        target: this.desktopSortContainer,
+        handler: this,
+      });
+    }
   }
 
   private setupResizeObserver() {
     if (!this.resizeObserver) return;
-    this.resizeObserver.addObserver({
-      target: this.sortSelectorContainer,
-      handler: this,
-    });
 
-    this.resizeObserver.addObserver({
-      target: this.desktopSortContainer,
-      handler: this,
-    });
+    if (this.sortSelectorContainer) {
+      this.resizeObserver.addObserver({
+        target: this.sortSelectorContainer,
+        handler: this,
+      });
+    }
+
+    if (this.desktopSortContainer) {
+      this.resizeObserver.addObserver({
+        target: this.desktopSortContainer,
+        handler: this,
+      });
+    }
   }
 
   handleResize(entry: ResizeObserverEntry): void {
