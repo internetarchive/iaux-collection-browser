@@ -437,6 +437,14 @@ export class AppRoot extends LitElement {
                 value="query error"
               />
             </div>
+            <div class="checkbox-control">
+              <input
+                type="button"
+                id="placeholder-loading"
+                @click=${() => this.showEmptyPlaceholder('placeholder loading')}
+                value="placeholder loading"
+              />
+            </div>
           </fieldset>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
@@ -558,6 +566,12 @@ export class AppRoot extends LitElement {
         this.collectionBrowser.baseQuery = '';
         this.collectionBrowser.withinCollection = '';
         this.collectionBrowser.queryErrorMessage = 'foo message';
+        break;
+      case 'placeholder loading':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.setSearchResultsLoading(true);
+        this.collectionBrowser.setFacetsLoading(true);
+        this.collectionBrowser.suppressPlaceholders = true;
         break;
       default:
         break;
