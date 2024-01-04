@@ -420,7 +420,6 @@ export class CollectionBrowser
   }
 
   render() {
-    this.setPlaceholderType();
     return html`
       <div
         id="content-container"
@@ -993,6 +992,11 @@ export class CollectionBrowser
   firstUpdated(): void {
     this.setupStateRestorationObserver();
     this.restoreState();
+  }
+
+  willUpdate() {
+    console.log('willUpdate');
+    this.setPlaceholderType();
   }
 
   updated(changed: PropertyValues) {
