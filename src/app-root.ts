@@ -395,6 +395,49 @@ export class AppRoot extends LitElement {
               </label>
             </div>
           </fieldset>
+          <fieldset class="Placeholder-type">
+            <legend>Placeholder type</legend>
+            <div class="checkbox-control">
+              <input
+                type="button"
+                id="placeholder-empty-query"
+                @click=${() => this.showEmptyPlaceholder('empty query')}
+                value="empty query"
+              />
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="button"
+                id="placeholder-no-results"
+                @click=${() => this.showEmptyPlaceholder('empty collection')}
+                value="empty collection"
+              />
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="button"
+                id="placeholder-empty-profile"
+                @click=${() => this.showEmptyPlaceholder('empty profile')}
+                value="empty profile"
+              />
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="button"
+                id="placeholder-collection-err"
+                @click=${() => this.showEmptyPlaceholder('collection error')}
+                value="collection error"
+              />
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="button"
+                id="placeholder-query-err"
+                @click=${() => this.showEmptyPlaceholder('query error')}
+                value="query error"
+              />
+            </div>
+          </fieldset>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
           Toggle Search Controls
@@ -486,6 +529,38 @@ export class AppRoot extends LitElement {
         '',
         pageUrl.toString()
       );
+    }
+  }
+
+  private showEmptyPlaceholder(placeholderType: string) {
+    switch (placeholderType) {
+      case 'empty query':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.withinCollection = '';
+        this.collectionBrowser.withinProfile = '';
+        break;
+      case 'empty collection':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.withinCollection = 'foo-collection';
+        this.collectionBrowser.withinProfile = '';
+        break;
+      case 'empty profile':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.withinCollection = '';
+        this.collectionBrowser.withinProfile = '@brewster';
+        break;
+      case 'collection error':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.withinCollection = 'foo-collection';
+        this.collectionBrowser.queryErrorMessage = 'foo message';
+        break;
+      case 'query error':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.withinCollection = '';
+        this.collectionBrowser.queryErrorMessage = 'foo message';
+        break;
+      default:
+        break;
     }
   }
 
