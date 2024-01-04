@@ -167,7 +167,7 @@ export class TileListCompact extends BaseTileComponent {
         align-items: center;
         line-height: 20px;
         padding-top: 5px;
-        padding-bottom: 5px;
+        margin-bottom: -5px;
       }
 
       #list-line.mobile {

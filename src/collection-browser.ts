@@ -417,7 +417,7 @@ export class CollectionBrowser
   }
 
   render() {
-    this.setPlaceholderType();
+    // this.setPlaceholderType();
     return html`
       <div
         id="content-container"
@@ -1093,6 +1093,10 @@ export class CollectionBrowser
   firstUpdated(): void {
     this.setupStateRestorationObserver();
     this.restoreState();
+  }
+
+  willUpdate() {
+    this.setPlaceholderType();
   }
 
   updated(changed: PropertyValues) {
@@ -2747,9 +2751,9 @@ export class CollectionBrowser
             --collectionBrowserCellMinWidth,
             100%
           );
-          --infiniteScrollerCellMinHeight: 34px; /* override infinite scroller component */
+          --infiniteScrollerCellMinHeight: 45px; /* override infinite scroller component */
           --infiniteScrollerCellMaxHeight: 56px;
-          --infiniteScrollerRowGap: 0px;
+          --infiniteScrollerRowGap: 10px;
         }
 
         infinite-scroller.list-detail {
