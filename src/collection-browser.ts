@@ -1026,7 +1026,7 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl') ||
       changed.has('loggedIn') ||
-      (changed.has('suppressPlaceholders') && this.suppressPlaceholders)
+      (changed.has('baseQuery') && !this.baseQuery)
     ) {
       this.infiniteScroller?.reload();
     }
