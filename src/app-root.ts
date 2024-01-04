@@ -405,30 +405,28 @@ export class AppRoot extends LitElement {
                 value="empty query"
               />
             </div>
-            <div class="checkbox-control">
-              <input
-                type="button"
-                id="placeholder-no-results"
-                @click=${() => this.showEmptyPlaceholder('empty collection')}
-                value="empty collection"
-              />
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="button"
-                id="placeholder-empty-profile"
-                @click=${() => this.showEmptyPlaceholder('empty profile')}
-                value="empty profile"
-              />
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="button"
-                id="placeholder-collection-err"
-                @click=${() => this.showEmptyPlaceholder('collection error')}
-                value="collection error"
-              />
-            </div>
+            ${this.withinCollection
+              ? html`
+                  <div class="checkbox-control">
+                    <input
+                      type="button"
+                      id="placeholder-collection-err"
+                      @click=${() =>
+                        this.showEmptyPlaceholder('collection error')}
+                      value="collection error"
+                    />
+                  </div>
+                  <div class="checkbox-control">
+                    <input
+                      type="button"
+                      id="placeholder-no-results"
+                      @click=${() =>
+                        this.showEmptyPlaceholder('empty collection')}
+                      value="empty collection"
+                    />
+                  </div>
+                `
+              : nothing}
             <div class="checkbox-control">
               <input
                 type="button"
@@ -540,7 +538,7 @@ export class AppRoot extends LitElement {
     }
   }
 
-  private showEmptyPlaceholder(placeholderType: string) {
+  private async showEmptyPlaceholder(placeholderType: string) {
     switch (placeholderType) {
       case 'empty query':
         this.collectionBrowser.baseQuery = '';
@@ -549,8 +547,9 @@ export class AppRoot extends LitElement {
         break;
       case 'empty collection':
         this.collectionBrowser.baseQuery = '';
-        this.collectionBrowser.withinCollection = 'foo-collection';
         this.collectionBrowser.withinProfile = '';
+        await this.collectionBrowser.updateComplete;
+
         break;
       case 'empty profile':
         this.collectionBrowser.baseQuery = '';
@@ -558,8 +557,10 @@ export class AppRoot extends LitElement {
         this.collectionBrowser.withinProfile = '@brewster';
         break;
       case 'collection error':
+        this.collectionBrowser.withinCollection = 'acdc';
+        await this.collectionBrowser.updateComplete;
+
         this.collectionBrowser.baseQuery = '';
-        this.collectionBrowser.withinCollection = 'foo-collection';
         this.collectionBrowser.queryErrorMessage = 'foo message';
         break;
       case 'query error':
@@ -572,6 +573,9 @@ export class AppRoot extends LitElement {
         this.collectionBrowser.setSearchResultsLoading(true);
         this.collectionBrowser.setFacetsLoading(true);
         this.collectionBrowser.suppressPlaceholders = true;
+        this.collectionBrowser.clearResultsOnEmptyQuery = true;
+        this.requestUpdate();
+        await this.collectionBrowser.updateComplete;
         break;
       default:
         break;
@@ -631,6 +635,7 @@ export class AppRoot extends LitElement {
     const oldQuery = this.searchQuery;
     this.searchQuery = ''; // Should just reset to the placeholder
     await this.updateComplete;
+    this.collectionBrowser.suppressPlaceholders = false;
     // For unclear reasons, Safari refuses to re-apply the old query until the next tick, hence:
     await new Promise(res => {
       setTimeout(res, 0);
