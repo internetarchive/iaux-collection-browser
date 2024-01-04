@@ -876,7 +876,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
-        .parentCollections=${this.dataSource.parentCollections}
+        .parentCollections=${this.dataSource.parentCollections ?? []}
         .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
