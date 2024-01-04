@@ -135,6 +135,12 @@ export class MoreFacetsContent extends LitElement {
    */
   async updateSpecificFacets(): Promise<void> {
     const trimmedQuery = this.query?.trim();
+
+    console.log('updateSpecificFacets', {
+      trimmedQuery,
+      withinCollection: this.withinCollection,
+    });
+
     if (!trimmedQuery && !this.withinCollection) return;
 
     const aggregations = {
@@ -158,11 +164,24 @@ export class MoreFacetsContent extends LitElement {
       rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
+    console.log('updateSpecificFacets', {
+      params,
+      searchType: this.searchType,
+    });
+    console.log(' *** firing facet call *** ');
+
     const results = await this.searchService?.search(params, this.searchType);
     this.aggregations = results?.success?.response.aggregations;
 
     this.facetGroup = this.aggregationFacetGroups;
     this.facetsLoading = false;
+
+    console.log(' *** Returned facet call *** ', {
+      results,
+      aggregations: this.aggregations,
+      facetGroup: this.facetGroup,
+      facetsLoading: this.facetsLoading,
+    });
 
     const collectionTitles = results?.success?.response?.collectionTitles;
     if (collectionTitles) {

@@ -899,17 +899,19 @@ export class CollectionBrowserDataSource
    *  if `pageNumber != 1`, defaulting to a single page.
    */
   async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
-    console.log(
-      `fetchPage(${pageNumber})`,
-      this.canPerformSearch,
-      this.hasPage(pageNumber),
-      this.endOfDataReached,
-      this.host.baseQuery,
-      JSON.stringify(this.host.selectedFacets)
-    );
+    console.log(`fetchPage(${pageNumber})`, {
+      canPerformSearch: this.canPerformSearch,
+      baseQuery: this.host.baseQuery,
+    });
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
 
+    console.log(`fetchPage - canPerformSearch`, {
+      hasPage: this.hasPage(pageNumber),
+      endOfDataReached: this.endOfDataReached,
+      pageFetchesInProgress: this.pageFetchesInProgress,
+      selectedFacets: JSON.stringify(this.host.selectedFacets),
+    });
     // if we already have data, don't fetch again
     if (this.hasPage(pageNumber)) return;
 

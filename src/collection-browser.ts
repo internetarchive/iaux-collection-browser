@@ -263,9 +263,16 @@ export class CollectionBrowser
      *
      * We disable it during the automated scroll since we don't want to fetch pages for intervening cells the
      * user may never see.
+     *
+     * No need to fetch if placeholder is being displayed
      */
-    if (!model && !this.isScrollingToCell) {
+    if (!this.placeholderType && !model && !this.isScrollingToCell) {
       const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
+      console.warn('****** FETCH PAGE tileModelAtCellIndex', {
+        pageNumber,
+        offsetIndex,
+        pageSize: this.pageSize,
+      });
       this.dataSource.fetchPage(pageNumber);
     }
     return model;
@@ -420,7 +427,6 @@ export class CollectionBrowser
   }
 
   render() {
-    this.setPlaceholderType();
     return html`
       <div
         id="content-container"
@@ -587,6 +593,7 @@ export class CollectionBrowser
   }
 
   private get infiniteScrollerTemplate() {
+    console.warn('infiniteScrollerTemplate', this.placeholderType);
     return html`<infinite-scroller
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
@@ -869,7 +876,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
-        .parentCollections=${this.dataSource.parentCollections}
+        .parentCollections=${this.dataSource.parentCollections ?? []}
         .withinCollection=${this.withinCollection}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
@@ -995,7 +1002,15 @@ export class CollectionBrowser
     this.restoreState();
   }
 
+  willUpdate() {
+    this.setPlaceholderType();
+    console.warn('willUpdate *** ', this.placeholderType);
+  }
+
   updated(changed: PropertyValues) {
+    console.warn('updated *** ', {
+      changed,
+    });
     if (changed.has('placeholderType') && this.placeholderType === null) {
       if (!this.leftColIntersectionObserver) {
         this.setupLeftColumnScrollListeners();
@@ -1010,7 +1025,8 @@ export class CollectionBrowser
       changed.has('displayMode') ||
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl') ||
-      changed.has('loggedIn')
+      changed.has('loggedIn') ||
+      (changed.has('baseQuery') && !this.baseQuery)
     ) {
       this.infiniteScroller?.reload();
     }
@@ -1359,12 +1375,11 @@ export class CollectionBrowser
   }
 
   private async handleQueryChange() {
-    console.log(
-      'CB: handling query change',
-      this.previousQueryKey,
-      this.dataSource.pageFetchQueryKey,
-      this.dataSource.canPerformSearch
-    );
+    console.log('CB: handling query change', {
+      previousQueryKey: this.previousQueryKey,
+      ds_pageFetchQueryKey: this.dataSource.pageFetchQueryKey,
+      ds_canPerformSearch: this.dataSource.canPerformSearch,
+    });
     // only reset if the query has actually changed
     if (
       !this.searchService ||
@@ -1379,11 +1394,10 @@ export class CollectionBrowser
     )
       return;
 
-    console.log(
-      'CB will reset',
-      this.baseQuery,
-      JSON.stringify(this.selectedFacets)
-    );
+    console.log('CB will reset', {
+      baseQuery: this.baseQuery,
+      selectedFacets: JSON.stringify(this.selectedFacets),
+    });
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
     this.emitQueryStateChanged();
 
@@ -1700,7 +1714,7 @@ export class CollectionBrowser
         .collectionTitles=${this.dataSource.collectionTitles}
         .sortParam=${this.sortParam}
         .defaultSortParam=${this.defaultSortParam}
-        .creatorFilter=${this.selectedCreatorFilter}
+        .creatorFilter=${this.selectedCreatorFilter ?? undefined}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
         .isManageView=${this.isManageView}
@@ -1718,6 +1732,10 @@ export class CollectionBrowser
   private scrollThresholdReached() {
     if (!this.endOfDataReached) {
       this.pagesToRender += 1;
+      console.warn(
+        '****** FETCH PAGE scrollThresholdReached',
+        this.pagesToRender
+      );
       this.dataSource.fetchPage(this.pagesToRender);
     }
   }
