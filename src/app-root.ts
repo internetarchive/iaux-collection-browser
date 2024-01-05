@@ -404,6 +404,31 @@ export class AppRoot extends LitElement {
               </label>
             </div>
           </fieldset>
+
+          <fieldset class="user-profile-controls">
+            <legend>Set Placeholder Types</legend>
+            <div class="checkbox-control">
+              <input
+                id="enable-loading-placeholder"
+                type="radio"
+                @click=${() => this.setPlaceholderType('loading-placeholder')}
+                name="placeholder-radio"
+              />
+              <label for="enable-loading-placeholder"
+                >Loading Placeholder</label
+              >
+            </div>
+            <div class="checkbox-control">
+              <input
+                id="enable-empty-placeholder"
+                type="radio"
+                @click=${() => this.setPlaceholderType('error-placeholder')}
+                value="empty-placeholder"
+                name="placeholder-radio"
+              />
+              <label for="enable-empty-placeholder">Empty Placeholder</label>
+            </div>
+          </fieldset>
         </div>
         <button id="toggle-dev-tools-btn" @click=${this.toggleDevTools}>
           Toggle Search Controls
@@ -435,6 +460,20 @@ export class AppRoot extends LitElement {
       </div>
       <modal-manager></modal-manager>
     `;
+  }
+
+  private async setPlaceholderType(type: String) {
+    switch (type) {
+      case 'loading-placeholder':
+        this.collectionBrowser.baseQuery = '';
+        this.collectionBrowser.suppressPlaceholders = true;
+        this.collectionBrowser.clearResultsOnEmptyQuery = true;
+        this.requestUpdate();
+        await this.collectionBrowser.updateComplete;
+        break;
+      default:
+        break;
+    }
   }
 
   private baseQueryChanged(e: CustomEvent<{ baseQuery?: string }>): void {
