@@ -278,6 +278,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'hello';
     await el.updateComplete;
+    await nextTick();
 
     const facets = el.shadowRoot?.querySelector('collection-facets');
     const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
@@ -782,6 +783,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'foo';
     await el.updateComplete;
+    await nextTick();
 
     const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
     const sortSelector = sortBar?.shadowRoot?.querySelector(
@@ -1119,6 +1121,7 @@ describe('Collection Browser', () => {
     // infinite scroller does exist.
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     const infiniteScroller = el.shadowRoot?.querySelector(
       'infinite-scroller'
@@ -1198,6 +1201,7 @@ describe('Collection Browser', () => {
     // Infinite scroller won't exist unless there's a base query
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
     (infiniteScroller as InfiniteScroller).reload = infiniteScrollerRefreshSpy;

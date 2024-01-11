@@ -788,6 +788,11 @@ describe('Collection Facets', () => {
         .baseNavigationUrl=${''}
         .withinCollection=${'foo'}
         .parentCollections=${['bar', 'baz']}
+        .collectionTitles=${new Map([
+          ['foo', 'foo-name'],
+          ['bar', 'bar-name'],
+          ['baz', 'baz-name'],
+        ])}
       ></collection-facets>`
     );
 
