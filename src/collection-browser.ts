@@ -237,11 +237,6 @@ export class CollectionBrowser
   private isScrollingToCell = false;
 
   /**
-   * When we've reached the end of the data, stop trying to fetch more
-   */
-  private endOfDataReached = false;
-
-  /**
    * When page width resizes from desktop to mobile, set true to
    * disable expand/collapse transition when loading.
    */
@@ -1119,7 +1114,7 @@ export class CollectionBrowser
     }
 
     if (changed.has('pagesToRender')) {
-      if (!this.endOfDataReached && this.infiniteScroller) {
+      if (!this.dataSource.endOfDataReached && this.infiniteScroller) {
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
@@ -1389,7 +1384,6 @@ export class CollectionBrowser
 
     this.tileModelOffset = 0;
     this.totalResults = undefined;
-    this.endOfDataReached = false;
     this.pagesToRender =
       this.initialPageNumber === 1
         ? 2 // First two pages are batched into one request when starting from page 1
@@ -1554,6 +1548,7 @@ export class CollectionBrowser
    * Sets the total number of tiles displayed in the infinite scroller.
    */
   setTileCount(count: number): void {
+    console.log('Setting scroller tile count to', count);
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
@@ -1716,7 +1711,7 @@ export class CollectionBrowser
    * increase the number of pages to render and start fetching data for the new page
    */
   private scrollThresholdReached() {
-    if (!this.endOfDataReached) {
+    if (!this.dataSource.endOfDataReached) {
       this.pagesToRender += 1;
       this.dataSource.fetchPage(this.pagesToRender);
     }

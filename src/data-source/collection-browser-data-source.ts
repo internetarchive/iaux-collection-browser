@@ -45,6 +45,12 @@ export interface CollectionBrowserDataSourceInterface
   readonly canPerformSearch: boolean;
 
   /**
+   * Whether the end of the set of results for the current query state has been
+   * encountered (i.e., the last page of results).
+   */
+  readonly endOfDataReached: boolean;
+
+  /**
    * A string key compactly representing the current full search state, which can
    * be used to determine, e.g., when a new search is required or whether an arriving
    * response is outdated.
@@ -242,8 +248,14 @@ export class CollectionBrowserDataSource
    */
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
+  /**
+   * @inheritdoc
+   */
   totalResults = 0;
 
+  /**
+   * @inheritdoc
+   */
   endOfDataReached = false;
 
   /**
@@ -1039,6 +1051,7 @@ export class CollectionBrowserDataSource
     // temporary estimates based on pages rendered so far).
     const resultCountDiscrepancy = numRows - results.length;
     if (resultCountDiscrepancy > 0) {
+      console.log('End of data reached');
       this.endOfDataReached = true;
       this.host.setTileCount(this.totalResults);
     }
