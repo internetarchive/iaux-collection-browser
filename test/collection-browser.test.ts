@@ -913,12 +913,13 @@ describe('Collection Browser', () => {
     expect(searchService.searchParams?.filters?.firstCreator).not.to.exist;
   });
 
-  // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-  // SKIPPING FOR NOW TO GET CI GREEN.
-  it.skip('sets date range query when date picker selection changed', async () => {
+  it('sets date range query when date picker selection changed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser .searchService=${searchService}>
+      html`<collection-browser
+        .searchService=${searchService}
+        .suppressPlaceholders=${true}
+      >
       </collection-browser>`
     );
 
@@ -1593,10 +1594,10 @@ describe('Collection Browser', () => {
       ?.querySelector('infinite-scroller')!
       .shadowRoot?.querySelectorAll('tile-dispatcher');
     expect(tiles).to.exist;
-
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(tiles!.length, 'tile count after `el.removeCheckedTiles()`').to.equal(1);
+    expect(
+      tiles!.length,
+      'tile count after `el.removeCheckedTiles()`'
+    ).to.equal(1);
   });
 
   it('can check/uncheck all tiles', async () => {

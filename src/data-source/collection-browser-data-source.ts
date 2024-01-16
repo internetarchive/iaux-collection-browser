@@ -474,6 +474,7 @@ export class CollectionBrowserDataSource
     this.pages = newPages;
     this.numTileModels -= numChecked;
     this.host.requestUpdate();
+    this.host.refreshVisibleResults();
   };
 
   /**
