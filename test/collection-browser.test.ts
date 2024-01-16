@@ -268,10 +268,7 @@ describe('Collection Browser', () => {
     expect(mockAnalyticsHandler.callLabel).to.equal('mediatype');
   });
 
-  // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-  // SKIPPING FOR NOW TO GET CI GREEN.
-  // this one has placeholder type issue
-  it.skip('should render with a sort bar, facets, and infinite scroller', async () => {
+  it('should render with a sort bar, facets, and infinite scroller', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<CollectionBrowser>(
@@ -778,10 +775,7 @@ describe('Collection Browser', () => {
   it('sets sort properties when user changes sort', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .suppressPlaceholders=${true}
-      >
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -1144,10 +1138,7 @@ describe('Collection Browser', () => {
     infiniteScroller.scrollToCell = spy;
 
     await el.goToPage(1);
-
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(spy.callCount, 'scroll to page fires once').to.equal(1);
+    expect(spy.callCount, 'scroll to page fires once').to.equal(1);
 
     infiniteScroller.scrollToCell = oldScrollToCell;
   });
