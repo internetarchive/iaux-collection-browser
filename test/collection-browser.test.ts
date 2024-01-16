@@ -1216,25 +1216,29 @@ describe('Collection Browser', () => {
     el.loggedIn = true;
     await el.updateComplete;
 
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(infiniteScrollerRefreshSpy.called, 'Infinite Scroller Refresh').to.be.true;
-    // expect(infiniteScrollerRefreshSpy.callCount, 'Infinite Scroller Refresh call count').to.equal(1);
+    expect(infiniteScrollerRefreshSpy.called, 'Infinite Scroller Refresh').to.be
+      .true;
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      'Infinite Scroller Refresh call count'
+    ).to.equal(1);
 
     el.loggedIn = false;
     await el.updateComplete;
 
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(infiniteScrollerRefreshSpy.callCount, '2nd Infinite Scroller Refresh').to.equal(2);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '2nd Infinite Scroller Refresh'
+    ).to.equal(2);
 
     // testing: `displayMode`
     el.displayMode = 'list-compact';
     el.searchContext = 'beta-search';
     await el.updateComplete;
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(infiniteScrollerRefreshSpy.callCount, '3rd Infinite Scroller Refresh').to.equal(3);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '3rd Infinite Scroller Refresh'
+    ).to.equal(3);
 
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
@@ -1242,10 +1246,10 @@ describe('Collection Browser', () => {
 
     el.displayMode = 'list-detail';
     await el.updateComplete;
-
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(infiniteScrollerRefreshSpy.callCount, '4th Infinite Scroller Refresh').to.equal(4);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '4th Infinite Scroller Refresh'
+    ).to.equal(4);
 
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
