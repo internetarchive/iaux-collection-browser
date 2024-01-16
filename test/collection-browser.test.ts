@@ -1258,18 +1258,18 @@ describe('Collection Browser', () => {
     // testing: `baseNavigationUrl`
     el.baseNavigationUrl = 'https://funtestsite.com';
     await el.updateComplete;
-
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(infiniteScrollerRefreshSpy.callCount, '5th Infinite Scroller Refresh').to.equal(5);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '5th Infinite Scroller Refresh'
+    ).to.equal(5);
 
     // testing: `baseImageUrl`
     el.baseImageUrl = 'https://funtestsiteforimages.com';
     await el.updateComplete;
-
-    // TODO: FIX THIS AS IT BROKE IN MAIN REFACTOR. (WEBDEV-6081 @latonv)
-    // COMMENTING OUT FOR NOW TO GET CI GREEN.
-    // expect(infiniteScrollerRefreshSpy.callCount, '6th Infinite Scroller Refresh').to.equal(6);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '6th Infinite Scroller Refresh'
+    ).to.equal(6);
   });
 
   it('query the search service for single result', async () => {
