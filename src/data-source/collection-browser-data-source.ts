@@ -12,7 +12,6 @@ import {
   SearchResult,
   SearchType,
 } from '@internetarchive/search-service';
-import type { MediaType } from '@internetarchive/field-parsers';
 import {
   prefixFilterAggregationKeys,
   type FacetBucket,
@@ -26,6 +25,8 @@ import type {
   PageSpecifierParams,
 } from './models';
 import { sha1 } from '../utils/sha1';
+import { collapseRepeatedQuotes } from '../utils/collapse-repeated-quotes';
+import { resolveMediatype } from '../utils/resolve-mediatype';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -1116,11 +1117,11 @@ export class CollectionBrowserDataSource
         dateReviewed: result.reviewdate?.value,
         description: result.description?.values.join('\n'),
         favCount: result.num_favorites?.value ?? 0,
-        href: this.collapseRepeatedQuotes(result.__href__?.value),
+        href: collapseRepeatedQuotes(result.__href__?.value),
         identifier: result.identifier,
         issue: result.issue?.value,
         itemCount: result.item_count?.value ?? 0,
-        mediatype: this.getMediatype(result),
+        mediatype: resolveMediatype(result),
         snippets: result.highlight?.values ?? [],
         source: result.source?.value,
         subjects: result.subject?.values ?? [],
@@ -1138,44 +1139,6 @@ export class CollectionBrowserDataSource
     if (needsReload) {
       this.host.refreshVisibleResults();
     }
-  }
-
-  /**
-   * Returns the mediatype string for the given search result, taking into account
-   * the special `favorited_search` hit type.
-   * @param result The search result to extract a mediatype from
-   */
-  private getMediatype(result: SearchResult): MediaType {
-    /**
-     * hit_type == 'favorited_search' is basically a new hit_type
-     * - we are getting from PPS.
-     * - which gives response for fav- collection
-     * - having favorited items like account/collection/item etc..
-     * - as user can also favorite a search result (a search page)
-     * - so we need to have response (having fav- items and fav- search results)
-     *
-     * if backend hit_type == 'favorited_search'
-     * - let's assume a "search" as new mediatype
-     */
-    if (result?.rawMetadata?.hit_type === 'favorited_search') {
-      return 'search';
-    }
-
-    return result.mediatype?.value ?? 'data';
-  }
-
-  /**
-   * Returns the input string, but removing one set of quotes from all instances of
-   * ""clauses wrapped in two sets of quotes"". This assumes the quotes are already
-   * URL-encoded.
-   *
-   * This should be a temporary measure to address the fact that the __href__ field
-   * sometimes acquires extra quotation marks during query rewriting. Once there is a
-   * full Lucene parser in place that handles quoted queries correctly, this can likely
-   * be removed.
-   */
-  private collapseRepeatedQuotes(str?: string): string | undefined {
-    return str?.replace(/%22%22(?!%22%22)(.+?)%22%22/g, '%22$1%22');
   }
 
   /**
