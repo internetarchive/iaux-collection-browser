@@ -9,6 +9,7 @@ import {
   HoverPaneProviderInterface,
 } from '../../../src/tiles/hover/hover-pane-controller';
 import type { TileHoverPane } from '../../../src/tiles/hover/tile-hover-pane';
+import { TileModel } from '../../../src/models';
 
 @customElement('host-element')
 class HostElement extends LitElement implements HoverPaneProviderInterface {
@@ -33,24 +34,25 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
   }
 
   getHoverPaneProps(): HoverPaneProperties {
+    const tileModel = new TileModel({});
+    tileModel.checked = false;
+    tileModel.collectionFilesCount = 1;
+    tileModel.collections = ['foo', 'bar'];
+    tileModel.collectionSize = 1;
+    tileModel.commentCount = 1;
+    tileModel.contentWarning = false;
+    tileModel.creators = ['foo', 'bar'];
+    tileModel.favCount = 1;
+    tileModel.identifier = 'foo';
+    tileModel.itemCount = 1;
+    tileModel.loginRequired = false;
+    tileModel.mediatype = 'data';
+    tileModel.subjects = ['foo', 'bar'];
+    tileModel.title = 'foo';
+    tileModel.viewCount = 1;
+
     return {
-      model: {
-        checked: false,
-        collectionFilesCount: 1,
-        collections: ['foo', 'bar'],
-        collectionSize: 1,
-        commentCount: 1,
-        contentWarning: false,
-        creators: ['foo', 'bar'],
-        favCount: 1,
-        identifier: 'foo',
-        itemCount: 1,
-        loginRequired: false,
-        mediatype: 'data',
-        subjects: ['foo', 'bar'],
-        title: 'foo',
-        viewCount: 1,
-      },
+      model: tileModel,
       loggedIn: false,
       sortParam: null,
     };

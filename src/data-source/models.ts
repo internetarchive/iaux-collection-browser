@@ -1,5 +1,6 @@
 import type {
   CollectionExtraInfo,
+  PageElementName,
   PageType,
   SearchServiceInterface,
   SearchType,
@@ -30,7 +31,7 @@ export type PageSpecifierParams = {
    * Which specific elements of a profile page to fetch. Corresponds to individual tab data
    * (e.g., "uploads", "reviews", ...)
    */
-  pageElements?: string[];
+  pageElements?: PageElementName[];
 };
 
 /**
@@ -40,7 +41,7 @@ export interface CollectionBrowserQueryState {
   baseQuery?: string;
   withinCollection?: string;
   withinProfile?: string;
-  profileElement?: string;
+  profileElement?: PageElementName;
   searchType: SearchType;
   selectedFacets?: SelectedFacets;
   minSelectedDate?: string;

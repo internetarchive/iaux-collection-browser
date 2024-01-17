@@ -18,6 +18,7 @@ import type {
 } from '@internetarchive/infinite-scroller';
 import {
   CollectionExtraInfo,
+  PageElementName,
   SearchServiceInterface,
   SearchType,
   SortDirection,
@@ -97,7 +98,7 @@ export class CollectionBrowser
 
   @property({ type: String }) withinProfile?: string;
 
-  @property({ type: String }) profileElement?: string;
+  @property({ type: String }) profileElement?: PageElementName;
 
   @property({ type: String }) baseQuery?: string;
 

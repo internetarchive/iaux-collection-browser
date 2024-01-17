@@ -37,7 +37,7 @@ export class TileList extends BaseTileComponent {
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
 
-  @state() private collectionLinks: TemplateResult[] = [];
+  @state() private collectionLinks: (TemplateResult | typeof nothing)[] = [];
 
   render() {
     return html`
@@ -345,10 +345,12 @@ export class TileList extends BaseTileComponent {
   }
 
   private detailsLink(
-    identifier: string,
+    identifier?: string,
     text?: string,
     isCollection = false
-  ): TemplateResult {
+  ): TemplateResult | typeof nothing {
+    if (!identifier) return nothing;
+
     const linkText = text ?? identifier;
     const linkHref = this.displayValueProvider.itemPageUrl(
       identifier,
@@ -392,7 +394,7 @@ export class TileList extends BaseTileComponent {
     // Note: quirk of Lit: need to replace collectionLinks array,
     // otherwise it will not re-render. Can't simply alter the array.
     this.collectionLinks = [];
-    const newCollectionLinks: TemplateResult[] = [];
+    const newCollectionLinks: (TemplateResult | typeof nothing)[] = [];
     for (const collection of this.model.collections) {
       // Don't include favorites or collections that are meant to be suppressed
       if (

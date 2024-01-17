@@ -96,7 +96,7 @@ export class TileDisplayValueProvider {
    * item is specified to be a collection (default false).
    */
   itemPageUrl(
-    identifier: string,
+    identifier?: string,
     isCollection = false
   ): string | typeof nothing {
     if (!identifier || this.baseNavigationUrl == null) return nothing;
