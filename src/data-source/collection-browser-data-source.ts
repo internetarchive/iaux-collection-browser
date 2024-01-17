@@ -134,6 +134,11 @@ export interface CollectionBrowserDataSourceInterface
   readonly uncheckedTileModels: TileModel[];
 
   /**
+   * Resets the data source to its empty state, with no result pages, aggregations, etc.
+   */
+  reset(): void;
+
+  /**
    * Adds the given page of tile models to the data source.
    * If the given page number already exists, that page will be overwritten.
    * @param pageNum Which page number to add (indexed starting from 1)
@@ -195,11 +200,6 @@ export interface CollectionBrowserDataSourceInterface
    * @param pageSize
    */
   setPageSize(pageSize: number): void;
-
-  /**
-   * Resets the data source to its empty state, with no result pages, aggregations, etc.
-   */
-  reset(): void;
 
   /**
    * Notifies the data source that a query change has occurred, which may trigger a data
@@ -318,6 +318,26 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  reset(): void {
+    this.pages = {};
+    this.aggregations = {};
+    this.yearHistogramAggregation = undefined;
+    this.pageFetchesInProgress = {};
+    this.pageElements = undefined;
+    this.parentCollections = [];
+    this.prefixFilterCountMap = {};
+
+    this.offset = 0;
+    this.numTileModels = 0;
+    this.totalResults = 0;
+    this.endOfDataReached = false;
+
+    this.host.requestUpdate();
+  }
+
+  /**
+   * @inheritdoc
+   */
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
     this.numTileModels += pageTiles.length;
@@ -367,26 +387,6 @@ export class CollectionBrowserDataSource
   setPageSize(pageSize: number): void {
     this.reset();
     this.pageSize = pageSize;
-  }
-
-  /**
-   * @inheritdoc
-   */
-  reset(): void {
-    this.pages = {};
-    this.aggregations = {};
-    this.yearHistogramAggregation = undefined;
-    this.pageFetchesInProgress = {};
-    this.pageElements = undefined;
-    this.parentCollections = [];
-    this.prefixFilterCountMap = {};
-
-    this.offset = 0;
-    this.numTileModels = 0;
-    this.totalResults = 0;
-    this.endOfDataReached = false;
-
-    this.host.requestUpdate();
   }
 
   /**
