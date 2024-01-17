@@ -21,6 +21,8 @@ interface TileFlags {
 export class TileModel {
   averageRating?: number;
 
+  captureDates?: Date[]; // List of capture dates for a URL, used on profile Web Archives tiles
+
   checked: boolean; // Whether this tile is currently checked for item management functions
 
   collectionIdentifier?: string;
@@ -71,7 +73,7 @@ export class TileModel {
 
   title: string;
 
-  viewCount: number;
+  viewCount?: number;
 
   volume?: string;
 
@@ -85,6 +87,7 @@ export class TileModel {
     const flags = this.getFlags(result);
 
     this.averageRating = result.avg_rating?.value;
+    this.captureDates = result.capture_dates?.values;
     this.checked = false;
     this.collections = result.collection?.values ?? [];
     this.collectionFilesCount = result.collection_files_count?.value ?? 0;
@@ -108,18 +111,19 @@ export class TileModel {
     this.subjects = result.subject?.values ?? [];
     this.title = result.title?.value ?? '';
     this.volume = result.volume?.value;
-    this.viewCount = result.downloads?.value ?? 0;
+    this.viewCount = result.downloads?.value;
     this.weeklyViewCount = result.week?.value;
     this.loginRequired = flags.loginRequired;
     this.contentWarning = flags.contentWarning;
   }
 
   /**
-   * Clones the contents of this TileModel onto a new instance
+   * Copies the contents of this TileModel onto a new instance
    */
   clone(): TileModel {
     const cloned = new TileModel({});
     cloned.averageRating = this.averageRating;
+    cloned.captureDates = this.captureDates;
     cloned.checked = this.checked;
     cloned.collections = this.collections;
     cloned.collectionFilesCount = this.collectionFilesCount;

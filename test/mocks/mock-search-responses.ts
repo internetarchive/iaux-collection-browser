@@ -49,6 +49,68 @@ export const getMockSuccessSingleResult: () => Result<
   },
 });
 
+export const getMockSuccessManyFields: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'many-fields',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'many-fields',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            avg_rating: 3.5,
+            collection: ['foo', 'bar', 'no-preview', 'loggedin'],
+            collection_files_count: 123,
+            collection_size: 234,
+            creator: ['baz', 'boop'],
+            date: '2010-01-03T01:23:45Z',
+            addeddate: '2010-01-01T01:23:45Z',
+            publicdate: '2010-01-02T01:23:45Z',
+            reviewdate: '2010-01-04T01:23:45Z',
+            description: 'foo bar baz',
+            downloads: 246,
+            issue: 1,
+            item_count: 20,
+            mediatype: 'texts',
+            num_favorites: 12,
+            num_reviews: 23,
+            source: 'foo bar',
+            subject: ['baz', 'quux'],
+            title: 'Foo Bar',
+            volume: 2,
+            week: 50,
+            __href__: 'https://archive.org/details/foo',
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockSuccessWithYearHistogramAggs: () => Result<
   SearchResponse,
   SearchServiceError
@@ -407,6 +469,10 @@ export const getMockSuccessWithCollectionAggregations: () => Result<
             },
           ],
         }),
+      },
+      collection_titles: {
+        foo: 'Foo',
+        bar: 'Bar',
       },
     },
     responseHeader: {

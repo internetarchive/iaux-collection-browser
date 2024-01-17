@@ -1,7 +1,8 @@
-import { nothing } from 'lit';
+import { TemplateResult, html, nothing } from 'lit';
 import { msg, str } from '@lit/localize';
 import type { SortParam } from '@internetarchive/search-service';
 import type { TileModel } from '../models';
+import { formatDate } from '../utils/format-date';
 
 /**
  * A class encapsulating shared logic for converting model values into display values
@@ -102,5 +103,22 @@ export class TileDisplayValueProvider {
     if (!identifier || this.baseNavigationUrl == null) return nothing;
     const basePath = isCollection ? this.collectionPagePath : '/details/';
     return `${this.baseNavigationUrl}${basePath}${identifier}`;
+  }
+
+  /**
+   * Produces a template for a link to a single web capture of the given URL and date
+   */
+  webArchivesCaptureLink(url: string, date: Date): TemplateResult {
+    // Convert the date into the format used to identify wayback captures (e.g., '20150102124550')
+    const captureDateStr = date
+      .toISOString()
+      .replace(/[TZ:-]/g, '')
+      .replace(/\..*/, '');
+    const captureHref = `https://web.archive.org/web/${captureDateStr}/${encodeURIComponent(
+      url
+    )}`;
+    const captureText = formatDate(date, 'long');
+
+    return html` <a href=${captureHref}> ${captureText} </a> `;
   }
 }

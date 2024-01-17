@@ -1116,6 +1116,7 @@ export class SortFilterBar
           height: 100%;
           padding-left: 5px;
           font-size: 1.4rem;
+          font-family: var(--ia-theme-base-font-family);
           line-height: 2;
           color: var(--ia-theme-primary-text-color, #2c2c2c);
           white-space: nowrap;

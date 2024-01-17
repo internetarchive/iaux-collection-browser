@@ -1013,6 +1013,10 @@ export class CollectionBrowserDataSource
     }
 
     if (this.host.withinCollection) {
+      console.log(
+        'host is within collection, setting collection info:',
+        success.response.collectionExtraInfo
+      );
       this.collectionExtraInfo = success.response.collectionExtraInfo;
 
       // For collections, we want the UI to respect the default sort option
@@ -1027,10 +1031,17 @@ export class CollectionBrowserDataSource
     } else if (this.host.withinProfile) {
       console.log(
         'host is within profile, setting acct info:',
-        success.response.accountExtraInfo
+        success.response.accountExtraInfo,
+        success.response.pageElements
       );
       this.accountExtraInfo = success.response.accountExtraInfo;
       this.pageElements = success.response.pageElements;
+    } else {
+      console.log(
+        'not within profile/collxn',
+        this.host.withinCollection,
+        this.host.withinProfile
+      );
     }
 
     const { results, collectionTitles } = success.response;

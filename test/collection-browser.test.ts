@@ -449,6 +449,25 @@ describe('Collection Browser', () => {
     expect(el.searchType).to.equal(SearchType.FULLTEXT);
   });
 
+  it('can construct tile models with many fields present', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'many-fields';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const cellTemplate = el.cellForIndex(0);
+    expect(cellTemplate).to.exist;
+
+    const cell = await fixture<TileDispatcher>(cellTemplate!);
+    expect(cell).to.exist;
+  });
+
   it('applies loggedin flag to tile models if needed', async () => {
     const searchService = new MockSearchService();
 

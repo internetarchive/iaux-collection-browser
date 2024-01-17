@@ -107,6 +107,7 @@ export class TileList extends BaseTileComponent {
       ${this.itemLineTemplate} ${this.creatorTemplate}
       <div id="dates-line">
         ${this.datePublishedTemplate} ${this.dateSortByTemplate}
+        ${this.webArchivesCaptureDatesTemplate}
       </div>
       <div id="views-line">
         ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
@@ -238,6 +239,7 @@ export class TileList extends BaseTileComponent {
       this.sortParam?.field === 'week'
         ? this.model?.weeklyViewCount // weekly views
         : this.model?.viewCount; // all-time views
+    if (viewCount == null) return nothing;
 
     // when its a search-tile, we don't have any stats to show
     if (this.model?.mediatype === 'search') {
@@ -245,7 +247,7 @@ export class TileList extends BaseTileComponent {
     }
 
     return this.metadataTemplate(
-      `${formatCount(viewCount ?? 0, this.formatSize)}`,
+      `${formatCount(viewCount, this.formatSize)}`,
       msg('Views')
     );
   }
@@ -307,6 +309,26 @@ export class TileList extends BaseTileComponent {
 
   private get hasSnippets(): boolean {
     return !!this.model?.snippets?.length;
+  }
+
+  private get webArchivesCaptureDatesTemplate():
+    | TemplateResult
+    | typeof nothing {
+    if (!this.model?.captureDates || !this.model?.title) return nothing;
+
+    return html`
+      <ul class="capture-dates">
+        ${map(
+          this.model.captureDates,
+          date => html`<li>
+            ${this.displayValueProvider.webArchivesCaptureLink(
+              this.model!.title,
+              date
+            )}
+          </li>`
+        )}
+      </ul>
+    `;
   }
 
   // Utility functions
@@ -623,6 +645,20 @@ export class TileList extends BaseTileComponent {
       #dates-line,
       #views-line {
         flex-wrap: wrap;
+      }
+
+      .capture-dates {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+      }
+
+      .capture-dates a:link {
+        text-decoration: none;
+        color: var(--ia-theme-link-color, #4b64ff);
+      }
+      .capture-dates a:hover {
+        text-decoration: underline;
       }
     `;
   }

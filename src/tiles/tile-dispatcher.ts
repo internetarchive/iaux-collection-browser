@@ -184,7 +184,8 @@ export class TileDispatcher
       this.enableHoverPane &&
       !!this.tileDisplayMode &&
       TileDispatcher.HOVER_PANE_DISPLAY_MODES[this.tileDisplayMode] &&
-      this.model?.mediatype !== 'search' // don't show hover panes on search tiles
+      this.model?.mediatype !== 'search' && // don't show hover panes on search tiles
+      !this.model?.captureDates // don't show hover panes on web archive tiles
     );
   }
 
