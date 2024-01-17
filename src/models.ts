@@ -182,6 +182,8 @@ export class TileModel {
   }
 }
 
+export type RequestKind = 'full' | 'hits' | 'aggregations';
+
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
 
 export type TileDisplayMode =

@@ -18,6 +18,7 @@ import {
   type PrefixFilterType,
   TileModel,
   PrefixFilterCounts,
+  RequestKind,
 } from '../models';
 import type {
   CollectionBrowserSearchInterface,
@@ -25,8 +26,6 @@ import type {
   PageSpecifierParams,
 } from './models';
 import { sha1 } from '../utils/sha1';
-
-type RequestKind = 'full' | 'hits' | 'aggregations';
 
 export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
