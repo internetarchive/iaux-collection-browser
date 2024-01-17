@@ -658,10 +658,11 @@ export class CollectionBrowser
     this.dispatchEvent(
       new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels.map(model => ({
-            ...model,
-            date: formatDate(model.datePublished, 'long'),
-          })),
+          items: this.dataSource.checkedTileModels.map(model => {
+            const cloned = model.clone();
+            cloned.dateStr = formatDate(model.datePublished, 'long');
+            return cloned as ManageableItem;
+          }),
         },
       })
     );

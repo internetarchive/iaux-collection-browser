@@ -16,7 +16,7 @@ import {
   prefixFilterAggregationKeys,
   type FacetBucket,
   type PrefixFilterType,
-  type TileModel,
+  TileModel,
   PrefixFilterCounts,
 } from '../models';
 import type {
@@ -25,8 +25,6 @@ import type {
   PageSpecifierParams,
 } from './models';
 import { sha1 } from '../utils/sha1';
-import { collapseRepeatedQuotes } from '../utils/collapse-repeated-quotes';
-import { resolveMediatype } from '../utils/resolve-mediatype';
 
 type RequestKind = 'full' | 'hits' | 'aggregations';
 
@@ -424,14 +422,22 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   checkAllTiles = (): void => {
-    this.map(model => ({ ...model, checked: true }));
+    this.map(model => {
+      const cloned = model.clone();
+      cloned.checked = true;
+      return cloned;
+    });
   };
 
   /**
    * @inheritdoc
    */
   uncheckAllTiles = (): void => {
-    this.map(model => ({ ...model, checked: false }));
+    this.map(model => {
+      const cloned = model.clone();
+      cloned.checked = false;
+      return cloned;
+    });
   };
 
   /**
@@ -1082,56 +1088,7 @@ export class CollectionBrowserDataSource
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
-
-      let loginRequired = false;
-      let contentWarning = false;
-      // Check if item and item in "modifying" collection, setting above flags
-      if (
-        result.collection?.values.length &&
-        result.mediatype?.value !== 'collection'
-      ) {
-        for (const collection of result.collection?.values ?? []) {
-          if (collection === 'loggedin') {
-            loginRequired = true;
-            if (contentWarning) break;
-          }
-          if (collection === 'no-preview') {
-            contentWarning = true;
-            if (loginRequired) break;
-          }
-        }
-      }
-
-      tiles.push({
-        averageRating: result.avg_rating?.value,
-        checked: false,
-        collections: result.collection?.values ?? [],
-        collectionFilesCount: result.collection_files_count?.value ?? 0,
-        collectionSize: result.collection_size?.value ?? 0,
-        commentCount: result.num_reviews?.value ?? 0,
-        creator: result.creator?.value,
-        creators: result.creator?.values ?? [],
-        dateAdded: result.addeddate?.value,
-        dateArchived: result.publicdate?.value,
-        datePublished: result.date?.value,
-        dateReviewed: result.reviewdate?.value,
-        description: result.description?.values.join('\n'),
-        favCount: result.num_favorites?.value ?? 0,
-        href: collapseRepeatedQuotes(result.__href__?.value),
-        identifier: result.identifier,
-        issue: result.issue?.value,
-        itemCount: result.item_count?.value ?? 0,
-        mediatype: resolveMediatype(result),
-        snippets: result.highlight?.values ?? [],
-        source: result.source?.value,
-        subjects: result.subject?.values ?? [],
-        title: result.title?.value ?? '',
-        volume: result.volume?.value,
-        viewCount: result.downloads?.value ?? 0,
-        weeklyViewCount: result.week?.value,
-        loginRequired,
-        contentWarning,
-      });
+      tiles.push(new TileModel(result));
     });
     this.addPage(pageNumber, tiles);
     const visiblePages = this.host.currentVisiblePageNumbers;

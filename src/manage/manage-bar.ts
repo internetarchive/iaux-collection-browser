@@ -6,7 +6,7 @@ import { when } from 'lit/directives/when.js';
 export interface ManageableItem {
   identifier: string;
   title?: string;
-  date?: string;
+  dateStr?: string;
 }
 
 @customElement('manage-bar')

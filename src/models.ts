@@ -1,40 +1,185 @@
 import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
+  SearchResult,
   SortDirection,
 } from '@internetarchive/search-service';
+import { collapseRepeatedQuotes } from './utils/collapse-repeated-quotes';
+import { resolveMediatype } from './utils/resolve-mediatype';
 
-export interface TileModel {
-  averageRating?: number;
-  checked: boolean; // Whether this tile is currently checked for item management functions
-  collectionIdentifier?: string;
-  collectionName?: string;
-  collectionFilesCount: number;
-  collections: string[];
-  collectionSize: number;
-  commentCount: number;
-  creator?: string;
-  creators: string[];
-  dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
-  dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
-  datePublished?: Date; // Date work published in the world (user-defined) [from: date]
-  dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
-  description?: string;
-  favCount: number;
-  href?: string;
-  identifier: string;
-  issue?: string;
-  itemCount: number;
-  mediatype: MediaType;
-  source?: string;
-  snippets?: string[];
-  subjects: string[];
-  title: string;
-  viewCount: number;
-  volume?: string;
-  weeklyViewCount?: number;
+/**
+ * Flags that can affect the visibility of content on a tile
+ */
+interface TileFlags {
   loginRequired: boolean;
   contentWarning: boolean;
+}
+
+/**
+ * Class for converting & storing raw search results in the correct format for UI tiles.
+ */
+export class TileModel {
+  averageRating?: number;
+
+  checked: boolean; // Whether this tile is currently checked for item management functions
+
+  collectionIdentifier?: string;
+
+  collectionName?: string;
+
+  collectionFilesCount: number;
+
+  collections: string[];
+
+  collectionSize: number;
+
+  commentCount: number;
+
+  creator?: string;
+
+  creators: string[];
+
+  dateStr?: string; // A string representation of the publication date, used strictly for passing preformatted dates to the parent
+
+  dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
+
+  dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
+
+  datePublished?: Date; // Date work published in the world (user-defined) [from: date]
+
+  dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
+
+  description?: string;
+
+  favCount: number;
+
+  href?: string;
+
+  identifier?: string;
+
+  issue?: string;
+
+  itemCount: number;
+
+  mediatype: MediaType;
+
+  source?: string;
+
+  snippets?: string[];
+
+  subjects: string[];
+
+  title: string;
+
+  viewCount: number;
+
+  volume?: string;
+
+  weeklyViewCount?: number;
+
+  loginRequired: boolean;
+
+  contentWarning: boolean;
+
+  constructor(result: SearchResult) {
+    const flags = this.getFlags(result);
+
+    this.averageRating = result.avg_rating?.value;
+    this.checked = false;
+    this.collections = result.collection?.values ?? [];
+    this.collectionFilesCount = result.collection_files_count?.value ?? 0;
+    this.collectionSize = result.collection_size?.value ?? 0;
+    this.commentCount = result.num_reviews?.value ?? 0;
+    this.creator = result.creator?.value;
+    this.creators = result.creator?.values ?? [];
+    this.dateAdded = result.addeddate?.value;
+    this.dateArchived = result.publicdate?.value;
+    this.datePublished = result.date?.value;
+    this.dateReviewed = result.reviewdate?.value;
+    this.description = result.description?.values.join('\n');
+    this.favCount = result.num_favorites?.value ?? 0;
+    this.href = collapseRepeatedQuotes(result.__href__?.value);
+    this.identifier = result.identifier;
+    this.issue = result.issue?.value;
+    this.itemCount = result.item_count?.value ?? 0;
+    this.mediatype = resolveMediatype(result);
+    this.snippets = result.highlight?.values ?? [];
+    this.source = result.source?.value;
+    this.subjects = result.subject?.values ?? [];
+    this.title = result.title?.value ?? '';
+    this.volume = result.volume?.value;
+    this.viewCount = result.downloads?.value ?? 0;
+    this.weeklyViewCount = result.week?.value;
+    this.loginRequired = flags.loginRequired;
+    this.contentWarning = flags.contentWarning;
+  }
+
+  /**
+   * Clones the contents of this TileModel onto a new instance
+   */
+  clone(): TileModel {
+    const cloned = new TileModel({});
+    cloned.averageRating = this.averageRating;
+    cloned.checked = this.checked;
+    cloned.collections = this.collections;
+    cloned.collectionFilesCount = this.collectionFilesCount;
+    cloned.collectionSize = this.collectionSize;
+    cloned.commentCount = this.commentCount;
+    cloned.creator = this.creator;
+    cloned.creators = this.creators;
+    cloned.dateStr = this.dateStr;
+    cloned.dateAdded = this.dateAdded;
+    cloned.dateArchived = this.dateArchived;
+    cloned.datePublished = this.datePublished;
+    cloned.dateReviewed = this.dateReviewed;
+    cloned.description = this.description;
+    cloned.favCount = this.favCount;
+    cloned.href = this.href;
+    cloned.identifier = this.identifier;
+    cloned.issue = this.issue;
+    cloned.itemCount = this.itemCount;
+    cloned.mediatype = this.mediatype;
+    cloned.snippets = this.snippets;
+    cloned.source = this.source;
+    cloned.subjects = this.subjects;
+    cloned.title = this.title;
+    cloned.volume = this.volume;
+    cloned.viewCount = this.viewCount;
+    cloned.weeklyViewCount = this.weeklyViewCount;
+    cloned.loginRequired = this.loginRequired;
+    cloned.contentWarning = this.contentWarning;
+    return cloned;
+  }
+
+  /**
+   * Determines the appropriate tile flags for the given search result
+   * (login required and/or content warning)
+   */
+  private getFlags(result: SearchResult): TileFlags {
+    const flags: TileFlags = {
+      loginRequired: false,
+      contentWarning: false,
+    };
+
+    // Check if item and item in "modifying" collection, setting above flags
+    if (
+      result.collection?.values.length &&
+      result.mediatype?.value !== 'collection'
+    ) {
+      for (const collection of result.collection?.values ?? []) {
+        if (collection === 'loggedin') {
+          flags.loginRequired = true;
+          if (flags.contentWarning) break;
+        }
+        if (collection === 'no-preview') {
+          flags.contentWarning = true;
+          if (flags.loginRequired) break;
+        }
+      }
+    }
+
+    return flags;
+  }
 }
 
 export type CollectionDisplayMode = 'grid' | 'list-compact' | 'list-detail';
