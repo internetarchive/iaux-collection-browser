@@ -4,7 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
 
-import { map } from 'lit/directives/map';
+import { map } from 'lit/directives/map.js';
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';

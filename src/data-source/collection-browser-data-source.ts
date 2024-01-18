@@ -1,4 +1,4 @@
-import type { ReactiveController, ReactiveControllerHost } from 'lit';
+import type { ReactiveControllerHost } from 'lit';
 import {
   AccountExtraInfo,
   Aggregation,
@@ -20,217 +20,10 @@ import {
   PrefixFilterCounts,
   RequestKind,
 } from '../models';
-import type {
-  CollectionBrowserSearchInterface,
-  CollectionTitles,
-  PageSpecifierParams,
-} from './models';
+import type { PageSpecifierParams } from './models';
+import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
+import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
-
-export interface CollectionBrowserDataSourceInterface
-  extends ReactiveController {
-  /**
-   * How many tile models are present in this data source
-   */
-  readonly size: number;
-
-  /**
-   * Whether the host has a valid set of properties for performing a search.
-   * For instance, on the search page this requires a valid search service and a
-   * non-empty query, while collection pages allow searching with an empty query
-   * for MDS but not FTS.
-   */
-  readonly canPerformSearch: boolean;
-
-  /**
-   * Whether the end of the set of results for the current query state has been
-   * encountered (i.e., the last page of results).
-   */
-  readonly endOfDataReached: boolean;
-
-  /**
-   * A string key compactly representing the current full search state, which can
-   * be used to determine, e.g., when a new search is required or whether an arriving
-   * response is outdated.
-   */
-  readonly pageFetchQueryKey: string;
-
-  /**
-   * Similar to `pageFetchQueryKey`, but excluding properties that do not affect
-   * the validity of a set of facets (e.g., sort).
-   */
-  readonly facetFetchQueryKey: string;
-
-  /**
-   * An object representing any collection- or profile-specific properties to be passed along
-   * to the search service, specifying the exact page/tab to fetch results for.
-   */
-  readonly pageSpecifierParams: PageSpecifierParams | null;
-
-  /**
-   * A FilterMap object representing all filters applied to the current search,
-   * including any facets, letter filters, and date ranges.
-   */
-  readonly filterMap: FilterMap;
-
-  /**
-   * The full set of aggregations retrieved for the current search.
-   */
-  readonly aggregations?: Record<string, Aggregation>;
-
-  /**
-   * The `year_histogram` aggregation retrieved for the current search.
-   */
-  readonly yearHistogramAggregation?: Aggregation;
-
-  /**
-   * A map from collection identifiers that appear on hits or aggregations for the
-   * current search, to their human-readable collection titles.
-   */
-  readonly collectionTitles: CollectionTitles;
-
-  /**
-   * The "extra info" package provided by the PPS for collection pages, including details
-   * used to populate the target collection header & About tab content.
-   */
-  readonly collectionExtraInfo?: CollectionExtraInfo;
-
-  /**
-   * The "extra info" package provided by the PPS for profile pages, including details
-   * used to populate the profile header.
-   */
-  readonly accountExtraInfo?: AccountExtraInfo;
-
-  /**
-   * The set of requested page elements for profile pages, if applicable. These represent
-   * any content specific to the current profile tab.
-   */
-  readonly pageElements?: PageElementMap;
-
-  /**
-   * An array of the current target collection's parent collections. Should include *all*
-   * ancestors in the collection hierarchy, not just the immediate parent.
-   */
-  readonly parentCollections?: string[];
-
-  /**
-   * An object storing result counts for the current search bucketed by letter prefix.
-   * Keys are the result field on which the prefixes are considered (e.g., title/creator)
-   * and values are a Record mapping letters to their counts.
-   */
-  readonly prefixFilterCountMap: Partial<
-    Record<PrefixFilterType, PrefixFilterCounts>
-  >;
-
-  /**
-   * An array of all the tile models whose management checkboxes are checked
-   */
-  readonly checkedTileModels: TileModel[];
-
-  /**
-   * An array of all the tile models whose management checkboxes are unchecked
-   */
-  readonly uncheckedTileModels: TileModel[];
-
-  /**
-   * Resets the data source to its empty state, with no result pages, aggregations, etc.
-   */
-  reset(): void;
-
-  /**
-   * Adds the given page of tile models to the data source.
-   * If the given page number already exists, that page will be overwritten.
-   * @param pageNum Which page number to add (indexed starting from 1)
-   * @param pageTiles The array of tile models for the new page
-   */
-  addPage(pageNum: number, pageTiles: TileModel[]): void;
-
-  /**
-   * Returns the given page of tile models from the data source.
-   * @param pageNum Which page number to get (indexed starting from 1)
-   */
-  getPage(pageNum: number): TileModel[];
-
-  /**
-   * Returns the full set of paged tile models stored in this data source.
-   */
-  getAllPages(): Record<string, TileModel[]>;
-
-  /**
-   * Whether the data source contains any tiles for the given page number.
-   * @param pageNum Which page number to query (indexed starting from 1)
-   */
-  hasPage(pageNum: number): boolean;
-
-  /**
-   * Returns the single tile model appearing at the given index in the
-   * data source, with respect to the current page size. Returns `undefined` if
-   * the corresponding page is not present on the data source or if it does not
-   * contain a tile model at the corresponding index.
-   * @param index The 0-based index (within the full data source) of the tile to get
-   */
-  getTileModelAt(index: number): TileModel | undefined;
-
-  /**
-   * Returns the first numeric tile index corresponding to the given tile model object,
-   * or -1 if the given tile model is not present.
-   * @param tile The tile model to search for in the data source
-   */
-  indexOf(tile: TileModel): number;
-
-  /**
-   * Requests that the data source fire a backend request for the given page of results.
-   * @param pageNum Which page number to fetch results for
-   * @param numInitialPages How many pages should be batched together on an initial fetch
-   */
-  fetchPage(pageNum: number, numInitialPages?: number): Promise<void>;
-
-  /**
-   * Requests that the data source update its prefix bucket result counts for the given
-   * type of prefix filter.
-   * @param filterType Which prefixable field to update the buckets for (e.g., title/creator)
-   */
-  updatePrefixFilterCounts(filterType: PrefixFilterType): Promise<void>;
-
-  /**
-   * Changes the page size used by the data source, discarding any previously-fetched pages.
-   *
-   * **Note: this operation will reset any data stored in the data source!**
-   * @param pageSize
-   */
-  setPageSize(pageSize: number): void;
-
-  /**
-   * Notifies the data source that a query change has occurred, which may trigger a data
-   * reset & new fetches.
-   */
-  handleQueryChange(): void;
-
-  /**
-   * Applies the given map function to all of the tile models in every page of the data
-   * source.
-   * @param callback A callback function to apply on each tile model, as with Array.map
-   */
-  map(
-    callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
-  ): void;
-
-  /**
-   * Checks every tile's management checkbox
-   */
-  checkAllTiles(): void;
-
-  /**
-   * Unchecks every tile's management checkbox
-   */
-  uncheckAllTiles(): void;
-
-  /**
-   * Removes all tile models that are currently checked & adjusts the paging
-   * of the data source to account for any new gaps in the data.
-   */
-  removeCheckedTiles(): void;
-}
 
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
@@ -247,6 +40,15 @@ export class CollectionBrowserDataSource
   private pageFetchesInProgress: Record<string, Set<number>> = {};
 
   /**
+   * A record of the query key used for the last search.
+   * If this changes, we need to load new results.
+   */
+  private previousQueryKey: string = '';
+
+  // TEMP for ease of debugging
+  private id = Math.random();
+
+  /**
    * @inheritdoc
    */
   totalResults = 0;
@@ -255,6 +57,11 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   endOfDataReached = false;
+
+  /**
+   * @inheritdoc
+   */
+  queryInitialized = false;
 
   /**
    * @inheritdoc
@@ -297,6 +104,27 @@ export class CollectionBrowserDataSource
   prefixFilterCountMap: Partial<Record<PrefixFilterType, PrefixFilterCounts>> =
     {};
 
+  /**
+   * Internal property to store the `resolve` function for the most recent
+   * `initialSearchComplete` promise, allowing us to resolve it at the appropriate time.
+   */
+  private _initialSearchCompleteResolver!: (val: boolean) => void;
+
+  /**
+   * Internal property to store the private value backing the `initialSearchComplete` getter.
+   */
+  private _initialSearchCompletePromise: Promise<boolean> = new Promise(res => {
+    this._initialSearchCompleteResolver = res;
+  });
+
+  /**
+   * @inheritdoc
+   */
+  get initialSearchComplete(): Promise<boolean> {
+    return this._initialSearchCompletePromise;
+  }
+
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost &
@@ -304,7 +132,39 @@ export class CollectionBrowserDataSource
     /** Default size of result pages */
     private pageSize: number
   ) {
-    this.host.addController(this as CollectionBrowserDataSourceInterface);
+    // No setup needed here, just defining properties
+  }
+
+  hostUpdate(): void {
+    console.log(
+      'hostUpdate',
+      this.id,
+      this.previousQueryKey,
+      this.pageFetchQueryKey
+    );
+    // This reactive controller hook is run whenever the host component (collection-browser) performs an update.
+    // We check whether the host's state has changed in a way which should trigger a reset & new results fetch.
+
+    // Only the currently-installed data source should react to the update
+    if (this.host.dataSource !== this) return;
+
+    // Can't perform searches without a search service
+    if (!this.host.searchService) return;
+
+    // We should only reset if part of the full query state has changed
+    const queryKeyChanged = this.pageFetchQueryKey !== this.previousQueryKey;
+    console.log('query keys', this.pageFetchQueryKey, this.previousQueryKey);
+    if (!queryKeyChanged) return;
+
+    // We should only reset if either:
+    //  (a) our state permits a valid search, or
+    //  (b) we have a blank query that we want to show empty results for
+    const shouldShowEmptyQueryResults =
+      this.host.clearResultsOnEmptyQuery && this.host.baseQuery === '';
+    if (!(this.canPerformSearch || shouldShowEmptyQueryResults)) return;
+
+    this.host.emitQueryStateChanged();
+    this.handleQueryChange();
   }
 
   /**
@@ -330,6 +190,9 @@ export class CollectionBrowserDataSource
     this.numTileModels = 0;
     this.totalResults = 0;
     this.endOfDataReached = false;
+    this.queryInitialized = false;
+
+    this.host.setTotalResultCount(0);
 
     this.host.requestUpdate();
   }
@@ -393,10 +256,21 @@ export class CollectionBrowserDataSource
    */
   async handleQueryChange(): Promise<void> {
     this.reset();
+
+    // Reset the `initialSearchComplete` promise with a new value for the imminent search
+    this._initialSearchCompletePromise = new Promise(res => {
+      this._initialSearchCompleteResolver = res;
+    });
+
+    // Fire the initial page & facet requests
+    this.queryInitialized = true;
     await Promise.all([
       this.doInitialPageFetch(),
       this.host.suppressFacets ? null : this.fetchFacets(),
     ]);
+
+    // Resolve the `initialSearchComplete` promise for this search
+    this._initialSearchCompleteResolver(true);
   }
 
   /**
@@ -549,15 +423,15 @@ export class CollectionBrowserDataSource
    *  - Any currently-applied prefix filters
    *  - The current sort options
    *
-   * This lets us keep track of queries so we don't persist data that's
-   * no longer relevant.
+   * This lets us internally keep track of queries so we don't persist data that's
+   * no longer relevant. Not meant to be human-readable.
    */
   get pageFetchQueryKey(): string {
-    const profileKey = `${this.host.withinProfile}--${this.host.profileElement}`;
+    const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
     const sortField = this.host.sortParam?.field ?? 'none';
     const sortDirection = this.host.sortParam?.direction ?? 'none';
-    return `${this.fullQuery}-${pageTarget}-${this.host.searchType}-${sortField}-${sortDirection}`;
+    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}-sf:${sortField}-sd:${sortDirection}`;
   }
 
   /**
@@ -833,8 +707,10 @@ export class CollectionBrowserDataSource
    * the current search state.
    */
   private async fetchFacets(): Promise<void> {
+    console.log('fetchFacets', this.id, this.host.profileElement);
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
+    console.log('will actually fetch facets');
 
     const { facetFetchQueryKey } = this;
 
@@ -866,7 +742,14 @@ export class CollectionBrowserDataSource
     // likely no longer valid for the newer query.
     const queryChangedSinceFetch =
       facetFetchQueryKey !== this.facetFetchQueryKey;
-    if (queryChangedSinceFetch) return;
+    if (queryChangedSinceFetch) {
+      console.log(
+        'facet query has changed since fetch, returning. new/old:',
+        this.facetFetchQueryKey,
+        facetFetchQueryKey
+      );
+      return;
+    }
 
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
@@ -880,6 +763,7 @@ export class CollectionBrowserDataSource
         );
       }
 
+      this.host.setFacetsLoading(false);
       return;
     }
 
@@ -918,14 +802,6 @@ export class CollectionBrowserDataSource
    *  if `pageNumber != 1`, defaulting to a single page.
    */
   async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
-    console.log(
-      `fetchPage(${pageNumber})`,
-      this.canPerformSearch,
-      this.hasPage(pageNumber),
-      this.endOfDataReached,
-      this.host.baseQuery,
-      JSON.stringify(this.host.selectedFacets)
-    );
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
 
@@ -943,16 +819,23 @@ export class CollectionBrowserDataSource
     const { pageFetchQueryKey } = this;
     const pageFetches =
       this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
-    if (pageFetches.has(pageNumber)) {
-      console.log(
-        `Skipping fetch for page ${pageNumber} because one is already in progress`
-      );
-      return;
-    }
+    if (pageFetches.has(pageNumber)) return;
+
     for (let i = 0; i < numPages; i += 1) {
       pageFetches.add(pageNumber + i);
     }
+    console.log(
+      `fetchPage(${pageNumber})`,
+      this.id,
+      this.canPerformSearch,
+      this.hasPage(pageNumber),
+      this.endOfDataReached,
+      this.host.baseQuery,
+      JSON.stringify(this.host.selectedFacets),
+      this.pageFetchQueryKey
+    );
     this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
+    this.previousQueryKey = pageFetchQueryKey;
 
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     const params: SearchParams = {

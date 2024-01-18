@@ -56,14 +56,11 @@ import {
   RestorationStateHandler,
   RestorationState,
 } from './restoration-state-handler';
-import {
-  CollectionBrowserDataSource,
-  CollectionBrowserDataSourceInterface,
-} from './data-source/collection-browser-data-source';
+import { CollectionBrowserDataSource } from './data-source/collection-browser-data-source';
 import type {
   CollectionBrowserQueryState,
   CollectionBrowserSearchInterface,
-} from './data-source/models';
+} from './data-source/collection-browser-query-state';
 import chevronIcon from './assets/img/icons/chevron';
 import type { PlaceholderType } from './empty-placeholder';
 import './empty-placeholder';
@@ -77,6 +74,7 @@ import { sha1 } from './utils/sha1';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
+import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -133,6 +131,8 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressURLQuery = false;
 
   @property({ type: Boolean }) suppressFacets = false;
+
+  @property({ type: Boolean }) suppressSortBar = false;
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -250,8 +250,7 @@ export class CollectionBrowser
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
   private tileModelAtCellIndex(index: number): TileModel | undefined {
-    const offsetIndex = index + this.tileModelOffset;
-    const model = this.dataSource.getTileModelAt(offsetIndex);
+    const model = this.dataSource.getTileModelAt(index);
     /**
      * If we encounter a model we don't have yet and we're not in the middle of an
      * automated scroll, fetch the page and just return undefined.
@@ -260,8 +259,8 @@ export class CollectionBrowser
      * We disable it during the automated scroll since we don't want to fetch pages for intervening cells the
      * user may never see.
      */
-    if (!model && !this.isScrollingToCell) {
-      const pageNumber = Math.floor(offsetIndex / this.pageSize) + 1;
+    if (!model && !this.isScrollingToCell && this.dataSource.queryInitialized) {
+      const pageNumber = Math.floor(index / this.pageSize) + 1;
       this.dataSource.fetchPage(pageNumber);
     }
     return model;
@@ -328,6 +327,7 @@ export class CollectionBrowser
    * Sets the state for whether the initial set of search results is loading in.
    */
   setSearchResultsLoading(loading: boolean): void {
+    console.log('setting search results loading to', loading);
     this.searchResultsLoading = loading;
   }
 
@@ -335,6 +335,7 @@ export class CollectionBrowser
    * Sets the state for whether facet data is loading in
    */
   setFacetsLoading(loading: boolean): void {
+    console.log('setting facets loading to', loading);
     this.facetsLoading = loading;
   }
 
@@ -604,7 +605,9 @@ export class CollectionBrowser
     });
   }
 
-  private get sortFilterBarTemplate() {
+  private get sortFilterBarTemplate(): TemplateResult | typeof nothing {
+    if (this.suppressSortBar) return nothing;
+
     return html`
       <sort-filter-bar
         .defaultSortField=${this.defaultSortField}
@@ -987,12 +990,49 @@ export class CollectionBrowser
     );
   }
 
+  async installDataSourceAndQueryState(
+    dataSource: CollectionBrowserDataSourceInterface,
+    queryState: CollectionBrowserQueryState
+  ): Promise<void> {
+    console.log('installing in CB:', dataSource, queryState);
+    if (this.dataSource) this.removeController(this.dataSource);
+    this.dataSource = dataSource;
+    this.addController(this.dataSource);
+
+    this.baseQuery = queryState.baseQuery;
+    this.profileElement = queryState.profileElement;
+    this.searchType = queryState.searchType;
+    this.selectedFacets = queryState.selectedFacets;
+    this.minSelectedDate = queryState.minSelectedDate;
+    this.maxSelectedDate = queryState.maxSelectedDate;
+    this.selectedSort = queryState.selectedSort ?? SortField.default;
+    this.sortDirection = queryState.sortDirection;
+    this.selectedTitleFilter = queryState.selectedTitleFilter;
+    this.selectedCreatorFilter = queryState.selectedCreatorFilter;
+
+    this.requestUpdate();
+    await this.updateComplete;
+
+    if (!this.searchResultsLoading) {
+      this.setTotalResultCount(this.dataSource.totalResults);
+      this.setTileCount(this.dataSource.size);
+      this.refreshVisibleResults();
+    }
+  }
+
   firstUpdated(): void {
     this.setupStateRestorationObserver();
     this.restoreState();
   }
 
   updated(changed: PropertyValues) {
+    console.log(
+      '* CB UPDATED',
+      [...changed.entries()]
+        .map(([k, v]) => `${String(k)}: ${v} => ${this[k as keyof this]}`)
+        .join('\n')
+    );
+
     if (changed.has('placeholderType') && this.placeholderType === null) {
       if (!this.leftColIntersectionObserver) {
         this.setupLeftColumnScrollListeners();
@@ -1252,7 +1292,8 @@ export class CollectionBrowser
     );
   }
 
-  private emitQueryStateChanged() {
+  emitQueryStateChanged() {
+    console.log('emitting query state changed event');
     this.dispatchEvent(
       new CustomEvent<CollectionBrowserQueryState>('queryStateChanged', {
         detail: {
@@ -1332,19 +1373,6 @@ export class CollectionBrowser
   private previousQueryKey?: string;
 
   /**
-   * Internal property to store the `resolve` function for the most recent
-   * `initialSearchComplete` promise, allowing us to resolve it at the appropriate time.
-   */
-  private _initialSearchCompleteResolver!: (val: boolean) => void;
-
-  /**
-   * Internal property to store the private value backing the `initialSearchComplete` getter.
-   */
-  private _initialSearchCompletePromise: Promise<boolean> = new Promise(res => {
-    this._initialSearchCompleteResolver = res;
-  });
-
-  /**
    * A Promise which, after each query change, resolves once the fetches for the initial
    * search have completed. Waits for *both* the hits and aggregations fetches to finish.
    *
@@ -1352,16 +1380,16 @@ export class CollectionBrowser
    * one, to ensure you do not await an obsolete promise from the previous update.
    */
   get initialSearchComplete(): Promise<boolean> {
-    return this._initialSearchCompletePromise;
+    return this.dataSource.initialSearchComplete;
   }
 
   private async handleQueryChange() {
-    console.log(
-      'CB: handling query change',
-      this.previousQueryKey,
-      this.dataSource.pageFetchQueryKey,
-      this.dataSource.canPerformSearch
-    );
+    // console.log(
+    //   'CB: handling query change',
+    //   this.previousQueryKey,
+    //   this.dataSource.pageFetchQueryKey,
+    //   this.dataSource.canPerformSearch
+    // );
     // only reset if the query has actually changed
     if (
       !this.searchService ||
@@ -1416,16 +1444,8 @@ export class CollectionBrowser
     }
     this.historyPopOccurred = false;
 
-    // Reset the `initialSearchComplete` promise with a new value for the imminent search
-    this._initialSearchCompletePromise = new Promise(res => {
-      this._initialSearchCompleteResolver = res;
-    });
-
     // Fire the initial page and facets requests
-    await this.dataSource.handleQueryChange();
-
-    // Resolve the `initialSearchComplete` promise for this search
-    this._initialSearchCompleteResolver(true);
+    // await this.dataSource.handleQueryChange();
   }
 
   private setupStateRestorationObserver() {
@@ -1665,8 +1685,7 @@ export class CollectionBrowser
       // Checked/unchecked state change -- rerender to ensure it propagates
       // this.mapDataSource(model => ({ ...model }));
       const cellIndex = this.dataSource.indexOf(event.detail);
-      if (cellIndex >= 0)
-        this.infiniteScroller?.refreshCell(cellIndex - this.tileModelOffset);
+      if (cellIndex >= 0) this.infiniteScroller?.refreshCell(cellIndex);
     }
 
     this.analyticsHandler?.sendEvent({
@@ -1713,7 +1732,7 @@ export class CollectionBrowser
    * increase the number of pages to render and start fetching data for the new page
    */
   private scrollThresholdReached() {
-    if (!this.dataSource.endOfDataReached) {
+    if (!this.dataSource.endOfDataReached && this.dataSource.queryInitialized) {
       this.pagesToRender += 1;
       this.dataSource.fetchPage(this.pagesToRender);
     }
