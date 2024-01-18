@@ -1006,7 +1006,8 @@ export class CollectionBrowser
     this.baseQuery = queryState.baseQuery;
     this.profileElement = queryState.profileElement;
     this.searchType = queryState.searchType;
-    this.selectedFacets = queryState.selectedFacets;
+    this.selectedFacets =
+      queryState.selectedFacets ?? getDefaultSelectedFacets();
     this.minSelectedDate = queryState.minSelectedDate;
     this.maxSelectedDate = queryState.maxSelectedDate;
     this.selectedSort = queryState.selectedSort ?? SortField.default;

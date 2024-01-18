@@ -302,14 +302,16 @@ export class CollectionFacets extends LitElement {
 
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
+    const minDate = fullYearsHistogramAggregation?.first_bucket_key;
+    const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     return this.fullYearAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
           <histogram-date-range
-            .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-            .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-            .minSelectedDate=${this.minSelectedDate}
-            .maxSelectedDate=${this.maxSelectedDate}
+            .minDate=${minDate}
+            .maxDate=${maxDate}
+            .minSelectedDate=${this.minSelectedDate ?? minDate}
+            .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
             .updateDelay=${100}
             missingDataMessage="..."
             .width=${this.collapsableFacets && this.contentWidth
