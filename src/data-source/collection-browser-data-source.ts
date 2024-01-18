@@ -144,6 +144,12 @@ export class CollectionBrowserDataSource
     // Just setting some property values
   }
 
+  hostConnected(): void {
+    console.log('hostConnected', this.id);
+    this.setSearchResultsLoading(this.searchResultsLoading);
+    this.setFacetsLoading(this.facetsLoading);
+  }
+
   hostUpdate(): void {
     console.log(
       'hostUpdate',
@@ -198,6 +204,7 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   reset(): void {
+    console.log('resetting data source', this.id);
     this.pages = {};
     this.aggregations = {};
     this.yearHistogramAggregation = undefined;
@@ -214,6 +221,7 @@ export class CollectionBrowserDataSource
 
     // Invalidate any fetches in progress
     this.fetchesInProgress.clear();
+    console.log('fetches cleared - size =', this.fetchesInProgress.size);
 
     if (this.activeOnHost) this.host.setTotalResultCount(0);
     this.requestHostUpdate();
@@ -854,7 +862,6 @@ export class CollectionBrowserDataSource
     this.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
     await this.fetchPage(this.host.initialPageNumber, 2);
-    this.setSearchResultsLoading(false);
   }
 
   /**
@@ -882,6 +889,11 @@ export class CollectionBrowserDataSource
     // if a fetch is already in progress for this query and page, don't fetch again
     const { pageFetchQueryKey } = this;
     const currentPageKey = `${pageFetchQueryKey}-p:${pageNumber}`;
+    console.log(
+      'page fetch key',
+      currentPageKey,
+      this.fetchesInProgress.has(currentPageKey)
+    );
     if (this.fetchesInProgress.has(currentPageKey)) return;
     // const pageFetches =
     //   this.fetchesInProgress[pageFetchQueryKey] ?? new Set();
@@ -924,6 +936,11 @@ export class CollectionBrowserDataSource
 
     // This is checking to see if the fetch has been invalidated since it was fired off.
     // If so, we just want to discard the response since it is for an obsolete query state.
+    console.log(
+      'after page fetch key:',
+      currentPageKey,
+      this.fetchesInProgress.has(currentPageKey)
+    );
     if (!this.fetchesInProgress.has(currentPageKey)) return;
     for (let i = 0; i < numPages; i += 1) {
       this.fetchesInProgress.delete(`${pageFetchQueryKey}-p:${pageNumber + i}`);
@@ -1020,6 +1037,7 @@ export class CollectionBrowserDataSource
       if (this.activeOnHost) this.host.setTileCount(this.totalResults);
     }
 
+    this.setSearchResultsLoading(false);
     this.requestHostUpdate();
   }
 
