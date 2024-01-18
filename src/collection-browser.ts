@@ -247,6 +247,11 @@ export class CollectionBrowser
 
   private placeholderCellTemplate = html`<collection-browser-loading-tile></collection-browser-loading-tile>`;
 
+  constructor() {
+    super();
+    this.addController(this.dataSource);
+  }
+
   private tileModelAtCellIndex(index: number): TileModel | undefined {
     const model = this.dataSource.getTileModelAt(index);
     /**

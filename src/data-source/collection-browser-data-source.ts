@@ -35,9 +35,9 @@ export class CollectionBrowserDataSource
   private numTileModels = 0;
 
   /**
-   * Maps the full query key to the pages being fetched for that query
+   * A set of fetch IDs that are valid for the current query state
    */
-  private pageFetchesInProgress: Record<string, Set<number>> = {};
+  private fetchesInProgress = new Set<string>();
 
   /**
    * A record of the query key used for the last search.
@@ -133,6 +133,7 @@ export class CollectionBrowserDataSource
     return this._initialSearchCompletePromise;
   }
 
+  // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost &
@@ -140,7 +141,7 @@ export class CollectionBrowserDataSource
     /** Default size of result pages */
     private pageSize: number
   ) {
-    this.host.addController(this);
+    // Just setting some property values
   }
 
   hostUpdate(): void {
@@ -200,7 +201,6 @@ export class CollectionBrowserDataSource
     this.pages = {};
     this.aggregations = {};
     this.yearHistogramAggregation = undefined;
-    this.pageFetchesInProgress = {};
     this.pageElements = undefined;
     this.parentCollections = [];
     this.prefixFilterCountMap = {};
@@ -211,6 +211,9 @@ export class CollectionBrowserDataSource
     this.totalResults = 0;
     this.endOfDataReached = false;
     this.queryInitialized = false;
+
+    // Invalidate any fetches in progress
+    this.fetchesInProgress.clear();
 
     if (this.activeOnHost) this.host.setTotalResultCount(0);
     this.requestHostUpdate();
@@ -771,6 +774,8 @@ export class CollectionBrowserDataSource
     console.log('will actually fetch facets');
 
     const { facetFetchQueryKey } = this;
+    if (this.fetchesInProgress.has(facetFetchQueryKey)) return;
+    this.fetchesInProgress.add(facetFetchQueryKey);
 
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     const params: SearchParams = {
@@ -799,7 +804,8 @@ export class CollectionBrowserDataSource
     // If so, we just want to discard this set of aggregations because they are
     // likely no longer valid for the newer query.
     const queryChangedSinceFetch =
-      facetFetchQueryKey !== this.facetFetchQueryKey;
+      this.fetchesInProgress.has(facetFetchQueryKey);
+    this.fetchesInProgress.delete(facetFetchQueryKey);
     if (queryChangedSinceFetch) {
       console.log(
         'facet query has changed since fetch, returning. new/old:',
@@ -875,12 +881,14 @@ export class CollectionBrowserDataSource
 
     // if a fetch is already in progress for this query and page, don't fetch again
     const { pageFetchQueryKey } = this;
-    const pageFetches =
-      this.pageFetchesInProgress[pageFetchQueryKey] ?? new Set();
-    if (pageFetches.has(pageNumber)) return;
+    const currentPageKey = `${pageFetchQueryKey}-p:${pageNumber}`;
+    if (this.fetchesInProgress.has(currentPageKey)) return;
+    // const pageFetches =
+    //   this.fetchesInProgress[pageFetchQueryKey] ?? new Set();
+    // if (pageFetches.has(pageNumber)) return;
 
     for (let i = 0; i < numPages; i += 1) {
-      pageFetches.add(pageNumber + i);
+      this.fetchesInProgress.add(`${pageFetchQueryKey}-p:${pageNumber + i}`);
     }
     console.log(
       `fetchPage(${pageNumber})`,
@@ -892,7 +900,6 @@ export class CollectionBrowserDataSource
       JSON.stringify(this.host.selectedFacets),
       this.pageFetchQueryKey
     );
-    this.pageFetchesInProgress[pageFetchQueryKey] = pageFetches;
     this.previousQueryKey = pageFetchQueryKey;
 
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
@@ -915,11 +922,12 @@ export class CollectionBrowserDataSource
     console.log('=== RECEIVED PAGE RESPONSE IN CB === ');
     const success = searchResponse?.success;
 
-    // This is checking to see if the query has changed since the data was fetched.
-    // If so, we just want to discard the data since there should be a new query
-    // right behind it.
-    const queryChangedSinceFetch = pageFetchQueryKey !== this.pageFetchQueryKey;
-    if (queryChangedSinceFetch) return;
+    // This is checking to see if the fetch has been invalidated since it was fired off.
+    // If so, we just want to discard the response since it is for an obsolete query state.
+    if (!this.fetchesInProgress.has(currentPageKey)) return;
+    for (let i = 0; i < numPages; i += 1) {
+      this.fetchesInProgress.delete(`${pageFetchQueryKey}-p:${pageNumber + i}`);
+    }
 
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
@@ -933,10 +941,6 @@ export class CollectionBrowserDataSource
         this.queryErrorMessage = 'Missing or malformed response from backend';
         // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
         window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
-      }
-
-      for (let i = 0; i < numPages; i += 1) {
-        this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
       }
 
       this.setSearchResultsLoading(false);
@@ -1014,10 +1018,6 @@ export class CollectionBrowserDataSource
       console.log('End of data reached');
       this.endOfDataReached = true;
       if (this.activeOnHost) this.host.setTileCount(this.totalResults);
-    }
-
-    for (let i = 0; i < numPages; i += 1) {
-      this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
     }
 
     this.requestHostUpdate();
