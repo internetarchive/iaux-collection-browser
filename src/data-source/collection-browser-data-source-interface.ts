@@ -121,6 +121,11 @@ export interface CollectionBrowserDataSourceInterface
   >;
 
   /**
+   * Any error message from the most recent search results response.
+   */
+  readonly queryErrorMessage?: string;
+
+  /**
    * An array of all the tile models whose management checkboxes are checked
    */
   readonly checkedTileModels: TileModel[];

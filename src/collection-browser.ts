@@ -171,8 +171,6 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) isLoansTab = false;
 
-  @property({ type: String }) queryErrorMessage?: string;
-
   /**
    * The results per page so we can paginate.
    *
@@ -450,7 +448,7 @@ export class CollectionBrowser
         !hasQuery && isCollection ? 'empty-collection' : 'no-results';
     }
 
-    if (this.queryErrorMessage) {
+    if (this.dataSource.queryErrorMessage) {
       this.placeholderType =
         !hasQuery && isCollection ? 'collection-error' : 'query-error';
     }
@@ -462,7 +460,7 @@ export class CollectionBrowser
         .placeholderType=${this.placeholderType}
         ?isMobileView=${this.mobileView}
         ?isCollection=${!!this.withinCollection}
-        .detailMessage=${this.queryErrorMessage ?? ''}
+        .detailMessage=${this.dataSource.queryErrorMessage ?? ''}
         .baseNavigationUrl=${this.baseNavigationUrl}
       ></empty-placeholder>
       ${this.infiniteScrollerTemplate}
@@ -1027,7 +1025,7 @@ export class CollectionBrowser
 
   updated(changed: PropertyValues) {
     console.log(
-      '* CB UPDATED',
+      '* CB UPDATED\n',
       [...changed.entries()]
         .map(([k, v]) => `${String(k)}: ${v} => ${this[k as keyof this]}`)
         .join('\n')
@@ -1410,7 +1408,7 @@ export class CollectionBrowser
       JSON.stringify(this.selectedFacets)
     );
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
-    this.emitQueryStateChanged();
+    // this.emitQueryStateChanged();
 
     this.tileModelOffset = 0;
     this.totalResults = undefined;
@@ -1418,7 +1416,6 @@ export class CollectionBrowser
       this.initialPageNumber === 1
         ? 2 // First two pages are batched into one request when starting from page 1
         : this.initialPageNumber;
-    this.queryErrorMessage = undefined;
 
     // Reset the infinite scroller's item count, so that it
     // shows tile placeholders until the new query's results load in

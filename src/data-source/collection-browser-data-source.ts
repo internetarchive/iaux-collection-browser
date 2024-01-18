@@ -45,6 +45,10 @@ export class CollectionBrowserDataSource
    */
   private previousQueryKey: string = '';
 
+  private searchResultsLoading = false;
+
+  private facetsLoading = false;
+
   // TEMP for ease of debugging
   private id = Math.random();
 
@@ -105,6 +109,11 @@ export class CollectionBrowserDataSource
     {};
 
   /**
+   * @inheritdoc
+   */
+  queryErrorMessage?: string;
+
+  /**
    * Internal property to store the `resolve` function for the most recent
    * `initialSearchComplete` promise, allowing us to resolve it at the appropriate time.
    */
@@ -124,7 +133,6 @@ export class CollectionBrowserDataSource
     return this._initialSearchCompletePromise;
   }
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost &
@@ -132,7 +140,7 @@ export class CollectionBrowserDataSource
     /** Default size of result pages */
     private pageSize: number
   ) {
-    // No setup needed here, just defining properties
+    this.host.addController(this);
   }
 
   hostUpdate(): void {
@@ -146,7 +154,11 @@ export class CollectionBrowserDataSource
     // We check whether the host's state has changed in a way which should trigger a reset & new results fetch.
 
     // Only the currently-installed data source should react to the update
-    if (this.host.dataSource !== this) return;
+    if (!this.activeOnHost) return;
+
+    // Copy loading states onto the host
+    this.setSearchResultsLoading(this.searchResultsLoading);
+    this.setFacetsLoading(this.facetsLoading);
 
     // Can't perform searches without a search service
     if (!this.host.searchService) return;
@@ -163,8 +175,15 @@ export class CollectionBrowserDataSource
       this.host.clearResultsOnEmptyQuery && this.host.baseQuery === '';
     if (!(this.canPerformSearch || shouldShowEmptyQueryResults)) return;
 
-    this.host.emitQueryStateChanged();
+    if (this.activeOnHost) this.host.emitQueryStateChanged();
     this.handleQueryChange();
+  }
+
+  /**
+   * Returns whether this data source is the one currently installed on the host component.
+   */
+  private get activeOnHost(): boolean {
+    return this.host.dataSource === this;
   }
 
   /**
@@ -185,6 +204,7 @@ export class CollectionBrowserDataSource
     this.pageElements = undefined;
     this.parentCollections = [];
     this.prefixFilterCountMap = {};
+    this.queryErrorMessage = undefined;
 
     this.offset = 0;
     this.numTileModels = 0;
@@ -192,9 +212,8 @@ export class CollectionBrowserDataSource
     this.endOfDataReached = false;
     this.queryInitialized = false;
 
-    this.host.setTotalResultCount(0);
-
-    this.host.requestUpdate();
+    if (this.activeOnHost) this.host.setTotalResultCount(0);
+    this.requestHostUpdate();
   }
 
   /**
@@ -203,7 +222,7 @@ export class CollectionBrowserDataSource
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
     this.numTileModels += pageTiles.length;
-    this.host.requestUpdate();
+    this.requestHostUpdate();
   }
 
   /**
@@ -287,8 +306,8 @@ export class CollectionBrowserDataSource
         ),
       ])
     );
-    this.host.requestUpdate();
-    this.host.refreshVisibleResults();
+    this.requestHostUpdate();
+    this.refreshVisibleResults();
   }
 
   /**
@@ -353,8 +372,8 @@ export class CollectionBrowserDataSource
     // Swap in the new pages
     this.pages = newPages;
     this.numTileModels -= numChecked;
-    this.host.requestUpdate();
-    this.host.refreshVisibleResults();
+    this.requestHostUpdate();
+    this.refreshVisibleResults();
   };
 
   /**
@@ -388,8 +407,6 @@ export class CollectionBrowserDataSource
       );
   }
 
-  // DATA FETCHES
-
   /**
    * @inheritdoc
    */
@@ -410,6 +427,47 @@ export class CollectionBrowserDataSource
       (isCollectionSearch && isMetadataSearch) ||
       (isProfileSearch && hasProfileElement && isMetadataSearch)
     );
+  }
+
+  /**
+   * Sets the state for whether the initial set of search results for the
+   * current query is loading
+   */
+  private setSearchResultsLoading(loading: boolean): void {
+    this.searchResultsLoading = loading;
+    if (this.activeOnHost) {
+      this.host.setSearchResultsLoading(loading);
+    }
+  }
+
+  /**
+   * Sets the state for whether the facets for a query is loading
+   */
+  private setFacetsLoading(loading: boolean): void {
+    this.facetsLoading = loading;
+    if (this.activeOnHost) {
+      this.host.setFacetsLoading(loading);
+    }
+  }
+
+  /**
+   * Requests that the host perform an update, provided this data
+   * source is actively installed on it.
+   */
+  private requestHostUpdate(): void {
+    if (this.activeOnHost) {
+      this.host.requestUpdate();
+    }
+  }
+
+  /**
+   * Requests that the host refresh its visible tiles, provided this
+   * data source is actively installed on it.
+   */
+  private refreshVisibleResults(): void {
+    if (this.activeOnHost) {
+      this.host.refreshVisibleResults();
+    }
   }
 
   /**
@@ -730,7 +788,7 @@ export class CollectionBrowserDataSource
       'aggregations'
     );
 
-    this.host.setFacetsLoading(true);
+    this.setFacetsLoading(true);
     const searchResponse = await this.host.searchService?.search(
       params,
       this.host.searchType
@@ -763,7 +821,7 @@ export class CollectionBrowserDataSource
         );
       }
 
-      this.host.setFacetsLoading(false);
+      this.setFacetsLoading(false);
       return;
     }
 
@@ -779,18 +837,18 @@ export class CollectionBrowserDataSource
     this.yearHistogramAggregation =
       success?.response?.aggregations?.year_histogram;
 
-    this.host.setFacetsLoading(false);
-    this.host.requestUpdate();
+    this.setFacetsLoading(false);
+    this.requestHostUpdate();
   }
 
   /**
    * Performs the initial page fetch(es) for the current search state.
    */
   private async doInitialPageFetch(): Promise<void> {
-    this.host.setSearchResultsLoading(true);
+    this.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
     await this.fetchPage(this.host.initialPageNumber, 2);
-    this.host.setSearchResultsLoading(false);
+    this.setSearchResultsLoading(false);
   }
 
   /**
@@ -867,13 +925,12 @@ export class CollectionBrowserDataSource
       const errorMsg = searchResponse?.error?.message;
       const detailMsg = searchResponse?.error?.details?.message;
 
-      this.host.queryErrorMessage = `${errorMsg ?? ''}${
+      this.queryErrorMessage = `${errorMsg ?? ''}${
         detailMsg ? `; ${detailMsg}` : ''
       }`;
 
-      if (!this.host.queryErrorMessage) {
-        this.host.queryErrorMessage =
-          'Missing or malformed response from backend';
+      if (!this.queryErrorMessage) {
+        this.queryErrorMessage = 'Missing or malformed response from backend';
         // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
         window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
       }
@@ -882,17 +939,19 @@ export class CollectionBrowserDataSource
         this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
       }
 
-      this.host.setSearchResultsLoading(false);
-      this.host.requestUpdate();
+      this.setSearchResultsLoading(false);
+      this.requestHostUpdate();
       return;
     }
 
     this.totalResults = success.response.totalResults - this.offset;
-    this.host.setTotalResultCount(this.totalResults);
+    if (this.activeOnHost) {
+      this.host.setTotalResultCount(this.totalResults);
 
-    // display event to offshoot when result count is zero.
-    if (this.totalResults === 0) {
-      this.host.emitEmptyResults();
+      // display event to offshoot when result count is zero.
+      if (this.totalResults === 0) {
+        this.host.emitEmptyResults();
+      }
     }
 
     if (this.host.withinCollection) {
@@ -954,14 +1013,14 @@ export class CollectionBrowserDataSource
     if (resultCountDiscrepancy > 0) {
       console.log('End of data reached');
       this.endOfDataReached = true;
-      this.host.setTileCount(this.totalResults);
+      if (this.activeOnHost) this.host.setTileCount(this.totalResults);
     }
 
     for (let i = 0; i < numPages; i += 1) {
       this.pageFetchesInProgress[pageFetchQueryKey]?.delete(pageNumber + i);
     }
 
-    this.host.requestUpdate();
+    this.requestHostUpdate();
   }
 
   /**
@@ -974,10 +1033,6 @@ export class CollectionBrowserDataSource
     pageNumber: number,
     results: SearchResult[]
   ): void {
-    // copy our existing datasource so when we set it below, it gets set
-    // instead of modifying the existing dataSource since object changes
-    // don't trigger a re-render
-    // const datasource = { ...this.dataSource };
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
@@ -987,7 +1042,7 @@ export class CollectionBrowserDataSource
     const visiblePages = this.host.currentVisiblePageNumbers;
     const needsReload = visiblePages.includes(pageNumber);
     if (needsReload) {
-      this.host.refreshVisibleResults();
+      this.refreshVisibleResults();
     }
   }
 
@@ -1051,6 +1106,6 @@ export class CollectionBrowserDataSource
       {}
     );
 
-    this.host.requestUpdate();
+    this.requestHostUpdate();
   }
 }

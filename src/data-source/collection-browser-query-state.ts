@@ -34,7 +34,6 @@ export interface CollectionBrowserQueryState {
 export interface CollectionBrowserSearchInterface
   extends CollectionBrowserQueryState {
   searchService?: SearchServiceInterface;
-  queryErrorMessage?: string;
   readonly sortParam: SortParam | null;
   readonly suppressFacets?: boolean;
   readonly initialPageNumber: number;
