@@ -431,6 +431,16 @@ export function sortOptionFromAPIString(sortName?: string | null): SortOption {
   );
 }
 
+export const defaultProfileElementSorts: Record<
+  string,
+  Exclude<SortField, SortField.default>
+> = {
+  uploads: SortField.datearchived,
+  reviews: SortField.datereviewed,
+  collections: SortField.datearchived,
+  web_archives: SortField.datearchived,
+};
+
 /** A union of the fields that permit prefix filtering (e.g., alphabetical filtering) */
 export type PrefixFilterType = 'title' | 'creator';
 

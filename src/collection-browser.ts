@@ -50,6 +50,7 @@ import {
   FacetEventDetails,
   sortOptionFromAPIString,
   SORT_OPTIONS,
+  defaultProfileElementSorts,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -1088,6 +1089,10 @@ export class CollectionBrowser
       }
     }
 
+    if (changed.has('profileElement')) {
+      this.applyDefaultProfileSort();
+    }
+
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
     }
@@ -1585,7 +1590,7 @@ export class CollectionBrowser
    *  - Date Favorited for fav-* collections
    *  - Weekly views for all other collections
    */
-  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo) {
+  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void {
     if (this.baseQuery) {
       // If there's a query set, then we default to relevance sorting regardless of
       // the collection metadata-specified sort.
@@ -1627,6 +1632,24 @@ export class CollectionBrowser
         direction: this.defaultSortDirection,
       };
     }
+  }
+
+  /**
+   * Applies the default sort option for the current profile element
+   */
+  applyDefaultProfileSort(): void {
+    if (this.profileElement) {
+      const defaultSortField = defaultProfileElementSorts[this.profileElement];
+      this.defaultSortField = defaultSortField ?? SortField.weeklyview;
+    } else {
+      this.defaultSortField = SortField.weeklyview;
+    }
+
+    this.defaultSortDirection = 'desc';
+    this.defaultSortParam = {
+      field: this.defaultSortField,
+      direction: this.defaultSortDirection,
+    };
   }
 
   /**

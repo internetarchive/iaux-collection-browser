@@ -19,6 +19,8 @@ import {
   TileModel,
   PrefixFilterCounts,
   RequestKind,
+  SortField,
+  SORT_OPTIONS,
 } from '../models';
 import type { PageSpecifierParams } from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
@@ -914,7 +916,21 @@ export class CollectionBrowserDataSource
     );
     this.previousQueryKey = pageFetchQueryKey;
 
-    const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
+    let sortParams = this.host.sortParam ? [this.host.sortParam] : [];
+    // TODO eventually the PPS should handle these defaults natively
+    if (this.host.withinProfile && this.host.defaultSortParam) {
+      const sortOption =
+        SORT_OPTIONS[this.host.defaultSortParam.field as SortField];
+      if (sortOption.searchServiceKey) {
+        sortParams = [
+          {
+            field: sortOption.searchServiceKey,
+            direction: 'desc',
+          },
+        ];
+      }
+    }
+
     const params: SearchParams = {
       ...this.pageSpecifierParams,
       query: trimmedQuery || '',
@@ -984,7 +1000,9 @@ export class CollectionBrowserDataSource
 
       // For collections, we want the UI to respect the default sort option
       // which can be specified in metadata, or otherwise assumed to be week:desc
-      this.host.applyDefaultCollectionSort(this.collectionExtraInfo);
+      if (this.activeOnHost) {
+        this.host.applyDefaultCollectionSort(this.collectionExtraInfo);
+      }
 
       if (this.collectionExtraInfo) {
         this.parentCollections = [].concat(
