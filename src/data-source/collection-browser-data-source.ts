@@ -812,7 +812,7 @@ export class CollectionBrowserDataSource
     // If so, we just want to discard this set of aggregations because they are
     // likely no longer valid for the newer query.
     const queryChangedSinceFetch =
-      this.fetchesInProgress.has(facetFetchQueryKey);
+      !this.fetchesInProgress.has(facetFetchQueryKey);
     this.fetchesInProgress.delete(facetFetchQueryKey);
     if (queryChangedSinceFetch) {
       console.log(
