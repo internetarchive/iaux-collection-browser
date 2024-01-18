@@ -32,7 +32,7 @@ import type { SortFilterBar } from '../src/sort-filter-bar/sort-filter-bar';
  */
 const nextTick = () => aTimeout(0);
 
-describe.skip('Collection Browser', () => {
+describe('Collection Browser', () => {
   beforeEach(async () => {
     // Apparently query params set by one test can bleed into other tests.
     // Since collection browser restores its state from certain query params, we need
