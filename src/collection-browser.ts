@@ -322,6 +322,12 @@ export class CollectionBrowser
    * @param pageNumber
    */
   goToPage(pageNumber: number) {
+    console.log(
+      'in goToPage',
+      pageNumber,
+      this.initialPageNumber,
+      this.pagesToRender
+    );
     this.initialPageNumber = pageNumber;
     this.pagesToRender = pageNumber;
     return this.scrollToPage(pageNumber);
@@ -1485,6 +1491,7 @@ export class CollectionBrowser
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
     if (this.currentPage > 1) {
+      console.log('will go to page', this.currentPage);
       this.goToPage(this.currentPage);
     }
   }
@@ -1552,12 +1559,17 @@ export class CollectionBrowser
       // then scrolls to the cell
       setTimeout(() => {
         this.isScrollingToCell = true;
+        console.log(
+          'about to scroll infinite scroller to cell',
+          cellIndexToScrollTo
+        );
         this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
         // This timeout is to give the scroll animation time to finish
         // then updating the infinite scroller once we're done scrolling
         // There's no scroll animation completion callback so we're
         // giving it 0.5s to finish.
         setTimeout(() => {
+          console.log('done scrolling, refreshing visible cells');
           this.isScrollingToCell = false;
           this.infiniteScroller?.refreshAllVisibleCells();
           resolve();
