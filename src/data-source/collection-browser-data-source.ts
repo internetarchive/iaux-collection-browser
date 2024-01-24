@@ -918,7 +918,9 @@ export class CollectionBrowserDataSource
 
     let sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     // TODO eventually the PPS should handle these defaults natively
-    if (this.host.withinProfile && this.host.defaultSortParam) {
+    const isDefaultProfileSort =
+      this.host.withinProfile && this.host.selectedSort === SortField.default;
+    if (isDefaultProfileSort && this.host.defaultSortParam) {
       const sortOption =
         SORT_OPTIONS[this.host.defaultSortParam.field as SortField];
       if (sortOption.searchServiceKey) {

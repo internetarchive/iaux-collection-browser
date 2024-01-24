@@ -176,7 +176,7 @@ export class ItemTile extends BaseTileComponent {
   private get webArchivesCaptureDatesTemplate():
     | TemplateResult
     | typeof nothing {
-    if (!this.model?.captureDates || !this.model?.title) return nothing;
+    if (!this.model?.captureDates || !this.model.title) return nothing;
 
     return html`
       <ul class="capture-dates">

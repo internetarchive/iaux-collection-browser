@@ -1391,6 +1391,40 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).to.equal('2010');
   });
 
+  it('respects the initial set of URL parameters within a profile page', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinProfile=${'@foobar'}
+        .profileElement=${'uploads'}
+      >
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    expect(el.withinProfile).to.equal('@foobar');
+    expect(el.profileElement).to.equal('uploads');
+    expect(el.baseQuery).to.equal('foo');
+    expect(el.searchType).to.equal(SearchType.METADATA);
+    expect(el.selectedFacets?.mediatype?.data?.state).to.equal('hidden');
+    expect(el.selectedFacets?.subject?.baz?.state).to.equal('selected');
+    expect(el.selectedTitleFilter).to.equal('X');
+    expect(el.minSelectedDate).to.equal('2000');
+    expect(el.maxSelectedDate).to.equal('2010');
+  });
+
   it('clears filters except sort when query changes for a general search', async () => {
     const url = new URL(window.location.href);
     const { searchParams } = url;

@@ -48,6 +48,19 @@ describe('Tile Dispatcher', () => {
     expect(accountTile).to.exist;
   });
 
+  it('should render search-tile for grid mode and search mediatype', async () => {
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher
+        .tileDisplayMode=${'grid'}
+        .model=${{ mediatype: 'search' }}
+      >
+      </tile-dispatcher>
+    `);
+
+    const searchTile = el.shadowRoot?.querySelector('search-tile');
+    expect(searchTile).to.exist;
+  });
+
   it('should render tile-list for extended list mode', async () => {
     const el = await fixture<TileDispatcher>(html`
       <tile-dispatcher .tileDisplayMode=${'list-detail'} .model=${{}}>
