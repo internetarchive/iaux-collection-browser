@@ -1080,6 +1080,20 @@ describe('Collection Browser', () => {
     expect(sortBar.sortDirection).to.be.null;
   });
 
+  it('falls back to weekly views default sorting on profiles when tab not set', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .withinProfile=${'@foobar'}
+      ></collection-browser>`
+    );
+
+    el.applyDefaultProfileSort();
+    expect(el.defaultSortParam).to.deep.equal({
+      field: SortField.weeklyview,
+      direction: 'desc',
+    });
+  });
+
   it('uses relevance sort as default when a query is set', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(

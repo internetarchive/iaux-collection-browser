@@ -141,7 +141,7 @@ export class CollectionBrowserDataSource
     private readonly host: ReactiveControllerHost &
       CollectionBrowserSearchInterface,
     /** Default size of result pages */
-    private pageSize: number
+    private pageSize: number = 50
   ) {
     // Just setting some property values
   }
@@ -1144,6 +1144,29 @@ export class CollectionBrowserDataSource
       {}
     );
 
+    this.requestHostUpdate();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async updatePrefixFiltersForCurrentSort(): Promise<void> {
+    if (['title', 'creator'].includes(this.host.selectedSort as SortField)) {
+      const filterType = this.host.selectedSort as PrefixFilterType;
+      if (!this.prefixFilterCountMap[filterType]) {
+        this.updatePrefixFilterCounts(filterType);
+      }
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
+  refreshLetterCounts(): void {
+    if (Object.keys(this.prefixFilterCountMap).length > 0) {
+      this.prefixFilterCountMap = {};
+    }
+    this.updatePrefixFiltersForCurrentSort();
     this.requestHostUpdate();
   }
 }

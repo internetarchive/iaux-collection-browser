@@ -205,6 +205,21 @@ export interface CollectionBrowserDataSourceInterface
   updatePrefixFilterCounts(filterType: PrefixFilterType): Promise<void>;
 
   /**
+   * Fetches and caches the prefix filter counts for the current sort type,
+   * provided it is one that permits prefix filtering. (If not, this does nothing).
+   */
+  updatePrefixFiltersForCurrentSort(): Promise<void>;
+
+  /**
+   * Clears the cached letter counts for both title and creator, and
+   * fetches a new set of counts for whichever of them is the currently
+   * selected sort option (which may be neither).
+   *
+   * Call this whenever the counts are invalidated (e.g., by a query change).
+   */
+  refreshLetterCounts(): void;
+
+  /**
    * Changes the page size used by the data source, discarding any previously-fetched pages.
    *
    * **Note: this operation will reset any data stored in the data source!**

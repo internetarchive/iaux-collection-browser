@@ -45,8 +45,6 @@ import {
   getDefaultSelectedFacets,
   TileModel,
   CollectionDisplayMode,
-  PrefixFilterType,
-  PrefixFilterCounts,
   FacetEventDetails,
   sortOptionFromAPIString,
   SORT_OPTIONS,
@@ -216,10 +214,6 @@ export class CollectionBrowser
   @state() private defaultSortDirection: SortDirection | null = null;
 
   @state() private placeholderType: PlaceholderType = null;
-
-  @state() private prefixFilterCountMap: Partial<
-    Record<PrefixFilterType, PrefixFilterCounts>
-  > = {};
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -720,7 +714,7 @@ export class CollectionBrowser
 
   private selectedSortChanged(): void {
     // Lazy-load the alphabet counts for title/creator sort bar as needed
-    this.updatePrefixFiltersForCurrentSort();
+    this.dataSource.updatePrefixFiltersForCurrentSort();
   }
 
   get sortParam(): SortParam | null {
@@ -1117,9 +1111,11 @@ export class CollectionBrowser
       changed.has('maxSelectedDate') ||
       changed.has('selectedFacets') ||
       changed.has('searchService') ||
-      changed.has('withinCollection')
+      changed.has('withinCollection') ||
+      changed.has('withinProfile') ||
+      changed.has('profileElement')
     ) {
-      this.refreshLetterCounts();
+      this.dataSource.refreshLetterCounts();
     }
 
     if (changed.has('selectedSort') || changed.has('sortDirection')) {
@@ -1686,33 +1682,6 @@ export class CollectionBrowser
    */
   refreshVisibleResults(): void {
     this.infiniteScroller?.refreshAllVisibleCells();
-  }
-
-  /**
-   * Fetches and caches the prefix filter counts for the current sort type,
-   * provided it is one that permits prefix filtering. (If not, this does nothing).
-   */
-  private async updatePrefixFiltersForCurrentSort(): Promise<void> {
-    if (['title', 'creator'].includes(this.selectedSort)) {
-      const filterType = this.selectedSort as PrefixFilterType;
-      if (!this.prefixFilterCountMap[filterType]) {
-        this.dataSource.updatePrefixFilterCounts(filterType);
-      }
-    }
-  }
-
-  /**
-   * Clears the cached letter counts for both title and creator, and
-   * fetches a new set of counts for whichever of them is the currently
-   * selected sort option (which may be neither).
-   *
-   * Call this whenever the counts are invalidated (e.g., by a query change).
-   */
-  private refreshLetterCounts(): void {
-    if (Object.keys(this.prefixFilterCountMap).length > 0) {
-      this.prefixFilterCountMap = {};
-    }
-    this.updatePrefixFiltersForCurrentSort();
   }
 
   /**
