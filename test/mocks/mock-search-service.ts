@@ -27,6 +27,7 @@ import {
   getMockSuccessWithDefaultFavSort,
   getMockSuccessWithParentCollections,
   getMockSuccessManyFields,
+  getMockSuccessNoResults,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -49,6 +50,7 @@ const responses: Record<
   'fav-sort': getMockSuccessWithDefaultFavSort,
   'parent-collections': getMockSuccessWithParentCollections,
   'many-fields': getMockSuccessManyFields,
+  'no-results': getMockSuccessNoResults,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };

@@ -1486,8 +1486,11 @@ export class CollectionBrowser
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
+    console.log(
+      'state restored -- will go to page if greater than 1:',
+      this.currentPage
+    );
     if (this.currentPage > 1) {
-      console.log('will go to page', this.currentPage);
       this.goToPage(this.currentPage);
     }
   }

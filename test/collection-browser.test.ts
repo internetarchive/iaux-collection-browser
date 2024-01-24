@@ -468,6 +468,25 @@ describe('Collection Browser', () => {
     expect(cell).to.exist;
   });
 
+  it('emits empty results event when search fetches no results', async () => {
+    const searchService = new MockSearchService();
+    const emptyResultsSpy = sinon.spy();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        @emptyResults=${emptyResultsSpy}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'no-results';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(emptyResultsSpy.callCount).to.equal(1);
+  });
+
   it('applies loggedin flag to tile models if needed', async () => {
     const searchService = new MockSearchService();
 

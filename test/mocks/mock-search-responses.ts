@@ -574,6 +574,40 @@ export const getMockSuccessMultipleResults: () => Result<
   },
 });
 
+export const getMockSuccessNoResults: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'no-results',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'no-results',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 0,
+      returnedCount: 0,
+      results: [],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockSuccessMultiLineDescription: () => Result<
   SearchResponse,
   SearchServiceError
