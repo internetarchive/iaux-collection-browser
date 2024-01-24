@@ -470,7 +470,7 @@ export const getMockSuccessWithCollectionAggregations: () => Result<
           ],
         }),
       },
-      collection_titles: {
+      collectionTitles: {
         foo: 'Foo',
         bar: 'Bar',
       },
