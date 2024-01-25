@@ -26,6 +26,7 @@ import type { PageSpecifierParams } from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
+import { log } from '../utils/log';
 
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
@@ -52,9 +53,6 @@ export class CollectionBrowserDataSource
   private facetsLoading = false;
 
   private suppressFetches = false;
-
-  // TEMP for ease of debugging
-  private id = Math.random();
 
   /**
    * @inheritdoc
@@ -149,18 +147,11 @@ export class CollectionBrowserDataSource
   }
 
   hostConnected(): void {
-    console.log('hostConnected', this.id);
     this.setSearchResultsLoading(this.searchResultsLoading);
     this.setFacetsLoading(this.facetsLoading);
   }
 
   hostUpdate(): void {
-    console.log(
-      'hostUpdate',
-      this.id,
-      this.previousQueryKey,
-      this.pageFetchQueryKey
-    );
     // This reactive controller hook is run whenever the host component (collection-browser) performs an update.
     // We check whether the host's state has changed in a way which should trigger a reset & new results fetch.
 
@@ -176,7 +167,6 @@ export class CollectionBrowserDataSource
 
     // We should only reset if part of the full query state has changed
     const queryKeyChanged = this.pageFetchQueryKey !== this.previousQueryKey;
-    console.log('query keys', this.pageFetchQueryKey, this.previousQueryKey);
     if (!queryKeyChanged) return;
 
     // We should only reset if either:
@@ -208,7 +198,7 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   reset(): void {
-    console.log('resetting data source', this.id);
+    log('Resetting CB data source');
     this.pages = {};
     this.aggregations = {};
     this.yearHistogramAggregation = undefined;
@@ -224,7 +214,6 @@ export class CollectionBrowserDataSource
 
     // Invalidate any fetches in progress
     this.fetchesInProgress.clear();
-    console.log('fetches cleared - size =', this.fetchesInProgress.size);
 
     if (this.activeOnHost) this.host.setTotalResultCount(0);
     this.requestHostUpdate();
@@ -789,10 +778,8 @@ export class CollectionBrowserDataSource
    * the current search state.
    */
   private async fetchFacets(): Promise<void> {
-    console.log('fetchFacets', this.id, this.host.profileElement);
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
-    console.log('will actually fetch facets');
 
     const { facetFetchQueryKey } = this;
     if (this.fetchesInProgress.has(facetFetchQueryKey)) return;
@@ -827,14 +814,7 @@ export class CollectionBrowserDataSource
     const queryChangedSinceFetch =
       !this.fetchesInProgress.has(facetFetchQueryKey);
     this.fetchesInProgress.delete(facetFetchQueryKey);
-    if (queryChangedSinceFetch) {
-      console.log(
-        'facet query has changed since fetch, returning. new/old:',
-        this.facetFetchQueryKey,
-        facetFetchQueryKey
-      );
-      return;
-    }
+    if (queryChangedSinceFetch) return;
 
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
@@ -902,29 +882,11 @@ export class CollectionBrowserDataSource
     // if a fetch is already in progress for this query and page, don't fetch again
     const { pageFetchQueryKey } = this;
     const currentPageKey = `${pageFetchQueryKey}-p:${pageNumber}`;
-    console.log(
-      'page fetch key',
-      currentPageKey,
-      this.fetchesInProgress.has(currentPageKey)
-    );
     if (this.fetchesInProgress.has(currentPageKey)) return;
-    // const pageFetches =
-    //   this.fetchesInProgress[pageFetchQueryKey] ?? new Set();
-    // if (pageFetches.has(pageNumber)) return;
 
     for (let i = 0; i < numPages; i += 1) {
       this.fetchesInProgress.add(`${pageFetchQueryKey}-p:${pageNumber + i}`);
     }
-    console.log(
-      `fetchPage(${pageNumber})`,
-      this.id,
-      this.canPerformSearch,
-      this.hasPage(pageNumber),
-      this.endOfDataReached,
-      this.host.baseQuery,
-      JSON.stringify(this.host.selectedFacets),
-      this.pageFetchQueryKey
-    );
     this.previousQueryKey = pageFetchQueryKey;
 
     let sortParams = this.host.sortParam ? [this.host.sortParam] : [];
@@ -955,21 +917,16 @@ export class CollectionBrowserDataSource
     };
     params.uid = await this.requestUID(params, 'hits');
 
-    console.log('=== FIRING PAGE REQUEST ===');
+    log('=== FIRING PAGE REQUEST ===', params);
     const searchResponse = await this.host.searchService?.search(
       params,
       this.host.searchType
     );
-    console.log('=== RECEIVED PAGE RESPONSE IN CB === ');
+    log('=== RECEIVED PAGE RESPONSE IN CB ===', searchResponse);
     const success = searchResponse?.success;
 
     // This is checking to see if the fetch has been invalidated since it was fired off.
     // If so, we just want to discard the response since it is for an obsolete query state.
-    console.log(
-      'after page fetch key:',
-      currentPageKey,
-      this.fetchesInProgress.has(currentPageKey)
-    );
     if (!this.fetchesInProgress.has(currentPageKey)) return;
     for (let i = 0; i < numPages; i += 1) {
       this.fetchesInProgress.delete(`${pageFetchQueryKey}-p:${pageNumber + i}`);
@@ -1005,10 +962,6 @@ export class CollectionBrowserDataSource
     }
 
     if (this.host.withinCollection) {
-      console.log(
-        'host is within collection, setting collection info:',
-        success.response.collectionExtraInfo
-      );
       this.collectionExtraInfo = success.response.collectionExtraInfo;
 
       // For collections, we want the UI to respect the default sort option
@@ -1023,19 +976,8 @@ export class CollectionBrowserDataSource
         );
       }
     } else if (this.host.withinProfile) {
-      console.log(
-        'host is within profile, setting acct info:',
-        success.response.accountExtraInfo,
-        success.response.pageElements
-      );
       this.accountExtraInfo = success.response.accountExtraInfo;
       this.pageElements = success.response.pageElements;
-    } else {
-      console.log(
-        'not within profile/collxn',
-        this.host.withinCollection,
-        this.host.withinProfile
-      );
     }
 
     const { results, collectionTitles } = success.response;
@@ -1063,7 +1005,6 @@ export class CollectionBrowserDataSource
     // temporary estimates based on pages rendered so far).
     const resultCountDiscrepancy = numRows - results.length;
     if (resultCountDiscrepancy > 0) {
-      console.log('End of data reached');
       this.endOfDataReached = true;
       if (this.activeOnHost) this.host.setTileCount(this.totalResults);
     }

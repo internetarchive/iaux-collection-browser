@@ -32,12 +32,6 @@ import '@internetarchive/infinite-scroller';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
-import './tiles/tile-dispatcher';
-import './tiles/collection-browser-loading-tile';
-import './sort-filter-bar/sort-filter-bar';
-import './manage/manage-bar';
-import './collection-facets';
-import './circular-activity-indicator';
 import {
   SelectedFacets,
   SortField,
@@ -60,20 +54,27 @@ import type {
   CollectionBrowserQueryState,
   CollectionBrowserSearchInterface,
 } from './data-source/collection-browser-query-state';
-import chevronIcon from './assets/img/icons/chevron';
-import type { PlaceholderType } from './empty-placeholder';
-import './empty-placeholder';
-
+import type { CollectionFacets } from './collection-facets';
+import type { ManageableItem } from './manage/manage-bar';
+import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
 import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
-import type { CollectionFacets } from './collection-facets';
-import type { ManageableItem } from './manage/manage-bar';
 import { formatDate } from './utils/format-date';
-import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
+import { log } from './utils/log';
+import type { PlaceholderType } from './empty-placeholder';
+
+import './empty-placeholder';
+import './tiles/tile-dispatcher';
+import './tiles/collection-browser-loading-tile';
+import './sort-filter-bar/sort-filter-bar';
+import './manage/manage-bar';
+import './collection-facets';
+import './circular-activity-indicator';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -316,12 +317,6 @@ export class CollectionBrowser
    * @param pageNumber
    */
   goToPage(pageNumber: number) {
-    console.log(
-      'in goToPage',
-      pageNumber,
-      this.initialPageNumber,
-      this.pagesToRender
-    );
     this.initialPageNumber = pageNumber;
     this.pagesToRender = pageNumber;
     return this.scrollToPage(pageNumber);
@@ -331,7 +326,6 @@ export class CollectionBrowser
    * Sets the state for whether the initial set of search results is loading in.
    */
   setSearchResultsLoading(loading: boolean): void {
-    console.log('setting search results loading to', loading);
     this.searchResultsLoading = loading;
   }
 
@@ -339,7 +333,6 @@ export class CollectionBrowser
    * Sets the state for whether facet data is loading in
    */
   setFacetsLoading(loading: boolean): void {
-    console.log('setting facets loading to', loading);
     this.facetsLoading = loading;
   }
 
@@ -998,7 +991,7 @@ export class CollectionBrowser
     dataSource: CollectionBrowserDataSourceInterface,
     queryState: CollectionBrowserQueryState
   ): Promise<void> {
-    console.log('installing in CB:', dataSource, queryState);
+    log('Installing data source & query state in CB:', dataSource, queryState);
     if (this.dataSource) this.removeController(this.dataSource);
     this.dataSource = dataSource;
     this.addController(this.dataSource);
@@ -1032,13 +1025,6 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    console.log(
-      '* CB UPDATED\n',
-      [...changed.entries()]
-        .map(([k, v]) => `${String(k)}: ${v} => ${this[k as keyof this]}`)
-        .join('\n')
-    );
-
     if (changed.has('placeholderType') && this.placeholderType === null) {
       if (!this.leftColIntersectionObserver) {
         this.setupLeftColumnScrollListeners();
@@ -1305,7 +1291,6 @@ export class CollectionBrowser
   }
 
   emitQueryStateChanged() {
-    console.log('emitting query state changed event');
     this.dispatchEvent(
       new CustomEvent<CollectionBrowserQueryState>('queryStateChanged', {
         detail: {
@@ -1396,12 +1381,6 @@ export class CollectionBrowser
   }
 
   private async handleQueryChange() {
-    // console.log(
-    //   'CB: handling query change',
-    //   this.previousQueryKey,
-    //   this.dataSource.pageFetchQueryKey,
-    //   this.dataSource.canPerformSearch
-    // );
     // only reset if the query has actually changed
     if (
       !this.searchService ||
@@ -1416,11 +1395,6 @@ export class CollectionBrowser
     )
       return;
 
-    console.log(
-      'CB will reset',
-      this.baseQuery,
-      JSON.stringify(this.selectedFacets)
-    );
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
     // this.emitQueryStateChanged();
 
@@ -1487,10 +1461,6 @@ export class CollectionBrowser
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
-    console.log(
-      'state restored -- will go to page if greater than 1:',
-      this.currentPage
-    );
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage);
     }
@@ -1559,17 +1529,12 @@ export class CollectionBrowser
       // then scrolls to the cell
       setTimeout(() => {
         this.isScrollingToCell = true;
-        console.log(
-          'about to scroll infinite scroller to cell',
-          cellIndexToScrollTo
-        );
         this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
         // This timeout is to give the scroll animation time to finish
         // then updating the infinite scroller once we're done scrolling
         // There's no scroll animation completion callback so we're
         // giving it 0.5s to finish.
         setTimeout(() => {
-          console.log('done scrolling, refreshing visible cells');
           this.isScrollingToCell = false;
           this.infiniteScroller?.refreshAllVisibleCells();
           resolve();
@@ -1590,7 +1555,6 @@ export class CollectionBrowser
    * Sets the total number of tiles displayed in the infinite scroller.
    */
   setTileCount(count: number): void {
-    console.log('Setting scroller tile count to', count);
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
