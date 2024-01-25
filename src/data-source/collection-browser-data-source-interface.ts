@@ -228,6 +228,13 @@ export interface CollectionBrowserDataSourceInterface
   setPageSize(pageSize: number): void;
 
   /**
+   * Sets whether this data source should suppress further data fetches, i.e. ignore any
+   * future query changes on its host that would trigger a page/facet fetch.
+   * @param suppressed Whether further fetches for this data source should be suppressed
+   */
+  setFetchesSuppressed(suppressed: boolean): void;
+
+  /**
    * Notifies the data source that a query change has occurred, which may trigger a data
    * reset & new fetches.
    */

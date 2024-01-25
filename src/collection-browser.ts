@@ -1021,8 +1021,9 @@ export class CollectionBrowser
     if (!this.searchResultsLoading) {
       this.setTotalResultCount(this.dataSource.totalResults);
       this.setTileCount(this.dataSource.size);
-      this.refreshVisibleResults();
     }
+
+    this.refreshVisibleResults();
   }
 
   firstUpdated(): void {

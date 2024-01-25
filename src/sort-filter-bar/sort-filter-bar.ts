@@ -178,7 +178,7 @@ export class SortFilterBar
       this.setupEscapeListeners();
     }
 
-    if (changed.has('resizeObserver')) {
+    if (changed.has('resizeObserver') || changed.has('showLoansTopBar')) {
       const oldObserver = changed.get(
         'resizeObserver'
       ) as SharedResizeObserverInterface;

@@ -51,6 +51,8 @@ export class CollectionBrowserDataSource
 
   private facetsLoading = false;
 
+  private suppressFetches = false;
+
   // TEMP for ease of debugging
   private id = Math.random();
 
@@ -212,7 +214,6 @@ export class CollectionBrowserDataSource
     this.yearHistogramAggregation = undefined;
     this.pageElements = undefined;
     this.parentCollections = [];
-    this.prefixFilterCountMap = {};
     this.queryErrorMessage = undefined;
 
     this.offset = 0;
@@ -286,7 +287,17 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  setFetchesSuppressed(suppressed: boolean): void {
+    this.suppressFetches = suppressed;
+  }
+
+  /**
+   * @inheritdoc
+   */
   async handleQueryChange(): Promise<void> {
+    // Don't react to the change if fetches are suppressed for this data source
+    if (this.suppressFetches) return;
+
     this.reset();
 
     // Reset the `initialSearchComplete` promise with a new value for the imminent search
@@ -500,8 +511,8 @@ export class CollectionBrowserDataSource
   get pageFetchQueryKey(): string {
     const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
-    const sortField = this.host.sortParam?.field ?? 'none';
-    const sortDirection = this.host.sortParam?.direction ?? 'none';
+    const sortField = this.host.selectedSort ?? 'none';
+    const sortDirection = this.host.sortDirection ?? 'none';
     return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}-sf:${sortField}-sd:${sortDirection}`;
   }
 
@@ -510,9 +521,9 @@ export class CollectionBrowserDataSource
    * are not relevant in determining aggregation queries.
    */
   get facetFetchQueryKey(): string {
-    const profileKey = `${this.host.withinProfile}--${this.host.profileElement}`;
+    const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
-    return `${this.fullQuery}-${pageTarget}-${this.host.searchType}`;
+    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}`;
   }
 
   /**
