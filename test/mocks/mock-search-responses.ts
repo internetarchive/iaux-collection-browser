@@ -6,6 +6,7 @@ import {
   SearchServiceError,
   TextHit,
 } from '@internetarchive/search-service';
+import { WebArchiveHit } from '@internetarchive/search-service/dist/src/models/hit-types/web-archive-hit';
 import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 
 export const getMockSuccessSingleResult: () => Result<
@@ -868,6 +869,49 @@ export const getMockSuccessWithParentCollections: () => Result<
           collection: ['foo', 'bar'],
         },
       },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessWithWebArchiveHits: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'web-archive',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'web-archive',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new WebArchiveHit({
+          fields: {
+            url: 'https://example.com',
+            capture_dates: ['2010-01-02T03:04:05Z'],
+            __href__:
+              'https://web.archive.org/web/20100102030405/https%3A%2F%2Fexample.com',
+          },
+        }),
+      ],
     },
     responseHeader: {
       succeeded: true,

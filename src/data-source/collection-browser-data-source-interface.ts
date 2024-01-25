@@ -220,6 +220,11 @@ export interface CollectionBrowserDataSourceInterface
   refreshLetterCounts(): void;
 
   /**
+   * Returns the current page size of the data source.
+   */
+  getPageSize(): number;
+
+  /**
    * Changes the page size used by the data source, discarding any previously-fetched pages.
    *
    * **Note: this operation will reset any data stored in the data source!**

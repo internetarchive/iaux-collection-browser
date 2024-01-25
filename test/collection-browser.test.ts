@@ -1562,6 +1562,37 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).not.to.exist;
   });
 
+  it('correctly retrieves web archive hits', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinProfile=${'@foo'}
+        .profileElement=${'web_archives'}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'web-archive';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await nextTick();
+
+    console.log(
+      '\n\n*****\n\n*****\n\n',
+      el.dataSource.getAllPages(),
+      '\n\n*****\n\n*****\n\n'
+    );
+    expect(el.dataSource.totalResults, 'total results').to.equal(1);
+    expect(el.dataSource.getTileModelAt(0)?.title).to.equal(
+      'https://example.com'
+    );
+    expect(
+      el.dataSource.getTileModelAt(0)?.captureDates?.length,
+      'capture dates'
+    ).to.equal(1);
+  });
+
   it('shows temporarily unavailable message when facets suppressed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(

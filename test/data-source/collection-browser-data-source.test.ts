@@ -1,10 +1,12 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
+import sinon from 'sinon';
 import { ItemHit, SearchType } from '@internetarchive/search-service';
 import { CollectionBrowserDataSource } from '../../src/data-source/collection-browser-data-source';
 import { TileModel } from '../../src/models';
 import type { CollectionBrowser } from '../../src/collection-browser';
 import '../../src/collection-browser';
+import { MockSearchService } from '../mocks/mock-search-service';
 
 const dataPage: TileModel[] = [
   new TileModel(
@@ -32,7 +34,7 @@ describe('Collection Browser Data Source', () => {
     `);
   });
 
-  it('can add and retrieve data pages', async () => {
+  it('can add and retrieve data pages', () => {
     const dataSource = new CollectionBrowserDataSource(host);
     dataSource.addPage(1, dataPage);
 
@@ -42,12 +44,13 @@ describe('Collection Browser Data Source', () => {
     expect(dataSource.getPage(1)[1].identifier).to.equal('bar');
   });
 
-  it('resets data when changing page size', async () => {
+  it('resets data when changing page size', () => {
     const dataSource = new CollectionBrowserDataSource(host);
     dataSource.addPage(1, dataPage);
 
     dataSource.setPageSize(100);
     expect(Object.keys(dataSource.getAllPages()).length).to.equal(0);
+    expect(dataSource.getPageSize()).to.equal(100);
   });
 
   it('can be installed on the host', async () => {
@@ -70,7 +73,21 @@ describe('Collection Browser Data Source', () => {
     host.removeController(dataSource);
   });
 
-  it('refreshes prefix filter counts', async () => {
+  it('can suppress further fetches', async () => {
+    host.searchService = new MockSearchService();
+
+    const pageFetchSpy = sinon.spy();
+    const dataSource = new CollectionBrowserDataSource(host);
+    dataSource.fetchPage = pageFetchSpy;
+
+    dataSource.addPage(1, dataPage);
+    dataSource.setFetchesSuppressed(true);
+    dataSource.handleQueryChange();
+
+    expect(pageFetchSpy.callCount).to.equal(0);
+  });
+
+  it('refreshes prefix filter counts', () => {
     const dataSource = new CollectionBrowserDataSource(host);
     dataSource.addPage(1, dataPage);
 

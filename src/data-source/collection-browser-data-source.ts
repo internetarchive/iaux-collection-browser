@@ -22,7 +22,7 @@ import {
   SortField,
   SORT_OPTIONS,
 } from '../models';
-import type { PageSpecifierParams } from './models';
+import { FACETLESS_PAGE_ELEMENTS, type PageSpecifierParams } from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
@@ -31,10 +31,21 @@ import { log } from '../utils/log';
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
 {
+  /**
+   * All pages of tile models that have been fetched so far, indexed by their page
+   * number (with the first being page 1).
+   */
   private pages: Record<string, TileModel[]> = {};
 
+  /**
+   * Tile offset to apply when looking up tiles in the pages, in order to maintain
+   * page alignment after tiles are removed.
+   */
   private offset = 0;
 
+  /**
+   * Total number of tile models stored in this data source's pages
+   */
   private numTileModels = 0;
 
   /**
@@ -48,10 +59,21 @@ export class CollectionBrowserDataSource
    */
   private previousQueryKey: string = '';
 
+  /**
+   * Whether the initial page of search results for the current query state
+   * is presently being fetched.
+   */
   private searchResultsLoading = false;
 
+  /**
+   * Whether the facets (aggregations) for the current query state are
+   * presently being fetched.
+   */
   private facetsLoading = false;
 
+  /**
+   * Whether further query changes should be ignored and not trigger fetches
+   */
   private suppressFetches = false;
 
   /**
@@ -268,6 +290,13 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  getPageSize(): number {
+    return this.pageSize;
+  }
+
+  /**
+   * @inheritdoc
+   */
   setPageSize(pageSize: number): void {
     this.reset();
     this.pageSize = pageSize;
@@ -294,11 +323,15 @@ export class CollectionBrowserDataSource
       this._initialSearchCompleteResolver = res;
     });
 
+    const shouldFetchFacets =
+      !this.host.suppressFacets &&
+      !FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!);
+
     // Fire the initial page & facet requests
     this.queryInitialized = true;
     await Promise.all([
       this.doInitialPageFetch(),
-      this.host.suppressFacets ? null : this.fetchFacets(),
+      shouldFetchFacets ? this.fetchFacets() : null,
     ]);
 
     // Resolve the `initialSearchComplete` promise for this search
@@ -876,7 +909,7 @@ export class CollectionBrowserDataSource
 
     // Batch multiple initial page requests together if needed (e.g., can request
     // pages 1 and 2 together in a single request).
-    const numPages = pageNumber === 1 ? numInitialPages : 1;
+    let numPages = pageNumber === 1 ? numInitialPages : 1;
     const numRows = this.pageSize * numPages;
 
     // if a fetch is already in progress for this query and page, don't fetch again
@@ -990,7 +1023,16 @@ export class CollectionBrowserDataSource
         }
       }
 
-      // Update the data source for each returned page
+      // Update the data source for each returned page.
+      // For loans and web archives, we must account for receiving more pages than we asked for.
+      if (
+        this.host.profileElement === 'lending' ||
+        this.host.profileElement === 'web_archives'
+      ) {
+        numPages = Math.ceil(results.length / this.pageSize);
+        this.endOfDataReached = true;
+        if (this.activeOnHost) this.host.setTileCount(this.totalResults);
+      }
       for (let i = 0; i < numPages; i += 1) {
         const pageStartIndex = this.pageSize * i;
         this.addTilesToDataSource(
