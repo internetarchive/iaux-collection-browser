@@ -26,6 +26,9 @@ import {
   getMockSuccessWithConciseDefaultSort,
   getMockSuccessWithDefaultFavSort,
   getMockSuccessWithParentCollections,
+  getMockSuccessManyFields,
+  getMockSuccessNoResults,
+  getMockSuccessWithWebArchiveHits,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -47,6 +50,9 @@ const responses: Record<
   'default-sort-concise': getMockSuccessWithConciseDefaultSort,
   'fav-sort': getMockSuccessWithDefaultFavSort,
   'parent-collections': getMockSuccessWithParentCollections,
+  'web-archive': getMockSuccessWithWebArchiveHits,
+  'many-fields': getMockSuccessManyFields,
+  'no-results': getMockSuccessNoResults,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,
 };

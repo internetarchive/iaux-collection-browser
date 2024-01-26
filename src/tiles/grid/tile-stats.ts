@@ -1,6 +1,7 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
+import { msg } from '@lit/localize';
 import { favoriteFilledIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
@@ -33,8 +34,8 @@ export class TileStats extends LitElement {
 
     const uploadsOrViewsTitle =
       this.mediatype === 'account'
-        ? `${this.itemCount} uploads`
-        : `${this.viewCount} ${this.viewLabel ?? 'all-time views'}`;
+        ? `${this.itemCount ?? 0} uploads`
+        : `${this.viewCount ?? 0} ${this.viewLabel ?? 'all-time views'}`;
 
     return html`
       <div class="item-stats">
@@ -43,17 +44,21 @@ export class TileStats extends LitElement {
         </p>
         <ul id="stats-row">
           <li class="col">
-            <p class="sr-only">Mediatype:</p>
+            <p class="sr-only">${msg('Mediatype:')}</p>
             <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
           </li>
           <li class="col" title="${uploadsOrViewsTitle}">
             ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
             <p class="status-text">
               <span class="sr-only">
-                ${this.mediatype === 'account' ? 'Uploads:' : 'Views:'}
+                ${this.mediatype === 'account'
+                  ? msg('Uploads:')
+                  : msg('Views:')}
               </span>
               ${formatCount(
-                this.mediatype === 'account' ? this.itemCount : this.viewCount,
+                this.mediatype === 'account'
+                  ? this.itemCount ?? 0
+                  : this.viewCount ?? 0,
                 'short',
                 'short'
               )}
@@ -62,14 +67,14 @@ export class TileStats extends LitElement {
           <li class="col" title="${formattedFavCount} favorites">
             ${favoriteFilledIcon}
             <p class="status-text">
-              <span class="sr-only">Favorites:</span>
+              <span class="sr-only">${msg('Favorites:')}</span>
               ${formattedFavCount}
             </p>
           </li>
           <li class="col reviews" title="${formattedReviewCount} reviews">
             ${reviewsIcon}
             <p class="status-text">
-              <span class="sr-only">Reviews:</span>
+              <span class="sr-only">${msg('Reviews:')}</span>
               ${formattedReviewCount}
             </p>
           </li>

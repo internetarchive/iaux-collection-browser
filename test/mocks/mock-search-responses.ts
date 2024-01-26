@@ -6,6 +6,7 @@ import {
   SearchServiceError,
   TextHit,
 } from '@internetarchive/search-service';
+import { WebArchiveHit } from '@internetarchive/search-service/dist/src/models/hit-types/web-archive-hit';
 import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 
 export const getMockSuccessSingleResult: () => Result<
@@ -38,6 +39,68 @@ export const getMockSuccessSingleResult: () => Result<
           fields: {
             identifier: 'foo',
             collection: ['foo', 'bar'],
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessManyFields: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'many-fields',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'many-fields',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            avg_rating: 3.5,
+            collection: ['foo', 'bar', 'no-preview', 'loggedin'],
+            collection_files_count: 123,
+            collection_size: 234,
+            creator: ['baz', 'boop'],
+            date: '2010-01-03T01:23:45Z',
+            addeddate: '2010-01-01T01:23:45Z',
+            publicdate: '2010-01-02T01:23:45Z',
+            reviewdate: '2010-01-04T01:23:45Z',
+            description: 'foo bar baz',
+            downloads: 246,
+            issue: 1,
+            item_count: 20,
+            mediatype: 'texts',
+            num_favorites: 12,
+            num_reviews: 23,
+            source: 'foo bar',
+            subject: ['baz', 'quux'],
+            title: 'Foo Bar',
+            volume: 2,
+            week: 50,
+            __href__: 'https://archive.org/details/foo',
           },
         }),
       ],
@@ -408,6 +471,10 @@ export const getMockSuccessWithCollectionAggregations: () => Result<
           ],
         }),
       },
+      collectionTitles: {
+        foo: 'Foo',
+        bar: 'Bar',
+      },
     },
     responseHeader: {
       succeeded: true,
@@ -500,6 +567,40 @@ export const getMockSuccessMultipleResults: () => Result<
           },
         }),
       ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessNoResults: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'no-results',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'no-results',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 0,
+      returnedCount: 0,
+      results: [],
     },
     responseHeader: {
       succeeded: true,
@@ -768,6 +869,49 @@ export const getMockSuccessWithParentCollections: () => Result<
           collection: ['foo', 'bar'],
         },
       },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessWithWebArchiveHits: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'web-archive',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'web-archive',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new WebArchiveHit({
+          fields: {
+            url: 'https://example.com',
+            capture_dates: ['2010-01-02T03:04:05Z'],
+            __href__:
+              'https://web.archive.org/web/20100102030405/https%3A%2F%2Fexample.com',
+          },
+        }),
+      ],
     },
     responseHeader: {
       succeeded: true,

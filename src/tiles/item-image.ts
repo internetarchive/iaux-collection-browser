@@ -24,6 +24,8 @@ export class ItemImage extends LitElement {
 
   @state() private isWaveform = false;
 
+  @state() private isNotFound = false;
+
   @query('img') private baseImage!: HTMLImageElement;
 
   render() {
@@ -43,6 +45,7 @@ export class ItemImage extends LitElement {
         src="${this.imageSrc}"
         alt=""
         @load=${this.onLoad}
+        @error=${this.onError}
       />
     `;
   }
@@ -51,9 +54,30 @@ export class ItemImage extends LitElement {
    * Helpers
    */
   private get imageSrc() {
+    if (this.isNotFound) return this.notFoundSrc;
+
+    // Use the correct image for web capture tiles, if possible
+    if (this.model?.captureDates && this.model.identifier) {
+      try {
+        const url = new URL(this.model.identifier);
+        const domain = encodeURIComponent(url.hostname);
+        return this.baseImageUrl
+          ? `https://web.archive.org/thumb/${domain}?generate=1`
+          : nothing;
+      } catch (err) {
+        return `${this.baseImageUrl}/images/notfound.png`;
+      }
+    }
+
     // Don't try to load invalid image URLs
     return this.baseImageUrl && this.model?.identifier
       ? `${this.baseImageUrl}/services/img/${this.model.identifier}`
+      : nothing;
+  }
+
+  private get notFoundSrc() {
+    return this.baseImageUrl
+      ? `${this.baseImageUrl}/images/notfound.png`
       : nothing;
   }
 
@@ -118,6 +142,10 @@ export class ItemImage extends LitElement {
     ) {
       this.isWaveform = true;
     }
+  }
+
+  private onError() {
+    this.isNotFound = true;
   }
 
   /**

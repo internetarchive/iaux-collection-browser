@@ -7,7 +7,6 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import eyeIcon from '../assets/img/icons/eye';
 import eyeClosedIcon from '../assets/img/icons/eye-closed';
 import type {
@@ -16,6 +15,7 @@ import type {
   FacetEventDetails,
   FacetState,
 } from '../models';
+import type { CollectionTitles } from '../data-source/models';
 
 @customElement('facet-row')
 export class FacetRow extends LitElement {
@@ -31,7 +31,7 @@ export class FacetRow extends LitElement {
 
   /** The collection name cache for converting collection identifiers to titles */
   @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  collectionTitles?: CollectionTitles;
 
   //
   // COMPONENT LIFECYCLE METHODS
@@ -56,18 +56,13 @@ export class FacetRow extends LitElement {
     const showOnlyCheckboxId = `${facetType}:${bucket.key}-show-only`;
     const negativeCheckboxId = `${facetType}:${bucket.key}-negative`;
 
-    // For collections, we need to asynchronously load the collection name
-    // so we use the `async-collection-name` widget.
+    // For collections, we render the collection title as a link.
     // For other facet types, we just have a static value to use.
     const bucketTextDisplay =
       facetType !== 'collection'
         ? html`${bucket.displayText ?? bucket.key}`
         : html`<a href="/details/${bucket.key}">
-            <async-collection-name
-              .collectionNameCache=${this.collectionNameCache}
-              .identifier=${bucket.key}
-              placeholder="-"
-            ></async-collection-name>
+            ${this.collectionTitles?.get(bucket.key) ?? bucket.key}
           </a> `;
 
     const facetHidden = bucket.state === 'hidden';

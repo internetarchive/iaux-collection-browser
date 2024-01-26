@@ -4,6 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
 
+import { map } from 'lit/directives/map.js';
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
@@ -57,7 +58,7 @@ export class ItemTile extends BaseTileComponent {
             ${this.isSortedByDate
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
-            ${this.textSnippetsTemplate}
+            ${this.webArchivesCaptureDatesTemplate} ${this.textSnippetsTemplate}
           </div>
 
           <tile-stats
@@ -172,6 +173,26 @@ export class ItemTile extends BaseTileComponent {
     `;
   }
 
+  private get webArchivesCaptureDatesTemplate():
+    | TemplateResult
+    | typeof nothing {
+    if (!this.model?.captureDates || !this.model.title) return nothing;
+
+    return html`
+      <ul class="capture-dates">
+        ${map(
+          this.model.captureDates,
+          date => html`<li>
+            ${this.displayValueProvider.webArchivesCaptureLink(
+              this.model!.title,
+              date
+            )}
+          </li>`
+        )}
+      </ul>
+    `;
+  }
+
   private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
       this.sortParam?.field as string
@@ -200,8 +221,22 @@ export class ItemTile extends BaseTileComponent {
     return [
       baseTileStyles,
       css`
+        a:link {
+          text-decoration: none;
+          color: var(--ia-theme-link-color, #4b64ff);
+        }
+        a:hover {
+          text-decoration: underline;
+        }
+
         .container {
           border: 1px solid ${tileBorderColor};
+        }
+
+        .capture-dates {
+          margin: 0;
+          padding: 0 5px;
+          list-style-type: none;
         }
 
         text-snippet-block {

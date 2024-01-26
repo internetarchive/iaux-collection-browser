@@ -80,10 +80,12 @@ describe('More facets content', () => {
     );
 
     el.facetKey = 'collection';
-    el.query = 'title:hello';
+    el.query = 'collection-aggregations';
     await el.updateComplete;
 
-    expect(searchService.searchParams?.query).to.equal('title:hello');
+    expect(searchService.searchParams?.query).to.equal(
+      'collection-aggregations'
+    );
   });
 
   it('queries for more facets using search service within a collection (no query)', async () => {

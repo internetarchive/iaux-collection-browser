@@ -1,6 +1,9 @@
 export { CollectionBrowser } from './src/collection-browser';
+export { CollectionBrowserDataSource } from './src/data-source/collection-browser-data-source';
+export { CollectionBrowserDataSourceInterface } from './src/data-source/collection-browser-data-source-interface';
+export { CollectionBrowserQueryState } from './src/data-source/collection-browser-query-state';
 export { SortFilterBar } from './src/sort-filter-bar/sort-filter-bar';
-export { CollectionDisplayMode, SortField } from './src/models';
+export { CollectionDisplayMode, SortField, TileModel } from './src/models';
 export { CollectionBrowserLoadingTile } from './src/tiles/collection-browser-loading-tile';
 export { CollectionTile } from './src/tiles/grid/collection-tile';
 export { AccountTile } from './src/tiles/grid/account-tile';

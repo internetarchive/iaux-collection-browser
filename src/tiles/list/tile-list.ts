@@ -7,8 +7,8 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { msg } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import { suppressedCollections } from '../../models';
+import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
@@ -35,9 +35,9 @@ export class TileList extends BaseTileComponent {
    */
 
   @property({ type: Object })
-  collectionNameCache?: CollectionNameCacheInterface;
+  collectionTitles?: CollectionTitles;
 
-  @state() private collectionLinks: TemplateResult[] = [];
+  @state() private collectionLinks: (TemplateResult | typeof nothing)[] = [];
 
   render() {
     return html`
@@ -107,6 +107,7 @@ export class TileList extends BaseTileComponent {
       ${this.itemLineTemplate} ${this.creatorTemplate}
       <div id="dates-line">
         ${this.datePublishedTemplate} ${this.dateSortByTemplate}
+        ${this.webArchivesCaptureDatesTemplate}
       </div>
       <div id="views-line">
         ${this.viewsTemplate} ${this.ratingTemplate} ${this.reviewsTemplate}
@@ -238,6 +239,7 @@ export class TileList extends BaseTileComponent {
       this.sortParam?.field === 'week'
         ? this.model?.weeklyViewCount // weekly views
         : this.model?.viewCount; // all-time views
+    if (viewCount == null) return nothing;
 
     // when its a search-tile, we don't have any stats to show
     if (this.model?.mediatype === 'search') {
@@ -245,7 +247,7 @@ export class TileList extends BaseTileComponent {
     }
 
     return this.metadataTemplate(
-      `${formatCount(viewCount ?? 0, this.formatSize)}`,
+      `${formatCount(viewCount, this.formatSize)}`,
       msg('Views')
     );
   }
@@ -309,6 +311,26 @@ export class TileList extends BaseTileComponent {
     return !!this.model?.snippets?.length;
   }
 
+  private get webArchivesCaptureDatesTemplate():
+    | TemplateResult
+    | typeof nothing {
+    if (!this.model?.captureDates || !this.model.title) return nothing;
+
+    return html`
+      <ul class="capture-dates">
+        ${map(
+          this.model.captureDates,
+          date => html`<li>
+            ${this.displayValueProvider.webArchivesCaptureLink(
+              this.model!.title,
+              date
+            )}
+          </li>`
+        )}
+      </ul>
+    `;
+  }
+
   // Utility functions
   // eslint-disable-next-line default-param-last
   private metadataTemplate(text: any, label = '', id?: string) {
@@ -345,10 +367,12 @@ export class TileList extends BaseTileComponent {
   }
 
   private detailsLink(
-    identifier: string,
+    identifier?: string,
     text?: string,
     isCollection = false
-  ): TemplateResult {
+  ): TemplateResult | typeof nothing {
+    if (!identifier) return nothing;
+
     const linkText = text ?? identifier;
     const linkHref = this.displayValueProvider.itemPageUrl(
       identifier,
@@ -379,40 +403,35 @@ export class TileList extends BaseTileComponent {
   }
 
   protected updated(changed: PropertyValues): void {
-    if (changed.has('model')) {
-      this.fetchCollectionNames();
+    if (changed.has('model') || changed.has('collectionTitles')) {
+      this.buildCollectionLinks();
     }
   }
 
-  private async fetchCollectionNames() {
-    if (
-      !this.model?.collections ||
-      this.model.collections.length === 0 ||
-      !this.collectionNameCache
-    ) {
+  private async buildCollectionLinks() {
+    if (!this.model?.collections || this.model.collections.length === 0) {
       return;
     }
+
     // Note: quirk of Lit: need to replace collectionLinks array,
     // otherwise it will not re-render. Can't simply alter the array.
     this.collectionLinks = [];
-    const newCollectionLinks: TemplateResult[] = [];
-    const promises: Promise<void>[] = [];
+    const newCollectionLinks: (TemplateResult | typeof nothing)[] = [];
     for (const collection of this.model.collections) {
       // Don't include favorites or collections that are meant to be suppressed
       if (
         !suppressedCollections[collection] &&
         !collection.startsWith('fav-')
       ) {
-        promises.push(
-          this.collectionNameCache?.collectionNameFor(collection).then(name => {
-            newCollectionLinks.push(
-              this.detailsLink(collection, name ?? collection, true)
-            );
-          })
+        newCollectionLinks.push(
+          this.detailsLink(
+            collection,
+            this.collectionTitles?.get(collection) ?? collection,
+            true
+          )
         );
       }
     }
-    await Promise.all(promises);
     this.collectionLinks = newCollectionLinks;
   }
 
@@ -626,6 +645,20 @@ export class TileList extends BaseTileComponent {
       #dates-line,
       #views-line {
         flex-wrap: wrap;
+      }
+
+      .capture-dates {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+      }
+
+      .capture-dates a:link {
+        text-decoration: none;
+        color: var(--ia-theme-link-color, #4b64ff);
+      }
+      .capture-dates a:hover {
+        text-decoration: underline;
       }
     `;
   }

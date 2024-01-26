@@ -22,8 +22,6 @@ import type {
 } from '@internetarchive/search-service';
 import '@internetarchive/histogram-date-range';
 import '@internetarchive/feature-feedback';
-import '@internetarchive/collection-name-cache';
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import {
   ModalConfig,
   ModalManagerInterface,
@@ -47,6 +45,7 @@ import {
   suppressedCollections,
   defaultFacetSort,
 } from './models';
+import type { CollectionTitles } from './data-source/models';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
@@ -118,7 +117,7 @@ export class CollectionFacets extends LitElement {
   analyticsHandler?: AnalyticsManagerInterface;
 
   @property({ type: Object, attribute: false })
-  collectionNameCache?: CollectionNameCacheInterface;
+  collectionTitles?: CollectionTitles;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -188,11 +187,7 @@ export class CollectionFacets extends LitElement {
                 data-id=${collxn}
                 @click=${this.partOfCollectionClicked}
               >
-                <async-collection-name
-                  .collectionNameCache=${this.collectionNameCache}
-                  .identifier=${collxn}
-                  placeholder=${collxn}
-                ></async-collection-name>
+                ${this.collectionTitles?.get(collxn) ?? collxn}
               </a>
             </li>`;
           })}
@@ -307,14 +302,16 @@ export class CollectionFacets extends LitElement {
 
   private get histogramTemplate() {
     const { fullYearsHistogramAggregation } = this;
+    const minDate = fullYearsHistogramAggregation?.first_bucket_key;
+    const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     return this.fullYearAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
           <histogram-date-range
-            .minDate=${fullYearsHistogramAggregation?.first_bucket_key}
-            .maxDate=${fullYearsHistogramAggregation?.last_bucket_key}
-            .minSelectedDate=${this.minSelectedDate}
-            .maxSelectedDate=${this.maxSelectedDate}
+            .minDate=${minDate}
+            .maxDate=${maxDate}
+            .minSelectedDate=${this.minSelectedDate ?? minDate}
+            .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
             .updateDelay=${100}
             missingDataMessage="..."
             .width=${this.collapsableFacets && this.contentWidth
@@ -652,7 +649,7 @@ export class CollectionFacets extends LitElement {
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}
-        .collectionNameCache=${this.collectionNameCache}
+        .collectionTitles=${this.collectionTitles}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
         @facetsChanged=${(e: CustomEvent) => {
@@ -694,7 +691,7 @@ export class CollectionFacets extends LitElement {
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .renderOn=${'page'}
-        .collectionNameCache=${this.collectionNameCache}
+        .collectionTitles=${this.collectionTitles}
         @selectedFacetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,

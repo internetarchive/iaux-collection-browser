@@ -4,7 +4,6 @@ import { html } from 'lit';
 import type { TileList } from '../../../src/tiles/list/tile-list';
 
 import '../../../src/tiles/list/tile-list';
-import { MockCollectionNameCache } from '../../mocks/mock-collection-name-cache';
 import type { TileModel } from '../../../src/models';
 
 describe('List Tile', () => {
@@ -83,12 +82,10 @@ describe('List Tile', () => {
   });
 
   it('should not render suppressed collections', async () => {
-    const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<TileList>(html`
       <tile-list
         .model=${{ collections: ['deemphasize', 'community', 'foo'] }}
         .baseNavigationUrl=${'base'}
-        .collectionNameCache=${collectionNameCache}
       >
       </tile-list>
     `);
@@ -104,12 +101,10 @@ describe('List Tile', () => {
   });
 
   it('should not render fav- collections', async () => {
-    const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<TileList>(html`
       <tile-list
         .model=${{ collections: ['fav-foo', 'bar'] }}
         .baseNavigationUrl=${'base'}
-        .collectionNameCache=${collectionNameCache}
       >
       </tile-list>
     `);
@@ -396,5 +391,60 @@ describe('List Tile', () => {
     const creatorBlock = el.shadowRoot?.getElementById('creator');
     expect(creatorBlock).to.exist;
     expect(creatorBlock?.textContent?.trim()).to.equal('Archivist since 2015');
+  });
+
+  it('should render web capture date links if present', async () => {
+    const captureDates = [
+      new Date('2010-01-02T12:34:56Z'),
+      new Date('2011-02-03T12:43:21Z'),
+    ];
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{
+          identifier: 'foo',
+          title: 'https://example.com/',
+          captureDates,
+        }}
+      ></tile-list>
+    `);
+
+    const captureDatesUl = el.shadowRoot?.querySelector('.capture-dates');
+    expect(captureDatesUl, 'capture dates container').to.exist;
+    expect(captureDatesUl?.children.length).to.equal(2);
+
+    const firstDateLink = captureDatesUl?.children[0]?.querySelector('a[href]');
+    expect(firstDateLink, 'first date link').to.exist;
+    expect(firstDateLink?.getAttribute('href')).to.equal(
+      'https://web.archive.org/web/20100102123456/https%3A%2F%2Fexample.com%2F'
+    );
+    expect(firstDateLink?.textContent?.trim()).to.equal('Jan 02, 2010');
+
+    const secondDateLink =
+      captureDatesUl?.children[1]?.querySelector('a[href]');
+    expect(secondDateLink, 'second date link').to.exist;
+    expect(secondDateLink?.getAttribute('href')).to.equal(
+      'https://web.archive.org/web/20110203124321/https%3A%2F%2Fexample.com%2F'
+    );
+    expect(secondDateLink?.textContent?.trim()).to.equal('Feb 03, 2011');
+  });
+
+  it('should not render web captures if no title is present', async () => {
+    const captureDates = [
+      new Date('2010-01-02T12:34:56Z'),
+      new Date('2011-02-03T12:43:21Z'),
+    ];
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{
+          identifier: 'foo',
+          captureDates,
+        }}
+      ></tile-list>
+    `);
+
+    const captureDatesUl = el.shadowRoot?.querySelector('.capture-dates');
+    expect(captureDatesUl).not.to.exist;
   });
 });

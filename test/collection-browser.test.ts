@@ -14,7 +14,6 @@ import {
   SortField,
 } from '../src/models';
 import { MockSearchService } from './mocks/mock-search-service';
-import { MockCollectionNameCache } from './mocks/mock-collection-name-cache';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import { analyticsCategories } from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
@@ -279,13 +278,14 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'hello';
     await el.updateComplete;
+    await nextTick();
 
     const facets = el.shadowRoot?.querySelector('collection-facets');
     const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
-    expect(facets).to.exist;
-    expect(sortBar).to.exist;
-    expect(infiniteScroller).to.exist;
+    expect(facets, 'facets').to.exist;
+    expect(sortBar, 'sort bar').to.exist;
+    expect(infiniteScroller, 'infinite scroller').to.exist;
   });
 
   it('queries the search service when given a base query', async () => {
@@ -427,7 +427,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     // This shouldn't throw an error
-    expect(el.fetchPage(3)).to.exist;
+    expect(el.dataSource.fetchPage(3)).to.exist;
 
     // Should continue showing the empty placeholder
     expect(el.shadowRoot?.querySelector('empty-placeholder')).to.exist;
@@ -447,6 +447,44 @@ describe('Collection Browser', () => {
     );
 
     expect(el.searchType).to.equal(SearchType.FULLTEXT);
+  });
+
+  it('can construct tile models with many fields present', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'many-fields';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const cellTemplate = el.cellForIndex(0);
+    expect(cellTemplate).to.exist;
+
+    const cell = await fixture<TileDispatcher>(cellTemplate!);
+    expect(cell).to.exist;
+  });
+
+  it('emits empty results event when search fetches no results', async () => {
+    const searchService = new MockSearchService();
+    const emptyResultsSpy = sinon.spy();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        @emptyResults=${emptyResultsSpy}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'no-results';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(emptyResultsSpy.callCount).to.equal(1);
   });
 
   it('applies loggedin flag to tile models if needed', async () => {
@@ -633,61 +671,11 @@ describe('Collection Browser', () => {
     expect(sentrySpy.callCount).to.be.greaterThanOrEqual(1);
   });
 
-  it('queries for collection names after a fetch', async () => {
-    const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
-
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
-      >
-      </collection-browser>`
-    );
-
-    el.baseQuery = 'collection:foo';
-    await el.updateComplete;
-    await el.initialSearchComplete;
-
-    expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
-      'foo',
-      'bar',
-      'baz',
-      'boop',
-    ]);
-  });
-
-  it('queries for collection names after an aggregations fetch', async () => {
-    const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
-
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
-      >
-      </collection-browser>`
-    );
-
-    el.baseQuery = 'collection-aggregations';
-    await el.updateComplete;
-    await el.initialSearchComplete;
-
-    expect(collectionNameCache.preloadIdentifiersRequested).to.deep.equal([
-      'foo',
-      'bar',
-    ]);
-  });
-
   it('adds collection names to cache when present on response', async () => {
     const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
 
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
-      >
+      html`<collection-browser .searchService=${searchService}>
       </collection-browser>`
     );
 
@@ -695,12 +683,18 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     await el.initialSearchComplete;
 
-    expect(collectionNameCache.knownTitlesAdded).to.deep.equal({
-      foo: 'Foo Collection',
-      bar: 'Bar Collection',
-      baz: 'Baz Collection',
-      boop: 'Boop Collection',
-    });
+    expect(el.dataSource.collectionTitles.get('foo')).to.equal(
+      'Foo Collection'
+    );
+    expect(el.dataSource.collectionTitles.get('bar')).to.equal(
+      'Bar Collection'
+    );
+    expect(el.dataSource.collectionTitles.get('baz')).to.equal(
+      'Baz Collection'
+    );
+    expect(el.dataSource.collectionTitles.get('boop')).to.equal(
+      'Boop Collection'
+    );
   });
 
   it('keeps search results from fetch if no change to query or sort param', async () => {
@@ -716,10 +710,11 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
 
-    await el.fetchPage(3);
+    await el.dataSource.fetchPage(3);
 
     // If there is no change to the query or sort param during the fetch, the results
     // should be read.
@@ -739,14 +734,15 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
 
     // We want to spy exclusively on the first set of results, not the second
     searchService.asyncResponse = false;
     searchService.resultsSpy = () => {};
 
-    el.sortParam = { field: 'foo', direction: 'desc' };
+    el.sortDirection = 'desc';
     await el.updateComplete;
     await el.initialSearchComplete;
 
@@ -774,7 +770,8 @@ describe('Collection Browser', () => {
     searchService.asyncResponse = false;
     searchService.resultsSpy = () => {};
 
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
     await el.initialSearchComplete;
 
@@ -796,14 +793,15 @@ describe('Collection Browser', () => {
     );
 
     el.baseQuery = 'with-sort';
-    el.sortParam = { field: 'foo', direction: 'asc' };
+    el.selectedSort = SortField.date;
+    el.sortDirection = 'asc';
     await el.updateComplete;
 
     // We want to spy exclusively on the first set of results, not the second
     searchService.asyncResponse = false;
     searchService.resultsSpy = () => {};
 
-    el.sortParam = null;
+    el.selectedSort = SortField.default;
     await el.updateComplete;
     await el.initialSearchComplete;
 
@@ -823,12 +821,15 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'foo';
     await el.updateComplete;
+    await nextTick();
 
-    const sortBar = el.shadowRoot?.querySelector('sort-filter-bar');
+    const sortBar = el.shadowRoot?.querySelector(
+      '#content-container sort-filter-bar'
+    );
     const sortSelector = sortBar?.shadowRoot?.querySelector(
       '#desktop-sort-selector'
     );
-    expect(sortSelector).to.exist;
+    expect(sortSelector, 'sort bar').to.exist;
 
     // Click the title sorter
     [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
@@ -935,7 +936,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
-    await el.initialSearchComplete;
+    await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
@@ -944,7 +945,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
-    await el.initialSearchComplete;
+    await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchParams?.filters?.firstCreator).not.to.exist;
@@ -953,7 +954,10 @@ describe('Collection Browser', () => {
   it('sets date range query when date picker selection changed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser .searchService=${searchService}>
+      html`<collection-browser
+        .searchService=${searchService}
+        .suppressPlaceholders=${true}
+      >
       </collection-browser>`
     );
 
@@ -972,7 +976,8 @@ describe('Collection Browser', () => {
     const histogram = facets?.shadowRoot?.querySelector(
       'histogram-date-range'
     ) as HistogramDateRange;
-    expect(histogram).to.exist;
+
+    expect(histogram, 'histogram exists').to.exist;
 
     // Enter a new min date into the date picker
     const minDateInput = histogram.shadowRoot?.querySelector(
@@ -1094,6 +1099,20 @@ describe('Collection Browser', () => {
     expect(sortBar.sortDirection).to.be.null;
   });
 
+  it('falls back to weekly views default sorting on profiles when tab not set', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .withinProfile=${'@foobar'}
+      ></collection-browser>`
+    );
+
+    el.applyDefaultProfileSort();
+    expect(el.defaultSortParam).to.deep.equal({
+      field: SortField.weeklyview,
+      direction: 'desc',
+    });
+  });
+
   it('uses relevance sort as default when a query is set', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
@@ -1160,6 +1179,7 @@ describe('Collection Browser', () => {
     // infinite scroller does exist.
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     const infiniteScroller = el.shadowRoot?.querySelector(
       'infinite-scroller'
@@ -1171,8 +1191,7 @@ describe('Collection Browser', () => {
     infiniteScroller.scrollToCell = spy;
 
     await el.goToPage(1);
-
-    expect(spy.callCount).to.equal(1);
+    expect(spy.callCount, 'scroll to page fires once').to.equal(1);
 
     infiniteScroller.scrollToCell = oldScrollToCell;
   });
@@ -1222,18 +1241,16 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
     await aTimeout(0);
 
-    expect(el.parentCollections).to.deep.equal(['foo', 'bar']);
+    expect(el.dataSource.parentCollections).to.deep.equal(['foo', 'bar']);
   });
 
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();
-    const collectionNameCache = new MockCollectionNameCache();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .analyticsHandler=${mockAnalyticsHandler}
         .searchService=${searchService}
-        .collectionNameCache=${collectionNameCache}
       ></collection-browser>`
     );
     const infiniteScrollerRefreshSpy = sinon.spy();
@@ -1241,6 +1258,7 @@ describe('Collection Browser', () => {
     // Infinite scroller won't exist unless there's a base query
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await nextTick();
 
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
     (infiniteScroller as InfiniteScroller).reload = infiniteScrollerRefreshSpy;
@@ -1250,18 +1268,30 @@ describe('Collection Browser', () => {
     // testing: `loggedIn`
     el.loggedIn = true;
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.called).to.be.true;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(1);
+
+    expect(infiniteScrollerRefreshSpy.called, 'Infinite Scroller Refresh').to.be
+      .true;
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      'Infinite Scroller Refresh call count'
+    ).to.equal(1);
 
     el.loggedIn = false;
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(2);
+
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '2nd Infinite Scroller Refresh'
+    ).to.equal(2);
 
     // testing: `displayMode`
     el.displayMode = 'list-compact';
     el.searchContext = 'beta-search';
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(3);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '3rd Infinite Scroller Refresh'
+    ).to.equal(3);
 
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
@@ -1269,7 +1299,10 @@ describe('Collection Browser', () => {
 
     el.displayMode = 'list-detail';
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(4);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '4th Infinite Scroller Refresh'
+    ).to.equal(4);
 
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
     expect(mockAnalyticsHandler.callAction).to.equal('displayMode');
@@ -1278,12 +1311,18 @@ describe('Collection Browser', () => {
     // testing: `baseNavigationUrl`
     el.baseNavigationUrl = 'https://funtestsite.com';
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(5);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '5th Infinite Scroller Refresh'
+    ).to.equal(5);
 
     // testing: `baseImageUrl`
     el.baseImageUrl = 'https://funtestsiteforimages.com';
     await el.updateComplete;
-    expect(infiniteScrollerRefreshSpy.callCount).to.equal(6);
+    expect(
+      infiniteScrollerRefreshSpy.callCount,
+      '6th Infinite Scroller Refresh'
+    ).to.equal(6);
   });
 
   it('query the search service for single result', async () => {
@@ -1385,6 +1424,40 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).to.equal('2010');
   });
 
+  it('respects the initial set of URL parameters within a profile page', async () => {
+    const url = new URL(window.location.href);
+    const { searchParams } = url;
+    searchParams.set('query', 'foo');
+    searchParams.append('not[]', 'mediatype:"data"');
+    searchParams.append('and[]', 'subject:"baz"');
+    searchParams.append('and[]', 'firstTitle:X');
+    searchParams.append('and[]', 'year:[2000 TO 2010]');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinProfile=${'@foobar'}
+        .profileElement=${'uploads'}
+      >
+      </collection-browser>`
+    );
+
+    await el.initialSearchComplete;
+    await el.updateComplete;
+
+    expect(el.withinProfile).to.equal('@foobar');
+    expect(el.profileElement).to.equal('uploads');
+    expect(el.baseQuery).to.equal('foo');
+    expect(el.searchType).to.equal(SearchType.METADATA);
+    expect(el.selectedFacets?.mediatype?.data?.state).to.equal('hidden');
+    expect(el.selectedFacets?.subject?.baz?.state).to.equal('selected');
+    expect(el.selectedTitleFilter).to.equal('X');
+    expect(el.minSelectedDate).to.equal('2000');
+    expect(el.maxSelectedDate).to.equal('2010');
+  });
+
   it('clears filters except sort when query changes for a general search', async () => {
     const url = new URL(window.location.href);
     const { searchParams } = url;
@@ -1440,9 +1513,6 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    await el.initialSearchComplete;
-    await el.updateComplete;
-
     el.baseQuery = 'bar';
     await el.updateComplete;
 
@@ -1478,9 +1548,6 @@ describe('Collection Browser', () => {
       </collection-browser>`
     );
 
-    await el.initialSearchComplete;
-    await el.updateComplete;
-
     el.withinCollection = 'bar';
     await el.updateComplete;
 
@@ -1493,6 +1560,37 @@ describe('Collection Browser', () => {
     expect(el.selectedTitleFilter).not.to.exist;
     expect(el.minSelectedDate).not.to.exist;
     expect(el.maxSelectedDate).not.to.exist;
+  });
+
+  it('correctly retrieves web archive hits', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinProfile=${'@foo'}
+        .profileElement=${'web_archives'}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'web-archive';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await nextTick();
+
+    console.log(
+      '\n\n*****\n\n*****\n\n',
+      el.dataSource.getAllPages(),
+      '\n\n*****\n\n*****\n\n'
+    );
+    expect(el.dataSource.totalResults, 'total results').to.equal(1);
+    expect(el.dataSource.getTileModelAt(0)?.title).to.equal(
+      'https://example.com'
+    );
+    expect(
+      el.dataSource.getTileModelAt(0)?.captureDates?.length,
+      'capture dates'
+    ).to.equal(1);
   });
 
   it('shows temporarily unavailable message when facets suppressed', async () => {
@@ -1577,7 +1675,8 @@ describe('Collection Browser', () => {
 
     let tiles =
       infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
-    expect(tiles).to.exist.and.have.length(2);
+    expect(tiles).to.exist;
+    expect(tiles?.length).to.equal(2);
 
     const firstTile = tiles![0] as TileDispatcher;
     const firstTileLink = firstTile.shadowRoot?.querySelector(
@@ -1590,7 +1689,8 @@ describe('Collection Browser', () => {
     el.removeCheckedTiles();
     await el.updateComplete;
     tiles = infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
-    expect(tiles).to.exist.and.have.length(2);
+    expect(tiles).to.exist;
+    expect(tiles?.length).to.equal(2);
 
     // Check the first tile
     firstTileLink!.click();
@@ -1599,9 +1699,16 @@ describe('Collection Browser', () => {
     // Remove checked tiles and verify that we only kept the second tile
     el.removeCheckedTiles();
     await el.updateComplete;
-    tiles = infiniteScroller!.shadowRoot?.querySelectorAll('tile-dispatcher');
-    expect(tiles).to.exist.and.have.length(1);
-    expect((tiles![0] as TileDispatcher).model?.identifier).to.equal('bar');
+    expect(el?.dataSource?.size, 'data source count').to.equal(1);
+
+    tiles = el.shadowRoot
+      ?.querySelector('infinite-scroller')!
+      .shadowRoot?.querySelectorAll('tile-dispatcher');
+    expect(tiles).to.exist;
+    expect(
+      tiles!.length,
+      'tile count after `el.removeCheckedTiles()`'
+    ).to.equal(1);
   });
 
   it('can check/uncheck all tiles', async () => {
@@ -1621,16 +1728,16 @@ describe('Collection Browser', () => {
     el.isManageView = true;
     await el.updateComplete;
 
-    expect(el.checkedTileModels.length).to.equal(0);
-    expect(el.uncheckedTileModels.length).to.equal(2);
+    expect(el.dataSource.checkedTileModels.length).to.equal(0);
+    expect(el.dataSource.uncheckedTileModels.length).to.equal(2);
 
-    el.checkAllTiles();
-    expect(el.checkedTileModels.length).to.equal(2);
-    expect(el.uncheckedTileModels.length).to.equal(0);
+    el.dataSource.checkAllTiles();
+    expect(el.dataSource.checkedTileModels.length).to.equal(2);
+    expect(el.dataSource.uncheckedTileModels.length).to.equal(0);
 
-    el.uncheckAllTiles();
-    expect(el.checkedTileModels.length).to.equal(0);
-    expect(el.uncheckedTileModels.length).to.equal(2);
+    el.dataSource.uncheckAllTiles();
+    expect(el.dataSource.checkedTileModels.length).to.equal(0);
+    expect(el.dataSource.uncheckedTileModels.length).to.equal(2);
   });
 
   it('emits event when item removal requested', async () => {

@@ -1,4 +1,3 @@
-import type { CollectionNameCacheInterface } from '@internetarchive/collection-name-cache';
 import type { SortParam } from '@internetarchive/search-service';
 import {
   html,
@@ -8,6 +7,7 @@ import {
   ReactiveControllerHost,
 } from 'lit';
 import type { TileModel } from '../../models';
+import type { CollectionTitles } from '../../data-source/models';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
@@ -17,7 +17,7 @@ export interface HoverPaneProperties {
   baseImageUrl?: string;
   loggedIn: boolean;
   sortParam: SortParam | null;
-  collectionNameCache?: CollectionNameCacheInterface;
+  collectionTitles?: CollectionTitles;
 }
 
 export interface HoverPaneControllerOptions {
@@ -187,7 +187,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
             .loggedIn=${this.hoverPaneProps?.loggedIn}
             .sortParam=${this.hoverPaneProps?.sortParam}
-            .collectionNameCache=${this.hoverPaneProps?.collectionNameCache}
+            .collectionTitles=${this.hoverPaneProps?.collectionTitles}
           ></tile-hover-pane>`
       : nothing;
   }
