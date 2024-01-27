@@ -16,6 +16,8 @@ import { formatDate, DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
+import '../review-block';
+import '../text-snippet-block';
 import '../mediatype-icon';
 
 @customElement('tile-list')
@@ -114,6 +116,7 @@ export class TileList extends BaseTileComponent {
       </div>
       ${this.topicsTemplate} ${this.collectionsTemplate}
       ${this.descriptionTemplate} ${this.textSnippetsTemplate}
+      ${this.reviewBlockTemplate}
     `;
   }
 
@@ -296,6 +299,21 @@ export class TileList extends BaseTileComponent {
       '',
       'description'
     );
+  }
+
+  private get reviewBlockTemplate(): TemplateResult | typeof nothing {
+    if (!this.model?.review) return nothing;
+
+    const { title, body, stars } = this.model.review;
+    return html`
+      <review-block
+        viewsize="list"
+        .title=${title}
+        .body=${body}
+        .starRating=${stars}
+      >
+      </review-block>
+    `;
   }
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
