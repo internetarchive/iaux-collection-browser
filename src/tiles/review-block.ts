@@ -84,6 +84,7 @@ export class ReviewBlock extends LitElement {
           font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
           overflow: hidden;
           overflow-wrap: break-word;
+          word-break: break-word;
           -webkit-line-clamp: var(--maxLines, 3);
           -webkit-box-orient: vertical;
           margin: 0;
