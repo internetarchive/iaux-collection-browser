@@ -166,20 +166,30 @@ export class SortFilterBar
     `;
   }
 
-  updated(changed: PropertyValues) {
-    if (changed.has('displayMode')) {
-      this.displayModeChanged();
-    }
+  willUpdate(changed: PropertyValues) {
+    if (changed.has('selectedSort')) {
+      if (this.sortDirection === null) {
+        const sortOption = SORT_OPTIONS[this.finalizedSortField];
+        this.sortDirection = sortOption.defaultSortDirection;
+      }
 
-    if (changed.has('selectedSort') && this.sortDirection === null) {
-      const sortOption = SORT_OPTIONS[this.finalizedSortField];
-      this.sortDirection = sortOption.defaultSortDirection;
+      if (this.viewOptionSelected) {
+        this.lastSelectedViewSort = this.finalizedSortField;
+      } else if (this.dateOptionSelected) {
+        this.lastSelectedDateSort = this.finalizedSortField;
+      }
     }
 
     // If we change which dropdown options are available, ensure the correct default becomes selected.
     // Currently, Date Favorited is the only dropdown option whose presence/absence can change.
     if (changed.has('showDateFavorited')) {
       this.lastSelectedDateSort = this.defaultDateSortField;
+    }
+  }
+
+  updated(changed: PropertyValues) {
+    if (changed.has('displayMode')) {
+      this.displayModeChanged();
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {

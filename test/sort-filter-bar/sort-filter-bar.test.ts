@@ -10,23 +10,22 @@ import type { SortField } from '../../src/models';
 import '../../src/sort-filter-bar/sort-filter-bar';
 
 describe('Sort selector default buttons', async () => {
-  const el = await fixture<SortFilterBar>(html`
-    <sort-filter-bar> </sort-filter-bar>
-  `);
-  const sortSelectorContainer = el.shadowRoot?.querySelector(
-    '#sort-selector-container'
-  );
-  const desktopSortSelector = sortSelectorContainer?.querySelector(
-    '#desktop-sort-selector'
-  );
+  let el: SortFilterBar;
+  let sortSelectorContainer: HTMLElement | null | undefined;
+  let desktopSortSelector: HTMLElement | null | undefined;
 
   beforeEach(async () => {
-    el.resizeObserver = new SharedResizeObserver();
-    await el.updateComplete;
-  });
+    el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+    sortSelectorContainer = el.shadowRoot?.querySelector(
+      '#sort-selector-container'
+    );
+    desktopSortSelector = sortSelectorContainer?.querySelector(
+      '#desktop-sort-selector'
+    );
 
-  afterEach(async () => {
-    el.resizeObserver = undefined;
+    el.resizeObserver = new SharedResizeObserver();
     await el.updateComplete;
   });
 
@@ -160,6 +159,10 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('handles click event on relevance selector', async () => {
+    el.showRelevance = true;
+    el.selectedSort = 'title' as SortField;
+    await el.updateComplete;
+
     const defaultSortSelector = desktopSortSelector?.children
       .item(0)
       ?.querySelector('button');
