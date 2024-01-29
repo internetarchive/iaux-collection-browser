@@ -80,6 +80,16 @@ export class SortFilterBar
   @property({ type: Object }) resizeObserver?: SharedResizeObserverInterface;
 
   /**
+   * The Views sort option that was most recently selected (or the default, if none has been selected yet)
+   */
+  @state() private lastSelectedViewSort = SortField.weeklyview;
+
+  /**
+   * The Date sort option that was most recently selected (or the default, if none has been selected yet)
+   */
+  @state() private lastSelectedDateSort = this.defaultDateSortField;
+
+  /**
    * Which of the alphabet bars (title/creator) should be shown, or null if one
    * should not currently be rendered.
    */
@@ -164,6 +174,12 @@ export class SortFilterBar
     if (changed.has('selectedSort') && this.sortDirection === null) {
       const sortOption = SORT_OPTIONS[this.finalizedSortField];
       this.sortDirection = sortOption.defaultSortDirection;
+    }
+
+    // If we change which dropdown options are available, ensure the correct default becomes selected.
+    // Currently, Date Favorited is the only dropdown option whose presence/absence can change.
+    if (changed.has('showDateFavorited')) {
+      this.lastSelectedDateSort = this.defaultDateSortField;
     }
 
     if (changed.has('selectedTitleFilter') && this.selectedTitleFilter) {
@@ -521,13 +537,20 @@ export class SortFilterBar
   private dropdownOptionSelected(e: CustomEvent<{ option: optionInterface }>) {
     this.dropdownBackdropVisible = false;
     this.clearAlphaBarFilters();
-    this.setSelectedSort(e.detail.option.id as SortField);
+
+    const sortField = e.detail.option.id as SortField;
+    this.setSelectedSort(sortField);
+    if (this.viewOptionSelected) {
+      this.lastSelectedViewSort = sortField;
+    } else if (this.dateOptionSelected) {
+      this.lastSelectedDateSort = sortField;
+    }
   }
 
   /** The template to render for the views dropdown */
   private get viewsDropdownTemplate(): TemplateResult {
     return this.getSortDropdown({
-      displayName: html`${this.viewSortField}`,
+      displayName: html`${this.viewSortDisplayName}`,
       id: 'views-dropdown',
       selected: this.viewOptionSelected,
       dropdownOptions: [
@@ -545,7 +568,7 @@ export class SortFilterBar
         if (!this.viewsDropdown.open && !this.viewOptionSelected) {
           e.stopPropagation();
           this.clearAlphaBarFilters();
-          this.setSelectedSort(SortField.weeklyview);
+          this.setSelectedSort(this.lastSelectedViewSort);
         }
       },
     });
@@ -554,7 +577,7 @@ export class SortFilterBar
   /** The template to render for the date dropdown */
   private get dateDropdownTemplate(): TemplateResult {
     return this.getSortDropdown({
-      displayName: html`${this.dateSortField}`,
+      displayName: html`${this.dateSortDisplayName}`,
       id: 'date-dropdown',
       selected: this.dateOptionSelected,
       dropdownOptions: [
@@ -577,7 +600,7 @@ export class SortFilterBar
         if (!this.dateDropdown.open && !this.dateOptionSelected) {
           e.stopPropagation();
           this.clearAlphaBarFilters();
-          this.setSelectedSort(this.defaultDateSortField);
+          this.setSelectedSort(this.lastSelectedDateSort);
         }
       },
     });
@@ -790,35 +813,27 @@ export class SortFilterBar
   }
 
   /**
-   * The display name of the current date field
+   * The display name of the last selected date field
    *
    * @readonly
    * @private
    * @type {string}
    * @memberof SortFilterBar
    */
-  private get dateSortField(): string {
-    const defaultDateSort = SORT_OPTIONS[this.defaultDateSortField];
-    const currentDateSort = this.dateOptionSelected
-      ? SORT_OPTIONS[this.finalizedSortField] ?? defaultDateSort
-      : defaultDateSort;
-    return currentDateSort.displayName;
+  private get dateSortDisplayName(): string {
+    return SORT_OPTIONS[this.lastSelectedDateSort].displayName;
   }
 
   /**
-   * The display name of the current view field
+   * The display name of the last selected view field
    *
    * @readonly
    * @private
    * @type {string}
    * @memberof SortFilterBar
    */
-  private get viewSortField(): string {
-    const defaultViewSort = SORT_OPTIONS[SortField.weeklyview];
-    const currentViewSort = this.viewOptionSelected
-      ? SORT_OPTIONS[this.finalizedSortField] ?? defaultViewSort
-      : defaultViewSort;
-    return currentViewSort.displayName;
+  private get viewSortDisplayName(): string {
+    return SORT_OPTIONS[this.lastSelectedViewSort].displayName;
   }
 
   private get titleSelectorBar() {
