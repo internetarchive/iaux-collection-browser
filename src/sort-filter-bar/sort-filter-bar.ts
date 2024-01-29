@@ -557,7 +557,7 @@ export class SortFilterBar
         this.getDropdownOption(SortField.weeklyview),
         this.getDropdownOption(SortField.alltimeview),
       ],
-      selectedOption: this.viewOptionSelected ? this.selectedSort : '',
+      selectedOption: this.viewOptionSelected ? this.finalizedSortField : '',
       onOptionSelected: this.dropdownOptionSelected,
       onDropdownClick: () => {
         this.dateDropdown.open = false;
@@ -589,7 +589,7 @@ export class SortFilterBar
         this.getDropdownOption(SortField.datereviewed),
         this.getDropdownOption(SortField.dateadded),
       ],
-      selectedOption: this.dateOptionSelected ? this.selectedSort : '',
+      selectedOption: this.dateOptionSelected ? this.finalizedSortField : '',
       onOptionSelected: this.dropdownOptionSelected,
       onDropdownClick: () => {
         this.viewsDropdown.open = false;
