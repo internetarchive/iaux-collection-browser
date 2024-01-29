@@ -167,6 +167,12 @@ export class SortFilterBar
   }
 
   willUpdate(changed: PropertyValues) {
+    console.log(
+      'sort bar updated:\n',
+      [...changed.entries()]
+        .map(([k, v]) => `${String(k)}: ${v} -> ${this[k as keyof this]}`)
+        .join('\n')
+    );
     if (changed.has('selectedSort')) {
       if (this.sortDirection === null) {
         const sortOption = SORT_OPTIONS[this.finalizedSortField];
@@ -182,7 +188,10 @@ export class SortFilterBar
 
     // If we change which dropdown options are available, ensure the correct default becomes selected.
     // Currently, Date Favorited is the only dropdown option whose presence/absence can change.
-    if (changed.has('showDateFavorited')) {
+    if (
+      changed.has('showDateFavorited') &&
+      changed.get('showDateFavorited') !== this.showDateFavorited
+    ) {
       this.lastSelectedDateSort = this.defaultDateSortField;
     }
   }
