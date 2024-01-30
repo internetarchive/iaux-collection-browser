@@ -1816,14 +1816,29 @@ describe('Collection Browser', () => {
     expect(el.isManageView).to.be.false;
   });
 
-  it('loans-tab sort-filter-bar', async () => {
+  it('applies loans tab properties to sort bar', async () => {
+    const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser .baseNavigationUrl=${''} .isLoansTab=${true}>
+      html`<collection-browser
+        .baseNavigationUrl=${''}
+        .searchService=${searchService}
+        .isLoansTab=${true}
+      >
       </collection-browser>`
     );
-    const loansTabSlot = el?.shadowRoot?.querySelector('slot');
 
-    expect(el.isLoansTab).to.equal(true);
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar'
+    ) as SortFilterBar;
+    expect(sortBar?.showLoansTopBar, 'show loans in sort bar').to.be.true;
+    expect(el.isLoansTab, 'collection browser is loans tab').to.be.true;
+
+    const loansTabSlot = sortBar.querySelector(
+      'slot[name="loans-tab-filter-bar-options-slot"]'
+    );
     expect(loansTabSlot).to.exist;
   });
 });
