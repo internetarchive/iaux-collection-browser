@@ -1841,4 +1841,37 @@ describe('Collection Browser', () => {
     );
     expect(loansTabSlot).to.exist;
   });
+
+  it('can suppress presence of result count', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        suppressResultCount
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const resultCount = el.shadowRoot?.querySelector('#results-total');
+    expect(resultCount).not.to.exist;
+  });
+
+  it('can suppress presence of result tiles', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        suppressResultTiles
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
+    expect(infiniteScroller).not.to.exist;
+  });
 });

@@ -44,6 +44,20 @@ describe('Collection Browser Data Source', () => {
     expect(dataSource.getPage(1)[1].identifier).to.equal('bar');
   });
 
+  it('can add data split across multiple pages', () => {
+    const dataSource = new CollectionBrowserDataSource(host, 3);
+    const doubledDataPage = [...dataPage, ...dataPage];
+    dataSource.addMultiplePages(1, doubledDataPage);
+
+    expect(Object.keys(dataSource.getAllPages()).length).to.equal(2);
+    expect(dataSource.getPage(1).length).to.equal(3);
+    expect(dataSource.getPage(2).length).to.equal(1);
+    expect(dataSource.getPage(1)[0].identifier).to.equal('foo');
+    expect(dataSource.getPage(1)[1].identifier).to.equal('bar');
+    expect(dataSource.getPage(1)[2].identifier).to.equal('foo');
+    expect(dataSource.getPage(2)[0].identifier).to.equal('bar');
+  });
+
   it('resets data when changing page size', () => {
     const dataSource = new CollectionBrowserDataSource(host);
     dataSource.addPage(1, dataPage);
