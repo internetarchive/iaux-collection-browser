@@ -167,12 +167,6 @@ export class SortFilterBar
   }
 
   willUpdate(changed: PropertyValues) {
-    console.log(
-      'sort bar updated:\n',
-      [...changed.entries()]
-        .map(([k, v]) => `${String(k)}: ${v} -> ${this[k as keyof this]}`)
-        .join('\n')
-    );
     if (changed.has('selectedSort')) {
       if (this.sortDirection === null) {
         const sortOption = SORT_OPTIONS[this.finalizedSortField];
