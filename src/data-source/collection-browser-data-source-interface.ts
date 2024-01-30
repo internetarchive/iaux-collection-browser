@@ -152,10 +152,21 @@ export interface CollectionBrowserDataSourceInterface
   /**
    * Adds the given page of tile models to the data source.
    * If the given page number already exists, that page will be overwritten.
+   * This method expects that the provided tiles already fit the configured page size; it
+   * will not split them into multiple pages.
    * @param pageNum Which page number to add (indexed starting from 1)
    * @param pageTiles The array of tile models for the new page
    */
   addPage(pageNum: number, pageTiles: TileModel[]): void;
+
+  /**
+   * Adds all of the given pages of tile models to the data source, splitting them into
+   * multiple pages according to the configured page size if necessary. Any pages that
+   * have tiles added by this method will have any existing content overwritten.
+   * @param firstPageNum Which page number to start adding pages from (pages are indexed starting from 1)
+   * @param tiles The full array of tile models to add across one or more pages
+   */
+  addMultiplePages(firstPageNum: number, tiles: TileModel[]): void;
 
   /**
    * Returns the given page of tile models from the data source.

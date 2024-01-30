@@ -253,6 +253,20 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  addMultiplePages(firstPageNum: number, tiles: TileModel[]): void {
+    const numPages = Math.ceil(tiles.length / this.pageSize);
+    for (let i = 0; i < numPages; i += 1) {
+      const pageStartIndex = this.pageSize * i;
+      this.addPage(
+        firstPageNum + i,
+        tiles.slice(pageStartIndex, pageStartIndex + this.pageSize)
+      );
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
   getPage(pageNum: number): TileModel[] {
     return this.pages[pageNum];
   }
@@ -1035,7 +1049,7 @@ export class CollectionBrowserDataSource
       }
       for (let i = 0; i < numPages; i += 1) {
         const pageStartIndex = this.pageSize * i;
-        this.addTilesToDataSource(
+        this.addFetchedResultsToDataSource(
           pageNumber + i,
           results.slice(pageStartIndex, pageStartIndex + this.pageSize)
         );
@@ -1061,7 +1075,7 @@ export class CollectionBrowserDataSource
    * @param pageNumber
    * @param results
    */
-  private addTilesToDataSource(
+  private addFetchedResultsToDataSource(
     pageNumber: number,
     results: SearchResult[]
   ): void {
