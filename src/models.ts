@@ -1,6 +1,7 @@
 import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
+  Review,
   SearchResult,
   SortDirection,
 } from '@internetarchive/search-service';
@@ -65,6 +66,8 @@ export class TileModel {
 
   mediatype: MediaType;
 
+  review?: Review;
+
   source?: string;
 
   snippets?: string[];
@@ -101,11 +104,14 @@ export class TileModel {
     this.dateReviewed = result.reviewdate?.value;
     this.description = result.description?.values.join('\n');
     this.favCount = result.num_favorites?.value ?? 0;
-    this.href = collapseRepeatedQuotes(result.__href__?.value);
+    this.href = collapseRepeatedQuotes(
+      result.review?.__href__ ?? result.__href__?.value
+    );
     this.identifier = result.identifier;
     this.issue = result.issue?.value;
     this.itemCount = result.item_count?.value ?? 0;
     this.mediatype = resolveMediatype(result);
+    this.review = result.review;
     this.snippets = result.highlight?.values ?? [];
     this.source = result.source?.value;
     this.subjects = result.subject?.values ?? [];

@@ -429,4 +429,37 @@ describe('Item Tile', () => {
     const captureDatesUl = el.shadowRoot?.querySelector('.capture-dates');
     expect(captureDatesUl).not.to.exist;
   });
+
+  it('should render review snippet if present', async () => {
+    const review = {
+      title: 'Foo',
+      body: 'foo bar baz',
+      stars: 3,
+    };
+
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${{
+          identifier: 'foo',
+          review,
+        }}
+      ></item-tile>
+    `);
+
+    const reviewBlock = el.shadowRoot?.querySelector('review-block');
+    expect(reviewBlock).to.exist;
+  });
+
+  it('should not render review snippet block when no review is present', async () => {
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${{
+          identifier: 'foo',
+        }}
+      ></item-tile>
+    `);
+
+    const reviewBlock = el.shadowRoot?.querySelector('review-block');
+    expect(reviewBlock).not.to.exist;
+  });
 });

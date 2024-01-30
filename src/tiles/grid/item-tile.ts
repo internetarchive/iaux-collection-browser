@@ -11,6 +11,7 @@ import { BaseTileComponent } from '../base-tile-component';
 
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import '../image-block';
+import '../review-block';
 import '../text-snippet-block';
 import '../item-image';
 import '../mediatype-icon';
@@ -59,6 +60,7 @@ export class ItemTile extends BaseTileComponent {
               ? this.sortedDateInfoTemplate
               : this.creatorTemplate}
             ${this.webArchivesCaptureDatesTemplate} ${this.textSnippetsTemplate}
+            ${this.reviewBlockTemplate}
           </div>
 
           <tile-stats
@@ -152,6 +154,21 @@ export class ItemTile extends BaseTileComponent {
       : nothing;
   }
 
+  private get reviewBlockTemplate(): TemplateResult | typeof nothing {
+    if (!this.model?.review) return nothing;
+
+    const { title, body, stars } = this.model.review;
+    return html`
+      <review-block
+        viewsize="grid"
+        .title=${title}
+        .body=${body}
+        .starRating=${stars}
+      >
+      </review-block>
+    `;
+  }
+
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
 
@@ -239,6 +256,7 @@ export class ItemTile extends BaseTileComponent {
           list-style-type: none;
         }
 
+        review-block,
         text-snippet-block {
           --containerLeftMargin: 5px;
           --containerTopMargin: 5px;
