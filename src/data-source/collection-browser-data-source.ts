@@ -230,14 +230,13 @@ export class CollectionBrowserDataSource
 
     this.offset = 0;
     this.numTileModels = 0;
-    this.totalResults = 0;
     this.endOfDataReached = false;
     this.queryInitialized = false;
 
     // Invalidate any fetches in progress
     this.fetchesInProgress.clear();
 
-    if (this.activeOnHost) this.host.setTotalResultCount(0);
+    this.setTotalResultCount(0);
     this.requestHostUpdate();
   }
 
@@ -261,6 +260,14 @@ export class CollectionBrowserDataSource
         firstPageNum + i,
         tiles.slice(pageStartIndex, pageStartIndex + this.pageSize)
       );
+    }
+
+    const visiblePages = this.host.currentVisiblePageNumbers;
+    const needsReload = visiblePages.some(
+      page => page >= firstPageNum && page <= firstPageNum + numPages
+    );
+    if (needsReload) {
+      this.refreshVisibleResults();
     }
   }
 
@@ -314,6 +321,16 @@ export class CollectionBrowserDataSource
   setPageSize(pageSize: number): void {
     this.reset();
     this.pageSize = pageSize;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  setTotalResultCount(count: number): void {
+    this.totalResults = count;
+    if (this.activeOnHost) {
+      this.host.setTotalResultCount(count);
+    }
   }
 
   /**
@@ -998,14 +1015,10 @@ export class CollectionBrowserDataSource
       return;
     }
 
-    this.totalResults = success.response.totalResults - this.offset;
-    if (this.activeOnHost) {
-      this.host.setTotalResultCount(this.totalResults);
-
+    this.setTotalResultCount(success.response.totalResults - this.offset);
+    if (this.activeOnHost && this.totalResults === 0) {
       // display event to offshoot when result count is zero.
-      if (this.totalResults === 0) {
-        this.host.emitEmptyResults();
-      }
+      this.host.emitEmptyResults();
     }
 
     if (this.host.withinCollection) {
