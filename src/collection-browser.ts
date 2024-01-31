@@ -239,6 +239,13 @@ export class CollectionBrowser
    */
   private isResizeToMobile = false;
 
+  /**
+   * Flag indicating that a new data source is currently being installed.
+   * During the install, any URL persistence operation should replace the current entry
+   * instead of creating a new one.
+   */
+  private dataSourceInstallInProgress = false;
+
   private leftColIntersectionObserver?: IntersectionObserver;
 
   private facetsIntersectionObserver?: IntersectionObserver;
@@ -1009,8 +1016,12 @@ export class CollectionBrowser
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
 
+    // We set this flag during the update to prevent the URL state persistence
+    // from creating an unwanted extra history entry.
+    this.dataSourceInstallInProgress = true;
     this.requestUpdate();
     await this.updateComplete;
+    this.dataSourceInstallInProgress = false;
 
     if (!this.searchResultsLoading) {
       this.setTotalResultCount(this.dataSource.totalResults);
@@ -1021,7 +1032,6 @@ export class CollectionBrowser
   }
 
   firstUpdated(): void {
-    this.setupStateRestorationObserver();
     this.restoreState();
   }
 
@@ -1173,6 +1183,11 @@ export class CollectionBrowser
       if (oldObserver) this.disconnectResizeObserver(oldObserver);
       this.setupResizeObserver();
     }
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback?.();
+    this.setupStateRestorationObserver();
   }
 
   disconnectedCallback(): void {
@@ -1435,8 +1450,9 @@ export class CollectionBrowser
   }
 
   private setupStateRestorationObserver() {
-    if (this.boundNavigationHandler) return;
-    this.boundNavigationHandler = this.historyNavigationHandler.bind(this);
+    if (!this.boundNavigationHandler) {
+      this.boundNavigationHandler = this.historyNavigationHandler.bind(this);
+    }
     // when the user navigates back, we want to update the UI to match the URL
     window.addEventListener('popstate', this.boundNavigationHandler);
   }
@@ -1483,7 +1499,10 @@ export class CollectionBrowser
       selectedTitleFilter: this.selectedTitleFilter ?? undefined,
       selectedCreatorFilter: this.selectedCreatorFilter ?? undefined,
     };
-    this.restorationStateHandler.persistState(restorationState);
+    this.restorationStateHandler.persistState(
+      restorationState,
+      this.dataSourceInstallInProgress
+    );
   }
 
   private emitSearchResultsLoadingChanged(): void {
