@@ -167,8 +167,14 @@ export class SortFilterBar
   }
 
   willUpdate(changed: PropertyValues) {
-    if (changed.has('selectedSort')) {
-      if (this.sortDirection === null) {
+    if (changed.has('selectedSort') || changed.has('defaultSortField')) {
+      // If the sort is changed from its default without a direction set,
+      // we adopt the default sort direction for that sort type.
+      if (
+        this.selectedSort &&
+        this.selectedSort !== SortField.default &&
+        this.sortDirection === null
+      ) {
         const sortOption = SORT_OPTIONS[this.finalizedSortField];
         this.sortDirection = sortOption.defaultSortDirection;
       }

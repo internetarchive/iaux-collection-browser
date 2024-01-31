@@ -31,7 +31,7 @@ export interface RestorationState {
 }
 
 export interface RestorationStateHandlerInterface {
-  persistState(state: RestorationState): void;
+  persistState(state: RestorationState, forceReplace?: boolean): void;
   getRestorationState(): RestorationState;
 }
 
@@ -50,9 +50,9 @@ export class RestorationStateHandler
     this.context = options.context;
   }
 
-  persistState(state: RestorationState): void {
+  persistState(state: RestorationState, forceReplace = false): void {
     if (state.displayMode) this.persistViewStateToCookies(state.displayMode);
-    this.persistQueryStateToUrl(state);
+    this.persistQueryStateToUrl(state, forceReplace);
   }
 
   getRestorationState(): RestorationState {
@@ -85,7 +85,10 @@ export class RestorationStateHandler
     return 'list-compact';
   }
 
-  private persistQueryStateToUrl(state: RestorationState) {
+  private persistQueryStateToUrl(
+    state: RestorationState,
+    forceReplace = false
+  ) {
     const url = new URL(window.location.href);
     const oldParams = new URLSearchParams(url.searchParams);
     const newParams = this.removeRecognizedParams(url.searchParams);
@@ -176,7 +179,9 @@ export class RestorationStateHandler
     //  - If the state has changed, we push a new history entry.
     //  - If only the page number has changed, we replace the current history entry.
     //  - If the state hasn't changed, then do nothing.
-    let historyMethod: 'pushState' | 'replaceState' = 'pushState';
+    let historyMethod: 'pushState' | 'replaceState' = forceReplace
+      ? 'replaceState'
+      : 'pushState';
     const nonQueryParamsMatch = this.paramsMatch(oldParams, newParams, [
       'sin',
       'sort',
