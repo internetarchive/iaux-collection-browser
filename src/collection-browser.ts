@@ -128,6 +128,8 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) suppressResultCount = false;
 
+  @property({ type: Boolean }) suppressResultTiles = false;
+
   @property({ type: Boolean }) suppressURLQuery = false;
 
   @property({ type: Boolean }) suppressFacets = false;
@@ -278,7 +280,7 @@ export class CollectionBrowser
   private tileModelOffset = 0;
 
   @query('infinite-scroller')
-  private infiniteScroller!: InfiniteScroller;
+  private infiniteScroller?: InfiniteScroller;
 
   private sessionIdGenPromise?: Promise<string>;
 
@@ -462,7 +464,6 @@ export class CollectionBrowser
         .detailMessage=${this.dataSource.queryErrorMessage ?? ''}
         .baseNavigationUrl=${this.baseNavigationUrl}
       ></empty-placeholder>
-      ${this.infiniteScrollerTemplate}
     `;
   }
 
@@ -575,7 +576,7 @@ export class CollectionBrowser
         ${this.displayMode === `list-compact`
           ? this.listHeaderTemplate
           : nothing}
-        ${this.infiniteScrollerTemplate}
+        ${this.suppressResultTiles ? nothing : this.infiniteScrollerTemplate}
       </div>
     `;
   }
