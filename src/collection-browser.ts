@@ -171,7 +171,8 @@ export class CollectionBrowser
    */
   @property({ type: Boolean }) isManageView = false;
 
-  @property({ type: Boolean }) isLoansTab = false;
+  /** Whether to replace the default sort options with a slot for customization (default: false) */
+  @property({ type: Boolean }) enableSortOptionsSlot = false;
 
   /**
    * The results per page so we can paginate.
@@ -626,19 +627,14 @@ export class CollectionBrowser
         .selectedCreatorFilter=${this.selectedCreatorFilter}
         .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
+        .enableSortOptionsSlot=${this.enableSortOptionsSlot}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
-        .showLoansTopBar=${this.isLoansTab}
       >
-        <div slot="sortbar-left-slot">
-          <slot name="sortbar-left-slot"></slot>
-        </div>
-        <slot
-          name="loans-tab-filter-bar-options-slot"
-          slot="loans-tab-filter-bar-options-slot"
-        ></slot>
+        <slot name="sort-options-left" slot="sort-options-left"></slot>
+        <slot name="sort-options" slot="sort-options"></slot>
       </sort-filter-bar>
     `;
   }
