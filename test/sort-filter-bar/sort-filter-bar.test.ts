@@ -647,7 +647,7 @@ describe('Sort/filter bar mobile view', () => {
     expect(removeSpy.callCount).to.equal(2);
   });
 
-  it('shows loansTab top-bar slot Custom Slotted View', async () => {
+  it('contains sort-options slot when enabled', async () => {
     const resizeStub = new SharedResizeObserver();
     const addSpy = sinon.spy(resizeStub, 'addObserver');
     const removeSpy = sinon.spy(resizeStub, 'removeObserver');
@@ -655,15 +655,17 @@ describe('Sort/filter bar mobile view', () => {
     const el = await fixture<SortFilterBar>(html`
       <sort-filter-bar
         .resizeObserver=${resizeStub}
-        .showLoansTopBar=${true}
+        .enableSortOptionsSlot=${true}
       ></sort-filter-bar>
     `);
 
     await el.updateComplete;
 
     // slot exists
-    const loansTabSlot = el?.shadowRoot?.querySelector('slot');
-    expect(loansTabSlot).to.exist;
+    const sortOptionsSlot = el?.shadowRoot?.querySelector(
+      'slot[name="sort-options"]'
+    );
+    expect(sortOptionsSlot).to.exist;
 
     // sort bar does not exist
     expect(el?.shadowRoot?.querySelector('#sort-selector-container')).to.not

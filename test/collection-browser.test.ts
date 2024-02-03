@@ -1822,7 +1822,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .baseNavigationUrl=${''}
         .searchService=${searchService}
-        .isLoansTab=${true}
+        .enableSortOptionsSlot=${true}
       >
       </collection-browser>`
     );
@@ -1837,9 +1837,7 @@ describe('Collection Browser', () => {
     expect(el.enableSortOptionsSlot, 'collection browser is loans tab').to.be
       .true;
 
-    const loansTabSlot = sortBar.querySelector(
-      'slot[name="loans-tab-filter-bar-options-slot"]'
-    );
+    const loansTabSlot = sortBar.querySelector('slot[name="sort-options"]');
     expect(loansTabSlot).to.exist;
   });
 
