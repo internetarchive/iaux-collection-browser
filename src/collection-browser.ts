@@ -226,7 +226,7 @@ export class CollectionBrowser
   @query('collection-facets') private collectionFacets?: CollectionFacets;
 
   @property({ type: Object, attribute: false })
-  private analyticsHandler?: AnalyticsManagerInterface;
+  analyticsHandler?: AnalyticsManagerInterface;
 
   /**
    * When we're animated scrolling to the page, we don't want to fetch
