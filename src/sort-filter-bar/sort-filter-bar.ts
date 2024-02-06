@@ -7,6 +7,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
 import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
@@ -68,8 +69,9 @@ export class SortFilterBar
   /** Whether to show the Date Favorited sort option instead of Date Published/Archived/Reviewed (default `false`) */
   @property({ type: Boolean }) showDateFavorited: boolean = false;
 
-  /** Whether to show the Loans filter for ProfilePage (default `false`) */
-  @property({ type: Boolean }) showLoansTopBar: boolean = false;
+  /** Whether to replace the default sort options with a slot for customization (default `false`) */
+  @property({ type: Boolean, reflect: true }) enableSortOptionsSlot: boolean =
+    false;
 
   /** Maps of result counts for letters on the alphabet bar, for each letter filter type */
   @property({ type: Object }) prefixFilterCountMap?: Record<
@@ -143,19 +145,21 @@ export class SortFilterBar
     return html`
       <div id="container">
         <section id="sort-bar" aria-label="Sorting options">
-          ${!this.showLoansTopBar
-            ? html`
-                <slot name="sortbar-left-slot"></slot>
-                <div class="sort-direction-container">
-                  ${this.sortDirectionSelectorTemplate}
-                </div>
-                <span class="sort-by-text">Sort by:</span>
-                <div id="sort-selector-container">
-                  ${this.mobileSortSelectorTemplate}
-                  ${this.desktopSortSelectorTemplate}
-                </div>
-              `
-            : html`<slot name="loans-tab-filter-bar-options-slot"></slot>`}
+          <slot name="sort-options-left"></slot>
+          <div id="sort-options">
+            ${!this.enableSortOptionsSlot
+              ? html`
+                  <div class="sort-direction-container">
+                    ${this.sortDirectionSelectorTemplate}
+                  </div>
+                  <span class="sort-by-text">${msg('Sort by:')}</span>
+                  <div id="sort-selector-container">
+                    ${this.mobileSortSelectorTemplate}
+                    ${this.desktopSortSelectorTemplate}
+                  </div>
+                `
+              : html`<slot name="sort-options"></slot>`}
+          </div>
 
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
         </section>
@@ -213,7 +217,7 @@ export class SortFilterBar
       this.setupEscapeListeners();
     }
 
-    if (changed.has('resizeObserver') || changed.has('showLoansTopBar')) {
+    if (changed.has('resizeObserver') || changed.has('enableSortOptionsSlot')) {
       const oldObserver = changed.get(
         'resizeObserver'
       ) as SharedResizeObserverInterface;
@@ -939,10 +943,16 @@ export class SortFilterBar
 
         #sort-bar {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-start;
           align-items: center;
           border-bottom: 1px solid #2c2c2c;
           font-size: 1.4rem;
+        }
+
+        #sort-options {
+          display: flex;
+          align-items: center;
+          flex-grow: 1;
         }
 
         ul {

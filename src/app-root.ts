@@ -395,11 +395,11 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="enable-loanstab-topbar-view"
-                @click=${this.loansTabTopBarViewCheckboxChanged}
+                id="enable-replaced-sort-options"
+                @click=${this.replaceSortOptionsChanged}
               />
-              <label for="enable-loanstab-topbar-view">
-                Show loans-tab top-bar view
+              <label for="enable-replaced-sort-options">
+                Show replaced sort options
               </label>
             </div>
           </fieldset>
@@ -744,7 +744,7 @@ export class AppRoot extends LitElement {
     div.style.setProperty('height', '3rem');
     div.style.setProperty('width', '3rem');
     div.style.backgroundColor = '#00000';
-    div.setAttribute('slot', 'sortbar-left-slot');
+    div.setAttribute('slot', 'sort-options-left');
 
     if (target.checked) {
       this.collectionBrowser.appendChild(div);
@@ -802,9 +802,9 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when the dev panel's "Show loanstab topbar view" checkbox is changed.
+   * Handler for when the dev panel's "Replace sort options" checkbox is changed.
    */
-  private loansTabTopBarViewCheckboxChanged(e: Event) {
+  private replaceSortOptionsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
     const p = document.createElement('p');
@@ -812,13 +812,13 @@ export class AppRoot extends LitElement {
     p.textContent = 'New stuff as a child.';
     p.style.setProperty('height', '20px');
     p.style.backgroundColor = '#00000';
-    p.setAttribute('slot', 'loans-tab-filter-bar-options-slot');
+    p.setAttribute('slot', 'sort-options');
 
     if (target.checked) {
-      this.collectionBrowser.isLoansTab = true;
+      this.collectionBrowser.enableSortOptionsSlot = true;
       this.collectionBrowser.appendChild(p);
     } else {
-      this.collectionBrowser.isLoansTab = false;
+      this.collectionBrowser.enableSortOptionsSlot = false;
       this.collectionBrowser.removeChild(
         this.collectionBrowser.lastElementChild as Element
       );

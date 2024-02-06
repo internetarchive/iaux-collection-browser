@@ -1822,7 +1822,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .baseNavigationUrl=${''}
         .searchService=${searchService}
-        .isLoansTab=${true}
+        .enableSortOptionsSlot=${true}
       >
       </collection-browser>`
     );
@@ -1833,12 +1833,11 @@ describe('Collection Browser', () => {
     const sortBar = el.shadowRoot?.querySelector(
       'sort-filter-bar'
     ) as SortFilterBar;
-    expect(sortBar?.showLoansTopBar, 'show loans in sort bar').to.be.true;
-    expect(el.isLoansTab, 'collection browser is loans tab').to.be.true;
+    expect(sortBar?.enableSortOptionsSlot, 'show loans in sort bar').to.be.true;
+    expect(el.enableSortOptionsSlot, 'collection browser is loans tab').to.be
+      .true;
 
-    const loansTabSlot = sortBar.querySelector(
-      'slot[name="loans-tab-filter-bar-options-slot"]'
-    );
+    const loansTabSlot = sortBar.querySelector('slot[name="sort-options"]');
     expect(loansTabSlot).to.exist;
   });
 
