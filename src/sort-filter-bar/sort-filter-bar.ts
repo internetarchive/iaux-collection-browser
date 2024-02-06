@@ -70,7 +70,8 @@ export class SortFilterBar
   @property({ type: Boolean }) showDateFavorited: boolean = false;
 
   /** Whether to replace the default sort options with a slot for customization (default `false`) */
-  @property({ type: Boolean }) enableSortOptionsSlot: boolean = false;
+  @property({ type: Boolean, reflect: true }) enableSortOptionsSlot: boolean =
+    false;
 
   /** Maps of result counts for letters on the alphabet bar, for each letter filter type */
   @property({ type: Object }) prefixFilterCountMap?: Record<
