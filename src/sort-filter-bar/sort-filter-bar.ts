@@ -160,6 +160,7 @@ export class SortFilterBar
                 `
               : html`<slot name="sort-options"></slot>`}
           </div>
+          <slot name="sort-options-right"></slot>
 
           <div id="display-style-selector">${this.displayOptionTemplate}</div>
         </section>

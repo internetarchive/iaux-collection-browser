@@ -635,6 +635,7 @@ export class CollectionBrowser
       >
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
+        <slot name="sort-options-right" slot="sort-options-right"></slot>
       </sort-filter-bar>
     `;
   }
