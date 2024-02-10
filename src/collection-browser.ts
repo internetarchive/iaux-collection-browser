@@ -136,6 +136,8 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) suppressSortBar = false;
 
+  @property({ type: Boolean }) suppressDisplayModes = false;
+
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
   @property({ type: String }) collectionPagePath: string = '/details/';
@@ -628,6 +630,7 @@ export class CollectionBrowser
         .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
         .enableSortOptionsSlot=${this.enableSortOptionsSlot}
+        .suppressDisplayModes=${this.suppressDisplayModes}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
         @titleLetterChanged=${this.titleLetterSelected}
@@ -1185,6 +1188,7 @@ export class CollectionBrowser
   connectedCallback(): void {
     super.connectedCallback?.();
     this.setupStateRestorationObserver();
+    this.setupResizeObserver();
   }
 
   disconnectedCallback(): void {
@@ -1338,7 +1342,7 @@ export class CollectionBrowser
   }
 
   private setupResizeObserver() {
-    if (!this.resizeObserver) return;
+    if (!this.resizeObserver || !this.contentContainer) return;
     this.resizeObserver.addObserver({
       target: this.contentContainer,
       handler: this,
