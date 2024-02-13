@@ -662,6 +662,7 @@ export class AppRoot extends LitElement {
   private manageModeCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.collectionBrowser.isManageView = target.checked;
+    this.collectionBrowser.manageViewLabel = 'Select items to remove...';
   }
 
   /**

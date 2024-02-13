@@ -171,6 +171,8 @@ export class CollectionBrowser
    */
   @property({ type: Boolean }) isManageView = false;
 
+  @property({ type: String }) manageViewLabel = 'Select items to remove';
+
   /** Whether to replace the default sort options with a slot for customization (default: false) */
   @property({ type: Boolean }) enableSortOptionsSlot = false;
 
@@ -642,6 +644,7 @@ export class CollectionBrowser
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
+        label=${this.manageViewLabel}
         showSelectAll
         showUnselectAll
         @removeItems=${this.handleRemoveItems}

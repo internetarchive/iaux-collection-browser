@@ -14,7 +14,7 @@ export class ManageBar extends LitElement {
   /**
    * The label displayed in front of the management buttons
    */
-  @property({ type: String }) label = msg('Select items to un-favorite');
+  @property({ type: String }) label = msg('Select items to remove');
 
   /**
    * Whether to show the "Select All" button (default false)
