@@ -14,7 +14,7 @@ export class ManageBar extends LitElement {
   /**
    * The label displayed in front of the management buttons
    */
-  @property({ type: String }) label = msg('Select items to un-favorite');
+  @property({ type: String }) label = msg('Select items to remove');
 
   /**
    * Whether to show the "Select All" button (default false)
@@ -84,7 +84,7 @@ export class ManageBar extends LitElement {
         display: flex;
         align-items: center;
         column-gap: 5px;
-        padding: 10px 0 20px;
+        padding: 20px 0 20px;
         flex-wrap: wrap;
       }
 
