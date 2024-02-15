@@ -1813,6 +1813,7 @@ export class CollectionBrowser
         #right-column {
           flex: 1;
           position: relative;
+          min-height: 90vh;
           border-left: 1px solid rgb(232, 232, 232);
           border-right: 1px solid rgb(232, 232, 232);
           padding-left: 1rem;
@@ -1929,7 +1930,9 @@ export class CollectionBrowser
 
         .mobile #left-column {
           width: 100%;
+          min-width: 0;
           padding: 0;
+          border: 0;
         }
 
         .clear-filters-btn-row {
