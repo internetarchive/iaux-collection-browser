@@ -754,7 +754,6 @@ export class AppRoot extends LitElement {
       div.textContent = 'Btn';
       div.style.setProperty('height', '3rem');
       div.style.setProperty('width', '3rem');
-      div.style.backgroundColor = '#000';
       div.setAttribute('slot', 'sort-options-left');
 
       this.collectionBrowser.appendChild(div);
@@ -778,7 +777,6 @@ export class AppRoot extends LitElement {
       div.textContent = 'Search bar';
       div.style.setProperty('height', '3rem');
       div.style.setProperty('width', '15rem');
-      div.style.backgroundColor = '#000';
       div.setAttribute('slot', 'sort-options-right');
 
       this.collectionBrowser.appendChild(div);
@@ -847,7 +845,6 @@ export class AppRoot extends LitElement {
       p.style.setProperty('border', '1px solid #000');
       p.textContent = 'New stuff as a child.';
       p.style.setProperty('height', '20px');
-      p.style.backgroundColor = '#000';
       p.setAttribute('slot', 'sort-options');
 
       this.collectionBrowser.appendChild(p);
