@@ -115,10 +115,10 @@
   dependencies:
     lit "^2.2.2"
 
-"@internetarchive/ia-dropdown@^1.3.6":
-  version "1.3.6"
-  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.3.6.tgz#c88049ff6b3271c191337e5c9c6ecd018cbfe4fd"
-  integrity sha512-FvNubg+sHUA8SF/XCcdmeLuHA5oxecPR1x/3lblpUYnAE6KCho84KUVy4WboDqP6RfDdpFkPrIXWkzmgOCEfjQ==
+"@internetarchive/ia-dropdown@^1.3.7-alpha.7":
+  version "1.3.7-alpha.7"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.3.7-alpha.7.tgz#7a1872f445256ae5d0414e201735550d76a1b75a"
+  integrity sha512-1X4l/DQatWvOElL1NNZFsaVmHZsRgvq8mwXZDiNdEB8rdFl3ULQ3be9qUY0medSqnShayM02XMpm38J412PmsA==
   dependencies:
     lit "^2.8.0"
 
