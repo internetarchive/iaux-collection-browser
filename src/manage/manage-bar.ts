@@ -26,6 +26,11 @@ export class ManageBar extends LitElement {
    */
   @property({ type: Boolean }) showUnselectAll = false;
 
+  /**
+   * Whether to active delete button for selectable items
+   */
+  @property({ type: Boolean }) enableRemoveButton = false;
+
   render(): TemplateResult {
     return html`
       <div class="manage-container">
@@ -34,7 +39,10 @@ export class ManageBar extends LitElement {
           <button class="cancel-btn" @click=${this.cancelClicked}>
             ${msg('Cancel')}
           </button>
-          <button class="remove-btn" @click=${this.removeClicked}>
+          <button
+            class="remove-btn ${!this.enableRemoveButton ? 'disable' : ''}"
+            @click=${this.removeClicked}
+          >
             ${msg('Remove selected items')}
           </button>
           <div class="selection-buttons">
@@ -145,6 +153,15 @@ export class ManageBar extends LitElement {
       .remove-btn:hover {
         background: #d2322d;
         border: 1px solid #ac2925;
+      }
+
+      .remove-btn.disable {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+        background: #767676;
+        border: 1px solid #999;
+        user-select: none;
       }
     `;
   }

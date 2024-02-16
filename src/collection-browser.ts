@@ -221,6 +221,8 @@ export class CollectionBrowser
 
   @state() private placeholderType: PlaceholderType = null;
 
+  @state() private manageViewRemoveButtonEnable = false;
+
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
@@ -644,18 +646,30 @@ export class CollectionBrowser
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
-        label=${this.manageViewLabel}
-        showSelectAll
-        showUnselectAll
+        .label=${this.manageViewLabel}
+        ?showSelectAll=${true}
+        ?showUnselectAll=${true}
+        ?enableRemoveButton=${this.manageViewRemoveButtonEnable}
         @removeItems=${this.handleRemoveItems}
-        @selectAll=${() => this.dataSource.checkAllTiles()}
-        @unselectAll=${() => this.dataSource.uncheckAllTiles()}
+        @selectAll=${() => {
+          this.dataSource.checkAllTiles();
+          this.toggleManageViewRemoveButtonState();
+        }}
+        @unselectAll=${() => {
+          this.dataSource.uncheckAllTiles();
+          this.toggleManageViewRemoveButtonState();
+        }}
         @cancel=${() => {
           this.isManageView = false;
           this.dataSource.uncheckAllTiles();
         }}
       ></manage-bar>
     `;
+  }
+
+  private toggleManageViewRemoveButtonState() {
+    this.manageViewRemoveButtonEnable =
+      !!this.dataSource.checkedTileModels.length;
   }
 
   /**
@@ -1680,6 +1694,8 @@ export class CollectionBrowser
       // this.mapDataSource(model => ({ ...model }));
       const cellIndex = this.dataSource.indexOf(event.detail);
       if (cellIndex >= 0) this.infiniteScroller?.refreshCell(cellIndex);
+
+      this.toggleManageViewRemoveButtonState();
     }
 
     this.analyticsHandler?.sendEvent({

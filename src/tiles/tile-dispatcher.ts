@@ -167,9 +167,7 @@ export class TileDispatcher
           type="checkbox"
           title=${this.manageCheckTitle}
           .checked=${this.model?.checked}
-          @change=${() => {
-            if (this.model) this.model.checked = !this.model.checked;
-          }}
+          @change=${this.handleLinkClicked}
         />
       </div>
     `;
