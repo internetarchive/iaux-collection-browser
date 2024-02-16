@@ -45,6 +45,13 @@ describe('Manage bar', () => {
     expect(el.shadowRoot?.querySelector('.unselect-all-btn')).to.exist;
   });
 
+  it('have delete button disabled', async () => {
+    const el = await fixture<ManageBar>(
+      html`<manage-bar ?enableRemoveButton=${false}></manage-bar>`
+    );
+    expect(el.shadowRoot?.querySelector('.remove-btn.disable')).to.exist;
+  });
+
   it('emits event when Cancel button clicked', async () => {
     const spy = Sinon.spy();
     const el = await fixture<ManageBar>(

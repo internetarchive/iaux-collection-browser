@@ -1816,6 +1816,44 @@ describe('Collection Browser', () => {
     expect(el.isManageView).to.be.false;
   });
 
+  it('enable/disable manage view delete button when you selectAll/unselectAll', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    const manageBar = el.shadowRoot?.querySelector('manage-bar');
+    expect(manageBar).to.exist;
+
+    // disable button exists
+    expect(manageBar?.shadowRoot?.querySelector('.remove-btn.disable')).to.be
+      .exist;
+
+    // Emit remove event from manage bar
+    manageBar!.dispatchEvent(new CustomEvent('selectAll'));
+    await el.updateComplete;
+
+    // disable button does not exists
+    expect(manageBar?.shadowRoot?.querySelector('.remove-btn.disable')).to.be
+      .not.exist;
+
+    // Emit remove event from manage bar
+    manageBar!.dispatchEvent(new CustomEvent('unselectAll'));
+    await el.updateComplete;
+
+    // disable button exists again
+    expect(manageBar?.shadowRoot?.querySelector('.remove-btn.disable')).to.be
+      .exist;
+  });
+
   it('applies loans tab properties to sort bar', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
