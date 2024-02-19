@@ -1834,7 +1834,7 @@ describe('Collection Browser', () => {
     expect(manageBar).to.exist;
 
     // disable button exists
-    expect(manageBar?.shadowRoot?.querySelector('.remove-btn.disable')).to.be
+    expect(manageBar?.shadowRoot?.querySelector('.danger:disabled')).to.be
       .exist;
 
     // Emit remove event from manage bar
@@ -1842,15 +1842,15 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     // disable button does not exists
-    expect(manageBar?.shadowRoot?.querySelector('.remove-btn.disable')).to.be
-      .not.exist;
+    expect(manageBar?.shadowRoot?.querySelector('.danger:disabled')).to.be.not
+      .exist;
 
     // Emit remove event from manage bar
     manageBar!.dispatchEvent(new CustomEvent('unselectAll'));
     await el.updateComplete;
 
     // disable button exists again
-    expect(manageBar?.shadowRoot?.querySelector('.remove-btn.disable')).to.be
+    expect(manageBar?.shadowRoot?.querySelector('.danger:disabled')).to.be
       .exist;
   });
 

@@ -46,10 +46,8 @@ describe('Manage bar', () => {
   });
 
   it('have delete button disabled', async () => {
-    const el = await fixture<ManageBar>(
-      html`<manage-bar ?enableRemoveButton=${false}></manage-bar>`
-    );
-    expect(el.shadowRoot?.querySelector('.remove-btn.disable')).to.exist;
+    const el = await fixture<ManageBar>(html`<manage-bar></manage-bar>`);
+    expect(el.shadowRoot?.querySelector('.remove-btn:disabled')).to.exist;
   });
 
   it('emits event when Cancel button clicked', async () => {

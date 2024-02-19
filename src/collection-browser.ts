@@ -646,30 +646,19 @@ export class CollectionBrowser
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
-        .label=${this.manageViewLabel}
-        ?showSelectAll=${true}
-        ?showUnselectAll=${true}
-        ?enableRemoveButton=${this.manageViewRemoveButtonEnable}
+        label=${this.manageViewLabel}
+        showSelectAll
+        showUnselectAll
+        ?enableRemoveButton=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
-        @selectAll=${() => {
-          this.dataSource.checkAllTiles();
-          this.toggleManageViewRemoveButtonState();
-        }}
-        @unselectAll=${() => {
-          this.dataSource.uncheckAllTiles();
-          this.toggleManageViewRemoveButtonState();
-        }}
+        @selectAll=${() => this.dataSource.checkAllTiles()}
+        @unselectAll=${() => this.dataSource.uncheckAllTiles()}
         @cancel=${() => {
           this.isManageView = false;
           this.dataSource.uncheckAllTiles();
         }}
       ></manage-bar>
     `;
-  }
-
-  private toggleManageViewRemoveButtonState() {
-    this.manageViewRemoveButtonEnable =
-      !!this.dataSource.checkedTileModels.length;
   }
 
   /**
@@ -1695,7 +1684,7 @@ export class CollectionBrowser
       const cellIndex = this.dataSource.indexOf(event.detail);
       if (cellIndex >= 0) this.infiniteScroller?.refreshCell(cellIndex);
 
-      this.toggleManageViewRemoveButtonState();
+      this.requestUpdate();
     }
 
     this.analyticsHandler?.sendEvent({
