@@ -221,8 +221,6 @@ export class CollectionBrowser
 
   @state() private placeholderType: PlaceholderType = null;
 
-  @state() private manageViewRemoveButtonEnable = false;
-
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
