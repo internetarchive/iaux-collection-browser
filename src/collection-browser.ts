@@ -890,9 +890,16 @@ export class CollectionBrowser
    * including the collapsible container (with header) and the facets themselves.
    */
   private get mobileFacetsTemplate(): TemplateResult {
-    const toggleFacetsVisible = () => {
+    const toggleFacetsVisible = (e: Event) => {
       this.isResizeToMobile = false;
       this.mobileFacetsVisible = !this.mobileFacetsVisible;
+
+      const target = e.target as HTMLDetailsElement;
+      this.analyticsHandler?.sendEvent({
+        category: this.searchContext,
+        action: analyticsActions.mobileFacetsToggled,
+        label: target.open ? 'open' : 'closed',
+      });
     };
 
     return html`
@@ -903,7 +910,7 @@ export class CollectionBrowser
       >
         <summary>
           <span class="collapser-icon">${chevronIcon}</span>
-          <h2>Filters</h2>
+          <h2>${msg('Filters')}</h2>
           ${this.clearFiltersBtnTemplate(true)}
         </summary>
         ${this.facetsTemplate}
