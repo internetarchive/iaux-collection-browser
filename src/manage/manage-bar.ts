@@ -2,6 +2,7 @@ import { msg } from '@lit/localize';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
+import iaButtonStyle from '../styles/ia-button';
 
 export interface ManageableItem {
   identifier: string;
@@ -26,15 +27,24 @@ export class ManageBar extends LitElement {
    */
   @property({ type: Boolean }) showUnselectAll = false;
 
+  /**
+   * Whether to active delete button for selectable items
+   */
+  @property({ type: Boolean }) removeAllowed = false;
+
   render(): TemplateResult {
     return html`
       <div class="manage-container">
         <span class="manage-label">${this.label}</span>
         <div class="manage-buttons">
-          <button class="cancel-btn" @click=${this.cancelClicked}>
+          <button class="ia-button dark" @click=${this.cancelClicked}>
             ${msg('Cancel')}
           </button>
-          <button class="remove-btn" @click=${this.removeClicked}>
+          <button
+            class="ia-button danger"
+            ?disabled=${!this.removeAllowed}
+            @click=${this.removeClicked}
+          >
             ${msg('Remove selected items')}
           </button>
           <div class="selection-buttons">
@@ -80,6 +90,7 @@ export class ManageBar extends LitElement {
 
   static get styles(): CSSResultGroup {
     return css`
+      ${iaButtonStyle}
       .manage-container {
         display: flex;
         align-items: center;
@@ -101,11 +112,14 @@ export class ManageBar extends LitElement {
         column-gap: 5px;
       }
 
+      .ia-button,
       button {
-        display: inline-block;
+        padding: 6px 12px;
         font-size: 1.4rem;
-        cursor: pointer;
-        white-space: nowrap;
+      }
+
+      .ia-button.danger:disabled {
+        opacity: 0.5;
       }
 
       button.link-styled {
@@ -116,35 +130,10 @@ export class ManageBar extends LitElement {
         background: none;
         color: var(--ia-theme-link-color, #4b64ff);
         text-decoration: none;
+        cursor: pointer;
       }
       button.link-styled:hover {
         text-decoration: underline;
-      }
-
-      button:not(.link-styled) {
-        margin: 0;
-        padding: 6px 12px;
-        border-radius: 4px;
-        color: white;
-      }
-
-      /* Button styles derived from legacy version */
-      .cancel-btn {
-        background: #777777;
-        border: 1px solid #666666;
-      }
-      .cancel-btn:hover {
-        background: #6b6b6b;
-        border: 1px solid #505050;
-      }
-
-      .remove-btn {
-        background: #d9534f;
-        border: 1px solid #d43f3a;
-      }
-      .remove-btn:hover {
-        background: #d2322d;
-        border: 1px solid #ac2925;
       }
     `;
   }

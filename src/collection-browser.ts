@@ -644,9 +644,10 @@ export class CollectionBrowser
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
-        label=${this.manageViewLabel}
+        .label=${this.manageViewLabel}
         showSelectAll
         showUnselectAll
+        ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
         @selectAll=${() => this.dataSource.checkAllTiles()}
         @unselectAll=${() => this.dataSource.uncheckAllTiles()}
@@ -1680,6 +1681,8 @@ export class CollectionBrowser
       // this.mapDataSource(model => ({ ...model }));
       const cellIndex = this.dataSource.indexOf(event.detail);
       if (cellIndex >= 0) this.infiniteScroller?.refreshCell(cellIndex);
+
+      this.requestUpdate();
     }
 
     this.analyticsHandler?.sendEvent({

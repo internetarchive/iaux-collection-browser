@@ -12,8 +12,8 @@ describe('Manage bar', () => {
 
     expect(el.shadowRoot?.querySelector('.manage-label')).to.exist;
     expect(el.shadowRoot?.querySelector('.manage-buttons')).to.exist;
-    expect(el.shadowRoot?.querySelector('.cancel-btn')).to.exist;
-    expect(el.shadowRoot?.querySelector('.remove-btn')).to.exist;
+    expect(el.shadowRoot?.querySelector('.ia-button.dark')).to.exist;
+    expect(el.shadowRoot?.querySelector('.ia-button.danger')).to.exist;
   });
 
   it('can set the label', async () => {
@@ -45,6 +45,18 @@ describe('Manage bar', () => {
     expect(el.shadowRoot?.querySelector('.unselect-all-btn')).to.exist;
   });
 
+  it('default and toggle state of remove button', async () => {
+    const el = await fixture<ManageBar>(html`<manage-bar></manage-bar>`);
+
+    expect(el.shadowRoot?.querySelector('.ia-button.danger:disabled')).to.exist;
+
+    el.removeAllowed = true;
+    await el.updateComplete;
+
+    expect(el.shadowRoot?.querySelector('.ia-button.danger:disabled')).to.not
+      .exist;
+  });
+
   it('emits event when Cancel button clicked', async () => {
     const spy = Sinon.spy();
     const el = await fixture<ManageBar>(
@@ -52,7 +64,7 @@ describe('Manage bar', () => {
     );
 
     const cancelBtn = el.shadowRoot?.querySelector(
-      '.cancel-btn'
+      '.ia-button.dark'
     ) as HTMLButtonElement;
     expect(cancelBtn).to.exist;
 
@@ -63,11 +75,11 @@ describe('Manage bar', () => {
   it('emits event when Remove Items button clicked', async () => {
     const spy = Sinon.spy();
     const el = await fixture<ManageBar>(
-      html`<manage-bar @removeItems=${spy}></manage-bar>`
+      html`<manage-bar @removeItems=${spy} removeAllowed></manage-bar>`
     );
 
     const removeItemsBtn = el.shadowRoot?.querySelector(
-      '.remove-btn'
+      '.ia-button.danger'
     ) as HTMLButtonElement;
     expect(removeItemsBtn).to.exist;
 
