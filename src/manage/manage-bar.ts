@@ -30,7 +30,7 @@ export class ManageBar extends LitElement {
   /**
    * Whether to active delete button for selectable items
    */
-  @property({ type: Boolean }) enableRemoveButton = false;
+  @property({ type: Boolean }) removeAllowed = false;
 
   render(): TemplateResult {
     return html`
@@ -42,7 +42,7 @@ export class ManageBar extends LitElement {
           </button>
           <button
             class="ia-button danger"
-            ?disabled=${!this.enableRemoveButton}
+            ?disabled=${!this.removeAllowed}
             @click=${this.removeClicked}
           >
             ${msg('Remove selected items')}

@@ -644,10 +644,10 @@ export class CollectionBrowser
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
-        label=${this.manageViewLabel}
+        .label=${this.manageViewLabel}
         showSelectAll
         showUnselectAll
-        ?enableRemoveButton=${this.dataSource.checkedTileModels.length !== 0}
+        ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
         @selectAll=${() => this.dataSource.checkAllTiles()}
         @unselectAll=${() => this.dataSource.uncheckAllTiles()}
