@@ -376,10 +376,20 @@ export class AppRoot extends LitElement {
               <input
                 type="checkbox"
                 id="enable-sortbar-left-slot"
-                @click=${this.sortBarSlotCheckboxChanged}
+                @click=${this.sortBarLeftSlotCheckboxChanged}
               />
               <label for="enable-sortbar-left-slot"
                 >Show sortbar left slot</label
+              >
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-sortbar-right-slot"
+                @click=${this.sortBarRightSlotCheckboxChanged}
+              />
+              <label for="enable-sortbar-right-slot"
+                >Show sortbar right slot</label
               >
             </div>
             <div class="checkbox-control">
@@ -735,25 +745,48 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when the dev panel's "Show facet top slot" checkbox is changed.
+   * Handler for when the dev panel's "Show sort bar top left slot" checkbox is changed.
    */
-  private sortBarSlotCheckboxChanged(e: Event) {
+  private sortBarLeftSlotCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
-    const div = document.createElement('div');
-    div.style.setProperty('border', '1px solid #000');
-    div.textContent = 'Btn';
-    div.style.setProperty('height', '3rem');
-    div.style.setProperty('width', '3rem');
-    div.style.backgroundColor = '#00000';
-    div.setAttribute('slot', 'sort-options-left');
-
     if (target.checked) {
+      const div = document.createElement('div');
+      div.style.setProperty('border', '1px solid #000');
+      div.textContent = 'Btn';
+      div.style.setProperty('height', '3rem');
+      div.style.setProperty('width', '3rem');
+      div.setAttribute('slot', 'sort-options-left');
+
       this.collectionBrowser.appendChild(div);
     } else {
-      this.collectionBrowser.removeChild(
-        this.collectionBrowser.lastElementChild as Element
+      const slottedEl = this.collectionBrowser.querySelector(
+        '[slot="sort-options-left"]'
       );
+      if (slottedEl) this.collectionBrowser.removeChild(slottedEl);
+    }
+  }
+
+  /**
+   * Handler for when the dev panel's "Show sort bar top right slot" checkbox is changed.
+   */
+  private sortBarRightSlotCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+
+    if (target.checked) {
+      const div = document.createElement('div');
+      div.style.setProperty('border', '1px solid #000');
+      div.textContent = 'Search bar';
+      div.style.setProperty('height', '3rem');
+      div.style.setProperty('width', '15rem');
+      div.setAttribute('slot', 'sort-options-right');
+
+      this.collectionBrowser.appendChild(div);
+    } else {
+      const slottedEl = this.collectionBrowser.querySelector(
+        '[slot="sort-options-right"]'
+      );
+      if (slottedEl) this.collectionBrowser.removeChild(slottedEl);
     }
   }
 
@@ -809,21 +842,21 @@ export class AppRoot extends LitElement {
   private replaceSortOptionsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
 
-    const p = document.createElement('p');
-    p.style.setProperty('border', '1px solid #000');
-    p.textContent = 'New stuff as a child.';
-    p.style.setProperty('height', '20px');
-    p.style.backgroundColor = '#00000';
-    p.setAttribute('slot', 'sort-options');
-
     if (target.checked) {
-      this.collectionBrowser.enableSortOptionsSlot = true;
+      const p = document.createElement('p');
+      p.style.setProperty('border', '1px solid #000');
+      p.textContent = 'New stuff as a child.';
+      p.style.setProperty('height', '20px');
+      p.setAttribute('slot', 'sort-options');
+
       this.collectionBrowser.appendChild(p);
+      this.collectionBrowser.enableSortOptionsSlot = true;
     } else {
-      this.collectionBrowser.enableSortOptionsSlot = false;
-      this.collectionBrowser.removeChild(
-        this.collectionBrowser.lastElementChild as Element
+      const slottedEl = this.collectionBrowser.querySelector(
+        '[slot="sort-options"]'
       );
+      if (slottedEl) this.collectionBrowser.removeChild(slottedEl);
+      this.collectionBrowser.enableSortOptionsSlot = false;
     }
   }
 

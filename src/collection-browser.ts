@@ -90,16 +90,34 @@ export class CollectionBrowser
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
+  /**
+   * Which backend should be targeted by searches (e.g., metadata or FTS)
+   */
   @property({ type: String }) searchType: SearchType = SearchType.METADATA;
 
+  /**
+   * The identifier of the collection that searches should be performed within
+   */
   @property({ type: String }) withinCollection?: string;
 
+  /**
+   * The identifier (e.g., @person) of the user whose profile is being searched within
+   */
   @property({ type: String }) withinProfile?: string;
 
+  /**
+   * Which section of the profile page searches are for (e.g., uploads, reviews, ...)
+   */
   @property({ type: String }) profileElement?: PageElementName;
 
+  /**
+   * The base query to use for all searches, updated to match the current user query.
+   */
   @property({ type: String }) baseQuery?: string;
 
+  /**
+   * Which mode to display result tiles in (grid, extended list, or compact list)
+   */
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
   @property({ type: Object }) defaultSortParam: SortParam | null = null;
@@ -122,19 +140,53 @@ export class CollectionBrowser
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
+  /**
+   * Whether to show the date picker (above the facets)
+   */
   @property({ type: Boolean }) showHistogramDatePicker = false;
 
+  /**
+   * Whether placeholder views should be suppressed. If true, searches that produce an
+   * error or empty result set will simply show a blank results view instead of a placeholder.
+   */
   @property({ type: Boolean }) suppressPlaceholders = false;
 
+  /**
+   * Whether the result count text should be suppressed.
+   * If true, no "X Results" message will be shown.
+   */
   @property({ type: Boolean }) suppressResultCount = false;
 
+  /**
+   * Whether the scrolling result view should be suppressed entirely.
+   * If true, no infinite scroller (and thus no result tiles) will be rendered.
+   */
   @property({ type: Boolean }) suppressResultTiles = false;
 
+  /**
+   * Whether to suppress persistence of the query to the URL.
+   * If true, the `query` param will not be added to the URL or updated on query changes.
+   */
   @property({ type: Boolean }) suppressURLQuery = false;
 
+  /**
+   * Whether to suppress the display of facets.
+   * If true, the facet sidebar content will be replaced by a message that facets are
+   * temporarily unavailable.
+   */
   @property({ type: Boolean }) suppressFacets = false;
 
+  /**
+   * Whether to suppress display of the sort bar.
+   * If true, the entire sort bar (incl. display modes) will be omitted from rendering.
+   */
   @property({ type: Boolean }) suppressSortBar = false;
+
+  /**
+   * Whether to suppress showing the display mode options in the sort bar.
+   * If true, those options will be omitted (though the rest of the sort bar may still render).
+   */
+  @property({ type: Boolean }) suppressDisplayModes = false;
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -630,6 +682,7 @@ export class CollectionBrowser
         .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
         .resizeObserver=${this.resizeObserver}
         .enableSortOptionsSlot=${this.enableSortOptionsSlot}
+        .suppressDisplayModes=${this.suppressDisplayModes}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
         @titleLetterChanged=${this.titleLetterSelected}
@@ -637,6 +690,7 @@ export class CollectionBrowser
       >
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
+        <slot name="sort-options-right" slot="sort-options-right"></slot>
       </sort-filter-bar>
     `;
   }
@@ -1188,6 +1242,7 @@ export class CollectionBrowser
   connectedCallback(): void {
     super.connectedCallback?.();
     this.setupStateRestorationObserver();
+    this.setupResizeObserver();
   }
 
   disconnectedCallback(): void {
@@ -1341,7 +1396,7 @@ export class CollectionBrowser
   }
 
   private setupResizeObserver() {
-    if (!this.resizeObserver) return;
+    if (!this.resizeObserver || !this.contentContainer) return;
     this.resizeObserver.addObserver({
       target: this.contentContainer,
       handler: this,
@@ -1814,6 +1869,7 @@ export class CollectionBrowser
         #right-column {
           flex: 1;
           position: relative;
+          min-height: 90vh;
           border-left: 1px solid rgb(232, 232, 232);
           border-right: 1px solid rgb(232, 232, 232);
           padding-left: 1rem;
@@ -1930,7 +1986,9 @@ export class CollectionBrowser
 
         .mobile #left-column {
           width: 100%;
+          min-width: 0;
           padding: 0;
+          border: 0;
         }
 
         .clear-filters-btn-row {

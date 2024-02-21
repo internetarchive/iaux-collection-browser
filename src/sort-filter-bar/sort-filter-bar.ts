@@ -73,6 +73,10 @@ export class SortFilterBar
   @property({ type: Boolean, reflect: true }) enableSortOptionsSlot: boolean =
     false;
 
+  /** Whether to suppress showing the three display mode options on the right of the bar (default `false`) */
+  @property({ type: Boolean, reflect: true })
+  suppressDisplayModes: boolean = false;
+
   /** Maps of result counts for letters on the alphabet bar, for each letter filter type */
   @property({ type: Object }) prefixFilterCountMap?: Record<
     PrefixFilterType,
@@ -160,8 +164,13 @@ export class SortFilterBar
                 `
               : html`<slot name="sort-options"></slot>`}
           </div>
+          <slot name="sort-options-right"></slot>
 
-          <div id="display-style-selector">${this.displayOptionTemplate}</div>
+          ${this.suppressDisplayModes
+            ? nothing
+            : html`<div id="display-style-selector">
+                ${this.displayOptionTemplate}
+              </div>`}
         </section>
 
         ${this.dropdownBackdropVisible ? this.dropdownBackdrop : nothing}
