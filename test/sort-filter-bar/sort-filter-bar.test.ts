@@ -407,6 +407,17 @@ describe('Display mode/style buttons', () => {
     expect(compactListButton).to.exist;
   });
 
+  it('should not render display mode buttons when suppressed', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar suppressDisplayModes></sort-filter-bar>
+    `);
+
+    const displayModeButtonList = el.shadowRoot?.querySelector(
+      '#display-style-selector'
+    );
+    expect(displayModeButtonList).not.to.exist;
+  });
+
   it('should active current display mode', async () => {
     const el = await fixture<SortFilterBar>(html`
       <sort-filter-bar> </sort-filter-bar>
