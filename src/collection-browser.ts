@@ -903,11 +903,7 @@ export class CollectionBrowser
     };
 
     return html`
-      <details
-        id="mobile-filter-collapse"
-        @click=${toggleFacetsVisible}
-        @keyup=${toggleFacetsVisible}
-      >
+      <details id="mobile-filter-collapse" @toggle=${toggleFacetsVisible}>
         <summary>
           <span class="collapser-icon">${chevronIcon}</span>
           <h2>${msg('Filters')}</h2>
