@@ -3215,7 +3215,7 @@ fill=""></path>
   .ia-button.dark:active {
     background-color: rgba(${Bo}, 0.7);
   }
-`;let Ft=class extends O{constructor(){super(...arguments),this.label=A("Select items to remove"),this.showSelectAll=!1,this.showUnselectAll=!1,this.enableRemoveButton=!1}render(){return c`
+`;let Ft=class extends O{constructor(){super(...arguments),this.label=A("Select items to remove"),this.showSelectAll=!1,this.showUnselectAll=!1,this.removeAllowed=!1}render(){return c`
       <div class="manage-container">
         <span class="manage-label">${this.label}</span>
         <div class="manage-buttons">
@@ -3224,7 +3224,7 @@ fill=""></path>
           </button>
           <button
             class="ia-button danger"
-            ?disabled=${!this.enableRemoveButton}
+            ?disabled=${!this.removeAllowed}
             @click=${this.removeClicked}
           >
             ${A("Remove selected items")}
@@ -3291,7 +3291,7 @@ fill=""></path>
       button.link-styled:hover {
         text-decoration: underline;
       }
-    `}};l([h({type:String})],Ft.prototype,"label",void 0);l([h({type:Boolean})],Ft.prototype,"showSelectAll",void 0);l([h({type:Boolean})],Ft.prototype,"showUnselectAll",void 0);l([h({type:Boolean})],Ft.prototype,"enableRemoveButton",void 0);Ft=l([L("manage-bar")],Ft);/**
+    `}};l([h({type:String})],Ft.prototype,"label",void 0);l([h({type:Boolean})],Ft.prototype,"showSelectAll",void 0);l([h({type:Boolean})],Ft.prototype,"showUnselectAll",void 0);l([h({type:Boolean})],Ft.prototype,"removeAllowed",void 0);Ft=l([L("manage-bar")],Ft);/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -5161,10 +5161,10 @@ fill=""></path>
       </sort-filter-bar>
     `}get manageBarTemplate(){return c`
       <manage-bar
-        label=${this.manageViewLabel}
+        .label=${this.manageViewLabel}
         showSelectAll
         showUnselectAll
-        ?enableRemoveButton=${this.dataSource.checkedTileModels.length!==0}
+        ?removeAllowed=${this.dataSource.checkedTileModels.length!==0}
         @removeItems=${this.handleRemoveItems}
         @selectAll=${()=>this.dataSource.checkAllTiles()}
         @unselectAll=${()=>this.dataSource.uncheckAllTiles()}
