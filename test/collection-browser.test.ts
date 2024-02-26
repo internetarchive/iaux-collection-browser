@@ -15,7 +15,10 @@ import {
 } from '../src/models';
 import { MockSearchService } from './mocks/mock-search-service';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
-import { analyticsCategories } from '../src/utils/analytics-events';
+import {
+  analyticsActions,
+  analyticsCategories,
+} from '../src/utils/analytics-events';
 import type { TileDispatcher } from '../src/tiles/tile-dispatcher';
 import type { CollectionFacets } from '../src/collection-facets';
 import type { EmptyPlaceholder } from '../src/empty-placeholder';
@@ -1225,6 +1228,69 @@ describe('Collection Browser', () => {
       '#mobile-filter-collapse'
     );
     expect(mobileFacets).to.exist;
+  });
+
+  it('fires analytics when mobile facets toggled', async () => {
+    const searchService = new MockSearchService();
+    const analyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .analyticsHandler=${analyticsHandler}
+        .searchContext=${'foobar-context'}
+        .mobileBreakpoint=${9999}
+      ></collection-browser>`
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+
+    const contentContainer = el.shadowRoot?.querySelector(
+      '#content-container'
+    ) as HTMLElement;
+
+    el.handleResize({
+      target: contentContainer,
+      contentRect: contentContainer.getBoundingClientRect(),
+      borderBoxSize: [],
+      contentBoxSize: [],
+      devicePixelContentBoxSize: [],
+    });
+    await el.updateComplete;
+
+    const mobileFacets = el.shadowRoot?.querySelector(
+      '#mobile-filter-collapse'
+    ) as HTMLDetailsElement;
+    expect(mobileFacets).to.exist;
+
+    // We set up a Promise to wait for the 'toggle' event on the collapser,
+    // which is what triggers the analytics.
+    let facetsToggled = new Promise(resolve => {
+      mobileFacets.addEventListener('toggle', resolve);
+    });
+
+    // Open the mobile facets accordion & check analytics
+    const mobileFacetsHeader = mobileFacets.querySelector('summary');
+    expect(mobileFacetsHeader).to.exist;
+    mobileFacetsHeader!.click();
+    await facetsToggled;
+    expect(analyticsHandler.callCategory).to.equal('foobar-context');
+    expect(analyticsHandler.callAction).to.equal(
+      analyticsActions.mobileFacetsToggled
+    );
+    expect(analyticsHandler.callLabel).to.equal('open');
+
+    // Close the mobile facets accordion & check analytics
+    facetsToggled = new Promise(resolve => {
+      mobileFacets.addEventListener('toggle', resolve);
+    });
+    mobileFacetsHeader!.click();
+    await facetsToggled;
+    expect(analyticsHandler.callCategory).to.equal('foobar-context');
+    expect(analyticsHandler.callAction).to.equal(
+      analyticsActions.mobileFacetsToggled
+    );
+    expect(analyticsHandler.callLabel).to.equal('closed');
   });
 
   it('sets parent collections to prop when searching a collection', async () => {
