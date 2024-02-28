@@ -31,6 +31,7 @@ export const getMockSuccessSingleResult: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -72,6 +73,7 @@ export const getMockSuccessManyFields: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -134,6 +136,7 @@ export const getMockSuccessWithYearHistogramAggs: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -185,6 +188,7 @@ export const getMockSuccessLoggedInResult: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -228,6 +232,7 @@ export const getMockSuccessNoPreviewResult: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -269,6 +274,7 @@ export const getMockSuccessLoggedInAndNoPreviewResult: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -310,6 +316,7 @@ export const getMockSuccessFirstTitleResult: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -355,6 +362,7 @@ export const getMockSuccessFirstCreatorResult: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -400,6 +408,7 @@ export const getMockSuccessWithCollectionTitles: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 2,
       returnedCount: 2,
@@ -453,6 +462,7 @@ export const getMockSuccessWithCollectionAggregations: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 0,
       returnedCount: 0,
@@ -504,6 +514,7 @@ export const getMockSuccessSingleResultWithSort: (
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -548,6 +559,7 @@ export const getMockSuccessMultipleResults: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 2,
       returnedCount: 2,
@@ -597,6 +609,7 @@ export const getMockSuccessNoResults: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 0,
       returnedCount: 0,
@@ -631,6 +644,7 @@ export const getMockSuccessMultiLineDescription: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -673,6 +687,7 @@ export const getMockSuccessExtraQuotedHref: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -715,6 +730,7 @@ export const getMockSuccessWithDefaultSort: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -761,6 +777,7 @@ export const getMockSuccessWithConciseDefaultSort: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -807,6 +824,7 @@ export const getMockSuccessWithDefaultFavSort: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -853,6 +871,7 @@ export const getMockSuccessWithParentCollections: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
@@ -899,6 +918,7 @@ export const getMockSuccessWithWebArchiveHits: () => Result<
       },
     },
     rawResponse: {},
+    sessionContext: {},
     response: {
       totalResults: 1,
       returnedCount: 1,
