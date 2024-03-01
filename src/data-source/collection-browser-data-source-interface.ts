@@ -4,6 +4,7 @@ import type {
   CollectionExtraInfo,
   AccountExtraInfo,
   PageElementMap,
+  SearchResponseSessionContext,
 } from '@internetarchive/search-service';
 import type { ReactiveController } from 'lit';
 import type {
@@ -98,6 +99,11 @@ export interface CollectionBrowserDataSourceInterface
    * used to populate the profile header.
    */
   readonly accountExtraInfo?: AccountExtraInfo;
+
+  /**
+   * Context about the user session that produced the search response, from the PPS.
+   */
+  readonly sessionContext?: SearchResponseSessionContext;
 
   /**
    * The set of requested page elements for profile pages, if applicable. These represent

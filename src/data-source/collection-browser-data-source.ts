@@ -9,6 +9,7 @@ import {
   FilterMapBuilder,
   PageElementMap,
   SearchParams,
+  SearchResponseSessionContext,
   SearchResult,
   SearchType,
 } from '@internetarchive/search-service';
@@ -115,6 +116,11 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   accountExtraInfo?: AccountExtraInfo;
+
+  /**
+   * @inheritdoc
+   */
+  sessionContext?: SearchResponseSessionContext;
 
   /**
    * @inheritdoc
@@ -1021,6 +1027,7 @@ export class CollectionBrowserDataSource
       this.host.emitEmptyResults();
     }
 
+    this.sessionContext = success.sessionContext;
     if (this.host.withinCollection) {
       this.collectionExtraInfo = success.response.collectionExtraInfo;
 
