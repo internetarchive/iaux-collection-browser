@@ -302,16 +302,35 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   getTileModelAt(index: number): TileModel | undefined {
-    const pageNum = Math.floor(index / this.pageSize) + 1;
-    const indexOnPage = index % this.pageSize;
-    return this.pages[pageNum]?.[indexOnPage];
+    const offsetIndex = index + this.offset;
+    const expectedPageNum = Math.floor(offsetIndex / this.pageSize) + 1;
+    const expectedIndexOnPage = offsetIndex % this.pageSize;
+
+    let page = 1;
+    let tilesSeen = 0;
+    while (tilesSeen <= offsetIndex) {
+      if (!this.pages[page]) {
+        // If we encounter a missing page, either we're past all the results or the page data is sparse.
+        // So just return the tile at the expected position if it exists.
+        return this.pages[expectedPageNum]?.[expectedIndexOnPage];
+      }
+
+      if (tilesSeen + this.pages[page].length > offsetIndex) {
+        return this.pages[page][offsetIndex - tilesSeen];
+      }
+
+      tilesSeen += this.pages[page].length;
+      page += 1;
+    }
+
+    return this.pages[expectedPageNum]?.[expectedIndexOnPage];
   }
 
   /**
    * @inheritdoc
    */
   indexOf(tile: TileModel): number {
-    return Object.values(this.pages).flat().indexOf(tile);
+    return Object.values(this.pages).flat().indexOf(tile) - this.offset;
   }
 
   /**
@@ -455,6 +474,7 @@ export class CollectionBrowserDataSource
     // Swap in the new pages
     this.pages = newPages;
     this.numTileModels -= numChecked;
+    this.host.setTileCount(this.size);
     this.requestHostUpdate();
     this.refreshVisibleResults();
   };
@@ -1079,10 +1099,9 @@ export class CollectionBrowserDataSource
     // When we reach the end of the data, we can set the infinite scroller's
     // item count to the real total number of results (rather than the
     // temporary estimates based on pages rendered so far).
-    const resultCountDiscrepancy = numRows - results.length;
-    if (resultCountDiscrepancy > 0) {
+    if (results.length === 0) {
       this.endOfDataReached = true;
-      if (this.activeOnHost) this.host.setTileCount(this.totalResults);
+      if (this.activeOnHost) this.host.setTileCount(this.size);
     }
 
     this.setSearchResultsLoading(false);
