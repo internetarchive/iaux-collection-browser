@@ -302,8 +302,9 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   getTileModelAt(index: number): TileModel | undefined {
-    const pageNum = Math.floor(index / this.pageSize) + 1;
-    const indexOnPage = index % this.pageSize;
+    const offsetIndex = index + this.offset;
+    const pageNum = Math.floor(offsetIndex / this.pageSize) + 1;
+    const indexOnPage = offsetIndex % this.pageSize;
     return this.pages[pageNum]?.[indexOnPage];
   }
 
@@ -311,7 +312,7 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   indexOf(tile: TileModel): number {
-    return Object.values(this.pages).flat().indexOf(tile);
+    return Object.values(this.pages).flat().indexOf(tile) - this.offset;
   }
 
   /**
@@ -455,6 +456,7 @@ export class CollectionBrowserDataSource
     // Swap in the new pages
     this.pages = newPages;
     this.numTileModels -= numChecked;
+    this.host.setTileCount(this.size);
     this.requestHostUpdate();
     this.refreshVisibleResults();
   };
