@@ -1758,7 +1758,7 @@ export class CollectionBrowser
 
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
-    if (!model) return undefined;
+    if (!model) return this.placeholderCellTemplate;
 
     return html`
       <tile-dispatcher
