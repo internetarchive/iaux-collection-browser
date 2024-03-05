@@ -3287,6 +3287,7 @@ fill=""></path>
         appearance: none;
         background: none;
         color: var(--ia-theme-link-color, #4b64ff);
+        font: inherit;
         text-decoration: none;
         cursor: pointer;
       }
