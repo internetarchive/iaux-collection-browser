@@ -933,6 +933,8 @@ export class CollectionBrowser
         .collectionPagePath=${this.collectionPagePath}
         .parentCollections=${this.dataSource.parentCollections}
         .withinCollection=${this.withinCollection}
+        .withinProfile=${this.withinProfile}
+        .profileElement=${this.profileElement}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
         .recaptchaManager=${this.recaptchaManager}

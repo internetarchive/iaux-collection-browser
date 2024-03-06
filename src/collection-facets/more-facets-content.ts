@@ -13,12 +13,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import {
   Aggregation,
   Bucket,
-  PageType,
   SearchServiceInterface,
   SearchParams,
   SearchType,
   AggregationSortType,
   FilterMap,
+  PageElementName,
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
@@ -32,7 +32,10 @@ import {
   valueFacetSort,
   defaultFacetSort,
 } from '../models';
-import type { CollectionTitles } from '../data-source/models';
+import type {
+  CollectionTitles,
+  PageSpecifierParams,
+} from '../data-source/models';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -60,6 +63,10 @@ export class MoreFacetsContent extends LitElement {
   @property({ type: String }) searchType?: SearchType;
 
   @property({ type: String }) withinCollection?: string;
+
+  @property({ type: String }) withinProfile?: string;
+
+  @property({ type: String }) profileElement?: PageElementName;
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
@@ -129,28 +136,38 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
+  get pageSpecifierParams(): PageSpecifierParams | null {
+    if (this.withinCollection) {
+      return {
+        pageType: 'collection_details',
+        pageTarget: this.withinCollection,
+      };
+    }
+    if (this.withinProfile) {
+      return {
+        pageType: 'account_details',
+        pageTarget: this.withinProfile,
+        pageElements: this.profileElement ? [this.profileElement] : [],
+      };
+    }
+    return null;
+  }
+
   /**
    * Get specific facets data from search-service API based of currently query params
    * - this.aggregations - hold result of search service and being used for further processing.
    */
   async updateSpecificFacets(): Promise<void> {
     const trimmedQuery = this.query?.trim();
-    if (!trimmedQuery && !this.withinCollection) return;
+    if (!trimmedQuery && !(this.withinCollection || this.withinProfile)) return;
 
     const aggregations = {
       simpleParams: [this.facetAggregationKey as string],
     };
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
-    const collectionParams = this.withinCollection
-      ? {
-          pageType: 'collection_details' as PageType,
-          pageTarget: this.withinCollection,
-        }
-      : null;
-
     const params: SearchParams = {
-      ...collectionParams,
+      ...this.pageSpecifierParams,
       query: trimmedQuery || '',
       filters: this.filterMap,
       aggregations,

@@ -30,6 +30,7 @@ import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-f
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
+import type { PageElementName } from '@internetarchive/search-service';
 import chevronIcon from './assets/img/icons/chevron';
 import expandIcon from './assets/img/icons/expand';
 import {
@@ -90,6 +91,10 @@ export class CollectionFacets extends LitElement {
   @property({ type: String }) query?: string;
 
   @property({ type: String }) withinCollection?: string;
+
+  @property({ type: String }) withinProfile?: string;
+
+  @property({ type: String }) profileElement?: PageElementName;
 
   @property({ type: Array }) parentCollections: string[] = [];
 
@@ -646,6 +651,8 @@ export class CollectionFacets extends LitElement {
         .query=${this.query}
         .filterMap=${this.filterMap}
         .withinCollection=${this.withinCollection}
+        .withinProfile=${this.withinProfile}
+        .profileElement=${this.profileElement}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}
