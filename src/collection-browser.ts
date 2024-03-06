@@ -932,9 +932,7 @@ export class CollectionBrowser
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
         .parentCollections=${this.dataSource.parentCollections}
-        .withinCollection=${this.withinCollection}
-        .withinProfile=${this.withinProfile}
-        .profileElement=${this.profileElement}
+        .pageSpecifierParams=${this.dataSource.pageSpecifierParams}
         .searchService=${this.searchService}
         .featureFeedbackService=${this.featureFeedbackService}
         .recaptchaManager=${this.recaptchaManager}

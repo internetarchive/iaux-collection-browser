@@ -18,7 +18,6 @@ import {
   SearchType,
   AggregationSortType,
   FilterMap,
-  PageElementName,
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
@@ -62,11 +61,7 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: String }) searchType?: SearchType;
 
-  @property({ type: String }) withinCollection?: string;
-
-  @property({ type: String }) withinProfile?: string;
-
-  @property({ type: String }) profileElement?: PageElementName;
+  @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
@@ -136,21 +131,13 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
-  get pageSpecifierParams(): PageSpecifierParams | null {
-    if (this.withinCollection) {
-      return {
-        pageType: 'collection_details',
-        pageTarget: this.withinCollection,
-      };
-    }
-    if (this.withinProfile) {
-      return {
-        pageType: 'account_details',
-        pageTarget: this.withinProfile,
-        pageElements: this.profileElement ? [this.profileElement] : [],
-      };
-    }
-    return null;
+  /**
+   * Whether facet requests are for the search_results page type (either defaulted or explicitly).
+   */
+  private get isSearchResultsPage(): boolean {
+    return [undefined, 'search_results'].includes(
+      this.pageSpecifierParams?.pageType
+    );
   }
 
   /**
@@ -159,7 +146,7 @@ export class MoreFacetsContent extends LitElement {
    */
   async updateSpecificFacets(): Promise<void> {
     const trimmedQuery = this.query?.trim();
-    if (!trimmedQuery && !(this.withinCollection || this.withinProfile)) return;
+    if (!trimmedQuery && this.isSearchResultsPage) return; // The search page _requires_ a query
 
     const aggregations = {
       simpleParams: [this.facetAggregationKey as string],

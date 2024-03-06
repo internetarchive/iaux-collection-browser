@@ -30,7 +30,6 @@ import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-f
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
-import type { PageElementName } from '@internetarchive/search-service';
 import chevronIcon from './assets/img/icons/chevron';
 import expandIcon from './assets/img/icons/expand';
 import {
@@ -46,7 +45,10 @@ import {
   suppressedCollections,
   defaultFacetSort,
 } from './models';
-import type { CollectionTitles } from './data-source/models';
+import type {
+  CollectionTitles,
+  PageSpecifierParams,
+} from './data-source/models';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
@@ -90,11 +92,7 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) query?: string;
 
-  @property({ type: String }) withinCollection?: string;
-
-  @property({ type: String }) withinProfile?: string;
-
-  @property({ type: String }) profileElement?: PageElementName;
+  @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
 
   @property({ type: Array }) parentCollections: string[] = [];
 
@@ -170,8 +168,7 @@ export class CollectionFacets extends LitElement {
 
   private get collectionPartOfTemplate(): TemplateResult | typeof nothing {
     // We only display the "Part Of" section on collection pages
-    if (!this.withinCollection || this.parentCollections.length === 0)
-      return nothing;
+    if (!this.parentCollections?.length) return nothing;
 
     const headingId = 'partof-heading';
     return html`
@@ -650,9 +647,7 @@ export class CollectionFacets extends LitElement {
         .facetAggregationKey=${facetAggrKey}
         .query=${this.query}
         .filterMap=${this.filterMap}
-        .withinCollection=${this.withinCollection}
-        .withinProfile=${this.withinProfile}
-        .profileElement=${this.profileElement}
+        .pageSpecifierParams=${this.pageSpecifierParams}
         .modalManager=${this.modalManager}
         .searchService=${this.searchService}
         .searchType=${this.searchType}
