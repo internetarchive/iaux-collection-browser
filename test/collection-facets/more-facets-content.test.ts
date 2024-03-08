@@ -94,7 +94,10 @@ describe('More facets content', () => {
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
         .searchService=${searchService}
-        .withinCollection=${'foobar'}
+        .pageSpecifierParams=${{
+          pageType: 'collection_details',
+          pageTarget: 'foobar',
+        }}
       ></more-facets-content>`
     );
 
@@ -111,7 +114,10 @@ describe('More facets content', () => {
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
         .searchService=${searchService}
-        .withinCollection=${'foobar'}
+        .pageSpecifierParams=${{
+          pageType: 'collection_details',
+          pageTarget: 'foobar',
+        }}
       ></more-facets-content>`
     );
 
