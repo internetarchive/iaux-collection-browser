@@ -1099,7 +1099,7 @@ export class CollectionBrowserDataSource
     // When we reach the end of the data, we can set the infinite scroller's
     // item count to the real total number of results (rather than the
     // temporary estimates based on pages rendered so far).
-    if (results.length === 0) {
+    if (this.size >= this.totalResults || results.length === 0) {
       this.endOfDataReached = true;
       if (this.activeOnHost) this.host.setTileCount(this.size);
     }

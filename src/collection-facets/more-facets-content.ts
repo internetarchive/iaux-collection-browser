@@ -18,6 +18,7 @@ import {
   SearchType,
   AggregationSortType,
   FilterMap,
+  PageType,
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
@@ -103,6 +104,7 @@ export class MoreFacetsContent extends LitElement {
     ) {
       this.facetsLoading = true;
       this.pageNumber = 1;
+      this.sortedBy = defaultFacetSort[this.facetKey as FacetOption];
 
       this.updateSpecificFacets();
     }
@@ -135,9 +137,10 @@ export class MoreFacetsContent extends LitElement {
    * Whether facet requests are for the search_results page type (either defaulted or explicitly).
    */
   private get isSearchResultsPage(): boolean {
-    return [undefined, 'search_results'].includes(
-      this.pageSpecifierParams?.pageType
-    );
+    // Default page type is search_results when none is specified, so we check
+    // for undefined as well.
+    const pageType: PageType | undefined = this.pageSpecifierParams?.pageType;
+    return pageType === undefined || pageType === 'search_results';
   }
 
   /**
@@ -395,7 +398,8 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get getModalHeaderTemplate(): TemplateResult {
-    const facetSort = defaultFacetSort[this.facetKey as FacetOption];
+    const facetSort =
+      this.sortedBy ?? defaultFacetSort[this.facetKey as FacetOption];
     const defaultSwitchSide =
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
 
