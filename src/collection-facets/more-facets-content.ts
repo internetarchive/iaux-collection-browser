@@ -13,12 +13,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import {
   Aggregation,
   Bucket,
-  PageType,
   SearchServiceInterface,
   SearchParams,
   SearchType,
   AggregationSortType,
   FilterMap,
+  PageType,
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
@@ -32,7 +32,10 @@ import {
   valueFacetSort,
   defaultFacetSort,
 } from '../models';
-import type { CollectionTitles } from '../data-source/models';
+import type {
+  CollectionTitles,
+  PageSpecifierParams,
+} from '../data-source/models';
 import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
@@ -59,7 +62,7 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: String }) searchType?: SearchType;
 
-  @property({ type: String }) withinCollection?: string;
+  @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
@@ -101,6 +104,7 @@ export class MoreFacetsContent extends LitElement {
     ) {
       this.facetsLoading = true;
       this.pageNumber = 1;
+      this.sortedBy = defaultFacetSort[this.facetKey as FacetOption];
 
       this.updateSpecificFacets();
     }
@@ -130,27 +134,30 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
+   * Whether facet requests are for the search_results page type (either defaulted or explicitly).
+   */
+  private get isSearchResultsPage(): boolean {
+    // Default page type is search_results when none is specified, so we check
+    // for undefined as well.
+    const pageType: PageType | undefined = this.pageSpecifierParams?.pageType;
+    return pageType === undefined || pageType === 'search_results';
+  }
+
+  /**
    * Get specific facets data from search-service API based of currently query params
    * - this.aggregations - hold result of search service and being used for further processing.
    */
   async updateSpecificFacets(): Promise<void> {
     const trimmedQuery = this.query?.trim();
-    if (!trimmedQuery && !this.withinCollection) return;
+    if (!trimmedQuery && this.isSearchResultsPage) return; // The search page _requires_ a query
 
     const aggregations = {
       simpleParams: [this.facetAggregationKey as string],
     };
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
-    const collectionParams = this.withinCollection
-      ? {
-          pageType: 'collection_details' as PageType,
-          pageTarget: this.withinCollection,
-        }
-      : null;
-
     const params: SearchParams = {
-      ...collectionParams,
+      ...this.pageSpecifierParams,
       query: trimmedQuery || '',
       filters: this.filterMap,
       aggregations,
@@ -391,7 +398,8 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get getModalHeaderTemplate(): TemplateResult {
-    const facetSort = defaultFacetSort[this.facetKey as FacetOption];
+    const facetSort =
+      this.sortedBy ?? defaultFacetSort[this.facetKey as FacetOption];
     const defaultSwitchSide =
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
 

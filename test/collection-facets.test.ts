@@ -808,12 +808,10 @@ describe('Collection Facets', () => {
     expect(partOfLinks?.[1]?.getAttribute('href')).to.equal('/details/baz');
   });
 
-  it('does not include Part Of section outside of collections', async () => {
-    // No withinCollection prop
+  it('does not include Part Of section without parent collections', async () => {
+    // No parentCollections prop
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets
-        .parentCollections=${['bar', 'baz']}
-      ></collection-facets>`
+      html`<collection-facets .withinCollection=${'foo'}></collection-facets>`
     );
 
     const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
