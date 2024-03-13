@@ -255,6 +255,11 @@ export class SortFilterBar
     }
   };
 
+  connectedCallback(): void {
+    super.connectedCallback?.();
+    this.setupResizeObserver();
+  }
+
   disconnectedCallback(): void {
     if (this.resizeObserver) {
       this.disconnectResizeObserver(this.resizeObserver);
