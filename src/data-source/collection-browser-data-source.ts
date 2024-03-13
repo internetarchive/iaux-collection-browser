@@ -73,6 +73,12 @@ export class CollectionBrowserDataSource
   private facetsLoading = false;
 
   /**
+   * Whether the facets are actually visible -- if not, then we can delay any facet
+   * fetches until they become visible.
+   */
+  private facetsVisible = false;
+
+  /**
    * Whether further query changes should be ignored and not trigger fetches
    */
   private suppressFetches = false;
@@ -379,19 +385,46 @@ export class CollectionBrowserDataSource
       this._initialSearchCompleteResolver = res;
     });
 
-    const shouldFetchFacets =
-      !this.host.suppressFacets &&
-      !FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!);
-
     // Fire the initial page & facet requests
     this.queryInitialized = true;
     await Promise.all([
       this.doInitialPageFetch(),
-      shouldFetchFacets ? this.fetchFacets() : null,
+      this.shouldFetchFacets ? this.fetchFacets() : null,
     ]);
 
     // Resolve the `initialSearchComplete` promise for this search
     this._initialSearchCompleteResolver(true);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async handleFacetVisibilityChange(visible: boolean): Promise<void> {
+    const facetsBecameVisible = !this.facetsVisible && visible;
+    this.facetsVisible = visible;
+
+    if (facetsBecameVisible && this.shouldFetchFacets) {
+      this.fetchFacets();
+    }
+  }
+
+  /**
+   * Whether the data source & its host are in a state where a facet request should be fired.
+   * (i.e., they aren't suppressed or already loading, etc.)
+   */
+  private get shouldFetchFacets(): boolean {
+    // Don't fetch facets if they are suppressed entirely or not required for the current profile page element
+    if (this.host.suppressFacets) return false;
+    if (FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!))
+      return false;
+
+    // Don't fetch facets if they are not going to be visible anyway (wait until they become visible)
+    if (!this.facetsVisible) return false;
+
+    // Don't fetch facets again if they are already fetched or pending
+    if (this.facetsLoading || !!this.aggregations) return false;
+
+    return true;
   }
 
   /**
@@ -875,6 +908,8 @@ export class CollectionBrowserDataSource
     if (this.fetchesInProgress.has(facetFetchQueryKey)) return;
     this.fetchesInProgress.add(facetFetchQueryKey);
 
+    this.setFacetsLoading(true);
+
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     const params: SearchParams = {
       ...this.pageSpecifierParams,
@@ -891,7 +926,6 @@ export class CollectionBrowserDataSource
       'aggregations'
     );
 
-    this.setFacetsLoading(true);
     const searchResponse = await this.host.searchService?.search(
       params,
       this.host.searchType

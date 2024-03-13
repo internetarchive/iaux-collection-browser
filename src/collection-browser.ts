@@ -1160,6 +1160,15 @@ export class CollectionBrowser
       this.persistState();
     }
 
+    if (changed.has('mobileView') || changed.has('mobileFacetsVisible')) {
+      // Facets are always visible in the desktop view.
+      // But in the mobile view, their visibility state can be toggled by the user.
+      // In either case, inform the data source so that it can determine whether/when to fetch facets.
+      this.dataSource.handleFacetVisibilityChange(
+        !this.mobileView || this.mobileFacetsVisible
+      );
+    }
+
     if (
       changed.has('baseQuery') ||
       changed.has('minSelectedDate') ||
