@@ -5127,7 +5127,7 @@ fill=""></path>
         </div>
         ${this.isManageView?this.manageBarTemplate:this.sortFilterBarTemplate}
         <slot name="cb-results"></slot>
-        ${this.displayMode==="list-compact"?this.listHeaderTemplate:y}
+        ${this.displayMode==="list-compact"&&this.totalResults?this.listHeaderTemplate:y}
         ${this.suppressResultTiles?y:this.infiniteScrollerTemplate}
       </div>
     `}get infiniteScrollerTemplate(){return c`<infinite-scroller
