@@ -635,7 +635,7 @@ export class CollectionBrowser
           ? this.manageBarTemplate
           : this.sortFilterBarTemplate}
         <slot name="cb-results"></slot>
-        ${this.displayMode === `list-compact`
+        ${this.displayMode === `list-compact` && this.totalResults
           ? this.listHeaderTemplate
           : nothing}
         ${this.suppressResultTiles ? nothing : this.infiniteScrollerTemplate}
