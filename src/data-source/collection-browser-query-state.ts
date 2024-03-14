@@ -37,6 +37,7 @@ export interface CollectionBrowserSearchInterface
   readonly sortParam: SortParam | null;
   readonly defaultSortParam: SortParam | null;
   readonly suppressFacets?: boolean;
+  readonly lazyLoadFacets?: boolean;
   readonly initialPageNumber: number;
   readonly currentVisiblePageNumbers: number[];
   readonly clearResultsOnEmptyQuery?: boolean;

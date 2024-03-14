@@ -244,6 +244,7 @@ export class CollectionBrowserDataSource
     this.numTileModels = 0;
     this.endOfDataReached = false;
     this.queryInitialized = false;
+    this.facetsLoading = false;
 
     // Invalidate any fetches in progress
     this.fetchesInProgress.clear();
@@ -387,11 +388,11 @@ export class CollectionBrowserDataSource
     });
 
     // Fire the initial page & facet requests
-    console.log('handling query change:', this.shouldFetchFacets);
+    console.log('handling query change:', this.canFetchFacets);
     this.queryInitialized = true;
     await Promise.all([
       this.doInitialPageFetch(),
-      this.shouldFetchFacets ? this.fetchFacets() : null,
+      this.canFetchFacets ? this.fetchFacets() : null,
     ]);
 
     // Resolve the `initialSearchComplete` promise for this search
@@ -411,7 +412,9 @@ export class CollectionBrowserDataSource
     const facetsBecameVisible = !this.facetsVisible && visible;
     this.facetsVisible = visible;
 
-    if (facetsBecameVisible && this.shouldFetchFacets) {
+    const needsFetch =
+      this.host.lazyLoadFacets && facetsBecameVisible && this.canFetchFacets;
+    if (needsFetch) {
       this.fetchFacets();
     }
   }
@@ -420,18 +423,20 @@ export class CollectionBrowserDataSource
    * Whether the data source & its host are in a state where a facet request should be fired.
    * (i.e., they aren't suppressed or already loading, etc.)
    */
-  private get shouldFetchFacets(): boolean {
+  private get canFetchFacets(): boolean {
     // Don't fetch facets if they are suppressed entirely or not required for the current profile page element
     if (this.host.suppressFacets) return false;
     if (FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!))
       return false;
 
-    // Don't fetch facets if they are not going to be visible anyway (wait until they become visible)
-    if (!this.facetsVisible) return false;
+    // If facets are to be lazy-loaded, don't fetch them if they are not going to be visible anyway
+    // (wait until they become visible instead)
+    if (this.host.lazyLoadFacets && !this.facetsVisible) return false;
 
     // Don't fetch facets again if they are already fetched or pending
-    if (this.facetsLoading || Object.keys(this.aggregations ?? {}).length > 0)
-      return false;
+    const facetsAlreadyFetched =
+      Object.keys(this.aggregations ?? {}).length > 0;
+    if (this.facetsLoading || facetsAlreadyFetched) return false;
 
     return true;
   }
