@@ -1098,6 +1098,13 @@ export class CollectionBrowser
 
   firstUpdated(): void {
     this.restoreState();
+    this.setInitialSize();
+  }
+
+  setInitialSize(): void {
+    this.contentWidth = this.contentContainer.getBoundingClientRect().width;
+    this.mobileView =
+      this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
   }
 
   updated(changed: PropertyValues) {

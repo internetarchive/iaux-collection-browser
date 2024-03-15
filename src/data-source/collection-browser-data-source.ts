@@ -376,7 +376,6 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   async handleQueryChange(): Promise<void> {
-    console.log('in handleQueryChange');
     // Don't react to the change if fetches are suppressed for this data source
     if (this.suppressFetches) return;
 
@@ -388,7 +387,6 @@ export class CollectionBrowserDataSource
     });
 
     // Fire the initial page & facet requests
-    console.log('handling query change:', this.canFetchFacets);
     this.queryInitialized = true;
     await Promise.all([
       this.doInitialPageFetch(),
@@ -403,12 +401,6 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   async handleFacetVisibilityChange(visible: boolean): Promise<void> {
-    console.log(
-      'handling facet visibility change:',
-      this.facetsVisible,
-      '->',
-      visible
-    );
     const facetsBecameVisible = !this.facetsVisible && visible;
     this.facetsVisible = visible;
 
@@ -915,7 +907,6 @@ export class CollectionBrowserDataSource
    * the current search state.
    */
   private async fetchFacets(): Promise<void> {
-    console.log('called fetchFacets');
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return;
 
@@ -923,7 +914,6 @@ export class CollectionBrowserDataSource
     if (this.fetchesInProgress.has(facetFetchQueryKey)) return;
     this.fetchesInProgress.add(facetFetchQueryKey);
 
-    console.log('setting facets loading');
     this.setFacetsLoading(true);
 
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
