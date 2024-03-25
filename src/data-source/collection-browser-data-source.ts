@@ -475,6 +475,7 @@ export class CollectionBrowserDataSource
     this.pages = newPages;
     this.numTileModels -= numChecked;
     this.host.setTileCount(this.size);
+    this.host.setTotalResultCount(this.totalResults - numChecked);
     this.requestHostUpdate();
     this.refreshVisibleResults();
   };
