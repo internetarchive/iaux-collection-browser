@@ -474,7 +474,9 @@ export class CollectionBrowserDataSource
     // Swap in the new pages
     this.pages = newPages;
     this.numTileModels -= numChecked;
+    this.totalResults -= numChecked;
     this.host.setTileCount(this.size);
+    this.host.setTotalResultCount(this.totalResults);
     this.requestHostUpdate();
     this.refreshVisibleResults();
   };
