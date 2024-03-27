@@ -42,6 +42,10 @@ export class AppRoot extends LitElement {
 
   @state() private colGap: number = 1.7;
 
+  @state() private suppressFacets: boolean = false;
+
+  @state() private lazyLoadFacets: boolean = false;
+
   @state() private loggedIn: boolean = false;
 
   @state() private searchType: SearchType = SearchType.METADATA;
@@ -306,6 +310,15 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-facets">Enable facets</label>
             </div>
+            <div class="checkbox-control indent">
+              <input
+                type="checkbox"
+                id="lazy-load-facets"
+                ?disabled=${this.suppressFacets}
+                @click=${this.lazyLoadFacetsChanged}
+              />
+              <label for="lazy-load-facets">Lazy load facets</label>
+            </div>
             <div class="checkbox-control">
               <input
                 type="checkbox"
@@ -450,6 +463,8 @@ export class AppRoot extends LitElement {
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
           .showHistogramDatePicker=${true}
+          .suppressFacets=${this.suppressFacets}
+          .lazyLoadFacets=${this.lazyLoadFacets}
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
@@ -651,7 +666,12 @@ export class AppRoot extends LitElement {
 
   private facetsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
-    this.collectionBrowser.suppressFacets = !target.checked;
+    this.suppressFacets = !target.checked;
+  }
+
+  private lazyLoadFacetsChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.lazyLoadFacets = target.checked;
   }
 
   /**
@@ -1015,6 +1035,9 @@ export class AppRoot extends LitElement {
 
     .checkbox-control {
       flex-basis: 50%;
+    }
+    .checkbox-control.indent {
+      margin-left: 10px;
     }
     .checkbox-control label {
       user-select: none;

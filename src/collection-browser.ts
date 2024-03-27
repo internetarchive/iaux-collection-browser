@@ -170,7 +170,7 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressURLQuery = false;
 
   /**
-   * Whether to suppress the display of facets.
+   * Whether to suppress the display of facets entirely.
    * If true, the facet sidebar content will be replaced by a message that facets are
    * temporarily unavailable.
    */
@@ -187,6 +187,14 @@ export class CollectionBrowser
    * If true, those options will be omitted (though the rest of the sort bar may still render).
    */
   @property({ type: Boolean }) suppressDisplayModes = false;
+
+  /**
+   * Whether facets should be lazy-loaded.
+   * If false (default), facet data will be loaded eagerly along with search hits.
+   * If true, facet data will only be requested once the facet pane actually becomes visible,
+   * either by displaying in desktop mode or by the mobile facet dropdown being opened.
+   */
+  @property({ type: Boolean }) lazyLoadFacets = false;
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -1090,6 +1098,13 @@ export class CollectionBrowser
 
   firstUpdated(): void {
     this.restoreState();
+    this.setInitialSize();
+  }
+
+  setInitialSize(): void {
+    this.contentWidth = this.contentContainer.getBoundingClientRect().width;
+    this.mobileView =
+      this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
   }
 
   updated(changed: PropertyValues) {
@@ -1189,6 +1204,13 @@ export class CollectionBrowser
         changed.get('selectedCreatorFilter') as string
       );
     }
+
+    // Facets are always visible in the desktop view.
+    // But in the mobile view, their visibility state can be toggled by the user.
+    // In either case, inform the data source so that it can determine whether/when to fetch facets.
+    this.dataSource.handleFacetVisibilityChange(
+      !this.mobileView || this.mobileFacetsVisible
+    );
 
     if (
       changed.has('baseQuery') ||
