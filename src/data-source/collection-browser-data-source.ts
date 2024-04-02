@@ -73,6 +73,12 @@ export class CollectionBrowserDataSource
   private facetsLoading = false;
 
   /**
+   * Whether the facets are actually visible -- if not, then we can delay any facet
+   * fetches until they become visible.
+   */
+  private facetsVisible = false;
+
+  /**
    * Whether further query changes should be ignored and not trigger fetches
    */
   private suppressFetches = false;
@@ -238,6 +244,7 @@ export class CollectionBrowserDataSource
     this.numTileModels = 0;
     this.endOfDataReached = false;
     this.queryInitialized = false;
+    this.facetsLoading = false;
 
     // Invalidate any fetches in progress
     this.fetchesInProgress.clear();
@@ -379,19 +386,51 @@ export class CollectionBrowserDataSource
       this._initialSearchCompleteResolver = res;
     });
 
-    const shouldFetchFacets =
-      !this.host.suppressFacets &&
-      !FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!);
-
     // Fire the initial page & facet requests
     this.queryInitialized = true;
     await Promise.all([
       this.doInitialPageFetch(),
-      shouldFetchFacets ? this.fetchFacets() : null,
+      this.canFetchFacets ? this.fetchFacets() : null,
     ]);
 
     // Resolve the `initialSearchComplete` promise for this search
     this._initialSearchCompleteResolver(true);
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async handleFacetVisibilityChange(visible: boolean): Promise<void> {
+    const facetsBecameVisible = !this.facetsVisible && visible;
+    this.facetsVisible = visible;
+
+    const needsFetch =
+      this.host.lazyLoadFacets && facetsBecameVisible && this.canFetchFacets;
+    if (needsFetch) {
+      this.fetchFacets();
+    }
+  }
+
+  /**
+   * Whether the data source & its host are in a state where a facet request should be fired.
+   * (i.e., they aren't suppressed or already loading, etc.)
+   */
+  private get canFetchFacets(): boolean {
+    // Don't fetch facets if they are suppressed entirely or not required for the current profile page element
+    if (this.host.suppressFacets) return false;
+    if (FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!))
+      return false;
+
+    // If facets are to be lazy-loaded, don't fetch them if they are not going to be visible anyway
+    // (wait until they become visible instead)
+    if (this.host.lazyLoadFacets && !this.facetsVisible) return false;
+
+    // Don't fetch facets again if they are already fetched or pending
+    const facetsAlreadyFetched =
+      Object.keys(this.aggregations ?? {}).length > 0;
+    if (this.facetsLoading || facetsAlreadyFetched) return false;
+
+    return true;
   }
 
   /**
@@ -877,6 +916,8 @@ export class CollectionBrowserDataSource
     if (this.fetchesInProgress.has(facetFetchQueryKey)) return;
     this.fetchesInProgress.add(facetFetchQueryKey);
 
+    this.setFacetsLoading(true);
+
     const sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     const params: SearchParams = {
       ...this.pageSpecifierParams,
@@ -893,7 +934,6 @@ export class CollectionBrowserDataSource
       'aggregations'
     );
 
-    this.setFacetsLoading(true);
     const searchResponse = await this.host.searchService?.search(
       params,
       this.host.searchType
