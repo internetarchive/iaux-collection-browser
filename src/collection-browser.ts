@@ -1105,6 +1105,16 @@ export class CollectionBrowser
     this.contentWidth = this.contentContainer.getBoundingClientRect().width;
     this.mobileView =
       this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
+    this.sendLayoutSizeAnalytics();
+  }
+
+  private sendLayoutSizeAnalytics(): void {
+    this.analyticsHandler?.sendEvent({
+      category: this.searchContext,
+      action: this.mobileView
+        ? analyticsActions.loadMobileView
+        : analyticsActions.loadDesktopView,
+    });
   }
 
   updated(changed: PropertyValues) {

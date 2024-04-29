@@ -10,6 +10,8 @@ export enum analyticsActions {
   filterByCreator = 'filterByCreator',
   filterByTitle = 'filterByTitle',
   displayMode = 'displayMode',
+  loadDesktopView = 'loadDesktopView',
+  loadMobileView = 'loadMobileView',
   facetSelected = 'facetSelected',
   facetDeselected = 'facetDeselected',
   facetNegativeSelected = 'facetNegativeSelected',
