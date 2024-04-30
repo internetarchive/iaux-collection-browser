@@ -1451,8 +1451,13 @@ export class CollectionBrowser
     if (this.isScrollingToCell) return;
     const { visibleCellIndices } = e.detail;
     if (visibleCellIndices.length === 0) return;
-    const lastVisibleCellIndex =
-      visibleCellIndices[visibleCellIndices.length - 1];
+
+    // For page determination, do not count more than a single page of visible cells,
+    // since otherwise patrons using very tall screens will be treated as one page
+    // further than they actually are.
+    const lastIndexWithinCurrentPage =
+      Math.min(this.pageSize, visibleCellIndices.length) - 1;
+    const lastVisibleCellIndex = visibleCellIndices[lastIndexWithinCurrentPage];
     const lastVisibleCellPage =
       Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
     if (this.currentPage !== lastVisibleCellPage) {
