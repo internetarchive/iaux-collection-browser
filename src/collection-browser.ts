@@ -290,6 +290,9 @@ export class CollectionBrowser
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
 
+  /** Whether layout size analytics have been sent already. */
+  private layoutSizeAnalyticsSent = false;
+
   /**
    * When we're animated scrolling to the page, we don't want to fetch
    * all of the pages as it scrolls so this lets us know if we're scrolling
@@ -1109,12 +1112,15 @@ export class CollectionBrowser
   }
 
   private sendLayoutSizeAnalytics(): void {
-    this.analyticsHandler?.sendEvent({
-      category: this.searchContext,
-      action: this.mobileView
-        ? analyticsActions.loadMobileView
-        : analyticsActions.loadDesktopView,
-    });
+    if (this.analyticsHandler) {
+      this.layoutSizeAnalyticsSent = true;
+      this.analyticsHandler.sendEvent({
+        category: this.searchContext,
+        action: this.mobileView
+          ? analyticsActions.loadMobileView
+          : analyticsActions.loadDesktopView,
+      });
+    }
   }
 
   updated(changed: PropertyValues) {
@@ -1126,6 +1132,10 @@ export class CollectionBrowser
         this.setupFacetsScrollListeners();
       }
       this.updateLeftColumnHeight();
+    }
+
+    if (changed.has('analyticsHandler') && !this.layoutSizeAnalyticsSent) {
+      this.sendLayoutSizeAnalytics();
     }
 
     if (
