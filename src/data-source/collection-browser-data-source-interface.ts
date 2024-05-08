@@ -269,10 +269,10 @@ export interface CollectionBrowserDataSourceInterface
   handleQueryChange(): Promise<void>;
 
   /**
-   * Notifies the data source that the visibility of the facets has been changed, which
+   * Notifies the data source that the readiness state of the facets has been changed, which
    * may trigger facet fetches if they were previously delayed.
    */
-  handleFacetVisibilityChange(visible: boolean): Promise<void>;
+  handleFacetReadinessChange(ready: boolean): Promise<void>;
 
   /**
    * Applies the given map function to all of the tile models in every page of the data

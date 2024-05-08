@@ -463,6 +463,18 @@ export const prefixFilterAggregationKeys: Record<PrefixFilterType, string> = {
 };
 
 /**
+ * Different facet loading strategies that can be used with collection browser.
+ *  - `eager`: Facet data is always loaded as soon as a search is performed
+ *  - `lazy-mobile`: In the desktop layout, functions exactly as `eager`.
+ *     In the mobile layout, facet data will only be loaded once the "Filters" accordion is opened.
+ *  - `opt-in`: In the desktop layout, facet data will only be loaded after the user presses a "Load Facets" button.
+ *     In the mobile layout, functions exactly as `lazy-mobile`.
+ *  - `off`: Facet data will never be loaded, and a message will be displayed in place of facets
+ *     indicating that they are unavailable.
+ */
+export type FacetLoadStrategy = 'eager' | 'lazy-mobile' | 'opt-in' | 'off';
+
+/**
  * Union of the facet types that are available in the sidebar.
  */
 export type FacetOption =
