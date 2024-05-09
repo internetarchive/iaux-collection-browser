@@ -197,7 +197,7 @@ export class CollectionBrowser
    *
    * To entirely suppress facets from being loaded, this may be set to `off`.
    */
-  @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'opt-in';
+  @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'eager';
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -941,24 +941,8 @@ export class CollectionBrowser
         </p>
       `;
     }
-    if (
-      this.facetLoadStrategy === 'opt-in' &&
-      !this.mobileView &&
-      !this.facetsOptedIn
-    ) {
-      return html`
-        <button
-          class="load-facets-btn"
-          @click=${() => {
-            this.facetsOptedIn = true;
-          }}
-        >
-          ${msg('Load facets')}
-        </button>
-      `;
-    }
 
-    return html`
+    const facets = html`
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
@@ -993,6 +977,27 @@ export class CollectionBrowser
       >
       </collection-facets>
     `;
+
+    // In the desktop facets opt-in case, wrap the facet sidebar in a <details> widget
+    // that can be opened and closed as needed.
+    if (this.facetLoadStrategy === 'opt-in' && !this.mobileView) {
+      return html`
+        <details
+          class="desktop-facets-dropdown"
+          @toggle=${() => {
+            this.facetsOptedIn = true;
+          }}
+        >
+          <summary>
+            <span class="collapser-icon">${chevronIcon}</span>
+            <h2>${msg('Filters')}</h2>
+          </summary>
+          ${facets}
+        </button>
+      `;
+    }
+    // Otherwise, just render the facets component bare
+    return facets;
   }
 
   /**
@@ -2048,6 +2053,25 @@ export class CollectionBrowser
           font-size: 1.4rem;
         }
 
+        .desktop-facets-dropdown > summary {
+          cursor: pointer;
+          list-style: none;
+        }
+
+        .desktop-facets-dropdown h2 {
+          display: inline-block;
+          margin: 0;
+          font-size: 1.6rem;
+        }
+
+        .desktop-facets-dropdown[open] > summary {
+          margin-bottom: 10px;
+        }
+
+        .desktop-facets-dropdown[open] svg {
+          transform: rotate(90deg);
+        }
+
         .desktop #left-column-scroll-sentinel {
           width: 1px;
           height: 100vh;
@@ -2085,8 +2109,7 @@ export class CollectionBrowser
           width: 100%;
         }
 
-        .clear-filters-btn,
-        .load-facets-btn {
+        .clear-filters-btn {
           display: inline-block;
           appearance: none;
           margin: 0;
@@ -2099,8 +2122,7 @@ export class CollectionBrowser
           cursor: pointer;
         }
 
-        .clear-filters-btn:hover,
-        .load-facets-btn:hover {
+        .clear-filters-btn:hover {
           text-decoration: underline;
         }
 
