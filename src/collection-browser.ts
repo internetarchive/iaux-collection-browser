@@ -197,7 +197,7 @@ export class CollectionBrowser
    *
    * To entirely suppress facets from being loaded, this may be set to `off`.
    */
-  @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'eager';
+  @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'opt-in';
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -941,10 +941,14 @@ export class CollectionBrowser
         </p>
       `;
     }
-    if (this.facetLoadStrategy === 'opt-in' && !this.facetsOptedIn) {
+    if (
+      this.facetLoadStrategy === 'opt-in' &&
+      !this.mobileView &&
+      !this.facetsOptedIn
+    ) {
       return html`
         <button
-          class="facets-opt-in"
+          class="load-facets-btn"
           @click=${() => {
             this.facetsOptedIn = true;
           }}
@@ -2081,7 +2085,8 @@ export class CollectionBrowser
           width: 100%;
         }
 
-        .clear-filters-btn {
+        .clear-filters-btn,
+        .load-facets-btn {
           display: inline-block;
           appearance: none;
           margin: 0;
@@ -2094,7 +2099,8 @@ export class CollectionBrowser
           cursor: pointer;
         }
 
-        .clear-filters-btn:hover {
+        .clear-filters-btn:hover,
+        .load-facets-btn:hover {
           text-decoration: underline;
         }
 
