@@ -76,7 +76,7 @@ export class CollectionBrowserDataSource
    * Whether the facets are actually visible -- if not, then we can delay any facet
    * fetches until they become visible.
    */
-  private facetsReady = false;
+  private facetsReadyToLoad = false;
 
   /**
    * Whether further query changes should be ignored and not trigger fetches
@@ -401,8 +401,8 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   async handleFacetReadinessChange(ready: boolean): Promise<void> {
-    const facetsBecameReady = !this.facetsReady && ready;
-    this.facetsReady = ready;
+    const facetsBecameReady = !this.facetsReadyToLoad && ready;
+    this.facetsReadyToLoad = ready;
 
     const lazyLoadFacets = ['lazy-mobile', 'opt-in'].includes(
       this.host.facetLoadStrategy
@@ -426,7 +426,7 @@ export class CollectionBrowserDataSource
 
     // If facets are to be lazy-loaded, don't fetch them if they are not going to be visible anyway
     // (wait until they become visible instead)
-    if (this.host.facetLoadStrategy !== 'eager' && !this.facetsReady)
+    if (this.host.facetLoadStrategy !== 'eager' && !this.facetsReadyToLoad)
       return false;
 
     // Don't fetch facets again if they are already fetched or pending
