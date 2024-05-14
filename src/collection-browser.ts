@@ -269,13 +269,11 @@ export class CollectionBrowser
 
   @state() private facetsLoading = false;
 
-  @state() private facetsOptedIn = false;
-
   @state() private totalResults?: number;
 
   @state() private mobileView = false;
 
-  @state() private mobileFacetsVisible = false;
+  @state() private collapsibleFacetsVisible = false;
 
   @state() private contentWidth?: number;
 
@@ -907,10 +905,10 @@ export class CollectionBrowser
    */
   private get mobileFacetsTemplate(): TemplateResult {
     const toggleFacetsVisible = (e: Event) => {
-      this.isResizeToMobile = false;
-      this.mobileFacetsVisible = !this.mobileFacetsVisible;
-
       const target = e.target as HTMLDetailsElement;
+      this.isResizeToMobile = false;
+      this.collapsibleFacetsVisible = target.open;
+
       this.analyticsHandler?.sendEvent({
         category: this.searchContext,
         action: analyticsActions.mobileFacetsToggled,
@@ -984,8 +982,9 @@ export class CollectionBrowser
       return html`
         <details
           class="desktop-facets-dropdown"
-          @toggle=${() => {
-            this.facetsOptedIn = true;
+          @toggle=${(e: Event) => {
+            const target = e.target as HTMLDetailsElement;
+            this.collapsibleFacetsVisible = target.open;
           }}
         >
           <summary>
@@ -1347,13 +1346,13 @@ export class CollectionBrowser
    */
   private updateFacetReadiness(): void {
     // In desktop view, we are always ready to load facets *unless* we are
-    // using the `opt-in` strategy and the opt-in has not yet occurred.
+    // using the `opt-in` strategy and the facets dropdown is not open.
     const desktopFacetsReady =
       !this.mobileView &&
-      (this.facetLoadStrategy !== 'opt-in' || this.facetsOptedIn);
+      (this.facetLoadStrategy !== 'opt-in' || this.collapsibleFacetsVisible);
 
     // In mobile view, facets are considered ready provided they are currently visible (their dropdown is opened).
-    const mobileFacetsReady = this.mobileView && this.mobileFacetsVisible;
+    const mobileFacetsReady = this.mobileView && this.collapsibleFacetsVisible;
 
     this.dataSource.handleFacetReadinessChange(
       desktopFacetsReady || mobileFacetsReady
