@@ -55,6 +55,7 @@ import type {
   CollectionBrowserQueryState,
   CollectionBrowserSearchInterface,
 } from './data-source/collection-browser-query-state';
+import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
@@ -903,7 +904,9 @@ export class CollectionBrowser
    * The full template for how the facets should be structured in mobile view,
    * including the collapsible container (with header) and the facets themselves.
    */
-  private get mobileFacetsTemplate(): TemplateResult {
+  private get mobileFacetsTemplate(): TemplateResult | typeof nothing {
+    if (FACETLESS_PAGE_ELEMENTS.includes(this.profileElement!)) return nothing;
+
     const toggleFacetsVisible = (e: Event) => {
       const target = e.target as HTMLDetailsElement;
       this.isResizeToMobile = false;
@@ -932,6 +935,7 @@ export class CollectionBrowser
    * The template for the facets component alone, without any surrounding wrappers.
    */
   private get facetsTemplate() {
+    if (FACETLESS_PAGE_ELEMENTS.includes(this.profileElement!)) return nothing;
     if (this.facetLoadStrategy === 'off') {
       return html`
         <p class="facets-message">
