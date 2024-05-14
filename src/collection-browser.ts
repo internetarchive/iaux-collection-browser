@@ -2091,6 +2091,7 @@ export class CollectionBrowser
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          clear: both;
         }
 
         .desktop #facets-header-container {
