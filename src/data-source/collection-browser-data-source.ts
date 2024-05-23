@@ -76,7 +76,7 @@ export class CollectionBrowserDataSource
    * Whether the facets are actually visible -- if not, then we can delay any facet
    * fetches until they become visible.
    */
-  private facetsVisible = false;
+  private facetsReadyToLoad = false;
 
   /**
    * Whether further query changes should be ignored and not trigger fetches
@@ -400,12 +400,15 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
-  async handleFacetVisibilityChange(visible: boolean): Promise<void> {
-    const facetsBecameVisible = !this.facetsVisible && visible;
-    this.facetsVisible = visible;
+  async handleFacetReadinessChange(ready: boolean): Promise<void> {
+    const facetsBecameReady = !this.facetsReadyToLoad && ready;
+    this.facetsReadyToLoad = ready;
 
+    const lazyLoadFacets = ['lazy-mobile', 'opt-in'].includes(
+      this.host.facetLoadStrategy
+    );
     const needsFetch =
-      this.host.lazyLoadFacets && facetsBecameVisible && this.canFetchFacets;
+      lazyLoadFacets && facetsBecameReady && this.canFetchFacets;
     if (needsFetch) {
       this.fetchFacets();
     }
@@ -417,13 +420,14 @@ export class CollectionBrowserDataSource
    */
   private get canFetchFacets(): boolean {
     // Don't fetch facets if they are suppressed entirely or not required for the current profile page element
-    if (this.host.suppressFacets) return false;
+    if (this.host.facetLoadStrategy === 'off') return false;
     if (FACETLESS_PAGE_ELEMENTS.includes(this.host.profileElement!))
       return false;
 
     // If facets are to be lazy-loaded, don't fetch them if they are not going to be visible anyway
     // (wait until they become visible instead)
-    if (this.host.lazyLoadFacets && !this.facetsVisible) return false;
+    if (this.host.facetLoadStrategy !== 'eager' && !this.facetsReadyToLoad)
+      return false;
 
     // Don't fetch facets again if they are already fetched or pending
     const facetsAlreadyFetched =

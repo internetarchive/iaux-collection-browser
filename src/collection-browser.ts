@@ -43,6 +43,7 @@ import {
   sortOptionFromAPIString,
   SORT_OPTIONS,
   defaultProfileElementSorts,
+  FacetLoadStrategy,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -54,6 +55,7 @@ import type {
   CollectionBrowserQueryState,
   CollectionBrowserSearchInterface,
 } from './data-source/collection-browser-query-state';
+import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
 import type { CollectionFacets } from './collection-facets';
 import type { ManageableItem } from './manage/manage-bar';
 import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
@@ -170,13 +172,6 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressURLQuery = false;
 
   /**
-   * Whether to suppress the display of facets entirely.
-   * If true, the facet sidebar content will be replaced by a message that facets are
-   * temporarily unavailable.
-   */
-  @property({ type: Boolean }) suppressFacets = false;
-
-  /**
    * Whether to suppress display of the sort bar.
    * If true, the entire sort bar (incl. display modes) will be omitted from rendering.
    */
@@ -189,12 +184,21 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressDisplayModes = false;
 
   /**
-   * Whether facets should be lazy-loaded.
-   * If false (default), facet data will be loaded eagerly along with search hits.
-   * If true, facet data will only be requested once the facet pane actually becomes visible,
-   * either by displaying in desktop mode or by the mobile facet dropdown being opened.
+   * What strategy to use for when/whether to load facet data for a search.
+   *
+   * Defaults to `eager`, always loading facets immediately alongside search results.
+   *
+   * To eliminate facets that are never seen, this can be reduced to `lazy-mobile`, which
+   * will delay loading facets in the mobile view until the "Filters" accordion is opened.
+   * Facets are still loaded eagerly when viewing the desktop layout.
+   *
+   * To further reduce facet requests for patrons who do not need to use them, this can be
+   * again reduced to `opt-in`, which will also require desktop users to explicitly request
+   * that they be loaded (in addition to the lazy mobile behavior described above).
+   *
+   * To entirely suppress facets from being loaded, this may be set to `off`.
    */
-  @property({ type: Boolean }) lazyLoadFacets = false;
+  @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'eager';
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -270,7 +274,7 @@ export class CollectionBrowser
 
   @state() private mobileView = false;
 
-  @state() private mobileFacetsVisible = false;
+  @state() private collapsibleFacetsVisible = false;
 
   @state() private contentWidth?: number;
 
@@ -900,12 +904,14 @@ export class CollectionBrowser
    * The full template for how the facets should be structured in mobile view,
    * including the collapsible container (with header) and the facets themselves.
    */
-  private get mobileFacetsTemplate(): TemplateResult {
-    const toggleFacetsVisible = (e: Event) => {
-      this.isResizeToMobile = false;
-      this.mobileFacetsVisible = !this.mobileFacetsVisible;
+  private get mobileFacetsTemplate(): TemplateResult | typeof nothing {
+    if (FACETLESS_PAGE_ELEMENTS.includes(this.profileElement!)) return nothing;
 
+    const toggleFacetsVisible = (e: Event) => {
       const target = e.target as HTMLDetailsElement;
+      this.isResizeToMobile = false;
+      this.collapsibleFacetsVisible = target.open;
+
       this.analyticsHandler?.sendEvent({
         category: this.searchContext,
         action: analyticsActions.mobileFacetsToggled,
@@ -929,7 +935,8 @@ export class CollectionBrowser
    * The template for the facets component alone, without any surrounding wrappers.
    */
   private get facetsTemplate() {
-    if (this.suppressFacets) {
+    if (FACETLESS_PAGE_ELEMENTS.includes(this.profileElement!)) return nothing;
+    if (this.facetLoadStrategy === 'off') {
       return html`
         <p class="facets-message">
           ${msg('Facets are temporarily unavailable.')}
@@ -937,7 +944,7 @@ export class CollectionBrowser
       `;
     }
 
-    return html`
+    const facets = html`
       <collection-facets
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
@@ -972,6 +979,28 @@ export class CollectionBrowser
       >
       </collection-facets>
     `;
+
+    // In the desktop facets opt-in case, wrap the facet sidebar in a <details> widget
+    // that can be opened and closed as needed.
+    if (this.facetLoadStrategy === 'opt-in' && !this.mobileView) {
+      return html`
+        <details
+          class="desktop-facets-dropdown"
+          @toggle=${(e: Event) => {
+            const target = e.target as HTMLDetailsElement;
+            this.collapsibleFacetsVisible = target.open;
+          }}
+        >
+          <summary>
+            <span class="collapser-icon">${chevronIcon}</span>
+            <h2>${msg('Filters')}</h2>
+          </summary>
+          ${facets}
+        </button>
+      `;
+    }
+    // Otherwise, just render the facets component bare
+    return facets;
   }
 
   /**
@@ -1225,12 +1254,7 @@ export class CollectionBrowser
       );
     }
 
-    // Facets are always visible in the desktop view.
-    // But in the mobile view, their visibility state can be toggled by the user.
-    // In either case, inform the data source so that it can determine whether/when to fetch facets.
-    this.dataSource.handleFacetVisibilityChange(
-      !this.mobileView || this.mobileFacetsVisible
-    );
+    this.updateFacetReadiness();
 
     if (
       changed.has('baseQuery') ||
@@ -1317,6 +1341,26 @@ export class CollectionBrowser
 
     // Ensure the facet sidebar remains sized correctly
     this.updateLeftColumnHeight();
+  }
+
+  /**
+   * Updates the data source with the current state of facet readiness for loading,
+   * so that they will begin to load in at the appropriate time according to the
+   * current facet loading strategy.
+   */
+  private updateFacetReadiness(): void {
+    // In desktop view, we are always ready to load facets *unless* we are
+    // using the `opt-in` strategy and the facets dropdown is not open.
+    const desktopFacetsReady =
+      !this.mobileView &&
+      (this.facetLoadStrategy !== 'opt-in' || this.collapsibleFacetsVisible);
+
+    // In mobile view, facets are considered ready provided they are currently visible (their dropdown is opened).
+    const mobileFacetsReady = this.mobileView && this.collapsibleFacetsVisible;
+
+    this.dataSource.handleFacetReadinessChange(
+      desktopFacetsReady || mobileFacetsReady
+    );
   }
 
   /**
@@ -2012,6 +2056,25 @@ export class CollectionBrowser
           font-size: 1.4rem;
         }
 
+        .desktop-facets-dropdown > summary {
+          cursor: pointer;
+          list-style: none;
+        }
+
+        .desktop-facets-dropdown h2 {
+          display: inline-block;
+          margin: 0;
+          font-size: 1.6rem;
+        }
+
+        .desktop-facets-dropdown[open] > summary {
+          margin-bottom: 10px;
+        }
+
+        .desktop-facets-dropdown[open] svg {
+          transform: rotate(90deg);
+        }
+
         .desktop #left-column-scroll-sentinel {
           width: 1px;
           height: 100vh;
@@ -2028,6 +2091,7 @@ export class CollectionBrowser
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
+          clear: both;
         }
 
         .desktop #facets-header-container {

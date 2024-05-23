@@ -6,7 +6,7 @@ import type {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
-import type { SelectedFacets, SortField } from '../models';
+import type { FacetLoadStrategy, SelectedFacets, SortField } from '../models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 
 /**
@@ -36,8 +36,7 @@ export interface CollectionBrowserSearchInterface
   searchService?: SearchServiceInterface;
   readonly sortParam: SortParam | null;
   readonly defaultSortParam: SortParam | null;
-  readonly suppressFacets?: boolean;
-  readonly lazyLoadFacets?: boolean;
+  readonly facetLoadStrategy: FacetLoadStrategy;
   readonly initialPageNumber: number;
   readonly currentVisiblePageNumbers: number[];
   readonly clearResultsOnEmptyQuery?: boolean;

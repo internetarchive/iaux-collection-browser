@@ -1659,10 +1659,33 @@ describe('Collection Browser', () => {
     ).to.equal(1);
   });
 
+  it('shows dropdown accordion in facet sidebar when opt-in strategy is specified', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        facetLoadStrategy=${'opt-in'}
+      >
+      </collection-browser>`
+    );
+
+    el.baseQuery = 'foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const facetsDropdown = el.shadowRoot?.querySelector(
+      '.desktop-facets-dropdown'
+    );
+    expect(facetsDropdown).to.exist;
+  });
+
   it('shows temporarily unavailable message when facets suppressed', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser .searchService=${searchService} suppressFacets>
+      html`<collection-browser
+        .searchService=${searchService}
+        facetLoadStrategy=${'off'}
+      >
       </collection-browser>`
     );
 
