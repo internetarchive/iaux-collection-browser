@@ -125,7 +125,7 @@ export class ImageBlock extends LitElement {
       }
 
       .list.mobile {
-        width: 90px;
+        width: var(--image-width, 90px);
         height: 90px;
       }
 
