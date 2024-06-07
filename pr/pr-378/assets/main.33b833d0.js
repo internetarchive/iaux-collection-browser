@@ -1742,16 +1742,16 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
           ></tile-list>
         </div>
       </div>
-    `}get headerTemplate(){var e,t,i;let o="",a="";for(const s of((e=this.model)===null||e===void 0?void 0:e.collections)||[])if(!Yi[s]&&!s.startsWith("fav-")){o=(i=(t=this.collectionTitles)===null||t===void 0?void 0:t.get(s))!==null&&i!==void 0?i:s,a=s;break}return c`
+    `}get headerTemplate(){var e,t,i,o;if(((e=this.model)===null||e===void 0?void 0:e.collections.length)===0)return y;let a="",s="";for(const n of((t=this.model)===null||t===void 0?void 0:t.collections)||[])if(!Yi[n]&&!n.startsWith("fav-")){a=(o=(i=this.collectionTitles)===null||i===void 0?void 0:i.get(n))!==null&&o!==void 0?o:n,s=n;break}return s?c`
       <div id="list-line-header">
-        <a href="${this.baseNavigationUrl}/collection/${a}">
+        <a href="${this.baseNavigationUrl}/details/${s}">
           <img
-            src="${this.baseImageUrl}/services/img/${a}"
+            src="${this.baseImageUrl}/services/img/${s}"
             alt=""
-          /><span>${o}</span>
+          /><span>${a}</span>
         </a>
       </div>
-    `}static get styles(){const e=f`var(--hoverPaneHeaderBGColor, #edf0ff)`,t=f`var(--ia-theme-link-color, #4b64ff)`,i=f`var(--ia-theme-base-font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);`;return f`
+    `:y}static get styles(){const e=f`var(--hoverPaneHeaderBGColor, #edf0ff)`,t=f`var(--ia-theme-link-color, #4b64ff)`,i=f`var(--ia-theme-base-font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);`;return f`
       :host {
         visibility: hidden;
         opacity: 0;
