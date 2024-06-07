@@ -1810,6 +1810,12 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         color: ${t};
         font-family: ${i};
         text-decoration: none;
+        width: auto;
+      }
+      #list-line-header a span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       #list-line-header a:hover {
         text-decoration: underline;
