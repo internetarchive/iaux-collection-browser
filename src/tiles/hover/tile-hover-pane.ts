@@ -1,5 +1,12 @@
 import type { SortParam } from '@internetarchive/search-service';
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { suppressedCollections, type TileModel } from '../../models';
 import type { CollectionTitles } from '../../data-source/models';
@@ -44,9 +51,13 @@ export class TileHoverPane extends LitElement {
     `;
   }
 
-  private get headerTemplate(): TemplateResult {
+  private get headerTemplate(): TemplateResult | typeof nothing {
+    // early return if item does't have parent collection
+    if (this.model?.collections.length === 0) return nothing;
+
     let collectionTitle = '';
     let collectionIdentifier = '';
+
     for (const collection of this.model?.collections || []) {
       if (
         !suppressedCollections[collection] &&
@@ -58,9 +69,13 @@ export class TileHoverPane extends LitElement {
       }
     }
 
+    // sometimes item does have collections but they are in suppressed or favorite list,
+    // let's not render that
+    if (!collectionIdentifier) return nothing;
+
     return html`
       <div id="list-line-header">
-        <a href="${this.baseNavigationUrl}/collection/${collectionIdentifier}">
+        <a href="${this.baseNavigationUrl}/details/${collectionIdentifier}">
           <img
             src="${this.baseImageUrl}/services/img/${collectionIdentifier}"
             alt=""
