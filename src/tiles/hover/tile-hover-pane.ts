@@ -149,6 +149,12 @@ export class TileHoverPane extends LitElement {
         color: ${iaLinkColor};
         font-family: ${iaFontFamily};
         text-decoration: none;
+        width: auto;
+      }
+      #list-line-header a span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       #list-line-header a:hover {
         text-decoration: underline;
