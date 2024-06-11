@@ -22,11 +22,11 @@ export class TileHoverPane extends LitElement {
 
   @property({ type: Boolean }) loggedIn: boolean = false;
 
-  @property({ type: Boolean }) mobileBreakpoint?: boolean;
-
-  @property({ type: Boolean }) currentWidth?: boolean;
-
   @property({ type: Object }) sortParam?: SortParam;
+
+  @property({ type: Number }) mobileBreakpoint?: number;
+
+  @property({ type: Number }) currentWidth?: Number;
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
