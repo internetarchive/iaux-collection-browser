@@ -1824,7 +1824,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
         width: 30px;
         max-height: 30px;
       }
-    `}};l([h({type:Object})],Re.prototype,"model",void 0);l([h({type:String})],Re.prototype,"baseNavigationUrl",void 0);l([h({type:String})],Re.prototype,"baseImageUrl",void 0);l([h({type:Boolean})],Re.prototype,"loggedIn",void 0);l([h({type:Boolean})],Re.prototype,"mobileBreakpoint",void 0);l([h({type:Boolean})],Re.prototype,"currentWidth",void 0);l([h({type:Object})],Re.prototype,"sortParam",void 0);l([h({type:Object})],Re.prototype,"collectionTitles",void 0);Re=l([D("tile-hover-pane")],Re);let xa=class extends ne{render(){var e,t,i,o,a,s;return c`
+    `}};l([h({type:Object})],Re.prototype,"model",void 0);l([h({type:String})],Re.prototype,"baseNavigationUrl",void 0);l([h({type:String})],Re.prototype,"baseImageUrl",void 0);l([h({type:Boolean})],Re.prototype,"loggedIn",void 0);l([h({type:Object})],Re.prototype,"sortParam",void 0);l([h({type:Number})],Re.prototype,"mobileBreakpoint",void 0);l([h({type:Number})],Re.prototype,"currentWidth",void 0);l([h({type:Object})],Re.prototype,"collectionTitles",void 0);Re=l([D("tile-hover-pane")],Re);let xa=class extends ne{render(){var e,t,i,o,a,s;return c`
       <div id="list-line" class="${this.classSize}">
         <image-block
           .model=${this.model}
