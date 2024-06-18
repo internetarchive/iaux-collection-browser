@@ -1,7 +1,14 @@
 import type { SortParam } from '@internetarchive/search-service';
-import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { TileModel } from '../../models';
+import { suppressedCollections, type TileModel } from '../../models';
 import type { CollectionTitles } from '../../data-source/models';
 import '../list/tile-list';
 
@@ -17,31 +24,79 @@ export class TileHoverPane extends LitElement {
 
   @property({ type: Object }) sortParam?: SortParam;
 
+  @property({ type: Number }) mobileBreakpoint?: number;
+
+  @property({ type: Number }) currentWidth?: Number;
+
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
 
   protected render(): TemplateResult {
     return html`
       <div id="container">
-        <tile-list
-          .model=${this.model}
-          .baseNavigationUrl=${this.baseNavigationUrl}
-          .baseImageUrl=${this.baseImageUrl}
-          .loggedIn=${this.loggedIn}
-          .sortParam=${this.sortParam}
-          .collectionTitles=${this.collectionTitles}
-        ></tile-list>
+        ${this.headerTemplate}
+        <div id="hover-tile-list">
+          <tile-list
+            .model=${this.model}
+            .baseNavigationUrl=${this.baseNavigationUrl}
+            .baseImageUrl=${this.baseImageUrl}
+            .loggedIn=${this.loggedIn}
+            .sortParam=${this.sortParam}
+            .collectionTitles=${this.collectionTitles}
+            .mobileBreakpoint=${this.mobileBreakpoint}
+            .currentWidth=${this.currentWidth}
+          ></tile-list>
+        </div>
+      </div>
+    `;
+  }
+
+  private get headerTemplate(): TemplateResult | typeof nothing {
+    // early return if item does't have parent collection
+    if (this.model?.collections.length === 0) return nothing;
+
+    let collectionTitle = '';
+    let collectionIdentifier = '';
+
+    for (const collection of this.model?.collections || []) {
+      if (
+        !suppressedCollections[collection] &&
+        !collection.startsWith('fav-')
+      ) {
+        collectionTitle = this.collectionTitles?.get(collection) ?? collection;
+        collectionIdentifier = collection;
+        break;
+      }
+    }
+
+    // sometimes item does have collections but they are in suppressed or favorite list,
+    // let's not render that
+    if (!collectionIdentifier) return nothing;
+
+    return html`
+      <div id="list-line-header">
+        <a href="${this.baseNavigationUrl}/details/${collectionIdentifier}">
+          <img
+            src="${this.baseImageUrl}/services/img/${collectionIdentifier}"
+            alt=""
+          /><span>${collectionTitle}</span>
+        </a>
       </div>
     `;
   }
 
   static get styles(): CSSResultGroup {
+    const hoverPaneHeaderBGColor = css`var(--hoverPaneHeaderBGColor, #edf0ff)`;
+    const iaLinkColor = css`var(--ia-theme-link-color, #4b64ff)`;
+    const iaFontFamily = css`var(--ia-theme-base-font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);`;
+
     return css`
       :host {
         visibility: hidden;
         opacity: 0;
         transform: translateY(8px);
         transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+        --image-width: auto;
       }
 
       :host(.visible) {
@@ -62,7 +117,6 @@ export class TileHoverPane extends LitElement {
       #container {
         width: max-content;
         max-width: min(45vw, 600px);
-        padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
         box-shadow: 4px 4px 8px 0 rgba(0, 0, 0, 0.8);
@@ -73,6 +127,41 @@ export class TileHoverPane extends LitElement {
         #container {
           max-width: 80vw;
         }
+      }
+
+      /* main tile-list container */
+      #hover-tile-list {
+        padding: 10px;
+      }
+
+      /* header on hover panel to show collection icon and title */
+      #list-line-header {
+        background: ${hoverPaneHeaderBGColor};
+      }
+      #list-line-header a {
+        display: flex;
+        align-items: center;
+        column-gap: 5px;
+        height: 3.4rem;
+        padding: 0 10px;
+        width: fit-content;
+        font-size: 1.4rem;
+        color: ${iaLinkColor};
+        font-family: ${iaFontFamily};
+        text-decoration: none;
+        width: auto;
+      }
+      #list-line-header a span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #list-line-header a:hover {
+        text-decoration: underline;
+      }
+      #list-line-header a img {
+        width: 30px;
+        max-height: 30px;
       }
     `;
   }

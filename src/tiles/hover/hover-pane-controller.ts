@@ -188,6 +188,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .loggedIn=${this.hoverPaneProps?.loggedIn}
             .sortParam=${this.hoverPaneProps?.sortParam}
             .collectionTitles=${this.hoverPaneProps?.collectionTitles}
+            .mobileBreakpoint=${this.mobileBreakpoint}
+            .currentWidth=${window.innerWidth}
           ></tile-hover-pane>`
       : nothing;
   }
