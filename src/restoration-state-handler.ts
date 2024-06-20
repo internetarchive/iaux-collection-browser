@@ -101,6 +101,8 @@ export class RestorationStateHandler
 
     if (state.searchType === SearchType.FULLTEXT) {
       newParams.set('sin', 'TXT');
+    } else if (state.searchType === SearchType.RADIO) {
+      newParams.set('sin', 'RADIO');
     }
     if (oldParams.get('sin') === '') {
       // Treat empty sin the same as no sin at all
@@ -263,6 +265,9 @@ export class RestorationStateHandler
       // Eventually there will be TV/Radio search types here too.
       case 'TXT':
         restorationState.searchType = SearchType.FULLTEXT;
+        break;
+      case 'RADIO':
+        restorationState.searchType = SearchType.RADIO;
         break;
       default:
         restorationState.searchType = SearchType.METADATA;
