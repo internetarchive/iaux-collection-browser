@@ -31,6 +31,8 @@ import {
   suppressedCollections,
   valueFacetSort,
   defaultFacetSort,
+  getDefaultSelectedFacets,
+  FacetEventDetails,
 } from '../models';
 import type {
   CollectionTitles,
@@ -45,6 +47,11 @@ import {
 } from '../utils/analytics-events';
 import './toggle-switch';
 import { srOnlyStyle } from '../styles/sr-only';
+import {
+  mergeSelectedFacets,
+  sortBucketsBySelectionState,
+  updateSelectedFacetBucket,
+} from '../utils/facet-utils';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -90,7 +97,7 @@ export class MoreFacetsContent extends LitElement {
 
   @state() paginationSize = 0;
 
-  @state() facetsType = 'modal';
+  @state() private uncommittedFacetChanges = getDefaultSelectedFacets();
 
   private facetsPerPage = 35;
 
@@ -195,8 +202,8 @@ export class MoreFacetsContent extends LitElement {
   /**
    * Combines the selected facets with the aggregations to create a single list of facets
    */
-  private get mergedFacets(): FacetGroup[] | void {
-    const facetGroups: FacetGroup[] = [];
+  private get mergedFacets(): FacetGroup | undefined {
+    if (!this.facetKey || !this.selectedFacets) return undefined;
 
     const selectedFacetGroup = this.selectedFacetGroups.find(
       group => group.key === this.facetKey
@@ -205,17 +212,15 @@ export class MoreFacetsContent extends LitElement {
       group => group.key === this.facetKey
     );
 
-    // if the user selected a facet, but it's not in the aggregation, we add it as-is
-    if (selectedFacetGroup && !aggregateFacetGroup) {
-      facetGroups.push(selectedFacetGroup);
-      return facetGroups;
-    }
+    const uncommittedFacetBuckets = Object.values(
+      this.uncommittedFacetChanges[this.facetKey]
+    );
 
-    // if we don't have an aggregate facet group, don't add this to the list
-    if (!aggregateFacetGroup) return facetGroups;
+    // if we don't have any aggregations, then there is nothing to show yet
+    if (!aggregateFacetGroup) return undefined;
 
     // start with either the selected group if we have one, or the aggregate group
-    const facetGroup = selectedFacetGroup ?? aggregateFacetGroup;
+    const facetGroup = { ...(selectedFacetGroup ?? aggregateFacetGroup) };
 
     // attach the counts to the selected buckets
     const bucketsWithCount =
@@ -231,16 +236,28 @@ export class MoreFacetsContent extends LitElement {
           : bucket;
       }) ?? [];
 
+    // sort by selection state (prior to adding uncommitted selections)
+    sortBucketsBySelectionState(bucketsWithCount);
+
     // append any additional buckets that were not selected
     aggregateFacetGroup.buckets.forEach(bucket => {
       const existingBucket = bucketsWithCount.find(b => b.key === bucket.key);
       if (existingBucket) return;
       bucketsWithCount.push(bucket);
     });
+
+    // apply any uncommitted selections that appear on this page
+    for (const bucket of uncommittedFacetBuckets) {
+      const existingBucketIndex = bucketsWithCount.findIndex(
+        b => b.key === bucket.key
+      );
+      if (existingBucketIndex >= 0) {
+        bucketsWithCount[existingBucketIndex] = { ...bucket };
+      }
+    }
     facetGroup.buckets = bucketsWithCount;
 
-    facetGroups.push(facetGroup);
-    return facetGroups;
+    return facetGroup;
   }
 
   /**
@@ -335,15 +352,20 @@ export class MoreFacetsContent extends LitElement {
     return facetGroups;
   }
 
-  private get getMoreFacetsTemplate(): TemplateResult {
+  private get moreFacetsTemplate(): TemplateResult {
     return html`
       <facets-template
-        .facetGroup=${this.mergedFacets?.shift()}
+        .facetGroup=${this.mergedFacets}
         .selectedFacets=${this.selectedFacets}
-        .renderOn=${'modal'}
         .collectionTitles=${this.collectionTitles}
-        @selectedFacetsChanged=${(e: CustomEvent) => {
-          this.selectedFacets = e.detail;
+        @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
+          if (this.facetKey) {
+            this.uncommittedFacetChanges = updateSelectedFacetBucket(
+              this.uncommittedFacetChanges,
+              this.facetKey,
+              e.detail.bucket
+            );
+          }
         }}
       ></facets-template>
     `;
@@ -397,7 +419,7 @@ export class MoreFacetsContent extends LitElement {
     );
   }
 
-  private get getModalHeaderTemplate(): TemplateResult {
+  private get modalHeaderTemplate(): TemplateResult {
     const facetSort =
       this.sortedBy ?? defaultFacetSort[this.facetKey as FacetOption];
     const defaultSwitchSide =
@@ -432,8 +454,8 @@ export class MoreFacetsContent extends LitElement {
         ? this.loaderTemplate
         : html`
             <section id="more-facets">
-              <div class="header-content">${this.getModalHeaderTemplate}</div>
-              <div class="facets-content">${this.getMoreFacetsTemplate}</div>
+              <div class="header-content">${this.modalHeaderTemplate}</div>
+              <div class="facets-content">${this.moreFacetsTemplate}</div>
               ${this.footerTemplate}
             </section>
           `}
@@ -441,8 +463,13 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private applySearchFacetsClicked() {
+    const mergedSelections = mergeSelectedFacets(
+      this.selectedFacets,
+      this.uncommittedFacetChanges
+    );
+
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
-      detail: this.selectedFacets,
+      detail: mergedSelections,
       bubbles: true,
       composed: true,
     });
@@ -470,18 +497,10 @@ export class MoreFacetsContent extends LitElement {
     return [
       srOnlyStyle,
       css`
-        @media (max-width: 560px) {
-          section#more-facets {
-            max-height: 450px;
-          }
-          .facets-content {
-            overflow-y: auto;
-            height: 300px;
-          }
-        }
         section#more-facets {
           overflow: auto;
           padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
+          --facetsColumnCount: 3;
         }
         .header-content .title {
           display: block;
@@ -532,6 +551,17 @@ export class MoreFacetsContent extends LitElement {
         .footer {
           text-align: center;
           margin-top: 10px;
+        }
+
+        @media (max-width: 560px) {
+          section#more-facets {
+            max-height: 450px;
+            --facetsColumnCount: 1;
+          }
+          .facets-content {
+            overflow-y: auto;
+            height: 300px;
+          }
         }
       `,
     ];
