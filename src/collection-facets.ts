@@ -646,13 +646,10 @@ export class CollectionFacets extends LitElement {
     facetGroup: FacetGroup,
     sortedBy: AggregationSortType
   ): Promise<void> {
-    const facetAggrKey = facetGroup.key;
-
     const customModalContent = html`
       <more-facets-content
         .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
-        .facetAggregationKey=${facetAggrKey}
         .query=${this.query}
         .filterMap=${this.filterMap}
         .pageSpecifierParams=${this.pageSpecifierParams}

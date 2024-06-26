@@ -6,6 +6,7 @@ import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-
 import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
 import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
+import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -64,7 +65,6 @@ describe('More facets content', () => {
 
     el.facetKey = 'mediatype';
     el.facetsLoading = false;
-    el.paginationSize = 6;
     await el.updateComplete;
 
     expect(el.shadowRoot?.querySelectorAll('more-facets-pagination')).to.exist;
@@ -146,7 +146,7 @@ describe('More facets content', () => {
     expect(searchService.searchParams?.query).to.equal('title:hello');
   });
 
-  it('combine selectedFacets and aggregationFacets and render on modal', async () => {
+  it('combines selectedFacets and aggregationFacets and renders on modal', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<MoreFacetsContent>(
@@ -157,11 +157,12 @@ describe('More facets content', () => {
       ></more-facets-content>`
     );
 
-    await el.updateComplete;
+    const facetsTemplate = el.shadowRoot?.querySelector(
+      'facets-template'
+    ) as FacetsTemplate;
+    expect(facetsTemplate).to.exist;
 
-    expect(el.facetGroupTitle).to.equal('Collection');
-
-    const facetGroup = el.facetGroup?.shift();
+    const { facetGroup } = facetsTemplate;
     expect(facetGroup?.key).to.equal('collection');
     expect(facetGroup?.title).to.equal('Collection');
 
@@ -180,7 +181,6 @@ describe('More facets content', () => {
     );
 
     el.facetsLoading = false;
-    el.paginationSize = 5;
     await el.updateComplete;
 
     // select cancel button
@@ -204,7 +204,6 @@ describe('More facets content', () => {
     );
 
     el.facetsLoading = false;
-    el.paginationSize = 5;
     el.facetKey = 'collection';
     await el.updateComplete;
 

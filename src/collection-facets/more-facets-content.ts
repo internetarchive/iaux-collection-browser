@@ -22,6 +22,7 @@ import {
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
+import { msg } from '@lit/localize';
 import {
   SelectedFacets,
   FacetGroup,
@@ -57,15 +58,9 @@ import {
 export class MoreFacetsContent extends LitElement {
   @property({ type: String }) facetKey?: FacetOption;
 
-  @property({ type: String }) facetAggregationKey?: FacetOption;
-
   @property({ type: String }) query?: string;
 
   @property({ type: Object }) filterMap?: FilterMap;
-
-  @property({ type: Object }) modalManager?: ModalManagerInterface;
-
-  @property({ type: Object }) searchService?: SearchServiceInterface;
 
   @property({ type: String }) searchType?: SearchType;
 
@@ -74,37 +69,78 @@ export class MoreFacetsContent extends LitElement {
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
 
+  /**
+   * Maximum number of facets to show per page within the modal.
+   */
+  @property({ type: Number }) facetsPerPage = 35;
+
+  /**
+   * Whether we are waiting for facet data to load.
+   * We begin with this set to true so that we show an initial loading indicator.
+   */
+  @property({ type: Boolean }) facetsLoading = true;
+
+  /**
+   * The set of pre-existing facet selections (including both selected & negated facets).
+   */
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
   @property({ type: String }) sortedBy: AggregationSortType =
     AggregationSortType.COUNT;
 
+  @property({ type: Object }) modalManager?: ModalManagerInterface;
+
+  @property({ type: Object }) searchService?: SearchServiceInterface;
+
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
 
-  @state() aggregations?: Record<string, Aggregation>;
-
-  @state() facetGroup?: FacetGroup[] = [];
-
-  @state() facetGroupTitle?: String = '';
-
-  @state() pageNumber = 1;
+  /**
+   * The full set of aggregations received from the search service
+   */
+  @state() private aggregations?: Record<string, Aggregation>;
 
   /**
-   * Facets are loading on popup
+   * A FacetGroup storing the set of facet buckets shown on the current page.
    */
-  @state() facetsLoading = true;
+  @state() private facetGroup?: FacetGroup;
 
-  @state() paginationSize = 0;
+  /**
+   * An object holding any changes the patron has made to their facet selections
+   * within the modal dialog but which they have not yet applied. These are
+   * eventually merged into the existing `selectedFacets` when the patron applies
+   * their changes, or discarded if they cancel/close the dialog.
+   */
+  @state() private unappliedFacetChanges = getDefaultSelectedFacets();
 
-  @state() private uncommittedFacetChanges = getDefaultSelectedFacets();
+  /**
+   * Which page of facets we are showing.
+   */
+  @state() private pageNumber = 1;
 
-  private facetsPerPage = 35;
+  willUpdate(changed: PropertyValues): void {
+    console.log('willUpdate');
+    if (
+      changed.has('aggregations') ||
+      changed.has('facetsPerPage') ||
+      changed.has('pageNumber') ||
+      changed.has('selectedFacets')
+    ) {
+      console.log(
+        'updating facet group',
+        changed.has('aggregations'),
+        changed.has('facetsPerPage'),
+        changed.has('pageNumber'),
+        changed.has('selectedFacets')
+      );
+      this.facetGroup = this.mergedFacets;
+    }
+  }
 
-  updated(changed: PropertyValues) {
+  updated(changed: PropertyValues): void {
+    // If any of the search properties change, it triggers a facet fetch
     if (
       changed.has('facetKey') ||
-      changed.has('facetAggregationKey') ||
       changed.has('query') ||
       changed.has('searchType') ||
       changed.has('filterMap')
@@ -115,13 +151,9 @@ export class MoreFacetsContent extends LitElement {
 
       this.updateSpecificFacets();
     }
-
-    if (changed.has('pageNumber')) {
-      this.facetGroup = this.aggregationFacetGroups;
-    }
   }
 
-  firstUpdated() {
+  firstUpdated(): void {
     this.setupEscapeListeners();
   }
 
@@ -155,11 +187,13 @@ export class MoreFacetsContent extends LitElement {
    * - this.aggregations - hold result of search service and being used for further processing.
    */
   async updateSpecificFacets(): Promise<void> {
+    if (!this.facetKey) return; // Can't fetch facets if we don't know what type of facets we need!
+
     const trimmedQuery = this.query?.trim();
     if (!trimmedQuery && this.isSearchResultsPage) return; // The search page _requires_ a query
 
     const aggregations = {
-      simpleParams: [this.facetAggregationKey as string],
+      simpleParams: [this.facetKey],
     };
     const aggregationsSize = 65535; // todo - do we want to have all the records at once?
 
@@ -174,8 +208,6 @@ export class MoreFacetsContent extends LitElement {
 
     const results = await this.searchService?.search(params, this.searchType);
     this.aggregations = results?.success?.response.aggregations;
-
-    this.facetGroup = this.aggregationFacetGroups;
     this.facetsLoading = false;
 
     const collectionTitles = results?.success?.response?.collectionTitles;
@@ -186,6 +218,9 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
+  /**
+   * Handler for page number changes from the pagination widget.
+   */
   private pageNumberClicked(e: CustomEvent<{ page: number }>) {
     const page = e?.detail?.page;
     if (page) {
@@ -205,27 +240,21 @@ export class MoreFacetsContent extends LitElement {
   private get mergedFacets(): FacetGroup | undefined {
     if (!this.facetKey || !this.selectedFacets) return undefined;
 
-    const selectedFacetGroup = this.selectedFacetGroups.find(
-      group => group.key === this.facetKey
-    );
-    const aggregateFacetGroup = this.aggregationFacetGroups.find(
-      group => group.key === this.facetKey
+    const { selectedFacetGroup, aggregationFacetGroup } = this;
+    const unappliedFacetBuckets = Object.values(
+      this.unappliedFacetChanges[this.facetKey]
     );
 
-    const uncommittedFacetBuckets = Object.values(
-      this.uncommittedFacetChanges[this.facetKey]
-    );
+    // If we don't have any aggregations, then there is nothing to show yet
+    if (!aggregationFacetGroup) return undefined;
 
-    // if we don't have any aggregations, then there is nothing to show yet
-    if (!aggregateFacetGroup) return undefined;
+    // Start with either the selected group if we have one, or the aggregate group otherwise
+    const facetGroup = { ...(selectedFacetGroup ?? aggregationFacetGroup) };
 
-    // start with either the selected group if we have one, or the aggregate group
-    const facetGroup = { ...(selectedFacetGroup ?? aggregateFacetGroup) };
-
-    // attach the counts to the selected buckets
+    // Attach the counts to the selected buckets
     const bucketsWithCount =
       selectedFacetGroup?.buckets.map(bucket => {
-        const selectedBucket = aggregateFacetGroup.buckets.find(
+        const selectedBucket = aggregationFacetGroup.buckets.find(
           b => b.key === bucket.key
         );
         return selectedBucket
@@ -236,18 +265,20 @@ export class MoreFacetsContent extends LitElement {
           : bucket;
       }) ?? [];
 
-    // sort by selection state (prior to adding uncommitted selections)
+    // Sort the buckets by selection state
+    // We do this *prior* to considering unapplied selections, because we want the facets
+    // to remain in position when they are selected/unselected, rather than re-sort themselves.
     sortBucketsBySelectionState(bucketsWithCount);
 
-    // append any additional buckets that were not selected
-    aggregateFacetGroup.buckets.forEach(bucket => {
+    // Append any additional buckets that were not selected
+    aggregationFacetGroup.buckets.forEach(bucket => {
       const existingBucket = bucketsWithCount.find(b => b.key === bucket.key);
       if (existingBucket) return;
       bucketsWithCount.push(bucket);
     });
 
-    // apply any uncommitted selections that appear on this page
-    for (const bucket of uncommittedFacetBuckets) {
+    // Apply any unapplied selections that appear on this page
+    for (const bucket of unappliedFacetBuckets) {
       const existingBucketIndex = bucketsWithCount.findIndex(
         b => b.key === bucket.key
       );
@@ -261,95 +292,83 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
-   * Converts the selected facets to a `FacetGroup` array,
-   * which is easier to work with
+   * Converts the selected facets for the current facet key to a `FacetGroup`,
+   * which is easier to work with.
    */
-  private get selectedFacetGroups(): FacetGroup[] {
-    if (!this.selectedFacets) return [];
+  private get selectedFacetGroup(): FacetGroup | undefined {
+    if (!this.selectedFacets || !this.facetKey) return undefined;
 
-    const facetGroups: FacetGroup[] = Object.entries(this.selectedFacets).map(
-      ([key, selectedFacets]) => {
-        const option = key as FacetOption;
-        const title = facetTitles[option];
+    const selectedFacetsForKey = this.selectedFacets[this.facetKey];
+    const facetGroupTitle = facetTitles[this.facetKey];
 
-        const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
-          ([value, data]) => {
-            const displayText: string = value;
-            return {
-              displayText,
-              key: value,
-              count: data?.count,
-              state: data?.state,
-            };
-          }
-        );
-
+    const buckets: FacetBucket[] = Object.entries(selectedFacetsForKey).map(
+      ([value, data]) => {
+        const displayText: string = value;
         return {
-          title,
-          key: option,
-          buckets,
+          displayText,
+          key: value,
+          count: data?.count,
+          state: data?.state,
         };
       }
     );
 
-    return facetGroups;
+    return {
+      title: facetGroupTitle,
+      key: this.facetKey,
+      buckets,
+    };
   }
 
   /**
-   * Converts the raw `aggregations` to `FacetGroups`, which are easier to use
+   * Converts the raw `aggregations` for the current facet key to a `FacetGroup`,
+   * which is easier to work with.
    */
-  private get aggregationFacetGroups(): FacetGroup[] {
-    const facetGroups: FacetGroup[] = [];
-    Object.entries(this.aggregations ?? []).forEach(([key, aggregation]) => {
-      // the year_histogram data is in a different format so can't be handled here
-      if (key === 'year_histogram') return;
+  private get aggregationFacetGroup(): FacetGroup | undefined {
+    if (!this.aggregations || !this.facetKey) return undefined;
 
-      const option = key as FacetOption;
-      this.facetGroupTitle = facetTitles[option];
+    const currentAggregation = this.aggregations[this.facetKey];
+    if (!currentAggregation) return undefined;
 
-      // sort facets in specific order
-      let castedBuckets = aggregation.getSortedBuckets(
-        this.sortedBy
-      ) as Bucket[];
+    const facetGroupTitle = facetTitles[this.facetKey];
 
-      if (option === 'collection') {
-        // we are not showing fav- collections or certain deemphasized collections in facets
-        castedBuckets = castedBuckets?.filter(bucket => {
-          const bucketKey = bucket?.key?.toString();
-          return (
-            !suppressedCollections[bucketKey] && !bucketKey?.startsWith('fav-')
-          );
-        });
-      }
+    // Order the facets according to the current sort option
+    let sortedBuckets = currentAggregation.getSortedBuckets(
+      this.sortedBy
+    ) as Bucket[];
 
-      // find length and pagination size for modal pagination
-      const { length } = Object.keys(castedBuckets as []);
-      this.paginationSize = Math.ceil(length / this.facetsPerPage);
-
-      // render only items which will be visible as per this.facetsPerPage
-      const bucketsMaxSix = castedBuckets?.slice(
-        (this.pageNumber - 1) * this.facetsPerPage,
-        this.pageNumber * this.facetsPerPage
-      );
-
-      const facetBucket: FacetBucket[] = bucketsMaxSix.map(bucket => {
-        const bucketKey = bucket.key;
-        return {
-          displayText: `${bucket.key}`,
-          key: `${bucketKey}`,
-          count: bucket.doc_count,
-          state: 'none',
-        };
+    if (this.facetKey === 'collection') {
+      // we are not showing fav- collections or certain deemphasized collections in facets
+      sortedBuckets = sortedBuckets?.filter(bucket => {
+        const bucketKey = bucket?.key?.toString();
+        return (
+          !suppressedCollections[bucketKey] && !bucketKey?.startsWith('fav-')
+        );
       });
-      const group: FacetGroup = {
-        title: this.facetGroupTitle as string,
-        key: option,
-        buckets: facetBucket,
+    }
+
+    // Truncate the aggregation buckets according to the max buckets per page
+    const truncatedBuckets = sortedBuckets?.slice(
+      (this.pageNumber - 1) * this.facetsPerPage,
+      this.pageNumber * this.facetsPerPage
+    );
+
+    // Construct the array of facet buckets from the aggregation buckets
+    const facetBuckets: FacetBucket[] = truncatedBuckets.map(bucket => {
+      const bucketKeyStr = `${bucket.key}`;
+      return {
+        displayText: `${bucketKeyStr}`,
+        key: `${bucketKeyStr}`,
+        count: bucket.doc_count,
+        state: 'none',
       };
-      facetGroups.push(group);
     });
 
-    return facetGroups;
+    return {
+      title: facetGroupTitle,
+      key: this.facetKey,
+      buckets: facetBuckets,
+    };
   }
 
   private get moreFacetsTemplate(): TemplateResult {
@@ -360,8 +379,8 @@ export class MoreFacetsContent extends LitElement {
         .collectionTitles=${this.collectionTitles}
         @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
           if (this.facetKey) {
-            this.uncommittedFacetChanges = updateSelectedFacetBucket(
-              this.uncommittedFacetChanges,
+            this.unappliedFacetChanges = updateSelectedFacetBucket(
+              this.unappliedFacetChanges,
               this.facetKey,
               e.detail.bucket
             );
@@ -375,6 +394,17 @@ export class MoreFacetsContent extends LitElement {
     return html`<div class="facets-loader">
       <ia-activity-indicator .mode=${'processing'}></ia-activity-indicator>
     </div> `;
+  }
+
+  /**
+   * How many pages of facets to show in the modal pagination widget
+   */
+  private get paginationSize(): number {
+    if (!this.aggregations || !this.facetKey) return 0;
+
+    // Calculate the appropriate number of pages to show in the modal pagination widget
+    const length = this.aggregations[this.facetKey]?.buckets.length;
+    return Math.ceil(length / this.facetsPerPage);
   }
 
   // render pagination if more then 1 page
@@ -425,18 +455,18 @@ export class MoreFacetsContent extends LitElement {
     const defaultSwitchSide =
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
 
-    return html`<span class="sr-only">More facets for:</span>
+    return html`<span class="sr-only">${msg('More facets for:')}</span>
       <span class="title">
-        ${this.facetGroupTitle}
+        ${this.facetGroup?.title}
 
-        <label class="sort-label">Sort by:</label>
+        <label class="sort-label">${msg('Sort by:')}</label>
         ${this.facetKey
           ? html`<toggle-switch
               class="sort-toggle"
               leftValue=${AggregationSortType.COUNT}
               leftLabel="Count"
               rightValue=${valueFacetSort[this.facetKey]}
-              rightLabel=${this.facetGroupTitle}
+              rightLabel=${this.facetGroup?.title}
               side=${defaultSwitchSide}
               @change=${(e: CustomEvent<string>) => {
                 this.sortFacetAggregation(
@@ -465,7 +495,7 @@ export class MoreFacetsContent extends LitElement {
   private applySearchFacetsClicked() {
     const mergedSelections = mergeSelectedFacets(
       this.selectedFacets,
-      this.uncommittedFacetChanges
+      this.unappliedFacetChanges
     );
 
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {
@@ -474,6 +504,10 @@ export class MoreFacetsContent extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event);
+
+    // Reset the unapplied changes back to default, now that they have been applied
+    this.unappliedFacetChanges = getDefaultSelectedFacets();
+
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
