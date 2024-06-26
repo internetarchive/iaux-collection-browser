@@ -44,6 +44,7 @@ import {
   LendingFacetKey,
   suppressedCollections,
   defaultFacetSort,
+  FacetEventDetails,
 } from './models';
 import type {
   CollectionTitles,
@@ -59,6 +60,10 @@ import {
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
 import { ExpandedDatePicker } from './expanded-date-picker';
+import {
+  sortBucketsBySelectionState,
+  updateSelectedFacetBucket,
+} from './utils/facet-utils';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -429,6 +434,9 @@ export class CollectionFacets extends LitElement {
         }
       }
 
+      // Sort the FacetBuckets so that selected and hidden buckets come before the rest
+      sortBucketsBySelectionState(bucketsWithCount);
+
       // splice how many items we want to show in page facet area
       facetGroup.buckets = bucketsWithCount.splice(0, allowedFacetCount);
 
@@ -692,11 +700,18 @@ export class CollectionFacets extends LitElement {
         .collectionPagePath=${this.collectionPagePath}
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
-        .renderOn=${'page'}
         .collectionTitles=${this.collectionTitles}
-        @selectedFacetsChanged=${(e: CustomEvent) => {
+        @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
+          console.log('received facetClick in collection-facets', e.detail);
+          this.selectedFacets = updateSelectedFacetBucket(
+            this.selectedFacets,
+            facetGroup.key,
+            e.detail.bucket,
+            true
+          );
+
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
-            detail: e.detail,
+            detail: this.selectedFacets,
             bubbles: true,
             composed: true,
           });

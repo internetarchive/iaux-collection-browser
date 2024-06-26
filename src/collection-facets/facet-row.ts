@@ -138,11 +138,14 @@ export class FacetRow extends LitElement {
 
     const target = e.target as HTMLInputElement;
     const { checked } = target;
-    bucket.state = FacetRow.getFacetState(checked, negative);
+    this.bucket = {
+      ...bucket,
+      state: FacetRow.getFacetState(checked, negative),
+    };
 
     this.dispatchFacetClickEvent({
       facetType,
-      bucket,
+      bucket: this.bucket,
       negative,
     });
   }
