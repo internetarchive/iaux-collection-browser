@@ -416,6 +416,9 @@ export class CollectionFacets extends LitElement {
         );
       }
 
+      // Sort the FacetBuckets so that selected and hidden buckets come before the rest
+      sortBucketsBySelectionState(bucketsWithCount);
+
       // For mediatype facets, ensure the collection bucket is always shown if present
       if (facetKey === 'mediatype') {
         const collectionIndex = bucketsWithCount.findIndex(
@@ -427,18 +430,18 @@ export class CollectionFacets extends LitElement {
             collectionIndex,
             1
           );
-          bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
+
           // If we're showing lots of selected facets, ensure we're not cutting off the last one
-          if (allowedFacetCount > this.allowedFacetCount)
+          if (allowedFacetCount > this.allowedFacetCount) {
             allowedFacetCount += 1;
+          }
+
+          bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
         }
       }
 
-      // Sort the FacetBuckets so that selected and hidden buckets come before the rest
-      sortBucketsBySelectionState(bucketsWithCount);
-
-      // splice how many items we want to show in page facet area
-      facetGroup.buckets = bucketsWithCount.splice(0, allowedFacetCount);
+      // slice off how many items we want to show in page facet area
+      facetGroup.buckets = bucketsWithCount.slice(0, allowedFacetCount);
 
       facetGroups.push(facetGroup);
     });
@@ -699,7 +702,6 @@ export class CollectionFacets extends LitElement {
         .selectedFacets=${this.selectedFacets}
         .collectionTitles=${this.collectionTitles}
         @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
-          console.log('received facetClick in collection-facets', e.detail);
           this.selectedFacets = updateSelectedFacetBucket(
             this.selectedFacets,
             facetGroup.key,

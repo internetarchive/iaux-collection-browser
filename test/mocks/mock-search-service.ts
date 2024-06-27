@@ -29,6 +29,7 @@ import {
   getMockSuccessManyFields,
   getMockSuccessNoResults,
   getMockSuccessWithWebArchiveHits,
+  getMockSuccessWithManyAggregations,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -51,6 +52,7 @@ const responses: Record<
   'fav-sort': getMockSuccessWithDefaultFavSort,
   'parent-collections': getMockSuccessWithParentCollections,
   'web-archive': getMockSuccessWithWebArchiveHits,
+  'more-facets': getMockSuccessWithManyAggregations,
   'many-fields': getMockSuccessManyFields,
   'no-results': getMockSuccessNoResults,
   error: getMockErrorResult,
