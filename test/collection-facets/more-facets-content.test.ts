@@ -1,12 +1,12 @@
 /* eslint-disable import/no-duplicates */
-import { expect, fixture } from '@open-wc/testing';
+import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import { Aggregation } from '@internetarchive/search-service';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
 import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
 import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
+import type { SelectedFacets } from '../../src/models';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -20,15 +20,16 @@ const selectedFacetsGroup = {
   ],
 };
 
-const aggregations: Record<string, Aggregation> = {
-  collection: new Aggregation({
-    buckets: [
-      {
-        key: 'foo',
-        doc_count: 5,
-      },
-    ],
-  }),
+const yearSelectedFacets: SelectedFacets = {
+  mediatype: {},
+  lending: {},
+  year: {
+    '2000': { key: '2000', count: 5, state: 'selected' },
+  },
+  subject: {},
+  collection: {},
+  creator: {},
+  language: {},
 };
 
 describe('More facets content', () => {
@@ -63,10 +64,14 @@ describe('More facets content', () => {
       ></more-facets-content>`
     );
 
-    el.facetKey = 'mediatype';
-    el.facetsLoading = false;
+    el.facetKey = 'year';
+    el.query = 'more-facets'; // Produces a response with 40+ aggregations for multiple pages
     await el.updateComplete;
+    await aTimeout(100);
 
+    // @ts-ignore
+    console.log(el.facetGroup);
+    console.log(el.shadowRoot);
     expect(el.shadowRoot?.querySelectorAll('more-facets-pagination')).to.exist;
   });
 
@@ -151,9 +156,10 @@ describe('More facets content', () => {
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
         .searchService=${searchService}
-        .selectedFacets=${selectedFacetsGroup}
-        .aggregations=${aggregations}
+        .selectedFacets=${yearSelectedFacets}
       ></more-facets-content>`
     );
 
@@ -163,54 +169,63 @@ describe('More facets content', () => {
     expect(facetsTemplate).to.exist;
 
     const { facetGroup } = facetsTemplate;
-    expect(facetGroup?.key).to.equal('collection');
-    expect(facetGroup?.title).to.equal('Collection');
+    expect(facetGroup?.key).to.equal('year');
+    expect(facetGroup?.title).to.equal('Year');
 
-    const bucket = facetGroup?.buckets[0];
-    expect(bucket?.key).to.equal('foo');
-    expect(bucket?.count).to.equal(5);
+    // First bucket is the one that was included in the selected facets
+    const firstBucket = facetGroup?.buckets[0];
+    expect(firstBucket?.key).to.equal('2000');
+    expect(firstBucket?.count).to.equal(5);
+
+    // Second bucket is the most recent year, since year facets default to descending order of year
+    const secondBucket = facetGroup?.buckets[1];
+    expect(secondBucket?.key).to.equal('2024');
+    expect(secondBucket?.count).to.equal(5);
   });
 
   it('cancel button clicked event', async () => {
+    const searchService = new MockSearchService();
     const mockAnalyticsHandler = new MockAnalyticsHandler();
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
+        .facetKey=${'collection'}
+        .query=${'collection-aggregations'}
+        .searchService=${searchService}
         .analyticsHandler=${mockAnalyticsHandler}
       ></more-facets-content>`
     );
-
-    el.facetsLoading = false;
-    await el.updateComplete;
 
     // select cancel button
     const cancelButton = el.shadowRoot?.querySelector(
       '.footer > .btn-cancel'
     ) as HTMLButtonElement;
+    expect(cancelButton).to.exist;
     cancelButton?.click();
 
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
     expect(mockAnalyticsHandler.callAction).to.equal('closeMoreFacetsModal');
-    expect(mockAnalyticsHandler.callLabel).to.equal('undefined');
+    expect(mockAnalyticsHandler.callLabel).to.equal('collection');
   });
 
   it('facet apply button clicked event', async () => {
+    const searchService = new MockSearchService();
     const mockAnalyticsHandler = new MockAnalyticsHandler();
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
+        .facetKey=${'collection'}
+        .query=${'collection-aggregations'}
+        .searchService=${searchService}
         .analyticsHandler=${mockAnalyticsHandler}
       ></more-facets-content>`
     );
-
-    el.facetsLoading = false;
-    el.facetKey = 'collection';
-    await el.updateComplete;
 
     // select submit button
     const submitButton = el.shadowRoot?.querySelector(
       '.footer > .btn-submit'
     ) as HTMLButtonElement;
+    expect(submitButton).to.exist;
     submitButton?.click();
 
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');

@@ -178,7 +178,11 @@ describe('Facet row', () => {
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
       facetType: 'subject',
-      bucket,
+      bucket: {
+        key: 'foo',
+        state: 'selected',
+        count: 5,
+      },
       negative: false,
     });
   });
@@ -208,7 +212,11 @@ describe('Facet row', () => {
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
       facetType: 'subject',
-      bucket,
+      bucket: {
+        key: 'foo',
+        state: 'none',
+        count: 5,
+      },
       negative: false,
     });
   });
@@ -238,7 +246,11 @@ describe('Facet row', () => {
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
       facetType: 'subject',
-      bucket,
+      bucket: {
+        key: 'foo',
+        state: 'hidden',
+        count: 5,
+      },
       negative: true,
     });
   });
@@ -268,7 +280,11 @@ describe('Facet row', () => {
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
       facetType: 'subject',
-      bucket,
+      bucket: {
+        key: 'foo',
+        state: 'none',
+        count: 5,
+      },
       negative: true,
     });
   });
@@ -299,7 +315,11 @@ describe('Facet row', () => {
     expect(facetClickSpy.callCount).to.equal(1);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
       facetType: 'subject',
-      bucket,
+      bucket: {
+        key: 'foo',
+        state: 'selected',
+        count: 5,
+      },
       negative: false,
     });
 
@@ -308,7 +328,11 @@ describe('Facet row', () => {
     expect(facetClickSpy.callCount).to.equal(2);
     expect(facetClickSpy.lastCall.args[0]?.detail).to.deep.equal({
       facetType: 'subject',
-      bucket,
+      bucket: {
+        key: 'foo',
+        state: 'none',
+        count: 5,
+      },
       negative: false,
     });
   });

@@ -119,20 +119,12 @@ export class MoreFacetsContent extends LitElement {
   @state() private pageNumber = 1;
 
   willUpdate(changed: PropertyValues): void {
-    console.log('willUpdate');
     if (
       changed.has('aggregations') ||
       changed.has('facetsPerPage') ||
       changed.has('pageNumber') ||
       changed.has('selectedFacets')
     ) {
-      console.log(
-        'updating facet group',
-        changed.has('aggregations'),
-        changed.has('facetsPerPage'),
-        changed.has('pageNumber'),
-        changed.has('selectedFacets')
-      );
       this.facetGroup = this.mergedFacets;
     }
   }
@@ -299,6 +291,8 @@ export class MoreFacetsContent extends LitElement {
     if (!this.selectedFacets || !this.facetKey) return undefined;
 
     const selectedFacetsForKey = this.selectedFacets[this.facetKey];
+    if (!selectedFacetsForKey) return undefined;
+
     const facetGroupTitle = facetTitles[this.facetKey];
 
     const buckets: FacetBucket[] = Object.entries(selectedFacetsForKey).map(

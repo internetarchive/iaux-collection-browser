@@ -940,6 +940,92 @@ export const getMockSuccessWithWebArchiveHits: () => Result<
   },
 });
 
+export const getMockSuccessWithManyAggregations: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'aggregations',
+      clientParameters: {
+        user_query: 'more-facets',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'aggregations',
+          finalized_parameters: {
+            user_query: 'more-facets',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {},
+    response: {
+      totalResults: 0,
+      returnedCount: 0,
+      results: [],
+      aggregations: {
+        year: new Aggregation({
+          buckets: [
+            { key: '1980', doc_count: 5 },
+            { key: '1981', doc_count: 6 },
+            { key: '1982', doc_count: 7 },
+            { key: '1983', doc_count: 8 },
+            { key: '1984', doc_count: 5 },
+            { key: '1985', doc_count: 6 },
+            { key: '1986', doc_count: 7 },
+            { key: '1987', doc_count: 8 },
+            { key: '1988', doc_count: 5 },
+            { key: '1989', doc_count: 6 },
+            { key: '1990', doc_count: 7 },
+            { key: '1991', doc_count: 8 },
+            { key: '1992', doc_count: 5 },
+            { key: '1993', doc_count: 6 },
+            { key: '1994', doc_count: 7 },
+            { key: '1995', doc_count: 8 },
+            { key: '1996', doc_count: 5 },
+            { key: '1997', doc_count: 6 },
+            { key: '1998', doc_count: 7 },
+            { key: '1999', doc_count: 8 },
+            { key: '2000', doc_count: 5 },
+            { key: '2001', doc_count: 6 },
+            { key: '2002', doc_count: 7 },
+            { key: '2003', doc_count: 8 },
+            { key: '2004', doc_count: 5 },
+            { key: '2005', doc_count: 6 },
+            { key: '2006', doc_count: 7 },
+            { key: '2007', doc_count: 8 },
+            { key: '2008', doc_count: 5 },
+            { key: '2009', doc_count: 6 },
+            { key: '2010', doc_count: 7 },
+            { key: '2011', doc_count: 8 },
+            { key: '2012', doc_count: 5 },
+            { key: '2013', doc_count: 6 },
+            { key: '2014', doc_count: 7 },
+            { key: '2015', doc_count: 8 },
+            { key: '2016', doc_count: 5 },
+            { key: '2017', doc_count: 6 },
+            { key: '2018', doc_count: 7 },
+            { key: '2019', doc_count: 8 },
+            { key: '2020', doc_count: 5 },
+            { key: '2021', doc_count: 6 },
+            { key: '2022', doc_count: 7 },
+            { key: '2023', doc_count: 8 },
+            { key: '2024', doc_count: 5 },
+          ],
+        }),
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockErrorResult: () => Result<
   SearchResponse,
   SearchServiceError
