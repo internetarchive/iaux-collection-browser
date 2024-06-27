@@ -67,11 +67,8 @@ describe('More facets content', () => {
     el.facetKey = 'year';
     el.query = 'more-facets'; // Produces a response with 40+ aggregations for multiple pages
     await el.updateComplete;
-    await aTimeout(100);
+    await aTimeout(50); // Give it a moment to perform the (mock) search query after the initial update
 
-    // @ts-ignore
-    console.log(el.facetGroup);
-    console.log(el.shadowRoot);
     expect(el.shadowRoot?.querySelectorAll('more-facets-pagination')).to.exist;
   });
 
