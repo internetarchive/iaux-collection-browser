@@ -44,6 +44,7 @@ import {
   LendingFacetKey,
   suppressedCollections,
   defaultFacetSort,
+  FacetEventDetails,
 } from './models';
 import type {
   CollectionTitles,
@@ -59,6 +60,10 @@ import {
 } from './utils/analytics-events';
 import { srOnlyStyle } from './styles/sr-only';
 import { ExpandedDatePicker } from './expanded-date-picker';
+import {
+  sortBucketsBySelectionState,
+  updateSelectedFacetBucket,
+} from './utils/facet-utils';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -411,6 +416,9 @@ export class CollectionFacets extends LitElement {
         );
       }
 
+      // Sort the FacetBuckets so that selected and hidden buckets come before the rest
+      sortBucketsBySelectionState(bucketsWithCount);
+
       // For mediatype facets, ensure the collection bucket is always shown if present
       if (facetKey === 'mediatype') {
         const collectionIndex = bucketsWithCount.findIndex(
@@ -422,15 +430,18 @@ export class CollectionFacets extends LitElement {
             collectionIndex,
             1
           );
-          bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
+
           // If we're showing lots of selected facets, ensure we're not cutting off the last one
-          if (allowedFacetCount > this.allowedFacetCount)
+          if (allowedFacetCount > this.allowedFacetCount) {
             allowedFacetCount += 1;
+          }
+
+          bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
         }
       }
 
-      // splice how many items we want to show in page facet area
-      facetGroup.buckets = bucketsWithCount.splice(0, allowedFacetCount);
+      // slice off how many items we want to show in page facet area
+      facetGroup.buckets = bucketsWithCount.slice(0, allowedFacetCount);
 
       facetGroups.push(facetGroup);
     });
@@ -638,13 +649,10 @@ export class CollectionFacets extends LitElement {
     facetGroup: FacetGroup,
     sortedBy: AggregationSortType
   ): Promise<void> {
-    const facetAggrKey = facetGroup.key;
-
     const customModalContent = html`
       <more-facets-content
         .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
-        .facetAggregationKey=${facetAggrKey}
         .query=${this.query}
         .filterMap=${this.filterMap}
         .pageSpecifierParams=${this.pageSpecifierParams}
@@ -692,11 +700,17 @@ export class CollectionFacets extends LitElement {
         .collectionPagePath=${this.collectionPagePath}
         .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
-        .renderOn=${'page'}
         .collectionTitles=${this.collectionTitles}
-        @selectedFacetsChanged=${(e: CustomEvent) => {
+        @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
+          this.selectedFacets = updateSelectedFacetBucket(
+            this.selectedFacets,
+            facetGroup.key,
+            e.detail.bucket,
+            true
+          );
+
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
-            detail: e.detail,
+            detail: this.selectedFacets,
             bubbles: true,
             composed: true,
           });

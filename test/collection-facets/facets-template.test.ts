@@ -28,26 +28,12 @@ describe('Render facets', () => {
     expect(el.shadowRoot?.querySelector('facet-row')).to.exist;
   });
 
-  it('facets render on page', async () => {
+  it('facets template renders facet rows', async () => {
     const el = await fixture<FacetsTemplate>(
-      html`<facets-template
-        .facetGroup=${facetGroup}
-        .renderOn=${'page'}
-      ></facets-template>`
+      html`<facets-template .facetGroup=${facetGroup}></facets-template>`
     );
 
-    expect(el.shadowRoot?.querySelector('.facets-on-page')).to.exist;
-  });
-
-  it('facets render on modal', async () => {
-    const el = await fixture<FacetsTemplate>(
-      html`<facets-template
-        .facetGroup=${facetGroup}
-        .renderOn=${'modal'}
-      ></facets-template>`
-    );
-
-    expect(el.shadowRoot?.querySelector('.facets-on-modal')).to.exist;
+    expect(el.shadowRoot?.querySelector('.facet-rows')).to.exist;
   });
 
   it('applies correct bucket values to facet row', async () => {
@@ -66,14 +52,12 @@ describe('Render facets', () => {
     });
   });
 
-  it('emits facet click and change events when a facet is selected/deselected', async () => {
+  it('emits facet click event when a facet is selected/deselected', async () => {
     const facetClickSpy = sinon.spy();
-    const facetChangeSpy = sinon.spy();
     const el = await fixture<FacetsTemplate>(
       html`<facets-template
         .facetGroup=${facetGroup}
         @facetClick=${facetClickSpy}
-        @selectedFacetsChanged=${facetChangeSpy}
       ></facets-template>`
     );
 
@@ -87,23 +71,19 @@ describe('Render facets', () => {
 
     facetSelectCheck.click();
     expect(facetClickSpy.callCount).to.equal(1);
-    expect(facetChangeSpy.callCount).to.equal(1);
     expect(facetRow.bucket?.state).to.equal('selected');
 
     facetSelectCheck.click();
     expect(facetClickSpy.callCount).to.equal(2);
-    expect(facetChangeSpy.callCount).to.equal(2);
     expect(facetRow.bucket?.state).to.equal('none');
   });
 
-  it('emits facet click and change events when a facet is negated/un-negated', async () => {
+  it('emits facet click event when a facet is negated/un-negated', async () => {
     const facetClickSpy = sinon.spy();
-    const facetChangeSpy = sinon.spy();
     const el = await fixture<FacetsTemplate>(
       html`<facets-template
         .facetGroup=${facetGroup}
         @facetClick=${facetClickSpy}
-        @selectedFacetsChanged=${facetChangeSpy}
       ></facets-template>`
     );
 
@@ -117,18 +97,15 @@ describe('Render facets', () => {
 
     facetNegateCheck.click();
     expect(facetClickSpy.callCount).to.equal(1);
-    expect(facetChangeSpy.callCount).to.equal(1);
     expect(facetRow.bucket?.state).to.equal('hidden');
 
     facetNegateCheck.click();
     expect(facetClickSpy.callCount).to.equal(2);
-    expect(facetChangeSpy.callCount).to.equal(2);
     expect(facetRow.bucket?.state).to.equal('none');
   });
 
-  it('emits facet click and change events when a pre-selected facet is deselected', async () => {
+  it('emits facet click event when a pre-selected facet is deselected', async () => {
     const facetClickSpy = sinon.spy();
-    const facetChangeSpy = sinon.spy();
     const facetGroupWithSelection = { ...facetGroup };
     facetGroupWithSelection.buckets = [
       { ...facetGroup.buckets[0], state: 'selected' },
@@ -139,7 +116,6 @@ describe('Render facets', () => {
       html`<facets-template
         .facetGroup=${facetGroupWithSelection}
         @facetClick=${facetClickSpy}
-        @selectedFacetsChanged=${facetChangeSpy}
       ></facets-template>`
     );
 
@@ -154,12 +130,10 @@ describe('Render facets', () => {
 
     facetSelectCheck.click();
     expect(facetClickSpy.callCount).to.equal(1);
-    expect(facetChangeSpy.callCount).to.equal(1);
     expect(facetRow.bucket?.state).to.equal('none');
 
     facetSelectCheck.click();
     expect(facetClickSpy.callCount).to.equal(2);
-    expect(facetChangeSpy.callCount).to.equal(2);
     expect(facetRow.bucket?.state).to.equal('selected');
   });
 });
