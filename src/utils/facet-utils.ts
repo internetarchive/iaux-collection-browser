@@ -13,9 +13,18 @@ import {
  * object. The function is always called with the facet type, bucket key, bucket object,
  * and the given SelectedFacets object.
  *
- * @param selectedFacets
- * @param fn
- * @returns
+ * @param selectedFacets The SelectedFacets object whose buckets should be iterated over
+ * @param fn The function to apply to each facet bucket.
+ *
+ * @example
+ * forEachFacetBucket(
+ *   myFacets,
+ *   (facetType, bucketKey, bucket) => {
+ *     if (facetType === 'collection' && bucket.state === 'hidden') {
+ *       console.log(`Excluding any results in the ${bucketKey} collection`);
+ *     }
+ *   }
+ * );
  */
 export function forEachFacetBucket(
   selectedFacets: SelectedFacets | undefined,
