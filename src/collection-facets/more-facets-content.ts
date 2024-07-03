@@ -101,7 +101,7 @@ export class MoreFacetsContent extends LitElement {
   @state() private aggregations?: Record<string, Aggregation>;
 
   /**
-   * A FacetGroup storing the set of facet buckets shown on the current page.
+   * A FacetGroup storing the full set of facet buckets to be shown on the dialog.
    */
   @state() private facetGroup?: FacetGroup;
 
@@ -122,9 +122,12 @@ export class MoreFacetsContent extends LitElement {
     if (
       changed.has('aggregations') ||
       changed.has('facetsPerPage') ||
-      changed.has('pageNumber') ||
-      changed.has('selectedFacets')
+      changed.has('sortedBy') ||
+      changed.has('selectedFacets') ||
+      changed.has('unappliedFacetChanges')
     ) {
+      // Convert the merged selected facets & aggregations into a facet group, and
+      // store it for reuse across pages.
       this.facetGroup = this.mergedFacets;
     }
   }
@@ -260,7 +263,7 @@ export class MoreFacetsContent extends LitElement {
     // Sort the buckets by selection state
     // We do this *prior* to considering unapplied selections, because we want the facets
     // to remain in position when they are selected/unselected, rather than re-sort themselves.
-    sortBucketsBySelectionState(bucketsWithCount);
+    sortBucketsBySelectionState(bucketsWithCount, this.sortedBy);
 
     // Append any additional buckets that were not selected
     aggregationFacetGroup.buckets.forEach(bucket => {
@@ -341,14 +344,8 @@ export class MoreFacetsContent extends LitElement {
       });
     }
 
-    // Truncate the aggregation buckets according to the max buckets per page
-    const truncatedBuckets = sortedBuckets?.slice(
-      (this.pageNumber - 1) * this.facetsPerPage,
-      this.pageNumber * this.facetsPerPage
-    );
-
     // Construct the array of facet buckets from the aggregation buckets
-    const facetBuckets: FacetBucket[] = truncatedBuckets.map(bucket => {
+    const facetBuckets: FacetBucket[] = sortedBuckets.map(bucket => {
       const bucketKeyStr = `${bucket.key}`;
       return {
         displayText: `${bucketKeyStr}`,
@@ -365,10 +362,30 @@ export class MoreFacetsContent extends LitElement {
     };
   }
 
+  /**
+   * Returns a FacetGroup representing only the current page of facet buckets to show.
+   */
+  private get facetGroupForCurrentPage(): FacetGroup | undefined {
+    const { facetGroup } = this;
+    if (!facetGroup) return undefined;
+
+    // Slice out only the current page of facet buckets
+    const firstBucketIndexOnPage = (this.pageNumber - 1) * this.facetsPerPage;
+    const truncatedBuckets = facetGroup.buckets.slice(
+      firstBucketIndexOnPage,
+      firstBucketIndexOnPage + this.facetsPerPage
+    );
+
+    return {
+      ...facetGroup,
+      buckets: truncatedBuckets,
+    };
+  }
+
   private get moreFacetsTemplate(): TemplateResult {
     return html`
       <facets-template
-        .facetGroup=${this.mergedFacets}
+        .facetGroup=${this.facetGroupForCurrentPage}
         .selectedFacets=${this.selectedFacets}
         .collectionTitles=${this.collectionTitles}
         @facetClick=${(e: CustomEvent<FacetEventDetails>) => {

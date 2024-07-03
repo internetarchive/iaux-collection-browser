@@ -1,3 +1,4 @@
+import { AggregationSortType } from '@internetarchive/search-service';
 import {
   FacetOption,
   getDefaultSelectedFacets,
@@ -150,12 +151,24 @@ const BUCKET_STATE_ORDER = ['selected', 'hidden', 'none'];
  * The sort is performed in-place using `Array.sort`, so the return value is
  * a reference to the same array that was passed in, only sorted.
  */
-export function sortBucketsBySelectionState(buckets: FacetBucket[]) {
+export function sortBucketsBySelectionState(
+  buckets: FacetBucket[],
+  sort?: AggregationSortType
+) {
   return buckets.sort((a, b) => {
     const aStateIndex = BUCKET_STATE_ORDER.indexOf(a.state);
     const bStateIndex = BUCKET_STATE_ORDER.indexOf(b.state);
-    const stateDiff = aStateIndex - bStateIndex; // Sort bucket states in the order defined by BUCKET_STATE_ORDER
-    const countDiff = b.count - a.count; // If both buckets have the same state, sort them by descending count
-    return stateDiff || countDiff; // Primary sort on state, secondary sort on count
+    const stateDiff = aStateIndex - bStateIndex; // Sort bucket states primarily in the order defined by BUCKET_STATE_ORDER
+
+    let secondaryDiff;
+    if (sort === AggregationSortType.ALPHABETICAL) {
+      secondaryDiff = a.key.localeCompare(b.key); // Ascending alphabetically by bucket key
+    } else if (sort === AggregationSortType.NUMERIC) {
+      secondaryDiff = Number(b.key) - Number(a.key); // Descending numerically by bucket key
+    } else {
+      secondaryDiff = b.count - a.count; // Descending by bucket count
+    }
+
+    return stateDiff || secondaryDiff; // Primary sort on state, secondary sort on the given sort type (defaulting to descending count)
   });
 }
