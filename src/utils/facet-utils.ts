@@ -144,16 +144,23 @@ const BUCKET_STATE_ORDER = ['selected', 'hidden', 'none'];
 
 /**
  * Sorts the provided FacetBuckets so that:
- * - Any selected items come first, sorted by count (desc.)
- * - Any hidden items come after all the selected items, also sorted by count (desc.)
+ * - Any selected items come first
+ * - Any hidden items come after all the selected items
  * - Any unselected / unhidden items come last
+ *
+ * Within each of the above groups, the buckets will be sorted according to
+ * the provided sort type, or by their bucket count by default.
  *
  * The sort is performed in-place using `Array.sort`, so the return value is
  * a reference to the same array that was passed in, only sorted.
+ *
+ * @param buckets The array of facet buckets to sort
+ * @param sort (Optional) How buckets within each state group should be sorted.
+ * Defaults to `AggregationSortType.COUNT` (i.e., descending by bucket count).
  */
 export function sortBucketsBySelectionState(
   buckets: FacetBucket[],
-  sort?: AggregationSortType
+  sort = AggregationSortType.COUNT
 ) {
   return buckets.sort((a, b) => {
     const aStateIndex = BUCKET_STATE_ORDER.indexOf(a.state);
