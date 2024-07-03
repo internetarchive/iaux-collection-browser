@@ -127,7 +127,7 @@ export class TileModel {
     this.href = collapseRepeatedQuotes(
       result.review?.__href__ ?? result.__href__?.value
     );
-    this.identifier = result.identifier;
+    this.identifier = TileModel.cleanIdentifier(result.identifier);
     this.issue = result.issue?.value;
     this.itemCount = result.item_count?.value ?? 0;
     this.mediatype = resolveMediatype(result);
@@ -209,6 +209,17 @@ export class TileModel {
     }
 
     return flags;
+  }
+
+  private static cleanIdentifier(
+    identifier: string | undefined
+  ): string | undefined {
+    // Some identifiers (e.g., from Whisper) represent documents rather than items, and
+    // are suffixed with values that need to be stripped. Those values are separated
+    // from the item identifier itself with '|'.
+    const barIndex = identifier?.indexOf('|') ?? -1;
+    const cleaned = barIndex > 0 ? identifier?.slice(0, barIndex) : identifier;
+    return cleaned;
   }
 }
 
