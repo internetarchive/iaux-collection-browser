@@ -180,6 +180,7 @@ export class CollectionFacets extends LitElement {
       <section
         class="facet-group partof-collections"
         aria-labelledby=${headingId}
+        data-testid="facet-group-partof-collections"
       >
         <div class="facet-group-header">
           <h3 id=${headingId}>${msg('Part Of')}</h3>
@@ -568,6 +569,7 @@ export class CollectionFacets extends LitElement {
       <section
         class="facet-group ${this.collapsableFacets ? 'mobile' : ''}"
         aria-labelledby=${headerId}
+        data-testid="facet-group-${facetGroup.key}"
       >
         <div class="facet-group-header">
           <h3
