@@ -4405,6 +4405,7 @@ fill=""></path>
             class="select-facet-checkbox"
             title=${w}
             id=${n}
+            data-testid=${n}
           />
           <input
             type="checkbox"
@@ -4419,6 +4420,7 @@ fill=""></path>
             for=${d}
             class="hide-facet-icon${u?" active":""}"
             title=${A}
+            data-testid=${d}
           >
             <span class="eye">${mc}</span>
             <span class="eye-closed">${gc}</span>
@@ -4906,7 +4908,7 @@ fill=""></path>
       <section
         class="facet-group ${this.collapsableFacets?"mobile":""}"
         aria-labelledby=${s}
-        data-testid="facet-group-${e.key}"
+        data-testid=${s}
       >
         <div class="facet-group-header">
           <h3
