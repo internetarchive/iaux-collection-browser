@@ -569,7 +569,7 @@ export class CollectionFacets extends LitElement {
       <section
         class="facet-group ${this.collapsableFacets ? 'mobile' : ''}"
         aria-labelledby=${headerId}
-        data-testid="facet-group-${facetGroup.key}"
+        data-testid=${headerId}
       >
         <div class="facet-group-header">
           <h3

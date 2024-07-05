@@ -91,6 +91,7 @@ export class FacetRow extends LitElement {
             class="select-facet-checkbox"
             title=${onlyShowText}
             id=${showOnlyCheckboxId}
+            data-testid=${showOnlyCheckboxId}
           />
           <input
             type="checkbox"
@@ -107,6 +108,7 @@ export class FacetRow extends LitElement {
             for=${negativeCheckboxId}
             class="hide-facet-icon${facetHidden ? ' active' : ''}"
             title=${showHideText}
+            data-testid=${negativeCheckboxId}
           >
             <span class="eye">${eyeIcon}</span>
             <span class="eye-closed">${eyeClosedIcon}</span>
