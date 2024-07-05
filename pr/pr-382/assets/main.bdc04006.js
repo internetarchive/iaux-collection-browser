@@ -4519,7 +4519,10 @@ fill=""></path>
         text-decoration: underline;
       }
     `}};l([h({type:String})],Nt.prototype,"facetType",void 0);l([h({type:Object})],Nt.prototype,"bucket",void 0);l([h({type:Object})],Nt.prototype,"collectionTitles",void 0);Nt=fr=l([D("facet-row")],Nt);let Ut=class extends R{facetClicked(e){const{bucket:t,negative:i}=e.detail;t.state==="none"?this.facetUnchecked(t):this.facetChecked(t,i),this.dispatchFacetClickEvent(e.detail)}facetChecked(e,t){const{facetGroup:i,selectedFacets:o}=this;if(!i)return;let a;o?a=le({},o):a=kt(),a[i.key][e.key]=xe(le({},e),{state:Nt.getFacetState(!0,t)}),this.selectedFacets=a,this.dispatchSelectedFacetsChanged()}facetUnchecked(e){const{facetGroup:t,selectedFacets:i}=this;if(!t)return;let o;i?o=le({},i):o=kt(),delete o[t.key][e.key],this.selectedFacets=o,this.dispatchSelectedFacetsChanged()}dispatchFacetClickEvent(e){const t=new CustomEvent("facetClick",{detail:e,composed:!0});this.dispatchEvent(t)}dispatchSelectedFacetsChanged(){const e=new CustomEvent("selectedFacetsChanged",{detail:this.selectedFacets,bubbles:!0,composed:!0});this.dispatchEvent(e)}get facetsTemplate(){const{facetGroup:e}=this;if(!e)return y;let t=e.buckets;return t=[...t.filter(i=>i.state==="selected").sort((i,o)=>i.count<o.count?1:-1),...t.filter(i=>i.state==="hidden").sort((i,o)=>i.count<o.count?1:-1),...t.filter(i=>i.state==="none")],c`
-      <div class="facets-on-${this.renderOn}">
+      <div
+        class="facets-on-${this.renderOn}"
+        data-testid="facets-for-${e.key}"
+      >
         ${gs(t,i=>`${e.key}:${i.key}`,i=>c`<facet-row
             .facetType=${e.key}
             .bucket=${i}
