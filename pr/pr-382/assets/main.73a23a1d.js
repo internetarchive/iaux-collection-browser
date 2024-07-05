@@ -4852,7 +4852,7 @@ fill=""></path>
       <section
         class="facet-group partof-collections"
         aria-labelledby=${t}
-        data-testid="facet-group partof-collections"
+        data-testid="facet-group-partof-collections"
       >
         <div class="facet-group-header">
           <h3 id=${t}>${P("Part Of")}</h3>
@@ -4906,7 +4906,7 @@ fill=""></path>
       <section
         class="facet-group ${this.collapsableFacets?"mobile":""}"
         aria-labelledby=${s}
-        data-testid="facet-group ${this.collapsableFacets}"
+        data-testid="facet-group-${e.key}"
       >
         <div class="facet-group-header">
           <h3
