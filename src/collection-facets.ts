@@ -154,7 +154,11 @@ export class CollectionFacets extends LitElement {
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
-              <section class="facet-group" aria-labelledby=${datePickerLabelId}>
+              <section
+                class="facet-group"
+                aria-labelledby=${datePickerLabelId}
+                data-testid="facet-group-header-label-date-picker"
+              >
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
                   ${this.expandDatePickerBtnTemplate}
@@ -581,7 +585,10 @@ export class CollectionFacets extends LitElement {
             <span class="sr-only">filters</span>
           </h3>
         </div>
-        <div class="facet-group-content ${isOpen ? 'open' : ''}">
+        <div
+          class="facet-group-content ${isOpen ? 'open' : ''}"
+          data-testid="facet-group-content-${facetGroup.key}"
+        >
           ${this.facetsLoading
             ? this.getTombstoneFacetGroupTemplate()
             : html`
@@ -642,6 +649,7 @@ export class CollectionFacets extends LitElement {
           new CustomEvent('showMoreFacets', { detail: facetGroup.key })
         );
       }}
+      data-testid="more-link-btn"
     >
       More...
     </button>`;

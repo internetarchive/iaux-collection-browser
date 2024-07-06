@@ -40,7 +40,7 @@ export class FacetsTemplate extends LitElement {
     return html`
       <div
         class="facet-rows"
-        data-testid="facets-for-${facetGroup.key}"
+        data-testid="facets-on-${facetGroup.key}"
       >
         ${repeat(
           facetBuckets,

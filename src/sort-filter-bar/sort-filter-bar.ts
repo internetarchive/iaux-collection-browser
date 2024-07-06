@@ -673,6 +673,7 @@ export class SortFilterBar
             }}
             class=${this.displayMode === 'grid' ? 'active' : ''}
             title="Tile view"
+            data-testid="grid-button"
           >
             ${tileIcon}
           </button>
@@ -685,6 +686,7 @@ export class SortFilterBar
             }}
             class=${this.displayMode === 'list-detail' ? 'active' : ''}
             title="List view"
+            data-testid="list-detail-button"
           >
             ${listIcon}
           </button>
@@ -697,6 +699,7 @@ export class SortFilterBar
             }}
             class=${this.displayMode === 'list-compact' ? 'active' : ''}
             title="Compact list view"
+            data-testid="list-compact-button"
           >
             ${compactIcon}
           </button>
