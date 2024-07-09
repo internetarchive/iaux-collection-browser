@@ -1411,14 +1411,19 @@ export class CollectionBrowser
    * current facet loading strategy.
    */
   private updateFacetReadiness(): void {
-    // In desktop view, we are always ready to load facets *unless* we are
-    // using the `opt-in` strategy and the facets dropdown is not open.
-    const desktopFacetsReady =
-      !this.mobileView &&
-      (this.facetLoadStrategy !== 'opt-in' || this.collapsibleFacetsVisible);
+    // There are two ways to opt into facet production:
+    //  (1) be logged into an account, or
+    //  (2) have the facets dropdown open
+    const optedIn = this.loggedIn || this.collapsibleFacetsVisible;
 
-    // In mobile view, facets are considered ready provided they are currently visible (their dropdown is opened).
-    const mobileFacetsReady = this.mobileView && this.collapsibleFacetsVisible;
+    // In desktop view, we are always ready to load facets *unless* we are using the
+    // `opt-in` strategy while logged out and with the facets dropdown closed.
+    const desktopFacetsReady =
+      !this.mobileView && (this.facetLoadStrategy !== 'opt-in' || optedIn);
+
+    // In the mobile view, facets are considered ready provided they are currently
+    // visible (their dropdown is opened) or we are logged in.
+    const mobileFacetsReady = this.mobileView && optedIn;
 
     this.dataSource.handleFacetReadinessChange(
       desktopFacetsReady || mobileFacetsReady
