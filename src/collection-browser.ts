@@ -1020,9 +1020,14 @@ export class CollectionBrowser
       </collection-facets>
     `;
 
-    // In the desktop facets opt-in case, wrap the facet sidebar in a <details> widget
-    // that can be opened and closed as needed.
-    if (this.facetLoadStrategy === 'opt-in' && !this.mobileView) {
+    // If we are using one of the opt-in facet load strategies, we may need to wrap the
+    // desktop view facets in a <details> widget so that patrons can opt into loading them.
+    // In the `opt-in-or-login` case, we only do this if they are not logged in.
+    const showDesktopOptInWidget =
+      this.facetLoadStrategy === 'opt-in' ||
+      (this.facetLoadStrategy === 'opt-in-or-login' && !this.loggedIn);
+
+    if (showDesktopOptInWidget && !this.mobileView) {
       return html`
         <details
           class="desktop-facets-dropdown"
@@ -1412,17 +1417,22 @@ export class CollectionBrowser
    */
   private updateFacetReadiness(): void {
     // There are two ways to opt into facet production:
-    //  (1) be logged into an account, or
-    //  (2) have the facets dropdown open
-    const optedIn = this.loggedIn || this.collapsibleFacetsVisible;
+    //  (1) have the facets dropdown open, or
+    //  (2) if using the `opt-in-or-login` strategy, be logged into an account
+    const optedIn =
+      this.collapsibleFacetsVisible ||
+      (this.facetLoadStrategy === 'opt-in-or-login' && this.loggedIn);
 
-    // In desktop view, we are always ready to load facets *unless* we are using the
-    // `opt-in` strategy while logged out and with the facets dropdown closed.
+    // In desktop view, we are always ready to load facets *unless* we are using one of the
+    // `opt-in` strategies and have not opted in (whether by login or UI interaction).
+    const usingOptInStrategy = ['opt-in', 'opt-in-or-login'].includes(
+      this.facetLoadStrategy
+    );
     const desktopFacetsReady =
-      !this.mobileView && (this.facetLoadStrategy !== 'opt-in' || optedIn);
+      !this.mobileView && (!usingOptInStrategy || optedIn);
 
-    // In the mobile view, facets are considered ready provided they are currently
-    // visible (their dropdown is opened) or we are logged in.
+    // In the mobile view, facets are considered ready provided we have opted in (whether by
+    // login or UI interaction).
     const mobileFacetsReady = this.mobileView && optedIn;
 
     this.dataSource.handleFacetReadinessChange(
