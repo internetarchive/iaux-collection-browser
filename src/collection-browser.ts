@@ -351,11 +351,6 @@ export class CollectionBrowser
     return this.pagesToRender * this.pageSize;
   }
 
-  /**
-   * How many tiles to offset the data source by, to account for any removed tiles.
-   */
-  private tileModelOffset = 0;
-
   @query('infinite-scroller')
   private infiniteScroller?: InfiniteScroller;
 
@@ -492,8 +487,11 @@ export class CollectionBrowser
     );
   }
 
-  render() {
+  willUpdate(): void {
     this.setPlaceholderType();
+  }
+
+  render() {
     return html`
       <div
         id="content-container"
@@ -1561,9 +1559,7 @@ export class CollectionBrowser
       return;
 
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
-    // this.emitQueryStateChanged();
 
-    this.tileModelOffset = 0;
     this.totalResults = undefined;
     this.pagesToRender =
       this.initialPageNumber === 1
@@ -1593,9 +1589,6 @@ export class CollectionBrowser
       this.persistState();
     }
     this.historyPopOccurred = false;
-
-    // Fire the initial page and facets requests
-    // await this.dataSource.handleQueryChange();
   }
 
   private setupStateRestorationObserver() {
