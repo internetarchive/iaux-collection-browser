@@ -5264,10 +5264,6 @@ fill=""></path>
           ${i}
         </button>
       </div>
-    `}get loadingTemplate(){return c`
-      <div class="loading-cover">
-        <circular-activity-indicator></circular-activity-indicator>
-      </div>
     `}get listHeaderTemplate(){return c`
       <div id="list-header">
         <tile-dispatcher
