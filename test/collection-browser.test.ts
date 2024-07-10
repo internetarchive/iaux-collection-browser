@@ -1956,6 +1956,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
+    await aTimeout(10);
 
     const sortBar = el.shadowRoot?.querySelector(
       'sort-filter-bar'
