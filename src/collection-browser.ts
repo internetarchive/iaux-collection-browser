@@ -504,6 +504,14 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Determines what type of placeholder content should be shown instead of result tiles, if applicable.
+   * The placeholders indicate states where we have no results to show, which could be the result of:
+   *  - No query is set (on the search page)
+   *  - No results were returned for the most recent search
+   *  - The collection being searched within has no viewable items
+   *  - An error occurred on the most recent search attempt
+   */
   private setPlaceholderType() {
     const hasQuery = !!this.baseQuery?.trim();
     const isCollection = !!this.withinCollection;
@@ -530,6 +538,9 @@ export class CollectionBrowser
     }
   }
 
+  /**
+   * Template for the placeholder content to show when no results are available.
+   */
   private get emptyPlaceholderTemplate() {
     return html`
       <empty-placeholder
@@ -656,6 +667,9 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Template for the infinite scroller widget that contains the result tiles.
+   */
   private get infiniteScrollerTemplate() {
     return html`<infinite-scroller
       class=${this.infiniteScrollerClasses}
@@ -671,6 +685,10 @@ export class CollectionBrowser
     </infinite-scroller>`;
   }
 
+  /**
+   * Produces a `classMap` indicating which classes the infinite scroller should have
+   * given the current display mode & placeholder case.
+   */
   private get infiniteScrollerClasses() {
     return classMap({
       [this.displayMode ?? '']: !!this.displayMode,
@@ -678,6 +696,9 @@ export class CollectionBrowser
     });
   }
 
+  /**
+   * Template for the sort & filtering bar that appears atop the search results.
+   */
   private get sortFilterBarTemplate(): TemplateResult | typeof nothing {
     if (this.suppressSortBar) return nothing;
 
@@ -708,6 +729,10 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Template for the manage bar UI that appears atop the search results when we are
+   * showing the management view. This generally replaces the sort bar when present.
+   */
   private get manageBarTemplate(): TemplateResult {
     return html`
       <manage-bar
@@ -752,6 +777,9 @@ export class CollectionBrowser
     this.dataSource.removeCheckedTiles();
   }
 
+  /**
+   * Handler for when the user changes the selected sort option or direction.
+   */
   private userChangedSort(
     e: CustomEvent<{
       selectedSort: SortField;
@@ -768,6 +796,10 @@ export class CollectionBrowser
     this.currentPage = 1;
   }
 
+  /**
+   * Fires an analytics event for sorting changes.
+   * @param prevSortDirection Which sort direction was previously set.
+   */
   private sendSortByAnalytics(prevSortDirection: SortDirection | null): void {
     const directionCleared = prevSortDirection && !this.sortDirection;
 
@@ -780,11 +812,18 @@ export class CollectionBrowser
     });
   }
 
+  /**
+   * Handler for when the selected sort option is updated, whether by the user
+   * themselves or programmatically.
+   */
   private selectedSortChanged(): void {
     // Lazy-load the alphabet counts for title/creator sort bar as needed
     this.dataSource.updatePrefixFiltersForCurrentSort();
   }
 
+  /**
+   * An object representing the current sort field & direction.
+   */
   get sortParam(): SortParam | null {
     const sortOption = SORT_OPTIONS[this.selectedSort];
     if (!sortOption?.handledBySearchService) {
@@ -804,6 +843,9 @@ export class CollectionBrowser
     return { field: sortField, direction: this.sortDirection };
   }
 
+  /**
+   * Handler for when the display mode option is changed (grid/list/compact-list views).
+   */
   private displayModeChanged(
     e: CustomEvent<{ displayMode?: CollectionDisplayMode }>
   ): void {
@@ -1031,14 +1073,9 @@ export class CollectionBrowser
     `;
   }
 
-  private get loadingTemplate() {
-    return html`
-      <div class="loading-cover">
-        <circular-activity-indicator></circular-activity-indicator>
-      </div>
-    `;
-  }
-
+  /**
+   * Template for the table header content that appears atop the compact list view.
+   */
   private get listHeaderTemplate() {
     return html`
       <div id="list-header">
@@ -1055,6 +1092,9 @@ export class CollectionBrowser
     `;
   }
 
+  /**
+   * Handler for when the date picker's date range is changed.
+   */
   private histogramDateRangeUpdated(
     e: CustomEvent<{
       minDate: string;
@@ -1071,6 +1111,9 @@ export class CollectionBrowser
     });
   }
 
+  /**
+   * The Lucene query corresponding to the current date range.
+   */
   private get dateRangeQueryClause() {
     if (!this.minSelectedDate || !this.maxSelectedDate) {
       return undefined;
@@ -1090,6 +1133,19 @@ export class CollectionBrowser
     );
   }
 
+  /**
+   * Installs a new data source component and associated query state parameters into
+   * this component, causing it to efficiently update its views to represent the
+   * newly-provided data. In this way, one can reuse a single instance of
+   * <collection-browser> to handle multiple different sets of search results on
+   * a single page, each set of results being loaded & updated by its own data
+   * source.
+   *
+   * @param dataSource The data source component containing (or prepared to fetch)
+   * the tile data to be displayed.
+   * @param queryState The new query-related state that this component should
+   * represent, such as the search query, sort option, and any filters applied.
+   */
   async installDataSourceAndQueryState(
     dataSource: CollectionBrowserDataSourceInterface,
     queryState: CollectionBrowserQueryState
@@ -1131,6 +1187,10 @@ export class CollectionBrowser
     this.setInitialSize();
   }
 
+  /**
+   * Determines the initial size of the content container and whether or not
+   * the mobile layout should be used.
+   */
   setInitialSize(): void {
     this.contentWidth = this.contentContainer.getBoundingClientRect().width;
     this.mobileView =
@@ -1138,6 +1198,10 @@ export class CollectionBrowser
     this.sendLayoutSizeAnalytics();
   }
 
+  /**
+   * Fires an analytics event indicating which type of layout was rendered:
+   * mobile or desktop.
+   */
   private sendLayoutSizeAnalytics(): void {
     if (this.analyticsHandler) {
       this.layoutSizeAnalyticsSent = true;
@@ -1430,6 +1494,9 @@ export class CollectionBrowser
     fadeElmt?.classList.toggle('hidden', entries?.[0]?.isIntersecting);
   };
 
+  /**
+   * Emits a `baseQueryChanged` event indicating an update to the search query.
+   */
   private emitBaseQueryChanged() {
     this.dispatchEvent(
       new CustomEvent<{ baseQuery?: string }>('baseQueryChanged', {
@@ -1440,6 +1507,10 @@ export class CollectionBrowser
     );
   }
 
+  /**
+   * Emits a `searchTypeChanged` event indicating an update to the search type
+   * (e.g., metadata vs. full-text).
+   */
   private emitSearchTypeChanged() {
     this.dispatchEvent(
       new CustomEvent<SearchType>('searchTypeChanged', {
@@ -1448,6 +1519,10 @@ export class CollectionBrowser
     );
   }
 
+  /**
+   * Emits a `queryStateChanged` event indicating that one or more of this component's
+   * properties have changed in a way that could affect the set of search results.
+   */
   emitQueryStateChanged() {
     this.dispatchEvent(
       new CustomEvent<CollectionBrowserQueryState>('queryStateChanged', {
@@ -1469,6 +1544,10 @@ export class CollectionBrowser
     );
   }
 
+  /**
+   * Emits an `emptyResults` event indicating that we have received an empty result set
+   * for the most recent query.
+   */
   emitEmptyResults() {
     this.dispatchEvent(new Event('emptyResults'));
   }
@@ -1543,6 +1622,10 @@ export class CollectionBrowser
     return this.dataSource.initialSearchComplete;
   }
 
+  /**
+   * Handler for whenever the component's properties change in a way that may require
+   * fetching new results.
+   */
   private async handleQueryChange() {
     // only reset if the query has actually changed
     if (
@@ -1647,6 +1730,10 @@ export class CollectionBrowser
     );
   }
 
+  /**
+   * Emits a `searchResultsLoadingChanged` event indicating that our loading state has
+   * changed (either we have started loading new results, or we have finished loading them).
+   */
   private emitSearchResultsLoadingChanged(): void {
     this.dispatchEvent(
       new CustomEvent<{ loading: boolean }>('searchResultsLoadingChanged', {
@@ -1657,10 +1744,17 @@ export class CollectionBrowser
     );
   }
 
+  /**
+   * Handler for when the set of selected facets changes.
+   */
   facetsChanged(e: CustomEvent<SelectedFacets>) {
     this.selectedFacets = e.detail;
   }
 
+  /**
+   * Handler for when any facet is selected/unselected/hidden/unhidden.
+   * Fires analytics indicating the type of facet event that took place.
+   */
   facetClickHandler({
     detail: { facetType, bucket, negative },
   }: CustomEvent<FacetEventDetails>): void {
