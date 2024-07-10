@@ -526,6 +526,9 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private cancelClick() {
+    // Reset the unapplied changes back to default
+    this.unappliedFacetChanges = getDefaultSelectedFacets();
+
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
