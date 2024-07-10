@@ -236,9 +236,6 @@ export class MoreFacetsContent extends LitElement {
     if (!this.facetKey || !this.selectedFacets) return undefined;
 
     const { selectedFacetGroup, aggregationFacetGroup } = this;
-    const unappliedFacetBuckets = Object.values(
-      this.unappliedFacetChanges[this.facetKey]
-    );
 
     // If we don't have any aggregations, then there is nothing to show yet
     if (!aggregationFacetGroup) return undefined;
@@ -267,18 +264,19 @@ export class MoreFacetsContent extends LitElement {
 
     // Append any additional buckets that were not selected
     aggregationFacetGroup.buckets.forEach(bucket => {
-      const existingBucket = bucketsWithCount.find(b => b.key === bucket.key);
+      const existingBucket = selectedFacetGroup?.buckets.find(
+        b => b.key === bucket.key
+      );
       if (existingBucket) return;
       bucketsWithCount.push(bucket);
     });
 
     // Apply any unapplied selections that appear on this page
-    for (const bucket of unappliedFacetBuckets) {
-      const existingBucketIndex = bucketsWithCount.findIndex(
-        b => b.key === bucket.key
-      );
-      if (existingBucketIndex >= 0) {
-        bucketsWithCount[existingBucketIndex] = { ...bucket };
+    const unappliedBuckets = this.unappliedFacetChanges[this.facetKey];
+    for (const [index, bucket] of bucketsWithCount.entries()) {
+      const unappliedBucket = unappliedBuckets[bucket.key];
+      if (unappliedBucket) {
+        bucketsWithCount[index] = { ...unappliedBucket };
       }
     }
     facetGroup.buckets = bucketsWithCount;
