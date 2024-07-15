@@ -404,11 +404,7 @@ export class CollectionBrowserDataSource
     const facetsBecameReady = !this.facetsReadyToLoad && ready;
     this.facetsReadyToLoad = ready;
 
-    const lazyLoadFacets = ['lazy-mobile', 'opt-in'].includes(
-      this.host.facetLoadStrategy
-    );
-    const needsFetch =
-      lazyLoadFacets && facetsBecameReady && this.canFetchFacets;
+    const needsFetch = facetsBecameReady && this.canFetchFacets;
     if (needsFetch) {
       this.fetchFacets();
     }
