@@ -38,10 +38,7 @@ export class FacetsTemplate extends LitElement {
     const facetBuckets = facetGroup.buckets as FacetBucket[];
 
     return html`
-      <div
-        class="facet-rows"
-        data-testid="facets-on-${facetGroup.key}"
-      >
+      <div class="facet-rows" data-testid="facets-on-${facetGroup.key}">
         ${repeat(
           facetBuckets,
           bucket => `${facetGroup.key}:${bucket.key}`,
