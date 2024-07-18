@@ -4530,10 +4530,7 @@ fill=""></path>
         text-decoration: underline;
       }
     `}};l([h({type:String})],ui.prototype,"facetType",void 0);l([h({type:Object})],ui.prototype,"bucket",void 0);l([h({type:Object})],ui.prototype,"collectionTitles",void 0);ui=fr=l([D("facet-row")],ui);let Qi=class extends F{facetClicked(e){this.dispatchFacetClickEvent(e.detail)}dispatchFacetClickEvent(e){const t=new CustomEvent("facetClick",{detail:e,composed:!0});this.dispatchEvent(t)}get facetsTemplate(){const{facetGroup:e}=this;if(!e)return y;const t=e.buckets;return c`
-      <div
-        class="facet-rows"
-        data-testid="facets-on-${e.key}"
-      >
+      <div class="facet-rows" data-testid="facets-on-${e.key}">
         ${ys(t,i=>`${e.key}:${i.key}`,i=>c`<facet-row
             .facetType=${e.key}
             .bucket=${i}
