@@ -86,6 +86,7 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get emptyQueryTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
       <h2 class="title" data-testid="empty-query-text-msg">
         ${EmptyPlaceholder.MESSAGE_EMPTY_QUERY}
@@ -95,6 +96,7 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get emptyCollectionTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
       <h2 class="title" data-testid="empty-collection-text-msg">
         ${EmptyPlaceholder.MESSAGE_NO_VIEWABLE_MEMBERS}
@@ -104,6 +106,7 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get noResultsTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
       <h2 class="title" data-testid="empty-results-text-msg">
         ${this.isCollection
@@ -115,6 +118,7 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get queryErrorTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
       <h2 class="title" data-testid="error-query-text-msg">
         ${EmptyPlaceholder.MESSAGE_QUERY_ERROR}
@@ -127,6 +131,7 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get collectionErrorTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
       <h2 class="title" data-testid="error-collection-text-msg">
         ${EmptyPlaceholder.MESSAGE_COLLECTION_ERROR}

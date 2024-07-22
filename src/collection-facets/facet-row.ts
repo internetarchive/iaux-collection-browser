@@ -77,6 +77,7 @@ export class FacetRow extends LitElement {
     const showHideText = facetHidden ? unhideText : hideText;
     const ariaLabel = `${titleText}, ${bucket.count} results`;
 
+    // Added data-testid for Playwright testing
     return html`
       <div class="facet-row-container">
         <div class="facet-checkboxes">

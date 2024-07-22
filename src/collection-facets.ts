@@ -148,6 +148,8 @@ export class CollectionFacets extends LitElement {
       managing: this.isManageView,
     });
 
+    // Added data-testid for Playwright testing
+    // Using facet-group class and aria-labels is not ideal for Playwright locator
     const datePickerLabelId = 'date-picker-label';
     return html`
       <div id="container" class=${containerClasses}>
@@ -179,6 +181,8 @@ export class CollectionFacets extends LitElement {
     // We only display the "Part Of" section on collection pages
     if (!this.parentCollections?.length) return nothing;
 
+    // Added data-testid for Playwright testing
+    // Using className and aria-labels is not ideal for Playwright locator
     const headingId = 'partof-heading';
     return html`
       <section
@@ -568,6 +572,8 @@ export class CollectionFacets extends LitElement {
       this.openFacets = newOpenFacets;
     };
 
+    // Added data-testid for Playwright testing
+    // Using className and aria-labels is not ideal for Playwright locator
     const headerId = `facet-group-header-label-${facetGroup.key}`;
     return html`
       <section
@@ -636,6 +642,8 @@ export class CollectionFacets extends LitElement {
     // We sort years in numeric order by default, rather than bucket count
     const facetSort = defaultFacetSort[facetGroup.key];
 
+    // Added data-testid for Playwright testing
+    // Using the className is not ideal for Playwright locator
     return html`<button
       class="more-link"
       @click=${() => {

@@ -37,6 +37,8 @@ export class FacetsTemplate extends LitElement {
 
     const facetBuckets = facetGroup.buckets as FacetBucket[];
 
+    // Added data-testid for Playwright testing
+    // Using className and aria-labels is not ideal for Playwright locator
     return html`
       <div class="facet-rows" data-testid="facets-on-${facetGroup.key}">
         ${repeat(

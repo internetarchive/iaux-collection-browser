@@ -662,6 +662,7 @@ export class SortFilterBar
   }
 
   /** Template for rendering the three display mode options */
+  /** Added data-testid for Playwright testing * */
   private get displayOptionTemplate() {
     return html`
       <ul>
