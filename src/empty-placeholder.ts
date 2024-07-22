@@ -86,22 +86,29 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get emptyQueryTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
-      <h2 class="title">${EmptyPlaceholder.MESSAGE_EMPTY_QUERY}</h2>
+      <h2 class="title" data-testid="empty-query-text-msg">
+        ${EmptyPlaceholder.MESSAGE_EMPTY_QUERY}
+      </h2>
       <div>${emptyQueryIcon}</div>
     `;
   }
 
   private get emptyCollectionTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
-      <h2 class="title">${EmptyPlaceholder.MESSAGE_NO_VIEWABLE_MEMBERS}</h2>
+      <h2 class="title" data-testid="empty-collection-text-msg">
+        ${EmptyPlaceholder.MESSAGE_NO_VIEWABLE_MEMBERS}
+      </h2>
       <div>${nullResultIcon}</div>
     `;
   }
 
   private get noResultsTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
-      <h2 class="title">
+      <h2 class="title" data-testid="empty-results-text-msg">
         ${this.isCollection
           ? EmptyPlaceholder.MESSAGE_NO_COLLECTION_RESULTS
           : EmptyPlaceholder.MESSAGE_NO_SEARCH_RESULTS}
@@ -111,8 +118,11 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get queryErrorTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
-      <h2 class="title">${EmptyPlaceholder.MESSAGE_QUERY_ERROR}</h2>
+      <h2 class="title" data-testid="error-query-text-msg">
+        ${EmptyPlaceholder.MESSAGE_QUERY_ERROR}
+      </h2>
       <div>${nullResultIcon}</div>
       <p class="error-details">
         ${EmptyPlaceholder.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
@@ -121,8 +131,11 @@ export class EmptyPlaceholder extends LitElement {
   }
 
   private get collectionErrorTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
     return html`
-      <h2 class="title">${EmptyPlaceholder.MESSAGE_COLLECTION_ERROR}</h2>
+      <h2 class="title" data-testid="error-collection-text-msg">
+        ${EmptyPlaceholder.MESSAGE_COLLECTION_ERROR}
+      </h2>
       <div>${nullResultIcon}</div>
       <p class="error-details">
         ${EmptyPlaceholder.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}

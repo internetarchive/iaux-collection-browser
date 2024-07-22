@@ -148,13 +148,19 @@ export class CollectionFacets extends LitElement {
       managing: this.isManageView,
     });
 
+    // Added data-testid for Playwright testing
+    // Using facet-group class and aria-labels is not ideal for Playwright locator
     const datePickerLabelId = 'date-picker-label';
     return html`
       <div id="container" class=${containerClasses}>
         ${this.showHistogramDatePicker &&
         (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
           ? html`
-              <section class="facet-group" aria-labelledby=${datePickerLabelId}>
+              <section
+                class="facet-group"
+                aria-labelledby=${datePickerLabelId}
+                data-testid="facet-group-header-label-date-picker"
+              >
                 <h3 id=${datePickerLabelId}>
                   Year Published <span class="sr-only">range filter</span>
                   ${this.expandDatePickerBtnTemplate}
@@ -175,11 +181,14 @@ export class CollectionFacets extends LitElement {
     // We only display the "Part Of" section on collection pages
     if (!this.parentCollections?.length) return nothing;
 
+    // Added data-testid for Playwright testing
+    // Using className and aria-labels is not ideal for Playwright locator
     const headingId = 'partof-heading';
     return html`
       <section
         class="facet-group partof-collections"
         aria-labelledby=${headingId}
+        data-testid="facet-group-partof-collections"
       >
         <div class="facet-group-header">
           <h3 id=${headingId}>${msg('Part Of')}</h3>
@@ -563,11 +572,14 @@ export class CollectionFacets extends LitElement {
       this.openFacets = newOpenFacets;
     };
 
+    // Added data-testid for Playwright testing
+    // Using className and aria-labels is not ideal for Playwright locator
     const headerId = `facet-group-header-label-${facetGroup.key}`;
     return html`
       <section
         class="facet-group ${this.collapsableFacets ? 'mobile' : ''}"
         aria-labelledby=${headerId}
+        data-testid=${headerId}
       >
         <div class="facet-group-header">
           <h3
@@ -579,7 +591,10 @@ export class CollectionFacets extends LitElement {
             <span class="sr-only">filters</span>
           </h3>
         </div>
-        <div class="facet-group-content ${isOpen ? 'open' : ''}">
+        <div
+          class="facet-group-content ${isOpen ? 'open' : ''}"
+          data-testid="facet-group-content-${facetGroup.key}"
+        >
           ${this.facetsLoading
             ? this.getTombstoneFacetGroupTemplate()
             : html`
@@ -627,6 +642,8 @@ export class CollectionFacets extends LitElement {
     // We sort years in numeric order by default, rather than bucket count
     const facetSort = defaultFacetSort[facetGroup.key];
 
+    // Added data-testid for Playwright testing
+    // Using the className is not ideal for Playwright locator
     return html`<button
       class="more-link"
       @click=${() => {
@@ -640,6 +657,7 @@ export class CollectionFacets extends LitElement {
           new CustomEvent('showMoreFacets', { detail: facetGroup.key })
         );
       }}
+      data-testid="more-link-btn"
     >
       More...
     </button>`;

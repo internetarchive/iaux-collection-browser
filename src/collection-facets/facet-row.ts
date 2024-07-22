@@ -77,6 +77,7 @@ export class FacetRow extends LitElement {
     const showHideText = facetHidden ? unhideText : hideText;
     const ariaLabel = `${titleText}, ${bucket.count} results`;
 
+    // Added data-testid for Playwright testing
     return html`
       <div class="facet-row-container">
         <div class="facet-checkboxes">
@@ -91,6 +92,7 @@ export class FacetRow extends LitElement {
             class="select-facet-checkbox"
             title=${onlyShowText}
             id=${showOnlyCheckboxId}
+            data-testid=${showOnlyCheckboxId}
           />
           <input
             type="checkbox"
@@ -107,6 +109,7 @@ export class FacetRow extends LitElement {
             for=${negativeCheckboxId}
             class="hide-facet-icon${facetHidden ? ' active' : ''}"
             title=${showHideText}
+            data-testid=${negativeCheckboxId}
           >
             <span class="eye">${eyeIcon}</span>
             <span class="eye-closed">${eyeClosedIcon}</span>

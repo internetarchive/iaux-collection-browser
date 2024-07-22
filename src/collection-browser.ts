@@ -633,8 +633,9 @@ export class CollectionBrowser
     const resultsCount = this.totalResults?.toLocaleString();
     const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
 
+    // Added data-testid for Playwright testing
     return html`
-      <div id="results-total">
+      <div id="results-total" data-testid="results-total">
         <span id="big-results-count">
           ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
         </span>
