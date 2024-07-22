@@ -182,24 +182,32 @@ var hl=Object.defineProperty,pl=Object.defineProperties;var ul=Object.getOwnProp
         ${pn(this.placeholderType,[["empty-query",()=>this.emptyQueryTemplate],["empty-collection",()=>this.emptyCollectionTemplate],["no-results",()=>this.noResultsTemplate],["query-error",()=>this.queryErrorTemplate],["collection-error",()=>this.collectionErrorTemplate]])}
       </div>
     `}get emptyQueryTemplate(){return c`
-      <h2 class="title">${Re.MESSAGE_EMPTY_QUERY}</h2>
+      <h2 class="title" data-testid="empty-query-text-msg">
+        ${Re.MESSAGE_EMPTY_QUERY}
+      </h2>
       <div>${un}</div>
     `}get emptyCollectionTemplate(){return c`
-      <h2 class="title">${Re.MESSAGE_NO_VIEWABLE_MEMBERS}</h2>
+      <h2 class="title" data-testid="empty-collection-text-msg">
+        ${Re.MESSAGE_NO_VIEWABLE_MEMBERS}
+      </h2>
       <div>${Mi}</div>
     `}get noResultsTemplate(){return c`
-      <h2 class="title">
+      <h2 class="title" data-testid="empty-results-text-msg">
         ${this.isCollection?Re.MESSAGE_NO_COLLECTION_RESULTS:Re.MESSAGE_NO_SEARCH_RESULTS}
       </h2>
       <div>${Mi}</div>
     `}get queryErrorTemplate(){return c`
-      <h2 class="title">${Re.MESSAGE_QUERY_ERROR}</h2>
+      <h2 class="title" data-testid="error-query-text-msg">
+        ${Re.MESSAGE_QUERY_ERROR}
+      </h2>
       <div>${Mi}</div>
       <p class="error-details">
         ${Re.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
       </p>
     `}get collectionErrorTemplate(){return c`
-      <h2 class="title">${Re.MESSAGE_COLLECTION_ERROR}</h2>
+      <h2 class="title" data-testid="error-collection-text-msg">
+        ${Re.MESSAGE_COLLECTION_ERROR}
+      </h2>
       <div>${Mi}</div>
       <p class="error-details">
         ${Re.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
@@ -2907,6 +2915,7 @@ fill=""></path>
             @click=${()=>{this.displayMode="grid"}}
             class=${this.displayMode==="grid"?"active":""}
             title="Tile view"
+            data-testid="grid-button"
           >
             ${zd}
           </button>
@@ -2917,6 +2926,7 @@ fill=""></path>
             @click=${()=>{this.displayMode="list-detail"}}
             class=${this.displayMode==="list-detail"?"active":""}
             title="List view"
+            data-testid="list-detail-button"
           >
             ${Pd}
           </button>
@@ -2927,6 +2937,7 @@ fill=""></path>
             @click=${()=>{this.displayMode="list-compact"}}
             class=${this.displayMode==="list-compact"?"active":""}
             title="Compact list view"
+            data-testid="list-compact-button"
           >
             ${Ad}
           </button>
@@ -4404,6 +4415,7 @@ fill=""></path>
             class="select-facet-checkbox"
             title=${w}
             id=${n}
+            data-testid=${n}
           />
           <input
             type="checkbox"
@@ -4418,6 +4430,7 @@ fill=""></path>
             for=${d}
             class="hide-facet-icon${v?" active":""}"
             title=${A}
+            data-testid=${d}
           >
             <span class="eye">${$c}</span>
             <span class="eye-closed">${Sc}</span>
@@ -4516,7 +4529,7 @@ fill=""></path>
         text-decoration: underline;
       }
     `}};l([h({type:String})],gi.prototype,"facetType",void 0);l([h({type:Object})],gi.prototype,"bucket",void 0);l([h({type:Object})],gi.prototype,"collectionTitles",void 0);gi=fa=l([R("facet-row")],gi);let Yi=class extends O{facetClicked(e){this.dispatchFacetClickEvent(e.detail)}dispatchFacetClickEvent(e){const t=new CustomEvent("facetClick",{detail:e,composed:!0});this.dispatchEvent(t)}get facetsTemplate(){const{facetGroup:e}=this;if(!e)return y;const t=e.buckets;return c`
-      <div class="facet-rows">
+      <div class="facet-rows" data-testid="facets-on-${e.key}">
         ${Ts(t,i=>`${e.key}:${i.key}`,i=>c`<facet-row
             .facetType=${e.key}
             .bucket=${i}
@@ -4812,7 +4825,11 @@ fill=""></path>
     `}};l([h({type:String})],Ne.prototype,"minDate",void 0);l([h({type:String})],Ne.prototype,"maxDate",void 0);l([h({type:String})],Ne.prototype,"minSelectedDate",void 0);l([h({type:String})],Ne.prototype,"maxSelectedDate",void 0);l([h({type:Array})],Ne.prototype,"buckets",void 0);l([h({type:Object,attribute:!1})],Ne.prototype,"modalManager",void 0);l([h({type:Object,attribute:!1})],Ne.prototype,"analyticsHandler",void 0);Ne=l([R("expanded-date-picker")],Ne);let H=class extends O{constructor(){super(...arguments),this.moreLinksVisible=!0,this.facetsLoading=!1,this.fullYearAggregationLoading=!1,this.collapsableFacets=!1,this.showHistogramDatePicker=!1,this.allowExpandingDatePicker=!1,this.parentCollections=[],this.collectionPagePath="/details/",this.isManageView=!1,this.openFacets={subject:!1,lending:!1,mediatype:!1,language:!1,creator:!1,collection:!1,year:!1},this.allowedFacetCount=6,this.handleExpandedDatePickerClosed=()=>{var e;(e=this.modalManager)===null||e===void 0||e.classList.remove("expanded-date-picker")},this.histogramDateRangeUpdated=e=>{const{minDate:t,maxDate:i}=e.detail,o=new CustomEvent("histogramDateRangeUpdated",{detail:{minDate:t,maxDate:i}});this.dispatchEvent(o)}}render(){const e=zt({loading:this.facetsLoading,managing:this.isManageView}),t="date-picker-label";return c`
       <div id="container" class=${e}>
         ${this.showHistogramDatePicker&&(this.fullYearsHistogramAggregation||this.fullYearAggregationLoading)?c`
-              <section class="facet-group" aria-labelledby=${t}>
+              <section
+                class="facet-group"
+                aria-labelledby=${t}
+                data-testid="facet-group-header-label-date-picker"
+              >
                 <h3 id=${t}>
                   Year Published <span class="sr-only">range filter</span>
                   ${this.expandDatePickerBtnTemplate}
@@ -4827,6 +4844,7 @@ fill=""></path>
       <section
         class="facet-group partof-collections"
         aria-labelledby=${t}
+        data-testid="facet-group-partof-collections"
       >
         <div class="facet-group-header">
           <h3 id=${t}>${z("Part Of")}</h3>
@@ -4880,6 +4898,7 @@ fill=""></path>
       <section
         class="facet-group ${this.collapsableFacets?"mobile":""}"
         aria-labelledby=${s}
+        data-testid=${s}
       >
         <div class="facet-group-header">
           <h3
@@ -4891,7 +4910,10 @@ fill=""></path>
             <span class="sr-only">filters</span>
           </h3>
         </div>
-        <div class="facet-group-content ${i?"open":""}">
+        <div
+          class="facet-group-content ${i?"open":""}"
+          data-testid="facet-group-content-${e.key}"
+        >
           ${this.facetsLoading?this.getTombstoneFacetGroupTemplate():c`
                 ${this.getFacetTemplate(e)}
                 ${this.searchMoreFacetsLink(e)}
@@ -4903,6 +4925,7 @@ fill=""></path>
     `}searchMoreFacetsLink(e){if(!this.moreLinksVisible||e.key==="lending"||Object.keys(e.buckets).length<this.allowedFacetCount)return y;const t=Vi[e.key];return c`<button
       class="more-link"
       @click=${()=>{var i;this.showMoreFacetsModal(e,t),(i=this.analyticsHandler)===null||i===void 0||i.sendEvent({category:Oe.default,action:J.showMoreFacetsModal,label:e.key}),this.dispatchEvent(new CustomEvent("showMoreFacets",{detail:e.key}))}}
+      data-testid="more-link-btn"
     >
       More...
     </button>`}async showMoreFacetsModal(e,t){var i,o;const r=c`
@@ -5137,7 +5160,7 @@ fill=""></path>
     `}get facetTopViewSlot(){return c`<div id="facet-top-view">
       <slot name="facet-top-slot"></slot>
     </div>`}get resultsCountTemplate(){var e;if(this.suppressResultCount)return y;const t=this.searchResultsLoading||this.totalResults===void 0,i=(e=this.totalResults)===null||e===void 0?void 0:e.toLocaleString(),o=this.totalResults===1?"Result":"Results";return c`
-      <div id="results-total">
+      <div id="results-total" data-testid="results-total">
         <span id="big-results-count">
           ${t?c`Searching&hellip;`:i}
         </span>
