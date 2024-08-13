@@ -36,13 +36,14 @@ export abstract class BaseTileComponent extends LitElement {
       changed.has('baseNavigationUrl') ||
       changed.has('collectionPagePath') ||
       changed.has('sortParam') ||
+      changed.has('defaultSortParam') ||
       changed.has('creatorFilter')
     ) {
       this.displayValueProvider = new TileDisplayValueProvider({
         model: this.model,
         baseNavigationUrl: this.baseNavigationUrl,
         collectionPagePath: this.collectionPagePath,
-        sortParam: this.sortParam ?? undefined,
+        sortParam: this.sortParam ?? this.defaultSortParam ?? undefined,
         creatorFilter: this.creatorFilter,
       });
     }

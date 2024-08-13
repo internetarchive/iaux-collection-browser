@@ -35,7 +35,7 @@ export interface CollectionBrowserSearchInterface
   extends CollectionBrowserQueryState {
   searchService?: SearchServiceInterface;
   readonly sortParam: SortParam | null;
-  readonly defaultSortParam: SortParam | null;
+  readonly defaultSortField: SortField | null;
   readonly facetLoadStrategy: FacetLoadStrategy;
   readonly initialPageNumber: number;
   readonly currentVisiblePageNumbers: number[];

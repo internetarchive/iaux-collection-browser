@@ -41,6 +41,7 @@ export class TileDispatcher
    *  - baseImageUrl?: string;
    *  - collectionPagePath?: string;
    *  - sortParam: SortParam | null = null;
+   *  - defaultSortParam: SortParam | null = null;
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
@@ -111,7 +112,7 @@ export class TileDispatcher
       <tile-list-compact-header
         class="header"
         .currentWidth=${currentWidth}
-        .sortParam=${sortParam || defaultSortParam}
+        .sortParam=${sortParam ?? defaultSortParam}
         .mobileBreakpoint=${mobileBreakpoint}
       >
       </tile-list-compact-header>
@@ -334,7 +335,8 @@ export class TileDispatcher
               .currentWidth=${this.currentWidth}
               .currentHeight=${this.currentHeight}
               .baseImageUrl=${this.baseImageUrl}
-              .sortParam=${sortParam || defaultSortParam}
+              .sortParam=${sortParam}
+              .defaultSortParam=${defaultSortParam}
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
               .isManageView=${this.isManageView}
@@ -350,7 +352,8 @@ export class TileDispatcher
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
-          .sortParam=${sortParam || defaultSortParam}
+          .sortParam=${sortParam}
+          .defaultSortParam=${defaultSortParam}
           .creatorFilter=${creatorFilter}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
@@ -365,7 +368,8 @@ export class TileDispatcher
           .currentWidth=${currentWidth}
           .currentHeight=${currentHeight}
           .baseNavigationUrl=${baseNavigationUrl}
-          .sortParam=${sortParam || defaultSortParam}
+          .sortParam=${sortParam}
+          .defaultSortParam=${defaultSortParam}
           .creatorFilter=${creatorFilter}
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
