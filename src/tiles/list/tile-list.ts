@@ -7,6 +7,7 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { msg } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
+import type { SortParam } from '@internetarchive/search-service';
 import { suppressedCollections } from '../../models';
 import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
@@ -31,6 +32,7 @@ export class TileList extends BaseTileComponent {
    *  - baseImageUrl?: string;
    *  - collectionPagePath?: string;
    *  - sortParam: SortParam | null = null;
+   *  - defaultSortParam: SortParam | null = null;
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
@@ -224,10 +226,10 @@ export class TileList extends BaseTileComponent {
   // Except datePublished which is always shown
   private get dateSortByTemplate() {
     if (
-      this.sortParam &&
-      (this.sortParam.field === 'addeddate' ||
-        this.sortParam.field === 'reviewdate' ||
-        this.sortParam.field === 'publicdate')
+      this.effectiveSort &&
+      (this.effectiveSort.field === 'addeddate' ||
+        this.effectiveSort.field === 'reviewdate' ||
+        this.effectiveSort.field === 'publicdate')
     ) {
       return this.metadataTemplate(
         formatDate(this.date, 'long'),
@@ -239,7 +241,7 @@ export class TileList extends BaseTileComponent {
 
   private get viewsTemplate() {
     const viewCount =
-      this.sortParam?.field === 'week'
+      this.effectiveSort?.field === 'week'
         ? this.model?.weeklyViewCount // weekly views
         : this.model?.viewCount; // all-time views
     if (viewCount == null) return nothing;
@@ -459,7 +461,7 @@ export class TileList extends BaseTileComponent {
    * @see src/models.ts
    */
   private get date(): Date | undefined {
-    switch (this.sortParam?.field) {
+    switch (this.effectiveSort?.field) {
       case 'date':
         return this.model?.datePublished;
       case 'reviewdate':
@@ -469,6 +471,13 @@ export class TileList extends BaseTileComponent {
       default:
         return this.model?.dateArchived; // publicdate
     }
+  }
+
+  /**
+   * Returns the active sort param if one is set, or the default sort param otherwise.
+   */
+  private get effectiveSort(): SortParam | null {
+    return this.sortParam ?? this.defaultSortParam;
   }
 
   private get classSize(): string {
