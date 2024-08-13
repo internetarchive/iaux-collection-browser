@@ -25,7 +25,9 @@ export class TileListCompactHeader extends BaseTileComponent {
         <div id="thumb"></div>
         <div id="title">${msg('Title')}</div>
         <div id="creator">${msg('Creator')}</div>
-        <div id="date">${this.displayValueProvider.dateLabel}</div>
+        <div id="date">
+          ${this.displayValueProvider.dateLabel || msg('Published')}
+        </div>
         <div id="icon">${msg('Type')}</div>
         <div id="views">${msg('Views')}</div>
       </div>
