@@ -1111,7 +1111,7 @@ describe('Collection Browser', () => {
 
     el.applyDefaultProfileSort();
     expect(el.defaultSortParam).to.deep.equal({
-      field: SortField.weeklyview,
+      field: 'week',
       direction: 'desc',
     });
   });
