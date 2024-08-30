@@ -1,6 +1,7 @@
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import DOMPurify from 'dompurify';
+import type { SortParam } from '@internetarchive/search-service';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
@@ -21,6 +22,7 @@ export class TileListCompact extends BaseTileComponent {
    *  - baseImageUrl?: string;
    *  - collectionPagePath?: string;
    *  - sortParam: SortParam | null = null;
+   *  - defaultSortParam: SortParam | null = null;
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
@@ -91,7 +93,7 @@ export class TileListCompact extends BaseTileComponent {
     // In contrast, the search engine metadata uses 'date' to refer to the actual
     // publication date of the underlying media ("Date Published" in the UI).
     // Refer to the full metadata schema for more info.
-    switch (this.sortParam?.field) {
+    switch (this.effectiveSort?.field) {
       case 'publicdate':
         return this.model?.dateArchived;
       case 'reviewdate':
@@ -104,9 +106,16 @@ export class TileListCompact extends BaseTileComponent {
   }
 
   private get views(): number | undefined {
-    return this.sortParam?.field === 'week'
+    return this.effectiveSort?.field === 'week'
       ? this.model?.weeklyViewCount // weekly views
       : this.model?.viewCount; // all-time views
+  }
+
+  /**
+   * Returns the active sort param if one is set, or the default sort param otherwise.
+   */
+  private get effectiveSort(): SortParam | null {
+    return this.sortParam ?? this.defaultSortParam;
   }
 
   private get classSize(): string {
@@ -125,7 +134,7 @@ export class TileListCompact extends BaseTileComponent {
     // This is because items with only a year for their publication date are normalized to
     // Jan 1 at midnight timestamps in the search engine documents.
     if (
-      (!this.isSortedByDate || this.sortParam?.field === 'date') && // Any sort except dates that aren't published date
+      (!this.isSortedByDate || this.effectiveSort?.field === 'date') && // Any sort except dates that aren't published date
       isFirstMillisecondOfUTCYear(this.model?.datePublished)
     ) {
       return 'year-only';
@@ -146,7 +155,7 @@ export class TileListCompact extends BaseTileComponent {
 
   private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
-      this.sortParam?.field as string
+      this.effectiveSort?.field as string
     );
   }
 

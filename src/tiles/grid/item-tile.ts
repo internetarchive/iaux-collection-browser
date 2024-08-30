@@ -5,6 +5,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
 
 import { map } from 'lit/directives/map.js';
+import type { SortParam } from '@internetarchive/search-service';
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
@@ -28,6 +29,7 @@ export class ItemTile extends BaseTileComponent {
    *  - baseImageUrl?: string;
    *  - collectionPagePath?: string;
    *  - sortParam: SortParam | null = null;
+   *  - defaultSortParam: SortParam | null = null;
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
@@ -37,8 +39,9 @@ export class ItemTile extends BaseTileComponent {
 
   render() {
     const itemTitle = this.model?.title;
+    const effectiveSort = this.sortParam ?? this.defaultSortParam;
     const [viewCount, viewLabel] =
-      this.sortParam?.field === 'week'
+      effectiveSort?.field === 'week'
         ? [this.model?.weeklyViewCount, 'weekly views']
         : [this.model?.viewCount, 'all-time views'];
 
@@ -110,7 +113,7 @@ export class ItemTile extends BaseTileComponent {
   private get sortedDateInfoTemplate() {
     let sortedValue;
     let format: DateFormat = 'long';
-    switch (this.sortParam?.field) {
+    switch (this.effectiveSort?.field) {
       case 'date': {
         const datePublished = this.model?.datePublished;
         sortedValue = { field: 'published', value: datePublished };
@@ -212,8 +215,15 @@ export class ItemTile extends BaseTileComponent {
 
   private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
-      this.sortParam?.field as string
+      this.effectiveSort?.field as string
     );
+  }
+
+  /**
+   * Returns the active sort param if one is set, or the default sort param otherwise.
+   */
+  private get effectiveSort(): SortParam | null {
+    return this.sortParam ?? this.defaultSortParam;
   }
 
   private get hasSnippets(): boolean {

@@ -18,7 +18,7 @@ export class TileStats extends LitElement {
 
   @property({ type: Number }) viewCount?: number;
 
-  @property({ type: String }) viewLabel?: number;
+  @property({ type: String }) viewLabel?: string;
 
   @property({ type: Number }) favCount?: number;
 

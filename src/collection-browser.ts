@@ -122,8 +122,6 @@ export class CollectionBrowser
    */
   @property({ type: String }) displayMode?: CollectionDisplayMode;
 
-  @property({ type: Object }) defaultSortParam: SortParam | null = null;
-
   @property({ type: String }) selectedSort: SortField = SortField.default;
 
   @property({ type: String }) selectedTitleFilter: string | null = null;
@@ -131,6 +129,13 @@ export class CollectionBrowser
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
+
+  @property({ type: String }) defaultSortField: Exclude<
+    SortField,
+    SortField.default
+  > = SortField.relevance;
+
+  @property({ type: String }) defaultSortDirection: SortDirection | null = null;
 
   @property({ type: Number }) pageSize = 50;
 
@@ -277,11 +282,6 @@ export class CollectionBrowser
   @state() private collapsibleFacetsVisible = false;
 
   @state() private contentWidth?: number;
-
-  @state() private defaultSortField: Exclude<SortField, SortField.default> =
-    SortField.relevance;
-
-  @state() private defaultSortDirection: SortDirection | null = null;
 
   @state() private placeholderType: PlaceholderType = null;
 
@@ -842,6 +842,17 @@ export class CollectionBrowser
 
     if (!sortField) return null;
     return { field: sortField, direction: this.sortDirection };
+  }
+
+  /**
+   * An object representing the default sort field & direction, if none are explicitly set.
+   */
+  get defaultSortParam(): SortParam | null {
+    const direction = this.defaultSortDirection ?? 'asc';
+    const field = SORT_OPTIONS[this.defaultSortField].searchServiceKey;
+    if (!field) return null;
+
+    return { field, direction };
   }
 
   /**
@@ -1876,10 +1887,6 @@ export class CollectionBrowser
     if (sortField && sortField !== SortField.default) {
       this.defaultSortField = sortField;
       this.defaultSortDirection = dir as SortDirection;
-      this.defaultSortParam = {
-        field: this.defaultSortField,
-        direction: this.defaultSortDirection,
-      };
     }
   }
 
@@ -1895,10 +1902,6 @@ export class CollectionBrowser
     }
 
     this.defaultSortDirection = 'desc';
-    this.defaultSortParam = {
-      field: this.defaultSortField,
-      direction: this.defaultSortDirection,
-    };
   }
 
   /**
