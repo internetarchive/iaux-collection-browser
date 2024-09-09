@@ -10,3 +10,4 @@ export { AccountTile } from './src/tiles/grid/account-tile';
 export { ItemTile } from './src/tiles/grid/item-tile';
 export { TileList } from './src/tiles/list/tile-list';
 export { TileListCompact } from './src/tiles/list/tile-list-compact';
+export { TileDispatcher } from './src/tiles/tile-dispatcher';
