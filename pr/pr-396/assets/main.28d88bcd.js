@@ -501,7 +501,7 @@ var Js=Object.defineProperty,el=Object.defineProperties;var tl=Object.getOwnProp
         </item-image>
         ${this.textOverlayTemplate} ${this.iconOverlayTemplate}
       </div>
-    `:b}get baseClass(){var e,t;return{list:this.isListTile&&!this.isCompactTile,"list-compact":this.isListTile&&this.isCompactTile,collection:((e=this.model)===null||e===void 0?void 0:e.mediatype)==="collection",[this.viewSize]:!0,"search-image":((t=this.model)===null||t===void 0?void 0:t.mediatype)==="search"}}get iconOverlayTemplate(){if(!this.isListTile)return b;const{overlayType:e}=this;return e?c`
+    `:b}get baseClass(){var e,t;return{container:!0,list:this.isListTile&&!this.isCompactTile,"list-compact":this.isListTile&&this.isCompactTile,collection:((e=this.model)===null||e===void 0?void 0:e.mediatype)==="collection",[this.viewSize]:!0,"search-image":((t=this.model)===null||t===void 0?void 0:t.mediatype)==="search"}}get iconOverlayTemplate(){if(!this.isListTile)return b;const{overlayType:e}=this;return e?c`
       <icon-overlay
         class=${this.isCompactTile?"list-compact":"list-detail"}
         .type=${this.overlayType}
@@ -552,7 +552,7 @@ var Js=Object.defineProperty,el=Object.defineProperties;var tl=Object.getOwnProp
       }
 
       /** tile-list-compact view */
-      .list-compact {
+      .container.list-compact {
         display: block;
         text-align: center;
       }
