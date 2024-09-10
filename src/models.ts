@@ -1,3 +1,5 @@
+import type { TemplateResult } from 'lit';
+import { msg } from '@lit/localize';
 import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
@@ -8,6 +10,9 @@ import {
 import { collapseRepeatedQuotes } from './utils/collapse-repeated-quotes';
 import { resolveMediatype } from './utils/resolve-mediatype';
 
+import { loginRequiredIcon } from './assets/img/icons/login-required';
+import { restrictedIcon } from './assets/img/icons/restricted';
+
 /**
  * Flags that can affect the visibility of content on a tile
  */
@@ -15,6 +20,21 @@ interface TileFlags {
   loginRequired: boolean;
   contentWarning: boolean;
 }
+
+/**
+ * Different types of tile overlays, corresponding to the above flags.
+ */
+export type TileOverlayType = 'login-required' | 'content-warning';
+
+export const TILE_OVERLAY_TEXT: Record<TileOverlayType, string> = {
+  'login-required': msg('Log in to view this item'),
+  'content-warning': msg('Content may be inappropriate'),
+};
+
+export const TILE_OVERLAY_ICONS: Record<TileOverlayType, TemplateResult> = {
+  'login-required': loginRequiredIcon,
+  'content-warning': restrictedIcon,
+};
 
 /**
  * Class for converting & storing raw search results in the correct format for UI tiles.

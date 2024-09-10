@@ -11,54 +11,46 @@ describe('Text Overlay component', () => {
 
     const overlay = el.shadowRoot?.querySelector('.overlay');
     const noPreview = el.shadowRoot?.querySelector('.no-preview');
-
-    expect(overlay).to.exist;
-    expect(noPreview).to.exist;
-  });
-
-  it('should render component if loggedIn required', async () => {
-    const el = await fixture<TextOverlay>(html`
-      <text-overlay .loggedIn=${false} .loginRequired=${true}> </text-overlay>
-    `);
-
-    const overlay = el.shadowRoot?.querySelector('.overlay');
-    const noPreview = el.shadowRoot?.querySelector('.no-preview');
     const iconOverlay = el.shadowRoot?.querySelector('.icon-overlay');
     const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
 
     expect(overlay).to.exist;
     expect(noPreview).to.exist;
     expect(iconOverlay).to.exist;
+    expect(textOverlay).to.exist;
+  });
+
+  it('should render component with login-required type', async () => {
+    const el = await fixture<TextOverlay>(html`
+      <text-overlay .type=${'login-required'}></text-overlay>
+    `);
+
+    const iconOverlay = el.shadowRoot?.querySelector('.icon-overlay');
+    const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
+
+    const svgTitle = el.shadowRoot
+      ?.querySelector('svg')
+      ?.querySelector('title')?.textContent;
+
+    expect(iconOverlay).to.exist;
+    expect(svgTitle).to.equal('Log in to view this item');
     expect(textOverlay?.textContent).to.equal('Log in to view this item');
   });
 
-  it('should render component if content warning', async () => {
+  it('should render component with content-warning type', async () => {
     const el = await fixture<TextOverlay>(html`
-      <text-overlay .loggedIn=${false} .loginRequired=${false}> </text-overlay>
+      <text-overlay .type=${'content-warning'}></text-overlay>
     `);
 
-    const overlay = el.shadowRoot?.querySelector('.overlay');
-    const noPreview = el.shadowRoot?.querySelector('.no-preview');
     const iconOverlay = el.shadowRoot?.querySelector('.icon-overlay');
     const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
 
-    expect(overlay).to.exist;
-    expect(noPreview).to.exist;
+    const svgTitle = el.shadowRoot
+      ?.querySelector('svg')
+      ?.querySelector('title')?.textContent;
+
     expect(iconOverlay).to.exist;
-    expect(textOverlay?.textContent).to.equal('Content may be inappropriate');
-  });
-
-  it('should render component if content warning', async () => {
-    const el = await fixture<TextOverlay>(html`
-      <text-overlay .loggedIn=${true} .loginRequired=${true}> </text-overlay>
-    `);
-
-    const overlay = el.shadowRoot?.querySelector('.overlay');
-    const noPreview = el.shadowRoot?.querySelector('.no-preview');
-    const textOverlay = el.shadowRoot?.querySelector('.text-overlay');
-
-    expect(overlay).to.exist;
-    expect(noPreview).to.exist;
+    expect(svgTitle).to.equal('Content may be inappropriate');
     expect(textOverlay?.textContent).to.equal('Content may be inappropriate');
   });
 });
