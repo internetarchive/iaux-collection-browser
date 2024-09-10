@@ -42,6 +42,7 @@ export class ImageBlock extends LitElement {
 
   private get baseClass(): ClassInfo {
     return {
+      container: true,
       list: this.isListTile && !this.isCompactTile,
       'list-compact': this.isListTile && this.isCompactTile,
       collection: this.model?.mediatype === 'collection', // fill the image in container
@@ -137,7 +138,7 @@ export class ImageBlock extends LitElement {
       }
 
       /** tile-list-compact view */
-      .list-compact {
+      .container.list-compact {
         display: block;
         text-align: center;
       }
