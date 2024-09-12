@@ -2,6 +2,7 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { ImageBlock } from '../src/tiles/image-block';
+import type { TextOverlay } from '../src/tiles/overlay/text-overlay';
 
 import '../src/tiles/image-block';
 
@@ -10,7 +11,7 @@ describe('Image block component', () => {
     const el = await fixture<ImageBlock>(html`
       <image-block
         .model=${{
-          loggedInRequired: true,
+          loginRequired: true,
           contentWarning: true,
           identifier: 'goody',
         }}
@@ -36,7 +37,7 @@ describe('Image block component', () => {
     const el = await fixture<ImageBlock>(html`
       <image-block
         .model=${{
-          loggedInRequired: true,
+          loginRequired: true,
           contentWarning: true,
           identifier: 'goody',
         }}
@@ -62,7 +63,7 @@ describe('Image block component', () => {
     const el = await fixture<ImageBlock>(html`
       <image-block
         .model=${{
-          loggedInRequired: true,
+          loginRequired: true,
           contentWarning: true,
           identifier: 'goody',
         }}
@@ -82,5 +83,142 @@ describe('Image block component', () => {
     expect(viewSize).to.exist;
     expect(itemImage).to.exist;
     expect(iconOverlay).to.exist;
+  });
+
+  it('should render a login-required overlay if model requires it and not logged in', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          loginRequired: true,
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${false}
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay'
+    ) as TextOverlay;
+    expect(textOverlay).to.exist;
+    expect(textOverlay.type).to.equal('login-required');
+  });
+
+  it('should render no overlay if logged in and model only requires login', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          loginRequired: true,
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${true}
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay'
+    ) as TextOverlay;
+    expect(textOverlay).not.to.exist;
+  });
+
+  it('should render a content-warning overlay if model requires it and no login overlay is present', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          contentWarning: true,
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${false}
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay'
+    ) as TextOverlay;
+    expect(textOverlay).to.exist;
+    expect(textOverlay.type).to.equal('content-warning');
+  });
+
+  it('should prioritize login-required overlay over content-warning if both required and logged out', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          loginRequired: true,
+          contentWarning: true,
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${false}
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay'
+    ) as TextOverlay;
+    expect(textOverlay).to.exist;
+    expect(textOverlay.type).to.equal('login-required');
+  });
+
+  it('should show content-warning overlay if both types required and logged in', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          loginRequired: true,
+          contentWarning: true,
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${true}
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay'
+    ) as TextOverlay;
+    expect(textOverlay).to.exist;
+    expect(textOverlay.type).to.equal('content-warning');
+  });
+
+  it('should render no overlay if neither loginRequired nor contentWarning flag present', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${false}
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay'
+    ) as TextOverlay;
+    expect(textOverlay).not.to.exist;
   });
 });

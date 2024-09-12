@@ -1,35 +1,39 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { loginRequiredIcon } from '../../assets/img/icons/login-required';
-import { restrictedIcon } from '../../assets/img/icons/restricted';
+import {
+  TILE_OVERLAY_ICONS,
+  TILE_OVERLAY_TEXT,
+  TileOverlayType,
+} from '../../models';
 
 @customElement('text-overlay')
 export class TextOverlay extends LitElement {
-  @property({ type: Boolean }) loggedIn = false;
-
-  @property({ type: Boolean }) loginRequired = false;
-
-  @property({ type: Boolean }) iconRequired = false;
+  @property({ type: String }) type?: TileOverlayType;
 
   render() {
     return html`
       <div class="overlay no-preview">
-        <div class="icon-overlay">${this.iconDisplay}</div>
-        <p class="text-overlay">${this.textDisplay}</p>
+        <div class="icon-overlay">${this.iconTemplate}</div>
+        <p class="text-overlay">${this.textTemplate}</p>
       </div>
     `;
   }
 
-  private get iconDisplay() {
-    return this.loginRequired && !this.loggedIn
-      ? html`${loginRequiredIcon}`
-      : html`${restrictedIcon}`;
+  private get iconTemplate(): TemplateResult | typeof nothing {
+    if (!this.type) return nothing;
+    return html`${TILE_OVERLAY_ICONS[this.type] ?? nothing}`;
   }
 
-  private get textDisplay() {
-    return this.loginRequired && !this.loggedIn
-      ? html`Log in to view this item`
-      : html`Content may be inappropriate`;
+  private get textTemplate(): TemplateResult | typeof nothing {
+    if (!this.type) return nothing;
+    return html`${TILE_OVERLAY_TEXT[this.type] ?? nothing}`;
   }
 
   static get styles(): CSSResultGroup {

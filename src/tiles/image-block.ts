@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
-import type { TileModel } from '../models';
+import type { TileModel, TileOverlayType } from '../models';
 
 import './overlay/icon-overlay';
 import './overlay/text-overlay';
@@ -42,6 +42,7 @@ export class ImageBlock extends LitElement {
 
   private get baseClass(): ClassInfo {
     return {
+      container: true,
       list: this.isListTile && !this.isCompactTile,
       'list-compact': this.isListTile && this.isCompactTile,
       collection: this.model?.mediatype === 'collection', // fill the image in container
@@ -51,35 +52,42 @@ export class ImageBlock extends LitElement {
   }
 
   private get iconOverlayTemplate() {
+    // Only list tiles use the icon overlay
     if (!this.isListTile) return nothing;
 
-    if (!this.model?.loginRequired && !this.model?.contentWarning)
-      return nothing;
+    const { overlayType } = this;
+    if (!overlayType) return nothing;
 
     return html`
       <icon-overlay
-        .loggedIn=${this.loggedIn}
-        .loginRequired=${this.model?.loginRequired}
-        .isCompactTile=${this.isCompactTile}
+        class=${this.isCompactTile ? 'list-compact' : 'list-detail'}
+        .type=${this.overlayType}
       >
       </icon-overlay>
     `;
   }
 
   private get textOverlayTemplate() {
+    // List tiles do not require the text overlay
     if (this.isListTile) return nothing;
 
-    if (!this.model?.loginRequired && !this.model?.contentWarning)
-      return nothing;
+    const { overlayType } = this;
+    if (!overlayType) return nothing;
 
-    return html`
-      <text-overlay
-        .loggedIn=${this.loggedIn}
-        .loginRequired=${this.model?.loginRequired}
-        ?iconRequired=${true}
-      >
-      </text-overlay>
-    `;
+    return html` <text-overlay .type=${this.overlayType}></text-overlay> `;
+  }
+
+  private get overlayType(): TileOverlayType | undefined {
+    // Prioritize showing the login-required overlay if needed.
+    // Otherwise, if a content warning is required, show that overlay instead.
+    // If neither flag is present, no overlay should be shown.
+    if (this.model?.loginRequired && !this.loggedIn) {
+      return 'login-required';
+    }
+    if (this.model?.contentWarning) {
+      return 'content-warning';
+    }
+    return undefined;
   }
 
   static get styles(): CSSResultGroup {
@@ -130,7 +138,7 @@ export class ImageBlock extends LitElement {
       }
 
       /** tile-list-compact view */
-      .list-compact {
+      .container.list-compact {
         display: block;
         text-align: center;
       }

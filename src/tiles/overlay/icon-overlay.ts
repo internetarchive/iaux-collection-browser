@@ -1,31 +1,25 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  TemplateResult,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-
-import { restrictedIcon } from '../../assets/img/icons/restricted';
-import { loginRequiredIcon } from '../../assets/img/icons/login-required';
+import { TILE_OVERLAY_ICONS, TileOverlayType } from '../../models';
 
 @customElement('icon-overlay')
 export class IconOverlay extends LitElement {
-  @property({ type: Boolean }) loggedIn = false;
-
-  @property({ type: Boolean }) loginRequired = false;
-
-  @property({ type: Boolean }) isCompactTile = false;
+  @property({ type: String }) type?: TileOverlayType;
 
   render() {
-    return html`<div class="icon-overlay ${this.getClass}">
-      ${this.iconDisplay}
-    </div>`;
+    return html`<div class="icon-overlay">${this.iconTemplate}</div>`;
   }
 
-  private get getClass() {
-    return this.isCompactTile ? 'list-compact' : 'list-detail';
-  }
-
-  private get iconDisplay() {
-    return this.loginRequired && !this.loggedIn
-      ? html`${loginRequiredIcon}`
-      : html`${restrictedIcon}`;
+  private get iconTemplate(): TemplateResult | typeof nothing {
+    if (!this.type) return nothing;
+    return html`${TILE_OVERLAY_ICONS[this.type] ?? nothing}`;
   }
 
   static get styles(): CSSResultGroup {
@@ -50,11 +44,11 @@ export class IconOverlay extends LitElement {
         padding: 2px;
       }
 
-      .list-detail {
+      :host(.list-detail) .icon-overlay {
         height: 20px;
         width: 20px;
       }
-      .list-compact {
+      :host(.list-compact) .icon-overlay {
         height: 15px;
         width: 15px;
       }
