@@ -58,7 +58,7 @@
     "eslint-plugin-wc": "^1.3.2",
     "gh-pages": "^4.0.0",
     "husky": "^7.0.0",
-    "madge": "^5.0.1",
+    "madge": "^7.0.0",
     "prettier": "^2.4.1",
     "rimraf": "^3.0.2",
     "sinon": "^12.0.1",
