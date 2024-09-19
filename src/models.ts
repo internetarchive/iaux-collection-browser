@@ -569,7 +569,6 @@ export const getDefaultSelectedFacets = (): SelectedFacets => ({
 
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',
-  'lending',
   'year',
   'subject',
   'collection',
