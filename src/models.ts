@@ -569,7 +569,7 @@ export const getDefaultSelectedFacets = (): SelectedFacets => ({
 
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',
-  'lending',
+  // 'lending', Commenting this out removes the lending facet from the sidebar for now
   'year',
   'subject',
   'collection',

@@ -12,12 +12,12 @@ import '@internetarchive/modal-manager';
 import '../src/collection-facets';
 import {
   FacetOption,
-  SelectedFacets,
+  // SelectedFacets, Used in lending tests (disabled)
   getDefaultSelectedFacets,
 } from '../src/models';
 import { MockAnalyticsHandler } from './mocks/mock-analytics-handler';
 import type { FacetRow } from '../src/collection-facets/facet-row';
-import type { FacetsTemplate } from '../src/collection-facets/facets-template';
+// import type { FacetsTemplate } from '../src/collection-facets/facets-template'; Used in lending tests (disabled)
 
 describe('Collection Facets', () => {
   it('has loader', async () => {
@@ -286,222 +286,223 @@ describe('Collection Facets', () => {
     expect(collectionFacets[0].bucket?.key).to.equal('foo');
   });
 
-  it('renders lending facets with human-readable names', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
+  // Lending tests disabled because lending facet disabled
+  // it('renders lending facets with human-readable names', async () => {
+  //   const el = await fixture<CollectionFacets>(
+  //     html`<collection-facets></collection-facets>`
+  //   );
 
-    const aggs: Record<string, Aggregation> = {
-      lending: new Aggregation({
-        buckets: [
-          {
-            key: 'is_lendable',
-            doc_count: 3,
-          },
-          {
-            key: 'available_to_borrow',
-            doc_count: 2,
-          },
-          {
-            key: 'is_readable',
-            doc_count: 1,
-          },
-        ],
-      }),
-    };
+  //   const aggs: Record<string, Aggregation> = {
+  //     lending: new Aggregation({
+  //       buckets: [
+  //         {
+  //           key: 'is_lendable',
+  //           doc_count: 3,
+  //         },
+  //         {
+  //           key: 'available_to_borrow',
+  //           doc_count: 2,
+  //         },
+  //         {
+  //           key: 'is_readable',
+  //           doc_count: 1,
+  //         },
+  //       ],
+  //     }),
+  //   };
 
-    el.aggregations = aggs;
-    await el.updateComplete;
+  //   el.aggregations = aggs;
+  //   await el.updateComplete;
 
-    const facetsTemplate = el.shadowRoot?.querySelector(
-      'facets-template'
-    ) as FacetsTemplate;
-    await facetsTemplate?.updateComplete;
+  //   const facetsTemplate = el.shadowRoot?.querySelector(
+  //     'facets-template'
+  //   ) as FacetsTemplate;
+  //   await facetsTemplate?.updateComplete;
 
-    const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
-      'facet-row'
-    ) as ArrayLike<FacetRow>;
-    expect(lendingFacets?.length).to.equal(3);
+  //   const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
+  //     'facet-row'
+  //   ) as ArrayLike<FacetRow>;
+  //   expect(lendingFacets?.length).to.equal(3);
 
-    expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
-      /^Lending Library\s*3$/
-    );
-    expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
-      /^Borrow 14 Days\s*2$/
-    );
-    expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
-      /^Always Available\s*1$/
-    );
-  });
+  //   expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Lending Library\s*3$/
+  //   );
+  //   expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Borrow 14 Days\s*2$/
+  //   );
+  //   expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Always Available\s*1$/
+  //   );
+  // });
 
-  it('renders selected/negative lending facets with human-readable names', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
+  // it('renders selected/negative lending facets with human-readable names', async () => {
+  //   const el = await fixture<CollectionFacets>(
+  //     html`<collection-facets></collection-facets>`
+  //   );
 
-    const selectedFacets: SelectedFacets = {
-      subject: {},
-      lending: {
-        is_lendable: {
-          key: 'is_lendable',
-          count: 5,
-          state: 'selected',
-        },
-        available_to_borrow: {
-          key: 'available_to_borrow',
-          count: 4,
-          state: 'selected',
-        },
-        is_readable: {
-          key: 'is_readable',
-          count: 3,
-          state: 'hidden',
-        },
-      },
-      mediatype: {},
-      language: {},
-      creator: {},
-      collection: {},
-      year: {},
-    };
+  //   const selectedFacets: SelectedFacets = {
+  //     subject: {},
+  //     lending: {
+  //       is_lendable: {
+  //         key: 'is_lendable',
+  //         count: 5,
+  //         state: 'selected',
+  //       },
+  //       available_to_borrow: {
+  //         key: 'available_to_borrow',
+  //         count: 4,
+  //         state: 'selected',
+  //       },
+  //       is_readable: {
+  //         key: 'is_readable',
+  //         count: 3,
+  //         state: 'hidden',
+  //       },
+  //     },
+  //     mediatype: {},
+  //     language: {},
+  //     creator: {},
+  //     collection: {},
+  //     year: {},
+  //   };
 
-    el.selectedFacets = selectedFacets;
-    await el.updateComplete;
+  //   el.selectedFacets = selectedFacets;
+  //   await el.updateComplete;
 
-    const facetsTemplate = el.shadowRoot?.querySelector(
-      'facets-template'
-    ) as FacetsTemplate;
-    await facetsTemplate?.updateComplete;
+  //   const facetsTemplate = el.shadowRoot?.querySelector(
+  //     'facets-template'
+  //   ) as FacetsTemplate;
+  //   await facetsTemplate?.updateComplete;
 
-    const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
-      'facet-row'
-    ) as ArrayLike<FacetRow>;
-    expect(lendingFacets?.length).to.equal(3);
+  //   const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
+  //     'facet-row'
+  //   ) as ArrayLike<FacetRow>;
+  //   expect(lendingFacets?.length).to.equal(3);
 
-    expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
-      /^Lending Library\s*5$/
-    );
-    expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
-      /^Borrow 14 Days\s*4$/
-    );
-    expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
-      /^Always Available\s*3$/
-    );
-  });
+  //   expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Lending Library\s*5$/
+  //   );
+  //   expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Borrow 14 Days\s*4$/
+  //   );
+  //   expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Always Available\s*3$/
+  //   );
+  // });
 
-  it('only renders lending facets for is_lendable, available_to_borrow, and is_readable', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
+  // it('only renders lending facets for is_lendable, available_to_borrow, and is_readable', async () => {
+  //   const el = await fixture<CollectionFacets>(
+  //     html`<collection-facets></collection-facets>`
+  //   );
 
-    const aggs: Record<string, Aggregation> = {
-      lending: new Aggregation({
-        buckets: [
-          {
-            key: 'is_lendable',
-            doc_count: 5,
-          },
-          {
-            key: 'is_borrowable',
-            doc_count: 4,
-          },
-          {
-            key: 'available_to_borrow',
-            doc_count: 5,
-          },
-          {
-            key: 'is_browsable',
-            doc_count: 4,
-          },
-          {
-            key: 'available_to_browse',
-            doc_count: 5,
-          },
-          {
-            key: 'is_readable',
-            doc_count: 4,
-          },
-          {
-            key: 'available_to_waitlist',
-            doc_count: 5,
-          },
-        ],
-      }),
-    };
+  //   const aggs: Record<string, Aggregation> = {
+  //     lending: new Aggregation({
+  //       buckets: [
+  //         {
+  //           key: 'is_lendable',
+  //           doc_count: 5,
+  //         },
+  //         {
+  //           key: 'is_borrowable',
+  //           doc_count: 4,
+  //         },
+  //         {
+  //           key: 'available_to_borrow',
+  //           doc_count: 5,
+  //         },
+  //         {
+  //           key: 'is_browsable',
+  //           doc_count: 4,
+  //         },
+  //         {
+  //           key: 'available_to_browse',
+  //           doc_count: 5,
+  //         },
+  //         {
+  //           key: 'is_readable',
+  //           doc_count: 4,
+  //         },
+  //         {
+  //           key: 'available_to_waitlist',
+  //           doc_count: 5,
+  //         },
+  //       ],
+  //     }),
+  //   };
 
-    el.aggregations = aggs;
-    await el.updateComplete;
+  //   el.aggregations = aggs;
+  //   await el.updateComplete;
 
-    const facetsTemplate = el.shadowRoot?.querySelector(
-      'facets-template'
-    ) as FacetsTemplate;
-    await facetsTemplate?.updateComplete;
-    await new Promise(res => {
-      setTimeout(res, 100);
-    });
+  //   const facetsTemplate = el.shadowRoot?.querySelector(
+  //     'facets-template'
+  //   ) as FacetsTemplate;
+  //   await facetsTemplate?.updateComplete;
+  //   await new Promise(res => {
+  //     setTimeout(res, 100);
+  //   });
 
-    const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
-      'facet-row'
-    ) as ArrayLike<FacetRow>;
-    expect(lendingFacets?.length).to.equal(3);
+  //   const lendingFacets = facetsTemplate?.shadowRoot?.querySelectorAll(
+  //     'facet-row'
+  //   ) as ArrayLike<FacetRow>;
+  //   expect(lendingFacets?.length).to.equal(3);
 
-    expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
-      /^Lending Library\s*5$/
-    );
-    expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
-      /^Borrow 14 Days\s*5$/
-    );
-    expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
-      /^Always Available\s*4$/
-    );
-  });
+  //   expect(lendingFacets[0].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Lending Library\s*5$/
+  //   );
+  //   expect(lendingFacets[1].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Borrow 14 Days\s*5$/
+  //   );
+  //   expect(lendingFacets[2].shadowRoot?.textContent?.trim()).to.match(
+  //     /^Always Available\s*4$/
+  //   );
+  // });
 
-  it('does not render a More... link for lending facets', async () => {
-    const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
-    );
+  // it('does not render a More... link for lending facets', async () => {
+  //   const el = await fixture<CollectionFacets>(
+  //     html`<collection-facets></collection-facets>`
+  //   );
 
-    const aggs: Record<string, Aggregation> = {
-      lending: new Aggregation({
-        buckets: [
-          {
-            key: 'is_lendable',
-            doc_count: 5,
-          },
-          {
-            key: 'is_borrowable',
-            doc_count: 4,
-          },
-          {
-            key: 'available_to_borrow',
-            doc_count: 5,
-          },
-          {
-            key: 'is_browsable',
-            doc_count: 4,
-          },
-          {
-            key: 'available_to_browse',
-            doc_count: 5,
-          },
-          {
-            key: 'is_readable',
-            doc_count: 4,
-          },
-          {
-            key: 'available_to_waitlist',
-            doc_count: 5,
-          },
-        ],
-      }),
-    };
+  //   const aggs: Record<string, Aggregation> = {
+  //     lending: new Aggregation({
+  //       buckets: [
+  //         {
+  //           key: 'is_lendable',
+  //           doc_count: 5,
+  //         },
+  //         {
+  //           key: 'is_borrowable',
+  //           doc_count: 4,
+  //         },
+  //         {
+  //           key: 'available_to_borrow',
+  //           doc_count: 5,
+  //         },
+  //         {
+  //           key: 'is_browsable',
+  //           doc_count: 4,
+  //         },
+  //         {
+  //           key: 'available_to_browse',
+  //           doc_count: 5,
+  //         },
+  //         {
+  //           key: 'is_readable',
+  //           doc_count: 4,
+  //         },
+  //         {
+  //           key: 'available_to_waitlist',
+  //           doc_count: 5,
+  //         },
+  //       ],
+  //     }),
+  //   };
 
-    el.aggregations = aggs;
-    await el.updateComplete;
+  //   el.aggregations = aggs;
+  //   await el.updateComplete;
 
-    const moreLink = el.shadowRoot?.querySelector('.more-link');
-    expect(moreLink).not.to.exist;
-  });
+  //   const moreLink = el.shadowRoot?.querySelector('.more-link');
+  //   expect(moreLink).not.to.exist;
+  // });
 
   it('always renders the mediatype:collection facet when present', async () => {
     const el = await fixture<CollectionFacets>(
