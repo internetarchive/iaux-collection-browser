@@ -1164,9 +1164,12 @@ export class CollectionBrowserDataSource
       if (!result.identifier) return;
       tiles.push(new TileModel(result));
     });
+
+    const isInitialPage = this.numTileModels === 0;
     this.addPage(pageNumber, tiles);
+
     const visiblePages = this.host.currentVisiblePageNumbers;
-    const needsReload = visiblePages.includes(pageNumber);
+    const needsReload = visiblePages.includes(pageNumber) || isInitialPage;
     if (needsReload) {
       this.refreshVisibleResults();
     }
