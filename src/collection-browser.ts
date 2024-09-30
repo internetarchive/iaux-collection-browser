@@ -246,7 +246,7 @@ export class CollectionBrowser
   @property({ type: Boolean }) enableSortOptionsSlot = false;
 
   /** Whether to display a smart results carousel above the full results */
-  @property({ type: Boolean }) showSmartResults = false;
+  @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
   /**
    * The results per page so we can paginate.
