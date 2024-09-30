@@ -245,6 +245,9 @@ export class CollectionBrowser
   /** Whether to replace the default sort options with a slot for customization (default: false) */
   @property({ type: Boolean }) enableSortOptionsSlot = false;
 
+  /** Whether to display a smart results carousel above the full results */
+  @property({ type: Boolean }) showSmartResults = false;
+
   /**
    * The results per page so we can paginate.
    *
@@ -652,18 +655,29 @@ export class CollectionBrowser
    */
   private get rightColumnTemplate(): TemplateResult {
     return html`
-      <div id="right-column" class="column">
-        <div id="cb-top-view">
-          <slot name="cb-top-slot"></slot>
-        </div>
-        ${this.isManageView
-          ? this.manageBarTemplate
-          : this.sortFilterBarTemplate}
-        <slot name="cb-results"></slot>
-        ${this.displayMode === `list-compact` && this.totalResults
-          ? this.listHeaderTemplate
-          : nothing}
-        ${this.suppressResultTiles ? nothing : this.infiniteScrollerTemplate}
+      <div
+        id="right-column"
+        class="column ${this.showSmartResults ? 'smart-results-spacing' : ''}"
+      >
+        <slot name="smart-results"></slot>
+        <section id="results">
+          ${this.showSmartResults
+            ? html`<h2 class="results-section-heading">
+                ${msg('All Results')}
+              </h2>`
+            : nothing}
+          <div id="cb-top-view">
+            <slot name="cb-top-slot"></slot>
+          </div>
+          ${this.isManageView
+            ? this.manageBarTemplate
+            : this.sortFilterBarTemplate}
+          <slot name="cb-results"></slot>
+          ${this.displayMode === `list-compact` && this.totalResults
+            ? this.listHeaderTemplate
+            : nothing}
+          ${this.suppressResultTiles ? nothing : this.infiniteScrollerTemplate}
+        </section>
       </div>
     `;
   }
@@ -2072,14 +2086,32 @@ export class CollectionBrowser
           min-height: 90vh;
           border-left: 1px solid rgb(232, 232, 232);
           border-right: 1px solid rgb(232, 232, 232);
-          padding-left: 1rem;
-          padding-right: 1rem;
           margin-top: var(--rightColumnMarginTop, 0);
           background: #fff;
         }
 
+        #results {
+          background: #fff;
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
+        #right-column.smart-results-spacing {
+          padding-top: 0.5rem;
+          border-right: none;
+          background: transparent;
+        }
+
+        #right-column.smart-results-spacing #results {
+          border-radius: 10px 10px 0px 0px;
+          padding-top: 0.5rem;
+        }
+
         .mobile #right-column {
           border-left: none;
+        }
+
+        .mobile #results {
           padding: 5px 5px 0;
         }
 
@@ -2266,6 +2298,21 @@ export class CollectionBrowser
 
         #facets-container.expanded {
           max-height: 2000px;
+        }
+
+        .results-section-heading {
+          margin: 0.5rem 0.3rem;
+          font-size: 2em;
+          line-height: 25px;
+        }
+
+        .mock-smart-results {
+          height: 200px;
+          padding: 5px 10px;
+          background-color: #eaf2fb;
+          border: 3px solid #194880;
+          border-radius: 10px;
+          margin-bottom: 1rem;
         }
 
         #results-total {
