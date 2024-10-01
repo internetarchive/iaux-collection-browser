@@ -659,7 +659,11 @@ export class CollectionBrowser
         id="right-column"
         class="column ${this.showSmartResults ? 'smart-results-spacing' : ''}"
       >
-        <slot name="smart-results"></slot>
+        ${this.showSmartResults
+          ? html`<div id="smart-results">
+              <slot name="smart-results"></slot>
+            </div>`
+          : nothing}
         <section id="results">
           ${this.showSmartResults
             ? html`<h2 class="results-section-heading">
@@ -2090,21 +2094,25 @@ export class CollectionBrowser
           background: #fff;
         }
 
-        #results {
-          background: #fff;
-          padding-left: 1rem;
-          padding-right: 1rem;
-        }
-
         #right-column.smart-results-spacing {
           padding-top: 0.5rem;
           border-right: none;
           background: transparent;
         }
 
+        #results {
+          background: #fff;
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
         #right-column.smart-results-spacing #results {
           border-radius: 10px 10px 0px 0px;
           padding-top: 0.5rem;
+        }
+
+        #smart-results {
+          margin-bottom: 1rem;
         }
 
         .mobile #right-column {
