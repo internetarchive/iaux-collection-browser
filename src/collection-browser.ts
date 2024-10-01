@@ -205,6 +205,9 @@ export class CollectionBrowser
    */
   @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'eager';
 
+  /** Whether to display a smart results carousel above the full results */
+  @property({ type: Boolean, reflect: true }) showSmartResults = false;
+
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
   @property({ type: String }) collectionPagePath: string = '/details/';
@@ -244,9 +247,6 @@ export class CollectionBrowser
 
   /** Whether to replace the default sort options with a slot for customization (default: false) */
   @property({ type: Boolean }) enableSortOptionsSlot = false;
-
-  /** Whether to display a smart results carousel above the full results */
-  @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
   /**
    * The results per page so we can paginate.
