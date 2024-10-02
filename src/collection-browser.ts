@@ -2098,6 +2098,7 @@ export class CollectionBrowser
           padding-top: 0.5rem;
           border-right: none;
           background: transparent;
+          min-width: 0;
         }
 
         #results {
