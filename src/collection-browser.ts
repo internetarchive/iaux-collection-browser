@@ -667,7 +667,7 @@ export class CollectionBrowser
         <section id="results">
           ${this.showSmartResults
             ? html`<h2 class="results-section-heading">
-                ${msg('All Results')}
+                ${msg('All results')}
               </h2>`
             : nothing}
           <div id="cb-top-view">
