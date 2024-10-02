@@ -667,7 +667,7 @@ export class CollectionBrowser
         <section id="results">
           ${this.showSmartResults
             ? html`<h2 class="results-section-heading">
-                ${msg('All Results')}
+                ${msg('All results')}
               </h2>`
             : nothing}
           <div id="cb-top-view">
@@ -2098,6 +2098,7 @@ export class CollectionBrowser
           padding-top: 0.5rem;
           border-right: none;
           background: transparent;
+          min-width: 0;
         }
 
         #results {
@@ -2310,17 +2311,8 @@ export class CollectionBrowser
 
         .results-section-heading {
           margin: 0.5rem 0.3rem;
-          font-size: 2em;
+          font-size: 2rem;
           line-height: 25px;
-        }
-
-        .mock-smart-results {
-          height: 200px;
-          padding: 5px 10px;
-          background-color: #eaf2fb;
-          border: 3px solid #194880;
-          border-radius: 10px;
-          margin-bottom: 1rem;
         }
 
         #results-total {
