@@ -5169,9 +5169,7 @@ fill=""></path>
         id="right-column"
         class="column ${this.showSmartResults?"smart-results-spacing":""}"
       >
-        ${this.showSmartResults?c`<div id="smart-results">
-              <slot name="smart-results"></slot>
-            </div>`:g}
+        ${this.showSmartResults?c`<slot name="smart-results"></slot>`:g}
         <section id="results">
           ${this.showSmartResults?c`<h2 class="results-section-heading">
                 ${M("All results")}
@@ -5423,10 +5421,7 @@ fill=""></path>
         #right-column.smart-results-spacing #results {
           border-radius: 10px 10px 0px 0px;
           padding-top: 0.5rem;
-        }
-
-        #smart-results {
-          margin-bottom: 1rem;
+          margin-top: 1rem;
         }
 
         .mobile #right-column {
