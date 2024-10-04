@@ -660,9 +660,7 @@ export class CollectionBrowser
         class="column ${this.showSmartResults ? 'smart-results-spacing' : ''}"
       >
         ${this.showSmartResults
-          ? html`<div id="smart-results">
-              <slot name="smart-results"></slot>
-            </div>`
+          ? html`<slot name="smart-results"></slot>`
           : nothing}
         <section id="results">
           ${this.showSmartResults
@@ -2110,10 +2108,7 @@ export class CollectionBrowser
         #right-column.smart-results-spacing #results {
           border-radius: 10px 10px 0px 0px;
           padding-top: 0.5rem;
-        }
-
-        #smart-results {
-          margin-bottom: 1rem;
+          margin-top: 1rem;
         }
 
         .mobile #right-column {
