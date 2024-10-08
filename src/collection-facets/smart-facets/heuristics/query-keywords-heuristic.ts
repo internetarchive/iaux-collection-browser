@@ -1,4 +1,8 @@
-import { SmartQueryHeuristic, KeywordFacetMap, SmartFacet } from '../models';
+import type {
+  SmartQueryHeuristic,
+  KeywordFacetMap,
+  SmartFacet,
+} from '../models';
 
 // If the query contains X word but Y facet isn't selected, recommend facet Y
 export class QueryKeywordsHeuristic implements SmartQueryHeuristic {

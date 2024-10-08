@@ -16,7 +16,7 @@ import type { CollectionTitles } from '../../data-source/models';
 import type { FacetOption, SelectedFacets } from '../../models';
 import { updateSelectedFacetBucket } from '../../utils/facet-utils';
 import { SmartQueryHeuristicGroup } from './smart-facet-heuristics';
-import { SmartFacet, SmartFacetEvent } from './models';
+import type { SmartFacet, SmartFacetEvent } from './models';
 import filterIcon from '../../assets/img/icons/filter';
 
 import './smart-facet-button';

@@ -1,4 +1,4 @@
-import { FacetEventDetails, FacetOption } from '../../models';
+import type { FacetEventDetails, FacetOption } from '../../models';
 
 export interface FacetRef {
   facetType: FacetOption;

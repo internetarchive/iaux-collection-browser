@@ -1,6 +1,6 @@
 import { QueryKeywordsHeuristic } from './heuristics/query-keywords-heuristic';
 import { WikidataEntityHeuristic } from './heuristics/wikidata-heuristic';
-import { SmartFacet, SmartQueryHeuristic } from './models';
+import type { SmartFacet, SmartQueryHeuristic } from './models';
 
 export class SmartQueryHeuristicGroup implements SmartQueryHeuristic {
   async getRecommendedFacets(query: string): Promise<SmartFacet[]> {

@@ -1,4 +1,8 @@
-import { SmartQueryHeuristic, KeywordFacetMap, SmartFacet } from '../models';
+import type {
+  SmartQueryHeuristic,
+  KeywordFacetMap,
+  SmartFacet,
+} from '../models';
 
 // If wikidata says the query is an entity of type X, recommend facet Y, e.g.:
 // X              Y
