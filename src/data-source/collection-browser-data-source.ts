@@ -1120,19 +1120,21 @@ export class CollectionBrowserDataSource
 
       // Update the data source for each returned page.
       // For loans and web archives, we must account for receiving more pages than we asked for.
-      if (
-        this.host.profileElement === 'lending' ||
-        this.host.profileElement === 'web_archives'
-      ) {
+      const isUnpagedElement = ['lending', 'web_archives'].includes(
+        this.host.profileElement!
+      );
+      if (isUnpagedElement) {
         numPages = Math.ceil(results.length / this.pageSize);
         this.endOfDataReached = true;
         if (this.activeOnHost) this.host.setTileCount(this.totalResults);
       }
+
       for (let i = 0; i < numPages; i += 1) {
         const pageStartIndex = this.pageSize * i;
         this.addFetchedResultsToDataSource(
           pageNumber + i,
-          results.slice(pageStartIndex, pageStartIndex + this.pageSize)
+          results.slice(pageStartIndex, pageStartIndex + this.pageSize),
+          !isUnpagedElement || i === numPages - 1
         );
       }
     }
@@ -1158,7 +1160,8 @@ export class CollectionBrowserDataSource
    */
   private addFetchedResultsToDataSource(
     pageNumber: number,
-    results: SearchResult[]
+    results: SearchResult[],
+    needsReload = true
   ): void {
     console.log('adding page', pageNumber, 'to data source');
     const tiles: TileModel[] = [];
@@ -1167,12 +1170,8 @@ export class CollectionBrowserDataSource
       tiles.push(new TileModel(result));
     });
 
-    const isInitialPage = this.numTileModels === 0;
-    console.log('isInitialPage:', isInitialPage);
     this.addPage(pageNumber, tiles);
 
-    const visiblePages = this.host.currentVisiblePageNumbers;
-    const needsReload = visiblePages.includes(pageNumber) || isInitialPage;
     if (needsReload) {
       console.log('needed reload -- refreshing visible cells');
       this.refreshVisibleResults();
