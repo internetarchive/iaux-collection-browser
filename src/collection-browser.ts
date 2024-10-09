@@ -1434,6 +1434,8 @@ export class CollectionBrowser
       if (oldObserver) this.disconnectResizeObserver(oldObserver);
       this.setupResizeObserver();
     }
+
+    this.ensureAvailableTilesDisplayed();
   }
 
   connectedCallback(): void {
@@ -1469,6 +1471,30 @@ export class CollectionBrowser
 
     // Ensure the facet sidebar remains sized correctly
     this.updateLeftColumnHeight();
+  }
+
+  /**
+   * Ensures that if we have new results from the data source that are not yet
+   * displayed in the infinite scroller, that they are immediately reflected
+   * in the tile count.
+   */
+  private ensureAvailableTilesDisplayed(): void {
+    if (
+      this.infiniteScroller &&
+      this.infiniteScroller.itemCount < this.dataSource.size
+    ) {
+      console.log(
+        'infinite scroller lags data source, setting tile count',
+        this.infiniteScroller.itemCount,
+        this.dataSource.size,
+        this.estimatedTileCount
+      );
+      this.setTileCount(
+        this.dataSource.endOfDataReached
+          ? this.dataSource.size
+          : this.estimatedTileCount
+      );
+    }
   }
 
   /**
