@@ -327,6 +327,14 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-smart-facet-bar"
+                @click=${this.smartFacetBarCheckboxChanged}
+              />
+              <label for="enable-smart-facet-bar">Enable smart facet bar</label>
+            </div>
           </fieldset>
 
           <fieldset class="cb-visual-appearance">
@@ -694,6 +702,14 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.isManageView = target.checked;
     this.collectionBrowser.manageViewLabel =
       'Select items to remove (customizable texts)';
+  }
+
+  /**
+   * Handler for when the dev panel's "Enable smart facet bar" checkbox is changed.
+   */
+  private smartFacetBarCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.showSmartFacetBar = target.checked;
   }
 
   /**
