@@ -1,15 +1,15 @@
 import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
-import type { FacetBucket, FacetOption } from '../../models';
+import type { FacetRef, SmartFacet, SmartFacetEvent } from './models';
 
 @customElement('smart-facet-dropdown')
 export class SmartFacetDropdown extends LitElement {
-  @property({ type: String }) facetType?: FacetOption;
+  @property({ type: Array }) facetInfo?: SmartFacet[];
 
-  @property({ type: Array }) buckets?: FacetBucket[];
+  @property({ type: String }) labelPrefix?: string;
 
-  @property({ type: Object }) activeBucket?: FacetBucket;
+  @property({ type: Object }) activeFacetRef?: FacetRef;
 
   @query('ia-dropdown') dropdown?: IaDropdown;
 
@@ -18,10 +18,11 @@ export class SmartFacetDropdown extends LitElement {
   //
 
   render() {
-    if (!this.facetType || !this.buckets || !this.activeBucket) return nothing;
-    if (this.buckets.length === 0) return nothing;
+    if (!this.facetInfo || !this.activeFacetRef) return nothing;
+    if (this.facetInfo.length === 0) return nothing;
 
-    const displayText = this.activeBucket.displayText ?? this.activeBucket.key;
+    const displayText =
+      this.activeFacetRef.displayText ?? this.activeFacetRef.bucketKey;
     if (!displayText) return nothing;
 
     return html`
@@ -37,7 +38,7 @@ export class SmartFacetDropdown extends LitElement {
           @optionSelected=${this.optionSelected}
         >
           <span class="dropdown-label" slot="dropdown-label"
-            >${displayText}</span
+            >${this.labelPrefix ?? nothing} ${displayText}</span
           >
         </ia-dropdown>
       </div>
@@ -50,28 +51,55 @@ export class SmartFacetDropdown extends LitElement {
 
   private get dropdownOptions(): optionInterface[] {
     return (
-      this.buckets?.map(bucket => ({
-        id: bucket.key,
-        label: bucket.displayText ?? bucket.key,
-      })) ?? []
+      this.facetInfo?.map(smartFacet => {
+        const firstFacet = smartFacet.facets[0];
+        return {
+          id: firstFacet.bucketKey,
+          label:
+            smartFacet.label ?? firstFacet.displayText ?? firstFacet.bucketKey,
+        };
+      }) ?? []
     );
   }
 
   private get activeDropdownOption(): optionInterface | undefined {
-    if (!this.activeBucket) return undefined;
-    return this.dropdownOptions.find(opt => opt.id === this.activeBucket?.key);
+    if (!this.activeFacetRef) return undefined;
+    return this.dropdownOptions.find(
+      opt => opt.id === this.activeFacetRef?.bucketKey
+    );
   }
 
   private optionSelected(e: CustomEvent<{ option: optionInterface }>): void {
+    if (!this.facetInfo || !this.activeFacetRef) return;
+
+    let selectedSmartFacet;
+    for (const smartFacet of this.facetInfo) {
+      const selectedRef = smartFacet.facets.find(
+        b => b.bucketKey === e.detail.option.id
+      );
+      if (selectedRef) {
+        this.activeFacetRef = selectedRef;
+        selectedSmartFacet = smartFacet;
+      }
+    }
+
+    if (!selectedSmartFacet) return;
+
     this.dispatchEvent(
-      new CustomEvent('facetClick', {
+      new CustomEvent<SmartFacetEvent>('facetClick', {
         detail: {
-          facetType: this.facetType,
-          bucket: {
-            ...this.buckets?.find(b => b.key === e.detail.option.id),
-            state: 'selected',
-          },
-          negative: false,
+          smartFacet: selectedSmartFacet,
+          details: [
+            {
+              facetType: this.activeFacetRef.facetType,
+              bucket: {
+                key: this.activeFacetRef.bucketKey,
+                count: 0,
+                state: 'selected',
+              },
+              negative: false,
+            },
+          ],
         },
       })
     );

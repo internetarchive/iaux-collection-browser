@@ -4,7 +4,7 @@ import type {
   SmartFacet,
 } from '../models';
 
-// If wikidata says the query is an entity of type X, recommend facet Y, e.g.:
+// If wikidata describes the top query result as X, recommend facet Y, e.g.:
 // X              Y
 // written work   mt:texts
 // film           mt:movies
@@ -12,9 +12,15 @@ import type {
 // filmmaker      mt:movies and creator:<query>
 // photographer   mt:image and creator:<query>
 // visual artist  mt:image and creator:<query>
-export class WikidataEntityHeuristic implements SmartQueryHeuristic {
+// etc.
+export class WikidataHeuristic implements SmartQueryHeuristic {
   private static readonly ENTITIES: KeywordFacetMap = {
+    'written work': [
+      { facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] },
+    ],
     literature: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
+    book: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
+    novel: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
     filmmaker: [
       {
         label: 'Films by __QUERY',
@@ -69,6 +75,24 @@ export class WikidataEntityHeuristic implements SmartQueryHeuristic {
         ],
       },
     ],
+    'visual artist': [
+      {
+        label: 'Images by __QUERY',
+        facets: [
+          { facetType: 'mediatype', bucketKey: 'image' },
+          { facetType: 'creator', bucketKey: '__QUERY' },
+        ],
+      },
+    ],
+    'graphic artist': [
+      {
+        label: 'Images by __QUERY',
+        facets: [
+          { facetType: 'mediatype', bucketKey: 'image' },
+          { facetType: 'creator', bucketKey: '__QUERY' },
+        ],
+      },
+    ],
     singer: [
       {
         label: 'Music by __QUERY',
@@ -96,6 +120,24 @@ export class WikidataEntityHeuristic implements SmartQueryHeuristic {
         ],
       },
     ],
+    composer: [
+      {
+        label: 'Music by __QUERY',
+        facets: [
+          { facetType: 'mediatype', bucketKey: 'audio' },
+          { facetType: 'creator', bucketKey: '__QUERY' },
+        ],
+      },
+    ],
+    pianist: [
+      {
+        label: 'Music by __QUERY',
+        facets: [
+          { facetType: 'mediatype', bucketKey: 'audio' },
+          { facetType: 'creator', bucketKey: '__QUERY' },
+        ],
+      },
+    ],
   };
 
   async getRecommendedFacets(query: string): Promise<SmartFacet[]> {
@@ -110,9 +152,10 @@ export class WikidataEntityHeuristic implements SmartQueryHeuristic {
       const searchResults = await wikidataResponse.json();
 
       for (const [keyword, facets] of Object.entries(
-        WikidataEntityHeuristic.ENTITIES
+        WikidataHeuristic.ENTITIES
       )) {
-        if (searchResults.search[0]?.description.includes(keyword)) {
+        const keywordRegex = new RegExp(`\\b${keyword}\\b`);
+        if (keywordRegex.test(searchResults.search[0]?.description)) {
           const entityName = searchResults.search[0].label;
           recommendations.push(
             ...facets.map(

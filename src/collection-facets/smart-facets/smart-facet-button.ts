@@ -3,9 +3,16 @@ import { customElement, property } from 'lit/decorators.js';
 import { mediatypeConfig } from '../../mediatype/mediatype-config';
 import type { SmartFacet } from './models';
 
+function capitalize(str?: string): string | undefined {
+  if (!str) return str;
+  return str.charAt(0).toLocaleUpperCase() + str.slice(1);
+}
+
 @customElement('smart-facet-button')
 export class SmartFacetButton extends LitElement {
   @property({ type: Object }) facetInfo?: SmartFacet;
+
+  @property({ type: String }) labelPrefix?: string;
 
   @property({ type: Boolean }) selected = false;
 
@@ -19,8 +26,10 @@ export class SmartFacetButton extends LitElement {
     const isSingleFacet = this.facetInfo.facets.length === 1;
     const firstFacet = this.facetInfo.facets[0];
 
-    const displayText =
-      this.facetInfo.label ?? firstFacet.displayText ?? firstFacet.bucketKey;
+    const displayText = capitalize(
+      (this.labelPrefix ? `${this.labelPrefix} ` : '') +
+        (this.facetInfo.label ?? firstFacet.displayText ?? firstFacet.bucketKey)
+    );
     if (!displayText) return nothing;
 
     const icon =

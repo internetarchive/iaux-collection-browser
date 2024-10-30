@@ -21,6 +21,8 @@ import filterIcon from '../../assets/img/icons/filter';
 
 import './smart-facet-button';
 import './smart-facet-dropdown';
+import { smartFacetEquals } from './smart-facet-equals';
+import { dedupe } from './dedupe';
 
 const fieldPrefixes: Partial<Record<FacetOption, string>> = {
   collection: 'Collection: ',
@@ -48,7 +50,9 @@ export class SmartFacetBar extends LitElement {
 
   @state() private heuristicRecs: SmartFacet[] = [];
 
-  @state() private smartFacets: SmartFacet[] = [];
+  @state() private smartFacets: SmartFacet[][] = [];
+
+  @state() private lastAggregations?: Record<string, Aggregation>;
 
   //
   // COMPONENT LIFECYCLE METHODS
@@ -60,29 +64,36 @@ export class SmartFacetBar extends LitElement {
         ${this.filtersToggleTemplate}
         ${repeat(
           this.smartFacets,
-          f => `${f.label}|${f.facets[0].facetType}|${f.facets[0].bucketKey}`,
-          facet => this.makeSmartFacet([facet])
+          f =>
+            `${f[0].label}|${f[0].facets[0].facetType}|${f[0].facets[0].bucketKey}`,
+          facet => this.makeSmartFacet(facet)
         )}
       </div>
     `;
   }
 
   protected willUpdate(changed: PropertyValues): void {
-    if (
-      changed.has('query') ||
-      (changed.has('aggregations') &&
-        (!changed.get('aggregations') ||
-          Object.keys(changed.get('aggregations')).length === 0))
-    ) {
+    if (changed.has('query')) {
       this.updateSmartFacets();
+      this.lastAggregations = undefined;
+    }
+
+    if (
+      changed.has('aggregations') &&
+      !this.lastAggregations &&
+      this.aggregations &&
+      Object.keys(this.aggregations).length > 0
+    ) {
+      this.lastAggregations = this.aggregations;
     }
   }
 
   private async updateSmartFacets(): Promise<void> {
+    console.log('updating smart facets');
     if (this.query) {
       this.heuristicRecs =
         await new SmartQueryHeuristicGroup().getRecommendedFacets(this.query);
-      this.smartFacets = this.facetsToDisplay;
+      this.smartFacets = dedupe(this.facetsToDisplay);
     }
   }
 
@@ -94,34 +105,33 @@ export class SmartFacetBar extends LitElement {
     if (facets.length === 0) {
       return nothing;
     }
-    return this.smartFacetButton(facets[0]);
-    // else {
-    //   return this.smartFacetDropdown(facets);
-    // }
+    if (facets.length === 1) {
+      return this.smartFacetButton(facets[0]);
+    }
+    return this.smartFacetDropdown(facets);
   }
 
   private smartFacetButton(facet: SmartFacet) {
     return html`
       <smart-facet-button
         .facetInfo=${facet}
+        .labelPrefix=${fieldPrefixes[facet.facets[0].facetType]}
+        .selected=${facet.selected ?? false}
         @facetClick=${this.facetClicked}
       ></smart-facet-button>
     `;
   }
 
-  // private smartFacetDropdown(facets: SmartFacet[]) {
-  //   return html`
-  //     <smart-facet-dropdown
-  //       .facetType=${facets[0].facets[0].facetType}
-  //       .buckets=${facets.map(sf => sf.facets.map(f => ({
-  //         key: f.bucketKey,
-
-  //       })))}
-  //       .activeBucket=${facet.buckets[0]}
-  //       @facetClick=${this.facetClicked}
-  //     ></smart-facet-dropdown>
-  //   `;
-  // }
+  private smartFacetDropdown(facets: SmartFacet[]) {
+    return html`
+      <smart-facet-dropdown
+        .facetInfo=${facets}
+        .labelPrefix=${fieldPrefixes[facets[0].facets[0].facetType]}
+        .activeFacetRef=${facets[0].facets[0]}
+        @facetClick=${this.facetDropdownClicked}
+      ></smart-facet-dropdown>
+    `;
+  }
 
   private get filtersToggleTemplate(): TemplateResult {
     return html`
@@ -136,18 +146,28 @@ export class SmartFacetBar extends LitElement {
     `;
   }
 
-  private get facetsToDisplay(): SmartFacet[] {
-    if (!this.aggregations) return [];
+  private get facetsToDisplay(): SmartFacet[][] {
+    if (!this.lastAggregations) return [];
 
-    const facets: SmartFacet[] = [];
+    const facets: SmartFacet[][] = [];
 
     if (this.heuristicRecs.length > 0) {
       for (const rec of this.heuristicRecs) {
-        facets.push(rec);
+        facets.push([rec]);
       }
     }
 
-    for (const [key, agg] of Object.entries(this.aggregations)) {
+    const keys = [
+      'mediatype',
+      'year',
+      'language',
+      'creator',
+      'subject',
+      'collection',
+    ];
+    for (const key of keys) {
+      const agg = this.lastAggregations[key];
+      if (!agg) continue;
       if (agg.buckets.length === 0) continue;
       if (['lending', 'year_histogram'].includes(key)) continue;
       if (typeof agg.buckets[0] === 'number') continue;
@@ -165,23 +185,25 @@ export class SmartFacetBar extends LitElement {
       const facetType = key as FacetOption;
       const buckets = agg.buckets as Bucket[];
 
-      const bestBucket = buckets.find(b => {
+      const unusedBuckets = buckets.filter(b => {
         const selectedFacetBucket = this.selectedFacets?.[facetType][b.key];
-        if (selectedFacetBucket && selectedFacetBucket.state !== 'none')
+        if (selectedFacetBucket && selectedFacetBucket.state !== 'none') {
           return false;
+        }
         return true;
       });
-      if (!bestBucket) continue;
-
-      facets.push(this.toSmartFacet(facetType, [bestBucket]));
 
       if (facetType === 'mediatype') {
-        facets.push(this.toSmartFacet(facetType, [buckets[1]]));
+        facets.push(
+          [this.toSmartFacet(facetType, [unusedBuckets[0]])],
+          [this.toSmartFacet(facetType, [unusedBuckets[1]])]
+        );
+      } else if (facetType === 'collection' || facetType === 'subject') {
+        const topBuckets = unusedBuckets.slice(0, 5);
+        facets.push(topBuckets.map(b => this.toSmartFacet(facetType, [b])));
+      } else {
+        facets.push([this.toSmartFacet(facetType, [unusedBuckets[0]])]);
       }
-
-      // if (facetType === 'collection' || facetType === 'subject') {
-      //   facets[facets.length - 1].buckets.push(...buckets.slice(1, 4).map(b => this.toSmartFacet(facetType, [b], false).buckets[0]));
-      // }
     }
 
     return facets;
@@ -189,8 +211,8 @@ export class SmartFacetBar extends LitElement {
 
   private toSmartFacet(
     facetType: FacetOption,
-    buckets: Bucket[],
-    prefix = true
+    buckets: Bucket[]
+    // prefix = true
   ): SmartFacet {
     return {
       facets: buckets.map(bucket => {
@@ -200,9 +222,9 @@ export class SmartFacetBar extends LitElement {
           if (title) displayText = title;
         }
 
-        if (prefix && fieldPrefixes[facetType]) {
-          displayText = fieldPrefixes[facetType] + displayText;
-        }
+        // if (prefix && fieldPrefixes[facetType]) {
+        //   displayText = fieldPrefixes[facetType] + displayText;
+        // }
 
         return {
           facetType,
@@ -215,8 +237,35 @@ export class SmartFacetBar extends LitElement {
 
   private facetClicked(e: CustomEvent<SmartFacetEvent>): void {
     this.smartFacets = [
-      e.detail.smartFacet,
-      ...this.smartFacets.filter(f => f !== e.detail.smartFacet),
+      [{ ...e.detail.smartFacet, selected: !e.detail.smartFacet.selected }],
+      ...this.smartFacets.filter(f => f[0] !== e.detail.smartFacet),
+    ];
+
+    for (const facet of e.detail.details) {
+      this.selectedFacets = updateSelectedFacetBucket(
+        this.selectedFacets,
+        facet.facetType,
+        facet.bucket,
+        true
+      );
+    }
+
+    const event = new CustomEvent<SelectedFacets>('facetsChanged', {
+      detail: this.selectedFacets,
+    });
+    this.dispatchEvent(event);
+  }
+
+  private facetDropdownClicked(e: CustomEvent<SmartFacetEvent>): void {
+    if (
+      this.smartFacets.find(sf => smartFacetEquals(sf[0], e.detail.smartFacet))
+    ) {
+      return;
+    }
+
+    this.smartFacets = [
+      [{ ...e.detail.smartFacet, selected: true }],
+      ...this.smartFacets,
     ];
 
     for (const facet of e.detail.details) {

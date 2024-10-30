@@ -9,11 +9,13 @@ export interface FacetRef {
 interface LabeledSmartFacet {
   label: string;
   facets: FacetRef[];
+  selected?: boolean;
 }
 
 interface UnlabeledSmartFacet {
   label?: string;
   facets: [FacetRef];
+  selected?: boolean;
 }
 
 export type SmartFacet = LabeledSmartFacet | UnlabeledSmartFacet;
