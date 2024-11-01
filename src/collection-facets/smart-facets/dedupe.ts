@@ -22,6 +22,7 @@ export function dedupe<T extends SmartFacet[] | SmartFacet[][]>(facets: T): T {
 
     return result as T;
   }
+
   const facetsNested = facets as SmartFacet[][];
 
   const result: SmartFacet[][] = [];
