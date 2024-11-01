@@ -77,6 +77,7 @@ import './sort-filter-bar/sort-filter-bar';
 import './manage/manage-bar';
 import './collection-facets';
 import './circular-activity-indicator';
+import './collection-facets/smart-facets/smart-facet-bar';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -95,7 +96,7 @@ export class CollectionBrowser
   /**
    * Which backend should be targeted by searches (e.g., metadata or FTS)
    */
-  @property({ type: String }) searchType: SearchType = SearchType.METADATA;
+  @property({ type: Number }) searchType: SearchType = SearchType.METADATA;
 
   /**
    * The identifier of the collection that searches should be performed within
@@ -146,6 +147,8 @@ export class CollectionBrowser
   @property({ type: String }) maxSelectedDate?: string;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
+
+  @property({ type: Boolean }) showSmartFacetBar = false;
 
   /**
    * Whether to show the date picker (above the facets)
@@ -204,6 +207,8 @@ export class CollectionBrowser
    * To entirely suppress facets from being loaded, this may be set to `off`.
    */
   @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'eager';
+
+  @property({ type: Boolean }) facetPaneVisible = false;
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
@@ -496,6 +501,20 @@ export class CollectionBrowser
 
   render() {
     return html`
+      ${this.showSmartFacetBar
+        ? html` <smart-facet-bar
+            .query=${this.baseQuery}
+            .aggregations=${this.dataSource.aggregations}
+            .selectedFacets=${this.selectedFacets}
+            .collectionTitles=${this.dataSource.collectionTitles}
+            .filterToggleActive=${this.facetPaneVisible}
+            @facetsChanged=${this.facetsChanged}
+            @filtersToggled=${() => {
+              this.facetPaneVisible = !this.facetPaneVisible;
+            }}
+          ></smart-facet-bar>`
+        : nothing}
+
       <div
         id="content-container"
         class=${this.mobileView ? 'mobile' : 'desktop'}
@@ -599,7 +618,11 @@ export class CollectionBrowser
    */
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
-      <div id="left-column" class="column">
+      <div
+        id="left-column"
+        class="column"
+        ?hidden=${this.showSmartFacetBar && !this.facetPaneVisible}
+      >
         ${this.facetTopViewSlot}
         <div id="facets-header-container">
           <h2 id="facets-header" class="sr-only">Filters</h2>
