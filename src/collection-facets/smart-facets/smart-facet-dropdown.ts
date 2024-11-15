@@ -2,6 +2,7 @@ import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { FacetRef, SmartFacet, SmartFacetEvent } from './models';
+import { log } from '../../utils/log';
 
 @customElement('smart-facet-dropdown')
 export class SmartFacetDropdown extends LitElement {
@@ -36,6 +37,7 @@ export class SmartFacetDropdown extends LitElement {
           .options=${this.dropdownOptions}
           .selectedOption=${this.activeDropdownOption}
           @optionSelected=${this.optionSelected}
+          @click=${this.onDropdownClick}
         >
           <span class="dropdown-label" slot="dropdown-label"
             >${this.labelPrefix ?? nothing} ${displayText}</span
@@ -103,6 +105,19 @@ export class SmartFacetDropdown extends LitElement {
         },
       })
     );
+  }
+
+  private onDropdownClick(): void {
+    log('smart dropdown: onDropdownClick', this);
+    this.dispatchEvent(
+      new CustomEvent<SmartFacetDropdown>('dropdownClick', { detail: this })
+    );
+  }
+
+  close(): void {
+    if (this.dropdown) {
+      this.dropdown.open = false;
+    }
   }
 
   //

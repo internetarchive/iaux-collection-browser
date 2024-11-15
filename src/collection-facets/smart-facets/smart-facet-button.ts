@@ -1,7 +1,7 @@
 import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { mediatypeConfig } from '../../mediatype/mediatype-config';
-import type { SmartFacet } from './models';
+import type { SmartFacet, SmartFacetEvent } from './models';
 
 function capitalize(str?: string): string | undefined {
   if (!str) return str;
@@ -75,7 +75,7 @@ export class SmartFacetButton extends LitElement {
     this.selected = !this.selected;
 
     this.dispatchEvent(
-      new CustomEvent('facetClick', {
+      new CustomEvent<SmartFacetEvent>('facetClick', {
         detail: {
           smartFacet: this.facetInfo,
           details: this.facetInfo.facets.map(f => ({
