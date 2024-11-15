@@ -2098,10 +2098,18 @@ eslint-plugin-no-only-tests@^3.0.0:
   resolved "https://registry.npmjs.org/eslint-plugin-no-only-tests/-/eslint-plugin-no-only-tests-3.0.0.tgz"
   integrity sha512-I0PeXMs1vu21ap45hey4HQCJRqpcoIvGcNTPJe+UhUm8TwjQ6//mCrDqF8q0WS6LgmRDwQ4ovQej0AQsAHb5yg==
 
-eslint-plugin-wc@^1.2.0, eslint-plugin-wc@^1.3.2:
+eslint-plugin-wc@^1.2.0:
   version "1.3.2"
   resolved "https://registry.npmjs.org/eslint-plugin-wc/-/eslint-plugin-wc-1.3.2.tgz"
   integrity sha512-/Tt3kIXBp1jh06xYtRqPwAvpNxVVk9YtbcFCKEgLa5l3GY+urZyn376pISaaZxkm9HVD3AIPOF5i9/uFwyF0Zw==
+  dependencies:
+    is-valid-element-name "^1.0.0"
+    js-levenshtein-esm "^1.2.0"
+
+eslint-plugin-wc@^2.0.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-wc/-/eslint-plugin-wc-2.2.0.tgz#a93c3dfd9409ff57f421ad8f3313a69a71553cbc"
+  integrity sha512-kjPp+aXz23fOl0JZJOJS+6adwhEv98KjZ2FJqWpc4vtmk4Oenz/JJmmNZrGSARgtyR0BLIF/kVWC6GSlHA+5MA==
   dependencies:
     is-valid-element-name "^1.0.0"
     js-levenshtein-esm "^1.2.0"
