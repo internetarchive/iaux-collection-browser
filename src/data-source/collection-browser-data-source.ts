@@ -1143,7 +1143,6 @@ export class CollectionBrowserDataSource
     // item count to the real total number of results (rather than the
     // temporary estimates based on pages rendered so far).
     if (this.size >= this.totalResults || results.length === 0) {
-      console.log('end of data reached. active?:', !!this.activeOnHost);
       this.endOfDataReached = true;
       if (this.activeOnHost) this.host.setTileCount(this.size);
     }
@@ -1163,7 +1162,6 @@ export class CollectionBrowserDataSource
     results: SearchResult[],
     needsReload = true
   ): void {
-    console.log('adding page', pageNumber, 'to data source');
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
@@ -1173,7 +1171,6 @@ export class CollectionBrowserDataSource
     this.addPage(pageNumber, tiles);
 
     if (needsReload) {
-      console.log('needed reload -- refreshing visible cells');
       this.refreshVisibleResults();
     }
   }

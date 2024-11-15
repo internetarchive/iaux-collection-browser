@@ -1231,11 +1231,6 @@ export class CollectionBrowser
     this.dataSourceInstallInProgress = false;
 
     if (!this.searchResultsLoading) {
-      console.log(
-        'setting total result count and tile count from installed data source',
-        this.dataSource.totalResults,
-        this.dataSource.size
-      );
       this.setTotalResultCount(this.dataSource.totalResults);
       this.setTileCount(this.dataSource.size);
     }
@@ -1411,12 +1406,7 @@ export class CollectionBrowser
     }
 
     if (changed.has('pagesToRender')) {
-      console.log('pagesToRender changed', this.pagesToRender);
       if (!this.dataSource.endOfDataReached && this.infiniteScroller) {
-        console.log(
-          'updating infinite scroller item count to new estimate',
-          this.estimatedTileCount
-        );
         this.infiniteScroller.itemCount = this.estimatedTileCount;
       }
     }
@@ -1483,12 +1473,6 @@ export class CollectionBrowser
       this.infiniteScroller &&
       this.infiniteScroller.itemCount < this.dataSource.size
     ) {
-      console.log(
-        'infinite scroller lags data source, setting tile count',
-        this.infiniteScroller.itemCount,
-        this.dataSource.size,
-        this.estimatedTileCount
-      );
       this.setTileCount(
         this.dataSource.endOfDataReached
           ? this.dataSource.size
@@ -1754,10 +1738,6 @@ export class CollectionBrowser
     // Reset the infinite scroller's item count, so that it
     // shows tile placeholders until the new query's results load in
     if (this.infiniteScroller) {
-      console.log(
-        'resetting infinite scroller tile count to estimate',
-        this.estimatedTileCount
-      );
       this.infiniteScroller.itemCount = this.estimatedTileCount;
       this.infiniteScroller.reload();
     }
@@ -1917,7 +1897,6 @@ export class CollectionBrowser
    * Sets the total number of tiles displayed in the infinite scroller.
    */
   setTileCount(count: number): void {
-    console.log('setTileCount called', count, !!this.infiniteScroller);
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
