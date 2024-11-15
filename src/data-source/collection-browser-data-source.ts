@@ -1048,12 +1048,12 @@ export class CollectionBrowserDataSource
     };
     params.uid = await this.requestUID(params, 'hits');
 
-    log('=== FIRING PAGE REQUEST ===', params);
+    // log('=== FIRING PAGE REQUEST ===', params);
     const searchResponse = await this.host.searchService?.search(
       params,
       this.host.searchType
     );
-    log('=== RECEIVED PAGE RESPONSE IN CB ===', searchResponse);
+    // log('=== RECEIVED PAGE RESPONSE IN CB ===', searchResponse);
     const success = searchResponse?.success;
 
     // This is checking to see if the fetch has been invalidated since it was fired off.
