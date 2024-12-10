@@ -205,10 +205,9 @@ export class CollectionBrowserDataSource
 
     // We should only reset if either:
     //  (a) our state permits a valid search, or
-    //  (b) we have a blank query that we want to show empty results for
-    const shouldShowEmptyQueryResults =
-      this.host.clearResultsOnEmptyQuery && this.host.baseQuery === '';
-    if (!(this.canPerformSearch || shouldShowEmptyQueryResults)) return;
+    //  (b) we have a blank query that we're showing a placeholder/message for
+    const queryIsEmpty = !this.host.baseQuery;
+    if (!(this.canPerformSearch || queryIsEmpty)) return;
 
     if (this.activeOnHost) this.host.emitQueryStateChanged();
     this.handleQueryChange();
@@ -238,6 +237,7 @@ export class CollectionBrowserDataSource
     this.yearHistogramAggregation = undefined;
     this.pageElements = undefined;
     this.parentCollections = [];
+    this.previousQueryKey = '';
     this.queryErrorMessage = undefined;
 
     this.offset = 0;

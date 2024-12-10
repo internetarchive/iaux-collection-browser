@@ -1717,15 +1717,14 @@ export class CollectionBrowser
     if (
       !this.searchService ||
       this.dataSource.pageFetchQueryKey === this.previousQueryKey
-    )
+    ) {
       return;
+    }
 
     // If the new state prevents us from updating the search results, don't reset
-    if (
-      !this.dataSource.canPerformSearch &&
-      !(this.clearResultsOnEmptyQuery && this.baseQuery === '')
-    )
+    if (this.baseQuery && !this.dataSource.canPerformSearch) {
       return;
+    }
 
     this.previousQueryKey = this.dataSource.pageFetchQueryKey;
 
