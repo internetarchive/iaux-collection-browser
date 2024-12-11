@@ -1010,11 +1010,11 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
+        @searchResultsLoadingChanged=${spy}
       ></collection-browser>`
     );
 
     el.baseQuery = 'collection:foo';
-    el.addEventListener('searchResultsLoadingChanged', spy);
     await el.updateComplete;
     await el.initialSearchComplete;
 

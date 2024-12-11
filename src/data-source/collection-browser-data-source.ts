@@ -150,17 +150,10 @@ export class CollectionBrowserDataSource
   queryErrorMessage?: string;
 
   /**
-   * Internal property to store the `resolve` function for the most recent
-   * `initialSearchComplete` promise, allowing us to resolve it at the appropriate time.
-   */
-  private _initialSearchCompleteResolver!: (val: boolean) => void;
-
-  /**
    * Internal property to store the private value backing the `initialSearchComplete` getter.
    */
-  private _initialSearchCompletePromise: Promise<boolean> = new Promise(res => {
-    this._initialSearchCompleteResolver = res;
-  });
+  private _initialSearchCompletePromise: Promise<boolean> =
+    Promise.resolve(true);
 
   /**
    * @inheritdoc
@@ -205,10 +198,9 @@ export class CollectionBrowserDataSource
 
     // We should only reset if either:
     //  (a) our state permits a valid search, or
-    //  (b) we have a blank query that we want to show empty results for
-    const shouldShowEmptyQueryResults =
-      this.host.clearResultsOnEmptyQuery && this.host.baseQuery === '';
-    if (!(this.canPerformSearch || shouldShowEmptyQueryResults)) return;
+    //  (b) we have a blank query that we're showing a placeholder/message for
+    const queryIsEmpty = !this.host.baseQuery;
+    if (!(this.canPerformSearch || queryIsEmpty)) return;
 
     if (this.activeOnHost) this.host.emitQueryStateChanged();
     this.handleQueryChange();
@@ -238,6 +230,7 @@ export class CollectionBrowserDataSource
     this.yearHistogramAggregation = undefined;
     this.pageElements = undefined;
     this.parentCollections = [];
+    this.previousQueryKey = '';
     this.queryErrorMessage = undefined;
 
     this.offset = 0;
@@ -382,8 +375,9 @@ export class CollectionBrowserDataSource
     this.reset();
 
     // Reset the `initialSearchComplete` promise with a new value for the imminent search
+    let initialSearchCompleteResolver: (value: boolean) => void;
     this._initialSearchCompletePromise = new Promise(res => {
-      this._initialSearchCompleteResolver = res;
+      initialSearchCompleteResolver = res;
     });
 
     // Fire the initial page & facet requests
@@ -394,7 +388,7 @@ export class CollectionBrowserDataSource
     ]);
 
     // Resolve the `initialSearchComplete` promise for this search
-    this._initialSearchCompleteResolver(true);
+    initialSearchCompleteResolver!(true);
   }
 
   /**
