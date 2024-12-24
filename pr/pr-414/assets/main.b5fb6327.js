@@ -3304,7 +3304,7 @@ fill=""></path>
   .ia-button.link:hover {
     text-decoration: underline;
   }
-`;let yt=class extends R{constructor(){super(...arguments),this.label=E("Select items to remove"),this.pageContext="",this.showSelectAll=!1,this.showUnselectAll=!1,this.removeAllowed=!1}render(){return c`
+`;let yt=class extends R{constructor(){super(...arguments),this.label=E("Select items to remove"),this.showSelectAll=!1,this.showUnselectAll=!1,this.removeAllowed=!1}render(){return c`
       <div class="manage-container">
         <span class="manage-label">${this.label}</span>
         <div class="manage-buttons">
