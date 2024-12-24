@@ -782,6 +782,7 @@ export class CollectionBrowser
         showUnselectAll
         ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
+        @itemsManager=${this.handleItemsManager}
         @selectAll=${() => this.dataSource.checkAllTiles()}
         @unselectAll=${() => this.dataSource.uncheckAllTiles()}
         @cancel=${() => {
@@ -805,6 +806,22 @@ export class CollectionBrowser
             cloned.dateStr = formatDate(model.datePublished, 'long');
             return cloned as ManageableItem;
           }),
+        },
+      })
+    );
+  }
+
+  /**
+   * Handler when user request to bulk edit from /search/ page
+   */
+  private handleItemsManager(): void {
+    this.dispatchEvent(
+      new CustomEvent('itemsManagerRequested', {
+        detail: {
+          items: this.dataSource.checkedTileModels
+            .map(item => item.identifier)
+            .filter(Boolean)
+            .join(','),
         },
       })
     );

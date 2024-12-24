@@ -17,7 +17,7 @@ const darkButtonFillColorRGB = css`var(--secondaryCTAFillRGB, 51, 51, 51)`; // R
 const darkButtonBorderColor = css`var(--primaryCTABorder, #979797)`;
 
 const warningButtonFillColor = css`var(---primaryWarningFill, #ee8950)`;
-const warningButtonFillColorRGB = css`var(--primaryErrorCTAFillRGB, 238, 137, 80)`; // RBG format of --primaryWarningFill
+const warningButtonFillColorRGB = css`var(--primaryWarningFillRGB, 238, 137, 80)`; // RBG format of --primaryWarningFill
 const warningButtonBorderColor = css`var(--primaryWarningBorder, #ec7939)`;
 
 export default css`

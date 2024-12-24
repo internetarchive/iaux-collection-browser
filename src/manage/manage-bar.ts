@@ -57,7 +57,7 @@ export class ManageBar extends LitElement {
                 <button
                   class="ia-button warning"
                   ?disabled=${!this.removeAllowed}
-                  @click=${this.removeClicked}
+                  @click=${this.itemsManagerClicked}
                 >
                   ${msg('Item Manager the items')}
                 </button>
@@ -94,6 +94,10 @@ export class ManageBar extends LitElement {
 
   private removeClicked(): void {
     this.dispatchEvent(new CustomEvent('removeItems'));
+  }
+
+  private itemsManagerClicked(): void {
+    this.dispatchEvent(new CustomEvent('itemsManager'));
   }
 
   private selectAllClicked(): void {

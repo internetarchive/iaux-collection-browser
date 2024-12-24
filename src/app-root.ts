@@ -490,7 +490,9 @@ export class AppRoot extends LitElement {
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
           @itemRemovalRequested=${(e: CustomEvent) =>
-            console.log(e?.detail?.items)}
+            console.log(e.detail.items)}
+          @itemsManagerRequested=${(e: CustomEvent) =>
+            console.log(e.detail.items)}
         >
           ${this.toggleSlots
             ? html`<div slot="sortbar-left-slot">Sort Slot</div>`
