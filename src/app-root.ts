@@ -327,6 +327,14 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-management">Enable manage mode</label>
             </div>
+            <div class="checkbox-control indent">
+              <input
+                type="checkbox"
+                id="enable-search-management"
+                @click=${this.SearchManageModeCheckboxChanged}
+              />
+              <label for="enable-search-management">Search</label>
+            </div>
             <div class="checkbox-control">
               <input
                 type="checkbox"
@@ -476,10 +484,13 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
+          .pageContext=${'collection'}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
+          @itemRemovalRequested=${(e: CustomEvent) =>
+            console.log(e?.detail?.items)}
         >
           ${this.toggleSlots
             ? html`<div slot="sortbar-left-slot">Sort Slot</div>`
@@ -702,6 +713,16 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.isManageView = target.checked;
     this.collectionBrowser.manageViewLabel =
       'Select items to remove (customizable texts)';
+  }
+
+  /**
+   * Handler for when the dev panel's "Enable manage mode" checkbox is search enabled.
+   */
+  private SearchManageModeCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.pageContext = target.checked
+      ? 'search'
+      : 'collection';
   }
 
   /**

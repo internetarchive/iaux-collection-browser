@@ -777,6 +777,7 @@ export class CollectionBrowser
     return html`
       <manage-bar
         .label=${this.manageViewLabel}
+        .pageContext=${this.pageContext}
         showSelectAll
         showUnselectAll
         ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
