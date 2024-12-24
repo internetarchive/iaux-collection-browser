@@ -31,6 +31,18 @@ describe('Manage bar', () => {
     expect(el.shadowRoot?.querySelector('.unselect-all-btn')).not.to.exist;
   });
 
+  it('does not render item manager button except /search/ page', async () => {
+    const el = await fixture<ManageBar>(html`<manage-bar></manage-bar>`);
+    expect(el.shadowRoot?.querySelector('.ia-button.warning')).not.to.exist;
+  });
+
+  it('render item manager button for /search/ page', async () => {
+    const el = await fixture<ManageBar>(
+      html`<manage-bar .pageContext=${'search'}></manage-bar>`
+    );
+    expect(el.shadowRoot?.querySelector('.ia-button.warning')).to.exist;
+  });
+
   it('includes Select All button when requested', async () => {
     const el = await fixture<ManageBar>(
       html`<manage-bar showSelectAll></manage-bar>`

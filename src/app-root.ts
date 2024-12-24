@@ -716,7 +716,7 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * Handler for when the dev panel's "Enable manage mode" checkbox is search enabled.
+   * Handler when the dev panel's "Enable manage mode -> Search" checkbox is changed.
    */
   private SearchManageModeCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;

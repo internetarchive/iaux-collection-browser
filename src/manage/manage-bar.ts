@@ -18,9 +18,9 @@ export class ManageBar extends LitElement {
   @property({ type: String }) label = msg('Select items to remove');
 
   /**
-   * The label displayed in front of the management buttons
+   * Specifies the context in which the collection browser is being used
    */
-  @property({ type: String }) pageContext = '';
+  @property({ type: String }) pageContext?: string;
 
   /**
    * Whether to show the "Select All" button (default false)
