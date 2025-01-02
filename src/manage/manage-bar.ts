@@ -18,6 +18,11 @@ export class ManageBar extends LitElement {
   @property({ type: String }) label = msg('Select items to remove');
 
   /**
+   * Specifies the context in which the collection browser is being used
+   */
+  @property({ type: String }) pageContext?: string;
+
+  /**
    * Whether to show the "Select All" button (default false)
    */
   @property({ type: Boolean }) showSelectAll = false;
@@ -47,11 +52,22 @@ export class ManageBar extends LitElement {
           >
             ${msg('Remove selected items')}
           </button>
+          ${this.pageContext === 'search'
+            ? html`
+                <button
+                  class="ia-button warning"
+                  ?disabled=${!this.removeAllowed}
+                  @click=${this.itemsManagerClicked}
+                >
+                  ${msg('Item Manager the items')}
+                </button>
+              `
+            : ''}
           <div class="selection-buttons">
             ${when(
               this.showSelectAll,
               () => html` <button
-                class="link-styled select-all-btn"
+                class="ia-button link select-all-btn"
                 @click=${this.selectAllClicked}
               >
                 ${msg('Select all')}
@@ -60,7 +76,7 @@ export class ManageBar extends LitElement {
             ${when(
               this.showUnselectAll,
               () => html` <button
-                class="link-styled unselect-all-btn"
+                class="ia-button link unselect-all-btn"
                 @click=${this.unselectAllClicked}
               >
                 ${msg('Unselect all')}
@@ -78,6 +94,10 @@ export class ManageBar extends LitElement {
 
   private removeClicked(): void {
     this.dispatchEvent(new CustomEvent('removeItems'));
+  }
+
+  private itemsManagerClicked(): void {
+    this.dispatchEvent(new CustomEvent('itemsManager'));
   }
 
   private selectAllClicked(): void {
@@ -108,33 +128,20 @@ export class ManageBar extends LitElement {
 
       .manage-buttons {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         column-gap: 5px;
+      }
+
+      .selection-buttons {
+        display: inherit;
       }
 
       .ia-button,
       button {
         padding: 6px 12px;
         font-size: 1.4rem;
-      }
-
-      .ia-button.danger:disabled {
-        opacity: 0.5;
-      }
-
-      button.link-styled {
-        margin: 0;
-        padding: 6px;
-        border: 0;
-        appearance: none;
-        background: none;
-        color: var(--ia-theme-link-color, #4b64ff);
-        font: inherit;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      button.link-styled:hover {
-        text-decoration: underline;
+        margin: 3px 0;
       }
     `;
   }

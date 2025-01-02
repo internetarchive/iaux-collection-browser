@@ -16,8 +16,9 @@ const darkButtonFillColor = css`var(--secondaryCTAFill, #333)`;
 const darkButtonFillColorRGB = css`var(--secondaryCTAFillRGB, 51, 51, 51)`; // RBG format of --secondaryCTAFill
 const darkButtonBorderColor = css`var(--primaryCTABorder, #979797)`;
 
-const warningButtonBGColor = css`#ee8950`;
-const warningButtonBorderColor = css`#ec7939`;
+const warningButtonFillColor = css`var(---primaryWarningFill, #ee8950)`;
+const warningButtonFillColorRGB = css`var(--primaryWarningFillRGB, 238, 137, 80)`; // RBG format of --primaryWarningFill
+const warningButtonBorderColor = css`var(--primaryWarningBorder, #ec7939)`;
 
 export default css`
   .ia-button {
@@ -58,9 +59,12 @@ export default css`
   .ia-button.transparent {
     background-color: transparent;
   }
-  .ia-button.warning {
-    background-color: ${warningButtonBGColor}
-    border-color: ${warningButtonBorderColor};
+
+  .ia-button.primary:disabled,
+  .ia-button.danger:disabled,
+  .ia-button.warning:disabled,
+  .ia-button.dark:disabled {
+    opacity: 0.5;
   }
 
   .ia-button.primary {
@@ -91,6 +95,20 @@ export default css`
     background-color: rgba(${dangerButtonFillColorRGB}, 0.7);
   }
 
+  .ia-button.warning {
+    background-color: ${warningButtonFillColor};
+    border-color: ${warningButtonBorderColor};
+  }
+  .ia-button.warning:hover {
+    background-color: rgba(${warningButtonFillColorRGB}, 0.9);
+  }
+  .ia-button.warning:focus-visible {
+    background-color: rgba(${warningButtonFillColorRGB}, 0.8);
+  }
+  .ia-button.warning:active {
+    background-color: rgba(${warningButtonFillColorRGB}, 0.7);
+  }
+
   .ia-button.dark {
     background-color: ${darkButtonFillColor};
     border-color: ${darkButtonBorderColor};
@@ -103,5 +121,19 @@ export default css`
   }
   .ia-button.dark:active {
     background-color: rgba(${darkButtonFillColorRGB}, 0.7);
+  }
+
+  .ia-button.link {
+    margin: 0;
+    padding: 6px;
+    border: 0;
+    appearance: none;
+    background: none;
+    color: var(--ia-theme-link-color, #4b64ff);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .ia-button.link:hover {
+    text-decoration: underline;
   }
 `;

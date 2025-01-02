@@ -236,9 +236,9 @@ export type TileDisplayMode =
 /**
  * This is mainly used to set the cookies for the collection display mode.
  *
- * It allows the user to set different modes for different contexts (collection page, search page, etc).
+ * It allows the user to set different modes for different contexts (collection page, search page, profile page etc).
  */
-export type CollectionBrowserContext = 'collection' | 'search';
+export type CollectionBrowserContext = 'collection' | 'search' | 'profile';
 
 /**
  * The sort fields shown in the sort filter bar
