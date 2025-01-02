@@ -484,14 +484,14 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
-          .pageContext=${'collection'}
+          .pageContext=${'search'}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
           @itemRemovalRequested=${(e: CustomEvent) =>
             console.log(e.detail.items)}
-          @itemsManagerRequested=${(e: CustomEvent) =>
+          @itemManagerRequested=${(e: CustomEvent) =>
             console.log(e.detail.items)}
         >
           ${this.toggleSlots

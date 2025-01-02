@@ -816,7 +816,7 @@ export class CollectionBrowser
    */
   private handleItemsManager(): void {
     this.dispatchEvent(
-      new CustomEvent('itemsManagerRequested', {
+      new CustomEvent('itemManagerRequested', {
         detail: {
           items: this.dataSource.checkedTileModels
             .map(item => item.identifier)
