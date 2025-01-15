@@ -44,6 +44,7 @@ import {
   SORT_OPTIONS,
   defaultProfileElementSorts,
   FacetLoadStrategy,
+  ManageableItem,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -57,7 +58,6 @@ import type {
 } from './data-source/collection-browser-query-state';
 import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
 import type { CollectionFacets } from './collection-facets';
-import type { ManageableItem } from './manage/manage-bar';
 import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
 import {
   analyticsActions,
@@ -220,6 +220,8 @@ export class CollectionBrowser
 
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
 
+  @property({ type: String }) activeTabId: string = '';
+
   @property({ type: Object })
   restorationStateHandler: RestorationStateHandlerInterface = new RestorationStateHandler(
     {
@@ -243,7 +245,9 @@ export class CollectionBrowser
   /**
    * If item management UI active
    */
-  @property({ type: Boolean }) isManageView = false;
+  @property({ type: Boolean }) isManageView = true;
+
+  @property({ type: Boolean }) hasItemsDeleted = true;
 
   @property({ type: String }) manageViewLabel = 'Select items to remove';
 
@@ -777,12 +781,15 @@ export class CollectionBrowser
     return html`
       <manage-bar
         .label=${this.manageViewLabel}
-        .pageContext=${this.pageContext}
+        .modalManager=${this.modalManager}
+        .selectedItems=${this.dataSource.checkedTileModels}
+        .hasItemsDeleted=${this.hasItemsDeleted}
         showSelectAll
         showUnselectAll
+        ?showItemManageButton=${this.pageContext === 'search'}
         ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
-        @itemsManager=${this.handleItemsManager}
+        @manageItems=${this.handleManageItems}
         @selectAll=${() => this.dataSource.checkAllTiles()}
         @unselectAll=${() => this.dataSource.uncheckAllTiles()}
         @cancel=${() => {
@@ -798,6 +805,8 @@ export class CollectionBrowser
    * Emits an `itemRemovalRequested` event with all checked tile models.
    */
   private handleRemoveItems(): void {
+    this.hasItemsDeleted = true;
+
     this.dispatchEvent(
       new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
         detail: {
@@ -814,14 +823,13 @@ export class CollectionBrowser
   /**
    * Handler when user request to bulk edit from /search/ page
    */
-  private handleItemsManager(): void {
+  private handleManageItems(): void {
     this.dispatchEvent(
-      new CustomEvent('itemManagerRequested', {
+      new CustomEvent<{ items: ManageableItem[] }>('itemManagerRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels
-            .map(item => item.identifier)
-            .filter(Boolean)
-            .join(','),
+          items: this.dataSource.checkedTileModels.map(
+            model => model as ManageableItem
+          ),
         },
       })
     );

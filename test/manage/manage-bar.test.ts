@@ -2,9 +2,14 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import Sinon from 'sinon';
-import type { ManageBar } from '../../src/manage/manage-bar';
-
 import '../../src/manage/manage-bar';
+import {
+  ModalManager,
+  ModalManagerInterface,
+} from '@internetarchive/modal-manager';
+import '@internetarchive/modal-manager';
+import { msg } from '@lit/localize';
+import type { ManageBar } from '../../src/manage/manage-bar';
 
 describe('Manage bar', () => {
   it('renders basic component', async () => {
@@ -38,7 +43,7 @@ describe('Manage bar', () => {
 
   it('render item manager button for /search/ page', async () => {
     const el = await fixture<ManageBar>(
-      html`<manage-bar .pageContext=${'search'}></manage-bar>`
+      html`<manage-bar showItemManageButton></manage-bar>`
     );
     expect(el.shadowRoot?.querySelector('.ia-button.warning')).to.exist;
   });
@@ -84,21 +89,6 @@ describe('Manage bar', () => {
     expect(spy.callCount).to.equal(1);
   });
 
-  it('emits event when Remove Items button clicked', async () => {
-    const spy = Sinon.spy();
-    const el = await fixture<ManageBar>(
-      html`<manage-bar @removeItems=${spy} removeAllowed></manage-bar>`
-    );
-
-    const removeItemsBtn = el.shadowRoot?.querySelector(
-      '.ia-button.danger'
-    ) as HTMLButtonElement;
-    expect(removeItemsBtn).to.exist;
-
-    removeItemsBtn.click();
-    expect(spy.callCount).to.equal(1);
-  });
-
   it('emits event when Select All button clicked', async () => {
     const spy = Sinon.spy();
     const el = await fixture<ManageBar>(
@@ -127,5 +117,38 @@ describe('Manage bar', () => {
 
     unselectAllBtn.click();
     expect(spy.callCount).to.equal(1);
+  });
+
+  it('opens the remove items modal when showRemoveItemsModal is clicked', async () => {
+    const el = await fixture<ManageBar>(html`
+      <manage-bar
+        .modalManager=${new ModalManager()}
+        .selectedItems=${[{ identifier: '1', title: 'Item 1' }]}
+        removeAllowed
+      ></manage-bar>
+    `);
+    await el.updateComplete;
+
+    const removeButton = el.shadowRoot?.querySelector(
+      '.ia-button.danger'
+    ) as HTMLButtonElement;
+    expect(removeButton).to.exist;
+
+    const showModalSpy = Sinon.spy(
+      el.modalManager as ModalManagerInterface,
+      'showModal'
+    );
+
+    await el.updateComplete;
+    removeButton?.click();
+
+    console.log(showModalSpy.args[0][0].config.title?.values[0]);
+
+    expect(showModalSpy.callCount).to.equal(1);
+    expect(el.modalManager?.classList.contains('remove-items')).to.be;
+    expect(showModalSpy.args[0][0].config.title?.values[0]).to.equal(
+      msg('Are you sure you want to remove these items?')
+    );
+    expect(showModalSpy.args[0][0].customModalContent).to.exist;
   });
 });
