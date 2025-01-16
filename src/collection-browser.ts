@@ -44,7 +44,6 @@ import {
   SORT_OPTIONS,
   defaultProfileElementSorts,
   FacetLoadStrategy,
-  ManageableItem,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -66,7 +65,6 @@ import {
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
-import { formatDate } from './utils/format-date';
 import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
 
@@ -806,15 +804,12 @@ export class CollectionBrowser
    */
   private handleRemoveItems(): void {
     this.hasItemsDeleted = true;
-
     this.dispatchEvent(
-      new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
+      new CustomEvent<{ items: String[] }>('itemRemovalRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels.map(model => {
-            const cloned = model.clone();
-            cloned.dateStr = formatDate(model.datePublished, 'long');
-            return cloned as ManageableItem;
-          }),
+          items: this.dataSource.checkedTileModels.map(model =>
+            model?.identifier ? model.identifier : ''
+          ),
         },
       })
     );
@@ -825,10 +820,10 @@ export class CollectionBrowser
    */
   private handleManageItems(): void {
     this.dispatchEvent(
-      new CustomEvent<{ items: ManageableItem[] }>('itemManagerRequested', {
+      new CustomEvent<{ items: String[] }>('itemManagerRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels.map(
-            model => model as ManageableItem
+          items: this.dataSource.checkedTileModels.map(model =>
+            model?.identifier ? model.identifier : ''
           ),
         },
       })
