@@ -192,7 +192,7 @@ var $n=Object.defineProperty,Cn=Object.defineProperties;var kn=Object.getOwnProp
     clip-path: inset(50%) !important;
     user-select: none !important;
   }
-`;function Ft(a,e="short",t="en-US"){if(!a)return"";const i={};switch(e){case"year-only":i.year="numeric";break;case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(a)}/**
+`;function Ft(a,e="short",t="en-US"){if(!a)return"";const i={};switch(e){case"year-only":return`${a.getUTCFullYear()}`;case"short":i.month="short",i.year="numeric";break;case"long":i.year="numeric",i.month="short",i.day="2-digit";break}return new Intl.DateTimeFormat(t,i).format(a)}/**
  * @license
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
