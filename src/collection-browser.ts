@@ -245,7 +245,7 @@ export class CollectionBrowser
   /**
    * If item management UI active
    */
-  @property({ type: Boolean }) isManageView = true;
+  @property({ type: Boolean }) isManageView = false;
 
   @property({ type: Boolean }) hasItemsDeleted = true;
 

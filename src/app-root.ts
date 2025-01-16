@@ -485,7 +485,7 @@ export class AppRoot extends LitElement {
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
           .pageContext=${'search'}
-          .activeTabId=${'uploads'}
+          .activeTabId=${''}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
