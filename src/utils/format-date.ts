@@ -20,8 +20,10 @@ export function formatDate(
 
   switch (format) {
     case 'year-only':
-      options.year = 'numeric';
-      break;
+      // If we're only using the year, ensure we output the correct UTC year and not
+      // the local year. If the local timezone is used, we can get strange off-by-one
+      // errors due to quirks of timezone handling for older years.
+      return `${date.getUTCFullYear()}`;
     case 'short':
       options.month = 'short';
       options.year = 'numeric';
