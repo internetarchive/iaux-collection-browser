@@ -162,13 +162,12 @@ export class CollectionBrowserDataSource
     return this._initialSearchCompletePromise;
   }
 
-  // eslint-disable-next-line no-useless-constructor
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost &
       CollectionBrowserSearchInterface,
     /** Default size of result pages */
-    private pageSize: number = 50
+    private pageSize: number = 50,
   ) {
     // Just setting some property values
   }
@@ -264,13 +263,13 @@ export class CollectionBrowserDataSource
       const pageStartIndex = this.pageSize * i;
       this.addPage(
         firstPageNum + i,
-        tiles.slice(pageStartIndex, pageStartIndex + this.pageSize)
+        tiles.slice(pageStartIndex, pageStartIndex + this.pageSize),
       );
     }
 
     const visiblePages = this.host.currentVisiblePageNumbers;
     const needsReload = visiblePages.some(
-      page => page >= firstPageNum && page <= firstPageNum + numPages
+      page => page >= firstPageNum && page <= firstPageNum + numPages,
     );
     if (needsReload) {
       this.refreshVisibleResults();
@@ -431,15 +430,19 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   map(
-    callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
+    callback: (
+      model: TileModel,
+      index: number,
+      array: TileModel[],
+    ) => TileModel,
   ): void {
     this.pages = Object.fromEntries(
       Object.entries(this.pages).map(([page, tileModels]) => [
         page,
         tileModels.map((model, index, array) =>
-          model ? callback(model, index, array) : model
+          model ? callback(model, index, array) : model,
         ),
-      ])
+      ]),
     );
     this.requestHostUpdate();
     this.refreshVisibleResults();
@@ -536,12 +539,12 @@ export class CollectionBrowserDataSource
    * @returns A filtered array of tile models satisfying the predicate
    */
   private getFilteredTileModels(
-    predicate: (model: TileModel, index: number, array: TileModel[]) => unknown
+    predicate: (model: TileModel, index: number, array: TileModel[]) => unknown,
   ): TileModel[] {
     return Object.values(this.pages)
       .flat()
       .filter((model, index, array) =>
-        model ? predicate(model, index, array) : false
+        model ? predicate(model, index, array) : false,
       );
   }
 
@@ -653,25 +656,25 @@ export class CollectionBrowserDataSource
       builder.addFilter(
         'year',
         this.host.minSelectedDate,
-        FilterConstraint.GREATER_OR_EQUAL
+        FilterConstraint.GREATER_OR_EQUAL,
       );
     }
     if (this.host.maxSelectedDate) {
       builder.addFilter(
         'year',
         this.host.maxSelectedDate,
-        FilterConstraint.LESS_OR_EQUAL
+        FilterConstraint.LESS_OR_EQUAL,
       );
     }
 
     // Add any selected facets
     if (this.host.selectedFacets) {
       for (const [facetName, facetValues] of Object.entries(
-        this.host.selectedFacets
+        this.host.selectedFacets,
       )) {
         const { name, values } = this.prepareFacetForFetch(
           facetName,
-          facetValues
+          facetValues,
         );
         for (const [value, bucket] of Object.entries(values)) {
           let constraint;
@@ -693,14 +696,14 @@ export class CollectionBrowserDataSource
       builder.addFilter(
         'firstTitle',
         this.host.selectedTitleFilter,
-        FilterConstraint.INCLUDE
+        FilterConstraint.INCLUDE,
       );
     }
     if (this.host.selectedCreatorFilter) {
       builder.addFilter(
         'firstCreator',
         this.host.selectedCreatorFilter,
-        FilterConstraint.INCLUDE
+        FilterConstraint.INCLUDE,
       );
     }
 
@@ -788,7 +791,7 @@ export class CollectionBrowserDataSource
     if (!this.host.selectedFacets) return undefined;
     const facetClauses = [];
     for (const [facetName, facetValues] of Object.entries(
-      this.host.selectedFacets
+      this.host.selectedFacets,
     )) {
       facetClauses.push(this.buildFacetClause(facetName, facetValues));
     }
@@ -841,11 +844,11 @@ export class CollectionBrowserDataSource
    */
   private buildFacetClause(
     facetName: string,
-    facetValues: Record<string, FacetBucket>
+    facetValues: Record<string, FacetBucket>,
   ): string {
     const { name: facetQueryName, values } = this.prepareFacetForFetch(
       facetName,
-      facetValues
+      facetValues,
     );
     const facetEntries = Object.entries(values);
     if (facetEntries.length === 0) return '';
@@ -869,7 +872,7 @@ export class CollectionBrowserDataSource
    */
   private prepareFacetForFetch(
     facetName: string,
-    facetValues: Record<string, FacetBucket>
+    facetValues: Record<string, FacetBucket>,
   ): { name: string; values: Record<string, FacetBucket> } {
     // eslint-disable-next-line prefer-const
     let [normalizedName, normalizedValues] = [facetName, facetValues];
@@ -891,7 +894,7 @@ export class CollectionBrowserDataSource
    */
   private joinFacetClauses(facetClauses: string[]): string | undefined {
     const nonEmptyFacetClauses = facetClauses.filter(
-      clause => clause.length > 0
+      clause => clause.length > 0,
     );
     return nonEmptyFacetClauses.length > 0
       ? `(${nonEmptyFacetClauses.join(' AND ')})`
@@ -925,12 +928,12 @@ export class CollectionBrowserDataSource
     };
     params.uid = await this.requestUID(
       { ...params, sort: sortParams },
-      'aggregations'
+      'aggregations',
     );
 
     const searchResponse = await this.host.searchService?.search(
       params,
-      this.host.searchType
+      this.host.searchType,
     );
     const success = searchResponse?.success;
 
@@ -947,10 +950,10 @@ export class CollectionBrowserDataSource
       const detailMsg = searchResponse?.error?.details?.message;
 
       if (!errorMsg && !detailMsg) {
-        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        // @ts-expect-error: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
         window?.Sentry?.captureMessage?.(
           'Missing or malformed facet response from backend',
-          'error'
+          'error',
         );
       }
 
@@ -1045,7 +1048,7 @@ export class CollectionBrowserDataSource
     // log('=== FIRING PAGE REQUEST ===', params);
     const searchResponse = await this.host.searchService?.search(
       params,
-      this.host.searchType
+      this.host.searchType,
     );
     // log('=== RECEIVED PAGE RESPONSE IN CB ===', searchResponse);
     const success = searchResponse?.success;
@@ -1067,7 +1070,7 @@ export class CollectionBrowserDataSource
 
       if (!this.queryErrorMessage) {
         this.queryErrorMessage = 'Missing or malformed response from backend';
-        // @ts-ignore: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
+        // @ts-expect-error: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
         window?.Sentry?.captureMessage?.(this.queryErrorMessage, 'error');
       }
 
@@ -1094,7 +1097,7 @@ export class CollectionBrowserDataSource
 
       if (this.collectionExtraInfo) {
         this.parentCollections = [].concat(
-          this.collectionExtraInfo.public_metadata?.collection ?? []
+          this.collectionExtraInfo.public_metadata?.collection ?? [],
         );
       }
     } else if (this.host.withinProfile) {
@@ -1115,7 +1118,7 @@ export class CollectionBrowserDataSource
       // Update the data source for each returned page.
       // For loans and web archives, we must account for receiving more pages than we asked for.
       const isUnpagedElement = ['lending', 'web_archives'].includes(
-        this.host.profileElement!
+        this.host.profileElement!,
       );
       if (isUnpagedElement) {
         numPages = Math.ceil(results.length / this.pageSize);
@@ -1128,7 +1131,7 @@ export class CollectionBrowserDataSource
         this.addFetchedResultsToDataSource(
           pageNumber + i,
           results.slice(pageStartIndex, pageStartIndex + this.pageSize),
-          !isUnpagedElement || i === numPages - 1
+          !isUnpagedElement || i === numPages - 1,
         );
       }
     }
@@ -1154,7 +1157,7 @@ export class CollectionBrowserDataSource
   private addFetchedResultsToDataSource(
     pageNumber: number,
     results: SearchResult[],
-    needsReload = true
+    needsReload = true,
   ): void {
     const tiles: TileModel[] = [];
     results?.forEach(result => {
@@ -1173,7 +1176,7 @@ export class CollectionBrowserDataSource
    * Fetches the aggregation buckets for the given prefix filter type.
    */
   private async fetchPrefixFilterBuckets(
-    filterType: PrefixFilterType
+    filterType: PrefixFilterType,
   ): Promise<Bucket[]> {
     const trimmedQuery = this.host.baseQuery?.trim();
     if (!this.canPerformSearch) return [];
@@ -1193,12 +1196,12 @@ export class CollectionBrowserDataSource
     };
     params.uid = await this.requestUID(
       { ...params, sort: sortParams },
-      'aggregations'
+      'aggregations',
     );
 
     const searchResponse = await this.host.searchService?.search(
       params,
-      this.host.searchType
+      this.host.searchType,
     );
 
     return (searchResponse?.success?.response?.aggregations?.[
@@ -1226,7 +1229,7 @@ export class CollectionBrowserDataSource
         acc[(bucket.key as string).toUpperCase()] = bucket.doc_count;
         return acc;
       },
-      {}
+      {},
     );
 
     this.requestHostUpdate();

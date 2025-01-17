@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
@@ -35,7 +34,7 @@ const yearSelectedFacets: SelectedFacets = {
 describe('More facets content', () => {
   it('should render more facets template', async () => {
     const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content></more-facets-content>`
+      html`<more-facets-content></more-facets-content>`,
     );
 
     el.facetsLoading = false;
@@ -46,7 +45,7 @@ describe('More facets content', () => {
 
   it('should render more facets loader template', async () => {
     const el = await fixture<MoreFacetsContent>(
-      html`<more-facets-content></more-facets-content>`
+      html`<more-facets-content></more-facets-content>`,
     );
 
     el.facetsLoading = true;
@@ -61,7 +60,7 @@ describe('More facets content', () => {
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
         .searchService=${searchService}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     el.facetKey = 'year';
@@ -78,7 +77,7 @@ describe('More facets content', () => {
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
         .searchService=${searchService}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     el.facetKey = 'collection';
@@ -86,7 +85,7 @@ describe('More facets content', () => {
     await el.updateComplete;
 
     expect(searchService.searchParams?.query).to.equal(
-      'collection-aggregations'
+      'collection-aggregations',
     );
   });
 
@@ -100,7 +99,7 @@ describe('More facets content', () => {
           pageType: 'collection_details',
           pageTarget: 'foobar',
         }}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     el.facetKey = 'subject';
@@ -120,7 +119,7 @@ describe('More facets content', () => {
           pageType: 'collection_details',
           pageTarget: 'foobar',
         }}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     el.facetKey = 'subject';
@@ -138,7 +137,7 @@ describe('More facets content', () => {
       html`<more-facets-content
         .searchService=${searchService}
         .selectedFacets=${selectedFacetsGroup}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     el.facetKey = 'collection';
@@ -157,11 +156,11 @@ describe('More facets content', () => {
         .query=${'more-facets'}
         .searchService=${searchService}
         .selectedFacets=${yearSelectedFacets}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     const facetsTemplate = el.shadowRoot?.querySelector(
-      'facets-template'
+      'facets-template',
     ) as FacetsTemplate;
     expect(facetsTemplate).to.exist;
 
@@ -190,12 +189,12 @@ describe('More facets content', () => {
         .query=${'collection-aggregations'}
         .searchService=${searchService}
         .analyticsHandler=${mockAnalyticsHandler}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     // select cancel button
     const cancelButton = el.shadowRoot?.querySelector(
-      '.footer > .btn-cancel'
+      '.footer > .btn-cancel',
     ) as HTMLButtonElement;
     expect(cancelButton).to.exist;
     cancelButton?.click();
@@ -215,12 +214,12 @@ describe('More facets content', () => {
         .query=${'collection-aggregations'}
         .searchService=${searchService}
         .analyticsHandler=${mockAnalyticsHandler}
-      ></more-facets-content>`
+      ></more-facets-content>`,
     );
 
     // select submit button
     const submitButton = el.shadowRoot?.querySelector(
-      '.footer > .btn-submit'
+      '.footer > .btn-submit',
     ) as HTMLButtonElement;
     expect(submitButton).to.exist;
     submitButton?.click();

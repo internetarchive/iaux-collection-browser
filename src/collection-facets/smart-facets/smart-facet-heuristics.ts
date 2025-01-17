@@ -13,7 +13,7 @@ export class SmartQueryHeuristicGroup implements SmartQueryHeuristic {
 
   async getRecommendedFacets(query: string): Promise<SmartFacet[]> {
     const promises = SmartQueryHeuristicGroup.HEURISTICS.map(HeuristicCtor =>
-      new HeuristicCtor().getRecommendedFacets(query)
+      new HeuristicCtor().getRecommendedFacets(query),
     );
 
     return dedupe((await Promise.all(promises)).flat());

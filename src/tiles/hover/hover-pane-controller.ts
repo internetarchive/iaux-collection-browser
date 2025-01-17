@@ -151,7 +151,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       HoverPaneProviderInterface &
       HTMLElement,
     /** Options for adjusting the hover pane behavior (offsets, delays, etc.) */
-    options: HoverPaneControllerOptions = {}
+    options: HoverPaneControllerOptions = {},
   ) {
     this.mobileBreakpoint = options.mobileBreakpoint ?? this.mobileBreakpoint;
     this.offsetX = options.offsetX ?? this.offsetX;

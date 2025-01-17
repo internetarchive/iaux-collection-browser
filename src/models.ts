@@ -125,7 +125,7 @@ export class TileModel {
     this.description = result.description?.values.join('\n');
     this.favCount = result.num_favorites?.value ?? 0;
     this.href = collapseRepeatedQuotes(
-      result.review?.__href__ ?? result.__href__?.value
+      result.review?.__href__ ?? result.__href__?.value,
     );
     this.identifier = TileModel.cleanIdentifier(result.identifier);
     this.issue = result.issue?.value;
@@ -212,7 +212,7 @@ export class TileModel {
   }
 
   private static cleanIdentifier(
-    identifier: string | undefined
+    identifier: string | undefined,
   ): string | undefined {
     // Some identifiers (e.g., from Whisper) represent documents rather than items, and
     // are suffixed with values that need to be stripped. Those values are separated
@@ -463,7 +463,7 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
 export function sortOptionFromAPIString(sortName?: string | null): SortOption {
   return (
     Object.values(SORT_OPTIONS).find(opt =>
-      opt.urlNames.some(name => sortName === name)
+      opt.urlNames.some(name => sortName === name),
     ) ?? SORT_OPTIONS[SortField.unrecognized]
   );
 }

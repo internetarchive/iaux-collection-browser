@@ -84,8 +84,8 @@ export class ToggleSwitch extends LitElement {
    */
   get selectedLabel(): string {
     return this.side === 'left'
-      ? this.leftLabel ?? this.leftValue
-      : this.rightLabel ?? this.rightValue;
+      ? (this.leftLabel ?? this.leftValue)
+      : (this.rightLabel ?? this.rightValue);
   }
 
   private handleClick(): void {

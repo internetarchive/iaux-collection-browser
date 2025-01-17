@@ -18,7 +18,7 @@ enum unitSizes {
 export function formatUnitSize(
   size: number | undefined,
   nDecimals: number,
-  separator: string = ' '
+  separator: string = ' ',
 ) {
   let itemSize = size;
   if (itemSize === undefined) return nothing; // early return.

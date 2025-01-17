@@ -9,7 +9,7 @@ describe('localDateFromUTC', () => {
     const date = new Date(1990, 1, 2, 3, 4, 5, 6);
     const dateFromUTC = new Date(Date.UTC(1990, 1, 2, 3, 4, 5, 6));
     expect(localDateFromUTC(date).toISOString()).to.equal(
-      dateFromUTC.toISOString()
+      dateFromUTC.toISOString(),
     );
   });
 });

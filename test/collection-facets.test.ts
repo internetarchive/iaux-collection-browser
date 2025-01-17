@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
@@ -22,24 +21,24 @@ import type { FacetRow } from '../src/collection-facets/facet-row';
 describe('Collection Facets', () => {
   it('has loader', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets ?facetsLoading=${true}></collection-facets>`
+      html`<collection-facets ?facetsLoading=${true}></collection-facets>`,
     );
 
     expect(
-      el.shadowRoot?.querySelector('#container')?.classList.contains('loading')
+      el.shadowRoot?.querySelector('#container')?.classList.contains('loading'),
     ).to.be.true;
 
     el.facetsLoading = false;
     await el.updateComplete;
 
     expect(
-      el.shadowRoot?.querySelector('#container')?.classList.contains('loading')
+      el.shadowRoot?.querySelector('#container')?.classList.contains('loading'),
     ).to.be.false;
   });
 
   it('renders a date picker loading placeholder when date picker enabled', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = true;
@@ -47,14 +46,14 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const histogramLoader = el.shadowRoot?.querySelector(
-      '.histogram-loading-indicator'
+      '.histogram-loading-indicator',
     );
     expect(histogramLoader).to.exist;
   });
 
   it('does not render a date picker loading placeholder when date picker disabled', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = true;
@@ -62,14 +61,14 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const histogramLoader = el.shadowRoot?.querySelector(
-      '.histogram-loading-indicator'
+      '.histogram-loading-indicator',
     );
     expect(histogramLoader).to.be.null;
   });
 
   it('renders the date picker when enabled with data present', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = false;
@@ -87,7 +86,7 @@ describe('Collection Facets', () => {
 
   it('does not render the date picker when disabled', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = false;
@@ -105,7 +104,7 @@ describe('Collection Facets', () => {
 
   it('renders button to expand the date picker when allowed', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = false;
@@ -124,7 +123,7 @@ describe('Collection Facets', () => {
 
   it('does not render button to expand the date picker when disallowed', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = false;
@@ -145,7 +144,7 @@ describe('Collection Facets', () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets
         .modalManager=${new ModalManager()}
-      ></collection-facets>`
+      ></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = false;
@@ -159,13 +158,13 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const expandBtn = el.shadowRoot?.querySelector(
-      '.expand-date-picker-btn'
+      '.expand-date-picker-btn',
     ) as HTMLButtonElement;
     expect(expandBtn).to.exist;
 
     const showModalSpy = sinon.spy(
       el.modalManager as ModalManagerInterface,
-      'showModal'
+      'showModal',
     );
 
     // Click the expand button to open the modal
@@ -179,7 +178,7 @@ describe('Collection Facets', () => {
 
   it('renders aggregations as facets', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     const aggs: Record<string, Aggregation> = {
@@ -202,11 +201,11 @@ describe('Collection Facets', () => {
     const facetGroupHeader = titleFacetGroup?.querySelector('h3');
     // Every facet group header has an invisible " filters" suffix for screen-readers
     expect(
-      facetGroupHeader?.querySelector('span.sr-only')?.textContent?.trim()
+      facetGroupHeader?.querySelector('span.sr-only')?.textContent?.trim(),
     ).to.equal('filters');
     // Ignoring the screen-reader suffix, we should be left with only the readable, capitalized title
     expect(
-      facetGroupHeader?.textContent?.trim().replace(/\s*filters$/, '')
+      facetGroupHeader?.textContent?.trim().replace(/\s*filters$/, ''),
     ).to.equal('Subject');
 
     const titleFacetRow = titleFacetGroup
@@ -215,13 +214,13 @@ describe('Collection Facets', () => {
     await titleFacetRow.updateComplete;
 
     expect(titleFacetRow?.shadowRoot?.textContent?.trim()).to.satisfy(
-      (text: string) => /^foo\s*5$/.test(text)
+      (text: string) => /^foo\s*5$/.test(text),
     );
   });
 
   it('renders multiple aggregation types', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     const aggs: Record<string, Aggregation> = {
@@ -252,7 +251,7 @@ describe('Collection Facets', () => {
 
   it('does not render suppressed collection facets', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     const aggs: Record<string, Aggregation> = {
@@ -506,7 +505,7 @@ describe('Collection Facets', () => {
 
   it('always renders the mediatype:collection facet when present', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     const aggs: Record<string, Aggregation> = {
@@ -553,7 +552,7 @@ describe('Collection Facets', () => {
 
     const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
     const facetRows = facetsTemplate?.shadowRoot?.querySelectorAll(
-      'facet-row'
+      'facet-row',
     ) as ArrayLike<FacetRow>;
     expect(facetRows?.length).to.equal(6);
     expect(facetRows?.[5]?.bucket?.key).to.equal('collection');
@@ -561,7 +560,7 @@ describe('Collection Facets', () => {
 
   it('renders the mediatype:collection facet even when >=6 other mediatypes are selected', async () => {
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets></collection-facets>`
+      html`<collection-facets></collection-facets>`,
     );
 
     const aggs: Record<string, Aggregation> = {
@@ -620,7 +619,7 @@ describe('Collection Facets', () => {
 
     const facetsTemplate = el.shadowRoot?.querySelector('facets-template');
     const facetRows = facetsTemplate?.shadowRoot?.querySelectorAll(
-      'facet-row'
+      'facet-row',
     ) as ArrayLike<FacetRow>;
     expect(facetRows?.length).to.equal(8);
     expect(facetRows?.[7]?.bucket?.key).to.equal('collection');
@@ -629,7 +628,7 @@ describe('Collection Facets', () => {
   describe('More Facets', () => {
     it('Does not render < allowedFacetCount', async () => {
       const el = await fixture<CollectionFacets>(
-        html`<collection-facets></collection-facets>`
+        html`<collection-facets></collection-facets>`,
       );
 
       const aggs: Record<string, Aggregation> = {
@@ -654,7 +653,7 @@ describe('Collection Facets', () => {
       const el = await fixture<CollectionFacets>(
         html`<collection-facets
           .modalManager=${new ModalManager()}
-        ></collection-facets>`
+        ></collection-facets>`,
       );
 
       const aggs: Record<string, Aggregation> = {
@@ -703,13 +702,13 @@ describe('Collection Facets', () => {
       });
 
       const moreLink = el.shadowRoot?.querySelector(
-        '.more-link'
+        '.more-link',
       ) as HTMLButtonElement;
       expect(moreLink).to.exist; // has link
 
       const showModalSpy = sinon.spy(
         el.modalManager as ModalManagerInterface,
-        'showModal'
+        'showModal',
       );
       // let's pop up modal
       moreLink?.click();
@@ -729,7 +728,7 @@ describe('Collection Facets', () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets
         .analyticsHandler=${mockAnalyticsHandler}
-      ></collection-facets>`
+      ></collection-facets>`,
     );
     const aggs: Record<string, Aggregation> = {
       subject: new Aggregation({
@@ -770,7 +769,7 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const moreLink = el.shadowRoot?.querySelector(
-      '.more-link'
+      '.more-link',
     ) as HTMLButtonElement;
 
     expect(moreLink).to.exist; // has link
@@ -794,7 +793,7 @@ describe('Collection Facets', () => {
           ['bar', 'bar-name'],
           ['baz', 'baz-name'],
         ])}
-      ></collection-facets>`
+      ></collection-facets>`,
     );
 
     const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
@@ -812,7 +811,7 @@ describe('Collection Facets', () => {
   it('does not include Part Of section without parent collections', async () => {
     // No parentCollections prop
     const el = await fixture<CollectionFacets>(
-      html`<collection-facets .withinCollection=${'foo'}></collection-facets>`
+      html`<collection-facets .withinCollection=${'foo'}></collection-facets>`,
     );
 
     const partOfSection = el.shadowRoot?.querySelector('.partof-collections');
@@ -825,7 +824,7 @@ describe('Collection Facets', () => {
     const el = await fixture<CollectionFacets>(
       html`<collection-facets
         .analyticsHandler=${mockAnalyticsHandler}
-      ></collection-facets>`
+      ></collection-facets>`,
     );
 
     el.fullYearAggregationLoading = false;
@@ -839,7 +838,7 @@ describe('Collection Facets', () => {
     await el.updateComplete;
 
     const expandBtn = el.shadowRoot?.querySelector(
-      '.expand-date-picker-btn'
+      '.expand-date-picker-btn',
     ) as HTMLButtonElement;
     expect(expandBtn).to.exist;
 
@@ -861,11 +860,11 @@ describe('Collection Facets', () => {
         .withinCollection=${'foo'}
         .parentCollections=${['bar']}
         .analyticsHandler=${mockAnalyticsHandler}
-      ></collection-facets>`
+      ></collection-facets>`,
     );
 
     const partOfLinks = el.shadowRoot?.querySelectorAll(
-      '.partof-collections a[href]'
+      '.partof-collections a[href]',
     );
     expect(partOfLinks?.length).to.equal(1);
 

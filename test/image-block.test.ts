@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { ImageBlock } from '../src/tiles/image-block';
@@ -102,7 +101,7 @@ describe('Image block component', () => {
     `);
 
     const textOverlay = el.shadowRoot?.querySelector(
-      'text-overlay'
+      'text-overlay',
     ) as TextOverlay;
     expect(textOverlay).to.exist;
     expect(textOverlay.type).to.equal('login-required');
@@ -125,7 +124,7 @@ describe('Image block component', () => {
     `);
 
     const textOverlay = el.shadowRoot?.querySelector(
-      'text-overlay'
+      'text-overlay',
     ) as TextOverlay;
     expect(textOverlay).not.to.exist;
   });
@@ -147,7 +146,7 @@ describe('Image block component', () => {
     `);
 
     const textOverlay = el.shadowRoot?.querySelector(
-      'text-overlay'
+      'text-overlay',
     ) as TextOverlay;
     expect(textOverlay).to.exist;
     expect(textOverlay.type).to.equal('content-warning');
@@ -171,7 +170,7 @@ describe('Image block component', () => {
     `);
 
     const textOverlay = el.shadowRoot?.querySelector(
-      'text-overlay'
+      'text-overlay',
     ) as TextOverlay;
     expect(textOverlay).to.exist;
     expect(textOverlay.type).to.equal('login-required');
@@ -195,7 +194,7 @@ describe('Image block component', () => {
     `);
 
     const textOverlay = el.shadowRoot?.querySelector(
-      'text-overlay'
+      'text-overlay',
     ) as TextOverlay;
     expect(textOverlay).to.exist;
     expect(textOverlay.type).to.equal('content-warning');
@@ -217,7 +216,7 @@ describe('Image block component', () => {
     `);
 
     const textOverlay = el.shadowRoot?.querySelector(
-      'text-overlay'
+      'text-overlay',
     ) as TextOverlay;
     expect(textOverlay).not.to.exist;
   });

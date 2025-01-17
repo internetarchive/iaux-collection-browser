@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { TileListCompact } from '../../../src/tiles/list/tile-list-compact';
@@ -9,7 +8,7 @@ import type { TileModel } from '../../../src/models';
 describe('List Tile Compact', () => {
   it('should render initial component', async () => {
     const el = await fixture<TileListCompact>(
-      html`<tile-list-compact></tile-list-compact>`
+      html`<tile-list-compact></tile-list-compact>`,
     );
 
     const listContainer = el.shadowRoot?.querySelector('#list-line');

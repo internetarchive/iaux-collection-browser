@@ -64,7 +64,7 @@ export class ItemImage extends LitElement {
         return this.baseImageUrl
           ? `https://web.archive.org/thumb/${domain}?generate=1`
           : nothing;
-      } catch (err) {
+      } catch {
         return `${this.baseImageUrl}/images/notfound.png`;
       }
     }

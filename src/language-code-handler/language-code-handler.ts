@@ -50,7 +50,7 @@ export class LanguageCodeHandler implements LanguageCodeHandlerInterface {
   /** @inheritdoc */
   getCodeStringFromLanguageName(languageName: string): string {
     const languageCodes = Object.keys(codeToLanguageMap).filter(
-      code => codeToLanguageMap[code] === languageName
+      code => codeToLanguageMap[code] === languageName,
     );
     const stringifiedCodes = languageCodes?.join(this.delimeter);
     return stringifiedCodes;

@@ -1,5 +1,3 @@
-/* eslint-disable dot-notation */
-/* eslint-disable lit-a11y/click-events-have-key-events */
 import {
   css,
   CSSResultGroup,
@@ -247,7 +245,7 @@ export class MoreFacetsContent extends LitElement {
     const bucketsWithCount =
       selectedFacetGroup?.buckets.map(bucket => {
         const selectedBucket = aggregationFacetGroup.buckets.find(
-          b => b.key === bucket.key
+          b => b.key === bucket.key,
         );
         return selectedBucket
           ? {
@@ -265,7 +263,7 @@ export class MoreFacetsContent extends LitElement {
     // Append any additional buckets that were not selected
     aggregationFacetGroup.buckets.forEach(bucket => {
       const existingBucket = selectedFacetGroup?.buckets.find(
-        b => b.key === bucket.key
+        b => b.key === bucket.key,
       );
       if (existingBucket) return;
       bucketsWithCount.push(bucket);
@@ -305,7 +303,7 @@ export class MoreFacetsContent extends LitElement {
           count: data?.count,
           state: data?.state,
         };
-      }
+      },
     );
 
     return {
@@ -329,7 +327,7 @@ export class MoreFacetsContent extends LitElement {
 
     // Order the facets according to the current sort option
     let sortedBuckets = currentAggregation.getSortedBuckets(
-      this.sortedBy
+      this.sortedBy,
     ) as Bucket[];
 
     if (this.facetKey === 'collection') {
@@ -371,7 +369,7 @@ export class MoreFacetsContent extends LitElement {
     const firstBucketIndexOnPage = (this.pageNumber - 1) * this.facetsPerPage;
     const truncatedBuckets = facetGroup.buckets.slice(
       firstBucketIndexOnPage,
-      firstBucketIndexOnPage + this.facetsPerPage
+      firstBucketIndexOnPage + this.facetsPerPage,
     );
 
     return {
@@ -391,7 +389,7 @@ export class MoreFacetsContent extends LitElement {
             this.unappliedFacetChanges = updateSelectedFacetBucket(
               this.unappliedFacetChanges,
               this.facetKey,
-              e.detail.bucket
+              e.detail.bucket,
             );
           }
         }}
@@ -454,7 +452,7 @@ export class MoreFacetsContent extends LitElement {
   private sortFacetAggregation(facetSortType: AggregationSortType) {
     this.sortedBy = facetSortType;
     this.dispatchEvent(
-      new CustomEvent('sortedFacets', { detail: this.sortedBy })
+      new CustomEvent('sortedFacets', { detail: this.sortedBy }),
     );
   }
 
@@ -475,11 +473,11 @@ export class MoreFacetsContent extends LitElement {
               leftValue=${AggregationSortType.COUNT}
               leftLabel="Count"
               rightValue=${valueFacetSort[this.facetKey]}
-              rightLabel=${this.facetGroup?.title}
+              .rightLabel=${this.facetGroup?.title}
               side=${defaultSwitchSide}
               @change=${(e: CustomEvent<string>) => {
                 this.sortFacetAggregation(
-                  Number(e.detail) as AggregationSortType
+                  Number(e.detail) as AggregationSortType,
                 );
               }}
             ></toggle-switch>`
@@ -504,7 +502,7 @@ export class MoreFacetsContent extends LitElement {
   private applySearchFacetsClicked() {
     const mergedSelections = mergeSelectedFacets(
       this.selectedFacets,
-      this.unappliedFacetChanges
+      this.unappliedFacetChanges,
     );
 
     const event = new CustomEvent<SelectedFacets>('facetsChanged', {

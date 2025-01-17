@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import '../src/empty-placeholder';
@@ -8,7 +7,7 @@ import type { EmptyPlaceholder } from '../src/empty-placeholder';
 describe('Empty Placeholder', () => {
   it('should render with empty-query placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
-      html`<empty-placeholder></empty-placeholder>`
+      html`<empty-placeholder></empty-placeholder>`,
     );
 
     el.placeholderType = 'empty-query';
@@ -21,7 +20,7 @@ describe('Empty Placeholder', () => {
 
   it('should render with empty-collection placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
-      html`<empty-placeholder></empty-placeholder>`
+      html`<empty-placeholder></empty-placeholder>`,
     );
 
     el.placeholderType = 'empty-collection';
@@ -34,7 +33,7 @@ describe('Empty Placeholder', () => {
 
   it('should render with no-results placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
-      html`<empty-placeholder></empty-placeholder>`
+      html`<empty-placeholder></empty-placeholder>`,
     );
 
     el.placeholderType = 'no-results';
@@ -47,7 +46,7 @@ describe('Empty Placeholder', () => {
 
   it('should render with query-error placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
-      html`<empty-placeholder></empty-placeholder>`
+      html`<empty-placeholder></empty-placeholder>`,
     );
 
     el.placeholderType = 'query-error';
@@ -60,7 +59,7 @@ describe('Empty Placeholder', () => {
 
   it('should render with collection-error placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
-      html`<empty-placeholder></empty-placeholder>`
+      html`<empty-placeholder></empty-placeholder>`,
     );
 
     el.placeholderType = 'collection-error';
@@ -73,7 +72,7 @@ describe('Empty Placeholder', () => {
 
   it('should not render any empty placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
-      html`<empty-placeholder></empty-placeholder>`
+      html`<empty-placeholder></empty-placeholder>`,
     );
 
     el.placeholderType = null;

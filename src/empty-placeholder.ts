@@ -23,35 +23,38 @@ export type PlaceholderType =
 @customElement('empty-placeholder')
 export class EmptyPlaceholder extends LitElement {
   private static readonly MESSAGE_EMPTY_QUERY = msg(
-    'To begin searching, enter a search term in the box above and hit "Go".'
+    'To begin searching, enter a search term in the box above and hit "Go".',
   );
 
   private static readonly MESSAGE_NO_SEARCH_RESULTS = msg(
     'Your search did not match any items in the Archive. ' +
-      'Try different keywords or a more general search.'
+      'Try different keywords or a more general search.',
   );
 
   private static readonly MESSAGE_NO_COLLECTION_RESULTS = msg(
     'Your search did not match any items in this collection. ' +
-      'Try different keywords or a more general search.'
+      'Try different keywords or a more general search.',
   );
 
   private static readonly MESSAGE_NO_VIEWABLE_MEMBERS = msg(
-    'This collection contains no viewable items.'
+    'This collection contains no viewable items.',
   );
 
-  private static readonly MESSAGE_QUERY_ERROR = msg(html`The search engine
-    encountered an error, which might be related to your search query.
-    <a
-      href="https://help.archive.org/help/search-building-powerful-complex-queries/"
-    >
-      Tips for constructing search queries.
-    </a> `);
+  private static readonly MESSAGE_QUERY_ERROR = msg(
+    html`The search engine encountered an error, which might be related to your
+      search query.
+      <a
+        href="https://help.archive.org/help/search-building-powerful-complex-queries/"
+      >
+        Tips for constructing search queries.
+      </a> `,
+  );
 
-  private static readonly MESSAGE_COLLECTION_ERROR = msg(html`The search engine
-    encountered an error while loading this collection. If the problem persists,
-    please let us know at
-    <a href="mailto:info@archive.org">info@archive.org</a>.`);
+  private static readonly MESSAGE_COLLECTION_ERROR = msg(
+    html`The search engine encountered an error while loading this collection.
+      If the problem persists, please let us know at
+      <a href="mailto:info@archive.org">info@archive.org</a>.`,
+  );
 
   private static readonly QUERY_ERROR_DETAILS_MESSAGE = msg('Error details:');
 
