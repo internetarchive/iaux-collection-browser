@@ -37,7 +37,7 @@ import type {
   CollectionTitles,
   PageSpecifierParams,
 } from '../data-source/models';
-import '@internetarchive/ia-activity-indicator/ia-activity-indicator';
+import '@internetarchive/ia-activity-indicator';
 import './more-facets-pagination';
 import './facets-template';
 import {
