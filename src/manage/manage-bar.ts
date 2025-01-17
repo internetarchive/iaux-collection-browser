@@ -1,12 +1,5 @@
 import { msg } from '@lit/localize';
-import {
-  LitElement,
-  html,
-  css,
-  TemplateResult,
-  CSSResultGroup,
-  PropertyValues,
-} from 'lit';
+import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
 import {
@@ -40,6 +33,11 @@ export class ManageBar extends LitElement {
   @property({ type: Object }) selectedItems: Array<ManageableItem> = [];
 
   /**
+   * Message shows as note in the modal when removing items
+   */
+  @property({ type: String }) manageViewModelMsg?: string;
+
+  /**
    * Whether to show the "Select All" button (default false)
    */
   @property({ type: Boolean }) showSelectAll = false;
@@ -50,11 +48,6 @@ export class ManageBar extends LitElement {
   @property({ type: Boolean }) showUnselectAll = false;
 
   /**
-   * Whether item has deleted or not (default true)
-   */
-  @property({ type: Boolean }) hasItemsDeleted = true;
-
-  /**
    * Whether to show "Item Manager the items" button (default false)
    */
   @property({ type: Boolean }) showItemManageButton = false;
@@ -63,12 +56,6 @@ export class ManageBar extends LitElement {
    * Whether to active delete button for selectable items
    */
   @property({ type: Boolean }) removeAllowed = false;
-
-  updated(changed: PropertyValues): void {
-    if (changed.has('hasItemsDeleted') && !this.hasItemsDeleted) {
-      this.showRemoveItemsErrorModal();
-    }
-  }
 
   render(): TemplateResult {
     return html`
@@ -125,7 +112,6 @@ export class ManageBar extends LitElement {
   }
 
   private removeItemsClicked(): void {
-    this.showRemoveItemsProcessingModal();
     this.dispatchEvent(new CustomEvent('removeItems'));
   }
 
@@ -146,17 +132,10 @@ export class ManageBar extends LitElement {
    * @param items Which items to list in the modal
    */
   private showRemoveItemsModal(): void {
-    const delayMessage =
-      this.activeTabId === 'uploads'
-        ? msg(
-            'Note: it may take a few minutes for these items to stop appearing in your uploads list.'
-          )
-        : undefined;
-
     const customModalContent = html`
       <remove-items-modal-content
         .items=${this.selectedItems}
-        .message=${delayMessage}
+        .message=${this.manageViewModelMsg}
         @confirm=${() => this.removeItemsClicked()}
       ></remove-items-modal-content>
     `;
@@ -184,7 +163,7 @@ export class ManageBar extends LitElement {
   /**
    * Shows a modal dialog indicating that item removal is being processed
    */
-  private showRemoveItemsProcessingModal(): void {
+  showRemoveItemsProcessingModal(): void {
     const config = new ModalConfig({
       showProcessingIndicator: true,
       processingImageMode: 'processing',
@@ -207,7 +186,7 @@ export class ManageBar extends LitElement {
   /**
    * Shows a modal dialog indicating that an error occurred while removing items
    */
-  private showRemoveItemsErrorModal(): void {
+  showRemoveItemsErrorModal(): void {
     const config = new ModalConfig({
       showProcessingIndicator: false,
       processingImageMode: 'processing',

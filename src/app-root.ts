@@ -485,7 +485,7 @@ export class AppRoot extends LitElement {
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
           .pageContext=${'search'}
-          .activeTabId=${''}
+          .activeTabId=${'uploads'}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
@@ -710,9 +710,10 @@ export class AppRoot extends LitElement {
    * Handler for item removal
    */
   private handleItemRemovalRequest(e: CustomEvent) {
-    setTimeout(() => {
-      console.log('itemRemovalRequested: ', e.detail.items);
+    this.collectionBrowser.showRemoveItemsProcessingModal();
+    console.log('itemRemovalRequested: ', e.detail.items);
 
+    setTimeout(() => {
       // execute item-removal-service, and response is successfully deleted
       const status = false;
 
@@ -723,7 +724,7 @@ export class AppRoot extends LitElement {
         this.modalManager?.classList.remove('remove-items');
       } else {
         // looking for failure?
-        this.collectionBrowser.hasItemsDeleted = false;
+        this.collectionBrowser.showRemoveItemsErrorModal();
       }
     }, 2000); // let's wait to see processing modal
   }
@@ -743,7 +744,6 @@ export class AppRoot extends LitElement {
     this.collectionBrowser.isManageView = target.checked;
     this.collectionBrowser.manageViewLabel =
       'Select items to remove (customizable texts)';
-    this.collectionBrowser.hasItemsDeleted = true;
   }
 
   /**

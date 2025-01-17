@@ -67,6 +67,7 @@ import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
 import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
+import type { ManageBar } from './manage/manage-bar';
 
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
@@ -245,8 +246,6 @@ export class CollectionBrowser
    */
   @property({ type: Boolean }) isManageView = false;
 
-  @property({ type: Boolean }) hasItemsDeleted = true;
-
   @property({ type: String }) manageViewLabel = 'Select items to remove';
 
   /** Whether to replace the default sort options with a slot for customization (default: false) */
@@ -300,6 +299,8 @@ export class CollectionBrowser
   @query('#left-column') private leftColumn?: HTMLDivElement;
 
   @query('collection-facets') private collectionFacets?: CollectionFacets;
+
+  @query('manage-bar') private manageBar?: ManageBar;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -776,12 +777,17 @@ export class CollectionBrowser
    * showing the management view. This generally replaces the sort bar when present.
    */
   private get manageBarTemplate(): TemplateResult {
+    const manageViewModelMsg =
+      this.profileElement === 'uploads'
+        ? 'Note: it may take a few minutes for these items to stop appearing in your uploads list.'
+        : nothing;
+
     return html`
       <manage-bar
         .label=${this.manageViewLabel}
         .modalManager=${this.modalManager}
         .selectedItems=${this.dataSource.checkedTileModels}
-        .hasItemsDeleted=${this.hasItemsDeleted}
+        .manageViewModelMsg=${manageViewModelMsg}
         showSelectAll
         showUnselectAll
         ?showItemManageButton=${this.pageContext === 'search'}
@@ -803,7 +809,6 @@ export class CollectionBrowser
    * Emits an `itemRemovalRequested` event with all checked tile models.
    */
   private handleRemoveItems(): void {
-    this.hasItemsDeleted = true;
     this.dispatchEvent(
       new CustomEvent<{ items: String[] }>('itemRemovalRequested', {
         detail: {
@@ -828,6 +833,20 @@ export class CollectionBrowser
         },
       })
     );
+  }
+
+  /**
+   * Handler to show processing modal while removing item
+   */
+  showRemoveItemsProcessingModal(): void {
+    this.manageBar?.showRemoveItemsProcessingModal();
+  }
+
+  /**
+   * Handler to show error modal when item removal failed
+   */
+  showRemoveItemsErrorModal(): void {
+    this.manageBar?.showRemoveItemsErrorModal();
   }
 
   /**
