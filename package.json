@@ -35,7 +35,6 @@
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.12.2",
     "dompurify": "^3.2.3",
-    "eslint-plugin-lit": "^1.15.0",
     "lit": "^2.8.0",
     "typescript-cookie": "^1.0.6"
   },
@@ -54,6 +53,7 @@
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-html": "^8.1.2",
     "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-lit": "^1.15.0",
     "eslint-plugin-lit-a11y": "^4.1.4",
     "eslint-plugin-no-only-tests": "^3.3.0",
     "eslint-plugin-wc": "^2.2.0",
