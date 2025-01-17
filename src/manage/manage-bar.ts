@@ -18,11 +18,6 @@ export class ManageBar extends LitElement {
   @property({ type: String }) label = msg('Select items to remove');
 
   /**
-   * Specifies the context in which the collection browser is being used
-   */
-  @property({ type: String }) activeTabId?: string;
-
-  /**
    * The shared modal manager component for displaying modal dialogs on this page
    */
   @property({ type: Object }) modalManager?: ModalManagerInterface;

@@ -219,8 +219,6 @@ export class CollectionBrowser
 
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
 
-  @property({ type: String }) activeTabId: string = '';
-
   @property({ type: Object })
   restorationStateHandler: RestorationStateHandlerInterface = new RestorationStateHandler(
     {
