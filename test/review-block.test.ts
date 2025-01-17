@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { ReviewBlock } from '../src/tiles/review-block';
@@ -11,7 +10,7 @@ describe('ReviewBlock component', () => {
         title="Foo"
         body="foo bar baz"
         starRating="3"
-      ></review-block>`
+      ></review-block>`,
     );
 
     el.title = 'Foo';

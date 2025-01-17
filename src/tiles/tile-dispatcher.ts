@@ -60,7 +60,7 @@ export class TileDispatcher
   @property({ type: Boolean }) enableHoverPane = false;
 
   @property({ type: String }) manageCheckTitle = msg(
-    'Remove this item from the list'
+    'Remove this item from the list',
   );
 
   private hoverPaneController?: HoverPaneControllerInterface;
@@ -155,7 +155,7 @@ export class TileDispatcher
 
     return this.displayValueProvider.itemPageUrl(
       this.model.identifier,
-      this.model.mediatype === 'collection'
+      this.model.mediatype === 'collection',
     );
   }
 
@@ -229,7 +229,7 @@ export class TileDispatcher
   updated(props: PropertyValues) {
     if (props.has('resizeObserver')) {
       const previousObserver = props.get(
-        'resizeObserver'
+        'resizeObserver',
       ) as SharedResizeObserverInterface;
       this.stopResizeObservation(previousObserver);
       this.startResizeObservation();
@@ -247,7 +247,7 @@ export class TileDispatcher
     }
 
     this.dispatchEvent(
-      new CustomEvent('resultSelected', { detail: this.model })
+      new CustomEvent('resultSelected', { detail: this.model }),
     );
   }
 
@@ -263,7 +263,7 @@ export class TileDispatcher
   }
 
   private tileInfoButtonPressed(
-    e: CustomEvent<{ x: number; y: number }>
+    e: CustomEvent<{ x: number; y: number }>,
   ): void {
     this.hoverPaneController?.toggleHoverPane({
       coords: e.detail,

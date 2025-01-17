@@ -67,7 +67,7 @@ export class SmartFacetDropdown extends LitElement {
   private get activeDropdownOption(): optionInterface | undefined {
     if (!this.activeFacetRef) return undefined;
     return this.dropdownOptions.find(
-      opt => opt.id === this.activeFacetRef?.bucketKey
+      opt => opt.id === this.activeFacetRef?.bucketKey,
     );
   }
 
@@ -77,7 +77,7 @@ export class SmartFacetDropdown extends LitElement {
     let selectedSmartFacet;
     for (const smartFacet of this.facetInfo) {
       const selectedRef = smartFacet.facets.find(
-        b => b.bucketKey === e.detail.option.id
+        b => b.bucketKey === e.detail.option.id,
       );
       if (selectedRef) {
         this.activeFacetRef = selectedRef;
@@ -103,14 +103,14 @@ export class SmartFacetDropdown extends LitElement {
             },
           ],
         },
-      })
+      }),
     );
   }
 
   private onDropdownClick(): void {
     log('smart dropdown: onDropdownClick', this);
     this.dispatchEvent(
-      new CustomEvent<SmartFacetDropdown>('dropdownClick', { detail: this })
+      new CustomEvent<SmartFacetDropdown>('dropdownClick', { detail: this }),
     );
   }
 

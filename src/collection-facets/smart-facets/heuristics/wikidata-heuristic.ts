@@ -147,12 +147,12 @@ export class WikidataHeuristic implements SmartQueryHeuristic {
       const urlQuery = encodeURIComponent(query);
 
       const wikidataResponse = await fetch(
-        `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${urlQuery}&format=json&language=en&uselang=en&origin=*&type=item&limit=5`
+        `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${urlQuery}&format=json&language=en&uselang=en&origin=*&type=item&limit=5`,
       );
       const searchResults = await wikidataResponse.json();
 
       for (const [keyword, facets] of Object.entries(
-        WikidataHeuristic.ENTITIES
+        WikidataHeuristic.ENTITIES,
       )) {
         const keywordRegex = new RegExp(`\\b${keyword}\\b`);
         if (keywordRegex.test(searchResults.search[0]?.description)) {
@@ -171,20 +171,20 @@ export class WikidataHeuristic implements SmartQueryHeuristic {
                     if (f.displayText) {
                       replaced.displayText = replaced.displayText?.replace(
                         '__QUERY',
-                        entityName
+                        entityName,
                       );
                     }
 
                     return replaced;
                   }),
-                } as SmartFacet)
-            )
+                }) as SmartFacet,
+            ),
           );
         }
       }
 
       return recommendations;
-    } catch (err) {
+    } catch {
       return [];
     }
   }

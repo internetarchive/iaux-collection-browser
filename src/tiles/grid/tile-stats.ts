@@ -29,7 +29,7 @@ export class TileStats extends LitElement {
     const formattedReviewCount = formatCount(
       this.commentCount,
       'short',
-      'short'
+      'short',
     );
 
     const uploadsOrViewsTitle =
@@ -57,10 +57,10 @@ export class TileStats extends LitElement {
               </span>
               ${formatCount(
                 this.mediatype === 'account'
-                  ? this.itemCount ?? 0
-                  : this.viewCount ?? 0,
+                  ? (this.itemCount ?? 0)
+                  : (this.viewCount ?? 0),
                 'short',
-                'short'
+                'short',
               )}
             </p>
           </li>

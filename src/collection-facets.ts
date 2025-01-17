@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import {
   css,
   html,
@@ -171,7 +170,7 @@ export class CollectionFacets extends LitElement {
           : nothing}
         ${this.collectionPartOfTemplate}
         ${this.mergedFacets.map(facetGroup =>
-          this.getFacetGroupTemplate(facetGroup)
+          this.getFacetGroupTemplate(facetGroup),
         )}
       </div>
     `;
@@ -349,7 +348,7 @@ export class CollectionFacets extends LitElement {
     e: CustomEvent<{
       minDate: string;
       maxDate: string;
-    }>
+    }>,
   ): void => {
     const { minDate, maxDate } = e.detail;
     const event = new CustomEvent('histogramDateRangeUpdated', {
@@ -366,10 +365,10 @@ export class CollectionFacets extends LitElement {
 
     facetDisplayOrder.forEach(facetKey => {
       const selectedFacetGroup = this.selectedFacetGroups.find(
-        group => group.key === facetKey
+        group => group.key === facetKey,
       );
       const aggregateFacetGroup = this.aggregationFacetGroups.find(
-        group => group.key === facetKey
+        group => group.key === facetKey,
       );
 
       // if the user selected a facet, but it's not in the aggregation, we add it as-is
@@ -388,7 +387,7 @@ export class CollectionFacets extends LitElement {
       let bucketsWithCount =
         selectedFacetGroup?.buckets.map(bucket => {
           const selectedBucket = aggregateFacetGroup.buckets.find(
-            b => b.key === bucket.key
+            b => b.key === bucket.key,
           );
           return selectedBucket
             ? {
@@ -412,7 +411,7 @@ export class CollectionFacets extends LitElement {
        * - additionally want to show all items (selected/suppressed) in page facet area
        */
       let allowedFacetCount = Object.keys(
-        (selectedFacetGroup?.buckets as []) || []
+        (selectedFacetGroup?.buckets as []) || [],
       )?.length;
       if (allowedFacetCount < this.allowedFacetCount) {
         allowedFacetCount = this.allowedFacetCount; // splice start index from 0th
@@ -421,7 +420,7 @@ export class CollectionFacets extends LitElement {
       // For lending facets, only include a specific subset of buckets
       if (facetKey === 'lending') {
         bucketsWithCount = bucketsWithCount.filter(
-          bucket => lendingFacetKeysVisibility[bucket.key as LendingFacetKey]
+          bucket => lendingFacetKeysVisibility[bucket.key as LendingFacetKey],
         );
       }
 
@@ -431,13 +430,13 @@ export class CollectionFacets extends LitElement {
       // For mediatype facets, ensure the collection bucket is always shown if present
       if (facetKey === 'mediatype') {
         const collectionIndex = bucketsWithCount.findIndex(
-          bucket => bucket.key === 'collection'
+          bucket => bucket.key === 'collection',
         );
 
         if (collectionIndex >= allowedFacetCount) {
           const [collectionBucket] = bucketsWithCount.splice(
             collectionIndex,
-            1
+            1,
           );
 
           // If we're showing lots of selected facets, ensure we're not cutting off the last one
@@ -484,7 +483,7 @@ export class CollectionFacets extends LitElement {
               count: facetData.count,
               state: facetData.state,
             };
-          }
+          },
         );
 
         return {
@@ -492,7 +491,7 @@ export class CollectionFacets extends LitElement {
           key: option,
           buckets,
         };
-      }
+      },
     );
 
     return facetGroups;
@@ -512,7 +511,7 @@ export class CollectionFacets extends LitElement {
       if (!title) return;
 
       let castedBuckets = aggregation.getSortedBuckets(
-        defaultFacetSort[option]
+        defaultFacetSort[option],
       ) as Bucket[];
 
       if (option === 'collection') {
@@ -556,7 +555,7 @@ export class CollectionFacets extends LitElement {
    * chevron for the mobile view
    */
   private getFacetGroupTemplate(
-    facetGroup: FacetGroup
+    facetGroup: FacetGroup,
   ): TemplateResult | typeof nothing {
     if (!this.facetsLoading && facetGroup.buckets.length === 0) return nothing;
 
@@ -611,7 +610,7 @@ export class CollectionFacets extends LitElement {
     return html`
       ${map(
         Array(5).fill(null),
-        () => html`<facet-tombstone-row></facet-tombstone-row>`
+        () => html`<facet-tombstone-row></facet-tombstone-row>`,
       )}
     `;
   }
@@ -622,7 +621,7 @@ export class CollectionFacets extends LitElement {
    * TODO: want to fire analytics?
    */
   private searchMoreFacetsLink(
-    facetGroup: FacetGroup
+    facetGroup: FacetGroup,
   ): TemplateResult | typeof nothing {
     // Don't render More... links for FTS searches
     if (!this.moreLinksVisible) {
@@ -654,7 +653,7 @@ export class CollectionFacets extends LitElement {
           label: facetGroup.key,
         });
         this.dispatchEvent(
-          new CustomEvent('showMoreFacets', { detail: facetGroup.key })
+          new CustomEvent('showMoreFacets', { detail: facetGroup.key }),
         );
       }}
       data-testid="more-link-btn"
@@ -665,7 +664,7 @@ export class CollectionFacets extends LitElement {
 
   async showMoreFacetsModal(
     facetGroup: FacetGroup,
-    sortedBy: AggregationSortType
+    sortedBy: AggregationSortType,
   ): Promise<void> {
     const customModalContent = html`
       <more-facets-content
@@ -724,7 +723,7 @@ export class CollectionFacets extends LitElement {
             this.selectedFacets,
             facetGroup.key,
             e.detail.bucket,
-            true
+            true,
           );
 
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {

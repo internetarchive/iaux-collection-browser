@@ -87,7 +87,7 @@ export class AccountTile extends BaseTileComponent {
     e.preventDefault();
     const event = new CustomEvent<{ x: number; y: number }>(
       'infoButtonPressed',
-      { detail: { x: e.clientX, y: e.clientY } }
+      { detail: { x: e.clientX, y: e.clientY } },
     );
     this.dispatchEvent(event);
   }

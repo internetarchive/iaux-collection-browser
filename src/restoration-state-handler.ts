@@ -87,7 +87,7 @@ export class RestorationStateHandler
 
   private persistQueryStateToUrl(
     state: RestorationState,
-    forceReplace = false
+    forceReplace = false,
   ) {
     const url = new URL(window.location.href);
     const oldParams = new URLSearchParams(url.searchParams);
@@ -145,10 +145,9 @@ export class RestorationStateHandler
 
     if (state.selectedFacets) {
       for (const [facetName, facetValues] of Object.entries(
-        state.selectedFacets
+        state.selectedFacets,
       )) {
         const facetEntries = Object.entries(facetValues);
-        // eslint-disable-next-line no-continue
         if (facetEntries.length === 0) continue;
         for (const [key, data] of facetEntries) {
           const notValue = data.state === 'hidden';
@@ -165,7 +164,7 @@ export class RestorationStateHandler
     if (state.minSelectedDate && state.maxSelectedDate) {
       newParams.append(
         'and[]',
-        `year:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`
+        `year:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`,
       );
     }
 
@@ -221,7 +220,7 @@ export class RestorationStateHandler
         facets: state.selectedFacets,
       },
       '',
-      url
+      url,
     );
   }
 
@@ -318,18 +317,18 @@ export class RestorationStateHandler
             if (minDate && maxDate) {
               restorationState.minSelectedDate = minDate.substring(
                 1,
-                minDate.length
+                minDate.length,
               );
               restorationState.maxSelectedDate = maxDate.substring(
                 0,
-                maxDate.length - 1
+                maxDate.length - 1,
               );
             } else {
               this.setSelectedFacetState(
                 restorationState.selectedFacets,
                 field as FacetOption,
                 value,
-                'selected'
+                'selected',
               );
             }
             break;
@@ -345,7 +344,7 @@ export class RestorationStateHandler
               restorationState.selectedFacets,
               field as FacetOption,
               value,
-              'selected'
+              'selected',
             );
         }
       });
@@ -358,7 +357,7 @@ export class RestorationStateHandler
           restorationState.selectedFacets,
           field as FacetOption,
           value,
-          'hidden'
+          'hidden',
         );
       });
     }
@@ -408,13 +407,13 @@ export class RestorationStateHandler
   private paramsMatch(
     searchParams1: URLSearchParams,
     searchParams2: URLSearchParams,
-    keys: string[]
+    keys: string[],
   ): boolean {
     return keys.every(key =>
       arrayEquals(
         searchParams1.getAll(key).sort(),
-        searchParams2.getAll(key).sort()
-      )
+        searchParams2.getAll(key).sort(),
+      ),
     );
   }
 
@@ -423,7 +422,7 @@ export class RestorationStateHandler
    * when loading state from the URL.
    */
   private removeRecognizedParams(
-    searchParams: URLSearchParams
+    searchParams: URLSearchParams,
   ): URLSearchParams {
     // Remove all of our standard params
     searchParams.delete('query');
@@ -464,7 +463,7 @@ export class RestorationStateHandler
     selectedFacets: SelectedFacets,
     field: FacetOption,
     value: string,
-    state: FacetState
+    state: FacetState,
   ): void {
     const facet = selectedFacets[field];
     if (!facet) return; // Unrecognized facet group, ignore it.

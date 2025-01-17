@@ -96,7 +96,7 @@ describe('Tile Dispatcher', () => {
     `);
 
     const tileLink = el.shadowRoot?.querySelector(
-      'a[href]'
+      'a[href]',
     ) as HTMLAnchorElement;
     expect(tileLink).to.exist;
 
@@ -120,7 +120,7 @@ describe('Tile Dispatcher', () => {
     `);
 
     const manageCheck = el.shadowRoot?.querySelector(
-      '.manage-check > input[type="checkbox"]'
+      '.manage-check > input[type="checkbox"]',
     ) as HTMLButtonElement;
 
     manageCheck.click();
@@ -138,7 +138,7 @@ describe('Tile Dispatcher', () => {
     `);
 
     expect(el.getHoverPaneProps()).to.satisfy(
-      (props: HoverPaneProperties) => props?.model?.identifier === 'foo'
+      (props: HoverPaneProperties) => props?.model?.identifier === 'foo',
     );
   });
 
@@ -148,7 +148,7 @@ describe('Tile Dispatcher', () => {
     before(() => {
       oldMatchMedia = window.matchMedia;
       // Pretend that there is no hover-capable input device
-      window.matchMedia = () => ({ matches: false } as MediaQueryList);
+      window.matchMedia = () => ({ matches: false }) as MediaQueryList;
     });
 
     after(() => {
@@ -169,7 +169,7 @@ describe('Tile Dispatcher', () => {
       expect(itemTile).to.exist;
 
       const infoButton = itemTile.shadowRoot?.querySelector(
-        '.info-button'
+        '.info-button',
       ) as HTMLButtonElement;
       expect(infoButton).to.exist;
 

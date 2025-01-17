@@ -16,7 +16,7 @@ export function dedupe<T extends SmartFacet[] | SmartFacet[][]>(facets: T): T {
     let result: SmartFacet[] = [...facetsUnnested];
     for (const curFacet of facetsUnnested) {
       result = result.filter(
-        sf => curFacet === sf || !smartFacetEquals(curFacet, sf)
+        sf => curFacet === sf || !smartFacetEquals(curFacet, sf),
       );
     }
 
@@ -30,7 +30,7 @@ export function dedupe<T extends SmartFacet[] | SmartFacet[][]>(facets: T): T {
     const subresult: SmartFacet[] = [];
     for (const curFacet of curFacetArray) {
       const existing = result.find(sfa =>
-        sfa.find(sf => smartFacetEquals(curFacet, sf))
+        sfa.find(sf => smartFacetEquals(curFacet, sf)),
       );
       if (!existing) subresult.push(curFacet);
     }

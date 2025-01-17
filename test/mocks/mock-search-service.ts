@@ -82,7 +82,7 @@ export class MockSearchService implements SearchServiceInterface {
 
   async search(
     params: SearchParams,
-    searchType: SearchType
+    searchType: SearchType,
   ): Promise<Result<SearchResponse, SearchServiceError>> {
     this.searchParams = params;
     this.searchType = searchType;

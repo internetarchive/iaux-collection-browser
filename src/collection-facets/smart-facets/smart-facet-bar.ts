@@ -1,5 +1,3 @@
-/* eslint-disable no-continue */
-
 import {
   css,
   html,
@@ -68,7 +66,7 @@ export class SmartFacetBar extends LitElement {
           this.smartFacets,
           f =>
             `${f[0].label}|${f[0].facets[0].facetType}|${f[0].facets[0].bucketKey}`,
-          facet => this.makeSmartFacet(facet)
+          facet => this.makeSmartFacet(facet),
         )}
       </div>
     `;
@@ -190,7 +188,7 @@ export class SmartFacetBar extends LitElement {
           key === 'mediatype' &&
           this.selectedFacets &&
           Object.values(this.selectedFacets.mediatype).some(
-            bucket => bucket.state !== 'none'
+            bucket => bucket.state !== 'none',
           )
         ) {
           continue;
@@ -210,7 +208,7 @@ export class SmartFacetBar extends LitElement {
         if (facetType === 'mediatype') {
           facets.push(
             [this.toSmartFacet(facetType, [unusedBuckets[0]])],
-            [this.toSmartFacet(facetType, [unusedBuckets[1]])]
+            [this.toSmartFacet(facetType, [unusedBuckets[1]])],
           );
         } else if (facetType === 'collection' || facetType === 'subject') {
           const topBuckets = unusedBuckets.slice(0, 5);
@@ -226,7 +224,7 @@ export class SmartFacetBar extends LitElement {
 
   private toSmartFacet(
     facetType: FacetOption,
-    buckets: Bucket[]
+    buckets: Bucket[],
     // prefix = true
   ): SmartFacet {
     return {
@@ -259,7 +257,7 @@ export class SmartFacetBar extends LitElement {
         this.selectedFacets,
         facet.facetType,
         facet.bucket,
-        true
+        true,
       );
     }
 
@@ -286,7 +284,7 @@ export class SmartFacetBar extends LitElement {
         this.selectedFacets,
         facet.facetType,
         facet.bucket,
-        true
+        true,
       );
     }
 

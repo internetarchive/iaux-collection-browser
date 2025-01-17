@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { TileStats } from '../src/tiles/grid/tile-stats';
@@ -19,17 +18,15 @@ describe('Tile Stats', () => {
   });
 
   it('should render component with value', async () => {
-    const el = await fixture<TileStats>(
-      html`
-        <tile-stats
-          .mediatype=${'account'}
-          .itemCount=${1}
-          .favCount=${2}
-          .commentCount=${3}
-        >
-        </tile-stats>
-      `
-    );
+    const el = await fixture<TileStats>(html`
+      <tile-stats
+        .mediatype=${'account'}
+        .itemCount=${1}
+        .favCount=${2}
+        .commentCount=${3}
+      >
+      </tile-stats>
+    `);
 
     const statsRow = el.shadowRoot?.querySelector('#stats-row');
 
@@ -56,17 +53,15 @@ describe('Tile Stats', () => {
   });
 
   it('should render view count for non-account items', async () => {
-    const el = await fixture<TileStats>(
-      html`
-        <tile-stats
-          .mediatype=${'texts'}
-          .viewCount=${4}
-          .favCount=${5}
-          .commentCount=${6}
-        >
-        </tile-stats>
-      `
-    );
+    const el = await fixture<TileStats>(html`
+      <tile-stats
+        .mediatype=${'texts'}
+        .viewCount=${4}
+        .favCount=${5}
+        .commentCount=${6}
+      >
+      </tile-stats>
+    `);
 
     const statsRow = el.shadowRoot?.querySelector('#stats-row');
 
@@ -94,12 +89,10 @@ describe('Tile Stats', () => {
   });
 
   it('handles missing counts gracefully', async () => {
-    const el = await fixture<TileStats>(
-      html`
-        <tile-stats .mediatype=${'texts'} .favCount=${5} .commentCount=${6}>
-        </tile-stats>
-      `
-    );
+    const el = await fixture<TileStats>(html`
+      <tile-stats .mediatype=${'texts'} .favCount=${5} .commentCount=${6}>
+      </tile-stats>
+    `);
 
     const statsRow = el.shadowRoot?.querySelector('#stats-row');
 
@@ -127,12 +120,10 @@ describe('Tile Stats', () => {
   });
 
   it('handles missing counts gracefully for accounts', async () => {
-    const el = await fixture<TileStats>(
-      html`
-        <tile-stats .mediatype=${'account'} .favCount=${5} .commentCount=${6}>
-        </tile-stats>
-      `
-    );
+    const el = await fixture<TileStats>(html`
+      <tile-stats .mediatype=${'account'} .favCount=${5} .commentCount=${6}>
+      </tile-stats>
+    `);
 
     const statsRow = el.shadowRoot?.querySelector('#stats-row');
 

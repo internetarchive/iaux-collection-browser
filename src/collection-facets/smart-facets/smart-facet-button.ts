@@ -28,7 +28,9 @@ export class SmartFacetButton extends LitElement {
 
     const displayText = capitalize(
       (this.labelPrefix ? `${this.labelPrefix} ` : '') +
-        (this.facetInfo.label ?? firstFacet.displayText ?? firstFacet.bucketKey)
+        (this.facetInfo.label ??
+          firstFacet.displayText ??
+          firstFacet.bucketKey),
     );
     if (!displayText) return nothing;
 
@@ -61,7 +63,7 @@ export class SmartFacetButton extends LitElement {
       for (const facet of this.facetInfo.facets) {
         url.searchParams.append(
           'and[]',
-          encodeURIComponent(`${facet.facetType}:"${facet.bucketKey}"`)
+          encodeURIComponent(`${facet.facetType}:"${facet.bucketKey}"`),
         );
       }
     }
@@ -88,7 +90,7 @@ export class SmartFacetButton extends LitElement {
             negative: false,
           })),
         },
-      })
+      }),
     );
   }
 

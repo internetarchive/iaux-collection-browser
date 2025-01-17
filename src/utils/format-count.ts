@@ -31,7 +31,6 @@ function magnitude(number: number, numberFormat: NumberFormat): Divisor {
  * Round a number given passed magnitude.
  * Significant digits of value less than 10 get a decimal.
  */
-// eslint-disable-next-line default-param-last
 function round(number: number = 0, divisor: Divisor): number {
   const result = number / divisor;
   const roundToOne = result < 10;
@@ -51,7 +50,7 @@ function labelize(
   rounded: number,
   divisor: Divisor,
   format: LabelFormat,
-  locale: string
+  locale: string,
 ): string {
   switch (divisor) {
     case 1_000_000_000:
@@ -83,7 +82,7 @@ export function formatCount(
   count: number | undefined,
   numberFormat: NumberFormat = 'long',
   labelFormat: LabelFormat = 'short',
-  locale: string = 'en-US'
+  locale: string = 'en-US',
 ): string {
   // Return blank if undefined
   const number = count ?? -1;

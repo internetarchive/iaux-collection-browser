@@ -14,14 +14,14 @@ const dataPage: TileModel[] = [
       fields: {
         identifier: 'foo',
       },
-    })
+    }),
   ),
   new TileModel(
     new ItemHit({
       fields: {
         identifier: 'bar',
       },
-    })
+    }),
   ),
 ];
 

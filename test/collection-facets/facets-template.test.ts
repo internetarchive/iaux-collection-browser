@@ -21,7 +21,7 @@ const facetGroup: FacetGroup = {
 describe('Render facets', () => {
   it('should render more facets template', async () => {
     const el = await fixture<FacetsTemplate>(
-      html`<facets-template .facetGroup=${facetGroup}></facets-template>`
+      html`<facets-template .facetGroup=${facetGroup}></facets-template>`,
     );
     await el.updateComplete;
 
@@ -30,7 +30,7 @@ describe('Render facets', () => {
 
   it('facets template renders facet rows', async () => {
     const el = await fixture<FacetsTemplate>(
-      html`<facets-template .facetGroup=${facetGroup}></facets-template>`
+      html`<facets-template .facetGroup=${facetGroup}></facets-template>`,
     );
 
     expect(el.shadowRoot?.querySelector('.facet-rows')).to.exist;
@@ -38,7 +38,7 @@ describe('Render facets', () => {
 
   it('applies correct bucket values to facet row', async () => {
     const el = await fixture<FacetsTemplate>(
-      html`<facets-template .facetGroup=${facetGroup}></facets-template>`
+      html`<facets-template .facetGroup=${facetGroup}></facets-template>`,
     );
 
     const facetRows = el.shadowRoot?.querySelectorAll('facet-row');
@@ -58,14 +58,14 @@ describe('Render facets', () => {
       html`<facets-template
         .facetGroup=${facetGroup}
         @facetClick=${facetClickSpy}
-      ></facets-template>`
+      ></facets-template>`,
     );
 
     const facetRow = el.shadowRoot?.querySelector('facet-row') as FacetRow;
     expect(facetRow).to.exist;
 
     const facetSelectCheck = facetRow.shadowRoot?.querySelector(
-      '.select-facet-checkbox'
+      '.select-facet-checkbox',
     ) as HTMLInputElement;
     expect(facetSelectCheck).to.exist;
 
@@ -84,14 +84,14 @@ describe('Render facets', () => {
       html`<facets-template
         .facetGroup=${facetGroup}
         @facetClick=${facetClickSpy}
-      ></facets-template>`
+      ></facets-template>`,
     );
 
     const facetRow = el.shadowRoot?.querySelector('facet-row') as FacetRow;
     expect(facetRow).to.exist;
 
     const facetNegateCheck = facetRow.shadowRoot?.querySelector(
-      '.hide-facet-checkbox'
+      '.hide-facet-checkbox',
     ) as HTMLInputElement;
     expect(facetNegateCheck).to.exist;
 
@@ -116,14 +116,14 @@ describe('Render facets', () => {
       html`<facets-template
         .facetGroup=${facetGroupWithSelection}
         @facetClick=${facetClickSpy}
-      ></facets-template>`
+      ></facets-template>`,
     );
 
     const facetRow = el.shadowRoot?.querySelector('facet-row') as FacetRow;
     expect(facetRow).to.exist;
 
     const facetSelectCheck = facetRow.shadowRoot?.querySelector(
-      '.select-facet-checkbox'
+      '.select-facet-checkbox',
     ) as HTMLInputElement;
     expect(facetSelectCheck).to.exist;
     expect(facetSelectCheck.checked).to.be.true;
