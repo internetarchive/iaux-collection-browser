@@ -6,7 +6,6 @@ import {
   SearchService,
   SearchServiceInterface,
   SearchType,
-  StringField,
 } from '@internetarchive/search-service';
 import { html, css, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -17,6 +16,7 @@ import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manag
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
+import { StringField } from '@internetarchive/iaux-item-metadata';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
