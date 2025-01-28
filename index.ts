@@ -11,3 +11,9 @@ export { ItemTile } from './src/tiles/grid/item-tile';
 export { TileList } from './src/tiles/list/tile-list';
 export { TileListCompact } from './src/tiles/list/tile-list-compact';
 export { TileDispatcher } from './src/tiles/tile-dispatcher';
+export {
+  SmartQueryHeuristic,
+  KeywordFacetMap,
+  SmartFacet,
+} from './src/collection-facets/smart-facets/models';
+export { SmartQueryHeuristicGroup } from './src/collection-facets/smart-facets/smart-facet-heuristics';
