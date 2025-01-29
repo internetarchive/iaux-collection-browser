@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture, oneEvent } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
@@ -13,13 +12,13 @@ describe('More facets pagination', () => {
   describe('5 pages or less', () => {
     it('shows all pages', async () => {
       const el = await fixture<MoreFacetsPagination>(
-        html`<more-facets-pagination .size=${5}></more-facets-pagination>`
+        html`<more-facets-pagination .size=${5}></more-facets-pagination>`,
       );
 
       await el.updateComplete;
 
       const pageButtons = el.shadowRoot?.querySelectorAll(
-        'button[data-page]'
+        'button[data-page]',
       ) as NodeList;
       expect(pageButtons.length).to.greaterThan(0);
 
@@ -31,7 +30,7 @@ describe('More facets pagination', () => {
 
   it('should render pagination template', async () => {
     const el = await fixture<MoreFacetsPagination>(
-      html`<more-facets-pagination .size=${10}></more-facets-pagination>`
+      html`<more-facets-pagination .size=${10}></more-facets-pagination>`,
     );
 
     await el.updateComplete;
@@ -42,7 +41,7 @@ describe('More facets pagination', () => {
 
   it('should render page numbers', async () => {
     const el = await fixture<MoreFacetsPagination>(
-      html`<more-facets-pagination .size=${3}></more-facets-pagination>`
+      html`<more-facets-pagination .size=${3}></more-facets-pagination>`,
     );
 
     await el.updateComplete;
@@ -57,7 +56,7 @@ describe('More facets pagination', () => {
       html`<more-facets-pagination
         .size=${4}
         .currentPage=${2}
-      ></more-facets-pagination>`
+      ></more-facets-pagination>`,
     );
 
     await el.updateComplete;
@@ -67,7 +66,7 @@ describe('More facets pagination', () => {
     expect(
       pageNumberElement
         ?.querySelectorAll('button')[1]
-        .classList.contains('current')
+        .classList.contains('current'),
     ).to.be.true;
     expect(el.pages?.length).to.equal(4);
   });
@@ -77,7 +76,7 @@ describe('More facets pagination', () => {
       html`<more-facets-pagination
         .size=${4}
         .currentPage=${2}
-      ></more-facets-pagination>`
+      ></more-facets-pagination>`,
     );
 
     await el.updateComplete;
@@ -88,15 +87,15 @@ describe('More facets pagination', () => {
   describe('Selecting a page', () => {
     it('fires event', async () => {
       const el = await fixture<MoreFacetsPagination>(
-        html`<more-facets-pagination></more-facets-pagination>`
+        html`<more-facets-pagination></more-facets-pagination>`,
       );
 
       await el.updateComplete;
 
       setTimeout(() =>
         el.dispatchEvent(
-          new CustomEvent('pageNumberClicked', { detail: { page: 15 } })
-        )
+          new CustomEvent('pageNumberClicked', { detail: { page: 15 } }),
+        ),
       );
       const { detail } = await oneEvent(el, 'pageNumberClicked');
       expect(detail?.page).to.equal(15);
@@ -106,7 +105,7 @@ describe('More facets pagination', () => {
         html`<more-facets-pagination
           .size=${'10'}
           .currentPage=${2}
-        ></more-facets-pagination>`
+        ></more-facets-pagination>`,
       );
 
       expect(el.currentPage).to.equal(2); // confirm current page
@@ -118,7 +117,7 @@ describe('More facets pagination', () => {
 
       // select first page button
       const pageButton = el.shadowRoot?.querySelector(
-        '.page-numbers > button'
+        '.page-numbers > button',
       ) as HTMLButtonElement;
       // confirm button isn't selected
       expect(pageButton.classList.contains('current')).to.be.false;
@@ -140,7 +139,7 @@ describe('More facets pagination', () => {
         html`<more-facets-pagination
           .size=${'10'}
           .currentPage=${2}
-        ></more-facets-pagination>`
+        ></more-facets-pagination>`,
       );
 
       expect(el.currentPage).to.equal(2); // confirm current page
@@ -152,7 +151,7 @@ describe('More facets pagination', () => {
 
       // select first page button
       const rewindButton = el.shadowRoot?.querySelector(
-        '.facets-pagination > button.rewind'
+        '.facets-pagination > button.rewind',
       ) as HTMLButtonElement;
       rewindButton.click();
 
@@ -165,9 +164,9 @@ describe('More facets pagination', () => {
       expect(
         (
           el.shadowRoot?.querySelector(
-            '.page-numbers > button[data-page="1"]'
+            '.page-numbers > button[data-page="1"]',
           ) as HTMLButtonElement
-        ).classList.contains('current')
+        ).classList.contains('current'),
       ).to.be.true;
     });
 
@@ -176,7 +175,7 @@ describe('More facets pagination', () => {
         html`<more-facets-pagination
           .size=${'10'}
           .currentPage=${5}
-        ></more-facets-pagination>`
+        ></more-facets-pagination>`,
       );
 
       expect(el.currentPage).to.equal(5); // confirm current page
@@ -188,7 +187,7 @@ describe('More facets pagination', () => {
 
       // select first page button
       const forwardButton = el.shadowRoot?.querySelector(
-        '.facets-pagination > button.forward'
+        '.facets-pagination > button.forward',
       ) as HTMLButtonElement;
       forwardButton.click();
 

@@ -43,7 +43,7 @@ export class QueryKeywordsHeuristic implements SmartQueryHeuristic {
     const recommendations: SmartFacet[] = [];
 
     for (const [keyword, facets] of Object.entries(
-      QueryKeywordsHeuristic.KEYWORDS
+      QueryKeywordsHeuristic.KEYWORDS,
     )) {
       if (query.includes(keyword)) {
         recommendations.push(...facets);

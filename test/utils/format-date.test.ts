@@ -29,7 +29,7 @@ describe('formatDate', () => {
     // receive from the search engine for date metadata that only specifies the year.
     // So we must ensure these older dates still output the correct year, not the prior one.
     expect(formatDate(new Date('1234-01-01T00:00:00Z'), 'year-only')).to.equal(
-      '1234'
+      '1234',
     );
   });
 

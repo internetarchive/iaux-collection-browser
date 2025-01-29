@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { TileList } from '../../../src/tiles/list/tile-list';
@@ -9,7 +8,7 @@ import type { TileModel } from '../../../src/models';
 describe('List Tile', () => {
   it('should render initial component', async () => {
     const el = await fixture<TileList>(
-      html`<tile-list .model=${{}}></tile-list>`
+      html`<tile-list .model=${{}}></tile-list>`,
     );
 
     const listContainer = el.shadowRoot?.querySelector('#list-line');
@@ -96,7 +95,7 @@ describe('List Tile', () => {
     const collectionLinks = collectionsRow?.querySelectorAll('a[href]');
     expect(collectionLinks?.length).to.equal(1);
     expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
-      'base/details/foo'
+      'base/details/foo',
     );
   });
 
@@ -115,7 +114,7 @@ describe('List Tile', () => {
     const collectionLinks = collectionsRow?.querySelectorAll('a[href]');
     expect(collectionLinks?.length).to.equal(1);
     expect(collectionLinks?.item(0).getAttribute('href')).to.equal(
-      'base/details/bar'
+      'base/details/bar',
     );
   });
 
@@ -282,19 +281,19 @@ describe('List Tile', () => {
     const subjectLink = el.shadowRoot?.querySelector('#topics a[href]');
     expect(subjectLink).to.exist;
     expect(subjectLink?.getAttribute('href')).to.equal(
-      `/search?query=${encodeURIComponent('subject:"foo"')}`
+      `/search?query=${encodeURIComponent('subject:"foo"')}`,
     );
 
     const creatorLink = el.shadowRoot?.querySelector('#creator a[href]');
     expect(creatorLink).to.exist;
     expect(creatorLink?.getAttribute('href')).to.equal(
-      `/search?query=${encodeURIComponent('creator:"bar"')}`
+      `/search?query=${encodeURIComponent('creator:"bar"')}`,
     );
 
     const sourceLink = el.shadowRoot?.querySelector('#source a[href]');
     expect(sourceLink).to.exist;
     expect(sourceLink?.getAttribute('href')).to.equal(
-      `/search?query=${encodeURIComponent('source:"baz"')}`
+      `/search?query=${encodeURIComponent('source:"baz"')}`,
     );
   });
 
@@ -323,7 +322,7 @@ describe('List Tile', () => {
     const mediatypeLink = el.shadowRoot?.querySelector('a#icon-right');
     expect(mediatypeLink).to.exist;
     expect(mediatypeLink?.getAttribute('href')).to.equal(
-      `https://archive.org/details/texts`
+      `https://archive.org/details/texts`,
     );
   });
 
@@ -356,7 +355,7 @@ describe('List Tile', () => {
     const mediatypeLink = el.shadowRoot?.querySelector('a#icon-right');
     expect(mediatypeLink).to.exist;
     expect(mediatypeLink?.getAttribute('href')).to.equal(
-      `https://archive.org/search?query=mediatype:collection&sort=-downloads`
+      `https://archive.org/search?query=mediatype:collection&sort=-downloads`,
     );
   });
 
@@ -416,7 +415,7 @@ describe('List Tile', () => {
     const firstDateLink = captureDatesUl?.children[0]?.querySelector('a[href]');
     expect(firstDateLink, 'first date link').to.exist;
     expect(firstDateLink?.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20100102123456/https%3A%2F%2Fexample.com%2F'
+      'https://web.archive.org/web/20100102123456/https%3A%2F%2Fexample.com%2F',
     );
     expect(firstDateLink?.textContent?.trim()).to.equal('Jan 02, 2010');
 
@@ -424,7 +423,7 @@ describe('List Tile', () => {
       captureDatesUl?.children[1]?.querySelector('a[href]');
     expect(secondDateLink, 'second date link').to.exist;
     expect(secondDateLink?.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20110203124321/https%3A%2F%2Fexample.com%2F'
+      'https://web.archive.org/web/20110203124321/https%3A%2F%2Fexample.com%2F',
     );
     expect(secondDateLink?.textContent?.trim()).to.equal('Feb 03, 2011');
   });

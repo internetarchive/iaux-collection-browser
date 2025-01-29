@@ -7,7 +7,7 @@ import '../../src/sort-filter-bar/alpha-bar-tooltip';
 describe('Alphabet Filter Bar Tooltips', () => {
   it('renders component', async () => {
     const el = await fixture<AlphaBarTooltip>(
-      html`<alpha-bar-tooltip .numResults=${42}></alpha-bar-tooltip>`
+      html`<alpha-bar-tooltip .numResults=${42}></alpha-bar-tooltip>`,
     );
 
     // Should render the number of results

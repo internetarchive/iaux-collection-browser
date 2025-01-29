@@ -96,7 +96,7 @@ export class ExpandedDatePicker extends LitElement {
     e: CustomEvent<{
       minDate: string;
       maxDate: string;
-    }>
+    }>,
   ): void {
     this.minSelectedDate = e.detail.minDate;
     this.maxSelectedDate = e.detail.maxDate;

@@ -66,21 +66,23 @@ export class ManageBar extends LitElement {
           <div class="selection-buttons">
             ${when(
               this.showSelectAll,
-              () => html` <button
-                class="ia-button link select-all-btn"
-                @click=${this.selectAllClicked}
-              >
-                ${msg('Select all')}
-              </button>`
+              () =>
+                html` <button
+                  class="ia-button link select-all-btn"
+                  @click=${this.selectAllClicked}
+                >
+                  ${msg('Select all')}
+                </button>`,
             )}
             ${when(
               this.showUnselectAll,
-              () => html` <button
-                class="ia-button link unselect-all-btn"
-                @click=${this.unselectAllClicked}
-              >
-                ${msg('Unselect all')}
-              </button>`
+              () =>
+                html` <button
+                  class="ia-button link unselect-all-btn"
+                  @click=${this.unselectAllClicked}
+                >
+                  ${msg('Unselect all')}
+                </button>`,
             )}
           </div>
         </div>

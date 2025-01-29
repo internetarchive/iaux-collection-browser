@@ -228,7 +228,7 @@ export class SortFilterBar
 
     if (changed.has('resizeObserver') || changed.has('enableSortOptionsSlot')) {
       const oldObserver = changed.get(
-        'resizeObserver'
+        'resizeObserver',
       ) as SharedResizeObserverInterface;
       if (oldObserver) this.disconnectResizeObserver(oldObserver);
       this.setupResizeObserver();
@@ -239,12 +239,12 @@ export class SortFilterBar
     if (this.dropdownBackdropVisible) {
       document.addEventListener(
         'keydown',
-        this.boundSortBarSelectorEscapeListener
+        this.boundSortBarSelectorEscapeListener,
       );
     } else {
       document.removeEventListener(
         'keydown',
-        this.boundSortBarSelectorEscapeListener
+        this.boundSortBarSelectorEscapeListener,
       );
     }
   }
@@ -267,7 +267,7 @@ export class SortFilterBar
   }
 
   private disconnectResizeObserver(
-    resizeObserver: SharedResizeObserverInterface
+    resizeObserver: SharedResizeObserverInterface,
   ) {
     if (this.sortSelectorContainer) {
       resizeObserver.removeObserver({
@@ -430,7 +430,7 @@ export class SortFilterBar
       .filter(opt => opt.shownInSortBar)
       .filter(opt => this.showRelevance || opt.field !== SortField.relevance)
       .filter(
-        opt => this.showDateFavorited || opt.field !== SortField.datefavorited
+        opt => this.showDateFavorited || opt.field !== SortField.datefavorited,
       );
 
     return html`
@@ -439,12 +439,11 @@ export class SortFilterBar
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
         ${this.getSortDropdown({
-          displayName: html`${SORT_OPTIONS[this.finalizedSortField]
-            .displayName}`,
+          displayName: html`${SORT_OPTIONS[this.finalizedSortField].displayName}`,
           id: 'mobile-dropdown',
           selected: true,
           dropdownOptions: displayedOptions.map(opt =>
-            this.getDropdownOption(opt.field)
+            this.getDropdownOption(opt.field),
           ),
           selectedOption: this.finalizedSortField,
           onOptionSelected: this.mobileSortChanged,
@@ -452,7 +451,7 @@ export class SortFilterBar
             this.dropdownBackdropVisible = this.mobileDropdown.open;
             this.mobileDropdown.classList.toggle(
               'open',
-              this.mobileDropdown.open
+              this.mobileDropdown.open,
             );
           },
         })}
@@ -479,7 +478,7 @@ export class SortFilterBar
       displayName?: TemplateResult;
       selected?: boolean;
       onClick?: (e: Event) => void;
-    }
+    },
   ): TemplateResult {
     const isSelected =
       options?.selected ?? this.finalizedSortField === sortField;
@@ -759,7 +758,7 @@ export class SortFilterBar
   /** Toggles the current sort direction between 'asc' and 'desc' */
   private toggleSortDirection() {
     this.setSortDirection(
-      this.finalizedSortDirection === 'desc' ? 'asc' : 'desc'
+      this.finalizedSortDirection === 'desc' ? 'asc' : 'desc',
     );
   }
 
@@ -896,14 +895,14 @@ export class SortFilterBar
   }
 
   private titleLetterChanged(
-    e: CustomEvent<{ selectedLetter: string | undefined }>
+    e: CustomEvent<{ selectedLetter: string | undefined }>,
   ) {
     this.selectedTitleFilter = e.detail.selectedLetter ?? null;
     this.emitTitleLetterChangedEvent();
   }
 
   private creatorLetterChanged(
-    e: CustomEvent<{ selectedLetter: string | undefined }>
+    e: CustomEvent<{ selectedLetter: string | undefined }>,
   ) {
     this.selectedCreatorFilter = e.detail.selectedLetter ?? null;
     this.emitCreatorLetterChangedEvent();
@@ -914,7 +913,7 @@ export class SortFilterBar
       'titleLetterChanged',
       {
         detail: { selectedLetter: this.selectedTitleFilter },
-      }
+      },
     );
     this.dispatchEvent(event);
   }
@@ -924,7 +923,7 @@ export class SortFilterBar
       'creatorLetterChanged',
       {
         detail: { selectedLetter: this.selectedCreatorFilter },
-      }
+      },
     );
     this.dispatchEvent(event);
   }

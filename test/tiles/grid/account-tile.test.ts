@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
@@ -38,7 +37,7 @@ describe('Account Tile', () => {
     expect(itemInfo).to.exist;
     expect(accountTitle).to.exist;
     expect(accountTitle?.querySelector('.truncated')?.textContent).to.equal(
-      '@jack-sparrow'
+      '@jack-sparrow',
     );
   });
 
@@ -112,7 +111,7 @@ describe('Account Tile', () => {
     `);
 
     const infoButton = el.shadowRoot?.querySelector(
-      '.info-button'
+      '.info-button',
     ) as HTMLButtonElement;
     infoButton.click();
     await el.updateComplete;

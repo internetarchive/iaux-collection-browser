@@ -31,6 +31,7 @@ export class MoreFacetsPagination extends LitElement {
     this.observePageCount();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override updated(changed: Map<string, any>) {
     if (changed.has('size')) {
       this.observePageCount();
@@ -175,7 +176,7 @@ export class MoreFacetsPagination extends LitElement {
         detail: { page: this.currentPage },
         bubbles: true,
         composed: true,
-      })
+      }),
     );
   }
 
@@ -219,7 +220,7 @@ export class MoreFacetsPagination extends LitElement {
         page =>
           html`${page !== 0
             ? this.getPageTemplate(page)
-            : this.getEllipsisTemplate}`
+            : this.getEllipsisTemplate}`,
       )}
     `;
   }

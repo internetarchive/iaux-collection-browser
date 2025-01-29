@@ -90,7 +90,7 @@ export class TileList extends BaseTileComponent {
     const isCollection = this.model.mediatype === 'collection';
     const href = this.displayValueProvider.itemPageUrl(
       this.model.identifier,
-      isCollection
+      isCollection,
     );
 
     return html`<a href=${href}>
@@ -149,7 +149,7 @@ export class TileList extends BaseTileComponent {
       : this.detailsLink(
           this.model.identifier,
           this.model.title,
-          this.model.mediatype === 'collection'
+          this.model.mediatype === 'collection',
         );
   }
 
@@ -203,7 +203,7 @@ export class TileList extends BaseTileComponent {
         ${this.labelTemplate(msg('By'))}
         ${join(
           map(this.model.creators, id => this.searchLink('creator', id)),
-          ', '
+          ', ',
         )}
       </div>
     `;
@@ -233,7 +233,7 @@ export class TileList extends BaseTileComponent {
     ) {
       return this.metadataTemplate(
         formatDate(this.date, 'long'),
-        this.displayValueProvider.dateLabel
+        this.displayValueProvider.dateLabel,
       );
     }
     return nothing;
@@ -253,7 +253,7 @@ export class TileList extends BaseTileComponent {
 
     return this.metadataTemplate(
       `${formatCount(viewCount, this.formatSize)}`,
-      msg('Views')
+      msg('Views'),
     );
   }
 
@@ -274,7 +274,7 @@ export class TileList extends BaseTileComponent {
         ${this.labelTemplate(msg('Topics'))}
         ${join(
           map(this.model.subjects, id => this.searchLink('subject', id)),
-          ', '
+          ', ',
         )}
       </div>
     `;
@@ -296,10 +296,10 @@ export class TileList extends BaseTileComponent {
     return this.metadataTemplate(
       // Sanitize away any HTML tags and convert line breaks to spaces.
       unsafeHTML(
-        DOMPurify.sanitize(this.model?.description?.replace(/\n/g, ' ') ?? '')
+        DOMPurify.sanitize(this.model?.description?.replace(/\n/g, ' ') ?? ''),
       ),
       '',
-      'description'
+      'description',
     );
   }
 
@@ -340,19 +340,20 @@ export class TileList extends BaseTileComponent {
       <ul class="capture-dates">
         ${map(
           this.model.captureDates,
-          date => html`<li>
-            ${this.displayValueProvider.webArchivesCaptureLink(
-              this.model!.title,
-              date
-            )}
-          </li>`
+          date =>
+            html`<li>
+              ${this.displayValueProvider.webArchivesCaptureLink(
+                this.model!.title,
+                date,
+              )}
+            </li>`,
         )}
       </ul>
     `;
   }
 
   // Utility functions
-  // eslint-disable-next-line default-param-last
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private metadataTemplate(text: any, label = '', id?: string) {
     if (!text) return nothing;
     return html`
@@ -375,28 +376,25 @@ export class TileList extends BaseTileComponent {
     const query = encodeURIComponent(`${field}:"${searchTerm}"`);
     // No whitespace after closing tag
     // Note: single ' for href='' to wrap " in query var gets changed back by yarn format
-
-    /* eslint-disable lit/no-invalid-html */
     return html`<a
       href="${this.baseNavigationUrl}/search?query=${query}"
       rel="nofollow"
     >
       ${DOMPurify.sanitize(searchTerm)}</a
     >`;
-    /* eslint-enable lit/no-invalid-html */
   }
 
   private detailsLink(
     identifier?: string,
     text?: string,
-    isCollection = false
+    isCollection = false,
   ): TemplateResult | typeof nothing {
     if (!identifier) return nothing;
 
     const linkText = text ?? identifier;
     const linkHref = this.displayValueProvider.itemPageUrl(
       identifier,
-      isCollection
+      isCollection,
     );
 
     return html`<a href=${linkHref}> ${DOMPurify.sanitize(linkText)} </a>`;
@@ -417,7 +415,7 @@ export class TileList extends BaseTileComponent {
       default:
         return this.displayValueProvider.itemPageUrl(
           this.model.mediatype,
-          true
+          true,
         );
     }
   }
@@ -447,8 +445,8 @@ export class TileList extends BaseTileComponent {
           this.detailsLink(
             collection,
             this.collectionTitles?.get(collection) ?? collection,
-            true
-          )
+            true,
+          ),
         );
       }
     }
@@ -664,7 +662,7 @@ export class TileList extends BaseTileComponent {
       /*
        * With the exception of the title line, allow these to wrap if
        * the space becomes too small to accommodate them together.
-       * 
+       *
        * The title line is excluded because it contains the mediatype icon
        * which we don't want to wrap.
        */

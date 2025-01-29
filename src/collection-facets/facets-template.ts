@@ -44,12 +44,13 @@ export class FacetsTemplate extends LitElement {
         ${repeat(
           facetBuckets,
           bucket => `${facetGroup.key}:${bucket.key}`,
-          bucket => html`<facet-row
-            .facetType=${facetGroup.key}
-            .bucket=${bucket}
-            .collectionTitles=${this.collectionTitles}
-            @facetClick=${this.facetClicked}
-          ></facet-row>`
+          bucket =>
+            html`<facet-row
+              .facetType=${facetGroup.key}
+              .bucket=${bucket}
+              .collectionTitles=${this.collectionTitles}
+              @facetClick=${this.facetClicked}
+            ></facet-row>`,
         )}
       </div>
     `;

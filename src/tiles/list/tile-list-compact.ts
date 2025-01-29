@@ -73,7 +73,7 @@ export class TileListCompact extends BaseTileComponent {
 
     return this.displayValueProvider.itemPageUrl(
       this.model.identifier,
-      this.model.mediatype === 'collection'
+      this.model.mediatype === 'collection',
     );
   }
 
@@ -155,7 +155,7 @@ export class TileListCompact extends BaseTileComponent {
 
   private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
-      this.effectiveSort?.field as string
+      this.effectiveSort?.field as string,
     );
   }
 

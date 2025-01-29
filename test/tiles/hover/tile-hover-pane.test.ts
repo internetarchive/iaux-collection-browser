@@ -8,7 +8,7 @@ import '../../../src/tiles/hover/tile-hover-pane';
 describe('Tile Hover Pane', () => {
   it('should render initial component', async () => {
     const el = await fixture<TileHoverPane>(
-      html`<tile-hover-pane></tile-hover-pane>`
+      html`<tile-hover-pane></tile-hover-pane>`,
     );
 
     const container = el.shadowRoot?.querySelector('#container');
@@ -25,7 +25,7 @@ describe('Tile Hover Pane', () => {
     };
 
     const el = await fixture<TileHoverPane>(
-      html`<tile-hover-pane .model=${model}></tile-hover-pane>`
+      html`<tile-hover-pane .model=${model}></tile-hover-pane>`,
     );
 
     const container = el.shadowRoot?.querySelector('#container');
@@ -36,7 +36,7 @@ describe('Tile Hover Pane', () => {
     expect(listView).to.exist;
     expect(headerElement).to.exist;
     expect(headerElement?.querySelector('a')?.getAttribute('href')).contains(
-      '/details/collection1'
+      '/details/collection1',
     );
   });
 
@@ -47,7 +47,7 @@ describe('Tile Hover Pane', () => {
     };
 
     const el = await fixture<TileHoverPane>(
-      html`<tile-hover-pane .model=${model}></tile-hover-pane>`
+      html`<tile-hover-pane .model=${model}></tile-hover-pane>`,
     );
 
     const container = el.shadowRoot?.querySelector('#container');
@@ -66,7 +66,7 @@ describe('Tile Hover Pane', () => {
     };
 
     const el = await fixture<TileHoverPane>(
-      html`<tile-hover-pane .model=${model}></tile-hover-pane>`
+      html`<tile-hover-pane .model=${model}></tile-hover-pane>`,
     );
 
     const container = el.shadowRoot?.querySelector('#container');

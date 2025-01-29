@@ -8,7 +8,7 @@ import '../../src/collection-facets/toggle-switch';
 describe('Toggle switch', () => {
   it('renders component', async () => {
     const el = await fixture<ToggleSwitch>(
-      html`<toggle-switch></toggle-switch>`
+      html`<toggle-switch></toggle-switch>`,
     );
 
     expect(el.shadowRoot?.querySelector('#switch-button')).to.exist;
@@ -17,7 +17,10 @@ describe('Toggle switch', () => {
 
   it('renders provided L/R values', async () => {
     const el = await fixture<ToggleSwitch>(
-      html`<toggle-switch .leftValue=${'L'} .rightValue=${'R'}></toggle-switch>`
+      html`<toggle-switch
+        .leftValue=${'L'}
+        .rightValue=${'R'}
+      ></toggle-switch>`,
     );
 
     expect(el.value).to.equal('L');
@@ -26,12 +29,12 @@ describe('Toggle switch', () => {
     expect(
       el.shadowRoot
         ?.querySelector('label[for=switch-left]')
-        ?.textContent?.trim()
+        ?.textContent?.trim(),
     ).to.equal('L');
     expect(
       el.shadowRoot
         ?.querySelector('label[for=switch-right]')
-        ?.textContent?.trim()
+        ?.textContent?.trim(),
     ).to.equal('R');
   });
 
@@ -42,28 +45,29 @@ describe('Toggle switch', () => {
         .leftLabel=${'L-label'}
         .rightValue=${'R'}
         .rightLabel=${'R-label'}
-      ></toggle-switch>`
+      ></toggle-switch>`,
     );
 
     expect(el.value).to.equal('L');
     expect(el.selectedLabel).to.equal('L-label');
 
     expect(
-      (el.shadowRoot?.querySelector('#switch-left') as HTMLInputElement)?.value
+      (el.shadowRoot?.querySelector('#switch-left') as HTMLInputElement)?.value,
     ).to.equal('L');
     expect(
-      (el.shadowRoot?.querySelector('#switch-right') as HTMLInputElement)?.value
+      (el.shadowRoot?.querySelector('#switch-right') as HTMLInputElement)
+        ?.value,
     ).to.equal('R');
 
     expect(
       el.shadowRoot
         ?.querySelector('label[for=switch-left]')
-        ?.textContent?.trim()
+        ?.textContent?.trim(),
     ).to.equal('L-label');
     expect(
       el.shadowRoot
         ?.querySelector('label[for=switch-right]')
-        ?.textContent?.trim()
+        ?.textContent?.trim(),
     ).to.equal('R-label');
   });
 
@@ -73,7 +77,7 @@ describe('Toggle switch', () => {
         .leftValue=${'L'}
         .rightValue=${'R'}
         .side=${'right'}
-      ></toggle-switch>`
+      ></toggle-switch>`,
     );
 
     expect(el.value).to.equal('R');
@@ -82,11 +86,14 @@ describe('Toggle switch', () => {
 
   it('toggles on click', async () => {
     const el = await fixture<ToggleSwitch>(
-      html`<toggle-switch .leftValue=${'L'} .rightValue=${'R'}></toggle-switch>`
+      html`<toggle-switch
+        .leftValue=${'L'}
+        .rightValue=${'R'}
+      ></toggle-switch>`,
     );
 
     const button = el.shadowRoot?.querySelector(
-      '#switch-button'
+      '#switch-button',
     ) as HTMLButtonElement;
 
     expect(el.value).to.equal('L');
@@ -102,14 +109,17 @@ describe('Toggle switch', () => {
 
   it('toggles on radio change', async () => {
     const el = await fixture<ToggleSwitch>(
-      html`<toggle-switch .leftValue=${'L'} .rightValue=${'R'}></toggle-switch>`
+      html`<toggle-switch
+        .leftValue=${'L'}
+        .rightValue=${'R'}
+      ></toggle-switch>`,
     );
 
     const leftRadio = el.shadowRoot?.querySelector(
-      '#switch-left'
+      '#switch-left',
     ) as HTMLInputElement;
     const rightRadio = el.shadowRoot?.querySelector(
-      '#switch-right'
+      '#switch-right',
     ) as HTMLInputElement;
 
     expect(el.value).to.equal('L');
@@ -130,11 +140,11 @@ describe('Toggle switch', () => {
         .leftValue=${'L'}
         .rightValue=${'R'}
         @change=${changeSpy}
-      ></toggle-switch>`
+      ></toggle-switch>`,
     );
 
     const button = el.shadowRoot?.querySelector(
-      '#switch-button'
+      '#switch-button',
     ) as HTMLButtonElement;
 
     button.click();
@@ -143,7 +153,7 @@ describe('Toggle switch', () => {
     expect(changeSpy.callCount).to.equal(1);
 
     const leftRadio = el.shadowRoot?.querySelector(
-      '#switch-left'
+      '#switch-left',
     ) as HTMLInputElement;
 
     leftRadio.click();
