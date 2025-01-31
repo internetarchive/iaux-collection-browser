@@ -775,7 +775,7 @@ export class CollectionBrowser
    * showing the management view. This generally replaces the sort bar when present.
    */
   private get manageBarTemplate(): TemplateResult {
-    const manageViewModelMsg =
+    const manageViewModalMsg =
       this.profileElement === 'uploads'
         ? 'Note: it may take a few minutes for these items to stop appearing in your uploads list.'
         : nothing;
@@ -785,7 +785,7 @@ export class CollectionBrowser
         .label=${this.manageViewLabel}
         .modalManager=${this.modalManager}
         .selectedItems=${this.dataSource.checkedTileModels}
-        .manageViewModelMsg=${manageViewModelMsg}
+        .manageViewModalMsg=${manageViewModalMsg}
         showSelectAll
         showUnselectAll
         ?showItemManageButton=${this.pageContext === 'search'}

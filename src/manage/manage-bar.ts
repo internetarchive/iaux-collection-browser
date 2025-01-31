@@ -30,7 +30,7 @@ export class ManageBar extends LitElement {
   /**
    * Message shows as note in the modal when removing items
    */
-  @property({ type: String }) manageViewModelMsg?: string;
+  @property({ type: String }) manageViewModalMsg?: string;
 
   /**
    * Whether to show the "Select All" button (default false)
@@ -130,7 +130,7 @@ export class ManageBar extends LitElement {
     const customModalContent = html`
       <remove-items-modal-content
         .items=${this.selectedItems}
-        .message=${this.manageViewModelMsg}
+        .message=${this.manageViewModalMsg}
         @confirm=${() => this.removeItemsClicked()}
       ></remove-items-modal-content>
     `;
