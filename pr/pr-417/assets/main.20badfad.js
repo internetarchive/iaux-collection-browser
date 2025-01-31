@@ -3803,7 +3803,7 @@ fill=""></path>
     `}cancelClicked(){this.dispatchEvent(new CustomEvent("cancel"))}removeItemsClicked(){this.dispatchEvent(new CustomEvent("removeItems"))}manageItemsClicked(){this.dispatchEvent(new CustomEvent("manageItems"))}selectAllClicked(){this.dispatchEvent(new CustomEvent("selectAll"))}unselectAllClicked(){this.dispatchEvent(new CustomEvent("unselectAll"))}showRemoveItemsModal(){var e,t;const i=c`
       <remove-items-modal-content
         .items=${this.selectedItems}
-        .message=${this.manageViewModelMsg}
+        .message=${this.manageViewModalMsg}
         @confirm=${()=>this.removeItemsClicked()}
       ></remove-items-modal-content>
     `,o=new Lt({showProcessingIndicator:!1,processingImageMode:"processing",bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:c`${k("Are you sure you want to remove these items?")}`});(e=this.modalManager)===null||e===void 0||e.classList.add("remove-items"),(t=this.modalManager)===null||t===void 0||t.showModal({config:o,customModalContent:i,userClosedModalCallback:()=>{var s;(s=this.modalManager)===null||s===void 0||s.classList.remove("remove-items")}})}showRemoveItemsProcessingModal(){var e,t;const i=new Lt({showProcessingIndicator:!0,processingImageMode:"processing",bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:c`${k("Removing selected items...")}`});(e=this.modalManager)===null||e===void 0||e.classList.add("remove-items"),(t=this.modalManager)===null||t===void 0||t.showModal({config:i,userClosedModalCallback:()=>{var o;(o=this.modalManager)===null||o===void 0||o.classList.remove("remove-items")}})}showRemoveItemsErrorModal(){var e,t;const i=new Lt({showProcessingIndicator:!1,processingImageMode:"processing",bodyColor:"#fff",headerColor:"#691916",showHeaderLogo:!1,closeOnBackdropClick:!0,title:c`${k("Error: unable to remove items")}`,message:c`${k("An error occurred while removing items. Please try again in a few minutes.")}`});(e=this.modalManager)===null||e===void 0||e.classList.add("remove-items"),(t=this.modalManager)===null||t===void 0||t.showModal({config:i,userClosedModalCallback:()=>{var o;(o=this.modalManager)===null||o===void 0||o.classList.remove("remove-items")}})}static get styles(){return v`
@@ -3840,7 +3840,7 @@ fill=""></path>
         font-size: 1.4rem;
         margin: 3px 0;
       }
-    `}};r([h({type:String})],We.prototype,"label",void 0);r([h({type:Object})],We.prototype,"modalManager",void 0);r([h({type:Object})],We.prototype,"selectedItems",void 0);r([h({type:String})],We.prototype,"manageViewModelMsg",void 0);r([h({type:Boolean})],We.prototype,"showSelectAll",void 0);r([h({type:Boolean})],We.prototype,"showUnselectAll",void 0);r([h({type:Boolean})],We.prototype,"showItemManageButton",void 0);r([h({type:Boolean})],We.prototype,"removeAllowed",void 0);We=r([L("manage-bar")],We);/**
+    `}};r([h({type:String})],We.prototype,"label",void 0);r([h({type:Object})],We.prototype,"modalManager",void 0);r([h({type:Object})],We.prototype,"selectedItems",void 0);r([h({type:String})],We.prototype,"manageViewModalMsg",void 0);r([h({type:Boolean})],We.prototype,"showSelectAll",void 0);r([h({type:Boolean})],We.prototype,"showUnselectAll",void 0);r([h({type:Boolean})],We.prototype,"showItemManageButton",void 0);r([h({type:Boolean})],We.prototype,"removeAllowed",void 0);We=r([L("manage-bar")],We);/**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
@@ -5473,7 +5473,7 @@ fill=""></path>
         .label=${this.manageViewLabel}
         .modalManager=${this.modalManager}
         .selectedItems=${this.dataSource.checkedTileModels}
-        .manageViewModelMsg=${e}
+        .manageViewModalMsg=${e}
         showSelectAll
         showUnselectAll
         ?showItemManageButton=${this.pageContext==="search"}
