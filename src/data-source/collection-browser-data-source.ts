@@ -572,6 +572,7 @@ export class CollectionBrowserDataSource
    * current query is loading
    */
   private setSearchResultsLoading(loading: boolean): void {
+    console.log('setSearchResultsLoading to host: ', loading);
     this.searchResultsLoading = loading;
     if (this.activeOnHost) {
       this.host.setSearchResultsLoading(loading);
@@ -978,9 +979,11 @@ export class CollectionBrowserDataSource
    * Performs the initial page fetch(es) for the current search state.
    */
   private async doInitialPageFetch(): Promise<void> {
+    console.log('---> 1. setSearchLoad initial fetch');
     this.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
     await this.fetchPage(this.host.initialPageNumber, 2);
+    this.setSearchResultsLoading(false);
   }
 
   /**
@@ -1140,7 +1143,6 @@ export class CollectionBrowserDataSource
       this.endOfDataReached = true;
       if (this.activeOnHost) this.host.setTileCount(this.size);
     }
-
     this.setSearchResultsLoading(false);
     this.requestHostUpdate();
   }
