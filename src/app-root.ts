@@ -489,10 +489,8 @@ export class AppRoot extends LitElement {
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
           @manageModeChanged=${this.manageModeChanged}
-          @itemRemovalRequested=${(e: CustomEvent) =>
-            console.log(e.detail.items)}
-          @itemManagerRequested=${(e: CustomEvent) =>
-            console.log(e.detail.items)}
+          @itemRemovalRequested=${this.handleItemRemovalRequest}
+          @itemManagerRequested=${this.handleItemManagerRequest}
         >
           ${this.toggleSlots
             ? html`<div slot="sortbar-left-slot">Sort Slot</div>`
@@ -705,6 +703,36 @@ export class AppRoot extends LitElement {
       '#enable-management'
     ) as HTMLInputElement;
     if (manageCheckbox) manageCheckbox.checked = e.detail;
+  }
+
+  /**
+   * Handler for item removal
+   */
+  private handleItemRemovalRequest(e: CustomEvent) {
+    this.collectionBrowser.showRemoveItemsProcessingModal();
+    console.log('itemRemovalRequested: ', e.detail.items);
+
+    setTimeout(() => {
+      // execute item-removal-service, and response is successfully deleted
+      const status = false;
+
+      if (status) {
+        // looking for success?
+        this.collectionBrowser.isManageView = false;
+        this.modalManager?.closeModal();
+        this.modalManager?.classList.remove('remove-items');
+      } else {
+        // looking for failure?
+        this.collectionBrowser.showRemoveItemsErrorModal();
+      }
+    }, 2000); // let's wait to see processing modal
+  }
+
+  /**
+   * Handler when item manage requested
+   */
+  private handleItemManagerRequest(e: CustomEvent) {
+    console.log('itemManagerRequested: ', e.detail.items);
   }
 
   /**
@@ -935,6 +963,12 @@ export class AppRoot extends LitElement {
     }
     modal-manager[mode='open'] {
       display: block;
+    }
+    modal-manager.remove-items {
+      --modalWidth: 58rem;
+      --modalBorder: 2px solid var(--primaryButtonBGColor, #194880);
+      --modalTitleLineHeight: 4rem;
+      --modalTitleFontSize: 1.8rem;
     }
     modal-manager.more-search-facets {
       --modalWidth: 85rem;

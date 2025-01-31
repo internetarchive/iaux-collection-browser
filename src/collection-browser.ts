@@ -57,7 +57,6 @@ import type {
 } from './data-source/collection-browser-query-state';
 import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
 import type { CollectionFacets } from './collection-facets';
-import type { ManageableItem } from './manage/manage-bar';
 import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
 import {
   analyticsActions,
@@ -66,9 +65,9 @@ import {
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
-import { formatDate } from './utils/format-date';
 import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
+import type { ManageBar } from './manage/manage-bar';
 
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
@@ -298,6 +297,8 @@ export class CollectionBrowser
   @query('#left-column') private leftColumn?: HTMLDivElement;
 
   @query('collection-facets') private collectionFacets?: CollectionFacets;
+
+  @query('manage-bar') private manageBar?: ManageBar;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -774,15 +775,23 @@ export class CollectionBrowser
    * showing the management view. This generally replaces the sort bar when present.
    */
   private get manageBarTemplate(): TemplateResult {
+    const manageViewModalMsg =
+      this.profileElement === 'uploads'
+        ? 'Note: it may take a few minutes for these items to stop appearing in your uploads list.'
+        : nothing;
+
     return html`
       <manage-bar
         .label=${this.manageViewLabel}
-        .pageContext=${this.pageContext}
+        .modalManager=${this.modalManager}
+        .selectedItems=${this.dataSource.checkedTileModels}
+        .manageViewModalMsg=${manageViewModalMsg}
         showSelectAll
         showUnselectAll
+        ?showItemManageButton=${this.pageContext === 'search'}
         ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
-        @itemsManager=${this.handleItemsManager}
+        @manageItems=${this.handleManageItems}
         @selectAll=${() => this.dataSource.checkAllTiles()}
         @unselectAll=${() => this.dataSource.uncheckAllTiles()}
         @cancel=${() => {
@@ -799,13 +808,11 @@ export class CollectionBrowser
    */
   private handleRemoveItems(): void {
     this.dispatchEvent(
-      new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
+      new CustomEvent<{ items: String[] }>('itemRemovalRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels.map(model => {
-            const cloned = model.clone();
-            cloned.dateStr = formatDate(model.datePublished, 'long');
-            return cloned as ManageableItem;
-          }),
+          items: this.dataSource.checkedTileModels.map(model =>
+            model?.identifier ? model.identifier : ''
+          ),
         },
       })
     );
@@ -814,17 +821,30 @@ export class CollectionBrowser
   /**
    * Handler when user request to bulk edit from /search/ page
    */
-  private handleItemsManager(): void {
+  private handleManageItems(): void {
     this.dispatchEvent(
-      new CustomEvent('itemManagerRequested', {
+      new CustomEvent<{ items: String[] }>('itemManagerRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels
-            .map(item => item.identifier)
-            .filter(Boolean)
-            .join(','),
+          items: this.dataSource.checkedTileModels.map(model =>
+            model?.identifier ? model.identifier : ''
+          ),
         },
       })
     );
+  }
+
+  /**
+   * Handler to show processing modal while removing item
+   */
+  showRemoveItemsProcessingModal(): void {
+    this.manageBar?.showRemoveItemsProcessingModal();
+  }
+
+  /**
+   * Handler to show error modal when item removal failed
+   */
+  showRemoveItemsErrorModal(): void {
+    this.manageBar?.showRemoveItemsErrorModal();
   }
 
   /**
