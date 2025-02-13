@@ -249,6 +249,17 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  resetPages(): void {
+    if (Object.keys(this.pages).length !== 15) this.pages = {};
+
+    // Invalidate any fetches in progress
+    this.fetchesInProgress.clear();
+    this.requestHostUpdate();
+  }
+
+  /**
+   * @inheritdoc
+   */
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
     this.numTileModels += pageTiles.length;
@@ -433,6 +444,7 @@ export class CollectionBrowserDataSource
   map(
     callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
   ): void {
+    if (!Object.keys(this.pages).length) return;
     this.pages = Object.fromEntries(
       Object.entries(this.pages).map(([page, tileModels]) => [
         page,
