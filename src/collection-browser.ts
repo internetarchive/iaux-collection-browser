@@ -1460,7 +1460,7 @@ export class CollectionBrowser
       if (this.isManageView) {
         this.displayMode = 'grid';
         this.fetchManagableSearchResults();
-      }
+      } else if (this.pageContext === 'search') this.infiniteScroller?.reload();
 
       this.infiniteScroller?.refreshAllVisibleCells();
       this.emitManageModeChangedEvent();
@@ -2106,10 +2106,12 @@ export class CollectionBrowser
     const maxAllowedResults = this.maxPagesToManage * this.pageSize;
     if (
       this.pageContext === 'search' &&
-      this.dataSource.totalResults > maxAllowedResults
+      this.dataSource.totalResults > maxAllowedResults &&
+      !this.searchResultsLoading
     ) {
       this.dataSource.resetPages();
       this.dataSource.fetchPage(1, this.maxPagesToManage); // will fetch 750 results
+      this.infiniteScroller?.reload();
     }
   }
 
