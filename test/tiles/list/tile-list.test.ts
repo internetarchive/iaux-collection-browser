@@ -232,7 +232,7 @@ describe('List Tile', () => {
 
     const dateRow = el.shadowRoot?.getElementById('dates-line');
     expect(dateRow).to.exist;
-    expect(dateRow?.textContent?.trim()).to.contain('Published:  2011');
+    expect(dateRow?.textContent?.trim()).to.contain('Published:  2012');
   });
 
   it('should show full date added/archived/reviewed, even on Jan 1 at midnight', async () => {

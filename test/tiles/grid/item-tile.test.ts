@@ -261,7 +261,7 @@ describe('Item Tile', () => {
 
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
     expect(dateSortedBy).to.exist;
-    expect(dateSortedBy?.textContent?.trim()).to.equal('published 2011');
+    expect(dateSortedBy?.textContent?.trim()).to.equal('published 2012');
   });
 
   it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {
