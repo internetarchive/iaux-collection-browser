@@ -263,6 +263,12 @@ export class CollectionBrowser
     new CollectionBrowserDataSource(this, this.pageSize);
 
   /**
+   * The maximum number of pages we will load when a privileged user clicks
+   * the "Manage" button on the search page. Limited to 15 pages.
+   */
+  maxPagesToManage = 15;
+
+  /**
    * The page that the consumer wants to load.
    */
   initialPageNumber = 1;
@@ -797,6 +803,7 @@ export class CollectionBrowser
         @cancel=${() => {
           this.isManageView = false;
           this.dataSource.uncheckAllTiles();
+          if (this.searchResultsLoading) this.dataSource.resetPages();
         }}
       ></manage-bar>
     `;
@@ -1450,7 +1457,11 @@ export class CollectionBrowser
     }
 
     if (changed.has('isManageView')) {
-      if (this.isManageView) this.displayMode = 'grid';
+      if (this.isManageView) {
+        this.displayMode = 'grid';
+        this.fetchManagableSearchResults();
+      } else if (this.pageContext === 'search') this.infiniteScroller?.reload();
+
       this.infiniteScroller?.refreshAllVisibleCells();
       this.emitManageModeChangedEvent();
     }
@@ -2083,6 +2094,24 @@ export class CollectionBrowser
     if (!this.dataSource.endOfDataReached && this.dataSource.queryInitialized) {
       this.pagesToRender += 1;
       this.dataSource.fetchPage(this.pagesToRender);
+    }
+  }
+
+  /**
+   * Fetches search results for privileged users when in manage view
+   * If total results exceed the threshold, partially resets the datasource pages
+   * and fetches the first page with a limit based on the threshold
+   */
+  private fetchManagableSearchResults(): void {
+    const maxAllowedResults = this.maxPagesToManage * this.pageSize;
+    if (
+      this.pageContext === 'search' &&
+      this.dataSource.totalResults > maxAllowedResults &&
+      !this.searchResultsLoading
+    ) {
+      this.dataSource.resetPages();
+      this.dataSource.fetchPage(1, this.maxPagesToManage); // will fetch 750 results
+      this.infiniteScroller?.reload();
     }
   }
 
