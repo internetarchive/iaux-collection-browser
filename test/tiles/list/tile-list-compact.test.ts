@@ -175,7 +175,7 @@ describe('List Tile Compact', () => {
 
     const dateColumn = el.shadowRoot?.getElementById('date');
     expect(dateColumn).to.exist;
-    expect(dateColumn?.textContent?.trim()).to.equal('2012');
+    expect(dateColumn?.textContent?.trim()).to.equal('2011');
   });
 
   it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {

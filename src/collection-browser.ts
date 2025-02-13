@@ -263,10 +263,10 @@ export class CollectionBrowser
     new CollectionBrowserDataSource(this, this.pageSize);
 
   /**
-   * The maximum number of records that can be loaded for privileged users
-   * when clicking the "Manage" button on the search page.
+   * The maximum number of pages we will load when a privileged user clicks
+   * the "Manage" button on the search page. Limited to 15 pages.
    */
-  privsUserSearchThreshold = 750;
+  maxPagesToManage = 15;
 
   /**
    * The page that the consumer wants to load.
@@ -1459,7 +1459,7 @@ export class CollectionBrowser
     if (changed.has('isManageView')) {
       if (this.isManageView) {
         this.displayMode = 'grid';
-        this.fetchPrivsUserSearchResults();
+        this.fetchManagableSearchResults();
       }
 
       this.infiniteScroller?.refreshAllVisibleCells();
@@ -2099,16 +2099,17 @@ export class CollectionBrowser
 
   /**
    * Fetches search results for privileged users when in manage view
-   * If total results exceed the threshold, partially resets the data source
+   * If total results exceed the threshold, partially resets the datasource pages
    * and fetches the first page with a limit based on the threshold
    */
-  private fetchPrivsUserSearchResults(): void {
-    if (this.dataSource.totalResults > this.privsUserSearchThreshold) {
+  private fetchManagableSearchResults(): void {
+    const maxAllowedResults = this.maxPagesToManage * this.pageSize;
+    if (
+      this.pageContext === 'search' &&
+      this.dataSource.totalResults > maxAllowedResults
+    ) {
       this.dataSource.resetPages();
-      this.dataSource.fetchPage(
-        1,
-        this.privsUserSearchThreshold / this.pageSize
-      );
+      this.dataSource.fetchPage(1, this.maxPagesToManage); // will fetch 750 results
     }
   }
 

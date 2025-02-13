@@ -250,7 +250,9 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   resetPages(): void {
-    if (Object.keys(this.pages).length !== 15) this.pages = {};
+    if (Object.keys(this.pages).length !== this.host.maxPagesToManage) {
+      this.pages = {};
+    }
 
     // Invalidate any fetches in progress
     this.fetchesInProgress.clear();
