@@ -250,13 +250,13 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   resetPages(): void {
-    if (Object.keys(this.pages).length !== this.host.maxPagesToManage) {
+    if (Object.keys(this.pages).length < this.host.maxPagesToManage) {
       this.pages = {};
-    }
 
-    // Invalidate any fetches in progress
-    this.fetchesInProgress.clear();
-    this.requestHostUpdate();
+      // Invalidate any fetches in progress
+      this.fetchesInProgress.clear();
+      this.requestHostUpdate();
+    }
   }
 
   /**

@@ -253,6 +253,12 @@ export class CollectionBrowser
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
   /**
+   * The maximum number of pages we will load when a privileged user clicks
+   * the "Manage" button on the search page. Limited to 15 pages.
+   */
+  @property({ type: Number }) maxPagesToManage = 15;
+
+  /**
    * The results per page so we can paginate.
    *
    * This allows us to start in the middle of the search results and
@@ -261,12 +267,6 @@ export class CollectionBrowser
    */
   @property({ type: Object }) dataSource: CollectionBrowserDataSourceInterface =
     new CollectionBrowserDataSource(this, this.pageSize);
-
-  /**
-   * The maximum number of pages we will load when a privileged user clicks
-   * the "Manage" button on the search page. Limited to 15 pages.
-   */
-  maxPagesToManage = 15;
 
   /**
    * The page that the consumer wants to load.
@@ -2098,19 +2098,22 @@ export class CollectionBrowser
   }
 
   /**
-   * Fetches search results for privileged users when in manage view
-   * If total results exceed the threshold, partially resets the datasource pages
-   * and fetches the first page with a limit based on the threshold
+   * Fetches search results for privileged users when in manage view.
+   *
+   * This method:
+   * 1. Checks if we're in search context with > 100 results and not currently loading
+   * 2. Resets the datasource pagination state
+   * 3. Fetches first page with limit based on maxPagesToManage threshold
+   * 4. Reloads the infinite scroller to display new results
    */
   private fetchManagableSearchResults(): void {
-    const maxAllowedResults = this.maxPagesToManage * this.pageSize;
     if (
       this.pageContext === 'search' &&
-      this.dataSource.totalResults > maxAllowedResults &&
+      this.dataSource.totalResults > 100 &&
       !this.searchResultsLoading
     ) {
       this.dataSource.resetPages();
-      this.dataSource.fetchPage(1, this.maxPagesToManage); // will fetch 750 results
+      this.dataSource.fetchPage(1, this.maxPagesToManage);
       this.infiniteScroller?.reload();
     }
   }
