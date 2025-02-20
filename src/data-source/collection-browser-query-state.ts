@@ -38,6 +38,7 @@ export interface CollectionBrowserSearchInterface
   readonly defaultSortField: SortField | null;
   readonly facetLoadStrategy: FacetLoadStrategy;
   readonly initialPageNumber: number;
+  readonly maxPagesToManage: number;
   readonly currentVisiblePageNumbers: number[];
   readonly clearResultsOnEmptyQuery?: boolean;
   readonly dataSource?: CollectionBrowserDataSourceInterface;

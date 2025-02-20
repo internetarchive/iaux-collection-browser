@@ -65,7 +65,7 @@ export class ManageBar extends LitElement {
             ?disabled=${!this.removeAllowed}
             @click=${this.showRemoveItemsModal}
           >
-            ${msg('Remove selected items')}
+            ${msg('Remove selected items')} (${this.selectedItems.length})
           </button>
           ${when(
             this.showItemManageButton,
@@ -74,7 +74,7 @@ export class ManageBar extends LitElement {
               ?disabled=${!this.removeAllowed}
               @click=${this.manageItemsClicked}
             >
-              ${msg('Item Manager the items')}
+              ${msg('Item Manager the items')} (${this.selectedItems.length})
             </button>`
           )}
           <div class="selection-buttons">
