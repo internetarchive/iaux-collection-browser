@@ -995,6 +995,7 @@ export class CollectionBrowserDataSource
     this.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
     await this.fetchPage(this.host.initialPageNumber, 2);
+    this.setSearchResultsLoading(false);
   }
 
   /**
