@@ -313,7 +313,7 @@
 
 "@internetarchive/histogram-date-range@^1.2.1":
   version "1.2.1"
-  resolved "https://registry.npmjs.org/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.1.tgz"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.1.tgz#1b53a9bcaaccb467b467c226e9ed9d3050d952bd"
   integrity sha512-UlQcYDhDVt2yNp2GHIewwuU371FswIMsVomqDUpqRqFlD0NEIi31Mi0XhwaUWMrRsNBXYtnVaoQuAEKMTP3Lvg==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.6"
