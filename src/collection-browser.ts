@@ -1575,7 +1575,7 @@ export class CollectionBrowser
       this.leftColIntersectionObserver = new IntersectionObserver(
         this.updateLeftColumnHeight,
         {
-          threshold: [...Array(101).keys()].map(n => n / 100), // Threshold every 1%
+          threshold: [...Array(201).keys()].map(n => n / 200), // Threshold every 0.5%
         }
       );
       this.leftColIntersectionObserver.observe(leftColumnSentinel);
@@ -1612,10 +1612,12 @@ export class CollectionBrowser
       this.leftColumn?.style?.removeProperty('height');
     } else {
       const clientTop = this.leftColumn?.getBoundingClientRect().top;
-      this.leftColumn?.style?.setProperty(
-        'height',
-        `${window.innerHeight - (clientTop ?? 0) - 3}px`
-      );
+      const heightValue =
+        clientTop === 0
+          ? null
+          : `${window.innerHeight - (clientTop ?? 0) - 20}px`;
+
+      this.leftColumn?.style?.setProperty('height', heightValue);
     }
   };
 
