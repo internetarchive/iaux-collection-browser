@@ -119,9 +119,13 @@ describe('Manage bar', () => {
   });
 
   it('opens the remove items modal when showRemoveItemsModal is clicked', async () => {
+    const modalManager = await fixture<ModalManager>(
+      html`<modal-manager></modal-manager>`,
+    );
+
     const el = await fixture<ManageBar>(html`
       <manage-bar
-        .modalManager=${new ModalManager()}
+        .modalManager=${modalManager}
         .selectedItems=${[{ identifier: '1', title: 'Item 1' }]}
         removeAllowed
       ></manage-bar>

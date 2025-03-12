@@ -141,9 +141,13 @@ describe('Collection Facets', () => {
   });
 
   it('opens modal when date picker expand button clicked', async () => {
+    const modalManager = await fixture<ModalManager>(
+      html`<modal-manager></modal-manager>`,
+    );
+
     const el = await fixture<CollectionFacets>(
       html`<collection-facets
-        .modalManager=${new ModalManager()}
+        .modalManager=${modalManager}
       ></collection-facets>`,
     );
 
@@ -650,9 +654,13 @@ describe('Collection Facets', () => {
     });
 
     it('Render More Facets', async () => {
+      const modalManager = await fixture<ModalManager>(
+        html`<modal-manager></modal-manager>`,
+      );
+
       const el = await fixture<CollectionFacets>(
         html`<collection-facets
-          .modalManager=${new ModalManager()}
+          .modalManager=${modalManager}
         ></collection-facets>`,
       );
 
