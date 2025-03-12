@@ -36,11 +36,11 @@
   integrity sha512-Ed61U6XJc3CVRfkERJWDz4dJwKe7iLmmJsbOGu9wSloNSFttHV0I8g6UAgb7qnK5ly5bGLPd4oXZlxCdANBOWQ==
 
 "@babel/parser@^7.24.4", "@babel/parser@^7.25.3":
-  version "7.26.5"
-  resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.26.5.tgz"
-  integrity sha512-SRJ4jYmXRqV1/Xc+TIVG84WjHBXKlxO9sHQnA2Pf12QQEAp1LOh6kDzNHXcUnbH1QI0FDoPPVOt+vyUDucxpaw==
+  version "7.26.10"
+  resolved "https://registry.npmjs.org/@babel/parser/-/parser-7.26.10.tgz"
+  integrity sha512-6aQR2zGE/QFi8JpDLjUZEPYOs7+mhKXm86VaKFiLP35JQwQb6bwUE+XbvkH0EptsYhbNBSUGaUBLKqxH1xSgsA==
   dependencies:
-    "@babel/types" "^7.26.5"
+    "@babel/types" "^7.26.10"
 
 "@babel/plugin-syntax-import-assertions@^7.20.0":
   version "7.26.0"
@@ -49,10 +49,10 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.25.9"
 
-"@babel/types@^7.26.5":
-  version "7.26.5"
-  resolved "https://registry.npmjs.org/@babel/types/-/types-7.26.5.tgz"
-  integrity sha512-L6mZmwFDK6Cjh1nRCLXpa6no13ZIioJDz7mdkzHv399pThrTa/k0nUlNaenOeh2kWu/iaOQYElEpKPUswUa9Vg==
+"@babel/types@^7.26.10":
+  version "7.26.10"
+  resolved "https://registry.npmjs.org/@babel/types/-/types-7.26.10.tgz"
+  integrity sha512-emqcG3vHrpxUKTrxcblR36dcrcoRDvKmnL/dCL6ZsHaShW80qxCAcNhzQZrpeM765VzEos+xOi4s+r4IXzTwdQ==
   dependencies:
     "@babel/helper-string-parser" "^7.25.9"
     "@babel/helper-validator-identifier" "^7.25.9"
@@ -313,7 +313,7 @@
 
 "@internetarchive/histogram-date-range@^1.2.1":
   version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.1.tgz#1b53a9bcaaccb467b467c226e9ed9d3050d952bd"
+  resolved "https://registry.npmjs.org/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.1.tgz"
   integrity sha512-UlQcYDhDVt2yNp2GHIewwuU371FswIMsVomqDUpqRqFlD0NEIi31Mi0XhwaUWMrRsNBXYtnVaoQuAEKMTP3Lvg==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.6"
@@ -336,7 +336,7 @@
 
 "@internetarchive/iaux-item-metadata@^1.0.4":
   version "1.0.4"
-  resolved "https://registry.yarnpkg.com/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.0.4.tgz#26f06fd8b898fd34fac741300e63c9ef6084e392"
+  resolved "https://registry.npmjs.org/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.0.4.tgz"
   integrity sha512-9md21gRp4MxupvwU6d84HCybW1mK1ihe7H42FTaSlNTYSqZQaOFcYqvvG9QPKjxQj+4wXjbk/ulxz8onEAWiHA==
   dependencies:
     "@internetarchive/field-parsers" "^0.1.4"
@@ -402,10 +402,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@2.0.0-alpha.1":
-  version "2.0.0-alpha.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.0.0-alpha.1.tgz#92b643ec7f8689d8287d0046654dd9ce5ca430ca"
-  integrity sha512-z/nvoCC0ZsM1e/Otzo2yiUOL9PGBMw1CBoLdZC9V4qJoNO9ZXJ0JCstoyc0LeliNkh6PiYQQ4dLzyzl34P19rA==
+"@internetarchive/search-service@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-2.0.0.tgz"
+  integrity sha512-SyaJZv49nGoaqWVLuhHA9Xmrr75WoQ3FkBwMs6PfJlxx3OudSX1iLsgHp7Ib00IK97byOZgPTrmHMTk5YJ8WOw==
   dependencies:
     "@internetarchive/iaux-item-metadata" "^1.0.4"
     "@internetarchive/result-type" "^0.0.1"
@@ -5437,7 +5437,7 @@ typescript-cookie@^1.0.6:
 
 typescript-memoize@^1.1.1:
   version "1.1.1"
-  resolved "https://registry.yarnpkg.com/typescript-memoize/-/typescript-memoize-1.1.1.tgz#02737495d5df6ebf72c07ba0d002e8f4cf5ccfa0"
+  resolved "https://registry.npmjs.org/typescript-memoize/-/typescript-memoize-1.1.1.tgz"
   integrity sha512-GQ90TcKpIH4XxYTI2F98yEQYZgjNMOGPpOgdjIBhaLaWji5HPWlRnZ4AeA1hfBxtY7bCGDJsqDDHk/KaHOl5bA==
 
 typescript@^5.4.4, typescript@^5.4.5, typescript@^5.5.4, typescript@^5.7.3:
