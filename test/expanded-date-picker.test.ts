@@ -86,7 +86,9 @@ describe('Expanded Date Picker', () => {
   });
 
   it('should close its modal and emit close event when date range applied', async () => {
-    const modalManager = new ModalManager();
+    const modalManager = await fixture<ModalManager>(
+      html`<modal-manager></modal-manager>`,
+    );
     modalManager.mode = ModalManagerMode.Open;
 
     const modalClosed = sinon.spy();
@@ -116,6 +118,10 @@ describe('Expanded Date Picker', () => {
   });
 
   it('closes the modal when Esc key is pressed', async () => {
+    const modalManager = await fixture<ModalManager>(
+      html`<modal-manager></modal-manager>`,
+    );
+
     const el = await fixture<ExpandedDatePicker>(
       html`<expanded-date-picker
         .buckets=${[1, 2, 3, 4, 5]}
@@ -123,7 +129,7 @@ describe('Expanded Date Picker', () => {
         .maxDate=${'5'}
         .minSelectedDate=${'1'}
         .maxSelectedDate=${'5'}
-        .modalManager=${new ModalManager()}
+        .modalManager=${modalManager}
       ></expanded-date-picker>`,
     );
 
