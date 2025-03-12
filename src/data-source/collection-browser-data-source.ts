@@ -248,6 +248,19 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  resetPages(): void {
+    if (Object.keys(this.pages).length < this.host.maxPagesToManage) {
+      this.pages = {};
+
+      // Invalidate any fetches in progress
+      this.fetchesInProgress.clear();
+      this.requestHostUpdate();
+    }
+  }
+
+  /**
+   * @inheritdoc
+   */
   addPage(pageNum: number, pageTiles: TileModel[]): void {
     this.pages[pageNum] = pageTiles;
     this.numTileModels += pageTiles.length;
@@ -436,6 +449,7 @@ export class CollectionBrowserDataSource
       array: TileModel[],
     ) => TileModel,
   ): void {
+    if (!Object.keys(this.pages).length) return;
     this.pages = Object.fromEntries(
       Object.entries(this.pages).map(([page, tileModels]) => [
         page,
@@ -1018,10 +1032,12 @@ export class CollectionBrowserDataSource
     }
     this.previousQueryKey = pageFetchQueryKey;
 
+    const { withinCollection, withinProfile } = this.host;
+
     let sortParams = this.host.sortParam ? [this.host.sortParam] : [];
     // TODO eventually the PPS should handle these defaults natively
     const isDefaultProfileSort =
-      this.host.withinProfile && this.host.selectedSort === SortField.default;
+      withinProfile && this.host.selectedSort === SortField.default;
     if (isDefaultProfileSort && this.host.defaultSortField) {
       const sortOption = SORT_OPTIONS[this.host.defaultSortField];
       if (sortOption.searchServiceKey) {
@@ -1086,7 +1102,7 @@ export class CollectionBrowserDataSource
     }
 
     this.sessionContext = success.sessionContext;
-    if (this.host.withinCollection) {
+    if (withinCollection) {
       this.collectionExtraInfo = success.response.collectionExtraInfo;
 
       // For collections, we want the UI to respect the default sort option
@@ -1100,7 +1116,7 @@ export class CollectionBrowserDataSource
           this.collectionExtraInfo.public_metadata?.collection ?? [],
         );
       }
-    } else if (this.host.withinProfile) {
+    } else if (withinProfile) {
       this.accountExtraInfo = success.response.accountExtraInfo;
       this.pageElements = success.response.pageElements;
     }
@@ -1112,6 +1128,12 @@ export class CollectionBrowserDataSource
       if (collectionTitles) {
         for (const [id, title] of Object.entries(collectionTitles)) {
           this.collectionTitles.set(id, title);
+        }
+
+        // Also add the target collection's title if available
+        const targetTitle = this.collectionExtraInfo?.public_metadata?.title;
+        if (withinCollection && targetTitle) {
+          this.collectionTitles.set(withinCollection, targetTitle);
         }
       }
 

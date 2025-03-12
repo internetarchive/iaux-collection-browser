@@ -56,7 +56,6 @@ import type {
 } from './data-source/collection-browser-query-state';
 import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
 import type { CollectionFacets } from './collection-facets';
-import type { ManageableItem } from './manage/manage-bar';
 import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
 import {
   analyticsActions,
@@ -65,9 +64,9 @@ import {
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
-import { formatDate } from './utils/format-date';
 import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
+import type { ManageBar } from './manage/manage-bar';
 
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
@@ -252,6 +251,12 @@ export class CollectionBrowser
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
   /**
+   * The maximum number of pages we will load when a privileged user clicks
+   * the "Manage" button on the search page. Limited to 15 pages.
+   */
+  @property({ type: Number }) maxPagesToManage = 15;
+
+  /**
    * The results per page so we can paginate.
    *
    * This allows us to start in the middle of the search results and
@@ -296,6 +301,8 @@ export class CollectionBrowser
   @query('#left-column') private leftColumn?: HTMLDivElement;
 
   @query('collection-facets') private collectionFacets?: CollectionFacets;
+
+  @query('manage-bar') private manageBar?: ManageBar;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -772,20 +779,29 @@ export class CollectionBrowser
    * showing the management view. This generally replaces the sort bar when present.
    */
   private get manageBarTemplate(): TemplateResult {
+    const manageViewModalMsg =
+      this.profileElement === 'uploads'
+        ? 'Note: it may take a few minutes for these items to stop appearing in your uploads list.'
+        : nothing;
+
     return html`
       <manage-bar
         .label=${this.manageViewLabel}
-        .pageContext=${this.pageContext}
+        .modalManager=${this.modalManager}
+        .selectedItems=${this.dataSource.checkedTileModels}
+        .manageViewModalMsg=${manageViewModalMsg}
         showSelectAll
         showUnselectAll
+        ?showItemManageButton=${this.pageContext === 'search'}
         ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
         @removeItems=${this.handleRemoveItems}
-        @itemsManager=${this.handleItemsManager}
+        @manageItems=${this.handleManageItems}
         @selectAll=${() => this.dataSource.checkAllTiles()}
         @unselectAll=${() => this.dataSource.uncheckAllTiles()}
         @cancel=${() => {
           this.isManageView = false;
           this.dataSource.uncheckAllTiles();
+          if (this.searchResultsLoading) this.dataSource.resetPages();
         }}
       ></manage-bar>
     `;
@@ -797,13 +813,11 @@ export class CollectionBrowser
    */
   private handleRemoveItems(): void {
     this.dispatchEvent(
-      new CustomEvent<{ items: ManageableItem[] }>('itemRemovalRequested', {
+      new CustomEvent<{ items: string[] }>('itemRemovalRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels.map(model => {
-            const cloned = model.clone();
-            cloned.dateStr = formatDate(model.datePublished, 'long');
-            return cloned as ManageableItem;
-          }),
+          items: this.dataSource.checkedTileModels.map(model =>
+            model?.identifier ? model.identifier : '',
+          ),
         },
       }),
     );
@@ -812,17 +826,30 @@ export class CollectionBrowser
   /**
    * Handler when user request to bulk edit from /search/ page
    */
-  private handleItemsManager(): void {
+  private handleManageItems(): void {
     this.dispatchEvent(
-      new CustomEvent('itemManagerRequested', {
+      new CustomEvent<{ items: string[] }>('itemManagerRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels
-            .map(item => item.identifier)
-            .filter(Boolean)
-            .join(','),
+          items: this.dataSource.checkedTileModels.map(model =>
+            model?.identifier ? model.identifier : '',
+          ),
         },
       }),
     );
+  }
+
+  /**
+   * Handler to show processing modal while removing item
+   */
+  showRemoveItemsProcessingModal(): void {
+    this.manageBar?.showRemoveItemsProcessingModal();
+  }
+
+  /**
+   * Handler to show error modal when item removal failed
+   */
+  showRemoveItemsErrorModal(): void {
+    this.manageBar?.showRemoveItemsErrorModal();
   }
 
   /**
@@ -1428,7 +1455,11 @@ export class CollectionBrowser
     }
 
     if (changed.has('isManageView')) {
-      if (this.isManageView) this.displayMode = 'grid';
+      if (this.isManageView) {
+        this.displayMode = 'grid';
+        this.fetchManagableSearchResults();
+      } else if (this.pageContext === 'search') this.infiniteScroller?.reload();
+
       this.infiniteScroller?.refreshAllVisibleCells();
       this.emitManageModeChangedEvent();
     }
@@ -2061,6 +2092,27 @@ export class CollectionBrowser
     if (!this.dataSource.endOfDataReached && this.dataSource.queryInitialized) {
       this.pagesToRender += 1;
       this.dataSource.fetchPage(this.pagesToRender);
+    }
+  }
+
+  /**
+   * Fetches search results for privileged users when in manage view.
+   *
+   * This method:
+   * 1. Checks if we're in search context with > 100 results and not currently loading
+   * 2. Resets the datasource pagination state
+   * 3. Fetches first page with limit based on maxPagesToManage threshold
+   * 4. Reloads the infinite scroller to display new results
+   */
+  private fetchManagableSearchResults(): void {
+    if (
+      this.pageContext === 'search' &&
+      this.dataSource.totalResults > 100 &&
+      !this.searchResultsLoading
+    ) {
+      this.dataSource.resetPages();
+      this.dataSource.fetchPage(1, this.maxPagesToManage);
+      this.infiniteScroller?.reload();
     }
   }
 

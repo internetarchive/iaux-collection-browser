@@ -675,3 +675,13 @@ export const suppressedCollections: Record<string, boolean> = {
   americana: true,
   toronto: true,
 };
+
+/**
+ * A record of manageable item
+ */
+export interface ManageableItem {
+  identifier: string;
+  title?: string;
+  dateStr?: string;
+  date?: string;
+}

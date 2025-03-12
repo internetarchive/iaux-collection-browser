@@ -156,6 +156,11 @@ export interface CollectionBrowserDataSourceInterface
   reset(): void;
 
   /**
+   * Resets the data source to its pages.
+   */
+  resetPages(): void;
+
+  /**
    * Adds the given page of tile models to the data source.
    * If the given page number already exists, that page will be overwritten.
    * This method expects that the provided tiles already fit the configured page size; it

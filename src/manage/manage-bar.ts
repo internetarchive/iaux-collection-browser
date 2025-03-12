@@ -2,13 +2,13 @@ import { msg } from '@lit/localize';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
+import {
+  ModalConfig,
+  type ModalManagerInterface,
+} from '@internetarchive/modal-manager';
+import type { ManageableItem } from '../models';
 import iaButtonStyle from '../styles/ia-button';
-
-export interface ManageableItem {
-  identifier: string;
-  title?: string;
-  dateStr?: string;
-}
+import './remove-items-modal-content';
 
 @customElement('manage-bar')
 export class ManageBar extends LitElement {
@@ -18,9 +18,19 @@ export class ManageBar extends LitElement {
   @property({ type: String }) label = msg('Select items to remove');
 
   /**
-   * Specifies the context in which the collection browser is being used
+   * The shared modal manager component for displaying modal dialogs on this page
    */
-  @property({ type: String }) pageContext?: string;
+  @property({ type: Object }) modalManager?: ModalManagerInterface;
+
+  /**
+   * Array of items that have been selected for management
+   */
+  @property({ type: Object }) selectedItems: Array<ManageableItem> = [];
+
+  /**
+   * Message shows as note in the modal when removing items
+   */
+  @property({ type: String }) manageViewModalMsg?: string;
 
   /**
    * Whether to show the "Select All" button (default false)
@@ -31,6 +41,11 @@ export class ManageBar extends LitElement {
    * Whether to show the "Unselect All" button (default false)
    */
   @property({ type: Boolean }) showUnselectAll = false;
+
+  /**
+   * Whether to show "Item Manager the items" button (default false)
+   */
+  @property({ type: Boolean }) showItemManageButton = false;
 
   /**
    * Whether to active delete button for selectable items
@@ -48,21 +63,21 @@ export class ManageBar extends LitElement {
           <button
             class="ia-button danger"
             ?disabled=${!this.removeAllowed}
-            @click=${this.removeClicked}
+            @click=${this.showRemoveItemsModal}
           >
-            ${msg('Remove selected items')}
+            ${msg('Remove selected items')} (${this.selectedItems.length})
           </button>
-          ${this.pageContext === 'search'
-            ? html`
-                <button
-                  class="ia-button warning"
-                  ?disabled=${!this.removeAllowed}
-                  @click=${this.itemsManagerClicked}
-                >
-                  ${msg('Item Manager the items')}
-                </button>
-              `
-            : ''}
+          ${when(
+            this.showItemManageButton,
+            () =>
+              html` <button
+                class="ia-button warning"
+                ?disabled=${!this.removeAllowed}
+                @click=${this.manageItemsClicked}
+              >
+                ${msg('Item Manager the items')} (${this.selectedItems.length})
+              </button>`,
+          )}
           <div class="selection-buttons">
             ${when(
               this.showSelectAll,
@@ -94,12 +109,12 @@ export class ManageBar extends LitElement {
     this.dispatchEvent(new CustomEvent('cancel'));
   }
 
-  private removeClicked(): void {
+  private removeItemsClicked(): void {
     this.dispatchEvent(new CustomEvent('removeItems'));
   }
 
-  private itemsManagerClicked(): void {
-    this.dispatchEvent(new CustomEvent('itemsManager'));
+  private manageItemsClicked(): void {
+    this.dispatchEvent(new CustomEvent('manageItems'));
   }
 
   private selectAllClicked(): void {
@@ -108,6 +123,88 @@ export class ManageBar extends LitElement {
 
   private unselectAllClicked(): void {
     this.dispatchEvent(new CustomEvent('unselectAll'));
+  }
+
+  /**
+   * Shows a modal dialog confirming the list of items to be removed
+   * @param items Which items to list in the modal
+   */
+  private showRemoveItemsModal(): void {
+    const customModalContent = html`
+      <remove-items-modal-content
+        .items=${this.selectedItems}
+        .message=${this.manageViewModalMsg}
+        @confirm=${() => this.removeItemsClicked()}
+      ></remove-items-modal-content>
+    `;
+
+    const config = new ModalConfig({
+      showProcessingIndicator: false,
+      processingImageMode: 'processing',
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true,
+      title: html`${msg('Are you sure you want to remove these items?')}`,
+    });
+
+    this.modalManager?.classList.add('remove-items');
+    this.modalManager?.showModal({
+      config,
+      customModalContent,
+      userClosedModalCallback: () => {
+        this.modalManager?.classList.remove('remove-items');
+      },
+    });
+  }
+
+  /**
+   * Shows a modal dialog indicating that item removal is being processed
+   */
+  showRemoveItemsProcessingModal(): void {
+    const config = new ModalConfig({
+      showProcessingIndicator: true,
+      processingImageMode: 'processing',
+      bodyColor: '#fff',
+      headerColor: '#194880',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true,
+      title: html`${msg('Removing selected items...')}`,
+    });
+
+    this.modalManager?.classList.add('remove-items');
+    this.modalManager?.showModal({
+      config,
+      userClosedModalCallback: () => {
+        this.modalManager?.classList.remove('remove-items');
+      },
+    });
+  }
+
+  /**
+   * Shows a modal dialog indicating that an error occurred while removing items
+   */
+  showRemoveItemsErrorModal(): void {
+    const config = new ModalConfig({
+      showProcessingIndicator: false,
+      processingImageMode: 'processing',
+      bodyColor: '#fff',
+      headerColor: '#691916',
+      showHeaderLogo: false,
+      closeOnBackdropClick: true,
+      title: html`${msg('Error: unable to remove items')}`,
+      message: html`${msg(
+        'An error occurred while removing items. Please try again in a few minutes.',
+      )}`,
+    });
+
+    this.modalManager?.classList.add('remove-items');
+    this.modalManager?.showModal({
+      config,
+      userClosedModalCallback: () => {
+        this.modalManager?.classList.remove('remove-items');
+      },
+    });
   }
 
   static get styles(): CSSResultGroup {

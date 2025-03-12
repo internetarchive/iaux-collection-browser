@@ -2002,4 +2002,27 @@ describe('Collection Browser', () => {
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
     expect(infiniteScroller).not.to.exist;
   });
+
+  it('fetch larger result on search page for admin user to manage items', async () => {
+    const resultsSpy = sinon.spy();
+    const searchService = new MockSearchService({
+      asyncResponse: true,
+      resultsSpy,
+    });
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    const numberOfPages = 15;
+
+    el.baseQuery = 'jack';
+    el.isManageView = true;
+    await el.dataSource.fetchPage(1, numberOfPages);
+    await el.updateComplete;
+
+    const initialResults = el.dataSource.getAllPages();
+    expect(Object.keys(initialResults).length).to.deep.equal(numberOfPages);
+  });
 });
