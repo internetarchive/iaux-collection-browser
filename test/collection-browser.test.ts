@@ -1876,7 +1876,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(spy.callCount).to.equal(1);
     expect(spy.args[0].length).to.equal(1);
-    expect(spy.args[0][0]?.detail?.items?.[0]?.identifier).to.equal('foo');
+    expect(spy.args[0][0].detail.items[0]).to.equal('foo');
   });
 
   it('disables manage view when manage bar cancelled', async () => {
