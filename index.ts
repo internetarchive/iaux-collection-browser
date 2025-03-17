@@ -3,7 +3,14 @@ export { CollectionBrowserDataSource } from './src/data-source/collection-browse
 export { CollectionBrowserDataSourceInterface } from './src/data-source/collection-browser-data-source-interface';
 export { CollectionBrowserQueryState } from './src/data-source/collection-browser-query-state';
 export { SortFilterBar } from './src/sort-filter-bar/sort-filter-bar';
-export { CollectionDisplayMode, SortField, TileModel } from './src/models';
+export {
+  CollectionDisplayMode,
+  SortField,
+  TileModel,
+  FacetOption,
+  SelectedFacets,
+  getDefaultSelectedFacets,
+} from './src/models';
 export { CollectionBrowserLoadingTile } from './src/tiles/collection-browser-loading-tile';
 export { CollectionTile } from './src/tiles/grid/collection-tile';
 export { AccountTile } from './src/tiles/grid/account-tile';
@@ -16,4 +23,5 @@ export {
   KeywordFacetMap,
   SmartFacet,
 } from './src/collection-facets/smart-facets/models';
+export * from './src/collection-facets/smart-facets/heuristics/index';
 export { SmartQueryHeuristicGroup } from './src/collection-facets/smart-facets/smart-facet-heuristics';
