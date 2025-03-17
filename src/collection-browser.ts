@@ -1575,7 +1575,7 @@ export class CollectionBrowser
       this.leftColIntersectionObserver = new IntersectionObserver(
         this.updateLeftColumnHeight,
         {
-          threshold: [...Array(101).keys()].map(n => n / 100), // Threshold every 1%
+          threshold: [...Array(201).keys()].map(n => n / 200), // Threshold every 0.5%
         }
       );
       this.leftColIntersectionObserver.observe(leftColumnSentinel);
@@ -1612,10 +1612,14 @@ export class CollectionBrowser
       this.leftColumn?.style?.removeProperty('height');
     } else {
       const clientTop = this.leftColumn?.getBoundingClientRect().top;
-      this.leftColumn?.style?.setProperty(
-        'height',
-        `${window.innerHeight - (clientTop ?? 0) - 3}px`
-      );
+      const columnHeight = window.innerHeight - (clientTop ?? 0);
+      const cssHeightValue =
+        clientTop === 0
+          ? null
+          : // Subtract off the column's top padding so that it doesn't overflow
+            `calc(${columnHeight}px - var(--leftColumnPaddingTop, 2rem))`;
+
+      this.leftColumn?.style?.setProperty('height', cssHeightValue);
     }
   };
 
@@ -2125,6 +2129,7 @@ export class CollectionBrowser
         :host {
           display: block;
           --leftColumnWidth: 18rem;
+          --leftColumnPaddingTop: 2rem;
           --leftColumnPaddingRight: 2.5rem;
         }
 
@@ -2190,10 +2195,6 @@ export class CollectionBrowser
           display: block;
         }
 
-        .column {
-          padding-top: 2rem;
-        }
-
         #right-column {
           flex: 1;
           position: relative;
@@ -2201,6 +2202,7 @@ export class CollectionBrowser
           border-left: 1px solid rgb(232, 232, 232);
           border-right: 1px solid rgb(232, 232, 232);
           margin-top: var(--rightColumnMarginTop, 0);
+          padding-top: 2rem;
           background: #fff;
         }
 
@@ -2235,6 +2237,7 @@ export class CollectionBrowser
           width: var(--leftColumnWidth, 18rem);
           /* Prevents Safari from shrinking col at first draw */
           min-width: var(--leftColumnWidth, 18rem);
+          padding-top: var(--leftColumnPaddingTop, 2rem);
           /* Reduced padding by 0.2rem to add the invisible border in the rule below */
           padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
           border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
