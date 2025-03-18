@@ -1007,7 +1007,11 @@ export class CollectionBrowserDataSource
    */
   async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
     const trimmedQuery = this.host.baseQuery?.trim();
-    if (!this.canPerformSearch) return;
+    // reset loading status
+    if (!this.canPerformSearch) {
+      this.setSearchResultsLoading(false);
+      return;
+    }
 
     // if we already have data, don't fetch again
     if (this.hasPage(pageNumber)) return;
