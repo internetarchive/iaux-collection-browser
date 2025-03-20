@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -202,12 +201,13 @@ export class ItemTile extends BaseTileComponent {
       <ul class="capture-dates">
         ${map(
           this.model.captureDates,
-          date => html`<li>
-            ${this.displayValueProvider.webArchivesCaptureLink(
-              this.model!.title,
-              date
-            )}
-          </li>`
+          date =>
+            html`<li>
+              ${this.displayValueProvider.webArchivesCaptureLink(
+                this.model!.title,
+                date,
+              )}
+            </li>`,
         )}
       </ul>
     `;
@@ -215,7 +215,7 @@ export class ItemTile extends BaseTileComponent {
 
   private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
-      this.effectiveSort?.field as string
+      this.effectiveSort?.field as string,
     );
   }
 
@@ -234,7 +234,7 @@ export class ItemTile extends BaseTileComponent {
     e.preventDefault();
     const event = new CustomEvent<{ x: number; y: number }>(
       'infoButtonPressed',
-      { detail: { x: e.clientX, y: e.clientY } }
+      { detail: { x: e.clientX, y: e.clientY } },
     );
     this.dispatchEvent(event);
   }

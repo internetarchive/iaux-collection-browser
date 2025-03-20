@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { aTimeout, expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
@@ -55,7 +54,7 @@ describe('Collection Browser', () => {
     const selectedFacets = getDefaultSelectedFacets();
     selectedFacets.creator.foo = { count: 1, key: 'foo', state: 'selected' };
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser></collection-browser>`,
     );
 
     el.selectedFacets = selectedFacets;
@@ -67,7 +66,7 @@ describe('Collection Browser', () => {
 
   it('clears existing filters but not sort by default', async () => {
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser></collection-browser>`,
     );
 
     el.selectedSort = 'title' as SortField;
@@ -88,7 +87,7 @@ describe('Collection Browser', () => {
 
   it('clears existing filters for facets & sort via option', async () => {
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser></collection-browser>`,
     );
 
     el.selectedSort = 'title' as SortField;
@@ -107,7 +106,7 @@ describe('Collection Browser', () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.searchContext = 'betaSearchService';
@@ -133,7 +132,7 @@ describe('Collection Browser', () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.searchContext = 'beta-search-service';
@@ -170,7 +169,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.searchContext = 'search-service';
@@ -188,7 +187,7 @@ describe('Collection Browser', () => {
           },
           negative: false,
         },
-      })
+      }),
     );
     expect(mockAnalyticsHandler.callCategory).to.equal('search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetSelected');
@@ -205,7 +204,7 @@ describe('Collection Browser', () => {
           },
           negative: false,
         },
-      })
+      }),
     );
     expect(el.selectedFacets).to.equal(mockedSelectedFacets);
     expect(mockAnalyticsHandler.callCategory).to.equal('search-service');
@@ -228,7 +227,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .analyticsHandler=${mockAnalyticsHandler}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.searchContext = 'beta-search-service';
@@ -246,7 +245,7 @@ describe('Collection Browser', () => {
           },
           negative: true,
         },
-      })
+      }),
     );
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
     expect(mockAnalyticsHandler.callAction).to.equal('facetNegativeSelected');
@@ -263,7 +262,7 @@ describe('Collection Browser', () => {
           },
           negative: true,
         },
-      })
+      }),
     );
     expect(el.selectedFacets).to.equal(mockedSelectedFacets);
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search-service');
@@ -276,7 +275,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'hello';
@@ -296,7 +295,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -305,7 +304,7 @@ describe('Collection Browser', () => {
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(
-      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
     ).to.contains('Results');
   });
 
@@ -314,7 +313,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html` <collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.searchType = SearchType.METADATA;
@@ -327,7 +326,7 @@ describe('Collection Browser', () => {
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.METADATA);
     expect(
-      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
     ).to.contains('Results');
   });
 
@@ -335,7 +334,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -353,7 +352,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html` <collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.searchType = SearchType.FULLTEXT;
@@ -366,7 +365,7 @@ describe('Collection Browser', () => {
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
     expect(
-      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
     ).to.contains('Results');
   });
 
@@ -401,7 +400,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -423,7 +422,7 @@ describe('Collection Browser', () => {
 
   it('fails gracefully if no search service provided', async () => {
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -446,7 +445,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     expect(el.searchType).to.equal(SearchType.FULLTEXT);
@@ -457,7 +456,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'many-fields';
@@ -480,7 +479,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         @emptyResults=${emptyResultsSpy}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'no-results';
@@ -495,7 +494,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'loggedin';
@@ -516,7 +515,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'no-preview';
@@ -537,7 +536,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'loggedin-no-preview';
@@ -559,7 +558,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     // This query receives an array description like ['line1', 'line2']
@@ -584,7 +583,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .searchType=${SearchType.METADATA}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -601,7 +600,7 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = '   collection:foo   ';
@@ -616,7 +615,7 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'error';
@@ -624,10 +623,10 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
 
     const errorPlaceholder = el.shadowRoot?.querySelector(
-      'empty-placeholder'
+      'empty-placeholder',
     ) as EmptyPlaceholder;
     const errorDetails = errorPlaceholder?.shadowRoot?.querySelector(
-      '.error-details'
+      '.error-details',
     ) as HTMLParagraphElement;
 
     expect(errorDetails).to.exist;
@@ -639,7 +638,7 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.withinCollection = 'error';
@@ -647,10 +646,10 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
 
     const errorPlaceholder = el.shadowRoot?.querySelector(
-      'empty-placeholder'
+      'empty-placeholder',
     ) as EmptyPlaceholder;
     const errorDetails = errorPlaceholder?.shadowRoot?.querySelector(
-      '.error-details'
+      '.error-details',
     ) as HTMLParagraphElement;
 
     expect(errorDetails).to.exist;
@@ -659,12 +658,13 @@ describe('Collection Browser', () => {
 
   it('reports malformed response errors to Sentry', async () => {
     const sentrySpy = sinon.spy();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).Sentry = { captureMessage: sentrySpy };
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'malformed';
@@ -679,7 +679,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'collection-titles';
@@ -687,16 +687,16 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
 
     expect(el.dataSource.collectionTitles.get('foo')).to.equal(
-      'Foo Collection'
+      'Foo Collection',
     );
     expect(el.dataSource.collectionTitles.get('bar')).to.equal(
-      'Bar Collection'
+      'Bar Collection',
     );
     expect(el.dataSource.collectionTitles.get('baz')).to.equal(
-      'Baz Collection'
+      'Baz Collection',
     );
     expect(el.dataSource.collectionTitles.get('boop')).to.equal(
-      'Boop Collection'
+      'Boop Collection',
     );
   });
 
@@ -709,7 +709,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'with-sort';
@@ -733,7 +733,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'with-sort';
@@ -763,7 +763,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'single-result';
@@ -792,7 +792,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'with-sort';
@@ -817,7 +817,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     expect(el.selectedSort).to.equal(SortField.default);
@@ -827,14 +827,15 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const sortBar = el.shadowRoot?.querySelector(
-      '#content-container sort-filter-bar'
+      '#content-container sort-filter-bar',
     );
     const sortSelector = sortBar?.shadowRoot?.querySelector(
-      '#desktop-sort-selector'
+      '#desktop-sort-selector',
     );
     expect(sortSelector, 'sort bar').to.exist;
 
     // Click the title sorter
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
       .find(child => child.textContent?.trim() === 'Title')
       ?.querySelector('button')
@@ -849,7 +850,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'first-title';
@@ -861,7 +862,7 @@ describe('Collection Browser', () => {
 
     expect(searchService.searchParams?.query).to.equal('first-title');
     expect(searchService.searchParams?.filters?.firstTitle?.X).to.equal(
-      FilterConstraint.INCLUDE
+      FilterConstraint.INCLUDE,
     );
   });
 
@@ -869,7 +870,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'first-creator';
@@ -881,7 +882,7 @@ describe('Collection Browser', () => {
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
-      FilterConstraint.INCLUDE
+      FilterConstraint.INCLUDE,
     );
   });
 
@@ -899,7 +900,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'first-creator';
@@ -931,7 +932,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'first-creator';
@@ -943,7 +944,7 @@ describe('Collection Browser', () => {
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
     expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
-      FilterConstraint.INCLUDE
+      FilterConstraint.INCLUDE,
     );
 
     el.baseQuery = 'collection:foo';
@@ -961,7 +962,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .suppressPlaceholders=${true}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'years'; // Includes year_histogram aggregation in response
@@ -969,7 +970,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     const facets = el.shadowRoot?.querySelector(
-      'collection-facets'
+      'collection-facets',
     ) as CollectionFacets;
     await facets?.updateComplete;
 
@@ -977,14 +978,14 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
-      'histogram-date-range'
+      'histogram-date-range',
     ) as HistogramDateRange;
 
     expect(histogram, 'histogram exists').to.exist;
 
     // Enter a new min date into the date picker
     const minDateInput = histogram.shadowRoot?.querySelector(
-      '#date-min'
+      '#date-min',
     ) as HTMLInputElement;
 
     const pressEnterEvent = new KeyboardEvent('keyup', {
@@ -1011,7 +1012,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         @searchResultsLoadingChanged=${spy}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -1030,7 +1031,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'extra-quoted-href';
@@ -1048,7 +1049,7 @@ describe('Collection Browser', () => {
 
     // Original href q param starts/ends with %22%22, but should be collapsed to %22 before render
     expect(
-      firstResult!.shadowRoot?.querySelector('a[href]')?.getAttribute('href')
+      firstResult!.shadowRoot?.querySelector('a[href]')?.getAttribute('href'),
     ).to.equal('/details/foo?q=%22quoted+query%22');
   });
 
@@ -1058,7 +1059,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.withinCollection = 'default-sort';
@@ -1068,7 +1069,7 @@ describe('Collection Browser', () => {
     await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
-      'sort-filter-bar'
+      'sort-filter-bar',
     ) as SortFilterBar;
     expect(sortBar).to.exist;
     expect(sortBar.defaultSortField).to.equal(SortField.title);
@@ -1083,7 +1084,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.withinCollection = 'default-sort-concise';
@@ -1093,7 +1094,7 @@ describe('Collection Browser', () => {
     await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
-      'sort-filter-bar'
+      'sort-filter-bar',
     ) as SortFilterBar;
     expect(sortBar).to.exist;
     expect(sortBar.defaultSortField).to.equal(SortField.dateadded);
@@ -1106,7 +1107,7 @@ describe('Collection Browser', () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .withinProfile=${'@foobar'}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.applyDefaultProfileSort();
@@ -1122,7 +1123,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.withinCollection = 'default-sort';
@@ -1133,7 +1134,7 @@ describe('Collection Browser', () => {
     await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
-      'sort-filter-bar'
+      'sort-filter-bar',
     ) as SortFilterBar;
     expect(sortBar).to.exist;
     expect(sortBar.defaultSortField).to.equal(SortField.relevance);
@@ -1148,7 +1149,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.withinCollection = 'fav-sort';
@@ -1158,7 +1159,7 @@ describe('Collection Browser', () => {
     await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
-      'sort-filter-bar'
+      'sort-filter-bar',
     ) as SortFilterBar;
     expect(sortBar).to.exist;
     expect(sortBar.defaultSortField).to.equal(SortField.datefavorited);
@@ -1171,7 +1172,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     // Infinite scroller won't exist unless there's a base query.
@@ -1185,7 +1186,7 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const infiniteScroller = el.shadowRoot?.querySelector(
-      'infinite-scroller'
+      'infinite-scroller',
     ) as InfiniteScroller;
     expect(infiniteScroller).to.exist;
 
@@ -1205,14 +1206,14 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .mobileBreakpoint=${9999}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
 
     const contentContainer = el.shadowRoot?.querySelector(
-      '#content-container'
+      '#content-container',
     ) as HTMLElement;
 
     el.handleResize({
@@ -1225,7 +1226,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     const mobileFacets = el.shadowRoot?.querySelector(
-      '#mobile-filter-collapse'
+      '#mobile-filter-collapse',
     );
     expect(mobileFacets).to.exist;
   });
@@ -1239,14 +1240,14 @@ describe('Collection Browser', () => {
         .analyticsHandler=${analyticsHandler}
         .searchContext=${'foobar-context'}
         .mobileBreakpoint=${9999}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
 
     const contentContainer = el.shadowRoot?.querySelector(
-      '#content-container'
+      '#content-container',
     ) as HTMLElement;
 
     el.handleResize({
@@ -1259,7 +1260,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     const mobileFacets = el.shadowRoot?.querySelector(
-      '#mobile-filter-collapse'
+      '#mobile-filter-collapse',
     ) as HTMLDetailsElement;
     expect(mobileFacets).to.exist;
 
@@ -1276,7 +1277,7 @@ describe('Collection Browser', () => {
     await facetsToggled;
     expect(analyticsHandler.callCategory).to.equal('foobar-context');
     expect(analyticsHandler.callAction).to.equal(
-      analyticsActions.mobileFacetsToggled
+      analyticsActions.mobileFacetsToggled,
     );
     expect(analyticsHandler.callLabel).to.equal('open');
 
@@ -1288,7 +1289,7 @@ describe('Collection Browser', () => {
     await facetsToggled;
     expect(analyticsHandler.callCategory).to.equal('foobar-context');
     expect(analyticsHandler.callAction).to.equal(
-      analyticsActions.mobileFacetsToggled
+      analyticsActions.mobileFacetsToggled,
     );
     expect(analyticsHandler.callLabel).to.equal('closed');
   });
@@ -1299,7 +1300,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         .withinCollection=${'fake'}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'parent-collections';
@@ -1317,7 +1318,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .analyticsHandler=${mockAnalyticsHandler}
         .searchService=${searchService}
-      ></collection-browser>`
+      ></collection-browser>`,
     );
     const infiniteScrollerRefreshSpy = sinon.spy();
 
@@ -1339,7 +1340,7 @@ describe('Collection Browser', () => {
       .true;
     expect(
       infiniteScrollerRefreshSpy.callCount,
-      'Infinite Scroller Refresh call count'
+      'Infinite Scroller Refresh call count',
     ).to.equal(1);
 
     el.loggedIn = false;
@@ -1347,7 +1348,7 @@ describe('Collection Browser', () => {
 
     expect(
       infiniteScrollerRefreshSpy.callCount,
-      '2nd Infinite Scroller Refresh'
+      '2nd Infinite Scroller Refresh',
     ).to.equal(2);
 
     // testing: `displayMode`
@@ -1356,7 +1357,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(
       infiniteScrollerRefreshSpy.callCount,
-      '3rd Infinite Scroller Refresh'
+      '3rd Infinite Scroller Refresh',
     ).to.equal(3);
 
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
@@ -1367,7 +1368,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(
       infiniteScrollerRefreshSpy.callCount,
-      '4th Infinite Scroller Refresh'
+      '4th Infinite Scroller Refresh',
     ).to.equal(4);
 
     expect(mockAnalyticsHandler.callCategory).to.equal('beta-search');
@@ -1379,7 +1380,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(
       infiniteScrollerRefreshSpy.callCount,
-      '5th Infinite Scroller Refresh'
+      '5th Infinite Scroller Refresh',
     ).to.equal(5);
 
     // testing: `baseImageUrl`
@@ -1387,7 +1388,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(
       infiniteScrollerRefreshSpy.callCount,
-      '6th Infinite Scroller Refresh'
+      '6th Infinite Scroller Refresh',
     ).to.equal(6);
   });
 
@@ -1396,7 +1397,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'single-result';
@@ -1404,13 +1405,13 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
 
     expect(
-      el.shadowRoot?.querySelector('#big-results-label')?.textContent
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
     ).to.contains('Result');
   });
 
   it('`searchContext` prop helps describe where component is being used', async () => {
     const el = await fixture<CollectionBrowser>(
-      html`<collection-browser></collection-browser>`
+      html`<collection-browser></collection-browser>`,
     );
 
     expect(el.searchContext).to.equal(analyticsCategories.default);
@@ -1439,7 +1440,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     await el.initialSearchComplete;
@@ -1473,7 +1474,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .withinCollection=${'foobar'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     await el.initialSearchComplete;
@@ -1507,7 +1508,7 @@ describe('Collection Browser', () => {
         .withinProfile=${'@foobar'}
         .profileElement=${'uploads'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     await el.initialSearchComplete;
@@ -1539,7 +1540,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     await el.initialSearchComplete;
@@ -1576,7 +1577,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .withinCollection=${'foobar'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'bar';
@@ -1611,7 +1612,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .withinCollection=${'foobar'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.withinCollection = 'bar';
@@ -1636,7 +1637,7 @@ describe('Collection Browser', () => {
         .withinProfile=${'@foo'}
         .profileElement=${'web_archives'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'web-archive';
@@ -1647,15 +1648,15 @@ describe('Collection Browser', () => {
     console.log(
       '\n\n*****\n\n*****\n\n',
       el.dataSource.getAllPages(),
-      '\n\n*****\n\n*****\n\n'
+      '\n\n*****\n\n*****\n\n',
     );
     expect(el.dataSource.totalResults, 'total results').to.equal(1);
     expect(el.dataSource.getTileModelAt(0)?.title).to.equal(
-      'https://example.com'
+      'https://example.com',
     );
     expect(
       el.dataSource.getTileModelAt(0)?.captureDates?.length,
-      'capture dates'
+      'capture dates',
     ).to.equal(1);
   });
 
@@ -1666,7 +1667,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         facetLoadStrategy=${'opt-in'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1674,7 +1675,7 @@ describe('Collection Browser', () => {
     await el.initialSearchComplete;
 
     const facetsDropdown = el.shadowRoot?.querySelector(
-      '.desktop-facets-dropdown'
+      '.desktop-facets-dropdown',
     );
     expect(facetsDropdown).to.exist;
   });
@@ -1686,7 +1687,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         facetLoadStrategy=${'off'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1696,7 +1697,7 @@ describe('Collection Browser', () => {
     const facetsMsg = el.shadowRoot?.querySelector('.facets-message');
     expect(facetsMsg).to.exist;
     expect(facetsMsg?.textContent?.trim()).to.equal(
-      'Facets are temporarily unavailable.'
+      'Facets are temporarily unavailable.',
     );
   });
 
@@ -1704,7 +1705,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1732,7 +1733,7 @@ describe('Collection Browser', () => {
         .baseQuery=${'foo'}
         .displayMode=${'list-detail'}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.isManageView = true;
@@ -1748,7 +1749,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .baseNavigationUrl=${''}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1769,7 +1770,7 @@ describe('Collection Browser', () => {
 
     const firstTile = tiles![0] as TileDispatcher;
     const firstTileLink = firstTile.shadowRoot?.querySelector(
-      'a[href]'
+      'a[href]',
     ) as HTMLAnchorElement;
     expect(firstTile.model?.identifier).to.equal('foo');
     expect(firstTileLink).to.exist;
@@ -1796,7 +1797,7 @@ describe('Collection Browser', () => {
     expect(tiles).to.exist;
     expect(
       tiles!.length,
-      'tile count after `el.removeCheckedTiles()`'
+      'tile count after `el.removeCheckedTiles()`',
     ).to.equal(1);
   });
 
@@ -1807,7 +1808,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .baseNavigationUrl=${''}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1838,7 +1839,7 @@ describe('Collection Browser', () => {
         .baseNavigationUrl=${''}
         @itemRemovalRequested=${spy}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1857,7 +1858,7 @@ describe('Collection Browser', () => {
 
     const firstTile = tiles![0] as TileDispatcher;
     const firstTileLink = firstTile.shadowRoot?.querySelector(
-      'a[href]'
+      'a[href]',
     ) as HTMLAnchorElement;
     expect(firstTile.model?.identifier).to.equal('foo');
     expect(firstTileLink).to.exist;
@@ -1875,7 +1876,7 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     expect(spy.callCount).to.equal(1);
     expect(spy.args[0].length).to.equal(1);
-    expect(spy.args[0][0]?.detail?.items?.[0]?.identifier).to.equal('foo');
+    expect(spy.args[0][0].detail.items[0]).to.equal('foo');
   });
 
   it('disables manage view when manage bar cancelled', async () => {
@@ -1885,7 +1886,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .baseNavigationUrl=${''}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1909,7 +1910,7 @@ describe('Collection Browser', () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'foo';
@@ -1951,7 +1952,7 @@ describe('Collection Browser', () => {
         .searchService=${searchService}
         .enableSortOptionsSlot=${true}
       >
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -1959,7 +1960,7 @@ describe('Collection Browser', () => {
     await aTimeout(10);
 
     const sortBar = el.shadowRoot?.querySelector(
-      'sort-filter-bar'
+      'sort-filter-bar',
     ) as SortFilterBar;
     expect(sortBar?.enableSortOptionsSlot, 'show loans in sort bar').to.be.true;
     expect(el.enableSortOptionsSlot, 'collection browser is loans tab').to.be
@@ -1975,7 +1976,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         suppressResultCount
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -1992,7 +1993,7 @@ describe('Collection Browser', () => {
       html`<collection-browser
         .searchService=${searchService}
         suppressResultTiles
-      ></collection-browser>`
+      ></collection-browser>`,
     );
 
     el.baseQuery = 'collection:foo';
@@ -2011,7 +2012,7 @@ describe('Collection Browser', () => {
 
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
-      </collection-browser>`
+      </collection-browser>`,
     );
 
     const numberOfPages = 15;

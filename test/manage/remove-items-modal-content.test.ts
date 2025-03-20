@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import Sinon from 'sinon';
@@ -38,10 +37,10 @@ describe('RemoveItemsModalContent', () => {
 
     listItems?.forEach((item, index) => {
       expect(item.querySelector('.item-title')?.textContent).to.equal(
-        items[index].title
+        items[index].title,
       );
       expect(item.querySelector('.item-date')?.textContent).to.equal(
-        items[index].date
+        items[index].date,
       );
     });
   });
@@ -56,7 +55,7 @@ describe('RemoveItemsModalContent', () => {
     `);
 
     expect(el.shadowRoot?.querySelector('.message')?.textContent).to.equal(
-      message
+      message,
     );
   });
 
@@ -72,7 +71,7 @@ describe('RemoveItemsModalContent', () => {
     el.addEventListener('confirm', spy);
 
     const button = el.shadowRoot?.querySelector(
-      '.remove-items-btn'
+      '.remove-items-btn',
     ) as HTMLInputElement;
     button?.click();
 

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
 import {
   ModalManager,
@@ -20,7 +19,7 @@ import {
 describe('Expanded Date Picker', () => {
   it('should render with a date picker and Apply button', async () => {
     const el = await fixture<ExpandedDatePicker>(
-      html`<expanded-date-picker></expanded-date-picker>`
+      html`<expanded-date-picker></expanded-date-picker>`,
     );
 
     expect(el.shadowRoot?.querySelector('#date-picker')).to.exist;
@@ -35,11 +34,11 @@ describe('Expanded Date Picker', () => {
         .maxDate=${'5'}
         .minSelectedDate=${'1'}
         .maxSelectedDate=${'5'}
-      ></expanded-date-picker>`
+      ></expanded-date-picker>`,
     );
 
     const datePicker = el.shadowRoot?.querySelector(
-      '#date-picker'
+      '#date-picker',
     ) as HistogramDateRange;
     expect(datePicker).to.exist;
 
@@ -51,7 +50,7 @@ describe('Expanded Date Picker', () => {
           minDate: datePicker.minSelectedDate,
           maxDate: datePicker.maxSelectedDate,
         },
-      })
+      }),
     );
     await el.updateComplete;
 
@@ -69,11 +68,11 @@ describe('Expanded Date Picker', () => {
         .minSelectedDate=${'1'}
         .maxSelectedDate=${'5'}
         @histogramDateRangeApplied=${applySpy}
-      ></expanded-date-picker>`
+      ></expanded-date-picker>`,
     );
 
     const applyBtn = el.shadowRoot?.querySelector(
-      '#apply-btn'
+      '#apply-btn',
     ) as HTMLButtonElement;
     expect(applyBtn).to.exist;
 
@@ -82,12 +81,14 @@ describe('Expanded Date Picker', () => {
 
     expect(applySpy.callCount).to.equal(1);
     expect(
-      applySpy.calledWithMatch({ detail: { minDate: '1', maxDate: '5' } })
+      applySpy.calledWithMatch({ detail: { minDate: '1', maxDate: '5' } }),
     );
   });
 
   it('should close its modal and emit close event when date range applied', async () => {
-    const modalManager = new ModalManager();
+    const modalManager = await fixture<ModalManager>(
+      html`<modal-manager></modal-manager>`,
+    );
     modalManager.mode = ModalManagerMode.Open;
 
     const modalClosed = sinon.spy();
@@ -101,11 +102,11 @@ describe('Expanded Date Picker', () => {
         .maxSelectedDate=${'5'}
         .modalManager=${modalManager}
         @modalClosed=${modalClosed}
-      ></expanded-date-picker>`
+      ></expanded-date-picker>`,
     );
 
     const applyBtn = el.shadowRoot?.querySelector(
-      '#apply-btn'
+      '#apply-btn',
     ) as HTMLButtonElement;
     expect(applyBtn).to.exist;
 
@@ -117,6 +118,10 @@ describe('Expanded Date Picker', () => {
   });
 
   it('closes the modal when Esc key is pressed', async () => {
+    const modalManager = await fixture<ModalManager>(
+      html`<modal-manager></modal-manager>`,
+    );
+
     const el = await fixture<ExpandedDatePicker>(
       html`<expanded-date-picker
         .buckets=${[1, 2, 3, 4, 5]}
@@ -124,13 +129,13 @@ describe('Expanded Date Picker', () => {
         .maxDate=${'5'}
         .minSelectedDate=${'1'}
         .maxSelectedDate=${'5'}
-        .modalManager=${new ModalManager()}
-      ></expanded-date-picker>`
+        .modalManager=${modalManager}
+      ></expanded-date-picker>`,
     );
 
     const closeModalSpy = sinon.spy(
       el.modalManager as ModalManagerInterface,
-      'closeModal'
+      'closeModal',
     );
 
     // Dispatch an Esc keydown event
@@ -150,11 +155,11 @@ describe('Expanded Date Picker', () => {
         .minDate=${'1'}
         .maxDate=${'5'}
         .analyticsHandler=${analyticsHandler}
-      ></expanded-date-picker>`
+      ></expanded-date-picker>`,
     );
 
     const applyBtn = el.shadowRoot?.querySelector(
-      '#apply-btn'
+      '#apply-btn',
     ) as HTMLButtonElement;
     expect(applyBtn).to.exist;
 
@@ -163,12 +168,12 @@ describe('Expanded Date Picker', () => {
 
     expect(analyticsHandler.callCategory).to.equal(analyticsCategories.default);
     expect(analyticsHandler.callAction).to.equal(
-      analyticsActions.histogramChangedFromModal
+      analyticsActions.histogramChangedFromModal,
     );
     expect(analyticsHandler.callLabel).to.equal(window.location.href);
 
     const datePicker = el.shadowRoot?.querySelector(
-      '#date-picker'
+      '#date-picker',
     ) as HistogramDateRange;
     expect(datePicker).to.exist;
 
@@ -180,7 +185,7 @@ describe('Expanded Date Picker', () => {
           minDate: datePicker.minSelectedDate,
           maxDate: datePicker.maxSelectedDate,
         },
-      })
+      }),
     );
     await el.updateComplete;
 
@@ -189,7 +194,7 @@ describe('Expanded Date Picker', () => {
 
     expect(analyticsHandler.callCategory).to.equal(analyticsCategories.default);
     expect(analyticsHandler.callAction).to.equal(
-      analyticsActions.histogramChangedFromModal
+      analyticsActions.histogramChangedFromModal,
     );
     expect(analyticsHandler.callLabel).to.equal(window.location.href);
   });

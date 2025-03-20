@@ -26,7 +26,7 @@ export class TileHoverPane extends LitElement {
 
   @property({ type: Number }) mobileBreakpoint?: number;
 
-  @property({ type: Number }) currentWidth?: Number;
+  @property({ type: Number }) currentWidth?: number;
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
@@ -95,7 +95,9 @@ export class TileHoverPane extends LitElement {
         visibility: hidden;
         opacity: 0;
         transform: translateY(8px);
-        transition: opacity 0.1s ease-in, transform 0.1s ease-in;
+        transition:
+          opacity 0.1s ease-in,
+          transform 0.1s ease-in;
         --image-width: auto;
       }
 

@@ -8,7 +8,7 @@ import type { FacetState } from '../../src/models';
 describe('Facet row', () => {
   it('renders nothing if no bucket provided', async () => {
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'subject'}></facet-row>`
+      html`<facet-row .facetType=${'subject'}></facet-row>`,
     );
 
     expect(el.shadowRoot?.querySelector('.facet-row-container')).not.to.exist;
@@ -22,7 +22,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .bucket=${bucket}></facet-row>`
+      html`<facet-row .bucket=${bucket}></facet-row>`,
     );
 
     expect(el.shadowRoot?.querySelector('.facet-row-container')).not.to.exist;
@@ -36,12 +36,12 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
     );
 
     expect(el.shadowRoot?.querySelector('.facet-row-container')).to.exist;
     expect(
-      el.shadowRoot?.querySelectorAll('input[type="checkbox"]')
+      el.shadowRoot?.querySelectorAll('input[type="checkbox"]'),
     ).to.have.length(2);
     expect(el.shadowRoot?.querySelectorAll('label')).to.have.length(2);
 
@@ -56,7 +56,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
     );
 
     const facetCount = el.shadowRoot?.querySelector('.facet-count');
@@ -71,24 +71,24 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
     );
 
     // "Positive" checkbox is checked; "Negative" checkbox is not checked
     const selectCheckbox = el.shadowRoot?.querySelector(
-      '.select-facet-checkbox'
+      '.select-facet-checkbox',
     ) as HTMLInputElement;
     const hideCheckbox = el.shadowRoot?.querySelector(
-      '.hide-facet-checkbox'
+      '.hide-facet-checkbox',
     ) as HTMLInputElement;
     expect(selectCheckbox?.checked).to.be.true;
     expect(hideCheckbox?.checked).to.be.false;
 
     // Eye icon is not in its active state
     expect(
-      el.shadowRoot?.querySelector('.hide-facet-icon')
+      el.shadowRoot?.querySelector('.hide-facet-icon'),
     ).to.exist.and.satisfy(
-      (icon: HTMLElement) => !icon.classList.contains('active')
+      (icon: HTMLElement) => !icon.classList.contains('active'),
     );
   });
 
@@ -100,24 +100,24 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
     );
 
     // "Positive" checkbox is not checked; "Negative" checkbox is checked
     const selectCheckbox = el.shadowRoot?.querySelector(
-      '.select-facet-checkbox'
+      '.select-facet-checkbox',
     ) as HTMLInputElement;
     const hideCheckbox = el.shadowRoot?.querySelector(
-      '.hide-facet-checkbox'
+      '.hide-facet-checkbox',
     ) as HTMLInputElement;
     expect(selectCheckbox?.checked).to.be.false;
     expect(hideCheckbox?.checked).to.be.true;
 
     // Eye icon is in its "active" state
     expect(
-      el.shadowRoot?.querySelector('.hide-facet-icon')
+      el.shadowRoot?.querySelector('.hide-facet-icon'),
     ).to.exist.and.satisfy((icon: HTMLElement) =>
-      icon.classList.contains('active')
+      icon.classList.contains('active'),
     );
   });
 
@@ -129,11 +129,14 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'collection'} .bucket=${bucket}></facet-row>`
+      html`<facet-row
+        .facetType=${'collection'}
+        .bucket=${bucket}
+      ></facet-row>`,
     );
 
     const collectionName = el.shadowRoot?.querySelector(
-      '.facet-title > a:link'
+      '.facet-title > a:link',
     );
     expect(collectionName).to.exist;
     expect(collectionName?.getAttribute('href')).to.equal('/details/foo');
@@ -147,7 +150,7 @@ describe('Facet row', () => {
     };
 
     const el = await fixture<FacetRow>(
-      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
     );
 
     expect(el.shadowRoot?.querySelector('a:link')).not.to.exist;
@@ -166,11 +169,11 @@ describe('Facet row', () => {
         .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
-      ></facet-row>`
+      ></facet-row>`,
     );
 
     const positiveFacetCheck = el.shadowRoot?.querySelector(
-      '.select-facet-checkbox'
+      '.select-facet-checkbox',
     ) as HTMLInputElement;
     expect(positiveFacetCheck).to.exist;
     positiveFacetCheck.click();
@@ -200,11 +203,11 @@ describe('Facet row', () => {
         .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
-      ></facet-row>`
+      ></facet-row>`,
     );
 
     const positiveFacetCheck = el.shadowRoot?.querySelector(
-      '.select-facet-checkbox'
+      '.select-facet-checkbox',
     ) as HTMLInputElement;
     expect(positiveFacetCheck).to.exist;
     positiveFacetCheck.click();
@@ -234,11 +237,11 @@ describe('Facet row', () => {
         .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
-      ></facet-row>`
+      ></facet-row>`,
     );
 
     const negativeFacetIcon = el.shadowRoot?.querySelector(
-      '.hide-facet-icon'
+      '.hide-facet-icon',
     ) as HTMLLabelElement;
     expect(negativeFacetIcon).to.exist;
     negativeFacetIcon.click();
@@ -268,11 +271,11 @@ describe('Facet row', () => {
         .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
-      ></facet-row>`
+      ></facet-row>`,
     );
 
     const negativeFacetIcon = el.shadowRoot?.querySelector(
-      '.hide-facet-icon'
+      '.hide-facet-icon',
     ) as HTMLLabelElement;
     expect(negativeFacetIcon).to.exist;
     negativeFacetIcon.click();
@@ -302,11 +305,11 @@ describe('Facet row', () => {
         .facetType=${'subject'}
         .bucket=${bucket}
         @facetClick=${facetClickSpy}
-      ></facet-row>`
+      ></facet-row>`,
     );
 
     const facetLabel = el.shadowRoot?.querySelector(
-      '.facet-info-display'
+      '.facet-info-display',
     ) as HTMLLabelElement;
     expect(facetLabel).to.exist;
 

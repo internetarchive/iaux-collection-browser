@@ -33,19 +33,18 @@ export class AlphaBar extends LitElement {
       <section id="container" aria-label=${this.ariaLandmarkLabel ?? nothing}>
         <ul>
           ${this.alphabet.map(
-            letter =>
-              html`
-                <li
-                  class=${letter === this.selectedUppercaseLetter
-                    ? 'selected'
-                    : nothing}
-                  @mousemove=${this.handleMouseMove}
-                  @mouseleave=${this.handleMouseLeave}
-                >
-                  ${this.letterButtonTemplate(letter)}
-                  ${this.tooltipTemplate(letter)}
-                </li>
-              `
+            letter => html`
+              <li
+                class=${letter === this.selectedUppercaseLetter
+                  ? 'selected'
+                  : nothing}
+                @mousemove=${this.handleMouseMove}
+                @mouseleave=${this.handleMouseLeave}
+              >
+                ${this.letterButtonTemplate(letter)}
+                ${this.tooltipTemplate(letter)}
+              </li>
+            `,
           )}
         </ul>
       </section>
@@ -87,7 +86,7 @@ export class AlphaBar extends LitElement {
     this.dispatchEvent(
       new CustomEvent('letterChanged', {
         detail: { selectedLetter: this.selectedUppercaseLetter },
-      })
+      }),
     );
   }
 
@@ -127,10 +126,10 @@ export class AlphaBar extends LitElement {
     // (but not including any scrollbar).
     const bodyStyle = getComputedStyle(document.body);
     const bodyMarginLeft = parseFloat(
-      bodyStyle.getPropertyValue('margin-left')
+      bodyStyle.getPropertyValue('margin-left'),
     );
     const bodyMarginRight = parseFloat(
-      bodyStyle.getPropertyValue('margin-right')
+      bodyStyle.getPropertyValue('margin-right'),
     );
     const bodyWidthWithMargin =
       document.body.clientWidth + bodyMarginLeft + bodyMarginRight;
@@ -155,7 +154,7 @@ export class AlphaBar extends LitElement {
       left -= overflowAmt;
       this.tooltip.style.setProperty(
         '--tooltipArrowOffset',
-        `${overflowAmt}px`
+        `${overflowAmt}px`,
       );
     }
 

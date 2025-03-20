@@ -22,7 +22,7 @@ describe('formatCount', () => {
 
   it('returns decimal when value of significant digits < 10', () => {
     expect(formatCount(testCount * 10, 'short', 'long')).to.equal(
-      '8.1 million'
+      '8.1 million',
     );
   });
 

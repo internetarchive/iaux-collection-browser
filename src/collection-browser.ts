@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import {
   html,
   css,
@@ -220,11 +219,10 @@ export class CollectionBrowser
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
 
   @property({ type: Object })
-  restorationStateHandler: RestorationStateHandlerInterface = new RestorationStateHandler(
-    {
+  restorationStateHandler: RestorationStateHandlerInterface =
+    new RestorationStateHandler({
       context: this.pageContext,
-    }
-  );
+    });
 
   @property({ type: Number }) mobileBreakpoint = 600;
 
@@ -394,7 +392,7 @@ export class CollectionBrowser
 
       sessionStorage?.setItem('cb-session', newSessionId);
       return newSessionId;
-    } catch (err) {
+    } catch {
       // Either we can't generate the hash or we're restricted from accessing sessionStorage
       return '';
     }
@@ -815,13 +813,13 @@ export class CollectionBrowser
    */
   private handleRemoveItems(): void {
     this.dispatchEvent(
-      new CustomEvent<{ items: String[] }>('itemRemovalRequested', {
+      new CustomEvent<{ items: string[] }>('itemRemovalRequested', {
         detail: {
           items: this.dataSource.checkedTileModels.map(model =>
-            model?.identifier ? model.identifier : ''
+            model?.identifier ? model.identifier : '',
           ),
         },
-      })
+      }),
     );
   }
 
@@ -830,13 +828,13 @@ export class CollectionBrowser
    */
   private handleManageItems(): void {
     this.dispatchEvent(
-      new CustomEvent<{ items: String[] }>('itemManagerRequested', {
+      new CustomEvent<{ items: string[] }>('itemManagerRequested', {
         detail: {
           items: this.dataSource.checkedTileModels.map(model =>
-            model?.identifier ? model.identifier : ''
+            model?.identifier ? model.identifier : '',
           ),
         },
-      })
+      }),
     );
   }
 
@@ -869,7 +867,7 @@ export class CollectionBrowser
     e: CustomEvent<{
       selectedSort: SortField;
       sortDirection: SortDirection | null;
-    }>
+    }>,
   ) {
     const { selectedSort, sortDirection } = e.detail;
     this.selectedSort = selectedSort;
@@ -943,7 +941,7 @@ export class CollectionBrowser
    * Handler for when the display mode option is changed (grid/list/compact-list views).
    */
   private displayModeChanged(
-    e: CustomEvent<{ displayMode?: CollectionDisplayMode }>
+    e: CustomEvent<{ displayMode?: CollectionDisplayMode }>,
   ): void {
     this.displayMode = e.detail.displayMode;
 
@@ -1000,7 +998,7 @@ export class CollectionBrowser
    * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
    */
   private sendFilterByCreatorAnalytics(
-    prevSelectedLetter: string | null
+    prevSelectedLetter: string | null,
   ): void {
     if (!prevSelectedLetter && !this.selectedCreatorFilter) {
       return;
@@ -1020,7 +1018,7 @@ export class CollectionBrowser
    * Handler for changes to which letter is selected in the title alphabet bar.
    */
   private titleLetterSelected(
-    e: CustomEvent<{ selectedLetter: string | null }>
+    e: CustomEvent<{ selectedLetter: string | null }>,
   ): void {
     this.selectedCreatorFilter = null;
     this.selectedTitleFilter = e.detail.selectedLetter;
@@ -1030,7 +1028,7 @@ export class CollectionBrowser
    * Handler for changes to which letter is selected in the creator alphabet bar.
    */
   private creatorLetterSelected(
-    e: CustomEvent<{ selectedLetter: string | null }>
+    e: CustomEvent<{ selectedLetter: string | null }>,
   ): void {
     this.selectedTitleFilter = null;
     this.selectedCreatorFilter = e.detail.selectedLetter;
@@ -1151,7 +1149,7 @@ export class CollectionBrowser
    * @param mobile Whether to style/shorten the button for mobile view
    */
   private clearFiltersBtnTemplate(
-    mobile: boolean
+    mobile: boolean,
   ): TemplateResult | typeof nothing {
     if (!this.hasActiveFilters) return nothing;
 
@@ -1200,7 +1198,7 @@ export class CollectionBrowser
     e: CustomEvent<{
       minDate: string;
       maxDate: string;
-    }>
+    }>,
   ) {
     const { minDate, maxDate } = e.detail;
     [this.minSelectedDate, this.maxSelectedDate] = [minDate, maxDate];
@@ -1230,7 +1228,7 @@ export class CollectionBrowser
     this.dispatchEvent(
       new CustomEvent<boolean>('manageModeChanged', {
         detail: this.isManageView,
-      })
+      }),
     );
   }
 
@@ -1249,7 +1247,7 @@ export class CollectionBrowser
    */
   async installDataSourceAndQueryState(
     dataSource: CollectionBrowserDataSourceInterface,
-    queryState: CollectionBrowserQueryState
+    queryState: CollectionBrowserQueryState,
   ): Promise<void> {
     log('Installing data source & query state in CB:', dataSource, queryState);
     if (this.dataSource) this.removeController(this.dataSource);
@@ -1408,12 +1406,12 @@ export class CollectionBrowser
 
     if (changed.has('selectedTitleFilter')) {
       this.sendFilterByTitleAnalytics(
-        changed.get('selectedTitleFilter') as string
+        changed.get('selectedTitleFilter') as string,
       );
     }
     if (changed.has('selectedCreatorFilter')) {
       this.sendFilterByCreatorAnalytics(
-        changed.get('selectedCreatorFilter') as string
+        changed.get('selectedCreatorFilter') as string,
       );
     }
 
@@ -1468,7 +1466,7 @@ export class CollectionBrowser
 
     if (changed.has('resizeObserver')) {
       const oldObserver = changed.get(
-        'resizeObserver'
+        'resizeObserver',
       ) as SharedResizeObserverInterface;
       if (oldObserver) this.disconnectResizeObserver(oldObserver);
       this.setupResizeObserver();
@@ -1525,7 +1523,7 @@ export class CollectionBrowser
       this.setTileCount(
         this.dataSource.endOfDataReached
           ? this.dataSource.size
-          : this.estimatedTileCount
+          : this.estimatedTileCount,
       );
     }
   }
@@ -1546,7 +1544,7 @@ export class CollectionBrowser
     // In desktop view, we are always ready to load facets *unless* we are using one of the
     // `opt-in` strategies and have not opted in (whether by login or UI interaction).
     const usingOptInStrategy = ['opt-in', 'opt-in-or-login'].includes(
-      this.facetLoadStrategy
+      this.facetLoadStrategy,
     );
     const desktopFacetsReady =
       !this.mobileView && (!usingOptInStrategy || optedIn);
@@ -1556,7 +1554,7 @@ export class CollectionBrowser
     const mobileFacetsReady = this.mobileView && optedIn;
 
     this.dataSource.handleFacetReadinessChange(
-      desktopFacetsReady || mobileFacetsReady
+      desktopFacetsReady || mobileFacetsReady,
     );
   }
 
@@ -1569,14 +1567,14 @@ export class CollectionBrowser
     // match the _available_ viewport height. This should generally be more
     // performant than listening to scroll events on the page or column.
     const leftColumnSentinel = this.shadowRoot?.querySelector(
-      '#left-column-scroll-sentinel'
+      '#left-column-scroll-sentinel',
     );
     if (leftColumnSentinel) {
       this.leftColIntersectionObserver = new IntersectionObserver(
         this.updateLeftColumnHeight,
         {
           threshold: [...Array(201).keys()].map(n => n / 200), // Threshold every 0.5%
-        }
+        },
       );
       this.leftColIntersectionObserver.observe(leftColumnSentinel);
     }
@@ -1593,11 +1591,11 @@ export class CollectionBrowser
    */
   private setupFacetsScrollListeners(): void {
     const facetsSentinel = this.shadowRoot?.querySelector(
-      '#facets-scroll-sentinel'
+      '#facets-scroll-sentinel',
     );
     if (facetsSentinel) {
       this.facetsIntersectionObserver = new IntersectionObserver(
-        this.updateFacetFadeOut
+        this.updateFacetFadeOut,
       );
       this.facetsIntersectionObserver.observe(facetsSentinel);
     }
@@ -1642,7 +1640,7 @@ export class CollectionBrowser
         detail: {
           baseQuery: this.baseQuery,
         },
-      })
+      }),
     );
   }
 
@@ -1654,7 +1652,7 @@ export class CollectionBrowser
     this.dispatchEvent(
       new CustomEvent<SearchType>('searchTypeChanged', {
         detail: this.searchType,
-      })
+      }),
     );
   }
 
@@ -1679,7 +1677,7 @@ export class CollectionBrowser
           selectedTitleFilter: this.selectedTitleFilter,
           selectedCreatorFilter: this.selectedCreatorFilter,
         },
-      })
+      }),
     );
   }
 
@@ -1692,7 +1690,7 @@ export class CollectionBrowser
   }
 
   private disconnectResizeObserver(
-    resizeObserver: SharedResizeObserverInterface
+    resizeObserver: SharedResizeObserverInterface,
   ) {
     resizeObserver.removeObserver({
       target: this.contentContainer,
@@ -1716,7 +1714,7 @@ export class CollectionBrowser
    * @returns
    */
   private visibleCellsChanged(
-    e: CustomEvent<{ visibleCellIndices: number[] }>
+    e: CustomEvent<{ visibleCellIndices: number[] }>,
   ) {
     if (this.isScrollingToCell) return;
     const { visibleCellIndices } = e.detail;
@@ -1864,7 +1862,7 @@ export class CollectionBrowser
     };
     this.restorationStateHandler.persistState(
       restorationState,
-      this.dataSourceInstallInProgress
+      this.dataSourceInstallInProgress,
     );
   }
 
@@ -1878,7 +1876,7 @@ export class CollectionBrowser
         detail: {
           loading: this.searchResultsLoading,
         },
-      })
+      }),
     );
   }
 

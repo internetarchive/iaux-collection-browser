@@ -69,32 +69,35 @@ export class ManageBar extends LitElement {
           </button>
           ${when(
             this.showItemManageButton,
-            () => html` <button
-              class="ia-button warning"
-              ?disabled=${!this.removeAllowed}
-              @click=${this.manageItemsClicked}
-            >
-              ${msg('Item Manager the items')} (${this.selectedItems.length})
-            </button>`
+            () =>
+              html` <button
+                class="ia-button warning"
+                ?disabled=${!this.removeAllowed}
+                @click=${this.manageItemsClicked}
+              >
+                ${msg('Item Manager the items')} (${this.selectedItems.length})
+              </button>`,
           )}
           <div class="selection-buttons">
             ${when(
               this.showSelectAll,
-              () => html` <button
-                class="ia-button link select-all-btn"
-                @click=${this.selectAllClicked}
-              >
-                ${msg('Select all')}
-              </button>`
+              () =>
+                html` <button
+                  class="ia-button link select-all-btn"
+                  @click=${this.selectAllClicked}
+                >
+                  ${msg('Select all')}
+                </button>`,
             )}
             ${when(
               this.showUnselectAll,
-              () => html` <button
-                class="ia-button link unselect-all-btn"
-                @click=${this.unselectAllClicked}
-              >
-                ${msg('Unselect all')}
-              </button>`
+              () =>
+                html` <button
+                  class="ia-button link unselect-all-btn"
+                  @click=${this.unselectAllClicked}
+                >
+                  ${msg('Unselect all')}
+                </button>`,
             )}
           </div>
         </div>
@@ -191,7 +194,7 @@ export class ManageBar extends LitElement {
       closeOnBackdropClick: true,
       title: html`${msg('Error: unable to remove items')}`,
       message: html`${msg(
-        'An error occurred while removing items. Please try again in a few minutes.'
+        'An error occurred while removing items. Please try again in a few minutes.',
       )}`,
     });
 

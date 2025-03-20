@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
@@ -26,7 +25,7 @@ describe('Item Tile', () => {
 
   it('should render with created-by element', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`
+      html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`,
     );
 
     const container = el.shadowRoot?.querySelector('.container');
@@ -46,7 +45,7 @@ describe('Item Tile', () => {
 
   it('should not render with created-by but date element', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ datePublished: new Date() }}></item-tile>`
+      html`<item-tile .model=${{ datePublished: new Date() }}></item-tile>`,
     );
 
     el.sortParam = {
@@ -64,7 +63,7 @@ describe('Item Tile', () => {
 
   it('should not render with created-by but reviewdate element', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ dateReviewed: new Date() }}></item-tile>`
+      html`<item-tile .model=${{ dateReviewed: new Date() }}></item-tile>`,
     );
 
     el.sortParam = {
@@ -82,7 +81,7 @@ describe('Item Tile', () => {
 
   it('should not render with created-by but publicdate element', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ dateArchived: new Date() }}></item-tile>`
+      html`<item-tile .model=${{ dateArchived: new Date() }}></item-tile>`,
     );
 
     el.sortParam = {
@@ -100,7 +99,7 @@ describe('Item Tile', () => {
 
   it('should not render date-sorted-by element if date is not provided', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ dateArchived: undefined }}></item-tile>`
+      html`<item-tile .model=${{ dateArchived: undefined }}></item-tile>`,
     );
 
     el.sortParam = {
@@ -118,7 +117,7 @@ describe('Item Tile', () => {
 
   it('should render without created-by when sorting by a date field', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ dateAdded: new Date() }}></item-tile>`
+      html`<item-tile .model=${{ dateAdded: new Date() }}></item-tile>`,
     );
 
     el.sortParam = {
@@ -138,7 +137,7 @@ describe('Item Tile', () => {
 
   it('should render with created-by when sort field is not a date', async () => {
     const el = await fixture<ItemTile>(
-      html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`
+      html`<item-tile .model=${{ creator: 'someone' }}></item-tile>`,
     );
 
     el.sortParam = {
@@ -175,7 +174,7 @@ describe('Item Tile', () => {
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
     expect(dateSortedBy).to.exist;
     expect(dateSortedBy?.textContent?.trim()).to.contain(
-      'published Jan 02, 2012'
+      'published Jan 02, 2012',
     );
   });
 
@@ -219,7 +218,7 @@ describe('Item Tile', () => {
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
     expect(dateSortedBy).to.exist;
     expect(dateSortedBy?.textContent?.trim()).to.contain(
-      'archived Jan 02, 2011'
+      'archived Jan 02, 2011',
     );
   });
 
@@ -242,7 +241,7 @@ describe('Item Tile', () => {
     const dateSortedBy = el.shadowRoot?.querySelector('.date-sorted-by');
     expect(dateSortedBy).to.exist;
     expect(dateSortedBy?.textContent?.trim()).to.contain(
-      'reviewed Jan 02, 2013'
+      'reviewed Jan 02, 2013',
     );
   });
 
@@ -349,7 +348,7 @@ describe('Item Tile', () => {
     `);
 
     const infoButton = el.shadowRoot?.querySelector(
-      '.info-button'
+      '.info-button',
     ) as HTMLButtonElement;
     infoButton.click();
     await el.updateComplete;
@@ -398,7 +397,7 @@ describe('Item Tile', () => {
     const firstDateLink = captureDatesUl?.children[0]?.querySelector('a[href]');
     expect(firstDateLink, 'first date link').to.exist;
     expect(firstDateLink?.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20100102123456/https%3A%2F%2Fexample.com%2F'
+      'https://web.archive.org/web/20100102123456/https%3A%2F%2Fexample.com%2F',
     );
     expect(firstDateLink?.textContent?.trim()).to.equal('Jan 02, 2010');
 
@@ -406,7 +405,7 @@ describe('Item Tile', () => {
       captureDatesUl?.children[1]?.querySelector('a[href]');
     expect(secondDateLink, 'second date link').to.exist;
     expect(secondDateLink?.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20110203124321/https%3A%2F%2Fexample.com%2F'
+      'https://web.archive.org/web/20110203124321/https%3A%2F%2Fexample.com%2F',
     );
     expect(secondDateLink?.textContent?.trim()).to.equal('Feb 03, 2011');
   });

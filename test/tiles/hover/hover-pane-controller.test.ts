@@ -66,7 +66,7 @@ describe('Hover Pane Controller', () => {
   before(() => {
     oldMatchMedia = window.matchMedia;
     oldOnTouchStart = window.ontouchstart;
-    window.matchMedia = () => ({ matches: true } as MediaQueryList);
+    window.matchMedia = () => ({ matches: true }) as MediaQueryList;
     window.ontouchstart = () => {};
   });
 
@@ -77,7 +77,7 @@ describe('Hover Pane Controller', () => {
 
   it('should initially provide empty template', async () => {
     const host = await fixture<HostElement>(
-      html`<host-element></host-element>`
+      html`<host-element></host-element>`,
     );
     expect(host.controller?.getTemplate()).to.equal(nothing);
   });
@@ -86,7 +86,7 @@ describe('Hover Pane Controller', () => {
     const host = await fixture<HostElement>(
       html`<host-element
         .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
-      ></host-element>`
+      ></host-element>`,
     );
 
     host.dispatchEvent(new MouseEvent('mousemove'));
@@ -110,7 +110,7 @@ describe('Hover Pane Controller', () => {
     const host = await fixture<HostElement>(
       html`<host-element
         .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
-      ></host-element>`
+      ></host-element>`,
     );
 
     host.dispatchEvent(new MouseEvent('mouseenter'));
@@ -126,7 +126,7 @@ describe('Hover Pane Controller', () => {
     const host = await fixture<HostElement>(
       html`<host-element
         .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
-      ></host-element>`
+      ></host-element>`,
     );
 
     // Enter the host element and wait for the show handlers to run
@@ -155,11 +155,11 @@ describe('Hover Pane Controller', () => {
     const host = await fixture<HostElement>(
       html`<host-element
         .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
-      ></host-element>`
+      ></host-element>`,
     );
 
     host.dispatchEvent(
-      new MouseEvent('mousemove', { clientX: 800, clientY: 600 })
+      new MouseEvent('mousemove', { clientX: 800, clientY: 600 }),
     );
     // Need to wait a tick for the event handlers to run
     await new Promise(resolve => {
@@ -169,10 +169,10 @@ describe('Hover Pane Controller', () => {
 
     expect(host.controller?.getTemplate()).not.to.equal(nothing);
     expect(host.getHoverPane()?.getBoundingClientRect()?.right).to.be.lessThan(
-      window.innerWidth
+      window.innerWidth,
     );
     expect(host.getHoverPane()?.getBoundingClientRect()?.bottom).to.be.lessThan(
-      window.innerHeight
+      window.innerHeight,
     );
   });
 
@@ -181,7 +181,7 @@ describe('Hover Pane Controller', () => {
       html`<host-element
         .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
         ?suppressHoverPane=${true}
-      ></host-element>`
+      ></host-element>`,
     );
 
     host.dispatchEvent(new MouseEvent('mousemove'));
@@ -225,7 +225,7 @@ describe('Hover Pane Controller', () => {
             longPressDelay: 0,
             enableLongPress: true,
           }}
-        ></host-element>`
+        ></host-element>`,
       );
 
       // Touch the host element and wait for the long press handlers to run
@@ -245,7 +245,7 @@ describe('Hover Pane Controller', () => {
             longPressDelay: 100,
             enableLongPress: true,
           }}
-        ></host-element>`
+        ></host-element>`,
       );
 
       // Touch the host element
@@ -271,7 +271,7 @@ describe('Hover Pane Controller', () => {
             longPressDelay: 100,
             enableLongPress: true,
           }}
-        ></host-element>`
+        ></host-element>`,
       );
 
       // Touch the host element
@@ -297,7 +297,7 @@ describe('Hover Pane Controller', () => {
             longPressDelay: 100,
             enableLongPress: true,
           }}
-        ></host-element>`
+        ></host-element>`,
       );
 
       // Touch the host element
@@ -325,7 +325,7 @@ describe('Hover Pane Controller', () => {
             enableLongPress: true,
             mobileBreakpoint: 9999, // Ensure we get the mobile view
           }}
-        ></host-element>`
+        ></host-element>`,
       );
 
       // Touch the host element

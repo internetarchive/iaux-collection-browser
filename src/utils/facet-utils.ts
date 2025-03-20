@@ -33,8 +33,8 @@ export function forEachFacetBucket(
     facetType: FacetOption,
     bucketKey: string,
     bucket: FacetBucket,
-    selectedFacets: SelectedFacets
-  ) => unknown
+    selectedFacets: SelectedFacets,
+  ) => unknown,
 ): void {
   if (!selectedFacets) return;
   for (const [facetType, facetBuckets] of Object.entries(selectedFacets)) {
@@ -59,7 +59,7 @@ export function updateSelectedFacetBucket(
   selectedFacets: SelectedFacets | undefined,
   facetType: FacetOption,
   bucket: FacetBucket,
-  omitNoneState = false
+  omitNoneState = false,
 ): SelectedFacets {
   const defaultedSelectedFacets = selectedFacets ?? getDefaultSelectedFacets();
   const newFacets = {
@@ -89,7 +89,7 @@ export function updateSelectedFacetBucket(
  * @param selectedFacets The SelectedFacets object to be cloned
  */
 export function cloneSelectedFacets(
-  selectedFacets: SelectedFacets | undefined
+  selectedFacets: SelectedFacets | undefined,
 ): SelectedFacets {
   const cloneResult = getDefaultSelectedFacets();
   forEachFacetBucket(selectedFacets, (facetType, bucketKey, bucket) => {
@@ -120,7 +120,7 @@ export function cloneSelectedFacets(
  */
 export function mergeSelectedFacets(
   destination: SelectedFacets | undefined,
-  source: SelectedFacets | undefined
+  source: SelectedFacets | undefined,
 ): SelectedFacets {
   const mergeResult = cloneSelectedFacets(destination);
   forEachFacetBucket(source, (facetType, bucketKey, bucket) => {
@@ -160,7 +160,7 @@ const BUCKET_STATE_ORDER = ['selected', 'hidden', 'none'];
  */
 export function sortBucketsBySelectionState(
   buckets: FacetBucket[],
-  sort = AggregationSortType.COUNT
+  sort = AggregationSortType.COUNT,
 ) {
   return buckets.sort((a, b) => {
     const aStateIndex = BUCKET_STATE_ORDER.indexOf(a.state);

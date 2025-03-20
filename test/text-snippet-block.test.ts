@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import type { TextSnippetBlock } from '../src/tiles/text-snippet-block';
@@ -7,7 +6,7 @@ import '../src/tiles/text-snippet-block';
 describe('TextSnippetBlock component', () => {
   it('should render initial component', async () => {
     const el = await fixture<TextSnippetBlock>(
-      html`<text-snippet-block></text-snippet-block>`
+      html`<text-snippet-block></text-snippet-block>`,
     );
 
     // No content if no snippets
@@ -27,7 +26,7 @@ describe('TextSnippetBlock component', () => {
     ];
 
     const el = await fixture<TextSnippetBlock>(
-      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
+      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`,
     );
 
     const container = el.shadowRoot?.querySelector('.snippet-view');
@@ -44,7 +43,7 @@ describe('TextSnippetBlock component', () => {
     ];
 
     const el = await fixture<TextSnippetBlock>(
-      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`
+      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`,
     );
 
     const container = el.shadowRoot?.querySelector('.snippet-view');
@@ -59,7 +58,7 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block
         viewsize="grid"
         .snippets=${['text']}
-      ></text-snippet-block>`
+      ></text-snippet-block>`,
     );
 
     const container = el.shadowRoot?.querySelector('.snippet-view');
@@ -74,7 +73,7 @@ describe('TextSnippetBlock component', () => {
       html`<text-snippet-block
         viewsize="list"
         .snippets=${['text']}
-      ></text-snippet-block>`
+      ></text-snippet-block>`,
     );
 
     const container = el.shadowRoot?.querySelector('.snippet-view');

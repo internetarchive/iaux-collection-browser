@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
@@ -19,10 +18,10 @@ describe('Sort selector default buttons', async () => {
       <sort-filter-bar></sort-filter-bar>
     `);
     sortSelectorContainer = el.shadowRoot?.querySelector(
-      '#sort-selector-container'
+      '#sort-selector-container',
     );
     desktopSortSelector = sortSelectorContainer?.querySelector(
-      '#desktop-sort-selector'
+      '#desktop-sort-selector',
     );
 
     el.resizeObserver = new SharedResizeObserver();
@@ -42,7 +41,7 @@ describe('Sort selector default buttons', async () => {
 
   it('should render sort direction button', async () => {
     const sortDirections = el.shadowRoot?.querySelector(
-      '.sort-direction-container'
+      '.sort-direction-container',
     );
     expect(sortDirections).to.exist;
     expect(sortDirections?.querySelector('.sort-direction-icon')).to.exist;
@@ -78,7 +77,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     const defaultSortSelector = desktopSortSelector?.querySelector(
-      'ia-dropdown.selected'
+      'ia-dropdown.selected',
     );
     expect(defaultSortSelector?.textContent?.trim()).to.equal('All-time views');
   });
@@ -102,7 +101,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     const defaultSortSelector = desktopSortSelector?.querySelector(
-      'ia-dropdown.selected'
+      'ia-dropdown.selected',
     );
     expect(defaultSortSelector?.textContent?.trim()).to.equal('Date reviewed');
   });
@@ -219,7 +218,7 @@ describe('Sort selector default buttons', async () => {
       ?.querySelector('ia-dropdown') as IaDropdown;
 
     const firstOption = defaultSortSelector?.shadowRoot?.querySelector(
-      'li > button'
+      'li > button',
     ) as HTMLButtonElement;
     expect(firstOption).to.exist;
 
@@ -235,7 +234,7 @@ describe('Sort selector default buttons', async () => {
       ?.querySelector('ia-dropdown') as IaDropdown;
 
     const firstOption = defaultSortSelector?.shadowRoot?.querySelector(
-      'li > button'
+      'li > button',
     ) as HTMLButtonElement;
     expect(firstOption).to.exist;
 
@@ -251,7 +250,7 @@ describe('Sort selector default buttons', async () => {
       ?.querySelector('ia-dropdown') as IaDropdown;
 
     const caret = defaultSortSelector?.shadowRoot?.querySelector(
-      '.caret'
+      '.caret',
     ) as HTMLElement;
     expect(caret).to.exist;
 
@@ -259,7 +258,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     let backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).to.exist;
 
@@ -267,7 +266,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).not.to.exist;
   });
@@ -278,7 +277,7 @@ describe('Sort selector default buttons', async () => {
       ?.querySelector('ia-dropdown') as IaDropdown;
 
     const caret = defaultSortSelector?.shadowRoot?.querySelector(
-      '.caret'
+      '.caret',
     ) as HTMLElement;
     expect(caret).to.exist;
 
@@ -286,7 +285,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     let backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).to.exist;
 
@@ -294,7 +293,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).not.to.exist;
   });
@@ -305,7 +304,7 @@ describe('Sort selector default buttons', async () => {
       ?.querySelector('ia-dropdown') as IaDropdown;
 
     const caret = defaultSortSelector?.shadowRoot?.querySelector(
-      '.caret'
+      '.caret',
     ) as HTMLElement;
     expect(caret).to.exist;
 
@@ -313,7 +312,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     let backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).to.exist;
 
@@ -321,7 +320,7 @@ describe('Sort selector default buttons', async () => {
     await el.updateComplete;
 
     backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).not.to.exist;
   });
@@ -337,7 +336,7 @@ describe('Sort direction button behavior', () => {
     await el.updateComplete;
 
     const sortDirectionButton = el.shadowRoot?.querySelector(
-      '.sort-direction-selector'
+      '.sort-direction-selector',
     ) as HTMLButtonElement;
     expect(sortDirectionButton).to.exist;
     expect(sortDirectionButton.disabled).to.be.true;
@@ -352,7 +351,7 @@ describe('Sort direction button behavior', () => {
     await el.updateComplete;
 
     const sortDirectionButton = el.shadowRoot?.querySelector(
-      '.sort-direction-selector'
+      '.sort-direction-selector',
     ) as HTMLButtonElement;
     expect(sortDirectionButton).to.exist;
     expect(sortDirectionButton.disabled).to.be.false;
@@ -368,7 +367,7 @@ describe('Sort direction button behavior', () => {
     await el.updateComplete;
 
     const sortDirectionButton = el.shadowRoot?.querySelector(
-      '.sort-direction-selector'
+      '.sort-direction-selector',
     ) as HTMLButtonElement;
 
     sortDirectionButton.click();
@@ -413,7 +412,7 @@ describe('Display mode/style buttons', () => {
     `);
 
     const displayModeButtonList = el.shadowRoot?.querySelector(
-      '#display-style-selector'
+      '#display-style-selector',
     );
     expect(displayModeButtonList).not.to.exist;
   });
@@ -442,21 +441,21 @@ describe('Display mode/style buttons', () => {
     await el.updateComplete;
 
     const extendedListButton = el.shadowRoot?.querySelector(
-      '#list-detail-button'
+      '#list-detail-button',
     ) as HTMLElement;
     extendedListButton.click();
     await el.updateComplete;
     expect(el.displayMode).to.equal('list-detail');
 
     const compactListButton = el.shadowRoot?.querySelector(
-      '#list-compact-button'
+      '#list-compact-button',
     ) as HTMLElement;
     compactListButton.click();
     await el.updateComplete;
     expect(el.displayMode).to.equal('list-compact');
 
     const gridModeButton = el.shadowRoot?.querySelector(
-      '#grid-button'
+      '#grid-button',
     ) as HTMLElement;
     gridModeButton.click();
     await el.updateComplete;
@@ -476,7 +475,7 @@ describe('Sort/filter bar letter behavior', () => {
 
     const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
     const letterLink = alphaBar?.shadowRoot?.querySelector(
-      'li > button:not(:disabled)'
+      'li > button:not(:disabled)',
     ) as HTMLAnchorElement;
     expect(letterLink?.textContent?.trim()).to.equal('T');
 
@@ -497,7 +496,7 @@ describe('Sort/filter bar letter behavior', () => {
 
     const alphaBar = el.shadowRoot?.querySelector('alpha-bar');
     const letterLink = alphaBar?.shadowRoot?.querySelector(
-      'li > button:not(:disabled)'
+      'li > button:not(:disabled)',
     ) as HTMLAnchorElement;
     expect(letterLink?.textContent?.trim()).to.equal('C');
 
@@ -525,10 +524,10 @@ describe('Sort/filter bar mobile view', () => {
     `);
 
     const mobileSortContainer = el.shadowRoot?.querySelector(
-      '#mobile-sort-container'
+      '#mobile-sort-container',
     );
     const desktopSortContainer = el.shadowRoot?.querySelector(
-      '#desktop-sort-container'
+      '#desktop-sort-container',
     );
 
     expect(mobileSortContainer?.classList?.contains('visible')).to.be.true;
@@ -541,14 +540,14 @@ describe('Sort/filter bar mobile view', () => {
     `);
 
     const mobileDropdown = el.shadowRoot?.querySelector(
-      '#mobile-dropdown'
+      '#mobile-dropdown',
     ) as IaDropdown;
     expect(mobileDropdown).to.exist;
 
     mobileDropdown.selectedOption = 'title';
     const option = { id: 'title' };
     mobileDropdown.dispatchEvent(
-      new CustomEvent('optionSelected', { detail: { option } })
+      new CustomEvent('optionSelected', { detail: { option } }),
     );
     await el.updateComplete;
 
@@ -565,14 +564,14 @@ describe('Sort/filter bar mobile view', () => {
     await el.updateComplete;
 
     const mobileDropdown = el.shadowRoot?.querySelector(
-      '#mobile-dropdown'
+      '#mobile-dropdown',
     ) as IaDropdown;
     expect(mobileDropdown).to.exist;
 
     mobileDropdown.selectedOption = 'relevance';
     const option = { id: 'relevance' };
     mobileDropdown.dispatchEvent(
-      new CustomEvent('optionSelected', { detail: { option } })
+      new CustomEvent('optionSelected', { detail: { option } }),
     );
     await el.updateComplete;
 
@@ -590,14 +589,14 @@ describe('Sort/filter bar mobile view', () => {
     await el.updateComplete;
 
     const mobileDropdown = el.shadowRoot?.querySelector(
-      '#mobile-dropdown'
+      '#mobile-dropdown',
     ) as IaDropdown;
     expect(mobileDropdown).to.exist;
 
     mobileDropdown.selectedOption = 'relevance';
     const option = { id: 'relevance' };
     mobileDropdown.dispatchEvent(
-      new CustomEvent('optionSelected', { detail: { option } })
+      new CustomEvent('optionSelected', { detail: { option } }),
     );
     await el.updateComplete;
 
@@ -611,12 +610,12 @@ describe('Sort/filter bar mobile view', () => {
     `);
 
     const mobileDropdown = el.shadowRoot?.querySelector(
-      '#mobile-dropdown'
+      '#mobile-dropdown',
     ) as IaDropdown;
     expect(mobileDropdown).to.exist;
 
     const caret = mobileDropdown?.shadowRoot?.querySelector(
-      '.caret'
+      '.caret',
     ) as HTMLElement;
     expect(caret).to.exist;
 
@@ -624,7 +623,7 @@ describe('Sort/filter bar mobile view', () => {
     await el.updateComplete;
 
     let backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).to.exist;
 
@@ -632,7 +631,7 @@ describe('Sort/filter bar mobile view', () => {
     await el.updateComplete;
 
     backdrop = el.shadowRoot?.querySelector(
-      '#sort-selector-backdrop'
+      '#sort-selector-backdrop',
     ) as HTMLElement;
     expect(backdrop).not.to.exist;
   });
@@ -674,7 +673,7 @@ describe('Sort/filter bar mobile view', () => {
 
     // slot exists
     const sortOptionsSlot = el?.shadowRoot?.querySelector(
-      'slot[name="sort-options"]'
+      'slot[name="sort-options"]',
     );
     expect(sortOptionsSlot).to.exist;
 

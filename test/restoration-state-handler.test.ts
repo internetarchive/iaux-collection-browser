@@ -68,7 +68,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.year['2018'].state).to.equal(
-      'selected'
+      'selected',
     );
   });
 
@@ -81,7 +81,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets).to.deep.equal(
-      getDefaultSelectedFacets()
+      getDefaultSelectedFacets(),
     );
   });
 
@@ -128,7 +128,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.subject.foo.state).to.equal(
-      'selected'
+      'selected',
     );
   });
 
@@ -141,7 +141,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.year['2018'].state).to.equal(
-      'hidden'
+      'hidden',
     );
   });
 
@@ -156,17 +156,17 @@ describe('Restoration state handler', () => {
     const restorationState = handler.getRestorationState();
 
     expect(restorationState.selectedFacets.collection.foo.state).to.equal(
-      'selected'
+      'selected',
     );
     expect(restorationState.selectedFacets.collection.bar.state).to.equal(
-      'selected'
+      'selected',
     );
 
     expect(restorationState.selectedFacets.collection.baz.state).to.equal(
-      'hidden'
+      'hidden',
     );
     expect(restorationState.selectedFacets.collection.boop.state).to.equal(
-      'hidden'
+      'hidden',
     );
   });
 
@@ -179,7 +179,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.collection.foo.state).to.equal(
-      'hidden'
+      'hidden',
     );
   });
 
@@ -192,7 +192,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.subject.foo.state).to.equal(
-      'selected'
+      'selected',
     );
   });
 
@@ -205,7 +205,7 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
     expect(restorationState.selectedFacets.year['2018'].state).to.equal(
-      'hidden'
+      'hidden',
     );
   });
 
@@ -377,7 +377,7 @@ describe('Restoration state handler', () => {
 
     // Ensure the new URL includes the "normalized" facet parameter and not the numbered one
     expect(decodeURIComponent(window.location.search)).to.include(
-      'and[]=subject:"foo"'
+      'and[]=subject:"foo"',
     );
     expect(new URL(window.location.href).searchParams.get('and[0]')).to.be.null;
   });

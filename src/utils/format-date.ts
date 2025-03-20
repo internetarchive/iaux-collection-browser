@@ -10,7 +10,7 @@ export type DateFormat =
 export function formatDate(
   date: Date | undefined,
   format: DateFormat = 'short',
-  locale: string = 'en-US'
+  locale: string = 'en-US',
 ): string {
   // Return blank if undefined
   if (!date) return '';

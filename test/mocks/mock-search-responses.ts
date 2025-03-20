@@ -1,3 +1,4 @@
+// eslint-disable @typescript-eslint/no-unsafe-function-type
 import type { Result } from '@internetarchive/result-type';
 import {
   Aggregation,
@@ -494,7 +495,7 @@ export const getMockSuccessWithCollectionAggregations: () => Result<
 });
 
 export const getMockSuccessSingleResultWithSort: (
-  resultsSpy: Function
+  resultsSpy: Function,
 ) => Result<SearchResponse, SearchServiceError> = (resultsSpy: Function) => ({
   success: {
     request: {

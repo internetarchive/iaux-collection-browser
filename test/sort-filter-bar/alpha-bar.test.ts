@@ -22,7 +22,7 @@ describe('Alphabetical Filter Bar', () => {
 
     // Should have exactly two letter buttons
     const letterButtons = el.shadowRoot?.querySelectorAll(
-      'li > button:not(:disabled)'
+      'li > button:not(:disabled)',
     );
     expect(letterButtons?.length).to.equal(2);
     expect(letterButtons?.item(0).textContent?.trim()).to.equal('U');
@@ -37,7 +37,7 @@ describe('Alphabetical Filter Bar', () => {
 
     // All but the two letters above should be disabled
     const letterButtons = el.shadowRoot?.querySelectorAll(
-      'li > button:disabled'
+      'li > button:disabled',
     );
     expect(letterButtons?.length).to.equal(24);
     expect(letterButtons?.item(0).textContent?.trim()).to.equal('A');
@@ -64,7 +64,7 @@ describe('Alphabetical Filter Bar', () => {
     await el.updateComplete;
 
     const tooltip = el.shadowRoot?.querySelector(
-      'alpha-bar-tooltip'
+      'alpha-bar-tooltip',
     ) as AlphaBarTooltip;
     expect(tooltip).to.exist;
 
@@ -88,14 +88,14 @@ describe('Alphabetical Filter Bar', () => {
     await el.updateComplete;
 
     const tooltip = el.shadowRoot?.querySelector(
-      'alpha-bar-tooltip'
+      'alpha-bar-tooltip',
     ) as AlphaBarTooltip;
     expect(tooltip).to.exist;
 
     // Should be positioned after next tick, but not off-screen
     await aTimeout(0);
     expect(tooltip.getBoundingClientRect().right).to.be.lessThan(
-      window.innerWidth
+      window.innerWidth,
     );
   });
 });

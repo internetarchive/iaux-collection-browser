@@ -285,7 +285,11 @@ export interface CollectionBrowserDataSourceInterface
    * @param callback A callback function to apply on each tile model, as with Array.map
    */
   map(
-    callback: (model: TileModel, index: number, array: TileModel[]) => TileModel
+    callback: (
+      model: TileModel,
+      index: number,
+      array: TileModel[],
+    ) => TileModel,
   ): void;
 
   /**

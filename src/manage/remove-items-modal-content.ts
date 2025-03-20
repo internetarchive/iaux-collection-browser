@@ -20,7 +20,7 @@ export class RemoveItemsModalContent extends LitElement {
               <span class="item-title">${title ?? '[untitled]'}</span>
               <span class="item-date">${date ?? ''}</span>
             </li>
-          `
+          `,
         )}
       </ul>
       ${this.message ? html`<p class="message">${this.message}</p>` : nothing}
@@ -38,7 +38,7 @@ export class RemoveItemsModalContent extends LitElement {
         detail: {
           items: this.items,
         },
-      })
+      }),
     );
   }
 

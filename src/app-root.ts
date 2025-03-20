@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import {
   AnalyticsEvent,
   AnalyticsManager,
@@ -7,7 +6,6 @@ import {
   SearchService,
   SearchServiceInterface,
   SearchType,
-  StringField,
 } from '@internetarchive/search-service';
 import { html, css, LitElement, PropertyValues, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -18,6 +16,7 @@ import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manag
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
+import { StringField } from '@internetarchive/iaux-item-metadata';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -83,7 +82,7 @@ export class AppRoot extends LitElement {
       includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
       servicePath: params.get('search_service_path') ?? undefined,
-      debuggingEnabled: !!params.get('debugging') ?? undefined,
+      debuggingEnabled: !!params.get('debugging'),
     });
   }
 
@@ -210,7 +209,7 @@ export class AppRoot extends LitElement {
             <button
               @click=${() => {
                 const details = this.shadowRoot?.getElementById(
-                  'latest-event-details'
+                  'latest-event-details',
                 );
                 details?.classList.toggle('hidden');
               }}
@@ -504,7 +503,7 @@ export class AppRoot extends LitElement {
     `;
   }
 
-  private async setPlaceholderType(type: String) {
+  private async setPlaceholderType(type: string) {
     switch (type) {
       case 'loading-placeholder':
         this.collectionBrowser.baseQuery = '';
@@ -548,11 +547,11 @@ export class AppRoot extends LitElement {
     if (target.checked) {
       this.collectionBrowser.style.setProperty(
         '--infiniteScrollerCellOutline',
-        '1px solid #33D1FF'
+        '1px solid #33D1FF',
       );
     } else {
       this.collectionBrowser.style.removeProperty(
-        '--infiniteScrollerCellOutline'
+        '--infiniteScrollerCellOutline',
       );
     }
   }
@@ -575,7 +574,7 @@ export class AppRoot extends LitElement {
           path: pageUrl.toString(),
         },
         '',
-        pageUrl.toString()
+        pageUrl.toString(),
       );
     }
   }
@@ -600,7 +599,7 @@ export class AppRoot extends LitElement {
         async search(params, searchType) {
           const searchResponse = await SearchService.default.search(
             params,
-            searchType
+            searchType,
           );
           searchResponse.success?.response.results.forEach(result => {
             Object.defineProperty(result, 'highlight', {
@@ -638,7 +637,7 @@ export class AppRoot extends LitElement {
         async search(params, searchType) {
           const searchResponse = await SearchService.default.search(
             params,
-            searchType
+            searchType,
           );
           searchResponse.success?.response.results.forEach((result, i) => {
             Object.defineProperty(result, 'review', {
@@ -700,7 +699,7 @@ export class AppRoot extends LitElement {
    */
   private manageModeChanged(e: CustomEvent<boolean>): void {
     const manageCheckbox = this.shadowRoot?.querySelector(
-      '#enable-management'
+      '#enable-management',
     ) as HTMLInputElement;
     if (manageCheckbox) manageCheckbox.checked = e.detail;
   }
@@ -780,7 +779,7 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.appendChild(p);
     } else {
       this.collectionBrowser.removeChild(
-        this.collectionBrowser.lastElementChild as Element
+        this.collectionBrowser.lastElementChild as Element,
       );
     }
   }
@@ -804,7 +803,7 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.appendChild(div);
     } else {
       this.collectionBrowser.removeChild(
-        this.collectionBrowser.lastElementChild as Element
+        this.collectionBrowser.lastElementChild as Element,
       );
     }
   }
@@ -826,7 +825,7 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.appendChild(p);
     } else {
       this.collectionBrowser.removeChild(
-        this.collectionBrowser.lastElementChild as Element
+        this.collectionBrowser.lastElementChild as Element,
       );
     }
   }
@@ -848,7 +847,7 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.appendChild(div);
     } else {
       const slottedEl = this.collectionBrowser.querySelector(
-        '[slot="sort-options-left"]'
+        '[slot="sort-options-left"]',
       );
       if (slottedEl) this.collectionBrowser.removeChild(slottedEl);
     }
@@ -871,7 +870,7 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.appendChild(div);
     } else {
       const slottedEl = this.collectionBrowser.querySelector(
-        '[slot="sort-options-right"]'
+        '[slot="sort-options-right"]',
       );
       if (slottedEl) this.collectionBrowser.removeChild(slottedEl);
     }
@@ -882,7 +881,7 @@ export class AppRoot extends LitElement {
     this.rowGap = parseFloat(input.value);
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserRowGap',
-      `${input.value}rem`
+      `${input.value}rem`,
     );
   }
 
@@ -891,7 +890,7 @@ export class AppRoot extends LitElement {
     this.colGap = parseFloat(input.value);
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserColGap',
-      `${input.value}rem`
+      `${input.value}rem`,
     );
   }
 
@@ -900,7 +899,7 @@ export class AppRoot extends LitElement {
     this.cellWidth = parseFloat(input.value);
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserCellMinWidth',
-      `${input.value}rem`
+      `${input.value}rem`,
     );
   }
 
@@ -909,11 +908,11 @@ export class AppRoot extends LitElement {
     this.cellHeight = parseFloat(input.value);
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserCellMinHeight',
-      `${input.value}rem`
+      `${input.value}rem`,
     );
     this.collectionBrowser.style.setProperty(
       '--collectionBrowserCellMaxHeight',
-      `${input.value}rem`
+      `${input.value}rem`,
     );
   }
 
@@ -940,7 +939,7 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.enableSortOptionsSlot = true;
     } else {
       const slottedEl = this.collectionBrowser.querySelector(
-        '[slot="sort-options"]'
+        '[slot="sort-options"]',
       );
       if (slottedEl) this.collectionBrowser.removeChild(slottedEl);
       this.collectionBrowser.enableSortOptionsSlot = false;

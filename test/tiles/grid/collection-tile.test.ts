@@ -1,4 +1,3 @@
-/* eslint-disable import/no-duplicates */
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
@@ -9,7 +8,7 @@ import '../../../src/tiles/grid/collection-tile';
 describe('Collection Tile', () => {
   it('should render initial component', async () => {
     const el = await fixture<CollectionTile>(
-      html`<collection-tile></collection-tile>`
+      html`<collection-tile></collection-tile>`,
     );
 
     const itemInfo = el.shadowRoot?.querySelector('.item-info');
@@ -40,7 +39,7 @@ describe('Collection Tile', () => {
     expect(itemInfo).to.exist;
     expect(itemTitle).to.exist;
     expect(itemTitle?.querySelector('.truncated')?.textContent).to.equal(
-      'Books'
+      'Books',
     );
   });
 
@@ -105,7 +104,7 @@ describe('Collection Tile', () => {
     `);
 
     const infoButton = el.shadowRoot?.querySelector(
-      '.info-button'
+      '.info-button',
     ) as HTMLButtonElement;
     infoButton.click();
     await el.updateComplete;

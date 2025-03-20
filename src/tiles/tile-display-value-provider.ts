@@ -26,7 +26,7 @@ export class TileDisplayValueProvider {
       collectionPagePath?: string;
       sortParam?: SortParam;
       creatorFilter?: string;
-    } = {}
+    } = {},
   ) {
     this.model = options.model;
     this.baseNavigationUrl = options.baseNavigationUrl;
@@ -55,7 +55,7 @@ export class TileDisplayValueProvider {
           .normalize('NFD')
           .replace(/[^A-Z]+/gi, '')
           .toUpperCase()
-          .startsWith(firstLetter)
+          .startsWith(firstLetter),
       );
     }
 
@@ -98,7 +98,7 @@ export class TileDisplayValueProvider {
    */
   itemPageUrl(
     identifier?: string,
-    isCollection = false
+    isCollection = false,
   ): string | typeof nothing {
     if (!identifier || this.baseNavigationUrl == null) return nothing;
     const basePath = isCollection ? this.collectionPagePath : '/details/';
@@ -115,7 +115,7 @@ export class TileDisplayValueProvider {
       .replace(/[TZ:-]/g, '')
       .replace(/\..*/, '');
     const captureHref = `https://web.archive.org/web/${captureDateStr}/${encodeURIComponent(
-      url
+      url,
     )}`;
     const captureText = formatDate(date, 'long');
 
