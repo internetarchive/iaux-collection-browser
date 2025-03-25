@@ -1,4 +1,4 @@
-import { KeywordFacetMap } from '../../models';
+import type { KeywordFacetMap } from '../../models';
 
 /**
  * Map from keywords found in the search query to an array of
