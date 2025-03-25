@@ -1,4 +1,4 @@
-import { KeywordFacetMap } from '../../models';
+import type { KeywordFacetMap } from '../../models';
 
 /**
  * Map from Wikidata description keywords for a given entity to a
