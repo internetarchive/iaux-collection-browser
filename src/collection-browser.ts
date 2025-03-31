@@ -241,6 +241,7 @@ export class CollectionBrowser
    * If item management UI active
    */
   @property({ type: Boolean }) isManageView = false;
+  @property({ type: Boolean }) urlBasedManageView = false;
 
   @property({ type: String }) manageViewLabel = 'Select items to remove';
 
@@ -552,7 +553,7 @@ export class CollectionBrowser
 
     if (!hasQuery && !isCollection && !isProfile) {
       this.placeholderType = 'empty-query';
-    } else if (noResults) {
+    } else if (noResults && !this.urlBasedManageView) {
       // Within a collection, no query + no results means the collection simply has no viewable items.
       // Otherwise, we must have a user query that produced 0 results.
       this.placeholderType =
@@ -1457,7 +1458,9 @@ export class CollectionBrowser
     if (changed.has('isManageView')) {
       if (this.isManageView) {
         this.displayMode = 'grid';
-        this.fetchManagableSearchResults();
+        if (this.pageContext === 'search') {
+          this.fetchManagableSearchResults();
+        }
       } else if (this.pageContext === 'search') this.infiniteScroller?.reload();
 
       this.infiniteScroller?.refreshAllVisibleCells();
@@ -2110,10 +2113,10 @@ export class CollectionBrowser
    */
   private fetchManagableSearchResults(): void {
     if (
-      this.pageContext === 'search' &&
-      this.dataSource.totalResults > 100 &&
-      !this.searchResultsLoading
+      (this.dataSource.totalResults > 100 && !this.searchResultsLoading) ||
+      this.urlBasedManageView
     ) {
+      console.log('here22');
       this.dataSource.resetPages();
       this.dataSource.fetchPage(1, this.maxPagesToManage);
       this.infiniteScroller?.reload();
