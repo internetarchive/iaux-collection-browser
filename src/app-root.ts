@@ -131,8 +131,12 @@ export class AppRoot extends LitElement {
 
   private get getClass() {
     const searchParams = new URLSearchParams(window.location.search);
-
     return searchParams.get('hide-dev-tools') ? 'hidden' : '';
+  }
+
+  private get urlBasedManageView() {
+    const searchParams = new URLSearchParams(window.location.search);
+    return searchParams.get('manage') ? true : false;
   }
 
   render() {
@@ -484,6 +488,8 @@ export class AppRoot extends LitElement {
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
           .pageContext=${'search'}
+          .isManageView=${this.urlBasedManageView}
+          .urlBasedManageView=${this.urlBasedManageView}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
