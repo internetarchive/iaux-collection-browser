@@ -1830,6 +1830,30 @@ describe('Collection Browser', () => {
     expect(el.dataSource.uncheckedTileModels.length).to.equal(2);
   });
 
+  it('emits event when manage view state changes', async () => {
+    const spy = sinon.spy();
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+        @manageModeChanged=${spy}
+      ></collection-browser>`,
+    );
+
+    el.isManageView = true;
+    await el.updateComplete;
+
+    expect(spy.callCount).to.equal(1);
+    expect(spy.args[0][0]?.detail).to.be.true;
+
+    el.isManageView = false;
+    await el.updateComplete;
+
+    expect(spy.callCount).to.equal(2);
+    expect(spy.args[1][0]?.detail).to.be.false;
+  });
+
   it('emits event when item removal requested', async () => {
     const spy = sinon.spy();
     const searchService = new MockSearchService();
