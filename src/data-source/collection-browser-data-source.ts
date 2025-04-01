@@ -50,6 +50,12 @@ export class CollectionBrowserDataSource
   private numTileModels = 0;
 
   /**
+   * How many consecutive pages should be batched together on the initial page fetch.
+   * Defaults to 2 pages.
+   */
+  private numInitialPages = 2;
+
+  /**
    * A set of fetch IDs that are valid for the current query state
    */
   private fetchesInProgress = new Set<string>();
@@ -358,6 +364,13 @@ export class CollectionBrowserDataSource
   setPageSize(pageSize: number): void {
     this.reset();
     this.pageSize = pageSize;
+  }
+
+  /**
+   * @inheritdoc
+   */
+  setNumInitialPages(numPages: number): void {
+    this.numInitialPages = numPages;
   }
 
   /**
@@ -997,7 +1010,7 @@ export class CollectionBrowserDataSource
   private async doInitialPageFetch(): Promise<void> {
     this.setSearchResultsLoading(true);
     // Try to batch 2 initial page requests when possible
-    await this.fetchPage(this.host.initialPageNumber, 2);
+    await this.fetchPage(this.host.initialPageNumber, this.numInitialPages);
   }
 
   /**
