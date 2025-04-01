@@ -1457,11 +1457,15 @@ export class CollectionBrowser
     if (changed.has('isManageView')) {
       if (this.isManageView) {
         this.displayMode = 'grid';
-        this.fetchManagableSearchResults();
+        this.fetchManageableSearchResults();
       } else if (this.pageContext === 'search') this.infiniteScroller?.reload();
 
       this.infiniteScroller?.refreshAllVisibleCells();
-      this.emitManageModeChangedEvent();
+
+      // Only emit change event if changing b/w true & false, not on initial value set.
+      if (changed.get('isManageView') !== undefined) {
+        this.emitManageModeChangedEvent();
+      }
     }
 
     if (changed.has('resizeObserver')) {
@@ -2103,16 +2107,19 @@ export class CollectionBrowser
    * Fetches search results for privileged users when in manage view.
    *
    * This method:
-   * 1. Checks if we're in search context with > 100 results and not currently loading
+   * 1. Checks if we're in search context and either haven't loaded results yet, or have already finished loading with > 100 total results
    * 2. Resets the datasource pagination state
    * 3. Fetches first page with limit based on maxPagesToManage threshold
    * 4. Reloads the infinite scroller to display new results
    */
-  private fetchManagableSearchResults(): void {
+  private fetchManageableSearchResults(): void {
+    const hasNotLoadedInitialResults = !this.dataSource.totalResults;
+    const hasLoadedWithMoreResultsAvailable =
+      !this.searchResultsLoading && this.dataSource.totalResults > 100;
+
     if (
       this.pageContext === 'search' &&
-      this.dataSource.totalResults > 100 &&
-      !this.searchResultsLoading
+      (hasNotLoadedInitialResults || hasLoadedWithMoreResultsAvailable)
     ) {
       this.dataSource.resetPages();
       this.dataSource.fetchPage(1, this.maxPagesToManage);
