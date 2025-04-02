@@ -255,6 +255,12 @@ export interface CollectionBrowserDataSourceInterface
   setPageSize(pageSize: number): void;
 
   /**
+   * Sets the total number of pages that should be batched together on each initial fetch.
+   * @param pages How many initial pages to batch
+   */
+  setNumInitialPages(numPages: number): void;
+
+  /**
    * Sets the total result count for this data source to the given value.
    * @param count The number of total results to set
    */

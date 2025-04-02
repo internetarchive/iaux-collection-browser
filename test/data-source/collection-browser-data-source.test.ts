@@ -101,6 +101,20 @@ describe('Collection Browser Data Source', () => {
     expect(pageFetchSpy.callCount).to.equal(0);
   });
 
+  it('can set its initial page batch size', async () => {
+    host.searchService = new MockSearchService();
+
+    const pageFetchSpy = sinon.spy();
+    const dataSource = new CollectionBrowserDataSource(host);
+    dataSource.setNumInitialPages(10);
+    dataSource.fetchPage = pageFetchSpy;
+
+    dataSource.handleQueryChange();
+
+    // Uses specified number of initial pages
+    expect(pageFetchSpy.args[0][1]).to.equal(10);
+  });
+
   it('refreshes prefix filter counts', () => {
     const dataSource = new CollectionBrowserDataSource(host);
     dataSource.addPage(1, dataPage);
