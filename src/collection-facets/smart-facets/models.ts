@@ -28,5 +28,9 @@ export interface SmartFacetEvent {
 export type KeywordFacetMap = Record<string, SmartFacet[]>;
 
 export interface SmartQueryHeuristic {
+  /**
+   * Resolves to a recommended set of facets to apply for the given query
+   * @param query The search query to recommend facets for
+   */
   getRecommendedFacets(query: string): Promise<SmartFacet[]>;
 }
