@@ -83,6 +83,7 @@ export class WikidataHeuristic implements SmartQueryHeuristic {
 
       return recommendations;
     } catch (err) {
+      console.warn(err);
       return [];
     }
   }
