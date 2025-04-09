@@ -815,9 +815,12 @@ export class CollectionBrowser
     this.dispatchEvent(
       new CustomEvent<{ items: string[] }>('itemRemovalRequested', {
         detail: {
-          items: this.dataSource.checkedTileModels.map(model =>
-            model?.identifier ? model.identifier : '',
-          ),
+          items: this.dataSource.checkedTileModels.map(model => {
+            // For favorited searches, we attach a search: prefix to differentiate it from an item
+            const searchPrefix = model?.mediatype === 'search' ? 'search:' : '';
+            const identifier = model?.identifier ? model.identifier : '';
+            return `${searchPrefix}${identifier}`;
+          }),
         },
       }),
     );
