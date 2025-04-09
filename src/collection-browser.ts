@@ -818,7 +818,7 @@ export class CollectionBrowser
           items: this.dataSource.checkedTileModels.map(model => {
             // For favorited searches, we attach a search: prefix to differentiate it from an item
             const searchPrefix = model?.mediatype === 'search' ? 'search:' : '';
-            const identifier = model?.identifier ? model.identifier : '';
+            const identifier = model?.identifier ?? '';
             return `${searchPrefix}${identifier}`;
           }),
         },
