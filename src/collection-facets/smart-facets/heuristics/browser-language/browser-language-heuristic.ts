@@ -1,4 +1,4 @@
-import type { SmartQueryHeuristic, SmartFacet } from '../models';
+import type { SmartQueryHeuristic, SmartFacet } from '../../models';
 
 export class BrowserLanguageHeuristic implements SmartQueryHeuristic {
   async getRecommendedFacets(): Promise<SmartFacet[]> {
