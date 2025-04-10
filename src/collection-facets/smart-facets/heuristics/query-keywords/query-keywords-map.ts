@@ -1,42 +1,70 @@
-import type { KeywordFacetMap } from '../../models';
+import type { KeywordFacetMap, SmartFacet } from '../../models';
+
+const TEXTS: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'texts' }],
+};
+const AUDIO: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'audio' }],
+};
+const MOVIES: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'movies' }],
+};
+const IMAGE: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'image' }],
+};
+const SOFTWARE: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'software' }],
+};
+const ETREE: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'etree' }],
+};
+const WEB: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'web' }],
+};
+const DATA: SmartFacet = {
+  facets: [{ facetType: 'mediatype', bucketKey: 'data' }],
+};
 
 /**
  * Map from keywords found in the search query to an array of
  * likely-relevant "smart facets" for those keywords.
  */
 export const QUERY_KEYWORDS: Readonly<KeywordFacetMap> = {
-  text: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  book: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  novel: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  magazine: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  newspaper: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  pdf: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  epub: [{ facets: [{ facetType: 'mediatype', bucketKey: 'texts' }] }],
-  audio: [{ facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] }],
-  song: [{ facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] }],
-  music: [{ facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] }],
-  listen: [{ facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] }],
-  podcast: [{ facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] }],
-  radio: [{ facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] }],
-  stream: [
-    { facets: [{ facetType: 'mediatype', bucketKey: 'audio' }] },
-    { facets: [{ facetType: 'mediatype', bucketKey: 'movies' }] },
-  ],
-  video: [{ facets: [{ facetType: 'mediatype', bucketKey: 'movies' }] }],
-  movie: [{ facets: [{ facetType: 'mediatype', bucketKey: 'movies' }] }],
-  film: [{ facets: [{ facetType: 'mediatype', bucketKey: 'movies' }] }],
-  animation: [{ facets: [{ facetType: 'mediatype', bucketKey: 'movies' }] }],
-  youtube: [{ facets: [{ facetType: 'mediatype', bucketKey: 'movies' }] }],
-  image: [{ facets: [{ facetType: 'mediatype', bucketKey: 'image' }] }],
-  photo: [{ facets: [{ facetType: 'mediatype', bucketKey: 'image' }] }],
-  picture: [{ facets: [{ facetType: 'mediatype', bucketKey: 'image' }] }],
-  painting: [{ facets: [{ facetType: 'mediatype', bucketKey: 'image' }] }],
-  software: [{ facets: [{ facetType: 'mediatype', bucketKey: 'software' }] }],
-  app: [{ facets: [{ facetType: 'mediatype', bucketKey: 'software' }] }],
-  program: [{ facets: [{ facetType: 'mediatype', bucketKey: 'software' }] }],
-  game: [{ facets: [{ facetType: 'mediatype', bucketKey: 'software' }] }],
-  etree: [{ facets: [{ facetType: 'mediatype', bucketKey: 'etree' }] }],
-  concert: [{ facets: [{ facetType: 'mediatype', bucketKey: 'etree' }] }],
-  'live music': [{ facets: [{ facetType: 'mediatype', bucketKey: 'etree' }] }],
-  dataset: [{ facets: [{ facetType: 'mediatype', bucketKey: 'data' }] }],
+  text: [TEXTS],
+  book: [TEXTS],
+  novel: [TEXTS],
+  magazine: [TEXTS],
+  newspaper: [TEXTS],
+  pdf: [TEXTS],
+  epub: [TEXTS],
+  audio: [AUDIO],
+  song: [AUDIO],
+  music: [AUDIO],
+  listen: [AUDIO],
+  podcast: [AUDIO],
+  radio: [AUDIO],
+  stream: [AUDIO, MOVIES],
+  video: [MOVIES],
+  movie: [MOVIES],
+  film: [MOVIES],
+  animation: [MOVIES],
+  youtube: [MOVIES],
+  image: [IMAGE],
+  photo: [IMAGE],
+  picture: [IMAGE],
+  painting: [IMAGE],
+  jpg: [IMAGE],
+  jpeg: [IMAGE],
+  png: [IMAGE],
+  gif: [IMAGE],
+  software: [SOFTWARE],
+  app: [SOFTWARE],
+  program: [SOFTWARE],
+  game: [SOFTWARE],
+  arcade: [SOFTWARE],
+  etree: [ETREE],
+  concert: [ETREE],
+  'live music': [ETREE],
+  'web crawl': [WEB],
+  dataset: [DATA],
 };
