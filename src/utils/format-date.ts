@@ -18,12 +18,22 @@ export function formatDate(
   // the date is already in UTC timezone so we should not add timeZone here again.
   const options: Intl.DateTimeFormatOptions = {};
 
+  console.log('defined formatDate: ', date);
   switch (format) {
     case 'year-only':
       // If we're only using the year, ensure we output the correct UTC year and not
       // the local year. If the local timezone is used, we can get strange off-by-one
       // errors due to quirks of timezone handling for older years.
-      return `${date.getUTCFullYear()}`;
+      // return `${date.getUTCFullYear()}`;
+      // Get the UTC year
+      const utcYear = Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+      );
+      console.log('return yearonly: ', new Date(utcYear));
+      // Return the UTC year
+      return `${new Date(utcYear).getUTCFullYear()}`;
     case 'short':
       options.month = 'short';
       options.year = 'numeric';
