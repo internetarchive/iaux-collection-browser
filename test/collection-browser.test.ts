@@ -360,7 +360,7 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
-    await nextTick();
+    await el.initialSearchComplete;
 
     expect(searchService.searchParams?.query).to.equal('collection:foo');
     expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
@@ -940,6 +940,7 @@ describe('Collection Browser', () => {
     el.sortDirection = 'asc';
     el.selectedCreatorFilter = 'X';
     await el.updateComplete;
+    await el.initialSearchComplete;
     await nextTick();
 
     expect(searchService.searchParams?.query).to.equal('first-creator');
@@ -1005,7 +1006,7 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).to.equal('2000');
   });
 
-  it('emits event when loading state changes', async () => {
+  it('emits event when results start and end loading', async () => {
     const spy = sinon.spy();
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
@@ -1014,6 +1015,7 @@ describe('Collection Browser', () => {
         @searchResultsLoadingChanged=${spy}
       ></collection-browser>`,
     );
+    spy.resetHistory();
 
     el.baseQuery = 'collection:foo';
     await el.updateComplete;
@@ -1040,17 +1042,10 @@ describe('Collection Browser', () => {
     await el.updateComplete;
     await aTimeout(50);
 
-    const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
-    expect(infiniteScroller).to.exist;
-
-    const firstResult =
-      infiniteScroller!.shadowRoot?.querySelector('tile-dispatcher');
-    expect(firstResult).to.exist;
-
     // Original href q param starts/ends with %22%22, but should be collapsed to %22 before render
-    expect(
-      firstResult!.shadowRoot?.querySelector('a[href]')?.getAttribute('href'),
-    ).to.equal('/details/foo?q=%22quoted+query%22');
+    expect(el.dataSource.getTileModelAt(0)?.href).to.equal(
+      '/details/foo?q=%22quoted+query%22',
+    );
   });
 
   it('sets default sort from collection metadata', async () => {

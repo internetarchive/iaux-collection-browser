@@ -34,22 +34,23 @@ describe('Tile Stats', () => {
     // get second column item in stats row
     const itemStatCount = statsRow?.children
       .item(1)
-      ?.querySelector('.status-text')?.textContent;
+      ?.querySelector('.status-text')
+      ?.textContent?.trim();
     // get third column item in stats row
     const favoritesStatCount = statsRow?.children
       .item(2)
-      ?.querySelector('.status-text')?.textContent;
+      ?.querySelector('.status-text')
+      ?.textContent?.trim();
     // get fourth column item in stats row
     const reviewsStatCount = statsRow?.children
       .item(3)
-      ?.querySelector('.status-text')?.textContent;
+      ?.querySelector('.status-text')
+      ?.textContent?.trim();
 
     expect(mediatypeStat).to.exist;
-
-    // Snapshot testing - reference: https://open-wc.org/docs/testing/semantic-dom-diff/#snapshot-testing
-    expect(itemStatCount).to.equalSnapshot(1);
-    expect(favoritesStatCount).to.equalSnapshot(2);
-    expect(reviewsStatCount).to.equalSnapshot(3);
+    expect(itemStatCount).to.match(/Uploads:\s+1/);
+    expect(favoritesStatCount).to.match(/Favorites:\s+2/);
+    expect(reviewsStatCount).to.match(/Reviews:\s+3/);
   });
 
   it('should render view count for non-account items', async () => {
