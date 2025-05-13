@@ -129,15 +129,16 @@ export class SmartFacetDropdown extends LitElement {
       .dropdown-container {
         padding: 5px 8px;
         border-radius: 5px;
-        background: #194880;
-        color: white;
-        font-size: 1.6rem;
+        background: white;
+        color: #2c2c2c;
+        border: 1px solid #194880;
+        font-size: 1.4rem;
         font-family: inherit;
         box-shadow: 1px 1px rgba(0, 0, 0, 0.4);
       }
 
       .dropdown-label {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         font-family: inherit;
       }
 
