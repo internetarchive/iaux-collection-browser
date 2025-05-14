@@ -327,26 +327,29 @@ export class SmartFacetBar extends LitElement {
       #filters-toggle {
         margin: 0;
         border: 0;
-        padding: 5px 10px;
-        border-radius: 15px;
-        background: #194880;
-        color: white;
-        font-size: 1.6rem;
+        padding: 5px 8px;
+        border-radius: 50%;
+        background: white;
+        color: #2c2c2c;
+        border: 1px solid #194880;
+        font-size: 1.4rem;
         font-family: inherit;
         text-decoration: none;
-        box-shadow: 1px 1px rgba(0, 0, 0, 0.4);
         cursor: pointer;
       }
 
       #filters-toggle.active {
-        background: #09294d;
-        box-shadow: -1px -1px rgba(0, 0, 0, 0.1);
+        background: #194880;
+        color: white;
       }
 
       #filters-toggle > svg {
-        width: 15px;
+        width: 12px;
+        filter: invert(0.16667);
+      }
+
+      #filters-toggle.active > svg {
         filter: invert(1);
-        vertical-align: text-bottom;
       }
     `;
   }

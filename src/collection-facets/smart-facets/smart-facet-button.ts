@@ -3,6 +3,8 @@ import { customElement, property } from 'lit/decorators.js';
 import { mediatypeConfig } from '../../mediatype/mediatype-config';
 import type { SmartFacet, SmartFacetEvent } from './models';
 
+import closeCircleDark from '../../assets/img/icons/close-circle-dark';
+
 function capitalize(str?: string): string | undefined {
   if (!str) return str;
   return str.charAt(0).toLocaleUpperCase() + str.slice(1);
@@ -47,7 +49,9 @@ export class SmartFacetButton extends LitElement {
       >
         ${icon} ${displayText}
         ${this.selected
-          ? html`<span style="margin-left: 5px;">×</span>`
+          ? html`<span class="unselect" style="margin-left: 5px;"
+              >${closeCircleDark}</span
+            >`
           : nothing}
       </a>
     `;
@@ -109,7 +113,6 @@ export class SmartFacetButton extends LitElement {
         font-size: 1.4rem;
         font-family: inherit;
         text-decoration: none;
-        box-shadow: 1px 1px rgba(0, 0, 0, 0.4);
       }
 
       .smart-facet-button.selected {
@@ -117,10 +120,16 @@ export class SmartFacetButton extends LitElement {
         color: white;
       }
 
+      .smart-facet-button .unselect {
+      }
+
       .smart-facet-button > svg {
-        width: 15px;
+        width: 12px;
+        filter: invert(0.16667);
+      }
+
+      .smart-facet-button.selected > svg {
         filter: invert(1);
-        vertical-align: text-top;
       }
     `;
   }
