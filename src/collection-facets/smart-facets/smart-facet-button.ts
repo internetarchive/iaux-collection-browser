@@ -49,9 +49,7 @@ export class SmartFacetButton extends LitElement {
       >
         ${icon} ${displayText}
         ${this.selected
-          ? html`<span class="unselect" style="margin-left: 5px;"
-              >${closeCircleDark}</span
-            >`
+          ? html`<span class="unselect-button">${closeCircleDark}</span>`
           : nothing}
       </a>
     `;
@@ -105,13 +103,17 @@ export class SmartFacetButton extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .smart-facet-button {
-        padding: 5px 10px;
+        display: inline-flex;
+        align-items: center;
+        column-gap: 5px;
+        padding: 5px 5px;
         border-radius: 5px;
         background: white;
         color: #2c2c2c;
         border: 1px solid #194880;
         font-size: 1.4rem;
         font-family: inherit;
+        line-height: normal;
         text-decoration: none;
       }
 
@@ -120,11 +122,15 @@ export class SmartFacetButton extends LitElement {
         color: white;
       }
 
-      .smart-facet-button .unselect {
+      .unselect-button > svg {
+        width: 10px;
+        height: 10px;
+        filter: invert(1);
       }
 
       .smart-facet-button > svg {
         width: 12px;
+        height: 12px;
         filter: invert(0.16667);
       }
 
