@@ -320,7 +320,7 @@ export class SmartFacetBar extends LitElement {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 5px 10px;
         padding: 10px 0;
       }
 
@@ -346,6 +346,7 @@ export class SmartFacetBar extends LitElement {
       #filters-toggle > svg {
         width: 12px;
         filter: invert(0.16667);
+        vertical-align: -1px;
       }
 
       #filters-toggle.active > svg {

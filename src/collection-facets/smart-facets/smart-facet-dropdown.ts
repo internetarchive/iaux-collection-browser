@@ -33,6 +33,8 @@ export class SmartFacetDropdown extends LitElement {
           displayCaret
           openViaButton
           closeOnSelect
+          closeOnEscape
+          closeOnBackdropClick
           includeSelectedOption
           .options=${this.dropdownOptions}
           .selectedOption=${this.activeDropdownOption}
@@ -127,7 +129,7 @@ export class SmartFacetDropdown extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .dropdown-container {
-        padding: 5px 8px;
+        padding: 5px 5px;
         border-radius: 5px;
         background: white;
         color: #2c2c2c;
@@ -142,10 +144,10 @@ export class SmartFacetDropdown extends LitElement {
       }
 
       .dropdown {
-        --dropdownBorderWidth: 5px;
         --dropdownBorderColor: #194880;
         --dropdownBorderWidth: 1px;
         --dropdownBgColor: white;
+        --dropdownHoverBgColor: #f8f8f8;
         --dropdownTextColor: #2c2c2c;
         --dropdownHoverTextColor: #2c2c2c;
         --dropdownCaretColor: #2c2c2c;
