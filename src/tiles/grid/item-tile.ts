@@ -36,6 +36,8 @@ export class ItemTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showInfoButton = false;
 
+  @property({ type: Boolean }) showTvClips = false;
+
   render() {
     const itemTitle = this.model?.title;
     const effectiveSort = this.sortParam ?? this.defaultSortParam;
@@ -71,6 +73,8 @@ export class ItemTile extends BaseTileComponent {
             .viewLabel=${viewLabel}
             .favCount=${this.model?.favCount}
             .commentCount=${this.model?.commentCount}
+            .tvClipCount=${0 /* TODO */}
+            .showTvClips=${this.showTvClips}
           >
           </tile-stats>
         </div>
