@@ -1,4 +1,4 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import { msg } from '@lit/localize';
@@ -6,6 +6,7 @@ import { favoriteFilledIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
 import { viewsIcon } from '../../assets/img/icons/views';
+import { quoteIcon } from '../../assets/img/icons/quote';
 import { srOnlyStyle } from '../../styles/sr-only';
 
 import { formatCount } from '../../utils/format-count';
@@ -24,63 +25,118 @@ export class TileStats extends LitElement {
 
   @property({ type: Number }) commentCount?: number;
 
+  @property({ type: Boolean }) showTvClips = false;
+
+  @property({ type: Number }) tvClipCount?: number;
+
   render() {
-    const formattedFavCount = formatCount(this.favCount, 'short', 'short');
-    const formattedReviewCount = formatCount(
-      this.commentCount,
-      'short',
-      'short',
-    );
-
-    const uploadsOrViewsTitle =
-      this.mediatype === 'account'
-        ? `${this.itemCount ?? 0} uploads`
-        : `${this.viewCount ?? 0} ${this.viewLabel ?? 'all-time views'}`;
-
     return html`
       <div class="item-stats">
         <p class="sr-only">
           ${this.mediatype === 'account' ? 'Account Stats' : 'Item Stats'}
         </p>
         <ul id="stats-row">
-          <li class="col">
-            <p class="sr-only">${msg('Mediatype:')}</p>
-            <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
-          </li>
-          <li class="col" title="${uploadsOrViewsTitle}">
-            ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
-            <p class="status-text">
-              <span class="sr-only">
-                ${this.mediatype === 'account'
-                  ? msg('Uploads:')
-                  : msg('Views:')}
-              </span>
-              ${formatCount(
-                this.mediatype === 'account'
-                  ? (this.itemCount ?? 0)
-                  : (this.viewCount ?? 0),
-                'short',
-                'short',
-              )}
-            </p>
-          </li>
-          <li class="col" title="${formattedFavCount} favorites">
-            ${favoriteFilledIcon}
-            <p class="status-text">
-              <span class="sr-only">${msg('Favorites:')}</span>
-              ${formattedFavCount}
-            </p>
-          </li>
-          <li class="col reviews" title="${formattedReviewCount} reviews">
-            ${reviewsIcon}
-            <p class="status-text">
-              <span class="sr-only">${msg('Reviews:')}</span>
-              ${formattedReviewCount}
-            </p>
-          </li>
+          ${this.mediatypeIconColumnTemplate}
+          ${this.mediatype === 'account'
+            ? this.uploadsColumnTemplate
+            : this.viewsColumnTemplate}
+          ${this.favoritesColumnTemplate}
+          ${this.showTvClips
+            ? this.tvClipsColumnTemplate
+            : this.reviewsColumnTemplate}
         </ul>
       </div>
     `;
+  }
+
+  /**
+   * Template for the mediatype icon column.
+   */
+  private get mediatypeIconColumnTemplate(): TemplateResult {
+    return html`
+      <li class="col">
+        <p class="sr-only">${msg('Mediatype:')}</p>
+        <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
+      </li>
+    `;
+  }
+
+  /**
+   * Helper method to construct a template for one of the tile stat columns,
+   * given its stat count, labels, and icon.
+   *
+   * @param count The numeric count to show for the stat
+   * @param label The textual label describing the stat (used in the title and screenreader text)
+   * @param icon The icon representing the stat
+   * @param classes Any additional CSS classes the stat column should have (optional)
+   */
+  private statColumnTemplate(
+    count: number | undefined,
+    label: string,
+    icon: TemplateResult,
+    classes: string[] = [],
+  ): TemplateResult {
+    const formattedCount = formatCount(count ?? 0, 'short', 'short');
+    const title = `${formattedCount} ${label}`;
+    const srLabel = label + ':';
+
+    return html`
+      <li class="col ${classes.join(' ')}" title=${title}>
+        ${icon}
+        <p class="status-text">
+          <span class="sr-only">${srLabel}</span>
+          ${formattedCount}
+        </p>
+      </li>
+    `;
+  }
+
+  /**
+   * Template for the views count column.
+   */
+  private get viewsColumnTemplate(): TemplateResult {
+    return this.statColumnTemplate(
+      this.viewCount,
+      this.viewLabel ?? msg('all-time views'),
+      viewsIcon,
+    );
+  }
+
+  /**
+   * Template for the uploads count column (replaces views for account tiles).
+   */
+  private get uploadsColumnTemplate(): TemplateResult {
+    return this.statColumnTemplate(this.itemCount, msg('uploads'), uploadIcon);
+  }
+
+  /**
+   * Template for the favorites count column.
+   */
+  private get favoritesColumnTemplate(): TemplateResult {
+    return this.statColumnTemplate(
+      this.favCount,
+      msg('favorites'),
+      favoriteFilledIcon,
+    );
+  }
+
+  /**
+   * Template for the reviews count column.
+   */
+  private get reviewsColumnTemplate(): TemplateResult {
+    return this.statColumnTemplate(
+      this.commentCount,
+      msg('reviews'),
+      reviewsIcon,
+      ['reviews'],
+    );
+  }
+
+  /**
+   * Template for the TV clips count column (replaces reviews for TV tiles).
+   */
+  private get tvClipsColumnTemplate(): TemplateResult {
+    return this.statColumnTemplate(this.tvClipCount, msg('clips'), quoteIcon);
   }
 
   static get styles(): CSSResultGroup {
@@ -93,12 +149,12 @@ export class TileStats extends LitElement {
         }
 
         ul {
-          all: unset; // unset all property values
-          list-style-type: none; // remove default list-style
+          all: unset;
+          list-style-type: none;
         }
 
         li {
-          list-style-type: none; // remove default list-style
+          list-style-type: none;
         }
 
         svg {
