@@ -2,7 +2,7 @@ import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 import { msg } from '@lit/localize';
-import { favoriteFilledIcon } from '../../assets/img/icons/favorite-filled';
+import { favoriteFilledIcon as favIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
 import { viewsIcon } from '../../assets/img/icons/views';
@@ -13,20 +13,28 @@ import { formatCount } from '../../utils/format-count';
 
 @customElement('tile-stats')
 export class TileStats extends LitElement {
+  /** The mediatype of the item these stats represent */
   @property({ type: String }) mediatype?: string;
 
+  /** The number of uploaded items, if representing an account */
   @property({ type: Number }) itemCount?: number;
 
+  /** The number of times the item has been viewed */
   @property({ type: Number }) viewCount?: number;
 
+  /** The text label describing the type of views (default "all-time views") */
   @property({ type: String }) viewLabel?: string;
 
+  /** The number of times the item has been favorited */
   @property({ type: Number }) favCount?: number;
 
+  /** The number of times the item has been reviewed */
   @property({ type: Number }) commentCount?: number;
 
+  /** Whether to show the number of TV clips in place of reviews */
   @property({ type: Boolean }) showTvClips = false;
 
+  /** The number of times the TV item has been clipped */
   @property({ type: Number }) tvClipCount?: number;
 
   render() {
@@ -65,10 +73,10 @@ export class TileStats extends LitElement {
    * Helper method to construct a template for one of the tile stat columns,
    * given its stat count, labels, and icon.
    *
-   * @param count The numeric count to show for the stat
-   * @param label The textual label describing the stat (used in the title and screenreader text)
-   * @param icon The icon representing the stat
-   * @param classes Any additional CSS classes the stat column should have (optional)
+   * @param count The numeric count to show for the stat. If undefined, will be treated as 0.
+   * @param label The textual label describing the stat (used in the title and screenreader text).
+   * @param icon The icon visually representing the stat.
+   * @param classes Any additional CSS classes the stat column should have (optional).
    */
   private columnTemplate(
     count: number | undefined,
@@ -95,11 +103,8 @@ export class TileStats extends LitElement {
    * Template for the views count column.
    */
   private get viewsColumnTemplate(): TemplateResult {
-    return this.columnTemplate(
-      this.viewCount,
-      this.viewLabel ?? msg('all-time views'),
-      viewsIcon,
-    );
+    const label = this.viewLabel ?? msg('all-time views');
+    return this.columnTemplate(this.viewCount, label, viewsIcon);
   }
 
   /**
@@ -113,11 +118,7 @@ export class TileStats extends LitElement {
    * Template for the favorites count column.
    */
   private get favoritesColumnTemplate(): TemplateResult {
-    return this.columnTemplate(
-      this.favCount,
-      msg('favorites'),
-      favoriteFilledIcon,
-    );
+    return this.columnTemplate(this.favCount, msg('favorites'), favIcon);
   }
 
   /**
