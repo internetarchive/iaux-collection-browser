@@ -70,7 +70,7 @@ export class TileStats extends LitElement {
    * @param icon The icon representing the stat
    * @param classes Any additional CSS classes the stat column should have (optional)
    */
-  private statColumnTemplate(
+  private columnTemplate(
     count: number | undefined,
     label: string,
     icon: TemplateResult,
@@ -95,7 +95,7 @@ export class TileStats extends LitElement {
    * Template for the views count column.
    */
   private get viewsColumnTemplate(): TemplateResult {
-    return this.statColumnTemplate(
+    return this.columnTemplate(
       this.viewCount,
       this.viewLabel ?? msg('all-time views'),
       viewsIcon,
@@ -106,14 +106,14 @@ export class TileStats extends LitElement {
    * Template for the uploads count column (replaces views for account tiles).
    */
   private get uploadsColumnTemplate(): TemplateResult {
-    return this.statColumnTemplate(this.itemCount, msg('uploads'), uploadIcon);
+    return this.columnTemplate(this.itemCount, msg('uploads'), uploadIcon);
   }
 
   /**
    * Template for the favorites count column.
    */
   private get favoritesColumnTemplate(): TemplateResult {
-    return this.statColumnTemplate(
+    return this.columnTemplate(
       this.favCount,
       msg('favorites'),
       favoriteFilledIcon,
@@ -124,19 +124,16 @@ export class TileStats extends LitElement {
    * Template for the reviews count column.
    */
   private get reviewsColumnTemplate(): TemplateResult {
-    return this.statColumnTemplate(
-      this.commentCount,
-      msg('reviews'),
-      reviewsIcon,
-      ['reviews'],
-    );
+    return this.columnTemplate(this.commentCount, msg('reviews'), reviewsIcon, [
+      'reviews',
+    ]);
   }
 
   /**
    * Template for the TV clips count column (replaces reviews for TV tiles).
    */
   private get tvClipsColumnTemplate(): TemplateResult {
-    return this.statColumnTemplate(this.tvClipCount, msg('clips'), quoteIcon);
+    return this.columnTemplate(this.tvClipCount, msg('clips'), quoteIcon);
   }
 
   static get styles(): CSSResultGroup {
