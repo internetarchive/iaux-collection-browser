@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
 import type { Aggregation, Bucket } from '@internetarchive/search-service';
 import type { CollectionTitles } from '../../data-source/models';
 import type { FacetOption, SelectedFacets } from '../../models';
@@ -18,11 +19,11 @@ import type { SmartFacetDropdown } from './smart-facet-dropdown';
 import type { SmartFacet, SmartFacetEvent } from './models';
 import { smartFacetEquals } from './smart-facet-equals';
 import { dedupe } from './dedupe';
+import { log } from '../../utils/log';
 import filterIcon from '../../assets/img/icons/filter';
 
 import './smart-facet-button';
 import './smart-facet-dropdown';
-import { log } from '../../utils/log';
 
 const fieldPrefixes: Partial<Record<FacetOption, string>> = {
   collection: 'Collection: ',
@@ -62,6 +63,7 @@ export class SmartFacetBar extends LitElement {
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}
+        <p id="filters-label">${msg('Insights:')}</p>
         ${repeat(
           this.smartFacets,
           f =>
@@ -353,6 +355,11 @@ export class SmartFacetBar extends LitElement {
 
       #filters-toggle.active > svg {
         filter: invert(1);
+      }
+
+      #filters-label {
+        font-weight: bold;
+        margin-right: -5px;
       }
     `;
   }
