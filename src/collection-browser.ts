@@ -250,6 +250,8 @@ export class CollectionBrowser
   /** Whether to display a smart results carousel above the full results */
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
+  @property({ type: String }) resultsHeader?: string;
+
   /**
    * The maximum number of pages we will load when a privileged user clicks
    * the "Manage" button on the search page. Limited to 15 pages.
@@ -693,7 +695,7 @@ export class CollectionBrowser
         <section id="results">
           ${this.showSmartResults
             ? html`<h2 class="results-section-heading">
-                ${msg('All results')}
+                ${this.resultsHeader ?? msg('All results')}
               </h2>`
             : nothing}
           <div id="cb-top-view">
