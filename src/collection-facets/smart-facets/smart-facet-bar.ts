@@ -63,7 +63,9 @@ export class SmartFacetBar extends LitElement {
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}
-        <p id="filters-label">${msg('Insights:')}</p>
+        ${this.smartFacets.length > 0
+          ? html`<p id="filters-label">${msg('Insights:')}</p>`
+          : nothing}
         ${repeat(
           this.smartFacets,
           f =>
