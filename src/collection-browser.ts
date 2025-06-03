@@ -67,6 +67,7 @@ import { sha1 } from './utils/sha1';
 import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
+import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
 
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
@@ -305,6 +306,8 @@ export class CollectionBrowser
   @query('collection-facets') private collectionFacets?: CollectionFacets;
 
   @query('manage-bar') private manageBar?: ManageBar;
+
+  @query('smart-facet-bar') private smartFacetBar?: SmartFacetBar;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -841,6 +844,10 @@ export class CollectionBrowser
         },
       }),
     );
+  }
+
+  refreshSmartFacets(): void {
+    this.smartFacetBar?.refresh();
   }
 
   /**
