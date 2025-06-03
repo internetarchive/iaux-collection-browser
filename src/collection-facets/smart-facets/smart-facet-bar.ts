@@ -60,6 +60,8 @@ export class SmartFacetBar extends LitElement {
   //
 
   render() {
+    if (!this.query) return nothing;
+
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}

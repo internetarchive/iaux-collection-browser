@@ -509,7 +509,7 @@ export class CollectionBrowser
   render() {
     return html`
       ${this.showSmartFacetBar
-        ? html` <smart-facet-bar
+        ? html`<smart-facet-bar
             .query=${this.baseQuery}
             .aggregations=${this.dataSource.aggregations}
             .selectedFacets=${this.selectedFacets}
