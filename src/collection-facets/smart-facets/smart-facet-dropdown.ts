@@ -59,8 +59,11 @@ export class SmartFacetDropdown extends LitElement {
         const firstFacet = smartFacet.facets[0];
         return {
           id: firstFacet.bucketKey,
-          label:
-            smartFacet.label ?? firstFacet.displayText ?? firstFacet.bucketKey,
+          label: html`<span>
+            ${smartFacet.label ??
+            firstFacet.displayText ??
+            firstFacet.bucketKey}
+          </span>`,
         };
       }) ?? []
     );
