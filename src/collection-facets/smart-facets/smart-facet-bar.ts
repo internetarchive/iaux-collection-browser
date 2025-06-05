@@ -105,6 +105,7 @@ export class SmartFacetBar extends LitElement {
   }
 
   refresh(): void {
+    this.lastAggregations = this.aggregations;
     this.updateSmartFacets();
   }
 
@@ -367,7 +368,7 @@ export class SmartFacetBar extends LitElement {
 
       #filters-label {
         font-weight: bold;
-        margin-right: -5px;
+        margin: 0 -5px 0 0;
       }
     `;
   }
