@@ -175,6 +175,10 @@ export class SmartFacetBar extends LitElement {
 
     if (this.heuristicRecs.length > 0) {
       for (const rec of this.heuristicRecs) {
+        // Suppress mediatype-only facets for now.
+        if (rec.facets.length === 1 && rec.facets[0].facetType === 'mediatype')
+          continue;
+
         facets.push([rec]);
       }
     }
@@ -219,10 +223,6 @@ export class SmartFacetBar extends LitElement {
         if (facetType === 'mediatype') {
           continue;
           // Don't include mediatype bubbles
-          // facets.push(
-          //   [this.toSmartFacet(facetType, [unusedBuckets[0]])],
-          //   [this.toSmartFacet(facetType, [unusedBuckets[1]])],
-          // );
         } else if (facetType === 'collection' || facetType === 'subject') {
           const topBuckets = unusedBuckets.slice(0, 5);
           facets.push(topBuckets.map(b => this.toSmartFacet(facetType, [b])));
