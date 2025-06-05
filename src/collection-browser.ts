@@ -521,6 +521,7 @@ export class CollectionBrowser
             @facetsChanged=${this.facetsChanged}
             @filtersToggled=${() => {
               this.facetPaneVisible = !this.facetPaneVisible;
+              this.emitFacetPaneVisibilityChanged();
             }}
           ></smart-facet-bar>`
         : nothing}
@@ -687,11 +688,14 @@ export class CollectionBrowser
    * tiles and sort/filter bar are shown.
    */
   private get rightColumnTemplate(): TemplateResult {
+    const rightColumnClasses = classMap({
+      column: true,
+      'full-width': this.showSmartFacetBar && !this.facetPaneVisible,
+      'smart-results-spacing': !!this.showSmartResults,
+    });
+
     return html`
-      <div
-        id="right-column"
-        class="column ${this.showSmartResults ? 'smart-results-spacing' : ''}"
-      >
+      <div id="right-column" class=${rightColumnClasses}>
         ${this.showSmartResults
           ? html`<slot name="smart-results"></slot>`
           : nothing}
@@ -1673,6 +1677,18 @@ export class CollectionBrowser
   }
 
   /**
+   * Emits a `facetPaneVisibilityChanged` event indicating that the facet pane has
+   * been toggled open or closed.
+   */
+  private emitFacetPaneVisibilityChanged(): void {
+    this.dispatchEvent(
+      new CustomEvent<boolean>('facetPaneVisibilityChanged', {
+        detail: this.facetPaneVisible,
+      }),
+    );
+  }
+
+  /**
    * Emits a `queryStateChanged` event indicating that one or more of this component's
    * properties have changed in a way that could affect the set of search results.
    */
@@ -2216,11 +2232,14 @@ export class CollectionBrowser
           flex: 1;
           position: relative;
           min-height: 90vh;
-          border-left: 1px solid rgb(232, 232, 232);
           border-right: 1px solid rgb(232, 232, 232);
           margin-top: var(--rightColumnMarginTop, 0);
           padding-top: 2rem;
           background: #fff;
+        }
+
+        #left-column:not([hidden]) + #right-column {
+          border-left: 1px solid rgb(232, 232, 232);
         }
 
         #right-column.smart-results-spacing {
