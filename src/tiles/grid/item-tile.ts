@@ -73,7 +73,7 @@ export class ItemTile extends BaseTileComponent {
             .viewLabel=${viewLabel}
             .favCount=${this.model?.favCount}
             .commentCount=${this.model?.commentCount}
-            .tvClipCount=${0 /* TODO */}
+            .tvClipCount=${this.model?.tvClipCount}
             .showTvClips=${this.showTvClips}
           >
           </tile-stats>
