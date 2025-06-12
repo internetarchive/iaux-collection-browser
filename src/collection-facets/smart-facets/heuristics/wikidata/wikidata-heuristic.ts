@@ -44,7 +44,10 @@ export class WikidataHeuristic implements SmartQueryHeuristic {
           facets: smartFacet.facets.map(facet => {
             const replaced = {
               ...facet,
-              bucketKey: facet.bucketKey.replace('__QUERY', query),
+              bucketKey: facet.bucketKey.replace(
+                '__QUERY',
+                query.toLowerCase(),
+              ),
             };
 
             if (facet.displayText) {

@@ -33,6 +33,8 @@ export class SmartFacetDropdown extends LitElement {
           displayCaret
           openViaButton
           closeOnSelect
+          closeOnEscape
+          closeOnBackdropClick
           includeSelectedOption
           .options=${this.dropdownOptions}
           .selectedOption=${this.activeDropdownOption}
@@ -57,8 +59,11 @@ export class SmartFacetDropdown extends LitElement {
         const firstFacet = smartFacet.facets[0];
         return {
           id: firstFacet.bucketKey,
-          label:
-            smartFacet.label ?? firstFacet.displayText ?? firstFacet.bucketKey,
+          label: html`<span>
+            ${smartFacet.label ??
+            firstFacet.displayText ??
+            firstFacet.bucketKey}
+          </span>`,
         };
       }) ?? []
     );
@@ -127,23 +132,29 @@ export class SmartFacetDropdown extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .dropdown-container {
-        padding: 5px 8px;
+        padding: 5px 5px;
         border-radius: 5px;
-        background: #194880;
-        color: white;
-        font-size: 1.6rem;
+        background: white;
+        color: #2c2c2c;
+        border: 1px solid #194880;
+        font-size: 1.4rem;
         font-family: inherit;
-        box-shadow: 1px 1px rgba(0, 0, 0, 0.4);
       }
 
       .dropdown-label {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         font-family: inherit;
       }
 
       .dropdown {
-        --dropdownBorderWidth: 5px;
-        --dropdownBorderColor: transparent;
+        --dropdownBorderColor: #194880;
+        --dropdownBorderWidth: 1px;
+        --dropdownBgColor: white;
+        --dropdownHoverBgColor: #f8f8f8;
+        --dropdownTextColor: #2c2c2c;
+        --dropdownHoverTextColor: #2c2c2c;
+        --dropdownCaretColor: #2c2c2c;
+        --dropdownWhiteSpace: nowrap;
         --caretWidth: 14px;
         --caretHeight: 14px;
       }

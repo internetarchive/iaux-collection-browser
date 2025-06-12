@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
 import type { Aggregation, Bucket } from '@internetarchive/search-service';
 import type { CollectionTitles } from '../../data-source/models';
 import type { FacetOption, SelectedFacets } from '../../models';
@@ -18,11 +19,11 @@ import type { SmartFacetDropdown } from './smart-facet-dropdown';
 import type { SmartFacet, SmartFacetEvent } from './models';
 import { smartFacetEquals } from './smart-facet-equals';
 import { dedupe } from './dedupe';
+import { log } from '../../utils/log';
 import filterIcon from '../../assets/img/icons/filter';
 
 import './smart-facet-button';
 import './smart-facet-dropdown';
-import { log } from '../../utils/log';
 
 const fieldPrefixes: Partial<Record<FacetOption, string>> = {
   collection: 'Collection: ',
@@ -59,9 +60,14 @@ export class SmartFacetBar extends LitElement {
   //
 
   render() {
+    if (!this.query) return nothing;
+
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}
+        ${this.smartFacets.length > 0
+          ? html`<p id="filters-label">${msg('Insights:')}</p>`
+          : nothing}
         ${repeat(
           this.smartFacets,
           f =>
@@ -96,6 +102,11 @@ export class SmartFacetBar extends LitElement {
       log('should update smart facets, doing so...');
       this.updateSmartFacets();
     }
+  }
+
+  refresh(): void {
+    this.lastAggregations = this.aggregations;
+    this.updateSmartFacets();
   }
 
   private async updateSmartFacets(): Promise<void> {
@@ -164,6 +175,10 @@ export class SmartFacetBar extends LitElement {
 
     if (this.heuristicRecs.length > 0) {
       for (const rec of this.heuristicRecs) {
+        // Suppress mediatype-only facets for now.
+        if (rec.facets.length === 1 && rec.facets[0].facetType === 'mediatype')
+          continue;
+
         facets.push([rec]);
       }
     }
@@ -206,10 +221,8 @@ export class SmartFacetBar extends LitElement {
         });
 
         if (facetType === 'mediatype') {
-          facets.push(
-            [this.toSmartFacet(facetType, [unusedBuckets[0]])],
-            [this.toSmartFacet(facetType, [unusedBuckets[1]])],
-          );
+          continue;
+          // Don't include mediatype bubbles
         } else if (facetType === 'collection' || facetType === 'subject') {
           const topBuckets = unusedBuckets.slice(0, 5);
           facets.push(topBuckets.map(b => this.toSmartFacet(facetType, [b])));
@@ -320,33 +333,42 @@ export class SmartFacetBar extends LitElement {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 5px;
+        gap: 5px 10px;
         padding: 10px 0;
       }
 
       #filters-toggle {
         margin: 0;
         border: 0;
-        padding: 5px 10px;
-        border-radius: 15px;
-        background: #194880;
-        color: white;
-        font-size: 1.6rem;
+        padding: 5px 8px;
+        border-radius: 50%;
+        background: white;
+        color: #2c2c2c;
+        border: 1px solid #194880;
+        font-size: 1.4rem;
         font-family: inherit;
         text-decoration: none;
-        box-shadow: 1px 1px rgba(0, 0, 0, 0.4);
         cursor: pointer;
       }
 
       #filters-toggle.active {
-        background: #09294d;
-        box-shadow: -1px -1px rgba(0, 0, 0, 0.1);
+        background: #194880;
+        color: white;
       }
 
       #filters-toggle > svg {
-        width: 15px;
+        width: 12px;
+        filter: invert(0.16667);
+        vertical-align: -1px;
+      }
+
+      #filters-toggle.active > svg {
         filter: invert(1);
-        vertical-align: text-bottom;
+      }
+
+      #filters-label {
+        font-weight: bold;
+        margin: 0 -5px 0 0;
       }
     `;
   }

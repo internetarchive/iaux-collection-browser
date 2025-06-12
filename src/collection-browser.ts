@@ -67,6 +67,7 @@ import { sha1 } from './utils/sha1';
 import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
+import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
 
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
@@ -250,6 +251,8 @@ export class CollectionBrowser
   /** Whether to display a smart results carousel above the full results */
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
+  @property({ type: String }) resultsHeader?: string;
+
   /**
    * The maximum number of pages we will load when a privileged user clicks
    * the "Manage" button on the search page. Limited to 15 pages.
@@ -303,6 +306,8 @@ export class CollectionBrowser
   @query('collection-facets') private collectionFacets?: CollectionFacets;
 
   @query('manage-bar') private manageBar?: ManageBar;
+
+  @query('smart-facet-bar') private smartFacetBar?: SmartFacetBar;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -507,7 +512,7 @@ export class CollectionBrowser
   render() {
     return html`
       ${this.showSmartFacetBar
-        ? html` <smart-facet-bar
+        ? html`<smart-facet-bar
             .query=${this.baseQuery}
             .aggregations=${this.dataSource.aggregations}
             .selectedFacets=${this.selectedFacets}
@@ -516,6 +521,7 @@ export class CollectionBrowser
             @facetsChanged=${this.facetsChanged}
             @filtersToggled=${() => {
               this.facetPaneVisible = !this.facetPaneVisible;
+              this.emitFacetPaneVisibilityChanged();
             }}
           ></smart-facet-bar>`
         : nothing}
@@ -682,18 +688,21 @@ export class CollectionBrowser
    * tiles and sort/filter bar are shown.
    */
   private get rightColumnTemplate(): TemplateResult {
+    const rightColumnClasses = classMap({
+      column: true,
+      'full-width': this.showSmartFacetBar && !this.facetPaneVisible,
+      'smart-results-spacing': !!this.showSmartResults,
+    });
+
     return html`
-      <div
-        id="right-column"
-        class="column ${this.showSmartResults ? 'smart-results-spacing' : ''}"
-      >
+      <div id="right-column" class=${rightColumnClasses}>
         ${this.showSmartResults
           ? html`<slot name="smart-results"></slot>`
           : nothing}
         <section id="results">
           ${this.showSmartResults
             ? html`<h2 class="results-section-heading">
-                ${msg('All results')}
+                ${this.resultsHeader ?? msg('All results')}
               </h2>`
             : nothing}
           <div id="cb-top-view">
@@ -839,6 +848,10 @@ export class CollectionBrowser
         },
       }),
     );
+  }
+
+  refreshSmartFacets(): void {
+    this.smartFacetBar?.refresh();
   }
 
   /**
@@ -1664,6 +1677,18 @@ export class CollectionBrowser
   }
 
   /**
+   * Emits a `facetPaneVisibilityChanged` event indicating that the facet pane has
+   * been toggled open or closed.
+   */
+  private emitFacetPaneVisibilityChanged(): void {
+    this.dispatchEvent(
+      new CustomEvent<boolean>('facetPaneVisibilityChanged', {
+        detail: this.facetPaneVisible,
+      }),
+    );
+  }
+
+  /**
    * Emits a `queryStateChanged` event indicating that one or more of this component's
    * properties have changed in a way that could affect the set of search results.
    */
@@ -2207,11 +2232,14 @@ export class CollectionBrowser
           flex: 1;
           position: relative;
           min-height: 90vh;
-          border-left: 1px solid rgb(232, 232, 232);
           border-right: 1px solid rgb(232, 232, 232);
           margin-top: var(--rightColumnMarginTop, 0);
           padding-top: 2rem;
           background: #fff;
+        }
+
+        #left-column:not([hidden]) + #right-column {
+          border-left: 1px solid rgb(232, 232, 232);
         }
 
         #right-column.smart-results-spacing {

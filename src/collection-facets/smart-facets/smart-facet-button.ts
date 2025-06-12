@@ -3,6 +3,8 @@ import { customElement, property } from 'lit/decorators.js';
 import { mediatypeConfig } from '../../mediatype/mediatype-config';
 import type { SmartFacet, SmartFacetEvent } from './models';
 
+import closeCircleDark from '../../assets/img/icons/close-circle-dark';
+
 function capitalize(str?: string): string | undefined {
   if (!str) return str;
   return str.charAt(0).toLocaleUpperCase() + str.slice(1);
@@ -47,7 +49,7 @@ export class SmartFacetButton extends LitElement {
       >
         ${icon} ${displayText}
         ${this.selected
-          ? html`<span style="margin-left: 5px;">×</span>`
+          ? html`<span class="unselect-button">${closeCircleDark}</span>`
           : nothing}
       </a>
     `;
@@ -101,24 +103,39 @@ export class SmartFacetButton extends LitElement {
   static get styles(): CSSResultGroup {
     return css`
       .smart-facet-button {
-        padding: 5px 10px;
-        border-radius: 15px;
-        background: #194880;
-        color: white;
-        font-size: 1.6rem;
+        display: inline-flex;
+        align-items: center;
+        column-gap: 5px;
+        padding: 5px 5px;
+        border-radius: 5px;
+        background: white;
+        color: #2c2c2c;
+        border: 1px solid #194880;
+        font-size: 1.4rem;
         font-family: inherit;
+        line-height: normal;
         text-decoration: none;
-        box-shadow: 1px 1px rgba(0, 0, 0, 0.4);
       }
 
       .smart-facet-button.selected {
-        background: #4c76aa;
+        background: #194880;
+        color: white;
+      }
+
+      .unselect-button > svg {
+        width: 10px;
+        height: 10px;
+        filter: invert(1);
       }
 
       .smart-facet-button > svg {
-        width: 15px;
+        width: 12px;
+        height: 12px;
+        filter: invert(0.16667);
+      }
+
+      .smart-facet-button.selected > svg {
         filter: invert(1);
-        vertical-align: text-top;
       }
     `;
   }
