@@ -34,6 +34,7 @@ export interface CollectionBrowserQueryState {
 export interface CollectionBrowserSearchInterface
   extends CollectionBrowserQueryState {
   searchService?: SearchServiceInterface;
+  isTVCollection: boolean;
   readonly sortParam: SortParam | null;
   readonly defaultSortField: SortField | null;
   readonly facetLoadStrategy: FacetLoadStrategy;

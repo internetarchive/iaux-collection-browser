@@ -30,8 +30,16 @@ export interface RestorationState {
   selectedCreatorFilter?: string;
 }
 
+export interface RestorationStatePersistOptions {
+  forceReplace?: boolean;
+  persistMetadataSearchType?: boolean;
+}
+
 export interface RestorationStateHandlerInterface {
-  persistState(state: RestorationState, forceReplace?: boolean): void;
+  persistState(
+    state: RestorationState,
+    options?: RestorationStatePersistOptions,
+  ): void;
   getRestorationState(): RestorationState;
 }
 
@@ -50,9 +58,12 @@ export class RestorationStateHandler
     this.context = options.context;
   }
 
-  persistState(state: RestorationState, forceReplace = false): void {
+  persistState(
+    state: RestorationState,
+    options: RestorationStatePersistOptions = {},
+  ): void {
     if (state.displayMode) this.persistViewStateToCookies(state.displayMode);
-    this.persistQueryStateToUrl(state, forceReplace);
+    this.persistQueryStateToUrl(state, options);
   }
 
   getRestorationState(): RestorationState {
@@ -87,7 +98,7 @@ export class RestorationStateHandler
 
   private persistQueryStateToUrl(
     state: RestorationState,
-    forceReplace = false,
+    options: RestorationStatePersistOptions = {},
   ) {
     const url = new URL(window.location.href);
     const oldParams = new URLSearchParams(url.searchParams);
@@ -99,11 +110,24 @@ export class RestorationStateHandler
       newParams.set('query', state.baseQuery);
     }
 
-    if (state.searchType === SearchType.FULLTEXT) {
-      newParams.set('sin', 'TXT');
-    } else if (state.searchType === SearchType.RADIO) {
-      newParams.set('sin', 'RADIO');
+    switch (state.searchType) {
+      case SearchType.FULLTEXT:
+        newParams.set('sin', 'TXT');
+        break;
+      case SearchType.RADIO:
+        newParams.set('sin', 'RADIO');
+        break;
+      case SearchType.TV:
+        newParams.set('sin', 'TV');
+        break;
+      case SearchType.METADATA:
+        // Only write the param for metadata when it isn't already the default.
+        // Currently this is only the case within TV collections.
+        if (options.persistMetadataSearchType || oldParams.get('sin') === 'MD')
+          newParams.set('sin', 'MD');
+        break;
     }
+
     if (oldParams.get('sin') === '') {
       // Treat empty sin the same as no sin at all
       oldParams.delete('sin');
@@ -180,7 +204,7 @@ export class RestorationStateHandler
     //  - If the state has changed, we push a new history entry.
     //  - If only the page number has changed, we replace the current history entry.
     //  - If the state hasn't changed, then do nothing.
-    let historyMethod: 'pushState' | 'replaceState' = forceReplace
+    let historyMethod: 'pushState' | 'replaceState' = options.forceReplace
       ? 'replaceState'
       : 'pushState';
     const nonQueryParamsMatch = this.paramsMatch(oldParams, newParams, [
@@ -261,15 +285,20 @@ export class RestorationStateHandler
     }
 
     switch (searchInside) {
-      // Eventually there will be TV/Radio search types here too.
       case 'TXT':
         restorationState.searchType = SearchType.FULLTEXT;
         break;
       case 'RADIO':
         restorationState.searchType = SearchType.RADIO;
         break;
-      default:
+      case 'TV':
+        restorationState.searchType = SearchType.TV;
+        break;
+      case 'MD':
         restorationState.searchType = SearchType.METADATA;
+        break;
+      default:
+        restorationState.searchType = SearchType.DEFAULT;
         break;
     }
 

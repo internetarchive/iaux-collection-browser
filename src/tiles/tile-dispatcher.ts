@@ -56,6 +56,8 @@ export class TileDispatcher
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
 
+  @property({ type: Boolean }) showTvClips = false;
+
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
@@ -340,6 +342,7 @@ export class TileDispatcher
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
               .isManageView=${this.isManageView}
+              ?showTvClips=${this.showTvClips}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >

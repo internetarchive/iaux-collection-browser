@@ -69,6 +69,9 @@ export class ItemImage extends LitElement {
       }
     }
 
+    // Use the thumbnail URL specified in the model if it exists
+    if (this.model?.thumbnailUrl) return this.model.thumbnailUrl;
+
     // Don't try to load invalid image URLs
     return this.baseImageUrl && this.model?.identifier
       ? `${this.baseImageUrl}/services/img/${this.model.identifier}`
