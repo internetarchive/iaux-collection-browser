@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { msg } from '@lit/localize';
+import { msg, str } from '@lit/localize';
 import { favoriteFilledIcon as favIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
@@ -85,7 +85,7 @@ export class TileStats extends LitElement {
     classes: string[] = [],
   ): TemplateResult {
     const formattedCount = formatCount(count ?? 0, 'short', 'short');
-    const title = `${formattedCount} ${label}`;
+    const title = msg(str`${formattedCount} ${label}`);
     const srLabel = label + ':';
 
     return html`
