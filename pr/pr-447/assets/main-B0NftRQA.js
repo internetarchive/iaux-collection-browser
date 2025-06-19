@@ -1172,7 +1172,7 @@
           ${s}
         </p>
       </li>
-    `}get viewsColumnTemplate(){var e;const t=(e=this.viewLabel)!==null&&e!==void 0?e:C("All-time views");return this.columnTemplate(this.viewCount,t,_d)}get uploadsColumnTemplate(){return this.columnTemplate(this.itemCount,C("Uploads"),$d)}get favoritesColumnTemplate(){return this.columnTemplate(this.favCount,C("Favorites"),pn)}get reviewsColumnTemplate(){return this.columnTemplate(this.commentCount,C("Reviews"),Sd,["reviews"])}get tvClipsColumnTemplate(){return this.columnTemplate(this.tvClipCount,C("Clips"),Cd)}static get styles(){return[ot,m`
+    `}get viewsColumnTemplate(){var e;const t=(e=this.viewLabel)!==null&&e!==void 0?e:C("All-time Views");return this.columnTemplate(this.viewCount,t,_d)}get uploadsColumnTemplate(){return this.columnTemplate(this.itemCount,C("Uploads"),$d)}get favoritesColumnTemplate(){return this.columnTemplate(this.favCount,C("Favorites"),pn)}get reviewsColumnTemplate(){return this.columnTemplate(this.commentCount,C("Reviews"),Sd,["reviews"])}get tvClipsColumnTemplate(){return this.columnTemplate(this.tvClipCount,C("Clips"),Cd)}static get styles(){return[ot,m`
         mediatype-icon {
           --iconHeight: 25px;
           --iconWidth: 25px;
