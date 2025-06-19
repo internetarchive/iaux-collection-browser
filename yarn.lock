@@ -311,10 +311,10 @@
     "@internetarchive/shared-resize-observer" "^0.2.0"
     lit "^2.2.7"
 
-"@internetarchive/field-parsers@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-0.1.4.tgz"
-  integrity sha512-J5nhMsIU91eXnfoApa6SE0PffPbwK1Cd3YTLX/HjgayzMbXVkQvfebfVKSaoPmzHRRttbtY3Sg9FjviCwBq6qg==
+"@internetarchive/field-parsers@0.1.5-alpha-webdev7387.0":
+  version "0.1.5-alpha-webdev7387.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-0.1.5-alpha-webdev7387.0.tgz#9faa1d54634bcd615046ba4c2211bb34bed55148"
+  integrity sha512-c8Nn6ULBqlTJMvG/Z3kvz77dOIeHuQF3Pxick2CDipcii1nMwzWWcCGW5nwn6SxjRU2aZhXWbfS65fmY6HsbxA==
 
 "@internetarchive/histogram-date-range@^1.2.1":
   version "1.2.1"
@@ -339,12 +339,12 @@
   dependencies:
     lit "^2.8.0"
 
-"@internetarchive/iaux-item-metadata@^1.0.4":
-  version "1.0.4"
-  resolved "https://registry.npmjs.org/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.0.4.tgz"
-  integrity sha512-9md21gRp4MxupvwU6d84HCybW1mK1ihe7H42FTaSlNTYSqZQaOFcYqvvG9QPKjxQj+4wXjbk/ulxz8onEAWiHA==
+"@internetarchive/iaux-item-metadata@1.0.5-alpha-webdev7387.0":
+  version "1.0.5-alpha-webdev7387.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.0.5-alpha-webdev7387.0.tgz#3a48a817d00c31339570434095efce54c8cc2985"
+  integrity sha512-GqkoTJJQmweHf3NHKV5NqNRehGoF+8l6yuj6GHQqfUZvVmHP1Dd9fkQAB3/GQmGXF8fy7HebeLBPI8dy8jMt8w==
   dependencies:
-    "@internetarchive/field-parsers" "^0.1.4"
+    "@internetarchive/field-parsers" "0.1.5-alpha-webdev7387.0"
     typescript-memoize "^1.1.1"
 
 "@internetarchive/icon-close@^1.3.4":
@@ -407,12 +407,12 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^2.2.0":
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.2.0.tgz#a4175322f0f7043481ee51af2bb13af5eb22377c"
-  integrity sha512-Gyg9HT5JLdc17Dh4F+Ijl2YFgNIzekPHHAzaNcMbWW9ZNcUU8CnxWra9oHHc9PbJYEL/K8V4Hn3CP3YXPYQSsA==
+"@internetarchive/search-service@2.2.1-alpha-webdev7387.0":
+  version "2.2.1-alpha-webdev7387.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.2.1-alpha-webdev7387.0.tgz#4099d9895bf4dc4d9ddf1bdd7c3b0bbde1663e5d"
+  integrity sha512-urIobdn6uRoyrv+li+eKVdcxPsZT//IfuSYlfsnpm1WkWlsKfF21kZTuC+VboBV/Fjs5Rk/fmqJrhP8dd2QOvg==
   dependencies:
-    "@internetarchive/iaux-item-metadata" "^1.0.4"
+    "@internetarchive/iaux-item-metadata" "1.0.5-alpha-webdev7387.0"
     "@internetarchive/result-type" "^0.0.1"
     decorator-cache-getter "^1.0.0"
     typescript-memoize "^1.1.1"

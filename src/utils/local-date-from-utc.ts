@@ -11,5 +11,5 @@ export function localDateFromUTC(date: Date): Date {
  */
 export function isFirstMillisecondOfUTCYear(date?: Date): boolean {
   if (!date) return false;
-  return localDateFromUTC(date).toISOString().endsWith('-01-01T00:00:00.000Z');
+  return date.toISOString().endsWith('-01-01T00:00:00.000Z');
 }

@@ -216,9 +216,9 @@ describe('List Tile', () => {
     expect(dateRow?.textContent?.trim()).to.contain('Reviewed:  Jan 02, 2013');
   });
 
-  it('should only show the year for a date published of Jan 1 at midnight', async () => {
+  it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
     const model: Partial<TileModel> = {
-      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date('2012-01-01T00:00:00Z'),
     };
 
     const el = await fixture<TileList>(html`
@@ -234,7 +234,7 @@ describe('List Tile', () => {
     expect(dateRow?.textContent?.trim()).to.contain('Published:  2012');
   });
 
-  it('should show full date added/archived/reviewed, even on Jan 1 at midnight', async () => {
+  it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {
     const model: Partial<TileModel> = {
       dateAdded: new Date(2010, 0, 1, 0, 0, 0, 0),
       dateArchived: new Date(2011, 0, 1, 0, 0, 0, 0),

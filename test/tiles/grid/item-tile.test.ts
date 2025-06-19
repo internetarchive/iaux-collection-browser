@@ -247,7 +247,7 @@ describe('Item Tile', () => {
 
   it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
     const model: Partial<TileModel> = {
-      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date('2012-01-01T00:00:00Z'),
     };
 
     const el = await fixture<ItemTile>(html`
