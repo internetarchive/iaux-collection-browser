@@ -1512,7 +1512,7 @@ describe('Collection Browser', () => {
     expect(el.withinProfile).to.equal('@foobar');
     expect(el.profileElement).to.equal('uploads');
     expect(el.baseQuery).to.equal('foo');
-    expect(el.searchType).to.equal(SearchType.METADATA);
+    expect(el.searchType).to.equal(SearchType.DEFAULT);
     expect(el.selectedFacets?.mediatype?.data?.state).to.equal('hidden');
     expect(el.selectedFacets?.subject?.baz?.state).to.equal('selected');
     expect(el.selectedTitleFilter).to.equal('X');
