@@ -17,7 +17,7 @@ describe('Tile Stats', () => {
     expect(statsRowCount).to.equal(4);
   });
 
-  it('should render component with value', async () => {
+  it('should render component with values', async () => {
     const el = await fixture<TileStats>(html`
       <tile-stats
         .mediatype=${'account'}
@@ -51,6 +51,44 @@ describe('Tile Stats', () => {
     expect(itemStatCount).to.match(/uploads:\s+1/);
     expect(favoritesStatCount).to.match(/favorites:\s+2/);
     expect(reviewsStatCount).to.match(/reviews:\s+3/);
+  });
+
+  it('should render component with tv clips', async () => {
+    const el = await fixture<TileStats>(html`
+      <tile-stats
+        showTvClips
+        .mediatype=${'texts'}
+        .viewCount=${1}
+        .favCount=${2}
+        .commentCount=${3}
+        .tvClipCount=${4}
+      >
+      </tile-stats>
+    `);
+
+    const statsRow = el.shadowRoot?.querySelector('#stats-row');
+
+    const mediatypeStat = statsRow?.children.item(0);
+    // get second column item in stats row
+    const itemStatCount = statsRow?.children
+      .item(1)
+      ?.querySelector('.status-text')
+      ?.textContent?.trim();
+    // get third column item in stats row
+    const favoritesStatCount = statsRow?.children
+      .item(2)
+      ?.querySelector('.status-text')
+      ?.textContent?.trim();
+    // get fourth column item in stats row
+    const clipsStatCount = statsRow?.children
+      .item(3)
+      ?.querySelector('.status-text')
+      ?.textContent?.trim();
+
+    expect(mediatypeStat).to.exist;
+    expect(itemStatCount).to.match(/views:\s+1/);
+    expect(favoritesStatCount).to.match(/favorites:\s+2/);
+    expect(clipsStatCount).to.match(/clips:\s+4/);
   });
 
   it('should render view count for non-account items', async () => {

@@ -98,12 +98,14 @@ export const getMockSuccessManyFields: () => Result<
             mediatype: 'texts',
             num_favorites: 12,
             num_reviews: 23,
+            num_clips: 34,
             source: 'foo bar',
             subject: ['baz', 'quux'],
             title: 'Foo Bar',
             volume: 2,
             week: 50,
             __href__: 'https://archive.org/details/foo',
+            __img__: '//services/img/foo',
           },
         }),
       ],
@@ -887,6 +889,54 @@ export const getMockSuccessWithParentCollections: () => Result<
       collectionExtraInfo: {
         public_metadata: {
           collection: ['foo', 'bar'],
+        },
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessForTvCollection: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'tv-collection',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'tv-collection',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            title: 'Foo',
+          },
+        }),
+      ],
+      collectionExtraInfo: {
+        public_metadata: {
+          identifier: 'TV-FOO',
+          collection: ['tvarchive'],
         },
       },
     },

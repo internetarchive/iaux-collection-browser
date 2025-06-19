@@ -48,6 +48,39 @@ describe('Restoration state handler', () => {
     expect(restorationState.searchType).to.equal(SearchType.FULLTEXT);
   });
 
+  it('should restore radio search type from URL', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sin=RADIO';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.searchType).to.equal(SearchType.RADIO);
+  });
+
+  it('should restore TV search type from URL', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sin=TV';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.searchType).to.equal(SearchType.TV);
+  });
+
+  it('should restore metadata search type from URL', async () => {
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    const url = new URL(window.location.href);
+    url.search = '?sin=MD';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const restorationState = handler.getRestorationState();
+    expect(restorationState.searchType).to.equal(SearchType.METADATA);
+  });
+
   it('should restore page number from URL', async () => {
     const handler = new RestorationStateHandler({ context: 'search' });
 
@@ -362,6 +395,32 @@ describe('Restoration state handler', () => {
 
     handler.persistState({ selectedFacets: getDefaultSelectedFacets() });
     expect(window.location.search).to.equal('');
+  });
+
+  it('should persist metadata search type only when option is true', async () => {
+    const url = new URL(window.location.href);
+    url.search = '?sin=';
+    window.history.replaceState({ path: url.href }, '', url.href);
+
+    const handler = new RestorationStateHandler({ context: 'search' });
+
+    handler.persistState(
+      {
+        selectedFacets: getDefaultSelectedFacets(),
+        searchType: SearchType.METADATA,
+      },
+      { persistMetadataSearchType: false },
+    );
+    expect(window.location.search).to.equal('');
+
+    handler.persistState(
+      {
+        selectedFacets: getDefaultSelectedFacets(),
+        searchType: SearchType.METADATA,
+      },
+      { persistMetadataSearchType: true },
+    );
+    expect(window.location.search).to.equal('?sin=MD');
   });
 
   it('round trip load/persist should erase numbers in square brackets', async () => {
