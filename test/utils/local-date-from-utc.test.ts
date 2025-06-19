@@ -16,18 +16,18 @@ describe('localDateFromUTC', () => {
 
 describe('isFirstMillisecondOfUTCYear', () => {
   it('returns true when date is exactly Jan 1 at midnight in UTC', async () => {
-    const midnightOnNewYearsDay = new Date(2010, 0, 1, 0, 0, 0, 0);
+    const midnightOnNewYearsDay = new Date('2010-01-01T00:00:00Z');
     expect(isFirstMillisecondOfUTCYear(midnightOnNewYearsDay)).to.be.true;
   });
 
   it('returns false when date is not exactly Jan 1 at midnight in UTC', async () => {
-    const oneMillisecondTooEarly = new Date(2009, 11, 31, 23, 59, 59, 999);
+    const oneMillisecondTooEarly = new Date('2009-12-31T23:59:59.999Z');
     expect(isFirstMillisecondOfUTCYear(oneMillisecondTooEarly)).to.be.false;
 
-    const oneMillisecondTooLate = new Date(2010, 0, 1, 0, 0, 0, 1);
+    const oneMillisecondTooLate = new Date('2010-01-01T00:00:00.001Z');
     expect(isFirstMillisecondOfUTCYear(oneMillisecondTooLate)).to.be.false;
 
-    const middleOfTheYear = new Date(2010, 6, 1, 0, 0, 0, 0);
+    const middleOfTheYear = new Date('2010-06-01T00:00:00Z');
     expect(isFirstMillisecondOfUTCYear(middleOfTheYear)).to.be.false;
   });
 

@@ -247,7 +247,7 @@ describe('Item Tile', () => {
 
   it('should only show the year for a date published of Jan 1 at midnight UTC', async () => {
     const model: Partial<TileModel> = {
-      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date('2012-01-01T00:00:00Z'),
     };
 
     const el = await fixture<ItemTile>(html`
@@ -265,10 +265,10 @@ describe('Item Tile', () => {
 
   it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date(2010, 0, 1, 0, 0, 0, 0),
-      dateArchived: new Date(2011, 0, 1, 0, 0, 0, 0),
-      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
-      dateReviewed: new Date(2013, 0, 1, 0, 0, 0, 0),
+      dateAdded: new Date('2010-01-01T00:00:00Z'),
+      dateArchived: new Date('2011-01-01T00:00:00Z'),
+      datePublished: new Date('2012-01-01T00:00:00Z'),
+      dateReviewed: new Date('2013-01-01T00:00:00Z'),
     };
 
     const el = await fixture<ItemTile>(html`
