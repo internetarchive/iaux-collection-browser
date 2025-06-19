@@ -236,10 +236,10 @@ describe('List Tile', () => {
 
   it('should show full date added/archived/reviewed, even on Jan 1 at midnight UTC', async () => {
     const model: Partial<TileModel> = {
-      dateAdded: new Date(2010, 0, 1, 0, 0, 0),
-      dateArchived: new Date(2011, 0, 1, 0, 0, 0),
-      datePublished: new Date(2012, 0, 1, 0, 0, 0),
-      dateReviewed: new Date(2013, 0, 1, 0, 0, 0),
+      dateAdded: new Date(2010, 0, 1, 0, 0, 0, 0),
+      dateArchived: new Date(2011, 0, 1, 0, 0, 0, 0),
+      datePublished: new Date(2012, 0, 1, 0, 0, 0, 0),
+      dateReviewed: new Date(2013, 0, 1, 0, 0, 0, 0),
     };
 
     const el = await fixture<TileList>(html`
