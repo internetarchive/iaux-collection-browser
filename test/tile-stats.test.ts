@@ -48,9 +48,9 @@ describe('Tile Stats', () => {
       ?.textContent?.trim();
 
     expect(mediatypeStat).to.exist;
-    expect(itemStatCount).to.match(/Uploads:\s+1/);
-    expect(favoritesStatCount).to.match(/Favorites:\s+2/);
-    expect(reviewsStatCount).to.match(/Reviews:\s+3/);
+    expect(itemStatCount).to.match(/uploads:\s+1/);
+    expect(favoritesStatCount).to.match(/favorites:\s+2/);
+    expect(reviewsStatCount).to.match(/reviews:\s+3/);
   });
 
   it('should render view count for non-account items', async () => {
@@ -84,9 +84,9 @@ describe('Tile Stats', () => {
       ?.textContent?.trim();
 
     expect(mediatypeStat).to.exist;
-    expect(viewStatCount).to.match(/Views:\s+4/);
-    expect(favoritesStatCount).to.match(/Favorites:\s+5/);
-    expect(reviewsStatCount).to.match(/Reviews:\s+6/);
+    expect(viewStatCount).to.match(/views:\s+4/);
+    expect(favoritesStatCount).to.match(/favorites:\s+5/);
+    expect(reviewsStatCount).to.match(/reviews:\s+6/);
   });
 
   it('handles missing counts gracefully', async () => {
@@ -115,9 +115,9 @@ describe('Tile Stats', () => {
       ?.textContent?.trim();
 
     expect(mediatypeStat).to.exist;
-    expect(viewStatCount).to.match(/Views:\s+0/);
-    expect(favoritesStatCount).to.match(/Favorites:\s+5/);
-    expect(reviewsStatCount).to.match(/Reviews:\s+6/);
+    expect(viewStatCount).to.match(/views:\s+0/);
+    expect(favoritesStatCount).to.match(/favorites:\s+5/);
+    expect(reviewsStatCount).to.match(/reviews:\s+6/);
   });
 
   it('handles missing counts gracefully for accounts', async () => {
@@ -146,8 +146,8 @@ describe('Tile Stats', () => {
       ?.textContent?.trim();
 
     expect(mediatypeStat).to.exist;
-    expect(itemStatCount).to.match(/Uploads:\s+0/);
-    expect(favoritesStatCount).to.match(/Favorites:\s+5/);
-    expect(reviewsStatCount).to.match(/Reviews:\s+6/);
+    expect(itemStatCount).to.match(/uploads:\s+0/);
+    expect(favoritesStatCount).to.match(/favorites:\s+5/);
+    expect(reviewsStatCount).to.match(/reviews:\s+6/);
   });
 });
