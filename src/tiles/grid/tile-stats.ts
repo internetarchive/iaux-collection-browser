@@ -103,7 +103,7 @@ export class TileStats extends LitElement {
    * Template for the views count column.
    */
   private get viewsColumnTemplate(): TemplateResult {
-    const label = this.viewLabel ?? msg('All-time views');
+    const label = this.viewLabel ?? msg('All-time Views');
     return this.columnTemplate(this.viewCount, label, viewsIcon);
   }
 
