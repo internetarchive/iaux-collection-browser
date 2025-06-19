@@ -48,6 +48,7 @@ import {
   RestorationStateHandlerInterface,
   RestorationStateHandler,
   RestorationState,
+  RestorationStatePersistOptions,
 } from './restoration-state-handler';
 import { CollectionBrowserDataSource } from './data-source/collection-browser-data-source';
 import type {
@@ -95,7 +96,7 @@ export class CollectionBrowser
   /**
    * Which backend should be targeted by searches (e.g., metadata or FTS)
    */
-  @property({ type: Number }) searchType: SearchType = SearchType.METADATA;
+  @property({ type: Number }) searchType: SearchType = SearchType.DEFAULT;
 
   /**
    * The identifier of the collection that searches should be performed within
@@ -237,6 +238,11 @@ export class CollectionBrowser
   featureFeedbackService?: FeatureFeedbackServiceInterface;
 
   @property({ type: Object }) recaptchaManager?: RecaptchaManagerInterface;
+
+  /**
+   * Whether we are representing a TV collection, needing slightly different tile handling.
+   */
+  @property({ type: Boolean }) isTVCollection = false;
 
   /**
    * If item management UI active
@@ -1892,10 +1898,11 @@ export class CollectionBrowser
       selectedTitleFilter: this.selectedTitleFilter ?? undefined,
       selectedCreatorFilter: this.selectedCreatorFilter ?? undefined,
     };
-    this.restorationStateHandler.persistState(
-      restorationState,
-      this.dataSourceInstallInProgress,
-    );
+    const persistOptions: RestorationStatePersistOptions = {
+      forceReplace: this.dataSourceInstallInProgress,
+      persistMetadataSearchType: this.isTVCollection,
+    };
+    this.restorationStateHandler.persistState(restorationState, persistOptions);
   }
 
   /**
@@ -2113,6 +2120,7 @@ export class CollectionBrowser
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
         .isManageView=${this.isManageView}
+        ?showTvClips=${this.isTVCollection}
         ?enableHoverPane=${true}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >

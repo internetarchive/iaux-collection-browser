@@ -369,6 +369,50 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
+  it('queries the search service with a radio search', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.searchType = SearchType.RADIO;
+    await el.updateComplete;
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchType).to.equal(SearchType.RADIO);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
+    ).to.contains('Results');
+  });
+
+  it('queries the search service with a TV search', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html` <collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.searchType = SearchType.TV;
+    await el.updateComplete;
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchType).to.equal(SearchType.TV);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
+    ).to.contains('Results');
+  });
+
   it('queries the search service with facets selected/negated', async () => {
     const searchService = new MockSearchService();
     const selectedFacets: SelectedFacets = {
@@ -1306,6 +1350,23 @@ describe('Collection Browser', () => {
     expect(el.dataSource.parentCollections).to.deep.equal(['foo', 'bar']);
   });
 
+  it('recognizes TV collections', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .withinCollection=${'TV-FOO'}
+      ></collection-browser>`,
+    );
+
+    el.baseQuery = 'tv-collection';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await aTimeout(0);
+
+    expect(el.isTVCollection).to.be.true;
+  });
+
   it('refreshes when certain properties change - with some analytics event sampling', async () => {
     const mockAnalyticsHandler = new MockAnalyticsHandler();
     const searchService = new MockSearchService();
@@ -1512,7 +1573,7 @@ describe('Collection Browser', () => {
     expect(el.withinProfile).to.equal('@foobar');
     expect(el.profileElement).to.equal('uploads');
     expect(el.baseQuery).to.equal('foo');
-    expect(el.searchType).to.equal(SearchType.METADATA);
+    expect(el.searchType).to.equal(SearchType.DEFAULT);
     expect(el.selectedFacets?.mediatype?.data?.state).to.equal('hidden');
     expect(el.selectedFacets?.subject?.baz?.state).to.equal('selected');
     expect(el.selectedTitleFilter).to.equal('X');

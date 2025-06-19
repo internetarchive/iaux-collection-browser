@@ -94,7 +94,11 @@ export class TileModel {
 
   subjects: string[];
 
+  thumbnailUrl?: string;
+
   title: string;
+
+  tvClipCount?: number;
 
   viewCount?: number;
 
@@ -135,7 +139,9 @@ export class TileModel {
     this.snippets = result.highlight?.values ?? [];
     this.source = result.source?.value;
     this.subjects = result.subject?.values ?? [];
+    this.thumbnailUrl = result.__img__?.value;
     this.title = result.title?.value ?? '';
+    this.tvClipCount = result.num_clips?.value ?? 0;
     this.volume = result.volume?.value;
     this.viewCount = result.downloads?.value;
     this.weeklyViewCount = result.week?.value;
@@ -172,7 +178,9 @@ export class TileModel {
     cloned.snippets = this.snippets;
     cloned.source = this.source;
     cloned.subjects = this.subjects;
+    cloned.thumbnailUrl = this.thumbnailUrl;
     cloned.title = this.title;
+    cloned.tvClipCount = this.tvClipCount;
     cloned.volume = this.volume;
     cloned.viewCount = this.viewCount;
     cloned.weeklyViewCount = this.weeklyViewCount;

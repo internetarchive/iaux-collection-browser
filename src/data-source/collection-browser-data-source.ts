@@ -586,14 +586,23 @@ export class CollectionBrowserDataSource
     const isCollectionSearch = !!this.host.withinCollection;
     const isProfileSearch = !!this.host.withinProfile;
     const hasProfileElement = !!this.host.profileElement;
+    const isDefaultedSearch = this.host.searchType === SearchType.DEFAULT;
     const isMetadataSearch = this.host.searchType === SearchType.METADATA;
+    const isTvSearch = this.host.searchType === SearchType.TV;
 
-    // Metadata searches within a collection/profile are allowed to have no query.
+    // Metadata/tv searches within a collection are allowed to have no query.
+    const isValidForCollectionSearch =
+      isDefaultedSearch || isMetadataSearch || isTvSearch;
+
+    // Searches within a profile page may also be performed without a query, provided the profile element is set.
+    const isValidForProfileSearch =
+      hasProfileElement && (isDefaultedSearch || isMetadataSearch);
+
     // Otherwise, a non-empty query must be set.
     return (
       hasNonEmptyQuery ||
-      (isCollectionSearch && isMetadataSearch) ||
-      (isProfileSearch && hasProfileElement && isMetadataSearch)
+      (isCollectionSearch && isValidForCollectionSearch) ||
+      (isProfileSearch && isValidForProfileSearch)
     );
   }
 
@@ -1132,6 +1141,14 @@ export class CollectionBrowserDataSource
         this.parentCollections = [].concat(
           this.collectionExtraInfo.public_metadata?.collection ?? [],
         );
+
+        // Update the TV collection status now that we know the parent collections
+        this.host.isTVCollection =
+          this.host.withinCollection?.startsWith('TV-') ||
+          this.host.withinCollection === 'tvnews' ||
+          this.host.withinCollection === 'tvarchive' ||
+          this.parentCollections.includes('tvnews') ||
+          this.parentCollections.includes('tvarchive');
       }
     } else if (withinProfile) {
       this.accountExtraInfo = success.response.accountExtraInfo;

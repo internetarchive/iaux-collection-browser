@@ -1,86 +1,140 @@
-import { css, CSSResultGroup, html, LitElement } from 'lit';
+import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { msg } from '@lit/localize';
-import { favoriteFilledIcon } from '../../assets/img/icons/favorite-filled';
+import { msg, str } from '@lit/localize';
+import { favoriteFilledIcon as favIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
 import { viewsIcon } from '../../assets/img/icons/views';
+import { quoteIcon } from '../../assets/img/icons/quote';
 import { srOnlyStyle } from '../../styles/sr-only';
 
 import { formatCount } from '../../utils/format-count';
 
 @customElement('tile-stats')
 export class TileStats extends LitElement {
+  /** The mediatype of the item these stats represent */
   @property({ type: String }) mediatype?: string;
 
+  /** The number of uploaded items, if representing an account */
   @property({ type: Number }) itemCount?: number;
 
+  /** The number of times the item has been viewed */
   @property({ type: Number }) viewCount?: number;
 
+  /** The text label describing the type of views (default "all-time views") */
   @property({ type: String }) viewLabel?: string;
 
+  /** The number of times the item has been favorited */
   @property({ type: Number }) favCount?: number;
 
+  /** The number of times the item has been reviewed */
   @property({ type: Number }) commentCount?: number;
 
+  /** Whether to show the number of TV clips in place of reviews */
+  @property({ type: Boolean }) showTvClips = false;
+
+  /** The number of times the TV item has been clipped */
+  @property({ type: Number }) tvClipCount?: number;
+
   render() {
-    const formattedFavCount = formatCount(this.favCount, 'short', 'short');
-    const formattedReviewCount = formatCount(
-      this.commentCount,
-      'short',
-      'short',
-    );
-
-    const uploadsOrViewsTitle =
-      this.mediatype === 'account'
-        ? `${this.itemCount ?? 0} uploads`
-        : `${this.viewCount ?? 0} ${this.viewLabel ?? 'all-time views'}`;
-
     return html`
       <div class="item-stats">
         <p class="sr-only">
           ${this.mediatype === 'account' ? 'Account Stats' : 'Item Stats'}
         </p>
         <ul id="stats-row">
-          <li class="col">
-            <p class="sr-only">${msg('Mediatype:')}</p>
-            <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
-          </li>
-          <li class="col" title="${uploadsOrViewsTitle}">
-            ${this.mediatype === 'account' ? uploadIcon : viewsIcon}
-            <p class="status-text">
-              <span class="sr-only">
-                ${this.mediatype === 'account'
-                  ? msg('Uploads:')
-                  : msg('Views:')}
-              </span>
-              ${formatCount(
-                this.mediatype === 'account'
-                  ? (this.itemCount ?? 0)
-                  : (this.viewCount ?? 0),
-                'short',
-                'short',
-              )}
-            </p>
-          </li>
-          <li class="col" title="${formattedFavCount} favorites">
-            ${favoriteFilledIcon}
-            <p class="status-text">
-              <span class="sr-only">${msg('Favorites:')}</span>
-              ${formattedFavCount}
-            </p>
-          </li>
-          <li class="col reviews" title="${formattedReviewCount} reviews">
-            ${reviewsIcon}
-            <p class="status-text">
-              <span class="sr-only">${msg('Reviews:')}</span>
-              ${formattedReviewCount}
-            </p>
-          </li>
+          ${this.mediatypeIconColumnTemplate}
+          ${this.mediatype === 'account'
+            ? this.uploadsColumnTemplate
+            : this.viewsColumnTemplate}
+          ${this.favoritesColumnTemplate}
+          ${this.showTvClips
+            ? this.tvClipsColumnTemplate
+            : this.reviewsColumnTemplate}
         </ul>
       </div>
     `;
+  }
+
+  /**
+   * Template for the mediatype icon column.
+   */
+  private get mediatypeIconColumnTemplate(): TemplateResult {
+    return html`
+      <li class="col">
+        <p class="sr-only">${msg('Mediatype:')}</p>
+        <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
+      </li>
+    `;
+  }
+
+  /**
+   * Helper method to construct a template for one of the tile stat columns,
+   * given its stat count, labels, and icon.
+   *
+   * @param count The numeric count to show for the stat. If undefined, will be treated as 0.
+   * @param label The textual label describing the stat (used in the title and screenreader text).
+   * @param icon The icon visually representing the stat.
+   * @param classes Any additional CSS classes the stat column should have (optional).
+   */
+  private columnTemplate(
+    count: number | undefined,
+    label: string,
+    icon: TemplateResult,
+    classes: string[] = [],
+  ): TemplateResult {
+    const formattedCount = formatCount(count ?? 0, 'short', 'short');
+    const title = msg(str`${formattedCount} ${label}`);
+    const srLabel = label + ':';
+
+    return html`
+      <li class="col ${classes.join(' ')}" title=${title}>
+        ${icon}
+        <p class="status-text">
+          <span class="sr-only">${srLabel}</span>
+          ${formattedCount}
+        </p>
+      </li>
+    `;
+  }
+
+  /**
+   * Template for the views count column.
+   */
+  private get viewsColumnTemplate(): TemplateResult {
+    const label = this.viewLabel ?? msg('all-time views');
+    return this.columnTemplate(this.viewCount, label, viewsIcon);
+  }
+
+  /**
+   * Template for the uploads count column (replaces views for account tiles).
+   */
+  private get uploadsColumnTemplate(): TemplateResult {
+    return this.columnTemplate(this.itemCount, msg('uploads'), uploadIcon);
+  }
+
+  /**
+   * Template for the favorites count column.
+   */
+  private get favoritesColumnTemplate(): TemplateResult {
+    return this.columnTemplate(this.favCount, msg('favorites'), favIcon);
+  }
+
+  /**
+   * Template for the reviews count column.
+   */
+  private get reviewsColumnTemplate(): TemplateResult {
+    return this.columnTemplate(this.commentCount, msg('reviews'), reviewsIcon, [
+      'reviews',
+    ]);
+  }
+
+  /**
+   * Template for the TV clips count column (replaces reviews for TV tiles).
+   */
+  private get tvClipsColumnTemplate(): TemplateResult {
+    return this.columnTemplate(this.tvClipCount, msg('clips'), quoteIcon);
   }
 
   static get styles(): CSSResultGroup {
@@ -93,12 +147,12 @@ export class TileStats extends LitElement {
         }
 
         ul {
-          all: unset; // unset all property values
-          list-style-type: none; // remove default list-style
+          all: unset;
+          list-style-type: none;
         }
 
         li {
-          list-style-type: none; // remove default list-style
+          list-style-type: none;
         }
 
         svg {
