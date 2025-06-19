@@ -591,15 +591,18 @@ export class CollectionBrowserDataSource
     const isTvSearch = this.host.searchType === SearchType.TV;
 
     // Metadata/tv searches within a collection are allowed to have no query.
+    const isValidForCollectionSearch =
+      isDefaultedSearch || isMetadataSearch || isTvSearch;
+
     // Searches within a profile page may also be performed without a query, provided the profile element is set.
+    const isValidForProfileSearch =
+      hasProfileElement && (isDefaultedSearch || isMetadataSearch);
+
     // Otherwise, a non-empty query must be set.
     return (
       hasNonEmptyQuery ||
-      (isCollectionSearch &&
-        (isDefaultedSearch || isMetadataSearch || isTvSearch)) ||
-      (isProfileSearch &&
-        hasProfileElement &&
-        (isDefaultedSearch || isMetadataSearch))
+      (isCollectionSearch && isValidForCollectionSearch) ||
+      (isProfileSearch && isValidForProfileSearch)
     );
   }
 
