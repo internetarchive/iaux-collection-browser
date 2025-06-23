@@ -564,7 +564,11 @@ export type FacetOption =
   | 'language'
   | 'creator'
   | 'collection'
-  | 'year';
+  | 'year'
+  // TV-specific facet options:
+  | 'program'
+  | 'person'
+  | 'sponsor';
 
 export type SelectedFacetState = 'selected' | 'hidden';
 
@@ -605,9 +609,8 @@ export type FacetEventDetails = {
 
 export type FacetValue = string;
 
-export type SelectedFacets = Record<
-  FacetOption,
-  Record<FacetValue, FacetBucket>
+export type SelectedFacets = Partial<
+  Record<FacetOption, Record<FacetValue, FacetBucket>>
 >;
 
 export const getDefaultSelectedFacets = (): SelectedFacets => ({
@@ -618,8 +621,14 @@ export const getDefaultSelectedFacets = (): SelectedFacets => ({
   creator: {},
   collection: {},
   year: {},
+  program: {},
+  person: {},
+  sponsor: {},
 });
 
+/**
+ * Facet display order when presenting results for all search types *except* TV (see below).
+ */
 export const facetDisplayOrder: FacetOption[] = [
   'mediatype',
   // 'lending', Commenting this out removes the lending facet from the sidebar for now
@@ -630,6 +639,23 @@ export const facetDisplayOrder: FacetOption[] = [
   'language',
 ];
 
+/**
+ * Specialized facet ordering when displaying TV search results
+ */
+export const tvFacetDisplayOrder: FacetOption[] = [
+  'program',
+  'creator',
+  'year',
+  'subject',
+  'collection',
+  'person',
+  'sponsor',
+  'language',
+];
+
+/**
+ * Human-readable titles for each facet group.
+ */
 export const facetTitles: Record<FacetOption, string> = {
   subject: 'Subject',
   lending: 'Availability',
@@ -638,6 +664,9 @@ export const facetTitles: Record<FacetOption, string> = {
   creator: 'Creator',
   collection: 'Collection',
   year: 'Year',
+  program: 'Program',
+  person: 'Person',
+  sponsor: 'Sponsor',
 };
 
 /**
@@ -650,7 +679,10 @@ export const defaultFacetSort: Record<FacetOption, AggregationSortType> = {
   language: AggregationSortType.COUNT,
   creator: AggregationSortType.COUNT,
   collection: AggregationSortType.COUNT,
-  year: AggregationSortType.NUMERIC,
+  year: AggregationSortType.NUMERIC, // Year facets are ordered by their numeric value by default
+  program: AggregationSortType.COUNT,
+  person: AggregationSortType.COUNT,
+  sponsor: AggregationSortType.COUNT,
 };
 
 /**
@@ -664,7 +696,10 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
   language: AggregationSortType.ALPHABETICAL,
   creator: AggregationSortType.ALPHABETICAL,
   collection: AggregationSortType.ALPHABETICAL,
-  year: AggregationSortType.NUMERIC,
+  year: AggregationSortType.NUMERIC, // Year facets' values should be compared numerically, not lexicographically (year 2001 > year 3)
+  program: AggregationSortType.ALPHABETICAL,
+  person: AggregationSortType.ALPHABETICAL,
+  sponsor: AggregationSortType.ALPHABETICAL,
 };
 
 export type LendingFacetKey =
