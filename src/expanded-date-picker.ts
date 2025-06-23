@@ -1,5 +1,6 @@
 import { css, html, LitElement, CSSResultGroup, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { msg } from '@lit/localize';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import {
@@ -19,6 +20,8 @@ export class ExpandedDatePicker extends LitElement {
 
   @property({ type: Array }) buckets?: number[];
 
+  @property({ type: String }) dateFormat: string = 'YYYY';
+
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
 
@@ -34,6 +37,7 @@ export class ExpandedDatePicker extends LitElement {
           .maxDate=${this.maxDate}
           .minSelectedDate=${this.minSelectedDate ?? this.minDate}
           .maxSelectedDate=${this.maxSelectedDate ?? this.maxDate}
+          .dateFormat=${this.dateFormat}
           .updateDelay=${0}
           updateWhileFocused
           missingDataMessage="..."
@@ -47,7 +51,7 @@ export class ExpandedDatePicker extends LitElement {
             slot="inputs-right-side"
             @click=${this.applyBtnClicked}
           >
-            Apply date range
+            ${msg('Apply date range')}
           </button>
         </histogram-date-range>
       </div>

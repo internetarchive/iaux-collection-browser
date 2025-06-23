@@ -235,6 +235,7 @@ export class CollectionFacets extends LitElement {
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     const buckets = fullYearsHistogramAggregation?.buckets as number[];
+    const dateFormat = this.allowDatePickerMonths ? 'YYYY-MM' : 'YYYY';
 
     // Because the modal manager does not clear its DOM content after being closed,
     // it may try to render the exact same date picker template when it is reopened.
@@ -259,6 +260,7 @@ export class CollectionFacets extends LitElement {
         .maxDate=${maxDate}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
+        .dateFormat=${dateFormat}
         .buckets=${buckets}
         .modalManager=${this.modalManager}
         .analyticsHandler=${this.analyticsHandler}
