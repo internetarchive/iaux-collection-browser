@@ -1102,11 +1102,11 @@ export class CollectionBrowser
       `;
     }
 
-    // We switch to TV facet ordering if we are in a TV collection or showing TV search results
-    const shouldUseTVFacets =
+    // We switch to TV facet ordering & date picker if we are in a TV collection or showing TV search results
+    const shouldUseTvInterface =
       this.isTVCollection ||
       (!this.withinCollection && this.searchType === SearchType.TV);
-    const facetDisplayOrder = shouldUseTVFacets
+    const facetDisplayOrder = shouldUseTvInterface
       ? tvFacetDisplayOrder
       : defaultFacetDisplayOrder;
 
@@ -1132,6 +1132,7 @@ export class CollectionBrowser
         .collectionTitles=${this.dataSource.collectionTitles}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
+        .allowDatePickerMonths=${shouldUseTvInterface}
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
         .filterMap=${this.dataSource.filterMap}
