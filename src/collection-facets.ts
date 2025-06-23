@@ -11,7 +11,7 @@ import { map } from 'lit/directives/map.js';
 import { ref } from 'lit/directives/ref.js';
 import { msg } from '@lit/localize';
 import { classMap } from 'lit/directives/class-map.js';
-import type {
+import {
   Aggregation,
   AggregationSortType,
   Bucket,
@@ -37,6 +37,7 @@ import {
   FacetGroup,
   FacetBucket,
   facetDisplayOrder,
+  tvFacetDisplayOrder,
   facetTitles,
   lendingFacetDisplayNames,
   lendingFacetKeysVisibility,
@@ -68,7 +69,7 @@ import {
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
-  @property({ type: String }) searchType?: SearchType;
+  @property({ type: Number }) searchType?: SearchType;
 
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
@@ -134,6 +135,9 @@ export class CollectionFacets extends LitElement {
     creator: false,
     collection: false,
     year: false,
+    program: false,
+    person: false,
+    sponsor: false,
   };
 
   /**
@@ -362,8 +366,12 @@ export class CollectionFacets extends LitElement {
    */
   private get mergedFacets(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
+    const displayOrder =
+      this.searchType === SearchType.TV
+        ? tvFacetDisplayOrder
+        : facetDisplayOrder;
 
-    facetDisplayOrder.forEach(facetKey => {
+    displayOrder.forEach(facetKey => {
       const selectedFacetGroup = this.selectedFacetGroups.find(
         group => group.key === facetKey,
       );
