@@ -100,7 +100,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.selectedFacets.year['2018'].state).to.equal(
+    expect(restorationState.selectedFacets.year?.['2018'].state).to.equal(
       'selected',
     );
   });
@@ -160,7 +160,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.selectedFacets.subject.foo.state).to.equal(
+    expect(restorationState.selectedFacets.subject?.foo.state).to.equal(
       'selected',
     );
   });
@@ -173,7 +173,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.selectedFacets.year['2018'].state).to.equal(
+    expect(restorationState.selectedFacets.year?.['2018'].state).to.equal(
       'hidden',
     );
   });
@@ -188,17 +188,17 @@ describe('Restoration state handler', () => {
 
     const restorationState = handler.getRestorationState();
 
-    expect(restorationState.selectedFacets.collection.foo.state).to.equal(
+    expect(restorationState.selectedFacets.collection?.foo.state).to.equal(
       'selected',
     );
-    expect(restorationState.selectedFacets.collection.bar.state).to.equal(
+    expect(restorationState.selectedFacets.collection?.bar.state).to.equal(
       'selected',
     );
 
-    expect(restorationState.selectedFacets.collection.baz.state).to.equal(
+    expect(restorationState.selectedFacets.collection?.baz.state).to.equal(
       'hidden',
     );
-    expect(restorationState.selectedFacets.collection.boop.state).to.equal(
+    expect(restorationState.selectedFacets.collection?.boop.state).to.equal(
       'hidden',
     );
   });
@@ -211,7 +211,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.selectedFacets.collection.foo.state).to.equal(
+    expect(restorationState.selectedFacets.collection?.foo.state).to.equal(
       'hidden',
     );
   });
@@ -224,7 +224,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.selectedFacets.subject.foo.state).to.equal(
+    expect(restorationState.selectedFacets.subject?.foo.state).to.equal(
       'selected',
     );
   });
@@ -237,7 +237,7 @@ describe('Restoration state handler', () => {
     window.history.replaceState({ path: url.href }, '', url.href);
 
     const restorationState = handler.getRestorationState();
-    expect(restorationState.selectedFacets.year['2018'].state).to.equal(
+    expect(restorationState.selectedFacets.year?.['2018'].state).to.equal(
       'hidden',
     );
   });

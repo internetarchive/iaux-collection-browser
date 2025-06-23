@@ -43,6 +43,8 @@ import {
   SORT_OPTIONS,
   defaultProfileElementSorts,
   FacetLoadStrategy,
+  defaultFacetDisplayOrder,
+  tvFacetDisplayOrder,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -1100,6 +1102,14 @@ export class CollectionBrowser
       `;
     }
 
+    // We switch to TV facet ordering if we are in a TV collection or showing TV search results
+    const shouldUseTVFacets =
+      this.isTVCollection ||
+      (!this.withinCollection && this.searchType === SearchType.TV);
+    const facetDisplayOrder = shouldUseTVFacets
+      ? tvFacetDisplayOrder
+      : defaultFacetDisplayOrder;
+
     const facets = html`
       <collection-facets
         @facetsChanged=${this.facetsChanged}
@@ -1127,6 +1137,7 @@ export class CollectionBrowser
         .filterMap=${this.dataSource.filterMap}
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
+        .facetDisplayOrder=${facetDisplayOrder}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
