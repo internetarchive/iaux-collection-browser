@@ -94,6 +94,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) allowExpandingDatePicker = false;
 
+  @property({ type: Boolean }) allowDatePickerMonths = false;
+
   @property({ type: String }) query?: string;
 
   @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
@@ -325,15 +327,18 @@ export class CollectionFacets extends LitElement {
     const { fullYearsHistogramAggregation } = this;
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
+    const dateFormat = this.allowDatePickerMonths ? 'YYYY-MM' : 'YYYY';
     return this.fullYearAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
           <histogram-date-range
+            class=${this.allowDatePickerMonths ? 'wide-inputs' : nothing}
             .minDate=${minDate}
             .maxDate=${maxDate}
             .minSelectedDate=${this.minSelectedDate ?? minDate}
             .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
             .updateDelay=${100}
+            .dateFormat=${dateFormat}
             missingDataMessage="..."
             .width=${this.collapsableFacets && this.contentWidth
               ? this.contentWidth
@@ -826,7 +831,7 @@ export class CollectionFacets extends LitElement {
 
         h3 {
           font-size: 1.4rem;
-          font-weight: 200
+          font-weight: 200;
           padding-bottom: 3px;
           margin: 0;
         }
@@ -863,6 +868,10 @@ export class CollectionFacets extends LitElement {
         .sorting-icon {
           height: 15px;
           cursor: pointer;
+        }
+
+        histogram-date-range.wide-inputs {
+          --histogramDateRangeInputWidth: 4.8rem;
         }
       `,
     ];
