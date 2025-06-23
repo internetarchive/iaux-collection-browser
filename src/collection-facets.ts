@@ -36,8 +36,7 @@ import {
   SelectedFacets,
   FacetGroup,
   FacetBucket,
-  facetDisplayOrder,
-  tvFacetDisplayOrder,
+  defaultFacetDisplayOrder,
   facetTitles,
   lendingFacetDisplayNames,
   lendingFacetKeysVisibility,
@@ -108,6 +107,9 @@ export class CollectionFacets extends LitElement {
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Boolean }) isManageView = false;
+
+  @property({ type: Array }) facetDisplayOrder: FacetOption[] =
+    defaultFacetDisplayOrder;
 
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
@@ -366,12 +368,8 @@ export class CollectionFacets extends LitElement {
    */
   private get mergedFacets(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
-    const displayOrder =
-      this.searchType === SearchType.TV
-        ? tvFacetDisplayOrder
-        : facetDisplayOrder;
 
-    displayOrder.forEach(facetKey => {
+    this.facetDisplayOrder.forEach(facetKey => {
       const selectedFacetGroup = this.selectedFacetGroups.find(
         group => group.key === facetKey,
       );
