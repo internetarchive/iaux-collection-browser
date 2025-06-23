@@ -613,7 +613,7 @@ export type SelectedFacets = Partial<
   Record<FacetOption, Record<FacetValue, FacetBucket>>
 >;
 
-export const getDefaultSelectedFacets = (): SelectedFacets => ({
+export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
   subject: {},
   lending: {},
   mediatype: {},
@@ -629,7 +629,7 @@ export const getDefaultSelectedFacets = (): SelectedFacets => ({
 /**
  * Facet display order when presenting results for all search types *except* TV (see below).
  */
-export const facetDisplayOrder: FacetOption[] = [
+export const defaultFacetDisplayOrder: FacetOption[] = [
   'mediatype',
   // 'lending', Commenting this out removes the lending facet from the sidebar for now
   'year',

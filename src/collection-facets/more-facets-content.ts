@@ -60,7 +60,7 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object }) filterMap?: FilterMap;
 
-  @property({ type: String }) searchType?: SearchType;
+  @property({ type: Number }) searchType?: SearchType;
 
   @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
 
@@ -83,7 +83,7 @@ export class MoreFacetsContent extends LitElement {
    */
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
-  @property({ type: String }) sortedBy: AggregationSortType =
+  @property({ type: Number }) sortedBy: AggregationSortType =
     AggregationSortType.COUNT;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface;
@@ -109,7 +109,8 @@ export class MoreFacetsContent extends LitElement {
    * eventually merged into the existing `selectedFacets` when the patron applies
    * their changes, or discarded if they cancel/close the dialog.
    */
-  @state() private unappliedFacetChanges = getDefaultSelectedFacets();
+  @state() private unappliedFacetChanges: SelectedFacets =
+    getDefaultSelectedFacets();
 
   /**
    * Which page of facets we are showing.
@@ -272,7 +273,7 @@ export class MoreFacetsContent extends LitElement {
     // Apply any unapplied selections that appear on this page
     const unappliedBuckets = this.unappliedFacetChanges[this.facetKey];
     for (const [index, bucket] of bucketsWithCount.entries()) {
-      const unappliedBucket = unappliedBuckets[bucket.key];
+      const unappliedBucket = unappliedBuckets?.[bucket.key];
       if (unappliedBucket) {
         bucketsWithCount[index] = { ...unappliedBucket };
       }
