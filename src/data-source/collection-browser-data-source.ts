@@ -690,27 +690,39 @@ export class CollectionBrowserDataSource
   get filterMap(): FilterMap {
     const builder = new FilterMapBuilder();
 
-    // Add the date range, if applicable
-    if (this.host.minSelectedDate) {
+    const {
+      minSelectedDate,
+      maxSelectedDate,
+      selectedFacets,
+      selectedTitleFilter,
+      selectedCreatorFilter,
+    } = this.host;
+
+    // Add the date range, if applicable.
+    // If the min/max are just years, filter on `year` alone. If months/days are included, use `date` instead.
+    const dateRangeField =
+      minSelectedDate?.includes('-') || maxSelectedDate?.includes('-')
+        ? 'date'
+        : 'year';
+
+    if (minSelectedDate) {
       builder.addFilter(
-        'year',
-        this.host.minSelectedDate,
+        dateRangeField,
+        minSelectedDate,
         FilterConstraint.GREATER_OR_EQUAL,
       );
     }
-    if (this.host.maxSelectedDate) {
+    if (maxSelectedDate) {
       builder.addFilter(
-        'year',
-        this.host.maxSelectedDate,
+        dateRangeField,
+        maxSelectedDate,
         FilterConstraint.LESS_OR_EQUAL,
       );
     }
 
     // Add any selected facets
-    if (this.host.selectedFacets) {
-      for (const [facetName, facetValues] of Object.entries(
-        this.host.selectedFacets,
-      )) {
+    if (selectedFacets) {
+      for (const [facetName, facetValues] of Object.entries(selectedFacets)) {
         const { name, values } = this.prepareFacetForFetch(
           facetName,
           facetValues,
@@ -731,17 +743,17 @@ export class CollectionBrowserDataSource
     }
 
     // Add any letter filters
-    if (this.host.selectedTitleFilter) {
+    if (selectedTitleFilter) {
       builder.addFilter(
         'firstTitle',
-        this.host.selectedTitleFilter,
+        selectedTitleFilter,
         FilterConstraint.INCLUDE,
       );
     }
-    if (this.host.selectedCreatorFilter) {
+    if (selectedCreatorFilter) {
       builder.addFilter(
         'firstCreator',
-        this.host.selectedCreatorFilter,
+        selectedCreatorFilter,
         FilterConstraint.INCLUDE,
       );
     }
