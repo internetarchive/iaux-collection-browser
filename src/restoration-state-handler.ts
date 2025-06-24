@@ -185,10 +185,16 @@ export class RestorationStateHandler
       }
     }
 
+    const dateField =
+      state.minSelectedDate?.includes('-') ||
+      state.maxSelectedDate?.includes('-')
+        ? 'date'
+        : 'year';
+
     if (state.minSelectedDate && state.maxSelectedDate) {
       newParams.append(
         'and[]',
-        `year:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`,
+        `${dateField}:[${state.minSelectedDate} TO ${state.maxSelectedDate}]`,
       );
     }
 
@@ -337,6 +343,7 @@ export class RestorationStateHandler
         }
 
         switch (field) {
+          case 'date':
           case 'year': {
             const [minDate, maxDate] = value.split(' TO ');
             // we have two potential ways of filtering by date:
