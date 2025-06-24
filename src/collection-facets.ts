@@ -44,6 +44,7 @@ import {
   suppressedCollections,
   defaultFacetSort,
   FacetEventDetails,
+  tvChannelFacetLabels,
 } from './models';
 import type {
   CollectionTitles,
@@ -94,8 +95,6 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) allowExpandingDatePicker = false;
 
-  @property({ type: Boolean }) allowDatePickerMonths = false;
-
   @property({ type: String }) query?: string;
 
   @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
@@ -109,6 +108,8 @@ export class CollectionFacets extends LitElement {
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   @property({ type: Boolean }) isManageView = false;
+
+  @property({ type: Boolean }) isTvSearch = false;
 
   @property({ type: Array }) facetDisplayOrder: FacetOption[] =
     defaultFacetDisplayOrder;
@@ -235,7 +236,7 @@ export class CollectionFacets extends LitElement {
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     const buckets = fullYearsHistogramAggregation?.buckets as number[];
-    const dateFormat = this.allowDatePickerMonths ? 'YYYY-MM' : 'YYYY';
+    const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
 
     // Because the modal manager does not clear its DOM content after being closed,
     // it may try to render the exact same date picker template when it is reopened.
@@ -274,7 +275,7 @@ export class CollectionFacets extends LitElement {
       headerColor: '#194880',
       showHeaderLogo: false,
       closeOnBackdropClick: true, // TODO: want to fire analytics
-      title: html`Select a date range`,
+      title: html`${msg('Select a date range')}`,
     });
 
     this.modalManager?.classList.add('expanded-date-picker');
@@ -329,12 +330,12 @@ export class CollectionFacets extends LitElement {
     const { fullYearsHistogramAggregation } = this;
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
-    const dateFormat = this.allowDatePickerMonths ? 'YYYY-MM' : 'YYYY';
+    const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
     return this.fullYearAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
           <histogram-date-range
-            class=${this.allowDatePickerMonths ? 'wide-inputs' : nothing}
+            class=${this.isTvSearch ? 'wide-inputs' : nothing}
             .minDate=${minDate}
             .maxDate=${maxDate}
             .minSelectedDate=${this.minSelectedDate ?? minDate}
@@ -459,6 +460,18 @@ export class CollectionFacets extends LitElement {
 
           bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
         }
+      }
+
+      // For TV creator facets, uppercase the display text
+      if (facetKey === 'creator' && this.isTvSearch) {
+        bucketsWithCount.forEach(b => {
+          b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
+
+          const channelLabel = tvChannelFacetLabels[b.displayText];
+          if (channelLabel && channelLabel !== b.displayText) {
+            b.extraNote = `(${channelLabel})`;
+          }
+        });
       }
 
       // slice off how many items we want to show in page facet area

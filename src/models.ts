@@ -575,11 +575,13 @@ export type SelectedFacetState = 'selected' | 'hidden';
 export type FacetState = SelectedFacetState | 'none';
 
 export interface FacetBucket {
-  // for some facets, we augment the key with a display value
-  displayText?: string;
   key: string;
   count: number;
   state: FacetState;
+  // for some facets, we augment the key with a display value
+  displayText?: string;
+  // for TV channel facets, we add a parenthesized secondary name
+  extraNote?: string;
 }
 
 export interface FacetGroup {
@@ -701,6 +703,42 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
   person: AggregationSortType.ALPHABETICAL,
   sponsor: AggregationSortType.ALPHABETICAL,
 };
+
+/**
+ * Extra parenthesized labels to show next to certain TV channel facets
+ *
+ * TODO this is temporary for testing
+ */
+export const tvChannelFacetLabels: Record<string, string> = Object.fromEntries(
+  Object.entries({
+    'Al Jazeera': ['ALJAZAM', 'ALJAZ'],
+    Bloomberg: ['BLOOMBERG'],
+    BBC: ['BBC', 'BBC1', 'BBC2'],
+    'BBC America': ['BBCAMERICA'],
+    'BBC News': ['BBCNEWS'],
+    'GB News': ['GBN'],
+    BET: ['BETW'],
+    CNBC: ['CNBC'],
+    CNN: ['CNNW', 'CNN'],
+    'Comedy Central': ['COM', 'COMW'],
+    CSPAN: ['CSPAN', 'CSPAN2', 'CSPAN3'],
+    Current: ['CURRENT'],
+    'Deutsche Welle': ['DW'],
+    'France 24': ['FRANCE24'],
+    'FOX Business': ['FBC'],
+    'FOX News': ['FOXNEWSW', 'FOXNEWS'],
+    LINKTV: ['LINKTV'],
+    MSNBC: ['MSNBCW', 'MSNBC'],
+    'NHK World': ['NHK'],
+    RT: ['RT'],
+    'Sky News': ['SKY'],
+  })
+    .map(e => e.reverse() as [string[], string])
+    .reduce(
+      (acc, cur) => acc.concat(cur[0].map(n => [n, cur[1]])),
+      [] as [string, string][],
+    ),
+);
 
 export type LendingFacetKey =
   | 'is_lendable'
