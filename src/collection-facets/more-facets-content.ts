@@ -32,6 +32,7 @@ import {
   defaultFacetSort,
   getDefaultSelectedFacets,
   FacetEventDetails,
+  tvChannelFacetLabels,
 } from '../models';
 import type {
   CollectionTitles,
@@ -85,6 +86,8 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Number }) sortedBy: AggregationSortType =
     AggregationSortType.COUNT;
+
+  @property({ type: Boolean }) isTvSearch = false;
 
   @property({ type: Object }) modalManager?: ModalManagerInterface;
 
@@ -278,8 +281,20 @@ export class MoreFacetsContent extends LitElement {
         bucketsWithCount[index] = { ...unappliedBucket };
       }
     }
-    facetGroup.buckets = bucketsWithCount;
 
+    // For TV creator facets, uppercase the display text
+    if (this.facetKey === 'creator' && this.isTvSearch) {
+      bucketsWithCount.forEach(b => {
+        b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
+
+        const channelLabel = tvChannelFacetLabels[b.displayText];
+        if (channelLabel && channelLabel !== b.displayText) {
+          b.extraNote = `(${channelLabel})`;
+        }
+      });
+    }
+
+    facetGroup.buckets = bucketsWithCount;
     return facetGroup;
   }
 

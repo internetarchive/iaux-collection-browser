@@ -705,6 +705,7 @@ export class CollectionFacets extends LitElement {
         .collectionTitles=${this.collectionTitles}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
+        .isTvSearch=${this.isTvSearch}
         @facetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,
