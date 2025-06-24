@@ -56,11 +56,15 @@ export class FacetRow extends LitElement {
     const showOnlyCheckboxId = `${facetType}:${bucket.key}-show-only`;
     const negativeCheckboxId = `${facetType}:${bucket.key}-negative`;
 
+    const extraNoteSpan = bucket.extraNote
+      ? html`<span class="facet-note">${bucket.extraNote}</span>`
+      : nothing;
+
     // For collections, we render the collection title as a link.
     // For other facet types, we just have a static value to use.
     const bucketTextDisplay =
       facetType !== 'collection'
-        ? html`${bucket.displayText ?? bucket.key}`
+        ? html`${bucket.displayText ?? bucket.key} ${extraNoteSpan}`
         : html`<a href="/details/${bucket.key}">
             ${this.collectionTitles?.get(bucket.key) ?? bucket.key}
           </a> `;
@@ -225,6 +229,9 @@ export class FacetRow extends LitElement {
         word-break: break-word;
         display: inline-block;
         flex: 1 1 0%;
+      }
+      .facet-note {
+        color: #bbb;
       }
       .facet-count {
         text-align: right;
