@@ -710,34 +710,33 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
  * TODO this is temporary for testing
  */
 export const tvChannelFacetLabels: Record<string, string> = Object.fromEntries(
+  // prettier-ignore
   Object.entries({
-    'Al Jazeera': ['ALJAZAM', 'ALJAZ'],
-    Bloomberg: ['BLOOMBERG'],
-    BBC: ['BBC', 'BBC1', 'BBC2'],
-    'BBC America': ['BBCAMERICA'],
-    'BBC News': ['BBCNEWS'],
-    'GB News': ['GBN'],
-    BET: ['BETW'],
-    CNBC: ['CNBC'],
-    CNN: ['CNNW', 'CNN'],
-    'Comedy Central': ['COM', 'COMW'],
-    CSPAN: ['CSPAN', 'CSPAN2', 'CSPAN3'],
-    Current: ['CURRENT'],
-    'Deutsche Welle': ['DW'],
-    'France 24': ['FRANCE24'],
-    'FOX Business': ['FBC'],
-    'FOX News': ['FOXNEWSW', 'FOXNEWS'],
-    LINKTV: ['LINKTV'],
-    MSNBC: ['MSNBCW', 'MSNBC'],
-    'NHK World': ['NHK'],
-    RT: ['RT'],
-    'Sky News': ['SKY'],
-  })
-    .map(e => e.reverse() as [string[], string])
-    .reduce(
-      (acc, cur) => acc.concat(cur[0].map(n => [n, cur[1]])),
-      [] as [string, string][],
-    ),
+    'Al Jazeera'     : ['ALJAZAM', 'ALJAZ'],
+    'Bloomberg'      : ['BLOOMBERG'],
+    'BBC'            : ['BBC', 'BBC1', 'BBC2'],
+    'BBC America'    : ['BBCAMERICA'],
+    'BBC News'       : ['BBCNEWS'],
+    'GB News'        : ['GBN'],
+    'BET'            : ['BETW'],
+    'CNBC'           : ['CNBC'],
+    'CNN'            : ['CNNW', 'CNN'],
+    'Comedy Central' : ['COM', 'COMW'],
+    'CSPAN'          : ['CSPAN', 'CSPAN2', 'CSPAN3'],
+    'Current'        : ['CURRENT'],
+    'Deutsche Welle' : ['DW'],
+    'France 24'      : ['FRANCE24'],
+    'FOX Business'   : ['FBC'],
+    'FOX News'       : ['FOXNEWSW', 'FOXNEWS'],
+    'LINKTV'         : ['LINKTV'],
+    'MSNBC'          : ['MSNBCW', 'MSNBC'],
+    'NHK World'      : ['NHK'],
+    'RT'             : ['RT'],
+    'Sky News'       : ['SKY'],
+  }).reduce(
+    (acc, [label, channels]) => acc.concat(channels.map(ch => [ch, label])),
+    [] as [string, string][],
+  ),
 );
 
 export type LendingFacetKey =
