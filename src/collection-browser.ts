@@ -1112,8 +1112,6 @@ export class CollectionBrowser
 
     const facets = html`
       <collection-facets
-        @facetsChanged=${this.facetsChanged}
-        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
         .parentCollections=${this.dataSource.parentCollections}
         .pageSpecifierParams=${this.dataSource.pageSpecifierParams}
@@ -1138,13 +1136,15 @@ export class CollectionBrowser
         .filterMap=${this.dataSource.filterMap}
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
+        .analyticsHandler=${this.analyticsHandler}
         .facetDisplayOrder=${facetDisplayOrder}
         .isTvSearch=${shouldUseTvInterface}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
         @facetClick=${this.facetClickHandler}
-        .analyticsHandler=${this.analyticsHandler}
+        @facetsChanged=${this.facetsChanged}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       >
       </collection-facets>
     `;
