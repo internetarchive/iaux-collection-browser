@@ -833,8 +833,6 @@ export class CollectionFacets extends LitElement {
 
         h3 {
           font-size: 1.4rem;
-          font-weight: 200;
-          padding-bottom: 3px;
           margin: 0;
         }
 
