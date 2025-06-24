@@ -1139,6 +1139,7 @@ export class CollectionBrowser
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
         .facetDisplayOrder=${facetDisplayOrder}
+        .isTvSearch=${shouldUseTvInterface}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
