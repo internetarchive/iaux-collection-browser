@@ -439,7 +439,7 @@ export class CollectionFacets extends LitElement {
       }
 
       // Sort the FacetBuckets so that selected and hidden buckets come before the rest
-      sortBucketsBySelectionState(bucketsWithCount);
+      sortBucketsBySelectionState(bucketsWithCount, defaultFacetSort[facetKey]);
 
       // For mediatype facets, ensure the collection bucket is always shown if present
       if (facetKey === 'mediatype') {
