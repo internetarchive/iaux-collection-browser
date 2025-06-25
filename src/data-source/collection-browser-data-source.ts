@@ -258,8 +258,10 @@ export class CollectionBrowserDataSource
     if (Object.keys(this.pages).length < this.host.maxPagesToManage) {
       this.pages = {};
 
-      // Invalidate any fetches in progress
-      this.fetchesInProgress.clear();
+      // Invalidate any page fetches in progress (keep facet fetches)
+      this.fetchesInProgress.forEach(key => {
+        if (!key.startsWith('facets-')) this.fetchesInProgress.delete(key);
+      });
       this.requestHostUpdate();
     }
   }
@@ -676,7 +678,7 @@ export class CollectionBrowserDataSource
   get facetFetchQueryKey(): string {
     const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
-    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}`;
+    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}`;
   }
 
   /**
