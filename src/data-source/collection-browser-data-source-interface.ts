@@ -156,7 +156,7 @@ export interface CollectionBrowserDataSourceInterface
   reset(): void;
 
   /**
-   * Resets the data source to its pages.
+   * Resets the data source's result pages, keeping other state intact.
    */
   resetPages(): void;
 
