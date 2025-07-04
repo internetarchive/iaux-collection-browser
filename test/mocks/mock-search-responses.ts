@@ -745,11 +745,6 @@ export const getMockSuccessWithDefaultSort: () => Result<
           },
         }),
       ],
-      collectionExtraInfo: {
-        public_metadata: {
-          'sort-by': 'titleSorter',
-        },
-      },
     },
     responseHeader: {
       succeeded: true,
@@ -792,11 +787,6 @@ export const getMockSuccessWithConciseDefaultSort: () => Result<
           },
         }),
       ],
-      collectionExtraInfo: {
-        public_metadata: {
-          'sort-by': '-addeddate',
-        },
-      },
     },
     responseHeader: {
       succeeded: true,
