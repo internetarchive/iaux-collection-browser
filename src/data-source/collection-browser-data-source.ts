@@ -1139,7 +1139,7 @@ export class CollectionBrowserDataSource
         // Normalize any backend-applied sort to an array and take the first element.
         // This accounts for the backend sort being a string, a string[], or undefined entirely.
         const backendSortRaw =
-          success.request.backendRequests['search'].finalized_parameters.sort;
+          success.request.backendRequests['search']?.finalized_parameters.sort;
         const backendSort = ([] as (string | undefined)[]).concat(
           backendSortRaw,
         )?.[0];

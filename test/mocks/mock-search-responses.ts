@@ -723,7 +723,7 @@ export const getMockSuccessWithDefaultSort: () => Result<
         sort: [],
       },
       backendRequests: {
-        primary: {
+        search: {
           kind: 'hits',
           finalized_parameters: {
             user_query: 'default-sort',
@@ -770,7 +770,7 @@ export const getMockSuccessWithConciseDefaultSort: () => Result<
         sort: [],
       },
       backendRequests: {
-        primary: {
+        search: {
           kind: 'hits',
           finalized_parameters: {
             user_query: 'default-sort-concise',
