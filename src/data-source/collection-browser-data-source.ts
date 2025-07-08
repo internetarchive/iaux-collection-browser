@@ -1190,6 +1190,7 @@ export class CollectionBrowserDataSource
           pageNumber + i,
           results.slice(pageStartIndex, pageStartIndex + this.pageSize),
           !isUnpagedElement || i === numPages - 1,
+          !this.host.withinCollection && this.host.searchType === SearchType.TV,
         );
       }
     }
@@ -1216,11 +1217,12 @@ export class CollectionBrowserDataSource
     pageNumber: number,
     results: SearchResult[],
     needsReload = true,
+    isTvSearch = false,
   ): void {
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
-      tiles.push(new TileModel(result));
+      tiles.push(new TileModel(result, isTvSearch));
     });
 
     this.addPage(pageNumber, tiles);

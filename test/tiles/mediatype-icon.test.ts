@@ -49,7 +49,20 @@ describe('Mediatype Icon', () => {
     expect(iconDiv.title).to.equal('TV Commercial');
   });
 
-  it('renders TV Fact Check mediatype', async () => {
+  it('renders TV Fact Check mediatype for search results', async () => {
+    const el = await fixture<MediatypeIcon>(html`
+      <mediatype-icon
+        isTvSearchResult
+        mediatype="movies"
+        .collections=${['tvnews', 'factchecked']}
+      ></mediatype-icon>
+    `);
+
+    const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
+    expect(iconDiv.title).to.equal('TV Fact Check');
+  });
+
+  it('does not use TV Fact Check mediatype for non-search results', async () => {
     const el = await fixture<MediatypeIcon>(html`
       <mediatype-icon
         mediatype="movies"
@@ -58,7 +71,7 @@ describe('Mediatype Icon', () => {
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
-    expect(iconDiv.title).to.equal('TV Fact Check');
+    expect(iconDiv.title).to.equal('TV');
   });
 
   it('renders radio mediatype', async () => {

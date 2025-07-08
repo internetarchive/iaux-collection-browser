@@ -17,6 +17,8 @@ export class MediatypeIcon extends LitElement {
 
   @property({ type: Array }) collections?: string[];
 
+  @property({ type: Boolean }) isTvSearchResult = false;
+
   @property({ type: Boolean }) showText = false;
 
   /**
@@ -34,7 +36,10 @@ export class MediatypeIcon extends LitElement {
   private get tvDisplayMediatype(): MediatypeConfigKey {
     if (this.collections?.includes(TV_COMMERCIAL_COLLECTION)) {
       return 'tvCommercial';
-    } else if (this.collections?.includes(TV_FACT_CHECK_COLLECTION)) {
+    } else if (
+      this.isTvSearchResult &&
+      this.collections?.includes(TV_FACT_CHECK_COLLECTION)
+    ) {
       return 'tvFactCheck';
     }
 

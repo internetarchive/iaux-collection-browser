@@ -110,7 +110,9 @@ export class TileModel {
 
   contentWarning: boolean;
 
-  constructor(result: SearchResult) {
+  isTvSearchResult: boolean;
+
+  constructor(result: SearchResult, isFromTvSearch = false) {
     const flags = this.getFlags(result);
 
     this.averageRating = result.avg_rating?.value;
@@ -147,6 +149,7 @@ export class TileModel {
     this.weeklyViewCount = result.week?.value;
     this.loginRequired = flags.loginRequired;
     this.contentWarning = flags.contentWarning;
+    this.isTvSearchResult = isFromTvSearch && result.hit_type === 'tv_clip';
   }
 
   /**
@@ -186,6 +189,7 @@ export class TileModel {
     cloned.weeklyViewCount = this.weeklyViewCount;
     cloned.loginRequired = this.loginRequired;
     cloned.contentWarning = this.contentWarning;
+    cloned.isTvSearchResult = this.isTvSearchResult;
     return cloned;
   }
 
