@@ -1,33 +1,64 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { mediatypeConfig } from '../mediatype/mediatype-config';
+import {
+  mediatypeConfig,
+  MediatypeConfigKey,
+} from '../mediatype/mediatype-config';
+
+const TV_COMMERCIAL_COLLECTION = 'tv_ads';
+const TV_FACT_CHECK_COLLECTION = 'factchecked';
+const TV_TOP_LEVEL_COLLECTIONS = new Set(['tvnews', 'tvarchive']);
+const RADIO_TOP_LEVEL_COLLECTIONS = new Set(['radio', 'radioprogram']);
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
-  @property({ type: String }) mediatype: string | undefined;
+  @property({ type: String }) mediatype?: MediatypeConfigKey;
 
-  @property({ type: Array }) collections: string[] | undefined;
+  @property({ type: Array }) collections?: string[];
 
   @property({ type: Boolean }) showText = false;
 
-  private get displayMediatype(): string {
-    const tvIdentifier = ['tvnews', 'tvarchive', 'television'];
-    const radioIdentifier = ['radio', 'radioprogram'];
+  /**
+   * Returns the appropriate mediatype config key for the current mediatype/collections.
+   */
+  private get displayMediatype(): MediatypeConfigKey {
+    if (this.isTvItem) return this.tvDisplayMediatype;
+    if (this.isRadioItem) return 'radio';
+    return this.mediatype ?? 'none';
+  }
 
-    if (
+  /**
+   * Returns the appropriate TV mediatype, depending on the current collections.
+   */
+  private get tvDisplayMediatype(): MediatypeConfigKey {
+    if (this.collections?.includes(TV_COMMERCIAL_COLLECTION)) {
+      return 'tvCommercial';
+    } else if (this.collections?.includes(TV_FACT_CHECK_COLLECTION)) {
+      return 'tvFactCheck';
+    }
+
+    return 'tv';
+  }
+
+  /**
+   * Whether this represents a TV item
+   */
+  private get isTvItem(): boolean {
+    return (
       this.mediatype === 'movies' &&
-      this.collections?.some(id => tvIdentifier.indexOf(id) >= 0)
-    ) {
-      return 'tv';
-    }
-    if (
+      !!this.collections?.some(id => TV_TOP_LEVEL_COLLECTIONS.has(id))
+    );
+  }
+
+  /**
+   * Whether this represents a radio item
+   */
+  private get isRadioItem(): boolean {
+    return (
       this.mediatype === 'audio' &&
-      this.collections?.some(id => radioIdentifier.indexOf(id) >= 0)
-    ) {
-      return 'radio';
-    }
-    return this.mediatype || '';
+      !!this.collections?.some(id => RADIO_TOP_LEVEL_COLLECTIONS.has(id))
+    );
   }
 
   render() {

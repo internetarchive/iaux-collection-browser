@@ -1,3 +1,4 @@
+import { html, TemplateResult } from 'lit';
 import { accountIcon } from '../assets/img/icons/mediatype/account';
 import { audioIcon } from '../assets/img/icons/mediatype/audio';
 import { collectionIcon } from '../assets/img/icons/mediatype/collection';
@@ -9,12 +10,44 @@ import { radioIcon } from '../assets/img/icons/mediatype/radio';
 import { softwareIcon } from '../assets/img/icons/mediatype/software';
 import { textsIcon } from '../assets/img/icons/mediatype/texts';
 import { tvIcon } from '../assets/img/icons/mediatype/tv';
+import { tvCommercialIcon } from '../assets/img/icons/mediatype/tv-commercial';
+import { tvFactCheckIcon } from '../assets/img/icons/mediatype/tv-fact-check';
 import { videoIcon } from '../assets/img/icons/mediatype/video';
 import { webIcon } from '../assets/img/icons/mediatype/web';
 import { searchIcon } from '../assets/img/icons/mediatype/search';
+import { tvQuoteIcon } from '../assets/img/icons/mediatype/tv-quote';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const mediatypeConfig: { [key: string]: any } = {
+/**
+ * Union of keys with valid mediatype config entries
+ */
+export type MediatypeConfigKey =
+  | 'account'
+  | 'audio'
+  | 'collection'
+  | 'data'
+  | 'etree'
+  | 'film'
+  | 'image'
+  | 'movies'
+  | 'none'
+  | 'radio'
+  | 'search'
+  | 'software'
+  | 'texts'
+  | 'tv'
+  | 'tvCommercial'
+  | 'tvFactCheck'
+  | 'tvQuote'
+  | 'video'
+  | 'web';
+
+export type MediatypeConfig = {
+  color: string;
+  icon: TemplateResult;
+  text: string;
+};
+
+export const mediatypeConfig: Record<MediatypeConfigKey, MediatypeConfig> = {
   account: {
     color: '#000000',
     icon: accountIcon,
@@ -55,6 +88,11 @@ export const mediatypeConfig: { [key: string]: any } = {
     icon: filmIcon,
     text: 'Movie',
   },
+  none: {
+    color: '#00000000',
+    icon: html``, // Empty
+    text: '',
+  },
   radio: {
     color: '#8fdaef',
     icon: radioIcon,
@@ -74,6 +112,21 @@ export const mediatypeConfig: { [key: string]: any } = {
     color: '#f1644b',
     icon: tvIcon,
     text: 'TV',
+  },
+  tvCommercial: {
+    color: '#84b648',
+    icon: tvCommercialIcon,
+    text: 'TV Commercial',
+  },
+  tvFactCheck: {
+    color: 'f1644b',
+    icon: tvFactCheckIcon,
+    text: 'TV Fact Check',
+  },
+  tvQuote: {
+    color: '',
+    icon: tvQuoteIcon,
+    text: 'TV Quote',
   },
   video: {
     color: '#f1644b',
