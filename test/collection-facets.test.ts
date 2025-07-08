@@ -629,6 +629,39 @@ describe('Collection Facets', () => {
     expect(facetRows?.[7]?.bucket?.key).to.equal('collection');
   });
 
+  it('uses specified facet display order', async () => {
+    const el = await fixture<CollectionFacets>(
+      html`<collection-facets
+        .facetDisplayOrder=${['language', 'creator'] as FacetOption[]}
+      ></collection-facets>`,
+    );
+
+    const aggs: Record<string, Aggregation> = {
+      mediatype: new Aggregation({
+        buckets: [{ key: 'texts', doc_count: 5 }],
+      }),
+      collection: new Aggregation({
+        buckets: [{ key: 'foo', doc_count: 10 }],
+      }),
+      creator: new Aggregation({
+        buckets: [{ key: 'bar', doc_count: 15 }],
+      }),
+      language: new Aggregation({
+        buckets: [{ key: 'baz', doc_count: 20 }],
+      }),
+    };
+
+    el.aggregations = aggs;
+    await el.updateComplete;
+
+    const facetHeaders = el.shadowRoot?.querySelectorAll('.facet-group-header');
+
+    // The only two facet groups should be Language and Creator (in that order)
+    expect(facetHeaders?.length).to.equal(2);
+    expect(facetHeaders?.[0].textContent).to.contain('Language');
+    expect(facetHeaders?.[1].textContent).to.contain('Creator');
+  });
+
   describe('More Facets', () => {
     it('Does not render < allowedFacetCount', async () => {
       const el = await fixture<CollectionFacets>(
