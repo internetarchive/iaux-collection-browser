@@ -124,7 +124,7 @@ export const mediatypeConfig: Record<MediatypeConfigKey, MediatypeConfig> = {
     text: 'TV Fact Check',
   },
   tvQuote: {
-    color: '',
+    color: '#fe7a5f',
     icon: tvQuoteIcon,
     text: 'TV Quote',
   },
