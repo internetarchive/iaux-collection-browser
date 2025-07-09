@@ -129,6 +129,7 @@ export class TileList extends BaseTileComponent {
         <mediatype-icon
           .mediatype=${this.model?.mediatype}
           .collections=${this.model?.collections}
+          ?isTvSearchResult=${this.model?.isTvSearchResult}
         >
         </mediatype-icon>
       </a>

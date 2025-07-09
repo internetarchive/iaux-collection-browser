@@ -22,6 +22,7 @@ import {
   RequestKind,
   SortField,
   SORT_OPTIONS,
+  HitRequestSource,
 } from '../models';
 import { FACETLESS_PAGE_ELEMENTS, type PageSpecifierParams } from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
@@ -1220,7 +1221,14 @@ export class CollectionBrowserDataSource
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
-      tiles.push(new TileModel(result));
+      const requestSource: HitRequestSource = this.host.baseQuery
+        ? 'search_query'
+        : this.host.withinProfile
+          ? 'profile_tab'
+          : this.host.withinCollection
+            ? 'collection_members'
+            : 'unknown';
+      tiles.push(new TileModel(result, requestSource));
     });
 
     this.addPage(pageNumber, tiles);

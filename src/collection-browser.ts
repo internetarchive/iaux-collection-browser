@@ -2120,7 +2120,7 @@ export class CollectionBrowser
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
         .isManageView=${this.isManageView}
-        ?showTvClips=${this.isTVCollection}
+        ?showTvClips=${this.isTVCollection || this.searchType === SearchType.TV}
         ?enableHoverPane=${true}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >

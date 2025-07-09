@@ -1,6 +1,9 @@
 import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { mediatypeConfig } from '../../mediatype/mediatype-config';
+import {
+  mediatypeConfig,
+  MediatypeConfigKey,
+} from '../../mediatype/mediatype-config';
 import type { SmartFacet, SmartFacetEvent } from './models';
 
 import closeCircleDark from '../../assets/img/icons/close-circle-dark';
@@ -38,7 +41,7 @@ export class SmartFacetButton extends LitElement {
 
     const icon =
       isSingleFacet && firstFacet.facetType === 'mediatype'
-        ? mediatypeConfig[firstFacet.bucketKey].icon
+        ? mediatypeConfig[firstFacet.bucketKey as MediatypeConfigKey].icon
         : nothing;
 
     return html`
