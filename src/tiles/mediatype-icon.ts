@@ -8,8 +8,8 @@ import {
 
 const TV_COMMERCIAL_COLLECTION = 'tv_ads';
 const TV_FACT_CHECK_COLLECTION = 'factchecked';
-const TV_TOP_LEVEL_COLLECTIONS = new Set(['tvnews', 'tvarchive']);
-const RADIO_TOP_LEVEL_COLLECTIONS = new Set(['radio', 'radioprogram']);
+const TV_COLLECTIONS = new Set(['tvnews', 'tvarchive', 'television']);
+const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
 
 @customElement('mediatype-icon')
 export class MediatypeIcon extends LitElement {
@@ -52,7 +52,7 @@ export class MediatypeIcon extends LitElement {
   private get isTvItem(): boolean {
     return (
       this.mediatype === 'movies' &&
-      !!this.collections?.some(id => TV_TOP_LEVEL_COLLECTIONS.has(id))
+      !!this.collections?.some(id => TV_COLLECTIONS.has(id))
     );
   }
 
@@ -62,7 +62,7 @@ export class MediatypeIcon extends LitElement {
   private get isRadioItem(): boolean {
     return (
       this.mediatype === 'audio' &&
-      !!this.collections?.some(id => RADIO_TOP_LEVEL_COLLECTIONS.has(id))
+      !!this.collections?.some(id => RADIO_COLLECTIONS.has(id))
     );
   }
 

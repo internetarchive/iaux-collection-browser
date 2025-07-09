@@ -22,6 +22,7 @@ import {
   RequestKind,
   SortField,
   SORT_OPTIONS,
+  HitRequestSource,
 } from '../models';
 import { FACETLESS_PAGE_ELEMENTS, type PageSpecifierParams } from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
@@ -1190,7 +1191,6 @@ export class CollectionBrowserDataSource
           pageNumber + i,
           results.slice(pageStartIndex, pageStartIndex + this.pageSize),
           !isUnpagedElement || i === numPages - 1,
-          !this.host.withinCollection && this.host.searchType === SearchType.TV,
         );
       }
     }
@@ -1217,12 +1217,18 @@ export class CollectionBrowserDataSource
     pageNumber: number,
     results: SearchResult[],
     needsReload = true,
-    isTvSearch = false,
   ): void {
     const tiles: TileModel[] = [];
     results?.forEach(result => {
       if (!result.identifier) return;
-      tiles.push(new TileModel(result, isTvSearch));
+      const requestSource: HitRequestSource = this.host.baseQuery
+        ? 'search_query'
+        : this.host.withinProfile
+          ? 'profile_tab'
+          : this.host.withinCollection
+            ? 'collection_members'
+            : 'unknown';
+      tiles.push(new TileModel(result, requestSource));
     });
 
     this.addPage(pageNumber, tiles);

@@ -3,6 +3,7 @@ import { msg } from '@lit/localize';
 import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
+  HitType,
   Review,
   SearchResult,
   SortDirection,
@@ -35,6 +36,19 @@ export const TILE_OVERLAY_ICONS: Record<TileOverlayType, TemplateResult> = {
   'login-required': loginRequiredIcon,
   'content-warning': restrictedIcon,
 };
+
+/**
+ * What type of request produced a given set of hits:
+ *  - `search_query`: Hits produced by an explicit user query and/or applied filters on any page
+ *  - `collection_members`: Hits produced for a collection page without any query or filters
+ *  - `profile_tab`: Hits produced for a tab of the profile page without any query or filters
+ *  - `unknown`: Hits produced via any other means
+ */
+export type HitRequestSource =
+  | 'search_query'
+  | 'collection_members'
+  | 'profile_tab'
+  | 'unknown';
 
 /**
  * Class for converting & storing raw search results in the correct format for UI tiles.
@@ -76,6 +90,10 @@ export class TileModel {
 
   favCount: number;
 
+  hitRequestSource: HitRequestSource;
+
+  hitType?: HitType;
+
   href?: string;
 
   identifier?: string;
@@ -110,9 +128,10 @@ export class TileModel {
 
   contentWarning: boolean;
 
-  isTvSearchResult: boolean;
-
-  constructor(result: SearchResult, isFromTvSearch = false) {
+  constructor(
+    result: SearchResult,
+    hitRequestSource: HitRequestSource = 'unknown',
+  ) {
     const flags = this.getFlags(result);
 
     this.averageRating = result.avg_rating?.value;
@@ -130,6 +149,8 @@ export class TileModel {
     this.dateReviewed = result.reviewdate?.value;
     this.description = result.description?.values.join('\n');
     this.favCount = result.num_favorites?.value ?? 0;
+    this.hitRequestSource = hitRequestSource;
+    this.hitType = result.rawMetadata?.hit_type;
     this.href = collapseRepeatedQuotes(
       result.review?.__href__ ?? result.__href__?.value,
     );
@@ -149,7 +170,6 @@ export class TileModel {
     this.weeklyViewCount = result.week?.value;
     this.loginRequired = flags.loginRequired;
     this.contentWarning = flags.contentWarning;
-    this.isTvSearchResult = isFromTvSearch && result.hit_type === 'tv_clip';
   }
 
   /**
@@ -173,6 +193,8 @@ export class TileModel {
     cloned.dateReviewed = this.dateReviewed;
     cloned.description = this.description;
     cloned.favCount = this.favCount;
+    cloned.hitRequestSource = this.hitRequestSource;
+    cloned.hitType = this.hitType;
     cloned.href = this.href;
     cloned.identifier = this.identifier;
     cloned.issue = this.issue;
@@ -189,8 +211,16 @@ export class TileModel {
     cloned.weeklyViewCount = this.weeklyViewCount;
     cloned.loginRequired = this.loginRequired;
     cloned.contentWarning = this.contentWarning;
-    cloned.isTvSearchResult = this.isTvSearchResult;
     return cloned;
+  }
+
+  /**
+   * Whether this model represents the result of a TV search query.
+   */
+  get isTvSearchResult(): boolean {
+    return (
+      this.hitType === 'tv_clip' && this.hitRequestSource === 'search_query'
+    );
   }
 
   /**
