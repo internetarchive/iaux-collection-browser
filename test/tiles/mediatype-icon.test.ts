@@ -1,13 +1,13 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
-import type { MediatypeIcon } from '../../src/tiles/mediatype-icon';
+import type { TileMediatypeIcon } from '../../src/tiles/tile-mediatype-icon';
 
-import '../../src/tiles/mediatype-icon';
+import '../../src/tiles/tile-mediatype-icon';
 
 describe('Mediatype Icon', () => {
   it('renders component', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon mediatype="texts"></mediatype-icon>
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon mediatype="texts"></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon');
@@ -15,8 +15,8 @@ describe('Mediatype Icon', () => {
   });
 
   it('renders basic mediatype correctly', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon mediatype="movies"></mediatype-icon>
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon mediatype="movies"></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
@@ -26,11 +26,11 @@ describe('Mediatype Icon', () => {
   });
 
   it('renders TV mediatype', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon
         mediatype="movies"
         .collections=${['tvnews']}
-      ></mediatype-icon>
+      ></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
@@ -38,11 +38,11 @@ describe('Mediatype Icon', () => {
   });
 
   it('renders TV Commercial mediatype', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon
         mediatype="movies"
         .collections=${['tvnews', 'tv_ads']}
-      ></mediatype-icon>
+      ></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
@@ -50,12 +50,12 @@ describe('Mediatype Icon', () => {
   });
 
   it('renders TV Fact Check mediatype for search results', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon
         isTvSearchResult
         mediatype="movies"
         .collections=${['tvnews', 'factchecked']}
-      ></mediatype-icon>
+      ></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
@@ -63,11 +63,11 @@ describe('Mediatype Icon', () => {
   });
 
   it('does not use TV Fact Check mediatype for non-search results', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon
         mediatype="movies"
         .collections=${['tvnews', 'factchecked']}
-      ></mediatype-icon>
+      ></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
@@ -75,11 +75,11 @@ describe('Mediatype Icon', () => {
   });
 
   it('renders radio mediatype', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon
         mediatype="audio"
         .collections=${['radio']}
-      ></mediatype-icon>
+      ></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
@@ -87,8 +87,8 @@ describe('Mediatype Icon', () => {
   });
 
   it('renders no icon if mediatype is unrecognized', async () => {
-    const el = await fixture<MediatypeIcon>(html`
-      <mediatype-icon mediatype="foobar"></mediatype-icon>
+    const el = await fixture<TileMediatypeIcon>(html`
+      <tile-mediatype-icon mediatype="foobar"></tile-mediatype-icon>
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon');

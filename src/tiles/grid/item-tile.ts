@@ -8,13 +8,13 @@ import type { SortParam } from '@internetarchive/search-service';
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
-
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
+
 import '../image-block';
 import '../review-block';
 import '../text-snippet-block';
 import '../item-image';
-import '../mediatype-icon';
+import '../tile-mediatype-icon';
 import './tile-stats';
 
 @customElement('item-tile')

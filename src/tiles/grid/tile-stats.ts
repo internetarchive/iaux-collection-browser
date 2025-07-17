@@ -70,11 +70,11 @@ export class TileStats extends LitElement {
     return html`
       <li class="col">
         <p class="sr-only">${msg('Mediatype:')}</p>
-        <mediatype-icon
+        <tile-mediatype-icon
           .mediatype=${this.mediatype}
           .collections=${this.collections}
           ?isTvSearchResult=${this.isTvSearchResult}
-        ></mediatype-icon>
+        ></tile-mediatype-icon>
       </li>
     `;
   }
@@ -151,7 +151,7 @@ export class TileStats extends LitElement {
     return [
       srOnlyStyle,
       css`
-        mediatype-icon {
+        tile-mediatype-icon {
           --iconHeight: 25px;
           --iconWidth: 25px;
         }

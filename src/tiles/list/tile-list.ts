@@ -19,7 +19,7 @@ import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import '../image-block';
 import '../review-block';
 import '../text-snippet-block';
-import '../mediatype-icon';
+import '../tile-mediatype-icon';
 
 @customElement('tile-list')
 export class TileList extends BaseTileComponent {
@@ -126,12 +126,12 @@ export class TileList extends BaseTileComponent {
   private get iconRightTemplate() {
     return html`
       <a id="icon-right" href=${this.mediatypeURL}>
-        <mediatype-icon
+        <tile-mediatype-icon
           .mediatype=${this.model?.mediatype}
           .collections=${this.model?.collections}
           ?isTvSearchResult=${this.model?.isTvSearchResult}
         >
-        </mediatype-icon>
+        </tile-mediatype-icon>
       </a>
     `;
   }

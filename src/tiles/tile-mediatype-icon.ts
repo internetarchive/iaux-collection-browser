@@ -11,8 +11,8 @@ const TV_FACT_CHECK_COLLECTION = 'factchecked';
 const TV_COLLECTIONS = new Set(['tvnews', 'tvarchive', 'television']);
 const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
 
-@customElement('mediatype-icon')
-export class MediatypeIcon extends LitElement {
+@customElement('tile-mediatype-icon')
+export class TileMediatypeIcon extends LitElement {
   @property({ type: String }) mediatype?: MediatypeConfigKey;
 
   @property({ type: Array }) collections?: string[];
