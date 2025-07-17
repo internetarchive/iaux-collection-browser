@@ -11,7 +11,7 @@ import { map } from 'lit/directives/map.js';
 import { ref } from 'lit/directives/ref.js';
 import { msg } from '@lit/localize';
 import { classMap } from 'lit/directives/class-map.js';
-import type {
+import {
   Aggregation,
   AggregationSortType,
   Bucket,
@@ -36,7 +36,7 @@ import {
   SelectedFacets,
   FacetGroup,
   FacetBucket,
-  facetDisplayOrder,
+  defaultFacetDisplayOrder,
   facetTitles,
   lendingFacetDisplayNames,
   lendingFacetKeysVisibility,
@@ -44,6 +44,7 @@ import {
   suppressedCollections,
   defaultFacetSort,
   FacetEventDetails,
+  tvChannelFacetLabels,
 } from './models';
 import type {
   CollectionTitles,
@@ -68,7 +69,7 @@ import {
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
-  @property({ type: String }) searchType?: SearchType;
+  @property({ type: Number }) searchType?: SearchType;
 
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
@@ -108,6 +109,11 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) isManageView = false;
 
+  @property({ type: Boolean }) isTvSearch = false;
+
+  @property({ type: Array }) facetDisplayOrder: FacetOption[] =
+    defaultFacetDisplayOrder;
+
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
 
@@ -134,6 +140,9 @@ export class CollectionFacets extends LitElement {
     creator: false,
     collection: false,
     year: false,
+    program: false,
+    person: false,
+    sponsor: false,
   };
 
   /**
@@ -227,6 +236,7 @@ export class CollectionFacets extends LitElement {
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     const buckets = fullYearsHistogramAggregation?.buckets as number[];
+    const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
 
     // Because the modal manager does not clear its DOM content after being closed,
     // it may try to render the exact same date picker template when it is reopened.
@@ -251,6 +261,7 @@ export class CollectionFacets extends LitElement {
         .maxDate=${maxDate}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
+        .dateFormat=${dateFormat}
         .buckets=${buckets}
         .modalManager=${this.modalManager}
         .analyticsHandler=${this.analyticsHandler}
@@ -264,7 +275,7 @@ export class CollectionFacets extends LitElement {
       headerColor: '#194880',
       showHeaderLogo: false,
       closeOnBackdropClick: true, // TODO: want to fire analytics
-      title: html`Select a date range`,
+      title: html`${msg('Select a date range')}`,
     });
 
     this.modalManager?.classList.add('expanded-date-picker');
@@ -319,15 +330,18 @@ export class CollectionFacets extends LitElement {
     const { fullYearsHistogramAggregation } = this;
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
+    const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
     return this.fullYearAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
           <histogram-date-range
+            class=${this.isTvSearch ? 'wide-inputs' : nothing}
             .minDate=${minDate}
             .maxDate=${maxDate}
             .minSelectedDate=${this.minSelectedDate ?? minDate}
             .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
             .updateDelay=${100}
+            .dateFormat=${dateFormat}
             missingDataMessage="..."
             .width=${this.collapsableFacets && this.contentWidth
               ? this.contentWidth
@@ -363,7 +377,7 @@ export class CollectionFacets extends LitElement {
   private get mergedFacets(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
 
-    facetDisplayOrder.forEach(facetKey => {
+    this.facetDisplayOrder.forEach(facetKey => {
       const selectedFacetGroup = this.selectedFacetGroups.find(
         group => group.key === facetKey,
       );
@@ -425,7 +439,7 @@ export class CollectionFacets extends LitElement {
       }
 
       // Sort the FacetBuckets so that selected and hidden buckets come before the rest
-      sortBucketsBySelectionState(bucketsWithCount);
+      sortBucketsBySelectionState(bucketsWithCount, defaultFacetSort[facetKey]);
 
       // For mediatype facets, ensure the collection bucket is always shown if present
       if (facetKey === 'mediatype') {
@@ -446,6 +460,18 @@ export class CollectionFacets extends LitElement {
 
           bucketsWithCount.splice(allowedFacetCount - 1, 0, collectionBucket);
         }
+      }
+
+      // For TV creator facets, uppercase the display text
+      if (facetKey === 'creator' && this.isTvSearch) {
+        bucketsWithCount.forEach(b => {
+          b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
+
+          const channelLabel = tvChannelFacetLabels[b.displayText];
+          if (channelLabel && channelLabel !== b.displayText) {
+            b.extraNote = `(${channelLabel})`;
+          }
+        });
       }
 
       // slice off how many items we want to show in page facet area
@@ -679,6 +705,7 @@ export class CollectionFacets extends LitElement {
         .collectionTitles=${this.collectionTitles}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
+        .isTvSearch=${this.isTvSearch}
         @facetsChanged=${(e: CustomEvent) => {
           const event = new CustomEvent<SelectedFacets>('facetsChanged', {
             detail: e.detail,
@@ -820,8 +847,6 @@ export class CollectionFacets extends LitElement {
 
         h3 {
           font-size: 1.4rem;
-          font-weight: 200
-          padding-bottom: 3px;
           margin: 0;
         }
 
@@ -857,6 +882,10 @@ export class CollectionFacets extends LitElement {
         .sorting-icon {
           height: 15px;
           cursor: pointer;
+        }
+
+        histogram-date-range.wide-inputs {
+          --histogramDateRangeInputWidth: 4.8rem;
         }
       `,
     ];
