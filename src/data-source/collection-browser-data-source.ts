@@ -1208,6 +1208,19 @@ export class CollectionBrowserDataSource
   }
 
   /**
+   * Returns the type of request that produced the current set of hits,
+   * based on the presence of a search query or profile/collection target
+   * on the host.
+   */
+  private get hitRequestSource(): HitRequestSource {
+    const { host } = this;
+    if (host.baseQuery) return 'search_query';
+    if (host.withinProfile) return 'profile_tab';
+    if (host.withinCollection) return 'collection_members';
+    return 'unknown';
+  }
+
+  /**
    * Update the datasource from the fetch response
    *
    * @param pageNumber
@@ -1219,15 +1232,9 @@ export class CollectionBrowserDataSource
     needsReload = true,
   ): void {
     const tiles: TileModel[] = [];
+    const requestSource = this.hitRequestSource;
     results?.forEach(result => {
       if (!result.identifier) return;
-      const requestSource: HitRequestSource = this.host.baseQuery
-        ? 'search_query'
-        : this.host.withinProfile
-          ? 'profile_tab'
-          : this.host.withinCollection
-            ? 'collection_members'
-            : 'unknown';
       tiles.push(new TileModel(result, requestSource));
     });
 
