@@ -1145,7 +1145,7 @@
       .fill-color {
         fill: var(--iconFillColor, '#000000');
       }
-    `}};n([h({type:String})],ti.prototype,"mediatype",void 0);n([h({type:Array})],ti.prototype,"collections",void 0);n([h({type:Boolean})],ti.prototype,"isTvSearchResult",void 0);n([h({type:Boolean})],ti.prototype,"showText",void 0);ti=n([F("mediatype-icon")],ti);const Ed=O`
+    `}};n([h({type:String})],ti.prototype,"mediatype",void 0);n([h({type:Array})],ti.prototype,"collections",void 0);n([h({type:Boolean})],ti.prototype,"isTvSearchResult",void 0);n([h({type:Boolean})],ti.prototype,"showText",void 0);ti=n([F("tile-mediatype-icon")],ti);const Ed=O`
   <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path
       d="m100 7.78013601c0-2.14552613-.7593357-3.978597-2.278007-5.4992126-1.5186713-1.52061561-3.3493984-2.28092341-5.4921813-2.28092341h-84.54977287c-2.08268321 0-3.88336049.7603078-5.40203183 2.28092341-1.51867133 1.5206156-2.278007 3.35368647-2.278007 5.4992126v51.49262709c0 2.0853495.75933567 3.8883321 2.278007 5.4089477 1.51867134 1.5206156 3.31934862 2.2809234 5.40203183 2.2809234h10.53361537l.3571304 33.0373658 32.4087237-33.0373658h41.2468361c2.1427829 0 3.97351-.7603078 5.4921813-2.2809234s2.278007-3.3235982 2.278007-5.4089477z"
@@ -1189,11 +1189,11 @@
     `}get mediatypeIconColumnTemplate(){return c`
       <li class="col">
         <p class="sr-only">${C("Mediatype:")}</p>
-        <mediatype-icon
+        <tile-mediatype-icon
           .mediatype=${this.mediatype}
           .collections=${this.collections}
           ?isTvSearchResult=${this.isTvSearchResult}
-        ></mediatype-icon>
+        ></tile-mediatype-icon>
       </li>
     `}columnTemplate(e,t,i,o=[]){const r=rr(e??0,"short","short"),a=C(nt`${r} ${t}`),l=t+":";return c`
       <li class="col ${o.join(" ")}" title=${a}>
@@ -1204,7 +1204,7 @@
         </p>
       </li>
     `}get viewsColumnTemplate(){var e;const t=(e=this.viewLabel)!==null&&e!==void 0?e:C("all-time views");return this.columnTemplate(this.viewCount,t,Ad)}get uploadsColumnTemplate(){return this.columnTemplate(this.itemCount,C("uploads"),Md)}get favoritesColumnTemplate(){return this.columnTemplate(this.favCount,C("favorites"),pn)}get reviewsColumnTemplate(){return this.columnTemplate(this.commentCount,C("reviews"),Ed,["reviews"])}get tvClipsColumnTemplate(){return this.columnTemplate(this.tvClipCount,C("clips"),Dd)}static get styles(){return[st,m`
-        mediatype-icon {
+        tile-mediatype-icon {
           --iconHeight: 25px;
           --iconWidth: 25px;
         }
@@ -1511,12 +1511,12 @@
       ${this.reviewBlockTemplate}
     `}get iconRightTemplate(){var e,t,i;return c`
       <a id="icon-right" href=${this.mediatypeURL}>
-        <mediatype-icon
+        <tile-mediatype-icon
           .mediatype=${(e=this.model)===null||e===void 0?void 0:e.mediatype}
           .collections=${(t=this.model)===null||t===void 0?void 0:t.collections}
           ?isTvSearchResult=${(i=this.model)===null||i===void 0?void 0:i.isTvSearchResult}
         >
-        </mediatype-icon>
+        </tile-mediatype-icon>
       </a>
     `}get titleTemplate(){var e,t,i;return!((e=this.model)===null||e===void 0)&&e.title?!((t=this.model)===null||t===void 0)&&t.href?c`<a href="${this.baseNavigationUrl}${this.model.href}"
           >${(i=this.model.title)!==null&&i!==void 0?i:this.model.identifier}</a
@@ -1875,12 +1875,12 @@
         </div>
         <div id="date">${Ri(this.date,this.dateFormatSize)}</div>
         <div id="icon">
-          <mediatype-icon
+          <tile-mediatype-icon
             .mediatype=${(o=this.model)===null||o===void 0?void 0:o.mediatype}
             .collections=${(r=this.model)===null||r===void 0?void 0:r.collections}
             ?isTvSearchResult=${(a=this.model)===null||a===void 0?void 0:a.isTvSearchResult}
           >
-          </mediatype-icon>
+          </tile-mediatype-icon>
         </div>
         <div id="views">${rr((l=this.views)!==null&&l!==void 0?l:0,this.formatSize)}</div>
       </div>
@@ -1943,7 +1943,7 @@
         display: none;
       }
 
-      .mobile mediatype-icon {
+      .mobile tile-mediatype-icon {
         --iconHeight: 14px;
         --iconWidth: 14px;
       }
