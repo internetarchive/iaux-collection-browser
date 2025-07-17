@@ -22,6 +22,7 @@ import {
   RequestKind,
   SortField,
   SORT_OPTIONS,
+  HitRequestSource,
 } from '../models';
 import { FACETLESS_PAGE_ELEMENTS, type PageSpecifierParams } from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
@@ -1207,6 +1208,19 @@ export class CollectionBrowserDataSource
   }
 
   /**
+   * Returns the type of request that produced the current set of hits,
+   * based on the presence of a search query or profile/collection target
+   * on the host.
+   */
+  private get hitRequestSource(): HitRequestSource {
+    const { host } = this;
+    if (host.baseQuery) return 'search_query';
+    if (host.withinProfile) return 'profile_tab';
+    if (host.withinCollection) return 'collection_members';
+    return 'unknown';
+  }
+
+  /**
    * Update the datasource from the fetch response
    *
    * @param pageNumber
@@ -1218,9 +1232,10 @@ export class CollectionBrowserDataSource
     needsReload = true,
   ): void {
     const tiles: TileModel[] = [];
+    const requestSource = this.hitRequestSource;
     results?.forEach(result => {
       if (!result.identifier) return;
-      tiles.push(new TileModel(result));
+      tiles.push(new TileModel(result, requestSource));
     });
 
     this.addPage(pageNumber, tiles);

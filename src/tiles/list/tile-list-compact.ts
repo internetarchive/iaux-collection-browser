@@ -9,7 +9,7 @@ import { formatDate, DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
-import '../mediatype-icon';
+import '../tile-mediatype-icon';
 
 @customElement('tile-list-compact')
 export class TileListCompact extends BaseTileComponent {
@@ -50,11 +50,12 @@ export class TileListCompact extends BaseTileComponent {
         </div>
         <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
         <div id="icon">
-          <mediatype-icon
+          <tile-mediatype-icon
             .mediatype=${this.model?.mediatype}
             .collections=${this.model?.collections}
+            ?isTvSearchResult=${this.model?.isTvSearchResult}
           >
-          </mediatype-icon>
+          </tile-mediatype-icon>
         </div>
         <div id="views">${formatCount(this.views ?? 0, this.formatSize)}</div>
       </div>
@@ -219,7 +220,7 @@ export class TileListCompact extends BaseTileComponent {
         display: none;
       }
 
-      .mobile mediatype-icon {
+      .mobile tile-mediatype-icon {
         --iconHeight: 14px;
         --iconWidth: 14px;
       }

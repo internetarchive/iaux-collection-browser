@@ -16,6 +16,9 @@ export class TileStats extends LitElement {
   /** The mediatype of the item these stats represent */
   @property({ type: String }) mediatype?: string;
 
+  /** The collections this item is part of */
+  @property({ type: Array }) collections?: string[];
+
   /** The number of uploaded items, if representing an account */
   @property({ type: Number }) itemCount?: number;
 
@@ -30,6 +33,9 @@ export class TileStats extends LitElement {
 
   /** The number of times the item has been reviewed */
   @property({ type: Number }) commentCount?: number;
+
+  /** Whether the tile represents the result of a search */
+  @property({ type: Boolean }) isTvSearchResult = false;
 
   /** Whether to show the number of TV clips in place of reviews */
   @property({ type: Boolean }) showTvClips = false;
@@ -64,7 +70,11 @@ export class TileStats extends LitElement {
     return html`
       <li class="col">
         <p class="sr-only">${msg('Mediatype:')}</p>
-        <mediatype-icon .mediatype=${this.mediatype}></mediatype-icon>
+        <tile-mediatype-icon
+          .mediatype=${this.mediatype}
+          .collections=${this.collections}
+          ?isTvSearchResult=${this.isTvSearchResult}
+        ></tile-mediatype-icon>
       </li>
     `;
   }
@@ -141,7 +151,7 @@ export class TileStats extends LitElement {
     return [
       srOnlyStyle,
       css`
-        mediatype-icon {
+        tile-mediatype-icon {
           --iconHeight: 25px;
           --iconWidth: 25px;
         }
