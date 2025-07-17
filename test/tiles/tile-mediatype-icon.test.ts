@@ -59,7 +59,7 @@ describe('Mediatype Icon', () => {
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
-    expect(iconDiv.title).to.equal('TV');
+    expect(iconDiv.title).to.equal('TV Fact Check');
   });
 
   it('does not use TV Fact Check mediatype for non-search results', async () => {
