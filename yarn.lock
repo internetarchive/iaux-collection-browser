@@ -301,10 +301,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/feature-feedback@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.npmjs.org/@internetarchive/feature-feedback/-/feature-feedback-0.1.4.tgz"
-  integrity sha512-oqZIc4xNfVRxgT0MVOg4jNRgNpO1tkC2MfQ215DBfxjej28R2dCeY6RfkTF2zIVRWc7EKf1jMcJztAtmNA0+mw==
+"@internetarchive/feature-feedback@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/feature-feedback/-/feature-feedback-1.0.0.tgz#72e905695306e4644fe3a92f8614be9d86a4ce33"
+  integrity sha512-JPeZ5UeVcUE6bXiU+7DKtQ418UbtIR1ixsnjCTDrWyvnZFHigwdhJVEfBVE19jedW+SA0XlNf2d3eNyZxTiFBA==
   dependencies:
     "@internetarchive/recaptcha-manager" "^0.1.1"
     "@internetarchive/result-type" "^0.0.1"
