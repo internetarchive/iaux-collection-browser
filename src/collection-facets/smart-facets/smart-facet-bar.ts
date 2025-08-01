@@ -65,9 +65,6 @@ export class SmartFacetBar extends LitElement {
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}
-        ${this.smartFacets.length > 0
-          ? html`<p id="filters-label">${msg('Insights:')}</p>`
-          : nothing}
         ${repeat(
           this.smartFacets,
           f =>
@@ -341,7 +338,7 @@ export class SmartFacetBar extends LitElement {
         margin: 0;
         border: 0;
         padding: 5px 8px;
-        border-radius: 50%;
+        border-radius: 5px;
         background: white;
         color: #2c2c2c;
         border: 1px solid #194880;
@@ -364,11 +361,6 @@ export class SmartFacetBar extends LitElement {
 
       #filters-toggle.active > svg {
         filter: invert(1);
-      }
-
-      #filters-label {
-        font-weight: bold;
-        margin: 0 -5px 0 0;
       }
     `;
   }

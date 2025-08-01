@@ -58,6 +58,9 @@ export class TileDispatcher
 
   @property({ type: Boolean }) showTvClips = false;
 
+  /** Whether to use the simple layout in grid mode */
+  @property({ type: Boolean }) useSimpleLayout = false;
+
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
@@ -342,6 +345,7 @@ export class TileDispatcher
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
               .isManageView=${this.isManageView}
+              ?useSimpleLayout=${this.useSimpleLayout}
               ?showTvClips=${this.showTvClips}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
