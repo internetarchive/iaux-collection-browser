@@ -43,6 +43,8 @@ import {
   SORT_OPTIONS,
   defaultProfileElementSorts,
   FacetLoadStrategy,
+  defaultFacetDisplayOrder,
+  tvFacetDisplayOrder,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -1100,10 +1102,16 @@ export class CollectionBrowser
       `;
     }
 
+    // We switch to TV facet ordering & date picker if we are in a TV collection or showing TV search results
+    const shouldUseTvInterface =
+      this.isTVCollection ||
+      (!this.withinCollection && this.searchType === SearchType.TV);
+    const facetDisplayOrder = shouldUseTvInterface
+      ? tvFacetDisplayOrder
+      : defaultFacetDisplayOrder;
+
     const facets = html`
       <collection-facets
-        @facetsChanged=${this.facetsChanged}
-        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
         .collectionPagePath=${this.collectionPagePath}
         .parentCollections=${this.dataSource.parentCollections}
         .pageSpecifierParams=${this.dataSource.pageSpecifierParams}
@@ -1122,16 +1130,21 @@ export class CollectionBrowser
         .collectionTitles=${this.dataSource.collectionTitles}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
+        .allowDatePickerMonths=${shouldUseTvInterface}
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
         .filterMap=${this.dataSource.filterMap}
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
+        .analyticsHandler=${this.analyticsHandler}
+        .facetDisplayOrder=${facetDisplayOrder}
+        .isTvSearch=${shouldUseTvInterface}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
         @facetClick=${this.facetClickHandler}
-        .analyticsHandler=${this.analyticsHandler}
+        @facetsChanged=${this.facetsChanged}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       >
       </collection-facets>
     `;

@@ -564,18 +564,24 @@ export type FacetOption =
   | 'language'
   | 'creator'
   | 'collection'
-  | 'year';
+  | 'year'
+  // TV-specific facet options:
+  | 'program'
+  | 'person'
+  | 'sponsor';
 
 export type SelectedFacetState = 'selected' | 'hidden';
 
 export type FacetState = SelectedFacetState | 'none';
 
 export interface FacetBucket {
-  // for some facets, we augment the key with a display value
-  displayText?: string;
   key: string;
   count: number;
   state: FacetState;
+  // for some facets, we augment the key with a display value
+  displayText?: string;
+  // for TV channel facets, we add a parenthesized secondary name
+  extraNote?: string;
 }
 
 export interface FacetGroup {
@@ -605,12 +611,11 @@ export type FacetEventDetails = {
 
 export type FacetValue = string;
 
-export type SelectedFacets = Record<
-  FacetOption,
-  Record<FacetValue, FacetBucket>
+export type SelectedFacets = Partial<
+  Record<FacetOption, Record<FacetValue, FacetBucket>>
 >;
 
-export const getDefaultSelectedFacets = (): SelectedFacets => ({
+export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
   subject: {},
   lending: {},
   mediatype: {},
@@ -618,9 +623,15 @@ export const getDefaultSelectedFacets = (): SelectedFacets => ({
   creator: {},
   collection: {},
   year: {},
+  program: {},
+  person: {},
+  sponsor: {},
 });
 
-export const facetDisplayOrder: FacetOption[] = [
+/**
+ * Facet display order when presenting results for all search types *except* TV (see below).
+ */
+export const defaultFacetDisplayOrder: FacetOption[] = [
   'mediatype',
   // 'lending', Commenting this out removes the lending facet from the sidebar for now
   'year',
@@ -630,6 +641,23 @@ export const facetDisplayOrder: FacetOption[] = [
   'language',
 ];
 
+/**
+ * Specialized facet ordering when displaying TV search results
+ */
+export const tvFacetDisplayOrder: FacetOption[] = [
+  'program',
+  'creator',
+  'year',
+  'subject',
+  'collection',
+  'person',
+  'sponsor',
+  'language',
+];
+
+/**
+ * Human-readable titles for each facet group.
+ */
 export const facetTitles: Record<FacetOption, string> = {
   subject: 'Subject',
   lending: 'Availability',
@@ -638,6 +666,9 @@ export const facetTitles: Record<FacetOption, string> = {
   creator: 'Creator',
   collection: 'Collection',
   year: 'Year',
+  program: 'Program',
+  person: 'Person',
+  sponsor: 'Sponsor',
 };
 
 /**
@@ -650,7 +681,10 @@ export const defaultFacetSort: Record<FacetOption, AggregationSortType> = {
   language: AggregationSortType.COUNT,
   creator: AggregationSortType.COUNT,
   collection: AggregationSortType.COUNT,
-  year: AggregationSortType.NUMERIC,
+  year: AggregationSortType.NUMERIC, // Year facets are ordered by their numeric value by default
+  program: AggregationSortType.COUNT,
+  person: AggregationSortType.COUNT,
+  sponsor: AggregationSortType.COUNT,
 };
 
 /**
@@ -664,8 +698,47 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
   language: AggregationSortType.ALPHABETICAL,
   creator: AggregationSortType.ALPHABETICAL,
   collection: AggregationSortType.ALPHABETICAL,
-  year: AggregationSortType.NUMERIC,
+  year: AggregationSortType.NUMERIC, // Year facets' values should be compared numerically, not lexicographically (year 2001 > year 3)
+  program: AggregationSortType.ALPHABETICAL,
+  person: AggregationSortType.ALPHABETICAL,
+  sponsor: AggregationSortType.ALPHABETICAL,
 };
+
+/**
+ * Extra parenthesized labels to show next to certain TV channel facets
+ *
+ * TODO: This is only needed until we can receive the appropriate mapping via PPS,
+ * and can be removed/replaced once that is set up.
+ */
+export const tvChannelFacetLabels: Record<string, string> = Object.fromEntries(
+  // prettier-ignore
+  Object.entries({
+    'Al Jazeera'     : ['ALJAZAM', 'ALJAZ'],
+    'Bloomberg'      : ['BLOOMBERG'],
+    'BBC'            : ['BBC', 'BBC1', 'BBC2'],
+    'BBC America'    : ['BBCAMERICA'],
+    'BBC News'       : ['BBCNEWS'],
+    'GB News'        : ['GBN'],
+    'BET'            : ['BETW'],
+    'CNBC'           : ['CNBC'],
+    'CNN'            : ['CNNW', 'CNN'],
+    'Comedy Central' : ['COM', 'COMW'],
+    'CSPAN'          : ['CSPAN', 'CSPAN2', 'CSPAN3'],
+    'Current'        : ['CURRENT'],
+    'Deutsche Welle' : ['DW'],
+    'France 24'      : ['FRANCE24'],
+    'FOX Business'   : ['FBC'],
+    'FOX News'       : ['FOXNEWSW', 'FOXNEWS'],
+    'LINKTV'         : ['LINKTV'],
+    'MSNBC'          : ['MSNBCW', 'MSNBC'],
+    'NHK World'      : ['NHK'],
+    'RT'             : ['RT'],
+    'Sky News'       : ['SKY'],
+  }).reduce(
+    (acc, [label, channels]) => acc.concat(channels.map(ch => [ch, label])),
+    [] as [string, string][],
+  ),
+);
 
 export type LendingFacetKey =
   | 'is_lendable'

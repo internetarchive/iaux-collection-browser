@@ -172,6 +172,17 @@ export class AppRoot extends LitElement {
             <span class="search-type">
               <input
                 type="radio"
+                id="default-search"
+                name="search-type"
+                value="default"
+                .checked=${this.searchType === SearchType.DEFAULT}
+                @click=${this.searchTypeSelected}
+              />
+              <label for="default-search">Default</label>
+            </span>
+            <span class="search-type">
+              <input
+                type="radio"
                 id="metadata-search"
                 name="search-type"
                 value="metadata"
@@ -190,6 +201,28 @@ export class AppRoot extends LitElement {
                 @click=${this.searchTypeSelected}
               />
               <label for="fulltext-search">Full text</label>
+            </span>
+            <span class="search-type">
+              <input
+                type="radio"
+                id="tv-search"
+                name="search-type"
+                value="tv"
+                .checked=${this.searchType === SearchType.TV}
+                @click=${this.searchTypeSelected}
+              />
+              <label for="tv-search">TV</label>
+            </span>
+            <span class="search-type">
+              <input
+                type="radio"
+                id="radio-search"
+                name="search-type"
+                value="radio"
+                .checked=${this.searchType === SearchType.RADIO}
+                @click=${this.searchTypeSelected}
+              />
+              <label for="radio-search">Radio</label>
             </span>
           </div>
 
@@ -529,8 +562,22 @@ export class AppRoot extends LitElement {
   /** Handler for user input selecting a search type */
   private searchTypeSelected(e: Event) {
     const target = e.target as HTMLInputElement;
-    this.searchType =
-      target.value === 'fulltext' ? SearchType.FULLTEXT : SearchType.METADATA;
+    this.searchType = this.searchTypeFromSelectedOption(target.value);
+  }
+
+  private searchTypeFromSelectedOption(option: string): SearchType {
+    switch (option) {
+      case 'metadata':
+        return SearchType.METADATA;
+      case 'fulltext':
+        return SearchType.FULLTEXT;
+      case 'tv':
+        return SearchType.TV;
+      case 'radio':
+        return SearchType.RADIO;
+      default:
+        return SearchType.DEFAULT;
+    }
   }
 
   private loginChanged(e: Event) {

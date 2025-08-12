@@ -62,7 +62,7 @@ export function updateSelectedFacetBucket(
   omitNoneState = false,
 ): SelectedFacets {
   const defaultedSelectedFacets = selectedFacets ?? getDefaultSelectedFacets();
-  const newFacets = {
+  const newFacets: SelectedFacets = {
     ...defaultedSelectedFacets,
     [facetType]: {
       ...defaultedSelectedFacets[facetType],
@@ -71,7 +71,7 @@ export function updateSelectedFacetBucket(
   };
 
   if (omitNoneState && bucket.state === 'none') {
-    delete newFacets[facetType][bucket.key];
+    delete newFacets[facetType]?.[bucket.key];
   }
 
   return newFacets;
@@ -93,6 +93,7 @@ export function cloneSelectedFacets(
 ): SelectedFacets {
   const cloneResult = getDefaultSelectedFacets();
   forEachFacetBucket(selectedFacets, (facetType, bucketKey, bucket) => {
+    if (!cloneResult[facetType]) cloneResult[facetType] = {};
     cloneResult[facetType][bucketKey] = bucket;
   });
   return cloneResult;
@@ -124,13 +125,14 @@ export function mergeSelectedFacets(
 ): SelectedFacets {
   const mergeResult = cloneSelectedFacets(destination);
   forEachFacetBucket(source, (facetType, bucketKey, bucket) => {
+    if (!mergeResult[facetType]) mergeResult[facetType] = {};
     mergeResult[facetType][bucketKey] = bucket;
   });
 
   // Normalize any 'none' states on the result (from either source or destination)
   forEachFacetBucket(mergeResult, (facetType, bucketKey, bucket) => {
     if (bucket.state === 'none') {
-      delete mergeResult[facetType][bucketKey];
+      delete mergeResult[facetType]?.[bucketKey];
     }
   });
 

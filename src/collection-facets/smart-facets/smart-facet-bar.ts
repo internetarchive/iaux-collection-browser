@@ -202,7 +202,7 @@ export class SmartFacetBar extends LitElement {
         if (
           key === 'mediatype' &&
           this.selectedFacets &&
-          Object.values(this.selectedFacets.mediatype).some(
+          Object.values(this.selectedFacets.mediatype ?? {}).some(
             bucket => bucket.state !== 'none',
           )
         ) {
@@ -213,7 +213,7 @@ export class SmartFacetBar extends LitElement {
         const buckets = agg.buckets as Bucket[];
 
         const unusedBuckets = buckets.filter(b => {
-          const selectedFacetBucket = this.selectedFacets?.[facetType][b.key];
+          const selectedFacetBucket = this.selectedFacets?.[facetType]?.[b.key];
           if (selectedFacetBucket && selectedFacetBucket.state !== 'none') {
             return false;
           }
