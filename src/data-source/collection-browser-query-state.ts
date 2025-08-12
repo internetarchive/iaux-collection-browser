@@ -6,7 +6,12 @@ import type {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
-import type { FacetLoadStrategy, SelectedFacets, SortField } from '../models';
+import type {
+  FacetLoadStrategy,
+  SelectedFacets,
+  SortField,
+  TvClipFilterType,
+} from '../models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 
 /**
@@ -23,6 +28,7 @@ export interface CollectionBrowserQueryState {
   maxSelectedDate?: string;
   selectedTitleFilter: string | null;
   selectedCreatorFilter: string | null;
+  tvClipFilter?: TvClipFilterType;
   selectedSort?: SortField;
   sortDirection: SortDirection | null;
 }

@@ -5,6 +5,7 @@ import {
   CollectionBrowserContext,
   CollectionDisplayMode,
   SelectedFacets,
+  TvClipFilterType,
   SortField,
   FacetBucket,
   FacetState,
@@ -28,6 +29,7 @@ export interface RestorationState {
   maxSelectedDate?: string;
   selectedTitleFilter?: string;
   selectedCreatorFilter?: string;
+  tvClipFilter?: TvClipFilterType;
 }
 
 export interface RestorationStatePersistOptions {
@@ -204,6 +206,21 @@ export class RestorationStateHandler
 
     if (state.creatorQuery) {
       newParams.append('and[]', state.creatorQuery);
+    }
+
+    // TV clip special filters
+    switch (state.tvClipFilter) {
+      case 'commercials':
+        newParams.append('only_commercials', '1');
+        break;
+      case 'factchecks':
+        newParams.append('only_factchecks', '1');
+        break;
+      case 'quotes':
+        newParams.append('only_quotes', '1');
+        break;
+      default:
+      // Don't add anything to the URL
     }
 
     // Ensure we aren't pushing consecutive identical states to the history stack.
@@ -396,6 +413,20 @@ export class RestorationStateHandler
           'hidden',
         );
       });
+    }
+
+    // TV clip special filters (carryovers from legacy page)
+    const commercialsParam = url.searchParams.get('only_commercials');
+    const factchecksParam = url.searchParams.get('only_factchecks');
+    const quotesParam = url.searchParams.get('only_quotes');
+    if (commercialsParam) {
+      restorationState.tvClipFilter = 'commercials';
+    } else if (factchecksParam) {
+      restorationState.tvClipFilter = 'factchecks';
+    } else if (quotesParam) {
+      restorationState.tvClipFilter = 'quotes';
+    } else {
+      restorationState.tvClipFilter = 'all';
     }
 
     return restorationState;

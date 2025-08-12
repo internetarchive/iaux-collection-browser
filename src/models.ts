@@ -629,6 +629,11 @@ export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
 });
 
 /**
+ * For TV search results, what types of TV clips to restrict the results to.
+ */
+export type TvClipFilterType = 'all' | 'commercials' | 'factchecks' | 'quotes';
+
+/**
  * Facet display order when presenting results for all search types *except* TV (see below).
  */
 export const defaultFacetDisplayOrder: FacetOption[] = [

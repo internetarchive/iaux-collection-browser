@@ -45,6 +45,7 @@ import {
   FacetLoadStrategy,
   defaultFacetDisplayOrder,
   tvFacetDisplayOrder,
+  TvClipFilterType,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -130,6 +131,8 @@ export class CollectionBrowser
   @property({ type: String }) selectedTitleFilter: string | null = null;
 
   @property({ type: String }) selectedCreatorFilter: string | null = null;
+
+  @property({ type: String }) tvClipFilter: TvClipFilterType = 'all';
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
@@ -1300,6 +1303,7 @@ export class CollectionBrowser
     this.sortDirection = queryState.sortDirection;
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
+    this.tvClipFilter = queryState.tvClipFilter ?? 'all';
 
     // We set this flag during the update to prevent the URL state persistence
     // from creating an unwanted extra history entry.
@@ -1727,6 +1731,7 @@ export class CollectionBrowser
           sortDirection: this.sortDirection,
           selectedTitleFilter: this.selectedTitleFilter,
           selectedCreatorFilter: this.selectedCreatorFilter,
+          tvClipFilter: this.tvClipFilter,
         },
       }),
     );
