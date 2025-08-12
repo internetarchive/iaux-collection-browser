@@ -509,6 +509,9 @@ export class RestorationStateHandler
     // Also remove some legacy params that should have been upgraded to the ones above
     searchParams.delete('q');
     searchParams.delete('search');
+    searchParams.delete('only_commercials');
+    searchParams.delete('only_factchecks');
+    searchParams.delete('only_quotes');
 
     return searchParams;
   }
