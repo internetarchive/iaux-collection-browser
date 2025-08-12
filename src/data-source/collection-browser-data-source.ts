@@ -698,23 +698,16 @@ export class CollectionBrowserDataSource
       selectedCreatorFilter,
     } = this.host;
 
-    // Add the date range, if applicable.
-    // If the min/max are just years, filter on `year` alone. If months/days are included, use `date` instead.
-    const dateRangeField =
-      minSelectedDate?.includes('-') || maxSelectedDate?.includes('-')
-        ? 'date'
-        : 'year';
-
     if (minSelectedDate) {
       builder.addFilter(
-        dateRangeField,
+        'year',
         minSelectedDate,
         FilterConstraint.GREATER_OR_EQUAL,
       );
     }
     if (maxSelectedDate) {
       builder.addFilter(
-        dateRangeField,
+        'year',
         maxSelectedDate,
         FilterConstraint.LESS_OR_EQUAL,
       );

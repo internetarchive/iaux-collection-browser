@@ -707,7 +707,8 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
 /**
  * Extra parenthesized labels to show next to certain TV channel facets
  *
- * TODO this is temporary for testing
+ * TODO: This is only needed until we can receive the appropriate mapping via PPS,
+ * and can be removed/replaced once that is set up.
  */
 export const tvChannelFacetLabels: Record<string, string> = Object.fromEntries(
   // prettier-ignore
