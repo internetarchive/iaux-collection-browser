@@ -127,6 +127,7 @@ export class TileList extends BaseTileComponent {
     return html`
       <a id="icon-right" href=${this.mediatypeURL}>
         <tile-mediatype-icon
+          .model=${this.model}
           .mediatype=${this.model?.mediatype}
           .collections=${this.model?.collections}
           ?isTvSearchResult=${this.model?.isTvSearchResult}

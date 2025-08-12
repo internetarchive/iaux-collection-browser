@@ -5,6 +5,7 @@ import {
   mediatypeConfig,
   MediatypeConfigKey,
 } from '../mediatype/mediatype-config';
+import { TileModel } from '../models';
 
 const TV_COMMERCIAL_COLLECTION = 'tv_ads';
 const TV_FACT_CHECK_COLLECTION = 'factchecked';
@@ -14,6 +15,8 @@ const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
 @customElement('tile-mediatype-icon')
 export class TileMediatypeIcon extends LitElement {
   @property({ type: String }) mediatype?: MediatypeConfigKey;
+
+  @property({ type: Object }) model?: TileModel;
 
   @property({ type: Array }) collections?: string[];
 
@@ -34,13 +37,12 @@ export class TileMediatypeIcon extends LitElement {
    * Returns the appropriate TV mediatype, depending on the current collections.
    */
   private get tvDisplayMediatype(): MediatypeConfigKey {
-    if (this.collections?.includes(TV_COMMERCIAL_COLLECTION)) {
+    if (this.isTvCommercial) {
       return 'tvCommercial';
-    } else if (
-      this.isTvSearchResult &&
-      this.collections?.includes(TV_FACT_CHECK_COLLECTION)
-    ) {
+    } else if (this.isTvSearchResult && this.isTvFactCheck) {
       return 'tvFactCheck';
+    } else if (this.isTvSearchResult && this.isTvQuote) {
+      return 'tvQuote';
     }
 
     return 'tv';
@@ -54,6 +56,20 @@ export class TileMediatypeIcon extends LitElement {
       this.mediatype === 'movies' &&
       !!this.collections?.some(id => TV_COLLECTIONS.has(id))
     );
+  }
+
+  private get isTvCommercial(): boolean {
+    // Contains one or more TV ad identifiers
+    return !!this.model?.adIds?.length;
+  }
+
+  private get isTvFactCheck(): boolean {
+    // Contains one or more fact-check URLs
+    return !!this.model?.factChecks?.length;
+  }
+
+  private get isTvQuote(): boolean {
+    return !!this.model?.isClip;
   }
 
   /**

@@ -339,7 +339,7 @@
   dependencies:
     lit "^2.8.0"
 
-"@internetarchive/iaux-item-metadata@^1.0.4", "@internetarchive/iaux-item-metadata@^1.0.5":
+"@internetarchive/iaux-item-metadata@^1.0.5":
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.0.5.tgz#d6854754aced46e12dae4ea89aeb4a14b5643391"
   integrity sha512-FArosV3Y/x588QjBSrH15mqeWCivh7hGgRGXoSdauuwqRyPjY/FI3VM69Ox92zZ9Qrm8JOTn3dzbHN0WbiiVtg==
@@ -407,14 +407,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^2.2.1":
-  version "2.2.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.2.1.tgz#bb3339b3ebbbd8b4d5e02166aa90b8309073ff58"
-  integrity sha512-MNwlgvC5M6XNMq/7fuK6Wvg3oF7tJLGwWhEovJeZSmNSwaiL/tYHMofNuCYiGcSpZq4vENcqQRnJ6xgk3mkpqg==
+"@internetarchive/search-service@2.3.2-alpha-webdev7687.0":
+  version "2.3.2-alpha-webdev7687.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.3.2-alpha-webdev7687.0.tgz#19d0667bfefe3b5339bb085edeea4de479d694ad"
+  integrity sha512-HyIDcJAyuiBFLNL+p6HuoA8TTr9rtacGCXnLAD0dWcp9tDr+CSmGHrKYT3Y7j+ryhZCEo75g6dmrGUQ5Y61O0A==
   dependencies:
-    "@internetarchive/iaux-item-metadata" "^1.0.4"
+    "@internetarchive/iaux-item-metadata" "^1.0.5"
     "@internetarchive/result-type" "^0.0.1"
-    decorator-cache-getter "^1.0.0"
     typescript-memoize "^1.1.1"
 
 "@internetarchive/shared-resize-observer@^0.2.0":
@@ -1969,11 +1968,6 @@ debug@^3.1.0, debug@^3.2.7:
   integrity sha512-CFjzYYAi4ThfiQvizrFQevTTXHtnCqWfe7x1AhgEscTz6ZbLbfoLRLPugTQyBth6f8ZERVUSyWHFD/7Wu4t1XQ==
   dependencies:
     ms "^2.1.1"
-
-decorator-cache-getter@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/decorator-cache-getter/-/decorator-cache-getter-1.0.0.tgz"
-  integrity sha512-yB49c5qi0govRjpe18vutEkkKzosIt2XggYSs1Qyev1TJYTh2WmLgDp0dV6VJ/6yNBRlKG+qMG80Vy4Bg0mLJw==
 
 deep-equal@~1.0.1:
   version "1.0.1"
