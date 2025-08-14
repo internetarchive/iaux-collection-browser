@@ -132,7 +132,7 @@ export class CollectionBrowser
 
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
-  @property({ type: String }) tvClipFilter?: TvClipFilterType = 'all';
+  @property({ type: String }) tvClipFilter: TvClipFilterType = 'all';
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
@@ -1895,7 +1895,7 @@ export class CollectionBrowser
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
-    this.tvClipFilter = restorationState.tvClipFilter;
+    this.tvClipFilter = restorationState.tvClipFilter ?? 'all';
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage);
     }
