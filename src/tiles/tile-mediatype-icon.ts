@@ -7,8 +7,6 @@ import {
 } from '../mediatype/mediatype-config';
 import { TileModel } from '../models';
 
-const TV_COMMERCIAL_COLLECTION = 'tv_ads';
-const TV_FACT_CHECK_COLLECTION = 'factchecked';
 const TV_COLLECTIONS = new Set(['tvnews', 'tvarchive', 'television']);
 const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
 
