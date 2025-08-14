@@ -5,7 +5,7 @@ import {
   mediatypeConfig,
   MediatypeConfigKey,
 } from '../mediatype/mediatype-config';
-import { TileModel } from '../models';
+import type { TileModel } from '../models';
 
 const TV_COLLECTIONS = new Set(['tvnews', 'tvarchive', 'television']);
 const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
