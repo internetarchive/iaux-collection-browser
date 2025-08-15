@@ -74,12 +74,7 @@ export class TileStats extends LitElement {
     return html`
       <li class="col">
         <p class="sr-only">${msg('Mediatype:')}</p>
-        <tile-mediatype-icon
-          .model=${this.model}
-          .mediatype=${this.mediatype}
-          .collections=${this.collections}
-          ?isTvSearchResult=${this.isTvSearchResult}
-        ></tile-mediatype-icon>
+        <tile-mediatype-icon .model=${this.model}></tile-mediatype-icon>
       </li>
     `;
   }

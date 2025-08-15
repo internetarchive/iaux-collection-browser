@@ -7,18 +7,14 @@ import {
 } from '../mediatype/mediatype-config';
 import type { TileModel } from '../models';
 
+const TV_COMMERCIAL_COLLECTION = 'tv_ads';
+const TV_FACT_CHECK_COLLECTION = 'factchecked';
 const TV_COLLECTIONS = new Set(['tvnews', 'tvarchive', 'television']);
 const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
 
 @customElement('tile-mediatype-icon')
 export class TileMediatypeIcon extends LitElement {
-  @property({ type: String }) mediatype?: MediatypeConfigKey;
-
   @property({ type: Object }) model?: TileModel;
-
-  @property({ type: Array }) collections?: string[];
-
-  @property({ type: Boolean }) isTvSearchResult = false;
 
   @property({ type: Boolean }) showText = false;
 
@@ -28,7 +24,7 @@ export class TileMediatypeIcon extends LitElement {
   private get displayMediatype(): MediatypeConfigKey {
     if (this.isTvItem) return this.tvDisplayMediatype;
     if (this.isRadioItem) return 'radio';
-    return this.mediatype ?? 'none';
+    return this.model?.mediatype ?? 'none';
   }
 
   /**
@@ -37,9 +33,9 @@ export class TileMediatypeIcon extends LitElement {
   private get tvDisplayMediatype(): MediatypeConfigKey {
     if (this.isTvCommercial) {
       return 'tvCommercial';
-    } else if (this.isTvSearchResult && this.isTvFactCheck) {
+    } else if (this.model?.isTvSearchResult && this.isTvFactCheck) {
       return 'tvFactCheck';
-    } else if (this.isTvSearchResult && this.isTvQuote) {
+    } else if (this.model?.isTvSearchResult && this.isTvQuote) {
       return 'tvQuote';
     }
 
@@ -50,20 +46,26 @@ export class TileMediatypeIcon extends LitElement {
    * Whether this represents a TV item
    */
   private get isTvItem(): boolean {
-    return (
-      this.mediatype === 'movies' &&
-      !!this.collections?.some(id => TV_COLLECTIONS.has(id))
+    return !!(
+      this.model?.mediatype === 'movies' &&
+      this.model?.collections.some(id => TV_COLLECTIONS.has(id))
     );
   }
 
   private get isTvCommercial(): boolean {
-    // Contains one or more TV ad identifiers
-    return !!this.model?.adIds?.length;
+    // Contains one or more TV ad identifiers or is in the tv_ads collection
+    return !!(
+      this.model?.adIds?.length ||
+      this.model?.collections.includes(TV_COMMERCIAL_COLLECTION)
+    );
   }
 
   private get isTvFactCheck(): boolean {
-    // Contains one or more fact-check URLs
-    return !!this.model?.factChecks?.length;
+    // Contains one or more fact-check URLs or is in the factchecked collection
+    return !!(
+      this.model?.factChecks?.length ||
+      this.model?.collections.includes(TV_FACT_CHECK_COLLECTION)
+    );
   }
 
   private get isTvQuote(): boolean {
@@ -74,9 +76,9 @@ export class TileMediatypeIcon extends LitElement {
    * Whether this represents a radio item
    */
   private get isRadioItem(): boolean {
-    return (
-      this.mediatype === 'audio' &&
-      !!this.collections?.some(id => RADIO_COLLECTIONS.has(id))
+    return !!(
+      this.model?.mediatype === 'audio' &&
+      this.model?.collections.some(id => RADIO_COLLECTIONS.has(id))
     );
   }
 

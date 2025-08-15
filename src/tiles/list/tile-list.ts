@@ -126,13 +126,7 @@ export class TileList extends BaseTileComponent {
   private get iconRightTemplate() {
     return html`
       <a id="icon-right" href=${this.mediatypeURL}>
-        <tile-mediatype-icon
-          .model=${this.model}
-          .mediatype=${this.model?.mediatype}
-          .collections=${this.model?.collections}
-          ?isTvSearchResult=${this.model?.isTvSearchResult}
-        >
-        </tile-mediatype-icon>
+        <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
       </a>
     `;
   }
