@@ -12,6 +12,8 @@ import {
   getDefaultSelectedFacets,
   sortOptionFromAPIString,
   SORT_OPTIONS,
+  tvClipFiltersToURLParams,
+  tvClipURLParamsToFilters,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 
@@ -209,18 +211,9 @@ export class RestorationStateHandler
     }
 
     // TV clip special filters
-    switch (state.tvClipFilter) {
-      case 'commercials':
-        newParams.append('only_commercials', '1');
-        break;
-      case 'factchecks':
-        newParams.append('only_factchecks', '1');
-        break;
-      case 'quotes':
-        newParams.append('only_quotes', '1');
-        break;
-      default:
-      // Don't add anything to the URL
+    if (state.tvClipFilter) {
+      const tvClipParam = tvClipFiltersToURLParams[state.tvClipFilter];
+      if (tvClipParam) newParams.append(tvClipParam, '1');
     }
 
     // Ensure we aren't pushing consecutive identical states to the history stack.
@@ -235,6 +228,9 @@ export class RestorationStateHandler
       'sort',
       'and[]',
       'not[]',
+      'only_commercials',
+      'only_factchecks',
+      'only_quotes',
     ]);
 
     if (
@@ -416,17 +412,11 @@ export class RestorationStateHandler
     }
 
     // TV clip special filters (carryovers from legacy page)
-    const commercialsParam = url.searchParams.get('only_commercials');
-    const factchecksParam = url.searchParams.get('only_factchecks');
-    const quotesParam = url.searchParams.get('only_quotes');
-    if (commercialsParam) {
-      restorationState.tvClipFilter = 'commercials';
-    } else if (factchecksParam) {
-      restorationState.tvClipFilter = 'factchecks';
-    } else if (quotesParam) {
-      restorationState.tvClipFilter = 'quotes';
-    } else {
-      restorationState.tvClipFilter = 'all';
+    for (const [paramKey, filter] of Object.entries(tvClipURLParamsToFilters)) {
+      if (url.searchParams.get(paramKey)) {
+        restorationState.tvClipFilter = filter;
+        break;
+      }
     }
 
     return restorationState;

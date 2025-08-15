@@ -656,6 +656,25 @@ export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
 export type TvClipFilterType = 'all' | 'commercials' | 'factchecks' | 'quotes';
 
 /**
+ * Map from TV clip filter types to their corresponding URL params
+ */
+export const tvClipFiltersToURLParams: Record<TvClipFilterType, string> = {
+  all: '',
+  commercials: 'only_commercials',
+  factchecks: 'only_factchecks',
+  quotes: 'only_quotes',
+};
+
+/**
+ * Map from allowed TV filtering parameters in the URL to their corresponding filter type
+ */
+export const tvClipURLParamsToFilters: Record<string, TvClipFilterType> = {
+  only_commercials: 'commercials',
+  only_factchecks: 'factchecks',
+  only_quotes: 'quotes',
+};
+
+/**
  * Facet display order when presenting results for all search types *except* TV (see below).
  */
 export const defaultFacetDisplayOrder: FacetOption[] = [
