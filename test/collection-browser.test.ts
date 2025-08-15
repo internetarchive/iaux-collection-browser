@@ -972,6 +972,60 @@ describe('Collection Browser', () => {
     });
   });
 
+  it('applies correct search filter when TV clip filter set to commercials', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'tv-fields';
+    el.searchType = SearchType.TV;
+    el.tvClipFilter = 'commercials';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.ad_id?.['*']).to.equal(
+      FilterConstraint.INCLUDE,
+    );
+  });
+
+  it('applies correct search filter when TV clip filter set to factchecks', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'tv-fields';
+    el.searchType = SearchType.TV;
+    el.tvClipFilter = 'factchecks';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.factcheck?.['*']).to.equal(
+      FilterConstraint.INCLUDE,
+    );
+  });
+
+  it('applies correct search filter when TV clip filter set to quotes', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'tv-fields';
+    el.searchType = SearchType.TV;
+    el.tvClipFilter = 'quotes';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.clip?.['1']).to.equal(
+      FilterConstraint.INCLUDE,
+    );
+  });
+
   it('resets letter filters when query changes', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(

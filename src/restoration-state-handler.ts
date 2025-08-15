@@ -5,12 +5,15 @@ import {
   CollectionBrowserContext,
   CollectionDisplayMode,
   SelectedFacets,
+  TvClipFilterType,
   SortField,
   FacetBucket,
   FacetState,
   getDefaultSelectedFacets,
   sortOptionFromAPIString,
   SORT_OPTIONS,
+  tvClipFiltersToURLParams,
+  tvClipURLParamsToFilters,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 
@@ -28,6 +31,7 @@ export interface RestorationState {
   maxSelectedDate?: string;
   selectedTitleFilter?: string;
   selectedCreatorFilter?: string;
+  tvClipFilter?: TvClipFilterType;
 }
 
 export interface RestorationStatePersistOptions {
@@ -206,6 +210,12 @@ export class RestorationStateHandler
       newParams.append('and[]', state.creatorQuery);
     }
 
+    // TV clip special filters
+    if (state.tvClipFilter) {
+      const tvClipParam = tvClipFiltersToURLParams[state.tvClipFilter];
+      if (tvClipParam) newParams.append(tvClipParam, '1');
+    }
+
     // Ensure we aren't pushing consecutive identical states to the history stack.
     //  - If the state has changed, we push a new history entry.
     //  - If only the page number has changed, we replace the current history entry.
@@ -218,6 +228,9 @@ export class RestorationStateHandler
       'sort',
       'and[]',
       'not[]',
+      'only_commercials',
+      'only_factchecks',
+      'only_quotes',
     ]);
 
     if (
@@ -398,6 +411,14 @@ export class RestorationStateHandler
       });
     }
 
+    // TV clip special filters (carryovers from legacy page)
+    for (const [paramKey, filter] of Object.entries(tvClipURLParamsToFilters)) {
+      if (url.searchParams.get(paramKey)) {
+        restorationState.tvClipFilter = filter;
+        break;
+      }
+    }
+
     return restorationState;
   }
 
@@ -478,6 +499,9 @@ export class RestorationStateHandler
     // Also remove some legacy params that should have been upgraded to the ones above
     searchParams.delete('q');
     searchParams.delete('search');
+    searchParams.delete('only_commercials');
+    searchParams.delete('only_factchecks');
+    searchParams.delete('only_quotes');
 
     return searchParams;
   }

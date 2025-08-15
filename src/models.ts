@@ -54,11 +54,16 @@ export type HitRequestSource =
  * Class for converting & storing raw search results in the correct format for UI tiles.
  */
 export class TileModel {
+  /** For TV hits. List of identifiers for any commercials contained. */
+  adIds?: string[];
+
   averageRating?: number;
 
-  captureDates?: Date[]; // List of capture dates for a URL, used on profile Web Archives tiles
+  /** For Web Archive hits on profile pages. List of capture dates for the current URL. */
+  captureDates?: Date[];
 
-  checked: boolean; // Whether this tile is currently checked for item management functions
+  /** Whether this tile is currently checked for item management functions */
+  checked: boolean;
 
   collectionIdentifier?: string;
 
@@ -76,17 +81,25 @@ export class TileModel {
 
   creators: string[];
 
-  dateStr?: string; // A string representation of the publication date, used strictly for passing preformatted dates to the parent
+  /** A string representation of the publication date, used strictly for passing preformatted dates to the parent */
+  dateStr?: string;
 
-  dateAdded?: Date; // Date added to public search (software-defined) [from: addeddate]
+  /** Date added to public search (software-defined) [from MD field: addeddate] */
+  dateAdded?: Date;
 
-  dateArchived?: Date; // Date archived (software-defined) item created on archive.org [from: publicdate]
+  /** Date archived (software-defined) item created on archive.org [from MD field: publicdate] */
+  dateArchived?: Date;
 
-  datePublished?: Date; // Date work published in the world (user-defined) [from: date]
+  /** Date work published in the world (user-defined) [from MD field: date] */
+  datePublished?: Date;
 
-  dateReviewed?: Date; // Date reviewed (user-created) most recent review [from: reviewdate]
+  /** Date reviewed (user-created) most recent review [from MD field: reviewdate] */
+  dateReviewed?: Date;
 
   description?: string;
+
+  /** For TV hits. List of URLs for any fact-checks of the contained clips. */
+  factChecks?: string[];
 
   favCount: number;
 
@@ -97,6 +110,9 @@ export class TileModel {
   href?: string;
 
   identifier?: string;
+
+  /** Whether this model represents a TV clip */
+  isClip?: boolean;
 
   issue?: string;
 
@@ -134,6 +150,7 @@ export class TileModel {
   ) {
     const flags = this.getFlags(result);
 
+    this.adIds = result.ad_id?.values;
     this.averageRating = result.avg_rating?.value;
     this.captureDates = result.capture_dates?.values;
     this.checked = false;
@@ -148,6 +165,7 @@ export class TileModel {
     this.datePublished = result.date?.value;
     this.dateReviewed = result.reviewdate?.value;
     this.description = result.description?.values.join('\n');
+    this.factChecks = result.factcheck?.values;
     this.favCount = result.num_favorites?.value ?? 0;
     this.hitRequestSource = hitRequestSource;
     this.hitType = result.rawMetadata?.hit_type;
@@ -155,6 +173,7 @@ export class TileModel {
       result.review?.__href__ ?? result.__href__?.value,
     );
     this.identifier = TileModel.cleanIdentifier(result.identifier);
+    this.isClip = result.is_clip?.value;
     this.issue = result.issue?.value;
     this.itemCount = result.item_count?.value ?? 0;
     this.mediatype = resolveMediatype(result);
@@ -177,6 +196,7 @@ export class TileModel {
    */
   clone(): TileModel {
     const cloned = new TileModel({});
+    cloned.adIds = this.adIds;
     cloned.averageRating = this.averageRating;
     cloned.captureDates = this.captureDates;
     cloned.checked = this.checked;
@@ -192,11 +212,13 @@ export class TileModel {
     cloned.datePublished = this.datePublished;
     cloned.dateReviewed = this.dateReviewed;
     cloned.description = this.description;
+    cloned.factChecks = this.factChecks;
     cloned.favCount = this.favCount;
     cloned.hitRequestSource = this.hitRequestSource;
     cloned.hitType = this.hitType;
     cloned.href = this.href;
     cloned.identifier = this.identifier;
+    cloned.isClip = this.isClip;
     cloned.issue = this.issue;
     cloned.itemCount = this.itemCount;
     cloned.mediatype = this.mediatype;
@@ -627,6 +649,30 @@ export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
   person: {},
   sponsor: {},
 });
+
+/**
+ * For TV search results, what types of TV clips to restrict the results to.
+ */
+export type TvClipFilterType = 'all' | 'commercials' | 'factchecks' | 'quotes';
+
+/**
+ * Map from TV clip filter types to their corresponding URL params
+ */
+export const tvClipFiltersToURLParams: Record<TvClipFilterType, string> = {
+  all: '',
+  commercials: 'only_commercials',
+  factchecks: 'only_factchecks',
+  quotes: 'only_quotes',
+};
+
+/**
+ * Map from allowed TV filtering parameters in the URL to their corresponding filter type
+ */
+export const tvClipURLParamsToFilters: Record<string, TvClipFilterType> = {
+  only_commercials: 'commercials',
+  only_factchecks: 'factchecks',
+  only_quotes: 'quotes',
+};
 
 /**
  * Facet display order when presenting results for all search types *except* TV (see below).

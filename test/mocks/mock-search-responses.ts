@@ -7,6 +7,7 @@ import {
   SearchServiceError,
   TextHit,
 } from '@internetarchive/search-service';
+import { TvClipHit } from '@internetarchive/search-service/dist/src/models/hit-types/tv-clip-hit';
 import { WebArchiveHit } from '@internetarchive/search-service/dist/src/models/hit-types/web-archive-hit';
 import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 
@@ -104,6 +105,73 @@ export const getMockSuccessManyFields: () => Result<
             title: 'Foo Bar',
             volume: 2,
             week: 50,
+            __href__: 'https://archive.org/details/foo',
+            __img__: '//services/img/foo',
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessTvFields: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'tv-fields',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'tv-fields',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new TvClipHit({
+          fields: {
+            identifier: 'foo',
+            ad_id: ['foo-ad'],
+            clip: true,
+            collection: ['foo', 'bar', 'tvnews'],
+            creator: ['baz', 'boop'],
+            date: '2010-01-03T01:23:45Z',
+            addeddate: '2010-01-01T01:23:45Z',
+            publicdate: '2010-01-02T01:23:45Z',
+            reviewdate: '2010-01-04T01:23:45Z',
+            description: 'foo bar baz',
+            downloads: 246,
+            factcheck: ['https://foo.bar'],
+            files_count: 75,
+            indexflag: ['index', 'nonoindex'],
+            item_size: 123456,
+            language: 'eng',
+            mediatype: 'movies',
+            num_favorites: 12,
+            nclips: 34,
+            source: 'foo bar',
+            start: '1234',
+            subject: ['baz', 'quux'],
+            title: 'Foo Bar',
+            week: 50,
+            year: 2010,
             __href__: 'https://archive.org/details/foo',
             __img__: '//services/img/foo',
           },

@@ -10,9 +10,13 @@ import { quoteIcon } from '../../assets/img/icons/quote';
 import { srOnlyStyle } from '../../styles/sr-only';
 
 import { formatCount } from '../../utils/format-count';
+import { TileModel } from '../../models';
 
 @customElement('tile-stats')
 export class TileStats extends LitElement {
+  /** The tile model these stats represent */
+  @property({ type: Object }) model?: TileModel;
+
   /** The mediatype of the item these stats represent */
   @property({ type: String }) mediatype?: string;
 
@@ -70,11 +74,7 @@ export class TileStats extends LitElement {
     return html`
       <li class="col">
         <p class="sr-only">${msg('Mediatype:')}</p>
-        <tile-mediatype-icon
-          .mediatype=${this.mediatype}
-          .collections=${this.collections}
-          ?isTvSearchResult=${this.isTvSearchResult}
-        ></tile-mediatype-icon>
+        <tile-mediatype-icon .model=${this.model}></tile-mediatype-icon>
       </li>
     `;
   }

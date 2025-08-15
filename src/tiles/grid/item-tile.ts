@@ -68,6 +68,7 @@ export class ItemTile extends BaseTileComponent {
           </div>
 
           <tile-stats
+            .model=${this.model}
             .mediatype=${this.model?.mediatype}
             .collections=${this.model?.collections}
             .viewCount=${viewCount}

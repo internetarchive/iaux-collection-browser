@@ -31,6 +31,7 @@ import {
   getMockSuccessNoResults,
   getMockSuccessWithWebArchiveHits,
   getMockSuccessWithManyAggregations,
+  getMockSuccessTvFields,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -56,6 +57,7 @@ const responses: Record<
   'web-archive': getMockSuccessWithWebArchiveHits,
   'more-facets': getMockSuccessWithManyAggregations,
   'many-fields': getMockSuccessManyFields,
+  'tv-fields': getMockSuccessTvFields,
   'no-results': getMockSuccessNoResults,
   error: getMockErrorResult,
   malformed: getMockMalformedResult,

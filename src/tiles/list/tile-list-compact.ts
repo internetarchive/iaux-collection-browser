@@ -50,12 +50,7 @@ export class TileListCompact extends BaseTileComponent {
         </div>
         <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
         <div id="icon">
-          <tile-mediatype-icon
-            .mediatype=${this.model?.mediatype}
-            .collections=${this.model?.collections}
-            ?isTvSearchResult=${this.model?.isTvSearchResult}
-          >
-          </tile-mediatype-icon>
+          <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
         </div>
         <div id="views">${formatCount(this.views ?? 0, this.formatSize)}</div>
       </div>
