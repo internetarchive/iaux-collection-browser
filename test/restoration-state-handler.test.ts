@@ -1,10 +1,7 @@
 import { SearchType } from '@internetarchive/search-service';
 import { expect } from '@open-wc/testing';
 import { SortField, getDefaultSelectedFacets } from '../src/models';
-import {
-  RestorationState,
-  RestorationStateHandler,
-} from '../src/restoration-state-handler';
+import { RestorationStateHandler } from '../src/restoration-state-handler';
 
 describe('Restoration state handler', () => {
   it('should restore query from URL', async () => {
