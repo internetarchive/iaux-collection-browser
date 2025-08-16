@@ -214,7 +214,6 @@ export class TileList extends BaseTileComponent {
     if (isFirstMillisecondOfUTCYear(date)) {
       format = 'year-only';
     }
-
     return this.metadataTemplate(formatDate(date, format), msg('Published'));
   }
 
