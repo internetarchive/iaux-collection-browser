@@ -1,9 +1,10 @@
 import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
+import { map } from 'lit/directives/map.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
-import { map } from 'lit/directives/map.js';
 import type { SortParam } from '@internetarchive/search-service';
 import { DateFormat, formatDate } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
@@ -38,16 +39,17 @@ export class ItemTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showTvClips = false;
 
+  @property({ type: Boolean }) useSimpleLayout = false;
+
   render() {
     const itemTitle = this.model?.title;
-    const effectiveSort = this.sortParam ?? this.defaultSortParam;
-    const [viewCount, viewLabel] =
-      effectiveSort?.field === 'week'
-        ? [this.model?.weeklyViewCount, 'weekly views']
-        : [this.model?.viewCount, 'all-time views'];
+    const containerClasses = classMap({
+      container: true,
+      simple: this.useSimpleLayout,
+    });
 
     return html`
-      <div class="container">
+      <div class=${containerClasses}>
         ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
@@ -67,19 +69,7 @@ export class ItemTile extends BaseTileComponent {
             ${this.reviewBlockTemplate}
           </div>
 
-          <tile-stats
-            .model=${this.model}
-            .mediatype=${this.model?.mediatype}
-            .collections=${this.model?.collections}
-            .viewCount=${viewCount}
-            .viewLabel=${viewLabel}
-            .favCount=${this.model?.favCount}
-            .commentCount=${this.model?.commentCount}
-            ?isTvSearchResult=${this.model?.isTvSearchResult}
-            .tvClipCount=${this.model?.tvClipCount}
-            .showTvClips=${this.showTvClips}
-          >
-          </tile-stats>
+          ${this.tileStatsTemplate}
         </div>
       </div>
     `;
@@ -220,6 +210,33 @@ export class ItemTile extends BaseTileComponent {
     `;
   }
 
+  /**
+   * Template for the stats row along the bottom of the tile.
+   */
+  private get tileStatsTemplate(): TemplateResult | typeof nothing {
+    if (this.useSimpleLayout) return nothing;
+
+    const effectiveSort = this.sortParam ?? this.defaultSortParam;
+    const [viewCount, viewLabel] =
+      effectiveSort?.field === 'week'
+        ? [this.model?.weeklyViewCount, 'weekly views']
+        : [this.model?.viewCount, 'all-time views'];
+
+    return html`
+      <tile-stats
+        .model=${this.model}
+        .mediatype=${this.model?.mediatype}
+        .viewCount=${viewCount}
+        .viewLabel=${viewLabel}
+        .favCount=${this.model?.favCount}
+        .commentCount=${this.model?.commentCount}
+        .tvClipCount=${this.model?.tvClipCount}
+        .showTvClips=${this.showTvClips}
+      >
+      </tile-stats>
+    `;
+  }
+
   private get isSortedByDate(): boolean {
     return ['date', 'reviewdate', 'addeddate', 'publicdate'].includes(
       this.effectiveSort?.field as string,
@@ -265,6 +282,24 @@ export class ItemTile extends BaseTileComponent {
 
         .container {
           border: 1px solid ${tileBorderColor};
+        }
+
+        .simple .item-info {
+          padding-bottom: 5px;
+        }
+
+        .simple #title > .truncated {
+          -webkit-line-clamp: 2;
+        }
+
+        .simple .created-by > .truncated,
+        .simple .date-sorted-by > .truncated,
+        .simple .volume-issue > .truncated {
+          -webkit-line-clamp: 1;
+        }
+
+        .simple text-snippet-block {
+          margin-top: auto; /* Force the snippets to the bottom of the tile */
         }
 
         .capture-dates {

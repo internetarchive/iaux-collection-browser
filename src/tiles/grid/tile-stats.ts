@@ -20,9 +20,6 @@ export class TileStats extends LitElement {
   /** The mediatype of the item these stats represent */
   @property({ type: String }) mediatype?: string;
 
-  /** The collections this item is part of */
-  @property({ type: Array }) collections?: string[];
-
   /** The number of uploaded items, if representing an account */
   @property({ type: Number }) itemCount?: number;
 
@@ -37,9 +34,6 @@ export class TileStats extends LitElement {
 
   /** The number of times the item has been reviewed */
   @property({ type: Number }) commentCount?: number;
-
-  /** Whether the tile represents the result of a search */
-  @property({ type: Boolean }) isTvSearchResult = false;
 
   /** Whether to show the number of TV clips in place of reviews */
   @property({ type: Boolean }) showTvClips = false;
