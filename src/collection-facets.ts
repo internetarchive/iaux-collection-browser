@@ -73,7 +73,7 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object }) aggregations?: Record<string, Aggregation>;
 
-  @property({ type: Object }) fullYearsHistogramAggregation?: Aggregation;
+  @property({ type: Object }) histogramAggregation?: Aggregation;
 
   @property({ type: String }) minSelectedDate?: string;
 
@@ -83,7 +83,7 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) facetsLoading = false;
 
-  @property({ type: Boolean }) fullYearAggregationLoading = false;
+  @property({ type: Boolean }) histogramAggregationLoading = false;
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
@@ -164,7 +164,7 @@ export class CollectionFacets extends LitElement {
     return html`
       <div id="container" class=${containerClasses}>
         ${this.showHistogramDatePicker &&
-        (this.fullYearsHistogramAggregation || this.fullYearAggregationLoading)
+        (this.histogramAggregation || this.histogramAggregationLoading)
           ? html`
               <section
                 class="facet-group"
@@ -234,7 +234,7 @@ export class CollectionFacets extends LitElement {
    * Opens a modal dialog containing an enlarged version of the date picker.
    */
   private showDatePickerModal(): void {
-    const { fullYearsHistogramAggregation } = this;
+    const { histogramAggregation: fullYearsHistogramAggregation } = this;
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     const buckets = fullYearsHistogramAggregation?.buckets as number[];
@@ -329,11 +329,11 @@ export class CollectionFacets extends LitElement {
   }
 
   private get histogramTemplate() {
-    const { fullYearsHistogramAggregation } = this;
+    const { histogramAggregation: fullYearsHistogramAggregation } = this;
     const minDate = fullYearsHistogramAggregation?.first_bucket_key;
     const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
     const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
-    return this.fullYearAggregationLoading
+    return this.histogramAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
           <histogram-date-range
@@ -533,8 +533,8 @@ export class CollectionFacets extends LitElement {
   private get aggregationFacetGroups(): FacetGroup[] {
     const facetGroups: FacetGroup[] = [];
     Object.entries(this.aggregations ?? []).forEach(([key, aggregation]) => {
-      // the year_histogram data is in a different format so can't be handled here
-      if (key === 'year_histogram') return;
+      // the year_histogram and date_histogram data is in a different format so can't be handled here
+      if (['year_histogram', 'date_histogram'].includes(key)) return;
 
       const option = key as FacetOption;
       const title = facetTitles[option];

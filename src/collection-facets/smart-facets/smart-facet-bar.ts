@@ -193,7 +193,8 @@ export class SmartFacetBar extends LitElement {
         const agg = this.lastAggregations[key];
         if (!agg) continue;
         if (agg.buckets.length === 0) continue;
-        if (['lending', 'year_histogram'].includes(key)) continue;
+        if (['lending', 'year_histogram', 'date_histogram'].includes(key))
+          continue;
         if (typeof agg.buckets[0] === 'number') continue;
 
         if (

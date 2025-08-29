@@ -1138,8 +1138,7 @@ export class CollectionBrowser
         .resizeObserver=${this.resizeObserver}
         .searchType=${this.searchType}
         .aggregations=${this.dataSource.aggregations}
-        .fullYearsHistogramAggregation=${this.dataSource
-          .yearHistogramAggregation}
+        .histogramAggregation=${this.dataSource.histogramAggregation}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .selectedFacets=${this.selectedFacets}
@@ -1158,7 +1157,7 @@ export class CollectionBrowser
         .isTvSearch=${shouldUseTvInterface}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
-        ?fullYearAggregationLoading=${this.facetsLoading}
+        ?histogramAggregationLoading=${this.facetsLoading}
         ?suppressMediatypeFacets=${this.suppressMediatypeFacets}
         @facetClick=${this.facetClickHandler}
         @facetsChanged=${this.facetsChanged}
