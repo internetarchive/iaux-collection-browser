@@ -318,6 +318,8 @@ export class CollectionBrowser
 
   @state() private mobileView = false;
 
+  @state() private tileBlurringEnabled = true;
+
   @state() private collapsibleFacetsVisible = false;
 
   @state() private contentWidth?: number;
@@ -801,11 +803,34 @@ export class CollectionBrowser
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
       >
+        ${this.tileBlurringToggleTemplate}
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
         <slot name="sort-options-right" slot="sort-options-right"></slot>
       </sort-filter-bar>
     `;
+  }
+
+  private get tileBlurringToggleTemplate(): TemplateResult | typeof nothing {
+    if (!this.dataSource.sessionContext?.is_archive_user) return nothing;
+
+    const blurEnabled = true; // TODO this.dataSource.sessionContext?.pps_relevant_user_preferences?.display__blur_moderated_content === 'on';
+    return html`
+      <label for="tile-blur-check" slot="sort-options-right">
+        ${msg('Blurring:')}
+        <input
+          id="tile-blur-check"
+          type="checkbox"
+          ?checked=${blurEnabled}
+          @change=${this.tileBlurringChanged}
+        />
+      </label>
+    `;
+  }
+
+  private tileBlurringChanged(e: Event): void {
+    const { checked } = e.target as HTMLInputElement;
+    this.tileBlurringEnabled = checked;
   }
 
   /**
