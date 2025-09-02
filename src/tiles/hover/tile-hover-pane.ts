@@ -92,6 +92,12 @@ export class TileHoverPane extends LitElement {
 
     return css`
       :host {
+        margin: 0;
+        border: 0;
+        padding: 0;
+        overflow: visible;
+        color: inherit;
+        background: none;
         visibility: hidden;
         opacity: 0;
         transform: translateY(8px);
@@ -146,6 +152,7 @@ export class TileHoverPane extends LitElement {
         column-gap: 5px;
         height: 3.4rem;
         padding: 0 10px;
+        border-radius: 4px 4px 0 0;
         width: fit-content;
         font-size: 1.4rem;
         color: ${iaLinkColor};

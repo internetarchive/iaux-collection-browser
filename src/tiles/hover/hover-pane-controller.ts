@@ -182,6 +182,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     return this.shouldRenderHoverPane
       ? html` ${this.touchBackdropTemplate}
           <tile-hover-pane
+            popover
             .model=${this.hoverPaneProps?.model}
             .baseNavigationUrl=${this.hoverPaneProps?.baseNavigationUrl}
             .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
@@ -259,7 +260,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * Returns the desired top/left offsets (in pixels) for this tile's hover pane.
    * The desired offsets balance positioning the hover pane under the primary pointer
    * while preventing it from flowing outside the viewport. The returned offsets are
-   * given relative to this tile's content box.
+   * relative to the viewport, intended to position the pane as a popover element.
    *
    * These offsets are only valid if the hover pane is already rendered with its
    * correct width and height. If the hover pane is not present, the returned offsets
@@ -302,11 +303,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
         top = clamp(top, 20, window.innerHeight - hoverPaneRect.height - 20);
       }
     }
-
-    // Subtract off the tile's own offsets
-    const hostRect = this.host.getBoundingClientRect();
-    left -= hostRect.left;
-    top -= hostRect.top;
 
     return { left, top };
   }
@@ -466,6 +462,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
     // Wait for the state update to render the hover pane
     await this.host.updateComplete;
+
+    this.hoverPane?.showPopover?.();
     await new Promise(resolve => {
       // Pane sizes aren't accurate until next frame
       requestAnimationFrame(resolve);
