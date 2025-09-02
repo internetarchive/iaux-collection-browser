@@ -9,6 +9,11 @@ import type {
 export type CollectionTitles = Map<string, string>;
 
 /**
+ * A Map from channel names to their corresponding, more human-readable network name.
+ */
+export type TVChannelAliases = Map<string, string>;
+
+/**
  * The subset of search service params that uniquely specify the type of results
  * that are sought by an instance of collection browser.
  */
