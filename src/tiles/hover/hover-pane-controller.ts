@@ -179,6 +179,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
   /** @inheritdoc */
   getTemplate(): HTMLTemplateResult | typeof nothing {
+    this.hoverPaneProps = this.host.getHoverPaneProps();
+
     return this.shouldRenderHoverPane
       ? html` ${this.touchBackdropTemplate}
           <tile-hover-pane
