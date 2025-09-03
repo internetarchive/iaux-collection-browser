@@ -95,6 +95,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) allowExpandingDatePicker = false;
 
+  @property({ type: Boolean }) suppressMediatypeFacets = false;
+
   @property({ type: String }) query?: string;
 
   @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
@@ -378,6 +380,8 @@ export class CollectionFacets extends LitElement {
     const facetGroups: FacetGroup[] = [];
 
     this.facetDisplayOrder.forEach(facetKey => {
+      if (facetKey === 'mediatype' && this.suppressMediatypeFacets) return;
+
       const selectedFacetGroup = this.selectedFacetGroups.find(
         group => group.key === facetKey,
       );

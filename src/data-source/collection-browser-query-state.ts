@@ -24,6 +24,7 @@ export interface CollectionBrowserQueryState {
   profileElement?: PageElementName;
   searchType: SearchType;
   selectedFacets?: SelectedFacets;
+  internalFilters?: SelectedFacets;
   minSelectedDate?: string;
   maxSelectedDate?: string;
   selectedTitleFilter: string | null;

@@ -29,6 +29,7 @@ import type { CollectionBrowserDataSourceInterface } from './collection-browser-
 import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
 import { log } from '../utils/log';
+import { mergeSelectedFacets } from '../utils/facet-utils';
 
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
@@ -694,6 +695,7 @@ export class CollectionBrowserDataSource
       minSelectedDate,
       maxSelectedDate,
       selectedFacets,
+      internalFilters,
       selectedTitleFilter,
       selectedCreatorFilter,
     } = this.host;
@@ -713,9 +715,13 @@ export class CollectionBrowserDataSource
       );
     }
 
-    // Add any selected facets
-    if (selectedFacets) {
-      for (const [facetName, facetValues] of Object.entries(selectedFacets)) {
+    // Add any selected facets and internal filters
+    const combinedFilters = mergeSelectedFacets(
+      internalFilters,
+      selectedFacets,
+    );
+    if (combinedFilters) {
+      for (const [facetName, facetValues] of Object.entries(combinedFilters)) {
         const { name, values } = this.prepareFacetForFetch(
           facetName,
           facetValues,

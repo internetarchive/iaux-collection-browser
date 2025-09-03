@@ -153,6 +153,14 @@ export class CollectionBrowser
 
   @property({ type: Object }) selectedFacets?: SelectedFacets;
 
+  /**
+   * Set of filters to be applied internally to searches, but not included in URL params or
+   * visibly selected facets. Use when this instance of collection browser is being shown
+   * in a filtered context, such as a single-mediatype tab, but the corresponding filters
+   * should not be exposed/changeable within that context.
+   */
+  @property({ type: Object }) internalFilters?: SelectedFacets;
+
   @property({ type: Boolean }) showSmartFacetBar = false;
 
   /**
@@ -195,6 +203,12 @@ export class CollectionBrowser
    * If true, those options will be omitted (though the rest of the sort bar may still render).
    */
   @property({ type: Boolean }) suppressDisplayModes = false;
+
+  /**
+   * Whether to suppress the display of the `mediatype` facet group, e.g., because this instance
+   * of collection browser is being shown in a filtered single-mediatype context.
+   */
+  @property({ type: Boolean }) suppressMediatypeFacets = false;
 
   /**
    * What strategy to use for when/whether to load facet data for a search.
@@ -1145,6 +1159,7 @@ export class CollectionBrowser
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
         ?fullYearAggregationLoading=${this.facetsLoading}
+        ?suppressMediatypeFacets=${this.suppressMediatypeFacets}
         @facetClick=${this.facetClickHandler}
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
@@ -1297,6 +1312,7 @@ export class CollectionBrowser
     this.searchType = queryState.searchType;
     this.selectedFacets =
       queryState.selectedFacets ?? getDefaultSelectedFacets();
+    this.internalFilters = queryState.internalFilters;
     this.minSelectedDate = queryState.minSelectedDate;
     this.maxSelectedDate = queryState.maxSelectedDate;
     this.selectedSort = queryState.selectedSort ?? SortField.default;
@@ -1304,6 +1320,8 @@ export class CollectionBrowser
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
     this.tvClipFilter = queryState.tvClipFilter ?? 'all';
+
+    this.pagesToRender = this.initialPageNumber;
 
     // We set this flag during the update to prevent the URL state persistence
     // from creating an unwanted extra history entry.
@@ -1725,6 +1743,7 @@ export class CollectionBrowser
           profileElement: this.profileElement,
           searchType: this.searchType,
           selectedFacets: this.selectedFacets,
+          internalFilters: this.internalFilters,
           minSelectedDate: this.minSelectedDate,
           maxSelectedDate: this.maxSelectedDate,
           selectedSort: this.selectedSort,

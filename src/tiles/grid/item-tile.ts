@@ -169,7 +169,7 @@ export class ItemTile extends BaseTileComponent {
   }
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
-    if (!this.hasSnippets) return nothing;
+    if (this.useSimpleLayout || !this.hasSnippets) return nothing;
 
     return html`
       <text-snippet-block viewsize="grid" .snippets=${this.model?.snippets}>
@@ -213,9 +213,7 @@ export class ItemTile extends BaseTileComponent {
   /**
    * Template for the stats row along the bottom of the tile.
    */
-  private get tileStatsTemplate(): TemplateResult | typeof nothing {
-    if (this.useSimpleLayout) return nothing;
-
+  private get tileStatsTemplate(): TemplateResult {
     const effectiveSort = this.sortParam ?? this.defaultSortParam;
     const [viewCount, viewLabel] =
       effectiveSort?.field === 'week'
@@ -284,10 +282,6 @@ export class ItemTile extends BaseTileComponent {
           border: 1px solid ${tileBorderColor};
         }
 
-        .simple .item-info {
-          padding-bottom: 5px;
-        }
-
         .simple #title > .truncated {
           -webkit-line-clamp: 2;
         }
@@ -296,10 +290,6 @@ export class ItemTile extends BaseTileComponent {
         .simple .date-sorted-by > .truncated,
         .simple .volume-issue > .truncated {
           -webkit-line-clamp: 1;
-        }
-
-        .simple text-snippet-block {
-          margin-top: auto; /* Force the snippets to the bottom of the tile */
         }
 
         .capture-dates {
