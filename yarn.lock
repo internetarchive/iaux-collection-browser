@@ -316,10 +316,10 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-1.0.0.tgz#ee3d3efb280860018193c2c52d54ec784e9bb202"
   integrity sha512-cbD0FtJOjzBm7exxFrzrkHnqbmalKbEXA4i7KrwhUGBojF/QTTLAvaIRXH/bfoiTyCh6YT1/E/mULAQPdB6yvQ==
 
-"@internetarchive/histogram-date-range@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.npmjs.org/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.1.tgz"
-  integrity sha512-UlQcYDhDVt2yNp2GHIewwuU371FswIMsVomqDUpqRqFlD0NEIi31Mi0XhwaUWMrRsNBXYtnVaoQuAEKMTP3Lvg==
+"@internetarchive/histogram-date-range@1.2.2-alpha-webdev7377.8":
+  version "1.2.2-alpha-webdev7377.8"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.2-alpha-webdev7377.8.tgz#0b5924855d3c17f30ecf7d11694d992c778d5c99"
+  integrity sha512-pLZJLZpuNpZ8/ZZ8OwblvqOTGWiSWTG6a2Bh6gdSuZAR86TGQtftCAMlb3NzvOjGMj1a0xJ0Qnb83pXaJQ+ofg==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.6"
     dayjs "^1.11.13"
@@ -1939,9 +1939,9 @@ data-view-byte-offset@^1.0.1:
     is-data-view "^1.0.1"
 
 dayjs@^1.11.13:
-  version "1.11.13"
-  resolved "https://registry.npmjs.org/dayjs/-/dayjs-1.11.13.tgz"
-  integrity sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==
+  version "1.11.18"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.18.tgz#835fa712aac52ab9dec8b1494098774ed7070a11"
+  integrity sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==
 
 debounce@^1.2.0:
   version "1.2.1"
