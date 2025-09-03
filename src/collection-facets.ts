@@ -245,7 +245,7 @@ export class CollectionFacets extends LitElement {
       aggregation.first_bucket_year ?? aggregation.first_bucket_key;
     const lastYear =
       aggregation.last_bucket_year ?? aggregation.last_bucket_key;
-    if (!firstYear || !lastYear) return undefined; // We at least need a start/end year
+    if (firstYear == null || lastYear == null) return undefined; // We at least need a start/end year defined
 
     const firstMonth = aggregation.first_bucket_month ?? 1;
     const lastMonth = aggregation.last_bucket_month ?? 12;

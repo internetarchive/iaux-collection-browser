@@ -14,6 +14,7 @@ import {
   getMockSuccessNoPreviewResult,
   getMockSuccessLoggedInAndNoPreviewResult,
   getMockSuccessWithYearHistogramAggs,
+  getMockSuccessWithDateHistogramAggs,
   getMockSuccessMultiLineDescription,
   getMockSuccessFirstTitleResult,
   getMockSuccessFirstCreatorResult,
@@ -40,6 +41,7 @@ const responses: Record<
 > = {
   'single-result': getMockSuccessSingleResult,
   years: getMockSuccessWithYearHistogramAggs,
+  months: getMockSuccessWithDateHistogramAggs,
   'multi-line-description': getMockSuccessMultiLineDescription,
   loggedin: getMockSuccessLoggedInResult,
   'no-preview': getMockSuccessNoPreviewResult,

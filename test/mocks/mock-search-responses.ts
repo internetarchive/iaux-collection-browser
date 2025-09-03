@@ -237,6 +237,60 @@ export const getMockSuccessWithYearHistogramAggs: () => Result<
   },
 });
 
+export const getMockSuccessWithDateHistogramAggs: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'months',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'months',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      aggregations: {
+        subject: new Aggregation({
+          buckets: [
+            {
+              key: 'foo',
+              doc_count: 3,
+            },
+          ],
+        }),
+        date_histogram: new Aggregation({
+          buckets: [1, 2, 3, 3, 2, 1],
+          first_bucket_year: 2000,
+          first_bucket_month: 1,
+          last_bucket_year: 2002,
+          last_bucket_month: 7,
+          interval_in_months: 6,
+          number_buckets: 6,
+        }),
+      },
+      results: [],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockSuccessLoggedInResult: () => Result<
   SearchResponse,
   SearchServiceError

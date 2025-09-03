@@ -43,6 +43,11 @@ describe('Collection Facets', () => {
 
     el.histogramAggregationLoading = true;
     el.showHistogramDatePicker = true;
+    el.histogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
     await el.updateComplete;
 
     const histogramLoader = el.shadowRoot?.querySelector(
@@ -58,6 +63,11 @@ describe('Collection Facets', () => {
 
     el.histogramAggregationLoading = true;
     el.showHistogramDatePicker = false;
+    el.histogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
     await el.updateComplete;
 
     const histogramLoader = el.shadowRoot?.querySelector(
