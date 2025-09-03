@@ -5081,23 +5081,23 @@ fill=""></path>
           @click=${this.showDatePickerModal}
         >
           ${O0}
-        </button>`:b}get histogramTemplate(){var e,t;const{histogramProps:i}=this;if(!i)return b;const{buckets:o,dateFormat:a,tooltipDateFormat:r,binSnapping:l,minDate:c,maxDate:u}=i;return this.histogramAggregationLoading?h`<div class="histogram-loading-indicator">&hellip;</div>`:h`
-          <histogram-date-range
-            class=${this.isTvSearch?"wide-inputs":b}
-            .minDate=${c}
-            .maxDate=${u}
-            .minSelectedDate=${(e=this.minSelectedDate)!==null&&e!==void 0?e:c}
-            .maxSelectedDate=${(t=this.maxSelectedDate)!==null&&t!==void 0?t:u}
-            .updateDelay=${100}
-            .dateFormat=${a}
-            .tooltipDateFormat=${r}
-            .binSnapping=${l}
-            .bins=${o}
-            missingDataMessage="..."
-            .width=${this.collapsableFacets&&this.contentWidth?this.contentWidth:180}
-            @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-          ></histogram-date-range>
-        `}get mergedFacets(){const e=[];return this.facetDisplayOrder.forEach(t=>{var i,o;if(t==="mediatype"&&this.suppressMediatypeFacets)return;const a=this.selectedFacetGroups.find(p=>p.key===t),r=this.aggregationFacetGroups.find(p=>p.key===t);if(a&&!r){e.push(a);return}if(!r)return;const l=a??r;let c=(i=a==null?void 0:a.buckets.map(p=>{const m=r.buckets.find(v=>v.key===p.key);return m?{...p,count:m.count}:p}))!==null&&i!==void 0?i:[];r.buckets.forEach(p=>{c.find(v=>v.key===p.key)||c.push(p)});let u=(o=Object.keys((a==null?void 0:a.buckets)||[]))===null||o===void 0?void 0:o.length;if(u<this.allowedFacetCount&&(u=this.allowedFacetCount),t==="lending"&&(c=c.filter(p=>Jl[p.key])),fn(c,Li[t]),t==="mediatype"){const p=c.findIndex(m=>m.key==="collection");if(p>=u){const[m]=c.splice(p,1);u>this.allowedFacetCount&&(u+=1),c.splice(u-1,0,m)}}t==="creator"&&this.isTvSearch&&c.forEach(p=>{var m,v;p.displayText=(v=(m=p.displayText)!==null&&m!==void 0?m:p.key)===null||v===void 0?void 0:v.toLocaleUpperCase();const y=ln[p.displayText];y&&y!==p.displayText&&(p.extraNote=`(${y})`)}),l.buckets=c.slice(0,u),e.push(l)}),e}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const o=t,a=yo[o],r=Object.entries(i).map(([l,c])=>{var u;let p=l;return o==="lending"&&(p=(u=ar[l])!==null&&u!==void 0?u:l),{displayText:p,key:l,count:c.count,state:c.state}});return{title:a,key:o,buckets:r}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,o])=>{if(["year_histogram","date_histogram"].includes(i))return;const a=i,r=yo[a];if(!r)return;let l=o.getSortedBuckets(Li[a]);a==="collection"&&(l=l==null?void 0:l.filter(p=>{var m;const v=(m=p==null?void 0:p.key)===null||m===void 0?void 0:m.toString();return!Ao[v]&&!(v!=null&&v.startsWith("fav-"))}));const c=l.map(p=>{var m;const v=p.key;let y=`${p.key}`;return a==="lending"&&(y=(m=ar[p.key])!==null&&m!==void 0?m:`${p.key}`),{displayText:y,key:`${v}`,count:p.doc_count,state:"none"}}),u={title:r,key:a,buckets:c};t.push(u)}),t}getFacetGroupTemplate(e){if(!this.facetsLoading&&e.buckets.length===0)return b;const{key:t}=e,i=this.openFacets[t],o=h`
+        </button>`:b}get histogramTemplate(){var e,t;if(this.histogramAggregationLoading)return h` <div class="histogram-loading-indicator">&hellip;</div> `;const{histogramProps:i}=this;if(!i)return b;const{buckets:o,dateFormat:a,tooltipDateFormat:r,binSnapping:l,minDate:c,maxDate:u}=i;return h`
+      <histogram-date-range
+        class=${this.isTvSearch?"wide-inputs":b}
+        .minDate=${c}
+        .maxDate=${u}
+        .minSelectedDate=${(e=this.minSelectedDate)!==null&&e!==void 0?e:c}
+        .maxSelectedDate=${(t=this.maxSelectedDate)!==null&&t!==void 0?t:u}
+        .updateDelay=${100}
+        .dateFormat=${a}
+        .tooltipDateFormat=${r}
+        .binSnapping=${l}
+        .bins=${o}
+        missingDataMessage="..."
+        .width=${this.collapsableFacets&&this.contentWidth?this.contentWidth:180}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+      ></histogram-date-range>
+    `}get mergedFacets(){const e=[];return this.facetDisplayOrder.forEach(t=>{var i,o;if(t==="mediatype"&&this.suppressMediatypeFacets)return;const a=this.selectedFacetGroups.find(p=>p.key===t),r=this.aggregationFacetGroups.find(p=>p.key===t);if(a&&!r){e.push(a);return}if(!r)return;const l=a??r;let c=(i=a==null?void 0:a.buckets.map(p=>{const m=r.buckets.find(v=>v.key===p.key);return m?{...p,count:m.count}:p}))!==null&&i!==void 0?i:[];r.buckets.forEach(p=>{c.find(v=>v.key===p.key)||c.push(p)});let u=(o=Object.keys((a==null?void 0:a.buckets)||[]))===null||o===void 0?void 0:o.length;if(u<this.allowedFacetCount&&(u=this.allowedFacetCount),t==="lending"&&(c=c.filter(p=>Jl[p.key])),fn(c,Li[t]),t==="mediatype"){const p=c.findIndex(m=>m.key==="collection");if(p>=u){const[m]=c.splice(p,1);u>this.allowedFacetCount&&(u+=1),c.splice(u-1,0,m)}}t==="creator"&&this.isTvSearch&&c.forEach(p=>{var m,v;p.displayText=(v=(m=p.displayText)!==null&&m!==void 0?m:p.key)===null||v===void 0?void 0:v.toLocaleUpperCase();const y=ln[p.displayText];y&&y!==p.displayText&&(p.extraNote=`(${y})`)}),l.buckets=c.slice(0,u),e.push(l)}),e}get selectedFacetGroups(){return this.selectedFacets?Object.entries(this.selectedFacets).map(([t,i])=>{const o=t,a=yo[o],r=Object.entries(i).map(([l,c])=>{var u;let p=l;return o==="lending"&&(p=(u=ar[l])!==null&&u!==void 0?u:l),{displayText:p,key:l,count:c.count,state:c.state}});return{title:a,key:o,buckets:r}}):[]}get aggregationFacetGroups(){var e;const t=[];return Object.entries((e=this.aggregations)!==null&&e!==void 0?e:[]).forEach(([i,o])=>{if(["year_histogram","date_histogram"].includes(i))return;const a=i,r=yo[a];if(!r)return;let l=o.getSortedBuckets(Li[a]);a==="collection"&&(l=l==null?void 0:l.filter(p=>{var m;const v=(m=p==null?void 0:p.key)===null||m===void 0?void 0:m.toString();return!Ao[v]&&!(v!=null&&v.startsWith("fav-"))}));const c=l.map(p=>{var m;const v=p.key;let y=`${p.key}`;return a==="lending"&&(y=(m=ar[p.key])!==null&&m!==void 0?m:`${p.key}`),{displayText:y,key:`${v}`,count:p.doc_count,state:"none"}}),u={title:r,key:a,buckets:c};t.push(u)}),t}getFacetGroupTemplate(e){if(!this.facetsLoading&&e.buckets.length===0)return b;const{key:t}=e,i=this.openFacets[t],o=h`
       <span class="collapser ${i?"open":""}"> ${Fs} </span>
     `,a=()=>{const l={...this.openFacets};l[t]=!i,this.openFacets=l},r=`facet-group-header-label-${e.key}`;return h`
       <section
