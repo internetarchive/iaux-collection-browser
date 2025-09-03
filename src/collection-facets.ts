@@ -29,6 +29,7 @@ import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-f
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
+import type { BinSnappingInterval } from '@internetarchive/histogram-date-range';
 import chevronIcon from './assets/img/icons/chevron';
 import expandIcon from './assets/img/icons/expand';
 import {
@@ -50,10 +51,6 @@ import type {
   CollectionTitles,
   PageSpecifierParams,
 } from './data-source/models';
-import './collection-facets/more-facets-content';
-import './collection-facets/facets-template';
-import './collection-facets/facet-tombstone-row';
-import './expanded-date-picker';
 import {
   analyticsActions,
   analyticsCategories,
@@ -64,6 +61,12 @@ import {
   sortBucketsBySelectionState,
   updateSelectedFacetBucket,
 } from './utils/facet-utils';
+
+import '@internetarchive/histogram-date-range';
+import './collection-facets/more-facets-content';
+import './collection-facets/facets-template';
+import './collection-facets/facet-tombstone-row';
+import './expanded-date-picker';
 
 @customElement('collection-facets')
 export class CollectionFacets extends LitElement {
@@ -231,14 +234,62 @@ export class CollectionFacets extends LitElement {
   }
 
   /**
+   * Properties to pass into the date-picker histogram component
+   */
+  private get histogramProps() {
+    const { histogramAggregation: aggregation } = this;
+    if (!aggregation) return undefined;
+
+    // Normalize some properties from the raw aggregation
+    const firstYear =
+      aggregation.first_bucket_year ?? aggregation.first_bucket_key;
+    const lastYear =
+      aggregation.last_bucket_year ?? aggregation.last_bucket_key;
+    if (!firstYear || !lastYear) return undefined; // We at least need a start/end year
+
+    const firstMonth = aggregation.first_bucket_month ?? 1;
+    const lastMonth = aggregation.last_bucket_month ?? 12;
+
+    const yearInterval = aggregation.interval ?? 1;
+    const monthInterval = aggregation.interval_in_months ?? 12;
+
+    const zeroPadMonth = (month: number) => month.toString().padStart(2, '0');
+
+    // Format the min/max dates appropriately
+    const minDate = this.isTvSearch
+      ? `${firstYear}-${zeroPadMonth(firstMonth)}`
+      : `${firstYear}`;
+
+    const maxDate = this.isTvSearch
+      ? `${lastYear}-${zeroPadMonth(lastMonth + monthInterval - 1)}`
+      : `${lastYear + yearInterval - 1}`;
+
+    const hasMonths = this.isTvSearch && monthInterval < 12;
+    return {
+      buckets: aggregation.buckets as number[],
+      dateFormat: this.isTvSearch ? 'YYYY-MM' : 'YYYY',
+      tooltipDateFormat: hasMonths ? 'MMM YYYY' : 'YYYY',
+      binSnapping: (hasMonths ? 'month' : 'year') as BinSnappingInterval,
+      minDate,
+      maxDate,
+    };
+  }
+
+  /**
    * Opens a modal dialog containing an enlarged version of the date picker.
    */
   private showDatePickerModal(): void {
-    const { histogramAggregation: fullYearsHistogramAggregation } = this;
-    const minDate = fullYearsHistogramAggregation?.first_bucket_key;
-    const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
-    const buckets = fullYearsHistogramAggregation?.buckets as number[];
-    const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
+    const { histogramProps } = this;
+    if (!histogramProps) return;
+
+    const {
+      buckets,
+      dateFormat,
+      tooltipDateFormat,
+      binSnapping,
+      minDate,
+      maxDate,
+    } = histogramProps;
 
     // Because the modal manager does not clear its DOM content after being closed,
     // it may try to render the exact same date picker template when it is reopened.
@@ -264,6 +315,8 @@ export class CollectionFacets extends LitElement {
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
         .dateFormat=${dateFormat}
+        .tooltipDateFormat=${tooltipDateFormat}
+        .binSnapping=${binSnapping}
         .buckets=${buckets}
         .modalManager=${this.modalManager}
         .analyticsHandler=${this.analyticsHandler}
@@ -328,11 +381,19 @@ export class CollectionFacets extends LitElement {
       : nothing;
   }
 
-  private get histogramTemplate() {
-    const { histogramAggregation: fullYearsHistogramAggregation } = this;
-    const minDate = fullYearsHistogramAggregation?.first_bucket_key;
-    const maxDate = fullYearsHistogramAggregation?.last_bucket_key;
-    const dateFormat = this.isTvSearch ? 'YYYY-MM' : 'YYYY';
+  private get histogramTemplate(): TemplateResult | typeof nothing {
+    const { histogramProps } = this;
+    if (!histogramProps) return nothing;
+
+    const {
+      buckets,
+      dateFormat,
+      tooltipDateFormat,
+      binSnapping,
+      minDate,
+      maxDate,
+    } = histogramProps;
+
     return this.histogramAggregationLoading
       ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
       : html`
@@ -344,11 +405,13 @@ export class CollectionFacets extends LitElement {
             .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
             .updateDelay=${100}
             .dateFormat=${dateFormat}
+            .tooltipDateFormat=${tooltipDateFormat}
+            .binSnapping=${binSnapping}
+            .bins=${buckets}
             missingDataMessage="..."
             .width=${this.collapsableFacets && this.contentWidth
               ? this.contentWidth
               : 180}
-            .bins=${fullYearsHistogramAggregation?.buckets as number[]}
             @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
           ></histogram-date-range>
         `;
