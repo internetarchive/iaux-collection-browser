@@ -382,6 +382,10 @@ export class CollectionFacets extends LitElement {
   }
 
   private get histogramTemplate(): TemplateResult | typeof nothing {
+    if (this.histogramAggregationLoading) {
+      return html` <div class="histogram-loading-indicator">&hellip;</div> `;
+    }
+
     const { histogramProps } = this;
     if (!histogramProps) return nothing;
 
@@ -394,27 +398,25 @@ export class CollectionFacets extends LitElement {
       maxDate,
     } = histogramProps;
 
-    return this.histogramAggregationLoading
-      ? html`<div class="histogram-loading-indicator">&hellip;</div>` // Ellipsis block
-      : html`
-          <histogram-date-range
-            class=${this.isTvSearch ? 'wide-inputs' : nothing}
-            .minDate=${minDate}
-            .maxDate=${maxDate}
-            .minSelectedDate=${this.minSelectedDate ?? minDate}
-            .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
-            .updateDelay=${100}
-            .dateFormat=${dateFormat}
-            .tooltipDateFormat=${tooltipDateFormat}
-            .binSnapping=${binSnapping}
-            .bins=${buckets}
-            missingDataMessage="..."
-            .width=${this.collapsableFacets && this.contentWidth
-              ? this.contentWidth
-              : 180}
-            @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-          ></histogram-date-range>
-        `;
+    return html`
+      <histogram-date-range
+        class=${this.isTvSearch ? 'wide-inputs' : nothing}
+        .minDate=${minDate}
+        .maxDate=${maxDate}
+        .minSelectedDate=${this.minSelectedDate ?? minDate}
+        .maxSelectedDate=${this.maxSelectedDate ?? maxDate}
+        .updateDelay=${100}
+        .dateFormat=${dateFormat}
+        .tooltipDateFormat=${tooltipDateFormat}
+        .binSnapping=${binSnapping}
+        .bins=${buckets}
+        missingDataMessage="..."
+        .width=${this.collapsableFacets && this.contentWidth
+          ? this.contentWidth
+          : 180}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+      ></histogram-date-range>
+    `;
   }
 
   /**
