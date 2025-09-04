@@ -36,6 +36,7 @@ export class TileList extends BaseTileComponent {
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
+   *  - suppressBlurring = false;
    */
 
   @property({ type: Object })
@@ -101,6 +102,7 @@ export class TileList extends BaseTileComponent {
         .isListTile=${true}
         .viewSize=${this.classSize}
         .loggedIn=${this.loggedIn}
+        .suppressBlurring=${this.suppressBlurring}
       >
       </image-block>
     </a> `;

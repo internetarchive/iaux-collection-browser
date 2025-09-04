@@ -21,6 +21,7 @@ export class CollectionTile extends BaseTileComponent {
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
+   *  - suppressBlurring = false;
    */
 
   @property({ type: Boolean }) showInfoButton = false;
@@ -46,6 +47,7 @@ export class CollectionTile extends BaseTileComponent {
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .viewSize=${'grid'}
+        .suppressBlurring=${this.suppressBlurring}
       >
       </image-block>
     `;

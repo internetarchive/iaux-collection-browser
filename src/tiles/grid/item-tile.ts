@@ -34,6 +34,7 @@ export class ItemTile extends BaseTileComponent {
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
+   *  - suppressBlurring = false;
    */
 
   @property({ type: Boolean }) showInfoButton = false;
@@ -101,6 +102,7 @@ export class ItemTile extends BaseTileComponent {
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
         .loggedIn=${this.loggedIn}
+        .suppressBlurring=${this.suppressBlurring}
         .isCompactTile=${false}
         .isListTile=${false}
         .viewSize=${'grid'}

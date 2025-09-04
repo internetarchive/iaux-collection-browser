@@ -1263,6 +1263,7 @@ export class CollectionBrowser
           .defaultSortParam=${this.defaultSortParam}
           .mobileBreakpoint=${this.mobileBreakpoint}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${!this.tileBlurringEnabled}
         >
         </tile-dispatcher>
       </div>
@@ -2183,6 +2184,7 @@ export class CollectionBrowser
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        .suppressBlurring=${!this.tileBlurringEnabled}
         .isManageView=${this.isManageView}
         ?showTvClips=${this.isTVCollection || this.searchType === SearchType.TV}
         ?enableHoverPane=${true}
