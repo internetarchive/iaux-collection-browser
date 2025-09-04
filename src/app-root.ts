@@ -665,6 +665,9 @@ export class AppRoot extends LitElement {
           });
           return searchResponse;
         },
+        async itemDetails(identifier: string) {
+          return SearchService.default.itemDetails(identifier);
+        },
       };
     } else {
       // Restore the default seach service
@@ -696,6 +699,9 @@ export class AppRoot extends LitElement {
             });
           });
           return searchResponse;
+        },
+        async itemDetails(identifier: string) {
+          return SearchService.default.itemDetails(identifier);
         },
       };
     } else {

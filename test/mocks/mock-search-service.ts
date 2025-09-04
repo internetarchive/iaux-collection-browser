@@ -120,4 +120,10 @@ export class MockSearchService implements SearchServiceInterface {
 
     return result;
   }
+
+  async itemDetails(
+    identifier: string,
+  ): Promise<Result<SearchResponse, SearchServiceError>> {
+    throw new Error('Method not implemented.');
+  }
 }
