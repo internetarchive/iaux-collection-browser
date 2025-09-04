@@ -1144,6 +1144,7 @@ export class CollectionBrowser
         .selectedFacets=${this.selectedFacets}
         .baseNavigationUrl=${this.baseNavigationUrl}
         .collectionTitles=${this.dataSource.collectionTitles}
+        .tvChannelAliases=${this.dataSource.tvChannelAliases}
         .showHistogramDatePicker=${this.showHistogramDatePicker}
         .allowExpandingDatePicker=${!this.mobileView}
         .allowDatePickerMonths=${shouldUseTvInterface}

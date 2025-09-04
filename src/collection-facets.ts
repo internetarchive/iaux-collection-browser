@@ -45,11 +45,11 @@ import {
   suppressedCollections,
   defaultFacetSort,
   FacetEventDetails,
-  tvChannelFacetLabels,
 } from './models';
 import type {
   CollectionTitles,
   PageSpecifierParams,
+  TVChannelAliases,
 } from './data-source/models';
 import {
   analyticsActions,
@@ -136,6 +136,9 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Object, attribute: false })
   collectionTitles?: CollectionTitles;
+
+  @property({ type: Object, attribute: false })
+  tvChannelAliases?: TVChannelAliases;
 
   @state() openFacets: Record<FacetOption, boolean> = {
     subject: false,
@@ -536,7 +539,7 @@ export class CollectionFacets extends LitElement {
         bucketsWithCount.forEach(b => {
           b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
 
-          const channelLabel = tvChannelFacetLabels[b.displayText];
+          const channelLabel = this.tvChannelAliases?.get(b.displayText);
           if (channelLabel && channelLabel !== b.displayText) {
             b.extraNote = `(${channelLabel})`;
           }
@@ -772,6 +775,7 @@ export class CollectionFacets extends LitElement {
         .searchService=${this.searchService}
         .searchType=${this.searchType}
         .collectionTitles=${this.collectionTitles}
+        .tvChannelAliases=${this.tvChannelAliases}
         .selectedFacets=${this.selectedFacets}
         .sortedBy=${sortedBy}
         .isTvSearch=${this.isTvSearch}

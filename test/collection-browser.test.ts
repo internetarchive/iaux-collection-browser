@@ -744,6 +744,22 @@ describe('Collection Browser', () => {
     );
   });
 
+  it('adds tv channel aliases to cache when present on response', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'channel-aliases';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(el.dataSource.tvChannelAliases.get('foo')).to.equal('Foo Network');
+    expect(el.dataSource.tvChannelAliases.get('bar')).to.equal('Bar Network');
+  });
+
   it('keeps search results from fetch if no change to query or sort param', async () => {
     const resultsSpy = sinon.spy();
     const searchService = new MockSearchService({

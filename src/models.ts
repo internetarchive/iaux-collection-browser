@@ -750,42 +750,6 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
   sponsor: AggregationSortType.ALPHABETICAL,
 };
 
-/**
- * Extra parenthesized labels to show next to certain TV channel facets
- *
- * TODO: This is only needed until we can receive the appropriate mapping via PPS,
- * and can be removed/replaced once that is set up.
- */
-export const tvChannelFacetLabels: Record<string, string> = Object.fromEntries(
-  // prettier-ignore
-  Object.entries({
-    'Al Jazeera'     : ['ALJAZAM', 'ALJAZ'],
-    'Bloomberg'      : ['BLOOMBERG'],
-    'BBC'            : ['BBC', 'BBC1', 'BBC2'],
-    'BBC America'    : ['BBCAMERICA'],
-    'BBC News'       : ['BBCNEWS'],
-    'GB News'        : ['GBN'],
-    'BET'            : ['BETW'],
-    'CNBC'           : ['CNBC'],
-    'CNN'            : ['CNNW', 'CNN'],
-    'Comedy Central' : ['COM', 'COMW'],
-    'CSPAN'          : ['CSPAN', 'CSPAN2', 'CSPAN3'],
-    'Current'        : ['CURRENT'],
-    'Deutsche Welle' : ['DW'],
-    'France 24'      : ['FRANCE24'],
-    'FOX Business'   : ['FBC'],
-    'FOX News'       : ['FOXNEWSW', 'FOXNEWS'],
-    'LINKTV'         : ['LINKTV'],
-    'MSNBC'          : ['MSNBCW', 'MSNBC'],
-    'NHK World'      : ['NHK'],
-    'RT'             : ['RT'],
-    'Sky News'       : ['SKY'],
-  }).reduce(
-    (acc, [label, channels]) => acc.concat(channels.map(ch => [ch, label])),
-    [] as [string, string][],
-  ),
-);
-
 export type LendingFacetKey =
   | 'is_lendable'
   | 'is_borrowable'

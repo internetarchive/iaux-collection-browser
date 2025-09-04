@@ -565,6 +565,52 @@ export const getMockSuccessWithCollectionTitles: () => Result<
   },
 });
 
+export const getMockSuccessWithChannelAliases: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'collection:foo',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'collection:foo',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new TvClipHit({
+          fields: {
+            identifier: 'foo',
+            creator: ['foo', 'bar'],
+          },
+        }),
+      ],
+      tvChannelAliases: {
+        foo: 'Foo Network',
+        bar: 'Bar Network',
+      },
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockSuccessWithCollectionAggregations: () => Result<
   SearchResponse,
   SearchServiceError

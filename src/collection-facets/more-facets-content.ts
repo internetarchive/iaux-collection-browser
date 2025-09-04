@@ -32,11 +32,11 @@ import {
   defaultFacetSort,
   getDefaultSelectedFacets,
   FacetEventDetails,
-  tvChannelFacetLabels,
 } from '../models';
 import type {
   CollectionTitles,
   PageSpecifierParams,
+  TVChannelAliases,
 } from '../data-source/models';
 import '@internetarchive/ia-activity-indicator';
 import './more-facets-pagination';
@@ -67,6 +67,9 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
+
+  @property({ type: Object })
+  tvChannelAliases?: TVChannelAliases;
 
   /**
    * Maximum number of facets to show per page within the modal.
@@ -287,7 +290,7 @@ export class MoreFacetsContent extends LitElement {
       bucketsWithCount.forEach(b => {
         b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
 
-        const channelLabel = tvChannelFacetLabels[b.displayText];
+        const channelLabel = this.tvChannelAliases?.get(b.displayText);
         if (channelLabel && channelLabel !== b.displayText) {
           b.extraNote = `(${channelLabel})`;
         }

@@ -124,6 +124,11 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  tvChannelAliases = new Map<string, string>();
+
+  /**
+   * @inheritdoc
+   */
   collectionExtraInfo?: CollectionExtraInfo;
 
   /**
@@ -1031,19 +1036,25 @@ export class CollectionBrowserDataSource
       return;
     }
 
-    const { aggregations, collectionTitles } = success.response;
+    const { aggregations, collectionTitles, tvChannelAliases } =
+      success.response;
     this.aggregations = aggregations;
+
+    this.histogramAggregation =
+      this.host.searchType === SearchType.TV
+        ? aggregations?.date_histogram
+        : aggregations?.year_histogram;
 
     if (collectionTitles) {
       for (const [id, title] of Object.entries(collectionTitles)) {
         this.collectionTitles.set(id, title);
       }
     }
-
-    this.histogramAggregation =
-      this.host.searchType === SearchType.TV
-        ? aggregations?.date_histogram
-        : aggregations?.year_histogram;
+    if (tvChannelAliases) {
+      for (const [channel, network] of Object.entries(tvChannelAliases)) {
+        this.tvChannelAliases.set(channel, network);
+      }
+    }
 
     this.setFacetsLoading(false);
     this.requestHostUpdate();
@@ -1191,7 +1202,7 @@ export class CollectionBrowserDataSource
       this.pageElements = success.response.pageElements;
     }
 
-    const { results, collectionTitles } = success.response;
+    const { results, collectionTitles, tvChannelAliases } = success.response;
     if (results && results.length > 0) {
       // Load any collection titles present on the response into the cache,
       // or queue up preload fetches for them if none were present.
@@ -1204,6 +1215,12 @@ export class CollectionBrowserDataSource
         const targetTitle = this.collectionExtraInfo?.public_metadata?.title;
         if (withinCollection && targetTitle) {
           this.collectionTitles.set(withinCollection, targetTitle);
+        }
+      }
+
+      if (tvChannelAliases) {
+        for (const [channel, network] of Object.entries(tvChannelAliases)) {
+          this.tvChannelAliases.set(channel, network);
         }
       }
 

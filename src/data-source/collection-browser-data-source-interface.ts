@@ -12,7 +12,11 @@ import type {
   PrefixFilterCounts,
   TileModel,
 } from '../models';
-import type { PageSpecifierParams, CollectionTitles } from './models';
+import type {
+  PageSpecifierParams,
+  CollectionTitles,
+  TVChannelAliases,
+} from './models';
 
 export interface CollectionBrowserDataSourceInterface
   extends ReactiveController {
@@ -87,6 +91,12 @@ export interface CollectionBrowserDataSourceInterface
    * current search, to their human-readable collection titles.
    */
   readonly collectionTitles: CollectionTitles;
+
+  /**
+   * A map from TV channel names appearing in `creator` aggregations, to their
+   * more human-readable network names.
+   */
+  readonly tvChannelAliases: TVChannelAliases;
 
   /**
    * The "extra info" package provided by the PPS for collection pages, including details
