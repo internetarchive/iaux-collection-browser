@@ -306,6 +306,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       }
     }
 
+    left += window.scrollX;
+    top += window.scrollY;
+
     return { left, top };
   }
 
@@ -464,6 +467,10 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
     // Wait for the state update to render the hover pane
     await this.host.updateComplete;
+
+    // Ensure the hover pane element is still in the document before showing,
+    // as it might have been removed by the previous update.
+    if (!this.hoverPane?.isConnected) return;
 
     this.hoverPane?.showPopover?.();
     await new Promise(resolve => {
