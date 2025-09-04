@@ -831,7 +831,7 @@ export class CollectionBrowser
         <input
           id="tile-blur-check"
           type="checkbox"
-          ?checked=${!this.shouldBlurTiles}
+          ?checked=${this.shouldBlurTiles}
           @change=${this.tileBlurCheckboxChanged}
         />
       </label>
@@ -948,8 +948,10 @@ export class CollectionBrowser
   private get shouldBlurTiles(): boolean {
     const { sessionContext } = this.dataSource;
     const userPrefs = sessionContext?.pps_relevant_user_preferences;
-    const blurPref = userPrefs?.display__blur_moderated_content === 'on';
-    return this.tileBlurOverride ?? blurPref;
+    const blurringPref = userPrefs?.display__blur_moderated_content;
+    const blurringPrefState =
+      blurringPref === undefined ? undefined : blurringPref === 'on';
+    return this.tileBlurOverride ?? blurringPrefState ?? true;
   }
 
   /**
