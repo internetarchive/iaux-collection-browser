@@ -700,16 +700,18 @@ export class CollectionBrowserDataSource
       selectedCreatorFilter,
     } = this.host;
 
+    const dateField = this.host.searchType === SearchType.TV ? 'date' : 'year';
+
     if (minSelectedDate) {
       builder.addFilter(
-        'year',
+        dateField,
         minSelectedDate,
         FilterConstraint.GREATER_OR_EQUAL,
       );
     }
     if (maxSelectedDate) {
       builder.addFilter(
-        'year',
+        dateField,
         maxSelectedDate,
         FilterConstraint.LESS_OR_EQUAL,
       );
