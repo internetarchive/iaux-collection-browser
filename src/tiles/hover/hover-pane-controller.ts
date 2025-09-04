@@ -306,6 +306,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       }
     }
 
+    left += window.scrollX;
+    top += window.scrollY;
+
     return { left, top };
   }
 
