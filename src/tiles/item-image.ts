@@ -22,6 +22,8 @@ export class ItemImage extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: Boolean }) suppressBlurring = false;
+
   @state() private isWaveform = false;
 
   @state() private isNotFound = false;
@@ -111,12 +113,14 @@ export class ItemImage extends LitElement {
   }
 
   private get itemImageClass(): ClassInfo {
-    const toBlur = this.model?.contentWarning || this.model?.loginRequired;
+    const toBlur =
+      !this.suppressBlurring &&
+      !!(this.model?.contentWarning || this.model?.loginRequired);
 
     return {
       contain: !this.isCompactTile && !this.isWaveform,
       cover: this.isCompactTile,
-      blur: toBlur || false,
+      blur: toBlur,
       waveform: this.isWaveform,
       'account-image': this.isAccountImage, // for account tile image
       'collection-image': this.model?.mediatype === 'collection', // for collection tile image

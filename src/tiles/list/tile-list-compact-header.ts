@@ -17,6 +17,7 @@ export class TileListCompactHeader extends BaseTileComponent {
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
+   *  - suppressBlurring = false;
    */
 
   render() {

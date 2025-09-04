@@ -16,6 +16,7 @@ export interface HoverPaneProperties {
   baseNavigationUrl?: string;
   baseImageUrl?: string;
   loggedIn: boolean;
+  suppressBlurring: boolean;
   sortParam: SortParam | null;
   collectionTitles?: CollectionTitles;
 }
@@ -189,6 +190,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .baseNavigationUrl=${this.hoverPaneProps?.baseNavigationUrl}
             .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
             .loggedIn=${this.hoverPaneProps?.loggedIn}
+            .suppressBlurring=${this.hoverPaneProps?.suppressBlurring}
             .sortParam=${this.hoverPaneProps?.sortParam}
             .collectionTitles=${this.hoverPaneProps?.collectionTitles}
             .mobileBreakpoint=${this.mobileBreakpoint}
