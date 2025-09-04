@@ -812,9 +812,11 @@ export class CollectionBrowser
   }
 
   private get tileBlurringToggleTemplate(): TemplateResult | typeof nothing {
-    if (!this.dataSource.sessionContext?.is_archive_user) return nothing;
+    const { sessionContext } = this.dataSource;
+    if (!sessionContext?.is_archive_user) return nothing;
 
-    const blurEnabled = true; // TODO this.dataSource.sessionContext?.pps_relevant_user_preferences?.display__blur_moderated_content === 'on';
+    const userPrefs = sessionContext?.pps_relevant_user_preferences;
+    const blurEnabled = userPrefs?.display__blur_moderated_content === 'on';
     return html`
       <label for="tile-blur-check" slot="sort-options-right">
         ${msg('Blurring:')}
