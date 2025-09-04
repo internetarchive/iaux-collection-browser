@@ -27,6 +27,8 @@ export abstract class BaseTileComponent extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: Boolean }) suppressBlurring = false;
+
   protected displayValueProvider = new TileDisplayValueProvider();
 
   protected willUpdate(changed: PropertyValues<this>) {

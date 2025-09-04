@@ -318,6 +318,10 @@ export class CollectionBrowser
 
   @state() private mobileView = false;
 
+  @state() private tileBlurPreference = true;
+
+  @state() private tileBlurOverride?: boolean;
+
   @state() private collapsibleFacetsVisible = false;
 
   @state() private contentWidth?: number;
@@ -801,10 +805,36 @@ export class CollectionBrowser
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
       >
+        ${this.tileBlurCheckboxTemplate}
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
         <slot name="sort-options-right" slot="sort-options-right"></slot>
       </sort-filter-bar>
+    `;
+  }
+
+  /**
+   * Template for the Blurring toggle for admins to enable/disable blurring of
+   * sensitive content in result tiles.
+   */
+  private get tileBlurCheckboxTemplate(): TemplateResult | typeof nothing {
+    // Only show the checkbox for @archive.org users
+    if (!this.dataSource.sessionContext?.is_archive_user) return nothing;
+
+    return html`
+      <label
+        id="tile-blur-label"
+        for="tile-blur-check"
+        slot="sort-options-right"
+      >
+        ${msg('Blurring')}
+        <input
+          id="tile-blur-check"
+          type="checkbox"
+          ?checked=${this.shouldBlurTiles}
+          @change=${this.tileBlurCheckboxChanged}
+        />
+      </label>
     `;
   }
 
@@ -899,6 +929,29 @@ export class CollectionBrowser
    */
   removeCheckedTiles(): void {
     this.dataSource.removeCheckedTiles();
+  }
+
+  /**
+   * Handler for when the tile blurring checkbox state is toggled
+   */
+  private tileBlurCheckboxChanged(e: Event): void {
+    const { checked } = e.target as HTMLInputElement;
+    this.tileBlurOverride = checked;
+    this.infiniteScroller?.refreshAllVisibleCells();
+  }
+
+  /**
+   * Whether result tiles that contain sensitive content should be blurred.
+   * First considers the `tileBlurOverride` if set, falling back to the setting in
+   * user preferences if not.
+   */
+  private get shouldBlurTiles(): boolean {
+    const { sessionContext } = this.dataSource;
+    const userPrefs = sessionContext?.pps_relevant_user_preferences;
+    const blurringPref = userPrefs?.display__blur_moderated_content;
+    const blurringPrefState =
+      blurringPref === undefined ? undefined : blurringPref === 'on';
+    return this.tileBlurOverride ?? blurringPrefState ?? true;
   }
 
   /**
@@ -1238,6 +1291,7 @@ export class CollectionBrowser
           .defaultSortParam=${this.defaultSortParam}
           .mobileBreakpoint=${this.mobileBreakpoint}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${!this.shouldBlurTiles}
         >
         </tile-dispatcher>
       </div>
@@ -2158,6 +2212,7 @@ export class CollectionBrowser
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        .suppressBlurring=${!this.shouldBlurTiles}
         .isManageView=${this.isManageView}
         ?showTvClips=${this.isTVCollection || this.searchType === SearchType.TV}
         ?enableHoverPane=${true}
@@ -2548,6 +2603,16 @@ export class CollectionBrowser
           justify-content: center;
           z-index: 1;
           padding-top: 50px;
+        }
+
+        #tile-blur-label {
+          display: flex;
+          align-items: center;
+          column-gap: 5px;
+        }
+
+        #tile-blur-check {
+          margin: 0 5px 0 0;
         }
 
         circular-activity-indicator {

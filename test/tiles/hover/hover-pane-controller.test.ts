@@ -54,6 +54,7 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
     return {
       model: tileModel,
       loggedIn: false,
+      suppressBlurring: false,
       sortParam: null,
     };
   }

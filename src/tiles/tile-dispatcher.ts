@@ -45,6 +45,7 @@ export class TileDispatcher
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
+   *  - suppressTileBlurring = false;
    */
 
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
@@ -302,6 +303,7 @@ export class TileDispatcher
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
               .creatorFilter=${creatorFilter}
+              .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
@@ -315,6 +317,7 @@ export class TileDispatcher
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
               .creatorFilter=${creatorFilter}
+              .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
@@ -328,6 +331,7 @@ export class TileDispatcher
               .currentWidth=${currentWidth}
               .currentHeight=${currentHeight}
               .creatorFilter=${creatorFilter}
+              .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
               ?showInfoButton=${false}
               @infoButtonPressed=${this.tileInfoButtonPressed}
@@ -344,6 +348,7 @@ export class TileDispatcher
               .defaultSortParam=${defaultSortParam}
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
+              .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
               ?useSimpleLayout=${this.useSimpleLayout}
               ?showTvClips=${this.showTvClips}
@@ -365,6 +370,7 @@ export class TileDispatcher
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${this.suppressBlurring}
         >
         </tile-list-compact>`;
       case 'list-detail':
@@ -381,6 +387,7 @@ export class TileDispatcher
           .mobileBreakpoint=${mobileBreakpoint}
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${this.suppressBlurring}
         >
         </tile-list>`;
       default:

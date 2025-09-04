@@ -26,6 +26,7 @@ export class TileListCompact extends BaseTileComponent {
    *  - creatorFilter?: string;
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
+   *  - suppressBlurring = false;
    */
 
   render() {
@@ -38,6 +39,7 @@ export class TileListCompact extends BaseTileComponent {
           .isListTile=${true}
           .viewSize=${this.classSize}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${this.suppressBlurring}
         >
         </image-block>
         <a href=${this.href} id="title"
