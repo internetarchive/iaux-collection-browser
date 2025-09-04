@@ -833,6 +833,7 @@ export class CollectionBrowser
   private tileBlurringChanged(e: Event): void {
     const { checked } = e.target as HTMLInputElement;
     this.tileBlurringEnabled = checked;
+    this.infiniteScroller?.refreshAllVisibleCells();
   }
 
   /**
