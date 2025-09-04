@@ -1,12 +1,16 @@
 import { css, html, LitElement, CSSResultGroup, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
+import { BinSnappingInterval } from '@internetarchive/histogram-date-range';
 import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+
+import '@internetarchive/histogram-date-range';
 
 @customElement('expanded-date-picker')
 export class ExpandedDatePicker extends LitElement {
@@ -21,6 +25,10 @@ export class ExpandedDatePicker extends LitElement {
   @property({ type: Array }) buckets?: number[];
 
   @property({ type: String }) dateFormat: string = 'YYYY';
+
+  @property({ type: String }) tooltipDateFormat?: string;
+
+  @property({ type: String }) binSnapping?: BinSnappingInterval;
 
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
@@ -38,6 +46,8 @@ export class ExpandedDatePicker extends LitElement {
           .minSelectedDate=${this.minSelectedDate ?? this.minDate}
           .maxSelectedDate=${this.maxSelectedDate ?? this.maxDate}
           .dateFormat=${this.dateFormat}
+          tooltipDateFormat=${ifDefined(this.tooltipDateFormat)}
+          binSnapping=${ifDefined(this.binSnapping)}
           .updateDelay=${0}
           updateWhileFocused
           missingDataMessage="..."

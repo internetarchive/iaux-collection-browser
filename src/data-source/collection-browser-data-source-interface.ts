@@ -78,9 +78,9 @@ export interface CollectionBrowserDataSourceInterface
   readonly aggregations?: Record<string, Aggregation>;
 
   /**
-   * The `year_histogram` aggregation retrieved for the current search.
+   * The `year_histogram` or `date_histogram` aggregation retrieved for the current search.
    */
-  readonly yearHistogramAggregation?: Aggregation;
+  readonly histogramAggregation?: Aggregation;
 
   /**
    * A map from collection identifiers that appear on hits or aggregations for the

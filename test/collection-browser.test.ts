@@ -1101,7 +1101,58 @@ describe('Collection Browser', () => {
     // date query correctly.
     await el.updateComplete;
     expect(el.minSelectedDate).to.equal('1960');
-    expect(el.maxSelectedDate).to.equal('2000');
+    expect(el.maxSelectedDate).to.equal('2009');
+  });
+
+  it('sets date range query when monthly date picker selection changed', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .suppressPlaceholders=${true}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'months'; // Includes date_histogram aggregation in response
+    el.searchType = SearchType.TV;
+    el.showHistogramDatePicker = true;
+    await el.updateComplete;
+
+    const facets = el.shadowRoot?.querySelector(
+      'collection-facets',
+    ) as CollectionFacets;
+    await facets?.updateComplete;
+
+    // Wait for the date picker to be rendered (which may take until the next tick)
+    await nextTick();
+
+    const histogram = facets?.shadowRoot?.querySelector(
+      'histogram-date-range',
+    ) as HistogramDateRange;
+
+    expect(histogram, 'histogram exists').to.exist;
+
+    // Enter a new min date into the date picker
+    const minDateInput = histogram.shadowRoot?.querySelector(
+      '#date-min',
+    ) as HTMLInputElement;
+
+    const pressEnterEvent = new KeyboardEvent('keyup', {
+      key: 'Enter',
+    });
+
+    minDateInput.value = '2001-02';
+    minDateInput.dispatchEvent(pressEnterEvent);
+
+    // Wait for the histogram's update delay
+    await aTimeout(histogram.updateDelay + 50);
+
+    // Ensure that the histogram change propagated to the collection browser's
+    // date query correctly.
+    await el.updateComplete;
+    expect(el.minSelectedDate).to.equal('2001-02');
+    expect(el.maxSelectedDate).to.equal('2002-12');
   });
 
   it('emits event when results start and end loading', async () => {

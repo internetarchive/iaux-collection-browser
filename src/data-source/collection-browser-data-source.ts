@@ -114,7 +114,7 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
-  yearHistogramAggregation?: Aggregation;
+  histogramAggregation?: Aggregation;
 
   /**
    * @inheritdoc
@@ -234,7 +234,7 @@ export class CollectionBrowserDataSource
     log('Resetting CB data source');
     this.pages = {};
     this.aggregations = {};
-    this.yearHistogramAggregation = undefined;
+    this.histogramAggregation = undefined;
     this.pageElements = undefined;
     this.parentCollections = [];
     this.previousQueryKey = '';
@@ -700,16 +700,18 @@ export class CollectionBrowserDataSource
       selectedCreatorFilter,
     } = this.host;
 
+    const dateField = this.host.searchType === SearchType.TV ? 'date' : 'year';
+
     if (minSelectedDate) {
       builder.addFilter(
-        'year',
+        dateField,
         minSelectedDate,
         FilterConstraint.GREATER_OR_EQUAL,
       );
     }
     if (maxSelectedDate) {
       builder.addFilter(
-        'year',
+        dateField,
         maxSelectedDate,
         FilterConstraint.LESS_OR_EQUAL,
       );
@@ -1038,8 +1040,10 @@ export class CollectionBrowserDataSource
       }
     }
 
-    this.yearHistogramAggregation =
-      success?.response?.aggregations?.year_histogram;
+    this.histogramAggregation =
+      this.host.searchType === SearchType.TV
+        ? aggregations?.date_histogram
+        : aggregations?.year_histogram;
 
     this.setFacetsLoading(false);
     this.requestHostUpdate();

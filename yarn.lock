@@ -316,10 +316,10 @@
   resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-1.0.0.tgz#ee3d3efb280860018193c2c52d54ec784e9bb202"
   integrity sha512-cbD0FtJOjzBm7exxFrzrkHnqbmalKbEXA4i7KrwhUGBojF/QTTLAvaIRXH/bfoiTyCh6YT1/E/mULAQPdB6yvQ==
 
-"@internetarchive/histogram-date-range@^1.2.1":
-  version "1.2.1"
-  resolved "https://registry.npmjs.org/@internetarchive/histogram-date-range/-/histogram-date-range-1.2.1.tgz"
-  integrity sha512-UlQcYDhDVt2yNp2GHIewwuU371FswIMsVomqDUpqRqFlD0NEIi31Mi0XhwaUWMrRsNBXYtnVaoQuAEKMTP3Lvg==
+"@internetarchive/histogram-date-range@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/histogram-date-range/-/histogram-date-range-1.3.0.tgz#08a96121dbd0119e3d17c384a321a809a9d2a621"
+  integrity sha512-Z3RnhTQ1QoWY7UGoTsO/5byAWGyEiHt5qEX4w1pyrcDQAliRsofdvaO7q2e40qd4exxYvEtEyxDEaUtd2BMoig==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.6"
     dayjs "^1.11.13"
@@ -407,10 +407,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^2.3.2":
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.3.2.tgz#5331a7f9489de306d071ce6c21f16be366fd76ca"
-  integrity sha512-I1j47OB7jbJ+uFH3b+u4Gh81P+8hVXkAOZpMb2bB0gL27oKtC2VvbIL0P10/AIuBaDOo1iUgriePT+JOvI9KaQ==
+"@internetarchive/search-service@^2.4.0":
+  version "2.4.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.4.0.tgz#c46579fe856d06296fd292f549aadadd41da8244"
+  integrity sha512-eHR21KY4vARvq+32nVkpjJYZjo1oTnqqq+xRA8RWvcabO1grhgwsETD00vGTMp1Y77Pw0GC3Fs+ygHHU+N19Zw==
   dependencies:
     "@internetarchive/iaux-item-metadata" "^1.0.5"
     "@internetarchive/result-type" "^0.0.1"
@@ -1939,9 +1939,9 @@ data-view-byte-offset@^1.0.1:
     is-data-view "^1.0.1"
 
 dayjs@^1.11.13:
-  version "1.11.13"
-  resolved "https://registry.npmjs.org/dayjs/-/dayjs-1.11.13.tgz"
-  integrity sha512-oaMBel6gjolK862uaPQOVTA7q3TZhuSvuMQAAglQDOWYO9A91IrAOUJEyKVlqJlHE0vq5p5UXxzdPfMH/x6xNg==
+  version "1.11.18"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.18.tgz#835fa712aac52ab9dec8b1494098774ed7070a11"
+  integrity sha512-zFBQ7WFRvVRhKcWoUh+ZA1g2HVgUbsZm9sbddh8EC5iv93sui8DVVz1Npvz+r6meo9VKfa8NyLWBsQK1VvIKPA==
 
 debounce@^1.2.0:
   version "1.2.1"

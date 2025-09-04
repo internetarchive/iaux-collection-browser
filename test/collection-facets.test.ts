@@ -41,8 +41,13 @@ describe('Collection Facets', () => {
       html`<collection-facets></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = true;
+    el.histogramAggregationLoading = true;
     el.showHistogramDatePicker = true;
+    el.histogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
     await el.updateComplete;
 
     const histogramLoader = el.shadowRoot?.querySelector(
@@ -56,8 +61,13 @@ describe('Collection Facets', () => {
       html`<collection-facets></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = true;
+    el.histogramAggregationLoading = true;
     el.showHistogramDatePicker = false;
+    el.histogramAggregation = new Aggregation({
+      buckets: [1, 2, 3],
+      first_bucket_key: 0,
+      last_bucket_key: 2,
+    });
     await el.updateComplete;
 
     const histogramLoader = el.shadowRoot?.querySelector(
@@ -71,9 +81,9 @@ describe('Collection Facets', () => {
       html`<collection-facets></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = false;
+    el.histogramAggregationLoading = false;
     el.showHistogramDatePicker = true;
-    el.fullYearsHistogramAggregation = new Aggregation({
+    el.histogramAggregation = new Aggregation({
       buckets: [1, 2, 3],
       first_bucket_key: 0,
       last_bucket_key: 2,
@@ -89,9 +99,9 @@ describe('Collection Facets', () => {
       html`<collection-facets></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = false;
+    el.histogramAggregationLoading = false;
     el.showHistogramDatePicker = false;
-    el.fullYearsHistogramAggregation = new Aggregation({
+    el.histogramAggregation = new Aggregation({
       buckets: [1, 2, 3],
       first_bucket_key: 0,
       last_bucket_key: 2,
@@ -107,10 +117,10 @@ describe('Collection Facets', () => {
       html`<collection-facets></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = false;
+    el.histogramAggregationLoading = false;
     el.showHistogramDatePicker = true;
     el.allowExpandingDatePicker = true;
-    el.fullYearsHistogramAggregation = new Aggregation({
+    el.histogramAggregation = new Aggregation({
       buckets: [1, 2, 3],
       first_bucket_key: 0,
       last_bucket_key: 2,
@@ -126,10 +136,10 @@ describe('Collection Facets', () => {
       html`<collection-facets></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = false;
+    el.histogramAggregationLoading = false;
     el.showHistogramDatePicker = true;
     el.allowExpandingDatePicker = false;
-    el.fullYearsHistogramAggregation = new Aggregation({
+    el.histogramAggregation = new Aggregation({
       buckets: [1, 2, 3],
       first_bucket_key: 0,
       last_bucket_key: 2,
@@ -151,10 +161,10 @@ describe('Collection Facets', () => {
       ></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = false;
+    el.histogramAggregationLoading = false;
     el.showHistogramDatePicker = true;
     el.allowExpandingDatePicker = true;
-    el.fullYearsHistogramAggregation = new Aggregation({
+    el.histogramAggregation = new Aggregation({
       buckets: [1, 2, 3],
       first_bucket_key: 0,
       last_bucket_key: 2,
@@ -868,10 +878,10 @@ describe('Collection Facets', () => {
       ></collection-facets>`,
     );
 
-    el.fullYearAggregationLoading = false;
+    el.histogramAggregationLoading = false;
     el.showHistogramDatePicker = true;
     el.allowExpandingDatePicker = true;
-    el.fullYearsHistogramAggregation = new Aggregation({
+    el.histogramAggregation = new Aggregation({
       buckets: [1, 2, 3],
       first_bucket_key: 0,
       last_bucket_key: 2,
