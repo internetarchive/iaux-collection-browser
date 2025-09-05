@@ -26,7 +26,7 @@
     "@internetarchive/analytics-manager": "^0.1.4",
     "@internetarchive/feature-feedback": "^1.0.0",
     "@internetarchive/field-parsers": "^1.0.0",
-    "@internetarchive/histogram-date-range": "1.3.1-alpha-webdev7745.0",
+    "@internetarchive/histogram-date-range": "^1.3.1",
     "@internetarchive/ia-activity-indicator": "^0.0.6",
     "@internetarchive/ia-dropdown": "^1.3.10",
     "@internetarchive/iaux-item-metadata": "^1.0.5",
