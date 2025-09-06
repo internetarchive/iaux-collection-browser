@@ -18,6 +18,7 @@ import './list/tile-list-compact';
 import './list/tile-list-compact-header';
 import type { TileHoverPane } from './hover/tile-hover-pane';
 import { BaseTileComponent } from './base-tile-component';
+import { SimpleLayoutType } from './models';
 import {
   HoverPaneController,
   HoverPaneControllerInterface,
@@ -58,8 +59,8 @@ export class TileDispatcher
 
   @property({ type: Boolean }) showTvClips = false;
 
-  /** Whether to use the simple layout in grid mode */
-  @property({ type: Boolean }) useSimpleLayout = false;
+  /** What type of simple layout to use in grid mode, if any */
+  @property({ type: String }) simpleLayoutType: SimpleLayoutType = 'none';
 
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
@@ -345,7 +346,7 @@ export class TileDispatcher
               .creatorFilter=${creatorFilter}
               .loggedIn=${this.loggedIn}
               .isManageView=${this.isManageView}
-              ?useSimpleLayout=${this.useSimpleLayout}
+              .simpleLayoutType=${this.simpleLayoutType}
               ?showTvClips=${this.showTvClips}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
