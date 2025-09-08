@@ -17,6 +17,7 @@ import '../text-snippet-block';
 import '../item-image';
 import '../tile-mediatype-icon';
 import './tile-stats';
+import { SimpleLayoutType } from '../models';
 
 @customElement('item-tile')
 export class ItemTile extends BaseTileComponent {
@@ -39,13 +40,15 @@ export class ItemTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showTvClips = false;
 
-  @property({ type: Boolean }) useSimpleLayout = false;
+  @property({ type: String }) simpleLayoutType: SimpleLayoutType = 'none';
 
   render() {
     const itemTitle = this.model?.title;
     const containerClasses = classMap({
       container: true,
-      simple: this.useSimpleLayout,
+      simple: this.simpleLayoutType !== 'none',
+      'stats-only': this.simpleLayoutType === 'stats-only',
+      'snippets-only': this.simpleLayoutType === 'snippets-only',
     });
 
     return html`
@@ -169,7 +172,8 @@ export class ItemTile extends BaseTileComponent {
   }
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
-    if (this.useSimpleLayout || !this.hasSnippets) return nothing;
+    if (!this.hasSnippets || this.simpleLayoutType === 'stats-only')
+      return nothing;
 
     return html`
       <text-snippet-block viewsize="grid" .snippets=${this.model?.snippets}>
@@ -213,7 +217,9 @@ export class ItemTile extends BaseTileComponent {
   /**
    * Template for the stats row along the bottom of the tile.
    */
-  private get tileStatsTemplate(): TemplateResult {
+  private get tileStatsTemplate(): TemplateResult | typeof nothing {
+    if (this.simpleLayoutType === 'snippets-only') return nothing;
+
     const effectiveSort = this.sortParam ?? this.defaultSortParam;
     const [viewCount, viewLabel] =
       effectiveSort?.field === 'week'
@@ -290,6 +296,14 @@ export class ItemTile extends BaseTileComponent {
         .simple .date-sorted-by > .truncated,
         .simple .volume-issue > .truncated {
           -webkit-line-clamp: 1;
+        }
+
+        .simple.snippets-only .item-info {
+          padding-bottom: 5px;
+        }
+
+        .simple.snippets-only text-snippet-block {
+          margin-top: auto; /* Force the snippets to the bottom of the tile */
         }
 
         .capture-dates {

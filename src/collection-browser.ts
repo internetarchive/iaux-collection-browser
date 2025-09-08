@@ -536,7 +536,7 @@ export class CollectionBrowser
 
   render() {
     return html`
-      ${this.showSmartFacetBar
+      ${this.showSmartFacetBar && this.placeholderType === null
         ? html`<smart-facet-bar
             .query=${this.baseQuery}
             .aggregations=${this.dataSource.aggregations}
