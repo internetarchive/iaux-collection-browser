@@ -46,6 +46,7 @@ import {
   defaultFacetDisplayOrder,
   tvFacetDisplayOrder,
   TvClipFilterType,
+  TileBlurOverrideState,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -318,9 +319,11 @@ export class CollectionBrowser
 
   @state() private mobileView = false;
 
-  @state() private tileBlurPreference = true;
-
-  @state() private tileBlurOverride?: boolean;
+  /**
+   * Any temporarily overridden `on`/`off` state for the user's tile blurring preference if they
+   * have chosen to override it, or `no-override` if they have not.
+   */
+  @state() private tileBlurOverrideState: TileBlurOverrideState = 'no-override';
 
   @state() private collapsibleFacetsVisible = false;
 
@@ -831,7 +834,7 @@ export class CollectionBrowser
         <input
           id="tile-blur-check"
           type="checkbox"
-          ?checked=${this.shouldBlurTiles}
+          ?checked=${!this.shouldSuppressTileBlurring}
           @change=${this.tileBlurCheckboxChanged}
         />
       </label>
@@ -936,22 +939,30 @@ export class CollectionBrowser
    */
   private tileBlurCheckboxChanged(e: Event): void {
     const { checked } = e.target as HTMLInputElement;
-    this.tileBlurOverride = checked;
+    this.tileBlurOverrideState = checked ? 'on' : 'off';
     this.infiniteScroller?.refreshAllVisibleCells();
   }
 
   /**
-   * Whether result tiles that contain sensitive content should be blurred.
-   * First considers the `tileBlurOverride` if set, falling back to the setting in
-   * user preferences if not.
+   * Whether result tiles should have the default blurring of sensitive content suppressed.
+   * First considers any override specified by the user, falling back to the setting in
+   * user preferences if not overridden.
    */
-  private get shouldBlurTiles(): boolean {
+  private get shouldSuppressTileBlurring(): boolean {
+    if (this.tileBlurOverrideState !== 'no-override') {
+      // User wants to override their preference.
+      // Return true if they want blurring turned off, or false otherwise.
+      return this.tileBlurOverrideState === 'off';
+    }
+
+    // Not overriding, so use the preference from session context
     const { sessionContext } = this.dataSource;
     const userPrefs = sessionContext?.pps_relevant_user_preferences;
     const blurringPref = userPrefs?.display__blur_moderated_content;
-    const blurringPrefState =
-      blurringPref === undefined ? undefined : blurringPref === 'on';
-    return this.tileBlurOverride ?? blurringPrefState ?? true;
+
+    // Only suppress blurring if the preference is disabled.
+    // If enabled or missing, tile blurring remains on.
+    return blurringPref === 'off';
   }
 
   /**
@@ -1291,7 +1302,7 @@ export class CollectionBrowser
           .defaultSortParam=${this.defaultSortParam}
           .mobileBreakpoint=${this.mobileBreakpoint}
           .loggedIn=${this.loggedIn}
-          .suppressBlurring=${!this.shouldBlurTiles}
+          .suppressBlurring=${this.shouldSuppressTileBlurring}
         >
         </tile-dispatcher>
       </div>
@@ -2212,7 +2223,7 @@ export class CollectionBrowser
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
-        .suppressBlurring=${!this.shouldBlurTiles}
+        .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
         ?showTvClips=${this.isTVCollection || this.searchType === SearchType.TV}
         ?enableHoverPane=${true}
