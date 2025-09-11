@@ -220,4 +220,28 @@ describe('Image block component', () => {
     ) as TextOverlay;
     expect(textOverlay).not.to.exist;
   });
+
+  it('should render no overlay if blurring is suppressed', async () => {
+    const el = await fixture<ImageBlock>(html`
+      <image-block
+        .model=${{
+          loginRequired: true,
+          contentWarning: true,
+          identifier: 'goody',
+        }}
+        .baseImageUrl=${'https://archive.org'}
+        .isCompactTile=${false}
+        .isListTile=${false}
+        .viewSize=${'desktop'}
+        .loggedIn=${true}
+        suppressBlurring
+      >
+      </image-block>
+    `);
+
+    const textOverlay = el.shadowRoot?.querySelector(
+      'text-overlay',
+    ) as TextOverlay;
+    expect(textOverlay).not.to.exist;
+  });
 });

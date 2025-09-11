@@ -895,8 +895,7 @@ describe('Collection Browser', () => {
     expect(sortSelector, 'sort bar').to.exist;
 
     // Click the title sorter
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [...(sortSelector?.children as HTMLCollection & Iterable<any>)] // tsc doesn't know children is iterable
+    Array.from(sortSelector!.children)
       .find(child => child.textContent?.trim() === 'Title')
       ?.querySelector('button')
       ?.click();
@@ -904,6 +903,16 @@ describe('Collection Browser', () => {
     await el.updateComplete;
 
     expect(el.selectedSort).to.equal(SortField.title);
+
+    // Click the creator sorter
+    Array.from(sortSelector!.children)
+      .find(child => child.textContent?.trim() === 'Creator')
+      ?.querySelector('button')
+      ?.click();
+
+    await el.updateComplete;
+
+    expect(el.selectedSort).to.equal(SortField.creator);
   });
 
   it('sets sort filter properties when user selects title filter', async () => {
@@ -1072,9 +1081,11 @@ describe('Collection Browser', () => {
 
   it('sets date range query when date picker selection changed', async () => {
     const searchService = new MockSearchService();
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
+        .analyticsHandler=${mockAnalyticsHandler}
         .suppressPlaceholders=${true}
       >
       </collection-browser>`,
@@ -2143,6 +2154,79 @@ describe('Collection Browser', () => {
     // disable button exists again
     expect(manageBar?.shadowRoot?.querySelector('.danger:disabled')).to.be
       .exist;
+  });
+
+  it('shows Blurring checkbox for admin users', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .baseNavigationUrl=${''}
+        .searchService=${searchService}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'archive-org-user-loggedin';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const blurringCheck = el.shadowRoot?.querySelector(
+      '#tile-blur-check',
+    ) as HTMLInputElement;
+    expect(blurringCheck).to.exist;
+    expect(blurringCheck.checked).to.be.true;
+  });
+
+  it('unchecks Blurring checkbox for admin users with blurring preference off', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .baseNavigationUrl=${''}
+        .searchService=${searchService}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'archive-org-user-loggedin-noblur';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const blurringCheck = el.shadowRoot?.querySelector(
+      '#tile-blur-check',
+    ) as HTMLInputElement;
+    expect(blurringCheck).to.exist;
+    expect(blurringCheck.checked).to.be.false;
+  });
+
+  it('toggles blur state when Blurring checkbox is toggled', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .baseNavigationUrl=${''}
+        .searchService=${searchService}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'archive-org-user-loggedin';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const blurringCheck = el.shadowRoot?.querySelector(
+      '#tile-blur-check',
+    ) as HTMLInputElement;
+    expect(blurringCheck).to.exist;
+
+    blurringCheck.dispatchEvent(new PointerEvent('click'));
+    await el.updateComplete;
+
+    const infiniteScroller = el.shadowRoot?.querySelector(
+      'infinite-scroller',
+    ) as InfiniteScroller;
+    const firstTile = infiniteScroller?.shadowRoot?.querySelector(
+      'tile-dispatcher',
+    ) as TileDispatcher;
+    expect(firstTile.suppressBlurring).to.be.true;
   });
 
   it('applies loans tab properties to sort bar', async () => {

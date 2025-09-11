@@ -2207,6 +2207,7 @@ export class CollectionBrowser
 
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
+    console.log('cell for index', index, model);
     if (!model) return undefined;
 
     return html`
