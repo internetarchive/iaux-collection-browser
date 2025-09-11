@@ -382,22 +382,6 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
-                id="show-dummy-snippets"
-                @click=${this.snippetsChanged}
-              />
-              <label for="show-dummy-snippets">Show dummy snippets</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
-                id="show-dummy-reviews"
-                @click=${this.reviewsChanged}
-              />
-              <label for="show-dummy-reviews">Show dummy reviews</label>
-            </div>
-            <div class="checkbox-control">
-              <input
-                type="checkbox"
                 id="show-facet-group-outline-check"
                 @click=${this.toggleFacetGroupOutline}
               />
@@ -635,87 +619,6 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.classList.remove('showFacetGroupOutlines');
       this.modalManager.classList.remove('showFacetGroupOutlines');
     }
-  }
-
-  private async snippetsChanged(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.checked) {
-      // Decorate the default search service with a wrapper that adds
-      // dummy snippets to any successful searches
-      this.searchService = {
-        async search(params, searchType) {
-          const searchResponse = await SearchService.default.search(
-            params,
-            searchType,
-          );
-          searchResponse.success?.response.results.forEach(result => {
-            Object.defineProperty(result, 'highlight', {
-              value: new StringField([
-                'this is a text {{{snippet}}} block with potentially',
-                'multiple {{{snippets}}} and such',
-                'but the {{{snippet}}} block may be quite long perhaps',
-                'depending on how many {{{snippet}}} matches there are',
-                'there may be multiple lines of {{{snippets}}} to show',
-                'but each {{{snippet}}} should be relatively short',
-                'and {{{snippets}}} are each a {{{snippet}}} of text',
-                'but every {{{snippet}}} might have multiple matches',
-                'the {{{snippets}}} should be separated and surrounded by ellipses',
-              ]),
-            });
-          });
-          return searchResponse;
-        },
-      };
-    } else {
-      // Restore the default seach service
-      this.searchService = SearchService.default;
-    }
-
-    // Re-perform the current search to show/hide the snippets immediately
-    this.reperformCurrentSearch();
-  }
-
-  private async reviewsChanged(e: Event) {
-    const target = e.target as HTMLInputElement;
-    if (target.checked) {
-      // Decorate the default search service with a wrapper that adds
-      // dummy reviews to any successful searches
-      this.searchService = {
-        async search(params, searchType) {
-          const searchResponse = await SearchService.default.search(
-            params,
-            searchType,
-          );
-          searchResponse.success?.response.results.forEach((result, i) => {
-            Object.defineProperty(result, 'review', {
-              value: {
-                title: 'My Great Review',
-                body: "This item is really great and that's why I'm leaving this review on it and giving it so many star...",
-                stars: (i + 3) % 6,
-              },
-            });
-          });
-          return searchResponse;
-        },
-      };
-    } else {
-      // Restore the default seach service
-      this.searchService = SearchService.default;
-    }
-
-    // Re-perform the current search to show/hide the reviews immediately
-    this.reperformCurrentSearch();
-  }
-
-  private async reperformCurrentSearch(): Promise<void> {
-    const oldQuery = this.searchQuery;
-    this.searchQuery = '-'; // Should just reset to the placeholder
-    await this.updateComplete;
-    // For unclear reasons, Safari refuses to re-apply the old query until the next tick, hence:
-    await new Promise(res => {
-      setTimeout(res, 0);
-    });
-    this.searchQuery = oldQuery; // Re-apply the original query
   }
 
   private datePickerChanged(e: Event) {
