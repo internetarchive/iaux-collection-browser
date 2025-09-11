@@ -124,4 +124,11 @@ export class MockSearchService implements SearchServiceInterface {
 
     return result;
   }
+
+  async itemDetails(
+    _: string,
+  ): Promise<Result<SearchResponse, SearchServiceError>> {
+    // We don't currently use the itemDetails method in collection-browser
+    throw new Error('not implemented');
+  }
 }
