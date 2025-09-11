@@ -22,6 +22,8 @@ export class TileHoverPane extends LitElement {
 
   @property({ type: Boolean }) loggedIn: boolean = false;
 
+  @property({ type: Boolean }) suppressBlurring: boolean = false;
+
   @property({ type: Object }) sortParam?: SortParam;
 
   @property({ type: Number }) mobileBreakpoint?: number;
@@ -41,6 +43,7 @@ export class TileHoverPane extends LitElement {
             .baseNavigationUrl=${this.baseNavigationUrl}
             .baseImageUrl=${this.baseImageUrl}
             .loggedIn=${this.loggedIn}
+            .suppressBlurring=${this.suppressBlurring}
             .sortParam=${this.sortParam}
             .collectionTitles=${this.collectionTitles}
             .mobileBreakpoint=${this.mobileBreakpoint}

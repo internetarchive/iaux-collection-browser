@@ -810,3 +810,13 @@ export interface ManageableItem {
   dateStr?: string;
   date?: string;
 }
+
+/**
+ * Possible states for whether & how the user has overridden their user preference
+ * for blurring behavior on tiles with sensitive content.
+ *  - `no-override`: The user has not overridden their user preference, so simply
+ *    respect the preference as given.
+ *  - `on`: The user has overridden their preference and wants tile blurring enabled.
+ *  - `off`: The user has overridden their preference and wants tile blurring disabled.
+ */
+export type TileBlurOverrideState = 'no-override' | 'on' | 'off';

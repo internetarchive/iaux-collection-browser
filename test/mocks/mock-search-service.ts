@@ -34,6 +34,8 @@ import {
   getMockSuccessWithWebArchiveHits,
   getMockSuccessWithManyAggregations,
   getMockSuccessTvFields,
+  getMockSuccessArchiveOrgUserResult,
+  getMockSuccessArchiveOrgUserNoBlurResult,
 } from './mock-search-responses';
 
 const responses: Record<
@@ -47,6 +49,8 @@ const responses: Record<
   loggedin: getMockSuccessLoggedInResult,
   'no-preview': getMockSuccessNoPreviewResult,
   'loggedin-no-preview': getMockSuccessLoggedInAndNoPreviewResult,
+  'archive-org-user-loggedin': getMockSuccessArchiveOrgUserResult,
+  'archive-org-user-loggedin-noblur': getMockSuccessArchiveOrgUserNoBlurResult,
   'first-title': getMockSuccessFirstTitleResult,
   'first-creator': getMockSuccessFirstCreatorResult,
   'collection-titles': getMockSuccessWithCollectionTitles,

@@ -46,6 +46,7 @@ import {
   defaultFacetDisplayOrder,
   tvFacetDisplayOrder,
   TvClipFilterType,
+  TileBlurOverrideState,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -317,6 +318,12 @@ export class CollectionBrowser
   @state() private totalResults?: number;
 
   @state() private mobileView = false;
+
+  /**
+   * Any temporarily overridden `on`/`off` state for the user's tile blurring preference if they
+   * have chosen to override it, or `no-override` if they have not.
+   */
+  @state() private tileBlurOverrideState: TileBlurOverrideState = 'no-override';
 
   @state() private collapsibleFacetsVisible = false;
 
@@ -801,10 +808,36 @@ export class CollectionBrowser
         @titleLetterChanged=${this.titleLetterSelected}
         @creatorLetterChanged=${this.creatorLetterSelected}
       >
+        ${this.tileBlurCheckboxTemplate}
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
         <slot name="sort-options-right" slot="sort-options-right"></slot>
       </sort-filter-bar>
+    `;
+  }
+
+  /**
+   * Template for the Blurring toggle for admins to enable/disable blurring of
+   * sensitive content in result tiles.
+   */
+  private get tileBlurCheckboxTemplate(): TemplateResult | typeof nothing {
+    // Only show the checkbox for @archive.org users
+    if (!this.dataSource.sessionContext?.is_archive_user) return nothing;
+
+    return html`
+      <label
+        id="tile-blur-label"
+        for="tile-blur-check"
+        slot="sort-options-right"
+      >
+        ${msg('Blurring')}
+        <input
+          id="tile-blur-check"
+          type="checkbox"
+          ?checked=${!this.shouldSuppressTileBlurring}
+          @change=${this.tileBlurCheckboxChanged}
+        />
+      </label>
     `;
   }
 
@@ -899,6 +932,37 @@ export class CollectionBrowser
    */
   removeCheckedTiles(): void {
     this.dataSource.removeCheckedTiles();
+  }
+
+  /**
+   * Handler for when the tile blurring checkbox state is toggled
+   */
+  private tileBlurCheckboxChanged(e: Event): void {
+    const { checked } = e.target as HTMLInputElement;
+    this.tileBlurOverrideState = checked ? 'on' : 'off';
+    this.infiniteScroller?.refreshAllVisibleCells();
+  }
+
+  /**
+   * Whether result tiles should have the default blurring of sensitive content suppressed.
+   * First considers any override specified by the user, falling back to the setting in
+   * user preferences if not overridden.
+   */
+  private get shouldSuppressTileBlurring(): boolean {
+    if (this.tileBlurOverrideState !== 'no-override') {
+      // User wants to override their preference.
+      // Return true if they want blurring turned off, or false otherwise.
+      return this.tileBlurOverrideState === 'off';
+    }
+
+    // Not overriding, so use the preference from session context
+    const { sessionContext } = this.dataSource;
+    const userPrefs = sessionContext?.pps_relevant_user_preferences;
+    const blurringPref = userPrefs?.display__blur_moderated_content;
+
+    // Only suppress blurring if the preference is disabled.
+    // If enabled or missing, tile blurring remains on.
+    return blurringPref === 'off';
   }
 
   /**
@@ -1238,6 +1302,7 @@ export class CollectionBrowser
           .defaultSortParam=${this.defaultSortParam}
           .mobileBreakpoint=${this.mobileBreakpoint}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${this.shouldSuppressTileBlurring}
         >
         </tile-dispatcher>
       </div>
@@ -2142,6 +2207,7 @@ export class CollectionBrowser
 
   cellForIndex(index: number): TemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
+    console.log('cell for index', index, model);
     if (!model) return undefined;
 
     return html`
@@ -2158,6 +2224,7 @@ export class CollectionBrowser
         .creatorFilter=${this.selectedCreatorFilter}
         .mobileBreakpoint=${this.mobileBreakpoint}
         .loggedIn=${this.loggedIn}
+        .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
         ?showTvClips=${this.isTVCollection || this.searchType === SearchType.TV}
         ?enableHoverPane=${true}
@@ -2548,6 +2615,16 @@ export class CollectionBrowser
           justify-content: center;
           z-index: 1;
           padding-top: 50px;
+        }
+
+        #tile-blur-label {
+          display: flex;
+          align-items: center;
+          column-gap: 5px;
+        }
+
+        #tile-blur-check {
+          margin: 0 5px 0 0;
         }
 
         circular-activity-indicator {

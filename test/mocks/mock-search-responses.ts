@@ -291,6 +291,110 @@ export const getMockSuccessWithDateHistogramAggs: () => Result<
   },
 });
 
+export const getMockSuccessArchiveOrgUserResult: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'archive-org-user-loggedin',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'archive-org-user-loggedin',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {
+      is_archive_user: true,
+      pps_relevant_user_preferences: {
+        display__blur_moderated_content: 'on',
+      },
+    },
+    response: {
+      totalResults: 2,
+      returnedCount: 2,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            collection: ['foo', 'loggedin', 'bar'],
+            __href__: '/foo',
+          },
+        }),
+        new ItemHit({
+          fields: {
+            identifier: 'bar',
+            collection: ['baz', 'boop'],
+            __href__: '/bar',
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
+export const getMockSuccessArchiveOrgUserNoBlurResult: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: {
+        user_query: 'archive-org-user-loggedin-noblur',
+        sort: [],
+      },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: {
+            user_query: 'archive-org-user-loggedin-noblur',
+            sort: [],
+          },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {
+      is_archive_user: true,
+      pps_relevant_user_preferences: {
+        display__blur_moderated_content: 'off',
+      },
+    },
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [
+        new ItemHit({
+          fields: {
+            identifier: 'foo',
+            collection: ['loggedin'],
+            title: 'foo',
+            mediatype: 'texts',
+          },
+        }),
+      ],
+    },
+    responseHeader: {
+      succeeded: true,
+      query_time: 0,
+    },
+  },
+});
+
 export const getMockSuccessLoggedInResult: () => Result<
   SearchResponse,
   SearchServiceError

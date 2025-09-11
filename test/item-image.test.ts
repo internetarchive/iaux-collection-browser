@@ -5,6 +5,7 @@ import { TileModel } from '../src/models';
 import type { ItemImage } from '../src/tiles/item-image';
 
 import '../src/tiles/item-image';
+import { MediaType } from '@internetarchive/field-parsers';
 
 const baseImageUrl = 'https://archive.org';
 const testBookModel: TileModel = new TileModel({});
@@ -130,5 +131,90 @@ describe('ItemImage component', () => {
     const img = el.shadowRoot?.querySelector('img');
     expect(img).to.exist;
     expect(img?.getAttribute('src')).not.to.exist;
+  });
+
+  it('should blur image if login required flag set', async () => {
+    const model = new TileModel({ identifier: 'foo' });
+    model.loginRequired = true;
+
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .model=${model}
+        .baseImageUrl=${baseImageUrl}
+      >
+      </item-image>
+    `);
+
+    const dropShadow = el.shadowRoot?.querySelector('.drop-shadow');
+    expect(dropShadow).to.exist;
+
+    const imgClasses = dropShadow?.querySelector('img')?.classList;
+    expect(imgClasses?.contains('blur')).to.be.true;
+  });
+
+  it('should blur image if content warning flag set', async () => {
+    const model = new TileModel({ identifier: 'foo' });
+    model.contentWarning = true;
+
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .model=${model}
+        .baseImageUrl=${baseImageUrl}
+      >
+      </item-image>
+    `);
+
+    const dropShadow = el.shadowRoot?.querySelector('.drop-shadow');
+    expect(dropShadow).to.exist;
+
+    const imgClasses = dropShadow?.querySelector('img')?.classList;
+    expect(imgClasses?.contains('blur')).to.be.true;
+  });
+
+  it('should not blur image if no login required nor content warning', async () => {
+    const model = new TileModel({ identifier: 'foo' });
+
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .model=${model}
+        .baseImageUrl=${baseImageUrl}
+      >
+      </item-image>
+    `);
+
+    const dropShadow = el.shadowRoot?.querySelector('.drop-shadow');
+    expect(dropShadow).to.exist;
+
+    const imgClasses = dropShadow?.querySelector('img')?.classList;
+    expect(imgClasses?.contains('blur')).to.be.false;
+  });
+
+  it('should not blur image if blurring is suppressed, regardless of content flags', async () => {
+    const model = new TileModel({ identifier: 'foo' });
+    model.loginRequired = true;
+    model.contentWarning = true;
+
+    const el = await fixture<ItemImage>(html`
+      <item-image
+        .isListTile=${false}
+        .isCompactTile=${false}
+        .model=${model}
+        .baseImageUrl=${baseImageUrl}
+        suppressBlurring
+      >
+      </item-image>
+    `);
+
+    const dropShadow = el.shadowRoot?.querySelector('.drop-shadow');
+    expect(dropShadow).to.exist;
+
+    const imgClasses = dropShadow?.querySelector('img')?.classList;
+    expect(imgClasses?.contains('blur')).to.be.false;
   });
 });

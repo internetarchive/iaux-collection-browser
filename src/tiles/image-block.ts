@@ -17,6 +17,8 @@ export class ImageBlock extends LitElement {
 
   @property({ type: Boolean }) loggedIn = false;
 
+  @property({ type: Boolean }) suppressBlurring = false;
+
   @property({ type: Object }) model?: TileModel;
 
   @property({ type: String }) viewSize: string = 'desktop';
@@ -32,6 +34,7 @@ export class ImageBlock extends LitElement {
           .isListTile=${this.isListTile}
           .isCompactTile=${this.isCompactTile}
           .loggedIn=${this.loggedIn}
+          .suppressBlurring=${this.suppressBlurring}
           style="--imgHeight: 100%; --imgWidth: 100%"
         >
         </item-image>
@@ -78,6 +81,8 @@ export class ImageBlock extends LitElement {
   }
 
   private get overlayType(): TileOverlayType | undefined {
+    if (this.suppressBlurring) return undefined;
+
     // Prioritize showing the login-required overlay if needed.
     // Otherwise, if a content warning is required, show that overlay instead.
     // If neither flag is present, no overlay should be shown.
