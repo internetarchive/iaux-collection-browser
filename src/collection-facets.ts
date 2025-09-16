@@ -255,6 +255,7 @@ export class CollectionFacets extends LitElement {
 
     const yearInterval = aggregation.interval ?? 1;
     const monthInterval = aggregation.interval_in_months ?? 12;
+    const hasMonths = this.isTvSearch && monthInterval < 12;
 
     const zeroPadMonth = (month: number) => month.toString().padStart(2, '0');
 
@@ -267,12 +268,17 @@ export class CollectionFacets extends LitElement {
       ? `${lastYear}-${zeroPadMonth(lastMonth + monthInterval - 1)}`
       : `${lastYear + yearInterval - 1}`;
 
-    const hasMonths = this.isTvSearch && monthInterval < 12;
+    const barScalingFunction = this.isTvSearch
+      ? (x: number) => x // Linear scaling for TV search
+      : nothing; // Defaults to logarithmic for all other search types
+
     return {
       buckets: aggregation.buckets as number[],
       dateFormat: this.isTvSearch ? 'YYYY-MM' : 'YYYY',
       tooltipDateFormat: hasMonths ? 'MMM YYYY' : 'YYYY',
+      tooltipLabel: this.isTvSearch ? 'broadcast' : nothing,
       binSnapping: (hasMonths ? 'month' : 'year') as BinSnappingInterval,
+      barScalingFunction,
       minDate,
       maxDate,
     };
@@ -289,7 +295,9 @@ export class CollectionFacets extends LitElement {
       buckets,
       dateFormat,
       tooltipDateFormat,
+      tooltipLabel,
       binSnapping,
+      barScalingFunction,
       minDate,
       maxDate,
     } = histogramProps;
@@ -319,7 +327,9 @@ export class CollectionFacets extends LitElement {
         .maxSelectedDate=${this.maxSelectedDate}
         .dateFormat=${dateFormat}
         .tooltipDateFormat=${tooltipDateFormat}
+        .tooltipLabel=${tooltipLabel}
         .binSnapping=${binSnapping}
+        .barScalingFunction=${barScalingFunction}
         .buckets=${buckets}
         .modalManager=${this.modalManager}
         .analyticsHandler=${this.analyticsHandler}
@@ -396,7 +406,9 @@ export class CollectionFacets extends LitElement {
       buckets,
       dateFormat,
       tooltipDateFormat,
+      tooltipLabel,
       binSnapping,
+      barScalingFunction,
       minDate,
       maxDate,
     } = histogramProps;
@@ -411,7 +423,9 @@ export class CollectionFacets extends LitElement {
         .updateDelay=${100}
         .dateFormat=${dateFormat}
         .tooltipDateFormat=${tooltipDateFormat}
+        .tooltipLabel=${tooltipLabel}
         .binSnapping=${binSnapping}
+        .barScalingFunction=${barScalingFunction}
         .bins=${buckets}
         missingDataMessage="..."
         .width=${this.collapsableFacets && this.contentWidth
