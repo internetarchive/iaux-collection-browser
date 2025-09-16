@@ -24,7 +24,7 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@internetarchive/analytics-manager": "^0.1.4",
-    "@internetarchive/feature-feedback": "^1.0.0",
+    "@internetarchive/feature-feedback": "1.2.0-alpha-webdev7741.0",
     "@internetarchive/field-parsers": "^1.0.0",
     "@internetarchive/histogram-date-range": "^1.3.2",
     "@internetarchive/ia-activity-indicator": "^0.0.6",

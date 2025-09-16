@@ -809,7 +809,12 @@ export class CollectionBrowser
         @creatorLetterChanged=${this.creatorLetterSelected}
       >
         ${this.tileBlurCheckboxTemplate}
-        <slot name="sort-options-left" slot="sort-options-left"></slot>
+        <slot name="sort-options-left" slot="sort-options-left">
+          <feature-feedback
+            prompt="This feedback widget should have a colorful button"
+            style="--featureFeedbackBetaButtonBackground: linear-gradient(to bottom right, #2fffff 0%, #90ff90 100%)"
+          ></feature-feedback>
+        </slot>
         <slot name="sort-options" slot="sort-options"></slot>
         <slot name="sort-options-right" slot="sort-options-right"></slot>
       </sort-filter-bar>

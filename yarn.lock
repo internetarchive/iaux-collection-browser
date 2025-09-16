@@ -301,14 +301,16 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/feature-feedback@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/feature-feedback/-/feature-feedback-1.0.0.tgz#72e905695306e4644fe3a92f8614be9d86a4ce33"
-  integrity sha512-JPeZ5UeVcUE6bXiU+7DKtQ418UbtIR1ixsnjCTDrWyvnZFHigwdhJVEfBVE19jedW+SA0XlNf2d3eNyZxTiFBA==
+"@internetarchive/feature-feedback@1.2.0-alpha-webdev7741.0":
+  version "1.2.0-alpha-webdev7741.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/feature-feedback/-/feature-feedback-1.2.0-alpha-webdev7741.0.tgz#0ecf316778b798c174b96bec4f75639a1098040a"
+  integrity sha512-tUeZYKxA1eZ5LOAgMmbzUCIpeouDbS8xlNvwvEgHdBWRFvd1ZswvXTckVDRehDoqk61H1r50PrxeNX9IDnBiqw==
   dependencies:
+    "@internetarchive/ia-styles" "^1.0.0"
     "@internetarchive/recaptcha-manager" "^0.1.1"
     "@internetarchive/result-type" "^0.0.1"
     "@internetarchive/shared-resize-observer" "^0.2.0"
+    "@lit/localize" "^0.11.4"
     lit "^2.2.7"
 
 "@internetarchive/field-parsers@^1.0.0":
@@ -336,6 +338,13 @@
   version "1.3.10"
   resolved "https://registry.npmjs.org/@internetarchive/ia-dropdown/-/ia-dropdown-1.3.10.tgz"
   integrity sha512-+xGgyfE0O4cV+w4rk61yA5av5KeSqCmojukp6ePbrluIYBIH2UCtfDcfCEQFVsnNSs8AesJOkUb0q3jaW0M4cQ==
+  dependencies:
+    lit "^2.8.0"
+
+"@internetarchive/ia-styles@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-styles/-/ia-styles-1.0.0.tgz#388113b3f29416c34a77d7a66aed2fff201f9732"
+  integrity sha512-7xvfROl5sUasM3cB+bCwOrO/Qyy08Tk50V7NAGgPKjmHr8LBUk4Q/Qj/ExKcoaiROQE3JlVy9TDANEl8WSLJCw==
   dependencies:
     lit "^2.8.0"
 
@@ -456,6 +465,14 @@
   resolved "https://registry.npmjs.org/@lit-labs/ssr-dom-shim/-/ssr-dom-shim-1.3.0.tgz"
   integrity sha512-nQIWonJ6eFAvUUrSlwyHDm/aE8PBDu5kRpL0vHMg6K8fK3Diq1xdPjTnsJSwxABhaZ+5eBi1btQB5ShUTKo4nQ==
 
+"@lit/localize@^0.11.4":
+  version "0.11.4"
+  resolved "https://registry.yarnpkg.com/@lit/localize/-/localize-0.11.4.tgz#4a5758965977828c10c51738fbb1890decb3d8f6"
+  integrity sha512-RRIwIX2tAm3+DuEndoXSJrFjGrAK5cb5IXo5K6jcJ6sbgD829B8rSqHC5MaKVUmXTVLIR1bk5IZOZDf9wFereA==
+  dependencies:
+    "@lit/reactive-element" "^1.4.0"
+    lit "^2.3.0"
+
 "@lit/localize@^0.12.2":
   version "0.12.2"
   resolved "https://registry.npmjs.org/@lit/localize/-/localize-0.12.2.tgz"
@@ -463,7 +480,7 @@
   dependencies:
     lit "^3.2.0"
 
-"@lit/reactive-element@^1.3.0", "@lit/reactive-element@^1.6.0":
+"@lit/reactive-element@^1.3.0", "@lit/reactive-element@^1.4.0", "@lit/reactive-element@^1.6.0":
   version "1.6.3"
   resolved "https://registry.npmjs.org/@lit/reactive-element/-/reactive-element-1.6.3.tgz"
   integrity sha512-QuTgnG52Poic7uM1AN5yJ09QMe0O28e10XzSvWDz02TJiiKee4stsiownEIadWm8nYzyDAyT+gKzUoZmiWQtsQ==
@@ -3860,7 +3877,7 @@ lit-html@^2.8.0:
     lit-element "^4.1.0"
     lit-html "^3.2.0"
 
-lit@^2.0.2, lit@^2.2.7, lit@^2.8.0:
+lit@^2.0.2, lit@^2.2.7, lit@^2.3.0, lit@^2.8.0:
   version "2.8.0"
   resolved "https://registry.npmjs.org/lit/-/lit-2.8.0.tgz"
   integrity sha512-4Sc3OFX9QHOJaHbmTMk28SYgVxLN3ePDjg7hofEft2zWlehFL3LiAuapWc4U/kYwMYJSh2hTCPZ6/LIC7ii0MA==
