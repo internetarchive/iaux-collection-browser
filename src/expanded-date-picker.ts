@@ -1,4 +1,11 @@
-import { css, html, LitElement, CSSResultGroup, TemplateResult } from 'lit';
+import {
+  css,
+  html,
+  LitElement,
+  CSSResultGroup,
+  TemplateResult,
+  nothing,
+} from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
@@ -28,7 +35,11 @@ export class ExpandedDatePicker extends LitElement {
 
   @property({ type: String }) tooltipDateFormat?: string;
 
+  @property({ type: String }) tooltipLabel?: string;
+
   @property({ type: String }) binSnapping?: BinSnappingInterval;
+
+  @property({ attribute: false }) barScalingFunction?: (x: number) => number;
 
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
@@ -47,7 +58,9 @@ export class ExpandedDatePicker extends LitElement {
           .maxSelectedDate=${this.maxSelectedDate ?? this.maxDate}
           .dateFormat=${this.dateFormat}
           tooltipDateFormat=${ifDefined(this.tooltipDateFormat)}
+          tooltipLabel=${ifDefined(this.tooltipLabel)}
           binSnapping=${ifDefined(this.binSnapping)}
+          .barScalingFunction=${this.barScalingFunction ?? nothing}
           .updateDelay=${0}
           updateWhileFocused
           missingDataMessage="..."
