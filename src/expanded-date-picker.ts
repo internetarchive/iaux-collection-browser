@@ -11,7 +11,10 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
-import { BinSnappingInterval } from '@internetarchive/histogram-date-range';
+import {
+  BarScalingOption,
+  BinSnappingInterval,
+} from '@internetarchive/histogram-date-range';
 import {
   analyticsActions,
   analyticsCategories,
@@ -31,15 +34,15 @@ export class ExpandedDatePicker extends LitElement {
 
   @property({ type: Array }) buckets?: number[];
 
-  @property({ type: String }) dateFormat: string = 'YYYY';
+  @property({ type: String }) customDateFormat?: string;
 
-  @property({ type: String }) tooltipDateFormat?: string;
+  @property({ type: String }) customTooltipDateFormat?: string;
 
-  @property({ type: String }) tooltipLabel?: string;
+  @property({ type: String }) customTooltipLabel?: string;
 
-  @property({ type: String }) binSnapping?: BinSnappingInterval;
+  @property({ type: String }) binSnapping: BinSnappingInterval = 'none';
 
-  @property({ attribute: false }) barScalingFunction?: (x: number) => number;
+  @property({ type: String }) barScaling: BarScalingOption = 'logarithmic';
 
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
@@ -56,11 +59,11 @@ export class ExpandedDatePicker extends LitElement {
           .maxDate=${this.maxDate}
           .minSelectedDate=${this.minSelectedDate ?? this.minDate}
           .maxSelectedDate=${this.maxSelectedDate ?? this.maxDate}
-          .dateFormat=${this.dateFormat}
-          tooltipDateFormat=${ifDefined(this.tooltipDateFormat)}
-          tooltipLabel=${ifDefined(this.tooltipLabel)}
-          binSnapping=${ifDefined(this.binSnapping)}
-          .barScalingFunction=${this.barScalingFunction ?? nothing}
+          dateFormat=${ifDefined(this.customDateFormat)}
+          tooltipDateFormat=${ifDefined(this.customTooltipDateFormat)}
+          tooltipLabel=${ifDefined(this.customTooltipLabel)}
+          .binSnapping=${this.binSnapping}
+          .barScaling=${this.barScaling ?? nothing}
           .updateDelay=${0}
           updateWhileFocused
           missingDataMessage="..."
