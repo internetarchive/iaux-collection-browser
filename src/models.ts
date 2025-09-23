@@ -4,7 +4,7 @@ import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
   HitType,
-  Review,
+  SearchReview,
   SearchResult,
   SortDirection,
 } from '@internetarchive/search-service';
@@ -120,7 +120,7 @@ export class TileModel {
 
   mediatype: MediaType;
 
-  review?: Review;
+  review?: SearchReview;
 
   source?: string;
 
