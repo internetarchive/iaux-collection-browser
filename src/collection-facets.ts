@@ -261,7 +261,7 @@ export class CollectionFacets extends LitElement {
 
     const zeroPadMonth = (month: number) => month.toString().padStart(2, '0');
 
-    // The date picker is configured differently for TV search, potentially representing individual months
+    // The date picker is configured differently for TV search, allowing month-level resolution
     if (this.isTvSearch) {
       // Whether the bucket interval is less than a year
       // (i.e., requires individual months to be handled & labeled)

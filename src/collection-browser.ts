@@ -1252,7 +1252,7 @@ export class CollectionBrowser
             <h2>${msg('Filters')}</h2>
           </summary>
           ${facets}
-        </button>
+        </details>
       `;
     }
     // Otherwise, just render the facets component bare
