@@ -16,11 +16,16 @@ import '@internetarchive/ia-dropdown';
 import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
+  ALL_DATE_SORT_FIELDS,
+  ALL_VIEWS_SORT_FIELDS,
   CollectionDisplayMode,
+  DateSortField,
+  defaultSortBarFields,
   PrefixFilterCounts,
   PrefixFilterType,
   SORT_OPTIONS,
   SortField,
+  ViewsSortField,
 } from '../models';
 import './alpha-bar';
 
@@ -51,6 +56,13 @@ export class SortFilterBar
     SortField.default
   > = SortField.relevance;
 
+  /** Which view sort option to expose by default. */
+  @property({ type: String }) defaultViewSort: ViewsSortField =
+    SortField.weeklyview;
+
+  /** Which date sort option to expose by default */
+  @property({ type: String }) defaultDateSort: DateSortField = SortField.date;
+
   /** The current sort direction (asc/desc), or null if none is set */
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
@@ -63,11 +75,8 @@ export class SortFilterBar
   /** The currently selected creator letter filter, or null if none is set */
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
-  /** Whether to show the Relevance sort option (default `true`) */
-  @property({ type: Boolean }) showRelevance: boolean = true;
-
-  /** Whether to show the Date Favorited sort option instead of Date Published/Archived/Reviewed (default `false`) */
-  @property({ type: Boolean }) showDateFavorited: boolean = false;
+  /** Map defining which sortable fields should be included on the sort bar */
+  @property({ type: Object }) displayedSortFields = defaultSortBarFields;
 
   /** Whether to replace the default sort options with a slot for customization (default `false`) */
   @property({ type: Boolean, reflect: true }) enableSortOptionsSlot: boolean =
@@ -88,12 +97,12 @@ export class SortFilterBar
   /**
    * The Views sort option that was most recently selected (or the default, if none has been selected yet)
    */
-  @state() private lastSelectedViewSort = SortField.weeklyview;
+  @state() private lastSelectedViewSort = this.defaultViewSort;
 
   /**
    * The Date sort option that was most recently selected (or the default, if none has been selected yet)
    */
-  @state() private lastSelectedDateSort = this.defaultDateSortField;
+  @state() private lastSelectedDateSort = this.defaultDateSort;
 
   /**
    * Which of the alphabet bars (title/creator) should be shown, or null if one
@@ -193,19 +202,18 @@ export class SortFilterBar
       }
 
       if (this.viewOptionSelected) {
-        this.lastSelectedViewSort = this.finalizedSortField;
+        this.lastSelectedViewSort = this.finalizedSortField as ViewsSortField;
       } else if (this.dateOptionSelected) {
-        this.lastSelectedDateSort = this.finalizedSortField;
+        this.lastSelectedDateSort = this.finalizedSortField as DateSortField;
       }
     }
 
-    // If we change which dropdown options are available, ensure the correct default becomes selected.
-    // Currently, Date Favorited is the only dropdown option whose presence/absence can change.
-    if (
-      changed.has('showDateFavorited') &&
-      changed.get('showDateFavorited') !== this.showDateFavorited
-    ) {
-      this.lastSelectedDateSort = this.defaultDateSortField;
+    // If we change which dropdown options are defaulted, update the default selections
+    if (changed.has('defaultViewSort')) {
+      this.lastSelectedViewSort = this.defaultViewSort;
+    }
+    if (changed.has('defaultDateSort')) {
+      this.lastSelectedDateSort = this.defaultDateSort;
     }
   }
 
@@ -370,6 +378,52 @@ export class SortFilterBar
     `;
   }
 
+  private get relevanceSortSelectorTemplate(): TemplateResult {
+    return html`<li>
+      ${this.getSortDisplayOption(SortField.relevance, {
+        onClick: () => {
+          this.dropdownBackdropVisible = false;
+          if (this.finalizedSortField !== SortField.relevance) {
+            this.clearAlphaBarFilters();
+            this.setSelectedSort(SortField.relevance);
+          }
+        },
+      })}
+    </li>`;
+  }
+
+  private get titleSortSelectorTemplate(): TemplateResult {
+    return html`<li>
+      ${this.getSortDisplayOption(SortField.title, {
+        onClick: () => {
+          this.dropdownBackdropVisible = false;
+          if (this.finalizedSortField !== SortField.title) {
+            this.alphaSelectorVisible = 'title';
+            this.selectedCreatorFilter = null;
+            this.setSelectedSort(SortField.title);
+            this.emitCreatorLetterChangedEvent();
+          }
+        },
+      })}
+    </li>`;
+  }
+
+  private get creatorSortSelectorTemplate(): TemplateResult {
+    return html`<li>
+      ${this.getSortDisplayOption(SortField.creator, {
+        onClick: () => {
+          this.dropdownBackdropVisible = false;
+          if (this.finalizedSortField !== SortField.creator) {
+            this.alphaSelectorVisible = 'creator';
+            this.selectedTitleFilter = null;
+            this.setSelectedSort(SortField.creator);
+            this.emitTitleLetterChangedEvent();
+          }
+        },
+      })}
+    </li>`;
+  }
+
   /** The template to render all the sort options in desktop view */
   private get desktopSortSelectorTemplate() {
     return html`
@@ -378,47 +432,17 @@ export class SortFilterBar
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
         <ul id="desktop-sort-selector">
-          ${this.showRelevance
-            ? html`<li>
-                ${this.getSortDisplayOption(SortField.relevance, {
-                  onClick: () => {
-                    this.dropdownBackdropVisible = false;
-                    if (this.finalizedSortField !== SortField.relevance) {
-                      this.clearAlphaBarFilters();
-                      this.setSelectedSort(SortField.relevance);
-                    }
-                  },
-                })}
-              </li>`
+          ${this.displayedSortFields.relevance
+            ? this.relevanceSortSelectorTemplate
             : nothing}
           <li>${this.viewsDropdownTemplate}</li>
-          <li>
-            ${this.getSortDisplayOption(SortField.title, {
-              onClick: () => {
-                this.dropdownBackdropVisible = false;
-                if (this.finalizedSortField !== SortField.title) {
-                  this.alphaSelectorVisible = 'title';
-                  this.selectedCreatorFilter = null;
-                  this.setSelectedSort(SortField.title);
-                  this.emitCreatorLetterChangedEvent();
-                }
-              },
-            })}
-          </li>
+          ${this.displayedSortFields.title
+            ? this.titleSortSelectorTemplate
+            : nothing}
           <li>${this.dateDropdownTemplate}</li>
-          <li>
-            ${this.getSortDisplayOption(SortField.creator, {
-              onClick: () => {
-                this.dropdownBackdropVisible = false;
-                if (this.finalizedSortField !== SortField.creator) {
-                  this.alphaSelectorVisible = 'creator';
-                  this.selectedTitleFilter = null;
-                  this.setSelectedSort(SortField.creator);
-                  this.emitTitleLetterChangedEvent();
-                }
-              },
-            })}
-          </li>
+          ${this.displayedSortFields.creator
+            ? this.creatorSortSelectorTemplate
+            : nothing}
         </ul>
       </div>
     `;
@@ -426,12 +450,9 @@ export class SortFilterBar
 
   /** The template to render all the sort options in mobile view */
   private get mobileSortSelectorTemplate() {
-    const displayedOptions = Object.values(SORT_OPTIONS)
-      .filter(opt => opt.shownInSortBar)
-      .filter(opt => this.showRelevance || opt.field !== SortField.relevance)
-      .filter(
-        opt => this.showDateFavorited || opt.field !== SortField.datefavorited,
-      );
+    const displayedOptions = Object.values(SORT_OPTIONS).filter(
+      opt => opt.shownInSortBar && this.displayedSortFields[opt.field],
+    );
 
     return html`
       <div
@@ -577,22 +598,23 @@ export class SortFilterBar
     const sortField = e.detail.option.id as SortField;
     this.setSelectedSort(sortField);
     if (this.viewOptionSelected) {
-      this.lastSelectedViewSort = sortField;
+      this.lastSelectedViewSort = sortField as ViewsSortField;
     } else if (this.dateOptionSelected) {
-      this.lastSelectedDateSort = sortField;
+      this.lastSelectedDateSort = sortField as DateSortField;
     }
   }
 
   /** The template to render for the views dropdown */
   private get viewsDropdownTemplate(): TemplateResult {
+    const displayedOptions = ALL_VIEWS_SORT_FIELDS.filter(
+      field => this.displayedSortFields[field],
+    ).map(field => this.getDropdownOption(field));
+
     return this.getSortDropdown({
       displayName: html`${this.viewSortDisplayName}`,
       id: 'views-dropdown',
       selected: this.viewOptionSelected,
-      dropdownOptions: [
-        this.getDropdownOption(SortField.weeklyview),
-        this.getDropdownOption(SortField.alltimeview),
-      ],
+      dropdownOptions: displayedOptions,
       selectedOption: this.viewOptionSelected ? this.finalizedSortField : '',
       onOptionSelected: this.dropdownOptionSelected,
       onDropdownClick: () => {
@@ -612,19 +634,15 @@ export class SortFilterBar
 
   /** The template to render for the date dropdown */
   private get dateDropdownTemplate(): TemplateResult {
+    const displayedOptions = ALL_DATE_SORT_FIELDS.filter(
+      field => this.displayedSortFields[field],
+    ).map(field => this.getDropdownOption(field));
+
     return this.getSortDropdown({
       displayName: html`${this.dateSortDisplayName}`,
       id: 'date-dropdown',
       selected: this.dateOptionSelected,
-      dropdownOptions: [
-        ...(this.showDateFavorited
-          ? [this.getDropdownOption(SortField.datefavorited)]
-          : []),
-        this.getDropdownOption(SortField.date),
-        this.getDropdownOption(SortField.datearchived),
-        this.getDropdownOption(SortField.datereviewed),
-        this.getDropdownOption(SortField.dateadded),
-      ],
+      dropdownOptions: displayedOptions,
       selectedOption: this.dateOptionSelected ? this.finalizedSortField : '',
       onOptionSelected: this.dropdownOptionSelected,
       onDropdownClick: () => {
@@ -842,14 +860,6 @@ export class SortFilterBar
       SortField.weeklyview,
     ];
     return viewSortFields.includes(this.finalizedSortField);
-  }
-
-  /**
-   * The default field for the date sort dropdown.
-   * This is Date Favorited when that option is available, or Date Published otherwise.
-   */
-  private get defaultDateSortField(): SortField {
-    return this.showDateFavorited ? SortField.datefavorited : SortField.date;
   }
 
   /**
