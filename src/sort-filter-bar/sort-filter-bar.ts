@@ -378,52 +378,6 @@ export class SortFilterBar
     `;
   }
 
-  private get relevanceSortSelectorTemplate(): TemplateResult {
-    return html`<li>
-      ${this.getSortDisplayOption(SortField.relevance, {
-        onClick: () => {
-          this.dropdownBackdropVisible = false;
-          if (this.finalizedSortField !== SortField.relevance) {
-            this.clearAlphaBarFilters();
-            this.setSelectedSort(SortField.relevance);
-          }
-        },
-      })}
-    </li>`;
-  }
-
-  private get titleSortSelectorTemplate(): TemplateResult {
-    return html`<li>
-      ${this.getSortDisplayOption(SortField.title, {
-        onClick: () => {
-          this.dropdownBackdropVisible = false;
-          if (this.finalizedSortField !== SortField.title) {
-            this.alphaSelectorVisible = 'title';
-            this.selectedCreatorFilter = null;
-            this.setSelectedSort(SortField.title);
-            this.emitCreatorLetterChangedEvent();
-          }
-        },
-      })}
-    </li>`;
-  }
-
-  private get creatorSortSelectorTemplate(): TemplateResult {
-    return html`<li>
-      ${this.getSortDisplayOption(SortField.creator, {
-        onClick: () => {
-          this.dropdownBackdropVisible = false;
-          if (this.finalizedSortField !== SortField.creator) {
-            this.alphaSelectorVisible = 'creator';
-            this.selectedTitleFilter = null;
-            this.setSelectedSort(SortField.creator);
-            this.emitTitleLetterChangedEvent();
-          }
-        },
-      })}
-    </li>`;
-  }
-
   /** The template to render all the sort options in desktop view */
   private get desktopSortSelectorTemplate() {
     return html`
@@ -432,17 +386,11 @@ export class SortFilterBar
         class=${this.mobileSelectorVisible ? 'hidden' : 'visible'}
       >
         <ul id="desktop-sort-selector">
-          ${this.displayedSortFields.relevance
-            ? this.relevanceSortSelectorTemplate
-            : nothing}
+          <li>${this.relevanceSortSelectorTemplate}</li>
           <li>${this.viewsDropdownTemplate}</li>
-          ${this.displayedSortFields.title
-            ? this.titleSortSelectorTemplate
-            : nothing}
+          <li>${this.titleSortSelectorTemplate}</li>
           <li>${this.dateDropdownTemplate}</li>
-          ${this.displayedSortFields.creator
-            ? this.creatorSortSelectorTemplate
-            : nothing}
+          <li>${this.creatorSortSelectorTemplate}</li>
         </ul>
       </div>
     `;
@@ -602,6 +550,52 @@ export class SortFilterBar
     } else if (this.dateOptionSelected) {
       this.lastSelectedDateSort = sortField as DateSortField;
     }
+  }
+
+  private get relevanceSortSelectorTemplate(): TemplateResult | typeof nothing {
+    if (!this.displayedSortFields.relevance) return nothing;
+
+    return this.getSortDisplayOption(SortField.relevance, {
+      onClick: () => {
+        this.dropdownBackdropVisible = false;
+        if (this.finalizedSortField !== SortField.relevance) {
+          this.clearAlphaBarFilters();
+          this.setSelectedSort(SortField.relevance);
+        }
+      },
+    });
+  }
+
+  private get titleSortSelectorTemplate(): TemplateResult | typeof nothing {
+    if (!this.displayedSortFields.title) return nothing;
+
+    return this.getSortDisplayOption(SortField.title, {
+      onClick: () => {
+        this.dropdownBackdropVisible = false;
+        if (this.finalizedSortField !== SortField.title) {
+          this.alphaSelectorVisible = 'title';
+          this.selectedCreatorFilter = null;
+          this.setSelectedSort(SortField.title);
+          this.emitCreatorLetterChangedEvent();
+        }
+      },
+    });
+  }
+
+  private get creatorSortSelectorTemplate(): TemplateResult | typeof nothing {
+    if (!this.displayedSortFields.creator) return nothing;
+
+    return this.getSortDisplayOption(SortField.creator, {
+      onClick: () => {
+        this.dropdownBackdropVisible = false;
+        if (this.finalizedSortField !== SortField.creator) {
+          this.alphaSelectorVisible = 'creator';
+          this.selectedTitleFilter = null;
+          this.setSelectedSort(SortField.creator);
+          this.emitTitleLetterChangedEvent();
+        }
+      },
+    });
   }
 
   /** The template to render for the views dropdown */
