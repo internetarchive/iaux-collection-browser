@@ -553,7 +553,7 @@ export function sortOptionFromAPIString(sortName?: string | null): SortOption {
   );
 }
 
-export const defaultSortBarFields: Record<SortField, boolean> = {
+export const defaultSortAvailability: Record<SortField, boolean> = {
   [SortField.relevance]: true,
   [SortField.weeklyview]: true,
   [SortField.alltimeview]: true,
@@ -568,13 +568,13 @@ export const defaultSortBarFields: Record<SortField, boolean> = {
   [SortField.unrecognized]: false,
 };
 
-export const favoritesSortBarFields: Record<SortField, boolean> = {
-  ...defaultSortBarFields,
+export const favoritesSortAvailability: Record<SortField, boolean> = {
+  ...defaultSortAvailability,
   [SortField.datefavorited]: true,
 };
 
-export const tvSortBarFields: Record<SortField, boolean> = {
-  ...defaultSortBarFields,
+export const tvSortAvailability: Record<SortField, boolean> = {
+  ...defaultSortAvailability,
   [SortField.date]: false,
   [SortField.datereviewed]: false,
   [SortField.dateadded]: false,

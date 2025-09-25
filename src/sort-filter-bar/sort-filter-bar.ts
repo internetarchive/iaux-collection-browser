@@ -20,7 +20,7 @@ import {
   ALL_VIEWS_SORT_FIELDS,
   CollectionDisplayMode,
   DateSortField,
-  defaultSortBarFields,
+  defaultSortAvailability,
   PrefixFilterCounts,
   PrefixFilterType,
   SORT_OPTIONS,
@@ -75,8 +75,20 @@ export class SortFilterBar
   /** The currently selected creator letter filter, or null if none is set */
   @property({ type: String }) selectedCreatorFilter: string | null = null;
 
-  /** Map defining which sortable fields should be included on the sort bar */
-  @property({ type: Object }) displayedSortFields = defaultSortBarFields;
+  /**
+   * Map defining which sortable fields should be included on the sort bar.
+   *
+   * E.g.,
+   * ```
+   * {
+   *   [SortField.relevance]: true,
+   *   [SortField.date]: false,
+   *   [SortField.title]: true,
+   *   ...
+   * }
+   * ```
+   */
+  @property({ type: Object }) sortFieldAvailability = defaultSortAvailability;
 
   /** Whether to replace the default sort options with a slot for customization (default `false`) */
   @property({ type: Boolean, reflect: true }) enableSortOptionsSlot: boolean =
@@ -387,9 +399,9 @@ export class SortFilterBar
       >
         <ul id="desktop-sort-selector">
           <li>${this.relevanceSortSelectorTemplate}</li>
-          <li>${this.viewsDropdownTemplate}</li>
+          <li>${this.viewsSortOptionsTemplate}</li>
           <li>${this.titleSortSelectorTemplate}</li>
-          <li>${this.dateDropdownTemplate}</li>
+          <li>${this.dateSortOptionsTemplate}</li>
           <li>${this.creatorSortSelectorTemplate}</li>
         </ul>
       </div>
@@ -399,7 +411,7 @@ export class SortFilterBar
   /** The template to render all the sort options in mobile view */
   private get mobileSortSelectorTemplate() {
     const displayedOptions = Object.values(SORT_OPTIONS).filter(
-      opt => opt.shownInSortBar && this.displayedSortFields[opt.field],
+      opt => opt.shownInSortBar && this.sortFieldAvailability[opt.field],
     );
 
     return html`
@@ -408,7 +420,7 @@ export class SortFilterBar
         class=${this.mobileSelectorVisible ? 'visible' : 'hidden'}
       >
         ${this.getSortDropdown({
-          displayName: html`${SORT_OPTIONS[this.finalizedSortField].displayName}`,
+          displayName: SORT_OPTIONS[this.finalizedSortField].displayName,
           id: 'mobile-dropdown',
           selected: true,
           dropdownOptions: displayedOptions.map(opt =>
@@ -429,37 +441,37 @@ export class SortFilterBar
   }
 
   /**
-   * This generates each of the non-dropdown sort option links.
+   * This generates each of the non-dropdown sort option buttons.
    *
    * It manages the display value and the selected state of the option.
    *
-   * @param sortField
-   * @param options {
-   *    onClick?: (e: Event) => void; If this is provided, it will also be called when the option is clicked.
-   *    displayName?: TemplateResult; The name to display for the option. Defaults to the sortField display name.
-   *    selected?: boolean; true if the option is selected. Defaults to the selectedSort === sortField.
-   * }
-   * @returns
+   * @param sortField Which sort field the button represents
+   * @param options Additional options:
+   *   - `onSelected?: (e: Event) => void;` If this is provided, it will also be called when the option is selected.
+   *     Default is to clear any selected alphabetical filters.
    */
-  private getSortDisplayOption(
+  private getSortSelectorButton(
     sortField: SortField,
     options?: {
-      displayName?: TemplateResult;
-      selected?: boolean;
-      onClick?: (e: Event) => void;
+      onSelected?: (e: Event) => void;
     },
   ): TemplateResult {
-    const isSelected =
-      options?.selected ?? this.finalizedSortField === sortField;
-    const displayName =
-      options?.displayName ?? SORT_OPTIONS[sortField].displayName;
+    const isSelected = this.finalizedSortField === sortField;
+    const displayName = SORT_OPTIONS[sortField].displayName;
+    const onSelected =
+      options?.onSelected ?? (() => this.clearAlphaBarFilters());
+
     return html`
       <button
-        class=${isSelected ? 'selected' : nothing}
+        class=${isSelected ? 'selected' : ''}
         data-title="${displayName}"
         @click=${(e: Event) => {
           e.preventDefault();
-          options?.onClick?.(e);
+          this.dropdownBackdropVisible = false;
+          if (this.finalizedSortField !== sortField) {
+            onSelected?.(e);
+            this.setSelectedSort(sortField);
+          }
         }}
       >
         ${displayName}
@@ -482,8 +494,8 @@ export class SortFilterBar
    *  on the dropdown's label
    */
   private getSortDropdown(options: {
-    displayName: TemplateResult;
-    id?: string;
+    displayName: string;
+    id: string;
     dropdownOptions: optionInterface[];
     selectedOption?: string;
     selected: boolean;
@@ -493,8 +505,8 @@ export class SortFilterBar
   }): TemplateResult {
     return html`
       <ia-dropdown
-        id=${options.id ?? nothing}
-        class=${options.selected ? 'selected' : nothing}
+        id=${options.id}
+        class=${options.selected ? 'selected' : ''}
         displayCaret
         closeOnSelect
         includeSelectedOption
@@ -507,7 +519,7 @@ export class SortFilterBar
         <span
           class="dropdown-label"
           slot="dropdown-label"
-          data-title="${options.displayName.values}"
+          data-title=${options.displayName}
           @click=${options.onLabelInteraction ?? nothing}
           @keydown=${options.onLabelInteraction
             ? (e: KeyboardEvent) => {
@@ -552,60 +564,81 @@ export class SortFilterBar
     }
   }
 
+  //
+  // SORT OPTION TEMPLATES
+  //
+
+  /**
+   * Template for the Relevance sort selector button, or `nothing` if the relevance
+   * field is not available for display.
+   */
   private get relevanceSortSelectorTemplate(): TemplateResult | typeof nothing {
-    if (!this.displayedSortFields.relevance) return nothing;
-
-    return this.getSortDisplayOption(SortField.relevance, {
-      onClick: () => {
-        this.dropdownBackdropVisible = false;
-        if (this.finalizedSortField !== SortField.relevance) {
-          this.clearAlphaBarFilters();
-          this.setSelectedSort(SortField.relevance);
-        }
-      },
-    });
+    if (!this.sortFieldAvailability.relevance) return nothing;
+    return this.getSortSelectorButton(SortField.relevance);
   }
 
+  /**
+   * Template for the Views sort selector button.
+   * This is shown instead of the views dropdown when only a single views sort field
+   * is available.
+   */
+  private get viewsSortSelectorTemplate(): TemplateResult {
+    const { availableViewsFields: displayedViewsFields } = this;
+    return this.getSortSelectorButton(displayedViewsFields[0]);
+  }
+
+  /**
+   * Template for the Title sort selector button, or `nothing` if the title field is
+   * not available for display.
+   */
   private get titleSortSelectorTemplate(): TemplateResult | typeof nothing {
-    if (!this.displayedSortFields.title) return nothing;
+    if (!this.sortFieldAvailability.title) return nothing;
 
-    return this.getSortDisplayOption(SortField.title, {
-      onClick: () => {
-        this.dropdownBackdropVisible = false;
-        if (this.finalizedSortField !== SortField.title) {
-          this.alphaSelectorVisible = 'title';
-          this.selectedCreatorFilter = null;
-          this.setSelectedSort(SortField.title);
-          this.emitCreatorLetterChangedEvent();
-        }
+    return this.getSortSelectorButton(SortField.title, {
+      onSelected: () => {
+        this.alphaSelectorVisible = 'title';
+        this.selectedCreatorFilter = null;
+        this.emitCreatorLetterChangedEvent();
       },
     });
   }
 
+  /**
+   * Template for the Date sort selector button.
+   * This is shown instead of the dates dropdown when only a single date sort field
+   * is available.
+   */
+  private get dateSortSelectorTemplate(): TemplateResult {
+    const { availableDateFields: displayedDateFields } = this;
+    return this.getSortSelectorButton(displayedDateFields[0]);
+  }
+
+  /**
+   * Template for the Creator sort selector button, or `nothing` if the creator field
+   * is not available for display.
+   */
   private get creatorSortSelectorTemplate(): TemplateResult | typeof nothing {
-    if (!this.displayedSortFields.creator) return nothing;
+    if (!this.sortFieldAvailability.creator) return nothing;
 
-    return this.getSortDisplayOption(SortField.creator, {
-      onClick: () => {
-        this.dropdownBackdropVisible = false;
-        if (this.finalizedSortField !== SortField.creator) {
-          this.alphaSelectorVisible = 'creator';
-          this.selectedTitleFilter = null;
-          this.setSelectedSort(SortField.creator);
-          this.emitTitleLetterChangedEvent();
-        }
+    return this.getSortSelectorButton(SortField.creator, {
+      onSelected: () => {
+        this.alphaSelectorVisible = 'creator';
+        this.selectedTitleFilter = null;
+        this.emitTitleLetterChangedEvent();
       },
     });
   }
 
-  /** The template to render for the views dropdown */
+  /**
+   * Template for the Views dropdown, shown when 2+ views sort fields are available.
+   */
   private get viewsDropdownTemplate(): TemplateResult {
     const displayedOptions = ALL_VIEWS_SORT_FIELDS.filter(
-      field => this.displayedSortFields[field],
+      field => this.sortFieldAvailability[field],
     ).map(field => this.getDropdownOption(field));
 
     return this.getSortDropdown({
-      displayName: html`${this.viewSortDisplayName}`,
+      displayName: this.viewSortDisplayName,
       id: 'views-dropdown',
       selected: this.viewOptionSelected,
       dropdownOptions: displayedOptions,
@@ -626,14 +659,16 @@ export class SortFilterBar
     });
   }
 
-  /** The template to render for the date dropdown */
+  /**
+   * Template for the Date dropdown, shown when 2+ date sort fields are available.
+   */
   private get dateDropdownTemplate(): TemplateResult {
     const displayedOptions = ALL_DATE_SORT_FIELDS.filter(
-      field => this.displayedSortFields[field],
+      field => this.sortFieldAvailability[field],
     ).map(field => this.getDropdownOption(field));
 
     return this.getSortDropdown({
-      displayName: html`${this.dateSortDisplayName}`,
+      displayName: this.dateSortDisplayName,
       id: 'date-dropdown',
       selected: this.dateOptionSelected,
       dropdownOptions: displayedOptions,
@@ -652,6 +687,36 @@ export class SortFilterBar
         }
       },
     });
+  }
+
+  /**
+   * Provides the correct template to use for Views sorting, depending on how many
+   * views sort fields are available.
+   */
+  private get viewsSortOptionsTemplate(): TemplateResult | typeof nothing {
+    switch (this.availableViewsFields.length) {
+      case 0:
+        return nothing;
+      case 1:
+        return this.viewsSortSelectorTemplate;
+      default:
+        return this.viewsDropdownTemplate;
+    }
+  }
+
+  /**
+   * Provides the correct template to use for Date sorting, depending on how many
+   * date sort fields are available.
+   */
+  private get dateSortOptionsTemplate(): TemplateResult | typeof nothing {
+    switch (this.availableDateFields.length) {
+      case 0:
+        return nothing;
+      case 1:
+        return this.dateSortSelectorTemplate;
+      default:
+        return this.dateDropdownTemplate;
+    }
   }
 
   /** Handler for when a new mobile sort dropdown option is selected */
@@ -878,6 +943,24 @@ export class SortFilterBar
    */
   private get viewSortDisplayName(): string {
     return SORT_OPTIONS[this.lastSelectedViewSort].displayName;
+  }
+
+  /**
+   * Array of all views sort fields that are displayed.
+   */
+  private get availableViewsFields(): SortField[] {
+    return ALL_VIEWS_SORT_FIELDS.filter(
+      field => this.sortFieldAvailability[field],
+    );
+  }
+
+  /**
+   * Array of all date sort fields that are displayed.
+   */
+  private get availableDateFields(): SortField[] {
+    return ALL_DATE_SORT_FIELDS.filter(
+      field => this.sortFieldAvailability[field],
+    );
   }
 
   private get titleSelectorBar() {
