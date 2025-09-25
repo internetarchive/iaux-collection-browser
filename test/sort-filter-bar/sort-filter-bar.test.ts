@@ -4,7 +4,7 @@ import { html } from 'lit';
 import type { IaDropdown } from '@internetarchive/ia-dropdown';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
-import type { SortField } from '../../src/models';
+import { SortField, defaultSortBarFields } from '../../src/models';
 
 import '../../src/sort-filter-bar/sort-filter-bar';
 
@@ -47,22 +47,159 @@ describe('Sort selector default buttons', async () => {
     expect(sortDirections?.querySelector('.sort-direction-icon')).to.exist;
   });
 
-  it('should not render relevance-sort selector if showRelevance is false', async () => {
-    el.showRelevance = false;
-    await el.updateComplete;
+  it('renders default set of sort options if not overridden', async () => {
+    const allSortSelectors = desktopSortSelector?.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(allSortSelectors).to.exist;
+    expect(allSortSelectors.length).to.equal(3);
+    expect(allSortSelectors[0]?.textContent?.trim()).to.equal('Relevance');
+    expect(allSortSelectors[1]?.textContent?.trim()).to.equal('Title');
+    expect(allSortSelectors[2]?.textContent?.trim()).to.equal('Creator');
 
-    const defaultSortSelector =
-      desktopSortSelector?.querySelector('button.selected');
-    expect(defaultSortSelector?.textContent?.trim()).not.to.equal('Relevance');
-  });
+    const allSortDropdowns = desktopSortSelector?.querySelectorAll(
+      'ia-dropdown',
+    ) as NodeListOf<IaDropdown>;
+    expect(allSortDropdowns).to.exist;
+    expect(allSortDropdowns.length).to.equal(2);
 
-  it('should render default relevance-sort selector', async () => {
-    el.showRelevance = true;
-    await el.updateComplete;
+    expect(allSortDropdowns[0]?.options.length).to.equal(2);
+    expect(allSortDropdowns[0]?.options.map(o => o.id)).to.deep.equal([
+      SortField.weeklyview,
+      SortField.alltimeview,
+    ]);
+    expect(allSortDropdowns[0]?.textContent?.trim()).to.equal('Weekly views');
 
+    expect(allSortDropdowns[1]?.options.length).to.equal(4);
+    expect(allSortDropdowns[1]?.options.map(o => o.id)).to.deep.equal([
+      SortField.date,
+      SortField.datearchived,
+      SortField.datereviewed,
+      SortField.dateadded,
+    ]);
+    expect(allSortDropdowns[1]?.textContent?.trim()).to.equal('Date published');
+
+    // Relevance selected by default
     const defaultSortSelector =
       desktopSortSelector?.querySelector('button.selected');
     expect(defaultSortSelector?.textContent?.trim()).to.equal('Relevance');
+  });
+
+  it('renders an overridden set of sort options if specified', async () => {
+    const customSortFields: Record<SortField, boolean> = {
+      ...defaultSortBarFields,
+      [SortField.relevance]: false,
+      [SortField.title]: false,
+      [SortField.datefavorited]: true,
+      [SortField.datearchived]: false,
+      [SortField.datereviewed]: false,
+    };
+
+    el.displayedSortFields = customSortFields;
+    await el.updateComplete;
+
+    const allSortSelectors = desktopSortSelector?.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(allSortSelectors).to.exist;
+    expect(allSortSelectors.length).to.equal(1);
+    expect(allSortSelectors[0]?.textContent?.trim()).to.equal('Creator');
+
+    const allSortDropdowns = desktopSortSelector?.querySelectorAll(
+      'ia-dropdown',
+    ) as NodeListOf<IaDropdown>;
+    expect(allSortDropdowns).to.exist;
+    expect(allSortDropdowns.length).to.equal(2);
+
+    expect(allSortDropdowns[0]?.options.length).to.equal(2);
+    expect(allSortDropdowns[0]?.options.map(o => o.id)).to.deep.equal([
+      SortField.weeklyview,
+      SortField.alltimeview,
+    ]);
+
+    expect(allSortDropdowns[1]?.options.length).to.equal(3);
+    expect(allSortDropdowns[1]?.options.map(o => o.id)).to.deep.equal([
+      SortField.datefavorited,
+      SortField.date,
+      SortField.dateadded,
+    ]);
+  });
+
+  it('renders a button instead of a dropdown if it would only have one option', async () => {
+    const customSortFields: Record<SortField, boolean> = {
+      ...defaultSortBarFields,
+      // Disable all default dates except Date Added
+      [SortField.date]: false,
+      [SortField.datearchived]: false,
+      [SortField.datereviewed]: false,
+    };
+
+    el.displayedSortFields = customSortFields;
+    await el.updateComplete;
+
+    const allSortSelectors = desktopSortSelector?.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(allSortSelectors).to.exist;
+    expect(allSortSelectors.length).to.equal(4);
+    expect(allSortSelectors[0]?.textContent?.trim()).to.equal('Relevance');
+    expect(allSortSelectors[1]?.textContent?.trim()).to.equal('Title');
+    expect(allSortSelectors[2]?.textContent?.trim()).to.equal('Date added');
+    expect(allSortSelectors[3]?.textContent?.trim()).to.equal('Creator');
+
+    const allSortDropdowns = desktopSortSelector?.querySelectorAll(
+      'ia-dropdown',
+    ) as NodeListOf<IaDropdown>;
+    expect(allSortDropdowns).to.exist;
+    expect(allSortDropdowns.length).to.equal(1);
+    expect(allSortDropdowns[0]?.id).to.equal('views-dropdown');
+  });
+
+  it('does not render a dropdown that would have zero available options', async () => {
+    const customSortFields: Record<SortField, boolean> = {
+      ...defaultSortBarFields,
+      // Disable all views sorts
+      [SortField.weeklyview]: false,
+      [SortField.alltimeview]: false,
+    };
+
+    el.displayedSortFields = customSortFields;
+    await el.updateComplete;
+
+    const allSortSelectors = desktopSortSelector?.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(allSortSelectors).to.exist;
+    expect(allSortSelectors.length).to.equal(3);
+
+    const allSortDropdowns = desktopSortSelector?.querySelectorAll(
+      'ia-dropdown',
+    ) as NodeListOf<IaDropdown>;
+    expect(allSortDropdowns).to.exist;
+    expect(allSortDropdowns.length).to.equal(1);
+    expect(allSortDropdowns[0]?.id).to.equal('date-dropdown'); // No views dropdown preset
+  });
+
+  it('allows changing the default views sort shown', async () => {
+    el.defaultViewSort = SortField.alltimeview;
+    await el.updateComplete;
+
+    const viewsDropdown = el.shadowRoot?.querySelector(
+      '#views-dropdown',
+    ) as IaDropdown;
+    expect(viewsDropdown).to.exist;
+    expect(viewsDropdown.textContent?.trim()).to.equal('All-time views');
+  });
+
+  it('allows changing the default date sort shown', async () => {
+    el.defaultDateSort = SortField.datereviewed;
+    await el.updateComplete;
+
+    const dateDropdown = el.shadowRoot?.querySelector(
+      '#date-dropdown',
+    ) as IaDropdown;
+    expect(dateDropdown).to.exist;
+    expect(dateDropdown.textContent?.trim()).to.equal('Date reviewed');
   });
 
   it('should render default view-sort selector', async () => {
@@ -158,7 +295,10 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('handles click event on relevance selector', async () => {
-    el.showRelevance = true;
+    el.displayedSortFields = {
+      ...el.displayedSortFields,
+      [SortField.relevance]: true,
+    };
     el.selectedSort = 'title' as SortField;
     await el.updateComplete;
 
