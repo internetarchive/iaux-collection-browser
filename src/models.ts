@@ -326,8 +326,8 @@ export enum SortField {
  * Views-related sort fields
  */
 export const ALL_VIEWS_SORT_FIELDS = [
-  SortField.alltimeview,
   SortField.weeklyview,
+  SortField.alltimeview,
 ] as const;
 export type ViewsSortField = (typeof ALL_VIEWS_SORT_FIELDS)[number];
 
