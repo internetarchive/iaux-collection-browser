@@ -356,10 +356,10 @@
     "@internetarchive/field-parsers" "^1.0.0"
     typescript-memoize "^1.1.1"
 
-"@internetarchive/iaux-item-metadata@^1.0.7-webdev-7743.0":
-  version "1.0.7-webdev-7743.0"
-  resolved "https://registry.npmjs.org/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.0.7-webdev-7743.0.tgz"
-  integrity sha512-9gj0gfPBlSY47/qku6+F6B8216M7TrRE24tsavqOaCFvNYH6D59wKI+SxU3D3WLx1YvRPWXqYwx8uwcbveM6EA==
+"@internetarchive/iaux-item-metadata@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/iaux-item-metadata/-/iaux-item-metadata-1.1.0.tgz#88d55db382db482720313d01df1a96e5e0bb72a1"
+  integrity sha512-yj92Cg2HmYUJcHcJPclXosomsvU4WGJJ2BzH4tNECDXVFaGtChIiUNUV9xTXbcxSSKNLTQdlMYLk7w+nWZrohQ==
   dependencies:
     "@internetarchive/field-parsers" "^1.0.0"
     typescript-memoize "^1.1.1"
@@ -424,12 +424,12 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@2.5.2-webdev-7743.0":
-  version "2.5.2-webdev-7743.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.5.2-webdev-7743.0.tgz#b3273201140cd87d8f35d3b8b51985f0eb1cd9ef"
-  integrity sha512-b3mur5G7ZMiRt+kN8vkD3OV0CPYD3SiMJN8Bhro5dZVdO+qQhSdJoXLO2451lyan/GCRRDBnMxGTLcmwLw2AQw==
+"@internetarchive/search-service@^2.5.2":
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.5.2.tgz#ccc9094e2657b762c05527032dc910cfe42f01c0"
+  integrity sha512-WHtenA+yTNGrRKLNHlncD8RblQ6foDodI60/MthklGhmzDr6PF/grQ8Yqdbf0J3Ao4/Amv6W9s0QgQWfcK4l0g==
   dependencies:
-    "@internetarchive/iaux-item-metadata" "^1.0.7-webdev-7743.0"
+    "@internetarchive/iaux-item-metadata" "^1.1.0"
     "@internetarchive/result-type" "^0.0.1"
     typescript-memoize "^1.1.1"
 
