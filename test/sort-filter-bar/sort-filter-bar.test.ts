@@ -4,7 +4,7 @@ import { html } from 'lit';
 import type { IaDropdown } from '@internetarchive/ia-dropdown';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
-import { SortField, defaultSortBarFields } from '../../src/models';
+import { SortField, defaultSortAvailability } from '../../src/models';
 
 import '../../src/sort-filter-bar/sort-filter-bar';
 
@@ -86,8 +86,8 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('renders an overridden set of sort options if specified', async () => {
-    const customSortFields: Record<SortField, boolean> = {
-      ...defaultSortBarFields,
+    const customSortAvailability: Record<SortField, boolean> = {
+      ...defaultSortAvailability,
       [SortField.relevance]: false,
       [SortField.title]: false,
       [SortField.datefavorited]: true,
@@ -95,7 +95,7 @@ describe('Sort selector default buttons', async () => {
       [SortField.datereviewed]: false,
     };
 
-    el.displayedSortFields = customSortFields;
+    el.sortFieldAvailability = customSortAvailability;
     await el.updateComplete;
 
     const allSortSelectors = desktopSortSelector?.querySelectorAll(
@@ -126,15 +126,15 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('renders a button instead of a dropdown if it would only have one option', async () => {
-    const customSortFields: Record<SortField, boolean> = {
-      ...defaultSortBarFields,
+    const customSortAvailability: Record<SortField, boolean> = {
+      ...defaultSortAvailability,
       // Disable all default dates except Date Added
       [SortField.date]: false,
       [SortField.datearchived]: false,
       [SortField.datereviewed]: false,
     };
 
-    el.displayedSortFields = customSortFields;
+    el.sortFieldAvailability = customSortAvailability;
     await el.updateComplete;
 
     const allSortSelectors = desktopSortSelector?.querySelectorAll(
@@ -156,14 +156,14 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('does not render a dropdown that would have zero available options', async () => {
-    const customSortFields: Record<SortField, boolean> = {
-      ...defaultSortBarFields,
+    const customSortAvailability: Record<SortField, boolean> = {
+      ...defaultSortAvailability,
       // Disable all views sorts
       [SortField.weeklyview]: false,
       [SortField.alltimeview]: false,
     };
 
-    el.displayedSortFields = customSortFields;
+    el.sortFieldAvailability = customSortAvailability;
     await el.updateComplete;
 
     const allSortSelectors = desktopSortSelector?.querySelectorAll(
@@ -295,8 +295,8 @@ describe('Sort selector default buttons', async () => {
   });
 
   it('handles click event on relevance selector', async () => {
-    el.displayedSortFields = {
-      ...el.displayedSortFields,
+    el.sortFieldAvailability = {
+      ...el.sortFieldAvailability,
       [SortField.relevance]: true,
     };
     el.selectedSort = 'title' as SortField;
