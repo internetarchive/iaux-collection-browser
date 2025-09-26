@@ -433,7 +433,7 @@ export class TileDispatcher
       }
 
       #container.hoverable:hover {
-        box-shadow: 0 0 6px 2px rgba(8, 8, 32, 0.8);
+        box-shadow: 0 0 10px 0px rgba(8, 8, 32, 0.15);
         transition: box-shadow 0.1s ease;
       }
 
