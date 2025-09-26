@@ -166,18 +166,6 @@ export class SortFilterBar
   @query('#mobile-dropdown')
   private mobileDropdown!: IaDropdown;
 
-  /**
-   * Array of all views sort fields that are displayed, regenerated when the sort
-   * availability changes.
-   */
-  private availableViewsFields: SortField[] = [];
-
-  /**
-   * Array of all views sort fields that are displayed, regenerated when the sort
-   * availability changes.
-   */
-  private availableDateFields: SortField[] = [];
-
   render() {
     return html`
       <div id="container">
@@ -230,15 +218,6 @@ export class SortFilterBar
       } else if (this.dateOptionSelected) {
         this.lastSelectedDateSort = this.finalizedSortField as DateSortField;
       }
-    }
-
-    if (changed.has('sortFieldAvailability')) {
-      this.availableViewsFields = ALL_VIEWS_SORT_FIELDS.filter(
-        field => this.sortFieldAvailability[field],
-      );
-      this.availableDateFields = ALL_DATE_SORT_FIELDS.filter(
-        field => this.sortFieldAvailability[field],
-      );
     }
 
     // If we change which dropdown options are defaulted, update the default selections
@@ -971,6 +950,24 @@ export class SortFilterBar
    */
   private get viewSortDisplayName(): string {
     return SORT_OPTIONS[this.lastSelectedViewSort].displayName;
+  }
+
+  /**
+   * Array of all the views sorts that should be shown
+   */
+  private get availableViewsFields(): SortField[] {
+    return ALL_VIEWS_SORT_FIELDS.filter(
+      field => this.sortFieldAvailability[field],
+    );
+  }
+
+  /**
+   * Array of all the date sorts that should be shown
+   */
+  private get availableDateFields(): SortField[] {
+    return ALL_DATE_SORT_FIELDS.filter(
+      field => this.sortFieldAvailability[field],
+    );
   }
 
   private get titleSelectorBar() {
