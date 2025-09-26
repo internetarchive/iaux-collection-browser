@@ -304,13 +304,13 @@ export class TileList extends BaseTileComponent {
   private get reviewBlockTemplate(): TemplateResult | typeof nothing {
     if (!this.model?.review) return nothing;
 
-    const { title, body, stars } = this.model.review;
+    const { reviewtitle, reviewbody, stars } = this.model.review;
     return html`
       <review-block
         viewsize="list"
-        .title=${title}
-        .body=${body}
-        .starRating=${stars}
+        title=${ifDefined(reviewtitle)}
+        body=${ifDefined(reviewbody)}
+        starRating=${ifDefined(stars)}
       >
       </review-block>
     `;
