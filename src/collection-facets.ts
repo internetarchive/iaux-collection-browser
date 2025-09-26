@@ -29,7 +29,10 @@ import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-f
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type { SharedResizeObserverInterface } from '@internetarchive/shared-resize-observer';
-import type { BinSnappingInterval } from '@internetarchive/histogram-date-range';
+import type {
+  BarScalingOption,
+  BinSnappingInterval,
+} from '@internetarchive/histogram-date-range';
 import chevronIcon from './assets/img/icons/chevron';
 import expandIcon from './assets/img/icons/expand';
 import {
@@ -258,23 +261,36 @@ export class CollectionFacets extends LitElement {
 
     const zeroPadMonth = (month: number) => month.toString().padStart(2, '0');
 
-    // Format the min/max dates appropriately
-    const minDate = this.isTvSearch
-      ? `${firstYear}-${zeroPadMonth(firstMonth)}`
-      : `${firstYear}`;
+    // The date picker is configured differently for TV search, allowing month-level resolution
+    if (this.isTvSearch) {
+      // Whether the bucket interval is less than a year
+      // (i.e., requires individual months to be handled & labeled)
+      const mustHandleMonths = monthInterval < 12;
 
-    const maxDate = this.isTvSearch
-      ? `${lastYear}-${zeroPadMonth(lastMonth + monthInterval - 1)}`
-      : `${lastYear + yearInterval - 1}`;
+      return {
+        buckets: aggregation.buckets as number[],
+        dateFormat: 'YYYY-MM',
+        tooltipDateFormat: mustHandleMonths ? 'MMM YYYY' : 'YYYY',
+        tooltipLabel: 'broadcast',
+        binSnapping: (mustHandleMonths
+          ? 'month'
+          : 'year') as BinSnappingInterval,
+        barScaling: 'linear' as BarScalingOption,
+        minDate: `${firstYear}-${zeroPadMonth(firstMonth)}`,
+        maxDate: `${lastYear}-${zeroPadMonth(lastMonth + monthInterval - 1)}`,
+      };
+    }
 
-    const hasMonths = this.isTvSearch && monthInterval < 12;
+    // All other search types use the same configuration
     return {
       buckets: aggregation.buckets as number[],
-      dateFormat: this.isTvSearch ? 'YYYY-MM' : 'YYYY',
-      tooltipDateFormat: hasMonths ? 'MMM YYYY' : 'YYYY',
-      binSnapping: (hasMonths ? 'month' : 'year') as BinSnappingInterval,
-      minDate,
-      maxDate,
+      dateFormat: 'YYYY',
+      tooltipDateFormat: 'YYYY',
+      tooltipLabel: 'item',
+      binSnapping: 'year' as BinSnappingInterval,
+      barScaling: 'logarithmic' as BarScalingOption,
+      minDate: `${firstYear}`,
+      maxDate: `${lastYear + yearInterval - 1}`,
     };
   }
 
@@ -289,7 +305,9 @@ export class CollectionFacets extends LitElement {
       buckets,
       dateFormat,
       tooltipDateFormat,
+      tooltipLabel,
       binSnapping,
+      barScaling,
       minDate,
       maxDate,
     } = histogramProps;
@@ -317,9 +335,11 @@ export class CollectionFacets extends LitElement {
         .maxDate=${maxDate}
         .minSelectedDate=${this.minSelectedDate}
         .maxSelectedDate=${this.maxSelectedDate}
-        .dateFormat=${dateFormat}
-        .tooltipDateFormat=${tooltipDateFormat}
+        .customDateFormat=${dateFormat}
+        .customTooltipDateFormat=${tooltipDateFormat}
+        .customTooltipLabel=${tooltipLabel}
         .binSnapping=${binSnapping}
+        .barScaling=${barScaling}
         .buckets=${buckets}
         .modalManager=${this.modalManager}
         .analyticsHandler=${this.analyticsHandler}
@@ -396,7 +416,9 @@ export class CollectionFacets extends LitElement {
       buckets,
       dateFormat,
       tooltipDateFormat,
+      tooltipLabel,
       binSnapping,
+      barScaling,
       minDate,
       maxDate,
     } = histogramProps;
@@ -411,7 +433,9 @@ export class CollectionFacets extends LitElement {
         .updateDelay=${100}
         .dateFormat=${dateFormat}
         .tooltipDateFormat=${tooltipDateFormat}
+        .tooltipLabel=${tooltipLabel}
         .binSnapping=${binSnapping}
+        .barScaling=${barScaling}
         .bins=${buckets}
         missingDataMessage="..."
         .width=${this.collapsableFacets && this.contentWidth
