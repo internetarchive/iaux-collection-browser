@@ -88,11 +88,11 @@ describe('Sort selector default buttons', async () => {
   it('renders an overridden set of sort options if specified', async () => {
     const customSortAvailability: Record<SortField, boolean> = {
       ...defaultSortAvailability,
-      [SortField.relevance]: false,
       [SortField.title]: false,
       [SortField.datefavorited]: true,
       [SortField.datearchived]: false,
       [SortField.datereviewed]: false,
+      [SortField.creator]: false,
     };
 
     el.sortFieldAvailability = customSortAvailability;
@@ -103,7 +103,7 @@ describe('Sort selector default buttons', async () => {
     ) as NodeListOf<HTMLButtonElement>;
     expect(allSortSelectors).to.exist;
     expect(allSortSelectors.length).to.equal(1);
-    expect(allSortSelectors[0]?.textContent?.trim()).to.equal('Creator');
+    expect(allSortSelectors[0]?.textContent?.trim()).to.equal('Relevance');
 
     const allSortDropdowns = desktopSortSelector?.querySelectorAll(
       'ia-dropdown',
@@ -125,7 +125,34 @@ describe('Sort selector default buttons', async () => {
     ]);
   });
 
-  it('renders a button instead of a dropdown if it would only have one option', async () => {
+  it('renders a views button instead of a dropdown if it would only have one option', async () => {
+    const customSortAvailability: Record<SortField, boolean> = {
+      ...defaultSortAvailability,
+      // Disable weekly views (but keep All-time Views)
+      [SortField.weeklyview]: false,
+    };
+
+    el.sortFieldAvailability = customSortAvailability;
+    await el.updateComplete;
+
+    const allSortSelectors = desktopSortSelector?.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(allSortSelectors).to.exist;
+    expect(allSortSelectors.length).to.equal(4);
+    expect(allSortSelectors[0]?.textContent?.trim()).to.equal('Relevance');
+    expect(allSortSelectors[1]?.textContent?.trim()).to.equal('All-time views');
+    expect(allSortSelectors[2]?.textContent?.trim()).to.equal('Title');
+    expect(allSortSelectors[3]?.textContent?.trim()).to.equal('Creator');
+
+    const allSortDropdowns = desktopSortSelector?.querySelectorAll(
+      'ia-dropdown',
+    ) as NodeListOf<IaDropdown>;
+    expect(allSortDropdowns).to.exist;
+    expect(allSortDropdowns.length).to.equal(1);
+  });
+
+  it('renders a date button instead of a dropdown if it would only have one option', async () => {
     const customSortAvailability: Record<SortField, boolean> = {
       ...defaultSortAvailability,
       // Disable all default dates except Date Added
@@ -152,13 +179,12 @@ describe('Sort selector default buttons', async () => {
     ) as NodeListOf<IaDropdown>;
     expect(allSortDropdowns).to.exist;
     expect(allSortDropdowns.length).to.equal(1);
-    expect(allSortDropdowns[0]?.id).to.equal('views-dropdown');
   });
 
-  it('does not render a dropdown that would have zero available options', async () => {
+  it('does not render a views dropdown that would have zero available options', async () => {
     const customSortAvailability: Record<SortField, boolean> = {
       ...defaultSortAvailability,
-      // Disable all views sorts
+      // Disable all view sorts
       [SortField.weeklyview]: false,
       [SortField.alltimeview]: false,
     };
@@ -177,7 +203,34 @@ describe('Sort selector default buttons', async () => {
     ) as NodeListOf<IaDropdown>;
     expect(allSortDropdowns).to.exist;
     expect(allSortDropdowns.length).to.equal(1);
-    expect(allSortDropdowns[0]?.id).to.equal('date-dropdown'); // No views dropdown preset
+    expect(allSortDropdowns[0].options?.[0]?.id).to.equal(SortField.date);
+  });
+
+  it('does not render a date dropdown that would have zero available options', async () => {
+    const customSortAvailability: Record<SortField, boolean> = {
+      ...defaultSortAvailability,
+      // Disable all date sorts
+      [SortField.date]: false,
+      [SortField.dateadded]: false,
+      [SortField.datearchived]: false,
+      [SortField.datereviewed]: false,
+    };
+
+    el.sortFieldAvailability = customSortAvailability;
+    await el.updateComplete;
+
+    const allSortSelectors = desktopSortSelector?.querySelectorAll(
+      'button',
+    ) as NodeListOf<HTMLButtonElement>;
+    expect(allSortSelectors).to.exist;
+    expect(allSortSelectors.length).to.equal(3);
+
+    const allSortDropdowns = desktopSortSelector?.querySelectorAll(
+      'ia-dropdown',
+    ) as NodeListOf<IaDropdown>;
+    expect(allSortDropdowns).to.exist;
+    expect(allSortDropdowns.length).to.equal(1);
+    expect(allSortDropdowns[0].options?.[0]?.id).to.equal(SortField.weeklyview);
   });
 
   it('allows changing the default views sort shown', async () => {

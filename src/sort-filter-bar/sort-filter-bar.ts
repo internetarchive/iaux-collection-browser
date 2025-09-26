@@ -156,15 +156,27 @@ export class SortFilterBar
 
   /** The dropdown component containing options for weekly and all-time views */
   @query('#views-dropdown')
-  private viewsDropdown!: IaDropdown;
+  private viewsDropdown?: IaDropdown;
 
-  /** The dropdown component containing the four date options */
+  /** The dropdown component containing all the available date options */
   @query('#date-dropdown')
-  private dateDropdown!: IaDropdown;
+  private dateDropdown?: IaDropdown;
 
   /** The single, consolidated dropdown component shown in mobile view */
   @query('#mobile-dropdown')
   private mobileDropdown!: IaDropdown;
+
+  /**
+   * Array of all views sort fields that are displayed, regenerated when the sort
+   * availability changes.
+   */
+  private availableViewsFields: SortField[] = [];
+
+  /**
+   * Array of all views sort fields that are displayed, regenerated when the sort
+   * availability changes.
+   */
+  private availableDateFields: SortField[] = [];
 
   render() {
     return html`
@@ -218,6 +230,15 @@ export class SortFilterBar
       } else if (this.dateOptionSelected) {
         this.lastSelectedDateSort = this.finalizedSortField as DateSortField;
       }
+    }
+
+    if (changed.has('sortFieldAvailability')) {
+      this.availableViewsFields = ALL_VIEWS_SORT_FIELDS.filter(
+        field => this.sortFieldAvailability[field],
+      );
+      this.availableDateFields = ALL_DATE_SORT_FIELDS.filter(
+        field => this.sortFieldAvailability[field],
+      );
     }
 
     // If we change which dropdown options are defaulted, update the default selections
@@ -399,9 +420,9 @@ export class SortFilterBar
       >
         <ul id="desktop-sort-selector">
           <li>${this.relevanceSortSelectorTemplate}</li>
-          <li>${this.viewsSortOptionsTemplate}</li>
+          <li>${this.allViewsSortOptionsTemplate}</li>
           <li>${this.titleSortSelectorTemplate}</li>
-          <li>${this.dateSortOptionsTemplate}</li>
+          <li>${this.allDateSortOptionsTemplate}</li>
           <li>${this.creatorSortSelectorTemplate}</li>
         </ul>
       </div>
@@ -464,7 +485,7 @@ export class SortFilterBar
     return html`
       <button
         class=${isSelected ? 'selected' : ''}
-        data-title="${displayName}"
+        data-title=${displayName}
         @click=${(e: Event) => {
           e.preventDefault();
           this.dropdownBackdropVisible = false;
@@ -582,9 +603,10 @@ export class SortFilterBar
    * This is shown instead of the views dropdown when only a single views sort field
    * is available.
    */
-  private get viewsSortSelectorTemplate(): TemplateResult {
-    const { availableViewsFields: displayedViewsFields } = this;
-    return this.getSortSelectorButton(displayedViewsFields[0]);
+  private get viewsSortSelectorTemplate(): TemplateResult | typeof nothing {
+    const { availableViewsFields } = this;
+    if (availableViewsFields.length < 1) return nothing;
+    return this.getSortSelectorButton(availableViewsFields[0]);
   }
 
   /**
@@ -608,9 +630,10 @@ export class SortFilterBar
    * This is shown instead of the dates dropdown when only a single date sort field
    * is available.
    */
-  private get dateSortSelectorTemplate(): TemplateResult {
-    const { availableDateFields: displayedDateFields } = this;
-    return this.getSortSelectorButton(displayedDateFields[0]);
+  private get dateSortSelectorTemplate(): TemplateResult | typeof nothing {
+    const { availableDateFields } = this;
+    if (availableDateFields.length < 1) return nothing;
+    return this.getSortSelectorButton(availableDateFields[0]);
   }
 
   /**
@@ -645,12 +668,13 @@ export class SortFilterBar
       selectedOption: this.viewOptionSelected ? this.finalizedSortField : '',
       onOptionSelected: this.dropdownOptionSelected,
       onDropdownClick: () => {
-        this.dateDropdown.open = false;
-        this.dropdownBackdropVisible = this.viewsDropdown.open;
-        this.viewsDropdown.classList.toggle('open', this.viewsDropdown.open);
+        if (this.dateDropdown) this.dateDropdown.open = false;
+        const viewsDropdown = this.viewsDropdown as IaDropdown;
+        this.dropdownBackdropVisible = viewsDropdown.open;
+        viewsDropdown.classList.toggle('open', viewsDropdown.open);
       },
       onLabelInteraction: (e: Event) => {
-        if (!this.viewsDropdown.open && !this.viewOptionSelected) {
+        if (!this.viewsDropdown?.open && !this.viewOptionSelected) {
           e.stopPropagation();
           this.clearAlphaBarFilters();
           this.setSelectedSort(this.lastSelectedViewSort);
@@ -675,12 +699,13 @@ export class SortFilterBar
       selectedOption: this.dateOptionSelected ? this.finalizedSortField : '',
       onOptionSelected: this.dropdownOptionSelected,
       onDropdownClick: () => {
-        this.viewsDropdown.open = false;
-        this.dropdownBackdropVisible = this.dateDropdown.open;
-        this.dateDropdown.classList.toggle('open', this.dateDropdown.open);
+        if (this.viewsDropdown) this.viewsDropdown.open = false;
+        const dateDropdown = this.dateDropdown as IaDropdown;
+        this.dropdownBackdropVisible = dateDropdown.open;
+        dateDropdown.classList.toggle('open', dateDropdown.open);
       },
       onLabelInteraction: (e: Event) => {
-        if (!this.dateDropdown.open && !this.dateOptionSelected) {
+        if (!this.dateDropdown?.open && !this.dateOptionSelected) {
           e.stopPropagation();
           this.clearAlphaBarFilters();
           this.setSelectedSort(this.lastSelectedDateSort);
@@ -690,11 +715,12 @@ export class SortFilterBar
   }
 
   /**
-   * Provides the correct template to use for Views sorting, depending on how many
+   * Provides the appropriate template to use for Views sorting, depending on how many
    * views sort fields are available.
    */
-  private get viewsSortOptionsTemplate(): TemplateResult | typeof nothing {
-    switch (this.availableViewsFields.length) {
+  private get allViewsSortOptionsTemplate(): TemplateResult | typeof nothing {
+    const numViewsSortOptions = this.availableViewsFields.length;
+    switch (numViewsSortOptions) {
       case 0:
         return nothing;
       case 1:
@@ -705,11 +731,12 @@ export class SortFilterBar
   }
 
   /**
-   * Provides the correct template to use for Date sorting, depending on how many
+   * Provides the appropriate template to use for Date sorting, depending on how many
    * date sort fields are available.
    */
-  private get dateSortOptionsTemplate(): TemplateResult | typeof nothing {
-    switch (this.availableDateFields.length) {
+  private get allDateSortOptionsTemplate(): TemplateResult | typeof nothing {
+    const numDateSortOptions = this.availableDateFields.length;
+    switch (numDateSortOptions) {
       case 0:
         return nothing;
       case 1:
@@ -808,6 +835,7 @@ export class SortFilterBar
       this.mobileDropdown,
     ];
     for (const dropdown of allDropdowns) {
+      if (!dropdown) continue;
       dropdown.open = false;
       dropdown.classList.remove('open');
     }
@@ -943,24 +971,6 @@ export class SortFilterBar
    */
   private get viewSortDisplayName(): string {
     return SORT_OPTIONS[this.lastSelectedViewSort].displayName;
-  }
-
-  /**
-   * Array of all views sort fields that are displayed.
-   */
-  private get availableViewsFields(): SortField[] {
-    return ALL_VIEWS_SORT_FIELDS.filter(
-      field => this.sortFieldAvailability[field],
-    );
-  }
-
-  /**
-   * Array of all date sort fields that are displayed.
-   */
-  private get availableDateFields(): SortField[] {
-    return ALL_DATE_SORT_FIELDS.filter(
-      field => this.sortFieldAvailability[field],
-    );
   }
 
   private get titleSelectorBar() {
