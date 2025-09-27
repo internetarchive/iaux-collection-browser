@@ -2516,7 +2516,7 @@ export class CollectionBrowser
         .mobile #left-column {
           width: 100%;
           min-width: 0;
-          padding: 0;
+          padding: 5px 0;
           border: 0;
         }
 
@@ -2589,9 +2589,8 @@ export class CollectionBrowser
         }
 
         .mobile #results-total {
-          float: right;
-          margin-bottom: 0;
-          margin-right: 5px;
+          position: absolute;
+          right: 10px;
         }
 
         #big-results-count {
