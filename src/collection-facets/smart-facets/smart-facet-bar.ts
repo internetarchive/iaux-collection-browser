@@ -158,7 +158,7 @@ export class SmartFacetBar extends LitElement {
         .facetInfo=${facets}
         .labelPrefix=${fieldPrefixes[facets[0].facets[0].facetType]}
         .activeFacetRef=${facets[0].facets[0]}
-        @facetClick=${this.facetDropdownClicked}
+        @facetClick=${this.dropdownOptionClicked}
         @dropdownClick=${this.onDropdownClick}
       ></smart-facet-dropdown>
     `;
@@ -289,12 +289,22 @@ export class SmartFacetBar extends LitElement {
       ];
     }
 
-    // Update the selected facets
-    for (const facet of details) {
+    this.updateSelectedFacets(
+      details.map(facet => ({ ...facet, state: newState })),
+    );
+  }
+
+  /**
+   * Updates the selected facet buckets for each of the given facets,
+   * and emits a `facetsChanged` event to notify parent components of
+   * the new state.
+   */
+  private updateSelectedFacets(facets: FacetEventDetails[]): void {
+    for (const facet of facets) {
       this.selectedFacets = updateSelectedFacetBucket(
         this.selectedFacets,
         facet.facetType,
-        { ...facet.bucket, state: newState },
+        facet.bucket,
         true,
       );
     }
@@ -305,11 +315,17 @@ export class SmartFacetBar extends LitElement {
     this.dispatchEvent(event);
   }
 
+  /**
+   * Handler for when a smart facet button is clicked
+   */
   private facetClicked(e: CustomEvent<SmartFacetEvent>): void {
     this.toggleSmartFacet(e.detail.smartFacet, e.detail.details);
   }
 
-  private facetDropdownClicked(e: CustomEvent<SmartFacetEvent>): void {
+  /**
+   * Handler for when an option in a smart facet dropdown is selected
+   */
+  private dropdownOptionClicked(e: CustomEvent<SmartFacetEvent>): void {
     const existingFacet = this.smartFacets.find(
       sf => sf.length === 1 && smartFacetEquals(sf[0], e.detail.smartFacet),
     );
@@ -325,19 +341,7 @@ export class SmartFacetBar extends LitElement {
       ...this.smartFacets,
     ];
 
-    for (const facet of e.detail.details) {
-      this.selectedFacets = updateSelectedFacetBucket(
-        this.selectedFacets,
-        facet.facetType,
-        facet.bucket,
-        true,
-      );
-    }
-
-    const event = new CustomEvent<SelectedFacets>('facetsChanged', {
-      detail: this.selectedFacets,
-    });
-    this.dispatchEvent(event);
+    this.updateSelectedFacets(e.detail.details);
   }
 
   private onDropdownClick(e: CustomEvent<SmartFacetDropdown>): void {
@@ -401,7 +405,7 @@ export class SmartFacetBar extends LitElement {
 
       #filters-label {
         font-size: 1.4rem;
-        font-weight: bold;
+        font-weight: var(--smartFacetLabelFontWeight, normal);
         margin: 0 -5px 0 0;
       }
     `;
