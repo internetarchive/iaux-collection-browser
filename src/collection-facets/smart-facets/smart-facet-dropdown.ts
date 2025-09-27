@@ -31,13 +31,13 @@ export class SmartFacetDropdown extends LitElement {
         <ia-dropdown
           class="dropdown"
           displayCaret
-          openViaButton
           closeOnSelect
           closeOnEscape
           closeOnBackdropClick
           includeSelectedOption
           .options=${this.dropdownOptions}
           .selectedOption=${this.activeDropdownOption}
+          .openViaButton=${false}
           @optionSelected=${this.optionSelected}
           @click=${this.onDropdownClick}
         >
