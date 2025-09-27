@@ -118,6 +118,15 @@ export class SmartFacetBar extends LitElement {
     this.updateSmartFacets();
   }
 
+  deselectAll(): void {
+    for (const sf of this.smartFacets) {
+      for (const facet of sf) {
+        facet.selected = false;
+      }
+    }
+    this.requestUpdate();
+  }
+
   private async updateSmartFacets(): Promise<void> {
     log('updating smart facets');
     if (this.query) {

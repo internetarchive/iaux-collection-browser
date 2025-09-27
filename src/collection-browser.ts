@@ -511,6 +511,10 @@ export class CollectionBrowser
       this.sortDirection = null;
       this.selectedSort = SortField.default;
     }
+
+    if (this.smartFacetBar) {
+      this.smartFacetBar.deselectAll();
+    }
   }
 
   /**
