@@ -35,6 +35,7 @@ export class SmartFacetDropdown extends LitElement {
           closeOnEscape
           closeOnBackdropClick
           includeSelectedOption
+          usePopover
           .options=${this.dropdownOptions}
           .selectedOption=${this.activeDropdownOption}
           .openViaButton=${false}
