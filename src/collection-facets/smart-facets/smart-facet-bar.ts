@@ -49,6 +49,8 @@ export class SmartFacetBar extends LitElement {
 
   @property({ type: Boolean }) filterToggleActive = false;
 
+  @property({ type: String }) label?: string;
+
   @state() private heuristicRecs: SmartFacet[] = [];
 
   @state() private smartFacets: SmartFacet[][] = [];
@@ -62,11 +64,12 @@ export class SmartFacetBar extends LitElement {
   render() {
     if (!this.query) return nothing;
 
+    const shouldShowLabel = !!this.label && this.smartFacets.length > 0;
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}
-        ${this.smartFacets.length > 0
-          ? html`<p id="filters-label">${msg('Browse:')}</p>`
+        ${shouldShowLabel
+          ? html`<p id="filters-label">${this.label}</p>`
           : nothing}
         ${repeat(
           this.smartFacets,
@@ -368,6 +371,7 @@ export class SmartFacetBar extends LitElement {
       }
 
       #filters-label {
+        font-size: 1.4rem;
         font-weight: bold;
         margin: 0 -5px 0 0;
       }

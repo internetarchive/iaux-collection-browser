@@ -7,6 +7,7 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
@@ -162,7 +163,15 @@ export class CollectionBrowser
    */
   @property({ type: Object }) internalFilters?: SelectedFacets;
 
+  /**
+   * Whether to show smart facets (bubbles) along the top of the component
+   */
   @property({ type: Boolean }) showSmartFacetBar = false;
+
+  /**
+   * Sets the label that is shown in front of the smart facets, if present.
+   */
+  @property({ type: String }) smartFacetBarLabel?: string;
 
   /**
    * Whether to show the date picker (above the facets)
@@ -550,6 +559,7 @@ export class CollectionBrowser
             .selectedFacets=${this.selectedFacets}
             .collectionTitles=${this.dataSource.collectionTitles}
             .filterToggleActive=${this.facetPaneVisible}
+            .label=${this.smartFacetBarLabel}
             @facetsChanged=${this.facetsChanged}
             @filtersToggled=${() => {
               this.facetPaneVisible = !this.facetPaneVisible;
