@@ -65,6 +65,9 @@ export class SmartFacetBar extends LitElement {
     return html`
       <div id="smart-facets-container">
         ${this.filtersToggleTemplate}
+        ${this.smartFacets.length > 0
+          ? html`<p id="filters-label">${msg('Browse:')}</p>`
+          : nothing}
         ${repeat(
           this.smartFacets,
           f =>
@@ -362,6 +365,11 @@ export class SmartFacetBar extends LitElement {
 
       #filters-toggle.active > svg {
         filter: invert(1);
+      }
+
+      #filters-label {
+        font-weight: bold;
+        margin: 0 -5px 0 0;
       }
     `;
   }
