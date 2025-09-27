@@ -12,7 +12,12 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { msg } from '@lit/localize';
 import type { Aggregation, Bucket } from '@internetarchive/search-service';
 import type { CollectionTitles } from '../../data-source/models';
-import type { FacetOption, SelectedFacets } from '../../models';
+import type {
+  FacetEventDetails,
+  FacetOption,
+  FacetState,
+  SelectedFacets,
+} from '../../models';
 import { updateSelectedFacetBucket } from '../../utils/facet-utils';
 import { SmartQueryHeuristicGroup } from './smart-facet-heuristics';
 import type { SmartFacetDropdown } from './smart-facet-dropdown';
@@ -261,19 +266,36 @@ export class SmartFacetBar extends LitElement {
     } as SmartFacet;
   }
 
-  private facetClicked(e: CustomEvent<SmartFacetEvent>): void {
-    if (!e.detail.smartFacet.selected) {
+  /**
+   * Toggles the state of the given smart facet, and updates the selected facets accordingly.
+   */
+  private toggleSmartFacet(
+    facet: SmartFacet,
+    details: FacetEventDetails[],
+  ): void {
+    let newState: FacetState;
+    if (facet.selected) {
+      // When deselected, leave the smart facet where it is
+      newState = 'none';
+      this.smartFacets = this.smartFacets.map(f => {
+        if (f[0] === facet) return [{ ...facet, selected: false }];
+        return f;
+      });
+    } else {
+      // When selected, move the toggled smart facet to the front of the list
+      newState = 'selected';
       this.smartFacets = [
-        [{ ...e.detail.smartFacet, selected: true }],
-        ...this.smartFacets.filter(f => f[0] !== e.detail.smartFacet),
+        [{ ...facet, selected: true }],
+        ...this.smartFacets.filter(f => f[0] !== facet),
       ];
     }
 
-    for (const facet of e.detail.details) {
+    // Update the selected facets
+    for (const facet of details) {
       this.selectedFacets = updateSelectedFacetBucket(
         this.selectedFacets,
         facet.facetType,
-        facet.bucket,
+        { ...facet.bucket, state: newState },
         true,
       );
     }
@@ -284,13 +306,21 @@ export class SmartFacetBar extends LitElement {
     this.dispatchEvent(event);
   }
 
+  private facetClicked(e: CustomEvent<SmartFacetEvent>): void {
+    this.toggleSmartFacet(e.detail.smartFacet, e.detail.details);
+  }
+
   private facetDropdownClicked(e: CustomEvent<SmartFacetEvent>): void {
-    if (
-      this.smartFacets.find(sf => smartFacetEquals(sf[0], e.detail.smartFacet))
-    ) {
+    const existingFacet = this.smartFacets.find(
+      sf => sf.length === 1 && smartFacetEquals(sf[0], e.detail.smartFacet),
+    );
+    if (existingFacet) {
+      // The facet already exists outside the dropdown, so just select it there
+      this.toggleSmartFacet(existingFacet[0], e.detail.details);
       return;
     }
 
+    // Otherwise, prepend a new smart facet for the selected option
     this.smartFacets = [
       [{ ...e.detail.smartFacet, selected: true }],
       ...this.smartFacets,
