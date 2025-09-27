@@ -51,6 +51,8 @@ export class SmartFacetBar extends LitElement {
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
 
+  @property({ type: Boolean }) filterToggleShown = false;
+
   @property({ type: Boolean }) filterToggleActive = false;
 
   @property({ type: String }) label?: string;
@@ -164,7 +166,9 @@ export class SmartFacetBar extends LitElement {
     `;
   }
 
-  private get filtersToggleTemplate(): TemplateResult {
+  private get filtersToggleTemplate(): TemplateResult | typeof nothing {
+    if (!this.filterToggleShown) return nothing;
+
     return html`
       <button
         id="filters-toggle"

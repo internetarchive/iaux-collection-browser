@@ -557,6 +557,7 @@ export class CollectionBrowser
             .aggregations=${this.dataSource.aggregations}
             .selectedFacets=${this.selectedFacets}
             .collectionTitles=${this.dataSource.collectionTitles}
+            .filterToggleShown=${!this.mobileView}
             .filterToggleActive=${this.facetPaneVisible}
             .label=${this.smartFacetBarLabel}
             @facetsChanged=${this.facetsChanged}
