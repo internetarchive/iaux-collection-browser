@@ -162,7 +162,15 @@ export class CollectionBrowser
    */
   @property({ type: Object }) internalFilters?: SelectedFacets;
 
+  /**
+   * Whether to show smart facets (bubbles) along the top of the component
+   */
   @property({ type: Boolean }) showSmartFacetBar = false;
+
+  /**
+   * Sets the label that is shown in front of the smart facets, if present.
+   */
+  @property({ type: String }) smartFacetBarLabel?: string;
 
   /**
    * Whether to show the date picker (above the facets)
@@ -550,6 +558,7 @@ export class CollectionBrowser
             .selectedFacets=${this.selectedFacets}
             .collectionTitles=${this.dataSource.collectionTitles}
             .filterToggleActive=${this.facetPaneVisible}
+            .label=${this.smartFacetBarLabel}
             @facetsChanged=${this.facetsChanged}
             @filtersToggled=${() => {
               this.facetPaneVisible = !this.facetPaneVisible;
