@@ -47,6 +47,9 @@ import {
   tvFacetDisplayOrder,
   TvClipFilterType,
   TileBlurOverrideState,
+  defaultSortAvailability,
+  favoritesSortAvailability,
+  tvSortAvailability,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -802,14 +805,37 @@ export class CollectionBrowser
   private get sortFilterBarTemplate(): TemplateResult | typeof nothing {
     if (this.suppressSortBar) return nothing;
 
+    // Determine the set of sortable fields that should be shown in the sort bar
+    let defaultViewSort = SortField.weeklyview;
+    let defaultDateSort = SortField.date;
+    let sortFieldAvailability = defaultSortAvailability;
+
+    // We adjust the sort options for a couple of special cases...
+    if (this.withinCollection?.startsWith('fav-')) {
+      // When viewing a fav- collection, we include the Date Favorited option and show
+      // it as the default in the date dropdown.
+      defaultDateSort = SortField.datefavorited;
+      sortFieldAvailability = favoritesSortAvailability;
+    } else if (!this.withinCollection && this.searchType === SearchType.TV) {
+      // When viewing TV search results, we default the views dropdown to All-time Views
+      // and exclude several of the usual date sort options.
+      defaultViewSort = SortField.alltimeview;
+      defaultDateSort = SortField.datearchived;
+      sortFieldAvailability = tvSortAvailability;
+    }
+
+    // We only show relevance sort if a search query is currently defined
+    sortFieldAvailability.relevance = this.isRelevanceSortAvailable;
+
     return html`
       <sort-filter-bar
         .defaultSortField=${this.defaultSortField}
         .defaultSortDirection=${this.defaultSortDirection}
+        .defaultViewSort=${defaultViewSort}
+        .defaultDateSort=${defaultDateSort}
         .selectedSort=${this.selectedSort}
         .sortDirection=${this.sortDirection}
-        .showRelevance=${this.isRelevanceSortAvailable}
-        .showDateFavorited=${this.withinCollection?.startsWith('fav-')}
+        .sortFieldAvailability=${sortFieldAvailability}
         .displayMode=${this.displayMode}
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
