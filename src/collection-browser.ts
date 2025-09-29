@@ -162,7 +162,15 @@ export class CollectionBrowser
    */
   @property({ type: Object }) internalFilters?: SelectedFacets;
 
+  /**
+   * Whether to show smart facets (bubbles) along the top of the component
+   */
   @property({ type: Boolean }) showSmartFacetBar = false;
+
+  /**
+   * Sets the label that is shown in front of the smart facets, if present.
+   */
+  @property({ type: String }) smartFacetBarLabel?: string;
 
   /**
    * Whether to show the date picker (above the facets)
@@ -503,6 +511,10 @@ export class CollectionBrowser
       this.sortDirection = null;
       this.selectedSort = SortField.default;
     }
+
+    if (this.smartFacetBar) {
+      this.smartFacetBar.deselectAll();
+    }
   }
 
   /**
@@ -549,7 +561,9 @@ export class CollectionBrowser
             .aggregations=${this.dataSource.aggregations}
             .selectedFacets=${this.selectedFacets}
             .collectionTitles=${this.dataSource.collectionTitles}
+            .filterToggleShown=${!this.mobileView}
             .filterToggleActive=${this.facetPaneVisible}
+            .label=${this.smartFacetBarLabel}
             @facetsChanged=${this.facetsChanged}
             @filtersToggled=${() => {
               this.facetPaneVisible = !this.facetPaneVisible;
@@ -2507,7 +2521,7 @@ export class CollectionBrowser
         .mobile #left-column {
           width: 100%;
           min-width: 0;
-          padding: 0;
+          padding: 5px 0;
           border: 0;
         }
 
@@ -2580,9 +2594,8 @@ export class CollectionBrowser
         }
 
         .mobile #results-total {
-          float: right;
-          margin-bottom: 0;
-          margin-right: 5px;
+          position: absolute;
+          right: 10px;
         }
 
         #big-results-count {

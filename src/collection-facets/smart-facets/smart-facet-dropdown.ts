@@ -31,17 +31,21 @@ export class SmartFacetDropdown extends LitElement {
         <ia-dropdown
           class="dropdown"
           displayCaret
-          openViaButton
           closeOnSelect
           closeOnEscape
           closeOnBackdropClick
           includeSelectedOption
+          usePopover
           .options=${this.dropdownOptions}
           .selectedOption=${this.activeDropdownOption}
+          .openViaButton=${false}
           @optionSelected=${this.optionSelected}
           @click=${this.onDropdownClick}
         >
-          <span class="dropdown-label" slot="dropdown-label"
+          <span
+            class="dropdown-label"
+            slot="dropdown-label"
+            @click=${this.defaultOptionSelected}
             >${this.labelPrefix ?? nothing} ${displayText}</span
           >
         </ia-dropdown>
@@ -76,13 +80,31 @@ export class SmartFacetDropdown extends LitElement {
     );
   }
 
+  /**
+   * Handler for when the default option on the dropdown button is clicked
+   */
+  private defaultOptionSelected(): void {
+    this.handleSelection(this.activeFacetRef?.bucketKey);
+  }
+
+  /**
+   * Handler for when an option in the dropdown menu is selected
+   */
   private optionSelected(e: CustomEvent<{ option: optionInterface }>): void {
-    if (!this.facetInfo || !this.activeFacetRef) return;
+    this.handleSelection(e.detail.option.id);
+  }
+
+  /**
+   * Responds to a dropdown selection by emitting a `facetClick` event with
+   * the appropriate facet details.
+   */
+  private handleSelection(bucketKey?: string): void {
+    if (!bucketKey || !this.facetInfo || !this.activeFacetRef) return;
 
     let selectedSmartFacet;
     for (const smartFacet of this.facetInfo) {
       const selectedRef = smartFacet.facets.find(
-        b => b.bucketKey === e.detail.option.id,
+        b => b.bucketKey === bucketKey,
       );
       if (selectedRef) {
         this.activeFacetRef = selectedRef;
