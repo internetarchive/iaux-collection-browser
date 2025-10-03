@@ -490,6 +490,7 @@ export class AppRoot extends LitElement {
       </div>
       <div id="collection-browser-container">
         <collection-browser
+          facetPaneVisible
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
