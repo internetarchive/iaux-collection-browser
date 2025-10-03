@@ -675,14 +675,10 @@ export class CollectionBrowser
    */
   private get desktopLeftColumnTemplate(): TemplateResult {
     return html`
-      <div
-        id="left-column"
-        class="column"
-        ?hidden=${this.showSmartFacetBar && !this.facetPaneVisible}
-      >
+      <div id="left-column" class="column" ?hidden=${!this.facetPaneVisible}>
         ${this.facetTopViewSlot}
         <div id="facets-header-container">
-          <h2 id="facets-header" class="sr-only">Filters</h2>
+          <h2 id="facets-header" class="sr-only">${msg('Filters')}</h2>
           ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
         </div>
         <div id="facets-container" aria-labelledby="facets-header">
@@ -736,7 +732,7 @@ export class CollectionBrowser
   private get rightColumnTemplate(): TemplateResult {
     const rightColumnClasses = classMap({
       column: true,
-      'full-width': this.showSmartFacetBar && !this.facetPaneVisible,
+      'full-width': !this.facetPaneVisible,
       'smart-results-spacing': !!this.showSmartResults,
     });
 
