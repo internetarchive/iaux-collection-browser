@@ -236,7 +236,7 @@ export class CollectionBrowser
    */
   @property({ type: String }) facetLoadStrategy: FacetLoadStrategy = 'eager';
 
-  @property({ type: Boolean }) facetPaneVisible = false;
+  @property({ type: Boolean, reflect: true }) facetPaneVisible = false;
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
