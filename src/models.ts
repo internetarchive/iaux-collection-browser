@@ -322,6 +322,27 @@ export enum SortField {
   'creator' = 'creator',
 }
 
+/**
+ * Views-related sort fields
+ */
+export const ALL_VIEWS_SORT_FIELDS = [
+  SortField.weeklyview,
+  SortField.alltimeview,
+] as const;
+export type ViewsSortField = (typeof ALL_VIEWS_SORT_FIELDS)[number];
+
+/**
+ * Date-related sort fields
+ */
+export const ALL_DATE_SORT_FIELDS = [
+  SortField.datefavorited,
+  SortField.date,
+  SortField.datearchived,
+  SortField.datereviewed,
+  SortField.dateadded,
+] as const;
+export type DateSortField = (typeof ALL_DATE_SORT_FIELDS)[number];
+
 export interface SortOption {
   /**
    * The SortField enum member corresponding to this option.
@@ -531,6 +552,33 @@ export function sortOptionFromAPIString(sortName?: string | null): SortOption {
     ) ?? SORT_OPTIONS[SortField.unrecognized]
   );
 }
+
+export const defaultSortAvailability: Record<SortField, boolean> = {
+  [SortField.relevance]: true,
+  [SortField.weeklyview]: true,
+  [SortField.alltimeview]: true,
+  [SortField.title]: true,
+  [SortField.datefavorited]: false,
+  [SortField.date]: true,
+  [SortField.datearchived]: true,
+  [SortField.datereviewed]: true,
+  [SortField.dateadded]: true,
+  [SortField.creator]: true,
+  [SortField.default]: false,
+  [SortField.unrecognized]: false,
+};
+
+export const favoritesSortAvailability: Record<SortField, boolean> = {
+  ...defaultSortAvailability,
+  [SortField.datefavorited]: true,
+};
+
+export const tvSortAvailability: Record<SortField, boolean> = {
+  ...defaultSortAvailability,
+  [SortField.date]: false,
+  [SortField.datereviewed]: false,
+  [SortField.dateadded]: false,
+};
 
 export const defaultProfileElementSorts: Record<
   string,
