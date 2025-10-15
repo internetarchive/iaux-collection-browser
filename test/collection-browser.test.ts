@@ -495,6 +495,33 @@ describe('Collection Browser', () => {
     expect(el.searchType).to.equal(SearchType.FULLTEXT);
   });
 
+  it('does not persist or restore search type from URL param if suppressed', async () => {
+    // Add a sin=TXT param to the URL
+    let url = new URL(window.location.href);
+    url.searchParams.append('sin', 'TXT');
+    window.history.replaceState({}, '', url);
+
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        suppressURLSinParam
+      >
+      </collection-browser>`,
+    );
+
+    url = new URL(window.location.href);
+    expect(el.searchType).to.equal(SearchType.DEFAULT);
+    expect(url.searchParams.has('sin')).to.be.false; // Removes existing sin param
+
+    el.searchType = SearchType.RADIO;
+    await el.updateComplete;
+
+    url = new URL(window.location.href);
+    expect(url.searchParams.has('sin')).to.be.false; // Doesn't add sin param
+  });
+
   it('can construct tile models with many fields present', async () => {
     const searchService = new MockSearchService();
 
