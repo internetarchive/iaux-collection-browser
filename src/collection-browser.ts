@@ -205,6 +205,12 @@ export class CollectionBrowser
   @property({ type: Boolean }) suppressURLQuery = false;
 
   /**
+   * Whether to suppress persistence of the `sin` search type param to the URL.
+   * If true, the `sin` param will not be added to the URL or updated on query changes.
+   */
+  @property({ type: Boolean }) suppressURLSinParam = false;
+
+  /**
    * Whether to suppress display of the sort bar.
    * If true, the entire sort bar (incl. display modes) will be omitted from rendering.
    */
@@ -595,6 +601,7 @@ export class CollectionBrowser
    *  - An error occurred on the most recent search attempt
    */
   private setPlaceholderType() {
+    const isInitialized = this.dataSource.queryInitialized;
     const hasQuery = !!this.baseQuery?.trim();
     const isCollection = !!this.withinCollection;
     const isProfile = !!this.withinProfile;
@@ -605,7 +612,9 @@ export class CollectionBrowser
     this.placeholderType = null;
     if (this.suppressPlaceholders) return;
 
-    if (!hasQuery && !isCollection && !isProfile) {
+    if (!isInitialized) {
+      this.placeholderType = 'empty-query';
+    } else if (!hasQuery && !isCollection && !isProfile) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
       // Within a collection, no query + no results means the collection simply has no viewable items.
@@ -2004,7 +2013,7 @@ export class CollectionBrowser
   private restoreState() {
     const restorationState = this.restorationStateHandler.getRestorationState();
     this.displayMode = restorationState.displayMode;
-    if (restorationState.searchType != null)
+    if (!this.suppressURLSinParam && restorationState.searchType != null)
       this.searchType = restorationState.searchType;
     this.selectedSort = restorationState.selectedSort ?? SortField.default;
     this.sortDirection = restorationState.sortDirection ?? null;
@@ -2024,7 +2033,7 @@ export class CollectionBrowser
   private persistState() {
     const restorationState: RestorationState = {
       displayMode: this.displayMode,
-      searchType: this.searchType,
+      searchType: this.suppressURLSinParam ? undefined : this.searchType,
       selectedSort: this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
       selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
