@@ -284,6 +284,13 @@ export interface CollectionBrowserDataSourceInterface
   setFetchesSuppressed(suppressed: boolean): void;
 
   /**
+   * Sets whether the end of the current data has been reached, indicating whether further
+   * pages should be looked up.
+   * @param reached Whether we are at the end of the data for the current query state
+   */
+  setEndOfDataReached(reached: boolean): void;
+
+  /**
    * Notifies the data source that a query change has occurred, which may trigger a data
    * reset & new fetches.
    */

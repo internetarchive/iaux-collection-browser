@@ -402,6 +402,13 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  setEndOfDataReached(reached: boolean): void {
+    this.endOfDataReached = reached;
+  }
+
+  /**
+   * @inheritdoc
+   */
   async handleQueryChange(): Promise<void> {
     // Don't react to the change if fetches are suppressed for this data source
     if (this.suppressFetches) return;
