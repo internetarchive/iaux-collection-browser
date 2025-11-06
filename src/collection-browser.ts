@@ -295,7 +295,7 @@ export class CollectionBrowser
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
   /** Header content to display above the results view */
-  @property({ type: String }) resultsHeader?: TemplateResult | string;
+  @property({ type: String }) resultsHeader?: string;
 
   /**
    * The maximum number of pages we will load when a privileged user clicks
