@@ -958,6 +958,13 @@ export class CollectionBrowser
   }
 
   /**
+   * Handler to show success modal when item removal succeeded
+   */
+  showRemoveItemsSuccessModal(): void {
+    this.manageBar?.showRemoveItemsSuccessModal();
+  }
+
+  /**
    * Handler to show processing modal while removing item
    */
   showRemoveItemsProcessingModal(): void {
