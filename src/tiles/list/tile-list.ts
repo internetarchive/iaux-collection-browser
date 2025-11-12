@@ -94,7 +94,7 @@ export class TileList extends BaseTileComponent {
       isCollection,
     );
 
-    return html`<a href=${href}>
+    return html`<a title=${msg('View ' + this.model?.title)} href=${href}>
       <image-block
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
@@ -127,7 +127,11 @@ export class TileList extends BaseTileComponent {
   // Data templates
   private get iconRightTemplate() {
     return html`
-      <a id="icon-right" href=${this.mediatypeURL}>
+      <a
+        id="icon-right"
+        href=${this.mediatypeURL}
+        title=${msg('See more: ' + this.model?.mediatype)}
+      >
         <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
       </a>
     `;
