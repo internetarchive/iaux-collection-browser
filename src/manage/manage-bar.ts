@@ -159,29 +159,6 @@ export class ManageBar extends LitElement {
   }
 
   /**
-   * Shows a modal dialog indicating that item removal was successful
-   */
-  showRemoveItemsSuccessModal(): void {
-    const config = new ModalConfig({
-      bodyColor: '#fff',
-      showHeaderLogo: true,
-      closeOnBackdropClick: true,
-      title: html`${msg('Success!')}`,
-      message: html`${msg(
-        'This entry has been deleted successfully. It may take time for the change to be reflected everywhere.',
-      )}`,
-    });
-
-    this.modalManager?.classList.add('remove-items');
-    this.modalManager?.showModal({
-      config,
-      userClosedModalCallback: () => {
-        this.modalManager?.classList.remove('remove-items');
-      },
-    });
-  }
-
-  /**
    * Shows a modal dialog indicating that item removal is being processed
    */
   showRemoveItemsProcessingModal(): void {

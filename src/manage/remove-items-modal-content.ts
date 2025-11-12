@@ -82,6 +82,7 @@ export class RemoveItemsModalContent extends LitElement {
       }
 
       .remove-items-btn {
+        margin-bottom: 10px;
         padding: 10px;
         border: 1px solid var(--primaryErrorCTABorder, #d43f3a);
         border-radius: 4px;

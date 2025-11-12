@@ -887,21 +887,37 @@ export class CollectionBrowser
   }
 
   /**
+   * Message to show in the manage view modal, depending on context.
+   */
+  private get manageViewModalMsg(): string {
+    const itemLabel =
+      this.dataSource.checkedTileModels.length > 1
+        ? 'these items'
+        : 'this item';
+
+    let listLabel = null;
+    if (this.profileElement === 'uploads') {
+      listLabel = 'uploads';
+    } else if (this.profileElement === 'web_archives') {
+      listLabel = 'web archives';
+    }
+
+    return listLabel
+      ? `Note: It may take a few minutes for ${itemLabel} to stop appearing in your ${listLabel} list.`
+      : '';
+  }
+
+  /**
    * Template for the manage bar UI that appears atop the search results when we are
    * showing the management view. This generally replaces the sort bar when present.
    */
   private get manageBarTemplate(): TemplateResult {
-    const manageViewModalMsg =
-      this.profileElement === 'uploads'
-        ? 'Note: it may take a few minutes for these items to stop appearing in your uploads list.'
-        : nothing;
-
     return html`
       <manage-bar
         .label=${this.manageViewLabel}
         .modalManager=${this.modalManager}
         .selectedItems=${this.dataSource.checkedTileModels}
-        .manageViewModalMsg=${manageViewModalMsg}
+        .manageViewModalMsg=${this.manageViewModalMsg}
         showSelectAll
         showUnselectAll
         ?showItemManageButton=${this.pageContext === 'search'}
@@ -955,13 +971,6 @@ export class CollectionBrowser
 
   refreshSmartFacets(): void {
     this.smartFacetBar?.refresh();
-  }
-
-  /**
-   * Handler to show success modal when item removal succeeded
-   */
-  showRemoveItemsSuccessModal(): void {
-    this.manageBar?.showRemoveItemsSuccessModal();
   }
 
   /**
