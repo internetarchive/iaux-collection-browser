@@ -324,6 +324,7 @@ describe('List Tile', () => {
     expect(mediatypeLink?.getAttribute('href')).to.equal(
       `https://archive.org/details/texts`,
     );
+    expect(mediatypeLink?.getAttribute('title')).to.equal('See more: texts');
   });
 
   it('should render mediatype icon as link even with empty baseNavigationUrl', async () => {
