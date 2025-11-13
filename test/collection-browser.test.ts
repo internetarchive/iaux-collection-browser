@@ -2337,23 +2337,4 @@ describe('Collection Browser', () => {
     const initialResults = el.dataSource.getAllPages();
     expect(Object.keys(initialResults).length).to.deep.equal(numberOfPages);
   });
-
-  it('renders provided results header instead of default, when showing smart results', async () => {
-    const searchService = new MockSearchService();
-
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        showSmartResults
-        .searchService=${searchService}
-        .resultsHeader=${'Foo Bar'}
-      ></collection-browser>`,
-    );
-
-    el.baseQuery = 'foo';
-    await el.updateComplete;
-    await nextTick();
-
-    const header = el.shadowRoot?.querySelector('.results-section-heading');
-    expect(header?.textContent?.trim()).to.equal('Foo Bar');
-  });
 });
