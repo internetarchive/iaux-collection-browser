@@ -291,10 +291,8 @@ export class CollectionBrowser
   /** Whether to replace the default sort options with a slot for customization (default: false) */
   @property({ type: Boolean }) enableSortOptionsSlot = false;
 
-  /** Whether to display a smart results carousel above the full results */
+  /** Whether to expose a slot for a smart results carousel above the full results */
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
-
-  @property({ type: String }) resultsHeader?: string;
 
   /**
    * The maximum number of pages we will load when a privileged user clicks
@@ -754,11 +752,9 @@ export class CollectionBrowser
           ? html`<slot name="smart-results"></slot>`
           : nothing}
         <section id="results">
-          ${this.showSmartResults
-            ? html`<h2 class="results-section-heading">
-                ${this.resultsHeader ?? msg('All results')}
-              </h2>`
-            : nothing}
+          <h2 class="results-section-heading">
+            <slot name="results-heading"></slot>
+          </h2>
           <div id="cb-top-view">
             <slot name="cb-top-slot"></slot>
           </div>
@@ -2415,7 +2411,7 @@ export class CollectionBrowser
           min-height: 90vh;
           border-right: 1px solid rgb(232, 232, 232);
           margin-top: var(--rightColumnMarginTop, 0);
-          padding-top: 2rem;
+          padding-top: var(--rightColumnPaddingTop, 2rem);
           background: #fff;
         }
 
@@ -2617,7 +2613,7 @@ export class CollectionBrowser
           max-height: 0;
           transition: max-height 0.2s ease-in-out;
           z-index: 1;
-          margin-top: 5rem;
+          margin-top: var(--facetsContainerMarginTop, 5rem);
           padding-bottom: 2rem;
         }
 
