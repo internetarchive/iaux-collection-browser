@@ -995,7 +995,7 @@ export const getMockSuccessWithDefaultSort: () => Result<
         sort: [],
       },
       backendRequests: {
-        primary: {
+        search: {
           kind: 'hits',
           finalized_parameters: {
             user_query: 'default-sort',
@@ -1017,11 +1017,6 @@ export const getMockSuccessWithDefaultSort: () => Result<
           },
         }),
       ],
-      collectionExtraInfo: {
-        public_metadata: {
-          'sort-by': 'titleSorter',
-        },
-      },
     },
     responseHeader: {
       succeeded: true,
@@ -1042,7 +1037,7 @@ export const getMockSuccessWithConciseDefaultSort: () => Result<
         sort: [],
       },
       backendRequests: {
-        primary: {
+        search: {
           kind: 'hits',
           finalized_parameters: {
             user_query: 'default-sort-concise',
@@ -1064,11 +1059,6 @@ export const getMockSuccessWithConciseDefaultSort: () => Result<
           },
         }),
       ],
-      collectionExtraInfo: {
-        public_metadata: {
-          'sort-by': '-addeddate',
-        },
-      },
     },
     responseHeader: {
       succeeded: true,
