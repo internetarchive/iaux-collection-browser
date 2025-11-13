@@ -294,9 +294,6 @@ export class CollectionBrowser
   /** Whether to expose a slot for a smart results carousel above the full results */
   @property({ type: Boolean, reflect: true }) showSmartResults = false;
 
-  /** Header content to display above the results view */
-  @property({ type: String }) resultsHeader?: string;
-
   /**
    * The maximum number of pages we will load when a privileged user clicks
    * the "Manage" button on the search page. Limited to 15 pages.
@@ -756,7 +753,7 @@ export class CollectionBrowser
           : nothing}
         <section id="results">
           <h2 class="results-section-heading">
-            <slot name="results-heading">${this.resultsHeader}</slot>
+            <slot name="results-heading"></slot>
           </h2>
           <div id="cb-top-view">
             <slot name="cb-top-slot"></slot>
