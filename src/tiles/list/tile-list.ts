@@ -94,7 +94,11 @@ export class TileList extends BaseTileComponent {
       isCollection,
     );
 
-    return html`<a title=${msg(str`View ${this.model?.title}`)} href=${href}>
+    return html`<a
+      id="image-link"
+      title=${msg(str`View ${this.model?.title}`)}
+      href=${href}
+    >
       <image-block
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
