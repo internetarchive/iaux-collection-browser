@@ -195,7 +195,7 @@ export class MoreFacetsContent extends LitElement {
     const aggregations = {
       simpleParams: [this.facetKey],
     };
-    const aggregationsSize = 65535; // todo - do we want to have all the records at once?
+    const aggregationsSize = 10000; // Only request the 10K highest-count facets
 
     const params: SearchParams = {
       ...this.pageSpecifierParams,
