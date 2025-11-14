@@ -409,7 +409,7 @@
     align-items: center;
     background: rgba(220, 220, 220, 0.5);
     color: white;
-    font-size: 2rem;
+    font-size: 2.4rem;
     font-weight: bold;
     line-height: 1;
     text-shadow: black 1px 1px 3px;
