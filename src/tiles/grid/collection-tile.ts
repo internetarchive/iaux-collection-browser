@@ -55,7 +55,7 @@ export class CollectionTile extends BaseTileComponent {
 
   private get getTitleTemplate() {
     return html`<div id="title">
-      <h4 class="truncated">${this.model?.title}</h4>
+      <h3 class="truncated">${this.model?.title}</h3>
     </div>`;
   }
 
@@ -123,7 +123,8 @@ export class CollectionTile extends BaseTileComponent {
           flex-grow: initial;
         }
 
-        h4.truncated {
+        h4.truncated,
+        h3.truncated {
           color: ${whiteColor};
         }
 

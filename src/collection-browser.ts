@@ -2687,6 +2687,7 @@ export class CollectionBrowser
 
         #tile-blur-check {
           margin: 0 5px 0 0;
+          width: 15px;
         }
 
         circular-activity-indicator {

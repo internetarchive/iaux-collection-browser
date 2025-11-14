@@ -397,6 +397,7 @@ export class CollectionFacets extends LitElement {
       ? html`<button
           class="expand-date-picker-btn"
           aria-hidden="true"
+          tabindex="-1"
           @click=${this.showDatePickerModal}
         >
           ${expandIcon}
