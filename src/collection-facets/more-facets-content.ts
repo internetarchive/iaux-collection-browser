@@ -52,6 +52,10 @@ import {
   sortBucketsBySelectionState,
   updateSelectedFacetBucket,
 } from '../utils/facet-utils';
+import {
+  MORE_FACETS__DEFAULT_PAGE_SIZE,
+  MORE_FACETS__MAX_AGGREGATIONS,
+} from './models';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -74,7 +78,7 @@ export class MoreFacetsContent extends LitElement {
   /**
    * Maximum number of facets to show per page within the modal.
    */
-  @property({ type: Number }) facetsPerPage = 35;
+  @property({ type: Number }) facetsPerPage = MORE_FACETS__DEFAULT_PAGE_SIZE;
 
   /**
    * Whether we are waiting for facet data to load.
@@ -195,7 +199,7 @@ export class MoreFacetsContent extends LitElement {
     const aggregations = {
       simpleParams: [this.facetKey],
     };
-    const aggregationsSize = 10000; // Only request the 10K highest-count facets
+    const aggregationsSize = MORE_FACETS__MAX_AGGREGATIONS; // Only request the 10K highest-count facets
 
     const params: SearchParams = {
       ...this.pageSpecifierParams,
