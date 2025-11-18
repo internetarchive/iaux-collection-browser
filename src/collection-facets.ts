@@ -659,6 +659,13 @@ export class CollectionFacets extends LitElement {
             lendingFacetDisplayNames[bucket.key as LendingFacetKey] ??
             `${bucket.key}`;
         }
+
+        // Capitalize clip_type bucket keys
+        if (option === 'clip_type') {
+          displayText =
+            displayText.charAt(0).toUpperCase() + displayText.slice(1);
+        }
+
         return {
           displayText,
           key: `${bucketKey}`,
