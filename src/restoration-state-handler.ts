@@ -5,14 +5,12 @@ import {
   CollectionBrowserContext,
   CollectionDisplayMode,
   SelectedFacets,
-  TvClipFilterType,
   SortField,
   FacetBucket,
   FacetState,
   getDefaultSelectedFacets,
   sortOptionFromAPIString,
   SORT_OPTIONS,
-  tvClipFiltersToURLParams,
   tvClipURLParamsToFilters,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
@@ -31,7 +29,6 @@ export interface RestorationState {
   maxSelectedDate?: string;
   selectedTitleFilter?: string;
   selectedCreatorFilter?: string;
-  tvClipFilter?: TvClipFilterType;
 }
 
 export interface RestorationStatePersistOptions {
@@ -208,12 +205,6 @@ export class RestorationStateHandler
 
     if (state.creatorQuery) {
       newParams.append('and[]', state.creatorQuery);
-    }
-
-    // TV clip special filters
-    if (state.tvClipFilter) {
-      const tvClipParam = tvClipFiltersToURLParams[state.tvClipFilter];
-      if (tvClipParam) newParams.append(tvClipParam, '1');
     }
 
     // Ensure we aren't pushing consecutive identical states to the history stack.
@@ -412,9 +403,16 @@ export class RestorationStateHandler
     }
 
     // TV clip special filters (carryovers from legacy page)
-    for (const [paramKey, filter] of Object.entries(tvClipURLParamsToFilters)) {
+    for (const [paramKey, facetKey] of Object.entries(
+      tvClipURLParamsToFilters,
+    )) {
       if (url.searchParams.get(paramKey)) {
-        restorationState.tvClipFilter = filter;
+        this.setSelectedFacetState(
+          restorationState.selectedFacets,
+          'clip_type',
+          facetKey,
+          'selected',
+        );
         break;
       }
     }

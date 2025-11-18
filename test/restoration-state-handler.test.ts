@@ -250,25 +250,33 @@ describe('Restoration state handler', () => {
     url.search = '?only_commercials=1';
     window.history.replaceState({ path: url.href }, '', url.href);
     const commercialsRestorationState = handler.getRestorationState();
-    expect(commercialsRestorationState.tvClipFilter).to.equal('commercials');
+    expect(
+      commercialsRestorationState.selectedFacets.clip_type?.commercial.state,
+    ).to.equal('selected');
 
     // Fact checks
     url.search = '?only_factchecks=1';
     window.history.replaceState({ path: url.href }, '', url.href);
     const factchecksRestorationState = handler.getRestorationState();
-    expect(factchecksRestorationState.tvClipFilter).to.equal('factchecks');
+    expect(
+      factchecksRestorationState.selectedFacets.clip_type?.['fact check'].state,
+    ).to.equal('selected');
 
     // Quotes
     url.search = '?only_quotes=1';
     window.history.replaceState({ path: url.href }, '', url.href);
     const quotesRestorationState = handler.getRestorationState();
-    expect(quotesRestorationState.tvClipFilter).to.equal('quotes');
+    expect(
+      quotesRestorationState.selectedFacets.clip_type?.quote.state,
+    ).to.equal('selected');
 
     // No filter param
     url.search = '';
     window.history.replaceState({ path: url.href }, '', url.href);
     const unfilteredRestorationState = handler.getRestorationState();
-    expect(unfilteredRestorationState.tvClipFilter).not.to.exist;
+    expect(unfilteredRestorationState.selectedFacets.clip_type).to.deep.equal(
+      {},
+    );
   });
 
   it('should restore sort from URL (space format)', async () => {
@@ -400,44 +408,6 @@ describe('Restoration state handler', () => {
     });
 
     expect(window.location.search).to.equal('?page=2');
-  });
-
-  it('should persist TV clip filter types to the URL', async () => {
-    const url = new URL(window.location.href);
-    url.search = '';
-    window.history.replaceState({ path: url.href }, '', url.href);
-
-    // Commercials
-    const handler = new RestorationStateHandler({ context: 'search' });
-    handler.persistState({
-      tvClipFilter: 'commercials',
-      selectedFacets: getDefaultSelectedFacets(),
-    });
-    expect(window.location.search).to.equal('?only_commercials=1');
-
-    // Fact checks
-    window.history.replaceState({ path: url.href }, '', url.href);
-    handler.persistState({
-      tvClipFilter: 'factchecks',
-      selectedFacets: getDefaultSelectedFacets(),
-    });
-    expect(window.location.search).to.equal('?only_factchecks=1');
-
-    // Quotes
-    window.history.replaceState({ path: url.href }, '', url.href);
-    handler.persistState({
-      tvClipFilter: 'quotes',
-      selectedFacets: getDefaultSelectedFacets(),
-    });
-    expect(window.location.search).to.equal('?only_quotes=1');
-
-    // Unfiltered
-    window.history.replaceState({ path: url.href }, '', url.href);
-    handler.persistState({
-      tvClipFilter: 'all',
-      selectedFacets: getDefaultSelectedFacets(),
-    });
-    expect(window.location.search).to.equal('');
   });
 
   it('should upgrade legacy search params to new ones', async () => {
