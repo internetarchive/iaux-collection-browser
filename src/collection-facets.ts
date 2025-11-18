@@ -153,6 +153,7 @@ export class CollectionFacets extends LitElement {
     creator: false,
     collection: false,
     year: false,
+    clip_type: false,
     program: false,
     person: false,
     sponsor: false,
