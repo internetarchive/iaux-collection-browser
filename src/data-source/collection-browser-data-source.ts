@@ -773,24 +773,6 @@ export class CollectionBrowserDataSource
       );
     }
 
-    // Add any TV clip type filter, if applicable
-    if (this.host.searchType === SearchType.TV) {
-      switch (this.host.tvClipFilter) {
-        case 'commercials':
-          builder.addFilter('ad_id', '*', FilterConstraint.INCLUDE);
-          break;
-        case 'factchecks':
-          builder.addFilter('factcheck', '*', FilterConstraint.INCLUDE);
-          break;
-        case 'quotes':
-          builder.addFilter('clip', '1', FilterConstraint.INCLUDE);
-          break;
-        case 'all':
-        default:
-          break;
-      }
-    }
-
     const filterMap = builder.build();
     return filterMap;
   }

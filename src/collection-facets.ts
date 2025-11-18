@@ -573,6 +573,14 @@ export class CollectionFacets extends LitElement {
           }
         });
       }
+      // For TV clip_type facets, capitalize the display text
+      if (facetKey === 'clip_type') {
+        bucketsWithCount.forEach(b => {
+          b.displayText ??= b.key;
+          b.displayText =
+            b.displayText.charAt(0).toUpperCase() + b.displayText.slice(1);
+        });
+      }
 
       // slice off how many items we want to show in page facet area
       facetGroup.buckets = bucketsWithCount.slice(0, allowedFacetCount);
@@ -659,13 +667,6 @@ export class CollectionFacets extends LitElement {
             lendingFacetDisplayNames[bucket.key as LendingFacetKey] ??
             `${bucket.key}`;
         }
-
-        // Capitalize clip_type bucket keys
-        if (option === 'clip_type') {
-          displayText =
-            displayText.charAt(0).toUpperCase() + displayText.slice(1);
-        }
-
         return {
           displayText,
           key: `${bucketKey}`,

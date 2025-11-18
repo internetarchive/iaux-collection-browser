@@ -703,25 +703,15 @@ export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
 /**
  * For TV search results, what types of TV clips to restrict the results to.
  */
-export type TvClipFilterType = 'all' | 'commercials' | 'factchecks' | 'quotes';
-
-/**
- * Map from TV clip filter types to their corresponding URL params
- */
-export const tvClipFiltersToURLParams: Record<TvClipFilterType, string> = {
-  all: '',
-  commercials: 'only_commercials',
-  factchecks: 'only_factchecks',
-  quotes: 'only_quotes',
-};
+export type TvClipFilterType = 'commercial' | 'fact check' | 'quote';
 
 /**
  * Map from allowed TV filtering parameters in the URL to their corresponding filter type
  */
 export const tvClipURLParamsToFilters: Record<string, TvClipFilterType> = {
-  only_commercials: 'commercials',
-  only_factchecks: 'factchecks',
-  only_quotes: 'quotes',
+  only_commercials: 'commercial',
+  only_factchecks: 'fact check',
+  only_quotes: 'quote',
 };
 
 /**
