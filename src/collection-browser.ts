@@ -7,6 +7,7 @@ import {
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { map } from 'lit/directives/map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
@@ -84,6 +85,10 @@ import './manage/manage-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './collection-facets/smart-facets/smart-facet-bar';
+import {
+  mergeSelectedFacets,
+  updateSelectedFacetBucket,
+} from './utils/facet-utils';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -1243,6 +1248,122 @@ export class CollectionBrowser
     `;
   }
 
+  @state() private selectedTVNetwork?: string = undefined;
+  @state() private selectedTVShow?: string = undefined;
+
+  @query('#tv-networks') private tvNetworksDropdown?: HTMLSelectElement;
+  @query('#tv-shows') private tvShowsDropdown?: HTMLSelectElement;
+
+  private async networksDropdownClicked(): Promise<void> {
+    this.tvNetworksDropdown?.classList.add('loading');
+    await this.dataSource.populateTVChannelMaps();
+    this.tvNetworksDropdown?.classList.remove('loading');
+  }
+
+  private async showsDropdownClicked(): Promise<void> {
+    this.tvShowsDropdown?.classList.add('loading');
+    await this.dataSource.populateTVChannelMaps();
+    this.tvShowsDropdown?.classList.remove('loading');
+  }
+
+  private async networksDropdownChanged(): Promise<void> {
+    if (this.tvNetworksDropdown?.selectedIndex === 0) {
+      this.selectedTVNetwork = undefined;
+      return;
+    }
+
+    this.selectedTVNetwork = this.tvNetworksDropdown!.selectedOptions[0].value;
+    let newNetworkFacets: SelectedFacets = getDefaultSelectedFacets();
+    for (const [
+      channel,
+      network,
+    ] of this.dataSource.tvChannelMaps.channelToNetwork!.entries()) {
+      if (network === this.selectedTVNetwork) {
+        newNetworkFacets = updateSelectedFacetBucket(
+          newNetworkFacets,
+          'creator',
+          {
+            key: channel.toLowerCase(),
+            count: 0,
+            state: 'selected',
+          },
+        );
+      }
+    }
+
+    log(newNetworkFacets);
+    this.selectedFacets = mergeSelectedFacets(
+      this.selectedFacets,
+      newNetworkFacets,
+    );
+    log(this.selectedFacets);
+  }
+
+  private async showsDropdownChanged(): Promise<void> {
+    if (this.tvShowsDropdown?.selectedIndex === 0) {
+      this.selectedTVShow = undefined;
+      return;
+    }
+
+    this.selectedTVShow = this.tvShowsDropdown!.selectedOptions[0].value;
+    this.selectedFacets = updateSelectedFacetBucket(
+      this.selectedFacets,
+      'program',
+      {
+        key: this.selectedTVShow,
+        count: 0,
+        state: 'selected',
+      },
+    );
+  }
+
+  private get tvDropdownFiltersTemplate(): TemplateResult | typeof nothing {
+    if (this.searchType !== SearchType.TV) return nothing;
+
+    log('start filters template preprocess', Date.now());
+    const { channelToNetwork, programToChannels } =
+      this.dataSource.tvChannelMaps;
+    const networks = channelToNetwork
+      ? [...new Set(channelToNetwork.values())]
+      : [];
+
+    let showEntries = programToChannels ? [...programToChannels.entries()] : [];
+
+    if (channelToNetwork && this.selectedTVNetwork) {
+      showEntries = showEntries.filter(([, channels]) =>
+        Object.keys(channels).some(
+          c => channelToNetwork.get(c) === this.selectedTVNetwork,
+        ),
+      );
+    }
+
+    const shows = showEntries.map(([show]) => show);
+    log('end filters template preprocess', Date.now());
+
+    return html`
+      <div id="tv-filters" slot="facets-top">
+        <select
+          id="tv-networks"
+          class="tv-filter-dropdown"
+          @click=${this.networksDropdownClicked}
+          @change=${this.networksDropdownChanged}
+        >
+          <option selected value="">${msg('Filter by Network')}</option>
+          ${map(networks, n => html`<option>${n}</option>`)}
+        </select>
+        <select
+          id="tv-shows"
+          class="tv-filter-dropdown"
+          @click=${this.showsDropdownClicked}
+          @change=${this.showsDropdownChanged}
+        >
+          <option selected value="">${msg('Filter by Show')}</option>
+          ${map(shows, s => html`<option>${s}</option>`)}
+        </select>
+      </div>
+    `;
+  }
+
   /**
    * The template for the facets component alone, without any surrounding wrappers.
    */
@@ -1302,6 +1423,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       >
+        ${this.tvDropdownFiltersTemplate}
       </collection-facets>
     `;
 
@@ -2652,6 +2774,16 @@ export class CollectionBrowser
           border-left: 1px solid #2c2c2c;
           font-size: 1.4rem;
           line-height: 1.3rem;
+        }
+
+        #tv-filters {
+          margin-bottom: 15px;
+        }
+
+        .tv-filter-dropdown {
+          width: 100%;
+          padding: 3px;
+          margin-bottom: 5px;
         }
 
         #facets-container {
