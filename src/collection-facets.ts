@@ -192,6 +192,7 @@ export class CollectionFacets extends LitElement {
             `
           : nothing}
         ${this.collectionPartOfTemplate}
+        <slot name="facets-top"></slot>
         ${this.mergedFacets.map(facetGroup =>
           this.getFacetGroupTemplate(facetGroup),
         )}
@@ -578,7 +579,8 @@ export class CollectionFacets extends LitElement {
         bucketsWithCount.forEach(b => {
           b.displayText ??= b.key;
           b.displayText =
-            b.displayText.charAt(0).toUpperCase() + b.displayText.slice(1);
+            b.displayText.charAt(0).toLocaleUpperCase() +
+            b.displayText.slice(1);
         });
       }
 
