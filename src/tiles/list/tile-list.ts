@@ -4,7 +4,7 @@ import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
-import { msg, str } from '@lit/localize';
+import { msg } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
 import type { SortParam } from '@internetarchive/search-service';
@@ -94,11 +94,7 @@ export class TileList extends BaseTileComponent {
       isCollection,
     );
 
-    return html`<a
-      id="image-link"
-      title=${msg(str`View ${this.model?.title}`)}
-      href=${href}
-    >
+    return html`<a href=${href}>
       <image-block
         .model=${this.model}
         .baseImageUrl=${this.baseImageUrl}
@@ -131,11 +127,7 @@ export class TileList extends BaseTileComponent {
   // Data templates
   private get iconRightTemplate() {
     return html`
-      <a
-        id="icon-right"
-        href=${this.mediatypeURL}
-        title=${msg(str`See more: ${this.model?.mediatype}`)}
-      >
+      <a id="icon-right" href=${this.mediatypeURL}>
         <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
       </a>
     `;
