@@ -60,9 +60,9 @@ export class ItemTile extends BaseTileComponent {
             ${this.imageBlockTemplate}
 
             <div id="title">
-              <h3 class="truncated" title=${ifDefined(itemTitle)}>
+              <h4 class="truncated" title=${ifDefined(itemTitle)}>
                 ${itemTitle}
-              </h3>
+              </h4>
             </div>
 
             ${this.volumeIssueTemplate}

@@ -213,8 +213,7 @@ export class FacetRow extends LitElement {
         display: flex;
         font-weight: 500;
         font-size: 1.2rem;
-        margin: 0 auto;
-        padding: 0.25rem 0;
+        margin: 2.5px auto;
         height: auto;
         border-top: ${facetRowBorderTop};
         border-bottom: ${facetRowBorderBottom};
