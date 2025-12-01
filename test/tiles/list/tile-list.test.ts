@@ -49,6 +49,20 @@ describe('List Tile', () => {
     expect(title?.getAttribute('href')).to.equal('/foo/bar');
   });
 
+  it('should add title to image link if provided', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .baseNavigationUrl=${''}
+        .model=${{ title: 'foo', href: '/foo/bar' }}
+      ></tile-list>
+    `);
+
+    const imageLink = el.shadowRoot?.querySelector('#image-link');
+
+    expect(imageLink).to.exist;
+    expect(imageLink?.getAttribute('title')).to.equal('View foo');
+  });
+
   it('should render with creator element but not dates', async () => {
     const el = await fixture<TileList>(html`
       <tile-list .model=${{ creators: ['someone'] }}></tile-list>
@@ -324,6 +338,7 @@ describe('List Tile', () => {
     expect(mediatypeLink?.getAttribute('href')).to.equal(
       `https://archive.org/details/texts`,
     );
+    expect(mediatypeLink?.getAttribute('title')).to.equal('See more: texts');
   });
 
   it('should render mediatype icon as link even with empty baseNavigationUrl', async () => {
