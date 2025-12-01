@@ -397,6 +397,7 @@ export class CollectionFacets extends LitElement {
       ? html`<button
           class="expand-date-picker-btn"
           aria-hidden="true"
+          tabindex="-1"
           @click=${this.showDatePickerModal}
         >
           ${expandIcon}
@@ -425,7 +426,7 @@ export class CollectionFacets extends LitElement {
 
     return html`
       <histogram-date-range
-        class=${this.isTvSearch ? 'wide-inputs' : nothing}
+        class=${this.isTvSearch ? 'wide-inputs' : ''}
         .minDate=${minDate}
         .maxDate=${maxDate}
         .minSelectedDate=${this.minSelectedDate ?? minDate}
@@ -951,6 +952,7 @@ export class CollectionFacets extends LitElement {
           font-size: 1.2rem;
           text-decoration: none;
           padding: 0;
+          margin-top: 0.25rem;
           background: inherit;
           border: 0;
           color: var(--ia-theme-link-color, #4b64ff);
