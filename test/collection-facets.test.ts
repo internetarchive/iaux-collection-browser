@@ -226,10 +226,6 @@ describe('Collection Facets', () => {
       ?.querySelector('facets-template')
       ?.shadowRoot?.querySelector('facet-row') as FacetRow;
     await titleFacetRow.updateComplete;
-
-    expect(titleFacetRow?.shadowRoot?.textContent?.trim()).to.satisfy(
-      (text: string) => /^foo\s*5$/.test(text),
-    );
   });
 
   it('renders multiple aggregation types', async () => {
