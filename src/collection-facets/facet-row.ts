@@ -16,6 +16,7 @@ import type {
   FacetState,
 } from '../models';
 import type { CollectionTitles } from '../data-source/models';
+import { srOnlyStyle } from '../styles/sr-only';
 
 @customElement('facet-row')
 export class FacetRow extends LitElement {
@@ -98,26 +99,29 @@ export class FacetRow extends LitElement {
             id=${showOnlyCheckboxId}
             data-testid=${showOnlyCheckboxId}
           />
-          <input
-            type="checkbox"
-            id=${negativeCheckboxId}
-            .name=${facetType}
-            .value=${bucket.key}
-            @click=${(e: Event) => {
-              this.facetClicked(e, true);
-            }}
-            .checked=${facetHidden}
-            class="hide-facet-checkbox"
-          />
-          <label
-            for=${negativeCheckboxId}
-            class="hide-facet-icon${facetHidden ? ' active' : ''}"
-            title=${showHideText}
-            data-testid=${negativeCheckboxId}
-          >
-            <span class="eye">${eyeIcon}</span>
-            <span class="eye-closed">${eyeClosedIcon}</span>
-          </label>
+          <div class="hide-facet-container">
+            <input
+              type="checkbox"
+              id=${negativeCheckboxId}
+              .name=${facetType}
+              .value=${bucket.key}
+              @click=${(e: Event) => {
+                this.facetClicked(e, true);
+              }}
+              .checked=${facetHidden}
+              class="hide-facet-checkbox"
+            />
+            <label
+              for=${negativeCheckboxId}
+              class="hide-facet-icon${facetHidden ? ' active' : ''}"
+              title=${showHideText}
+              data-testid=${negativeCheckboxId}
+            >
+              <span class="sr-only">${showHideText}</span>
+              <span class="eye">${eyeIcon}</span>
+              <span class="eye-closed">${eyeClosedIcon}</span>
+            </label>
+          </div>
         </div>
         <label
           for=${showOnlyCheckboxId}
@@ -192,7 +196,7 @@ export class FacetRow extends LitElement {
     const facetRowBorderTop = css`var(--facet-row-border-top, 1px solid transparent)`;
     const facetRowBorderBottom = css`var(--facet-row-border-bottom, 1px solid transparent)`;
 
-    return css`
+    const ownCss = css`
       async-collection-name {
         display: contents;
       }
@@ -242,17 +246,27 @@ export class FacetRow extends LitElement {
         display: inline-block;
       }
       .hide-facet-checkbox {
-        display: none;
+        position: absolute;
+        clip: rect(0, 0, 0, 0);
+        pointer-events: none;
+      }
+      .hide-facet-checkbox:focus-visible + .hide-facet-icon {
+        outline: 2px solid black;
       }
       .hide-facet-icon {
         width: 15px;
         height: 15px;
         cursor: pointer;
-        opacity: 0.3;
         display: inline-block;
       }
-      .hide-facet-icon:hover,
-      .active {
+      .eye,
+      .eye-closed {
+        opacity: 0.3;
+      }
+      .hide-facet-icon:hover .eye,
+      .hide-facet-icon:hover .eye-closed,
+      .active .eye,
+      .active .eye-closed {
         opacity: 1;
       }
       .hide-facet-icon:hover .eye,
@@ -279,5 +293,7 @@ export class FacetRow extends LitElement {
         text-decoration: underline;
       }
     `;
+
+    return [srOnlyStyle, ownCss];
   }
 }
