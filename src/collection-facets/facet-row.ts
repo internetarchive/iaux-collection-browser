@@ -198,9 +198,6 @@ export class FacetRow extends LitElement {
     const checkboxHeight = css`15px`;
 
     const ownCss = css`
-      async-collection-name {
-        display: contents;
-      }
       .facet-checkboxes {
         margin: 0 5px 0 0;
         display: flex;
