@@ -118,8 +118,8 @@ export class FacetRow extends LitElement {
               data-testid=${negativeCheckboxId}
             >
               <span class="sr-only">${showHideText}</span>
-              <span class="eye">${eyeIcon}</span>
-              <span class="eye-closed">${eyeClosedIcon}</span>
+              <span class="eye eye-open">${eyeIcon}</span>
+              <span class="eye eye-closed">${eyeClosedIcon}</span>
             </label>
           </div>
         </div>
@@ -195,6 +195,7 @@ export class FacetRow extends LitElement {
   static get styles(): CSSResultGroup {
     const facetRowBorderTop = css`var(--facet-row-border-top, 1px solid transparent)`;
     const facetRowBorderBottom = css`var(--facet-row-border-bottom, 1px solid transparent)`;
+    const checkboxHeight = css`15px`;
 
     const ownCss = css`
       async-collection-name {
@@ -203,14 +204,14 @@ export class FacetRow extends LitElement {
       .facet-checkboxes {
         margin: 0 5px 0 0;
         display: flex;
-        height: 15px;
+        height: ${checkboxHeight};
       }
       .facet-checkboxes input:first-child {
         margin-right: 5px;
       }
       .facet-checkboxes input {
-        height: 15px;
-        width: 15px;
+        height: ${checkboxHeight};
+        width: ${checkboxHeight};
         margin: 0;
       }
       .facet-row-container {
@@ -222,7 +223,6 @@ export class FacetRow extends LitElement {
         height: auto;
         border-top: ${facetRowBorderTop};
         border-bottom: ${facetRowBorderBottom};
-        overflow: hidden;
       }
       .facet-info-display {
         display: flex;
@@ -251,25 +251,25 @@ export class FacetRow extends LitElement {
         pointer-events: none;
       }
       .hide-facet-checkbox:focus-visible + .hide-facet-icon {
-        outline: 2px solid black;
+        outline-style: auto;
+        outline-offset: 2px;
       }
       .hide-facet-icon {
-        width: 15px;
-        height: 15px;
+        width: ${checkboxHeight};
+        height: ${checkboxHeight};
         cursor: pointer;
-        display: inline-block;
+        display: flex;
       }
-      .eye,
-      .eye-closed {
+      .eye {
+        width: ${checkboxHeight};
+        height: ${checkboxHeight};
         opacity: 0.3;
       }
       .hide-facet-icon:hover .eye,
-      .hide-facet-icon:hover .eye-closed,
-      .active .eye,
-      .active .eye-closed {
+      .active .eye {
         opacity: 1;
       }
-      .hide-facet-icon:hover .eye,
+      .hide-facet-icon:hover .eye-open,
       .hide-facet-icon .eye-closed {
         display: none;
       }
@@ -277,7 +277,7 @@ export class FacetRow extends LitElement {
       .hide-facet-icon.active .eye-closed {
         display: inline;
       }
-      .hide-facet-icon.active .eye {
+      .hide-facet-icon.active .eye-open {
         display: none;
       }
       .sorting-icon {
