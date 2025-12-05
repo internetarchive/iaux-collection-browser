@@ -45,7 +45,8 @@ describe('Facet row', () => {
     ).to.have.length(2);
     expect(el.shadowRoot?.querySelectorAll('label')).to.have.length(2);
 
-    expect(el.shadowRoot?.textContent?.trim()).to.match(/^foo\s*5$/);
+    const labelText = el.shadowRoot?.querySelector('.facet-info-display');
+    expect(labelText?.textContent?.trim()).to.match(/^foo\s*5$/);
   });
 
   it('renders locale-appropriate facet count', async () => {
@@ -118,6 +119,38 @@ describe('Facet row', () => {
       el.shadowRoot?.querySelector('.hide-facet-icon'),
     ).to.exist.and.satisfy((icon: HTMLElement) =>
       icon.classList.contains('active'),
+    );
+  });
+
+  it('renders correct accessible label for unchecked negative facets', async () => {
+    const bucket = {
+      key: 'foo',
+      state: 'none' as FacetState,
+      count: 5,
+    };
+
+    const el = await fixture<FacetRow>(
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
+    );
+
+    const hideFacetLabel = el.shadowRoot?.querySelector('.hide-facet-icon');
+    expect(hideFacetLabel?.textContent?.trim()).to.match(/^Hide subject: foo$/);
+  });
+
+  it('renders correct accessible label for checked negative facets', async () => {
+    const bucket = {
+      key: 'foo',
+      state: 'hidden' as FacetState,
+      count: 5,
+    };
+
+    const el = await fixture<FacetRow>(
+      html`<facet-row .facetType=${'subject'} .bucket=${bucket}></facet-row>`,
+    );
+
+    const hideFacetLabel = el.shadowRoot?.querySelector('.hide-facet-icon');
+    expect(hideFacetLabel?.textContent?.trim()).to.match(
+      /^Unhide subject: foo$/,
     );
   });
 
