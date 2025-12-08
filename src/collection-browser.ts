@@ -1859,6 +1859,18 @@ export class CollectionBrowser
   }
 
   /**
+   * Emits a `searchError` event indicating that the most recent search has encountered
+   * an error from the backend.
+   */
+  emitSearchError(): void {
+    this.dispatchEvent(
+      new CustomEvent<string>('searchError', {
+        detail: this.dataSource.queryErrorMessage,
+      }),
+    );
+  }
+
+  /**
    * Emits a `queryStateChanged` event indicating that one or more of this component's
    * properties have changed in a way that could affect the set of search results.
    */

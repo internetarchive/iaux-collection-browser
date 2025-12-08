@@ -58,6 +58,7 @@ export interface CollectionBrowserSearchInterface
   setTileCount(count: number): void;
   applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void;
   emitEmptyResults(): void;
+  emitSearchError(): void;
   emitQueryStateChanged(): void;
   refreshVisibleResults(): void;
 }
