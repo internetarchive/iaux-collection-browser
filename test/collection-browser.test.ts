@@ -560,6 +560,25 @@ describe('Collection Browser', () => {
     expect(emptyResultsSpy.callCount).to.equal(1);
   });
 
+  it('emits searchError event when search results in an error', async () => {
+    const searchService = new MockSearchService();
+    const searchErrorSpy = sinon.spy();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        @searchError=${searchErrorSpy}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchErrorSpy.callCount).to.equal(1);
+  });
+
   it('applies loggedin flag to tile models if needed', async () => {
     const searchService = new MockSearchService();
 
