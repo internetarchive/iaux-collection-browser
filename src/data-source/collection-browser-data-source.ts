@@ -1172,6 +1172,7 @@ export class CollectionBrowserDataSource
 
       this.setSearchResultsLoading(false);
       this.requestHostUpdate();
+      this.host.emitSearchError();
       return;
     }
 
