@@ -2249,6 +2249,19 @@ export class CollectionBrowser
   }
 
   /**
+   * Whether we are currently displaying results for a radio collection
+   */
+  private get isRadioCollection(): boolean {
+    const { withinCollection } = this;
+    const topCollections = ['radio'];
+    const isTopCollection = topCollections.includes(withinCollection as string);
+    const isSubCollection = topCollections.some(topCollxn =>
+      this.dataSource.parentCollections?.includes(topCollxn),
+    );
+    return isTopCollection || isSubCollection;
+  }
+
+  /**
    * Refreshes all visible result cells in the infinite scroller.
    */
   refreshVisibleResults(): void {
@@ -2285,6 +2298,17 @@ export class CollectionBrowser
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
 
+    // Tiles show dates in UTC by default.
+    // But for certain types of time-based media, we want them to use local time instead.
+    // Those local-time cases are:
+    //  - TV or Radio search results
+    //  - TV or Radio collection results
+    const isTVSearch = this.searchType === SearchType.TV;
+    const isRadioSearch = this.searchType === SearchType.RADIO;
+    const { isTVCollection, isRadioCollection } = this;
+    const shouldUseLocalTime =
+      isTVSearch || isRadioSearch || isTVCollection || isRadioCollection;
+
     return html`
       <tile-dispatcher
         .collectionPagePath=${this.collectionPagePath}
@@ -2301,8 +2325,9 @@ export class CollectionBrowser
         .loggedIn=${this.loggedIn}
         .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
-        ?showTvClips=${this.isTVCollection || this.searchType === SearchType.TV}
+        ?showTvClips=${isTVSearch || this.isTVCollection}
         ?enableHoverPane=${true}
+        ?useLocalTime=${shouldUseLocalTime}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >
       </tile-dispatcher>
