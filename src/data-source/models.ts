@@ -25,7 +25,7 @@ export type PageSpecifierParams = {
   /**
    * The target identifier for collection or profile pages (e.g., "prelinger", "@brewster", ...)
    */
-  pageTarget: string;
+  pageTarget?: string;
   /**
    * Which specific elements of a profile page to fetch. Corresponds to individual tab data
    * (e.g., "uploads", "reviews", ...)

@@ -63,6 +63,8 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: String }) query?: string;
 
+  @property({ type: Array }) identifiers?: string[];
+
   @property({ type: Object }) filterMap?: FilterMap;
 
   @property({ type: Number }) searchType?: SearchType;
@@ -204,6 +206,7 @@ export class MoreFacetsContent extends LitElement {
     const params: SearchParams = {
       ...this.pageSpecifierParams,
       query: trimmedQuery || '',
+      identifiers: this.identifiers,
       filters: this.filterMap,
       aggregations,
       aggregationsSize,

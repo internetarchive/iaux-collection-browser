@@ -126,6 +126,16 @@ export class CollectionBrowser
   @property({ type: String }) baseQuery?: string;
 
   /**
+   * The base list of identifiers to fetch, if using the client_document_fetch feature
+   * of the search service.
+   *
+   * This approach allows many more identifiers to be retrieved than a query like
+   * `identifier:(foo OR bar OR ...)` would, but still may be more limited in what
+   * content is returned by the backend
+   */
+  @property({ type: Array }) identifiers?: string[];
+
+  /**
    * Which mode to display result tiles in (grid, extended list, or compact list)
    */
   @property({ type: String }) displayMode?: CollectionDisplayMode;
@@ -1278,6 +1288,7 @@ export class CollectionBrowser
         .allowDatePickerMonths=${shouldUseTvInterface}
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
+        .identifiers=${this.identifiers}
         .filterMap=${this.dataSource.filterMap}
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
@@ -1525,6 +1536,7 @@ export class CollectionBrowser
 
     if (
       changed.has('baseQuery') ||
+      changed.has('identifiers') ||
       changed.has('searchType') ||
       changed.has('withinCollection')
     ) {
@@ -1573,6 +1585,7 @@ export class CollectionBrowser
 
     if (
       changed.has('baseQuery') ||
+      changed.has('identifiers') ||
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
       changed.has('selectedFacets') ||
@@ -1605,6 +1618,7 @@ export class CollectionBrowser
 
     if (
       changed.has('baseQuery') ||
+      changed.has('identifiers') ||
       changed.has('searchType') ||
       changed.has('selectedTitleFilter') ||
       changed.has('selectedCreatorFilter') ||
