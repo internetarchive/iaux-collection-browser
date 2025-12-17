@@ -22,6 +22,7 @@ export class CollectionTile extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   @property({ type: Boolean }) showInfoButton = false;

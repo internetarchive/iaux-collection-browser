@@ -35,6 +35,7 @@ export class ItemTile extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   @property({ type: Boolean }) showInfoButton = false;
@@ -139,11 +140,14 @@ export class ItemTile extends BaseTileComponent {
     if (!sortedValue?.value) {
       return nothing;
     }
+
+    const { useLocalTime } = this;
+    const formattedDate = formatDate(sortedValue?.value, format, {
+      useLocalTime,
+    });
     return html`
       <div class="date-sorted-by truncated">
-        <span>
-          ${sortedValue?.field} ${formatDate(sortedValue?.value, format)}
-        </span>
+        <span> ${sortedValue?.field} ${formattedDate} </span>
       </div>
     `;
   }

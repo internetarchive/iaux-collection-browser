@@ -37,6 +37,7 @@ export class TileList extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   @property({ type: Object })
@@ -225,7 +226,11 @@ export class TileList extends BaseTileComponent {
       format = 'year-only';
     }
 
-    return this.metadataTemplate(formatDate(date, format), msg('Published'));
+    const { useLocalTime } = this;
+    return this.metadataTemplate(
+      formatDate(date, format, { useLocalTime }),
+      msg('Published'),
+    );
   }
 
   // Show date label/value when sorted by date type
@@ -237,8 +242,9 @@ export class TileList extends BaseTileComponent {
         this.effectiveSort.field === 'reviewdate' ||
         this.effectiveSort.field === 'publicdate')
     ) {
+      const { useLocalTime } = this;
       return this.metadataTemplate(
-        formatDate(this.date, 'long'),
+        formatDate(this.date, 'long', { useLocalTime }),
         this.displayValueProvider.dateLabel,
       );
     }

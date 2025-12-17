@@ -27,6 +27,7 @@ export class TileListCompact extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   render() {
@@ -50,7 +51,7 @@ export class TileListCompact extends BaseTileComponent {
             ? this.displayValueProvider.accountLabel
             : this.creator}
         </div>
-        <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
+        <div id="date">${this.formattedDate}</div>
         <div id="icon">
           <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
         </div>
@@ -138,6 +139,14 @@ export class TileListCompact extends BaseTileComponent {
       return 'year-only';
     }
     return this.formatSize;
+  }
+
+  /**
+   * The formatted date string for the current type of date being displayed.
+   */
+  private get formattedDate(): string {
+    const { useLocalTime } = this;
+    return formatDate(this.date, this.dateFormatSize, { useLocalTime });
   }
 
   private get formatSize(): NumberFormat {
