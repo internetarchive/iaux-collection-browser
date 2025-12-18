@@ -6,10 +6,11 @@ import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
 import type { SortParam } from '@internetarchive/search-service';
-import { DateFormat } from '../../utils/format-date';
+import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
+import { SimpleLayoutType } from '../models';
 
 import '../image-block';
 import '../review-block';
@@ -17,7 +18,6 @@ import '../text-snippet-block';
 import '../item-image';
 import '../tile-mediatype-icon';
 import './tile-stats';
-import { SimpleLayoutType } from '../models';
 
 @customElement('item-tile')
 export class ItemTile extends BaseTileComponent {

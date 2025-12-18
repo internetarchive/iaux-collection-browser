@@ -13,7 +13,7 @@ import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
-import { DateFormat } from '../../utils/format-date';
+import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
