@@ -5,7 +5,7 @@ import type { SortParam } from '@internetarchive/search-service';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
-import { formatDate, DateFormat } from '../../utils/format-date';
+import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
@@ -27,6 +27,7 @@ export class TileListCompact extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   render() {
@@ -50,7 +51,9 @@ export class TileListCompact extends BaseTileComponent {
             ? this.displayValueProvider.accountLabel
             : this.creator}
         </div>
-        <div id="date">${formatDate(this.date, this.dateFormatSize)}</div>
+        <div id="date">
+          ${this.getFormattedDate(this.date, this.dateFormatSize)}
+        </div>
         <div id="icon">
           <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
         </div>

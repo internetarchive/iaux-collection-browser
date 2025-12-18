@@ -47,6 +47,7 @@ export class TileDispatcher
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressTileBlurring = false;
+   *  - useLocalTime = false;
    */
 
   @property({ type: String }) tileDisplayMode?: TileDisplayMode;
@@ -354,6 +355,7 @@ export class TileDispatcher
               .simpleLayoutType=${this.simpleLayoutType}
               ?showTvClips=${this.showTvClips}
               ?showInfoButton=${!this.isHoverEnabled}
+              ?useLocalTime=${this.useLocalTime}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </item-tile>`;
@@ -372,6 +374,7 @@ export class TileDispatcher
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
           .suppressBlurring=${this.suppressBlurring}
+          ?useLocalTime=${this.useLocalTime}
         >
         </tile-list-compact>`;
       case 'list-detail':
@@ -389,6 +392,7 @@ export class TileDispatcher
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
           .suppressBlurring=${this.suppressBlurring}
+          ?useLocalTime=${this.useLocalTime}
         >
         </tile-list>`;
       default:

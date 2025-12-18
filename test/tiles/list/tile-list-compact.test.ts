@@ -210,6 +210,60 @@ describe('List Tile Compact', () => {
     expect(dateColumn?.textContent?.trim()).to.equal('Jan 01, 2013');
   });
 
+  it('should display dates in UTC time zone by default', async () => {
+    const model: Partial<TileModel> = {
+      datePublished: new Date('2012-02-15T00:00:00Z'),
+    };
+
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list-compact>
+    `);
+
+    const dateColumn = el.shadowRoot?.getElementById('date');
+    expect(dateColumn).to.exist;
+    expect(dateColumn?.textContent?.trim()).to.equal('Feb 15, 2012');
+  });
+
+  it('should display dates in local time when useLocalTime option is true', async () => {
+    // Expected behavior depends on the time zone offset where the testing occurs
+    const offset = new Date().getTimezoneOffset();
+    let datePublished, expected;
+    if (offset > 0) {
+      // Positive local time zone offsets have earlier local dates than UTC
+      datePublished = new Date('2012-02-15T00:00:00Z');
+      expected = 'Feb 14, 2012';
+    } else if (offset < 0) {
+      // Negative local time zone offsets have later local dates than UTC
+      datePublished = new Date('2012-02-15T23:59:59Z');
+      expected = 'Feb 16, 2012';
+    } else {
+      // Local time may just be UTC itself
+      datePublished = new Date('2012-02-15T00:00:00Z');
+      expected = 'Feb 15, 2012';
+    }
+
+    const model: Partial<TileModel> = {
+      datePublished,
+    };
+
+    const el = await fixture<TileListCompact>(html`
+      <tile-list-compact
+        useLocalTime
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list-compact>
+    `);
+
+    const dateColumn = el.shadowRoot?.getElementById('date');
+    expect(dateColumn).to.exist;
+    expect(dateColumn?.textContent?.trim()).to.equal(expected);
+  });
+
   it('should show the first creator matching the letter filter, if defined', async () => {
     const model: Partial<TileModel> = {
       creator: 'foo',

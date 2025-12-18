@@ -33,7 +33,57 @@ describe('formatDate', () => {
     );
   });
 
+  it('uses UTC time zone by default or when useLocalTime is explicitly false', () => {
+    // Default options
+    expect(formatDate(new Date('2025-02-15T00:00:00Z'), 'long')).to.equal(
+      'Feb 15, 2025',
+    );
+    expect(formatDate(new Date('2025-02-15T23:59:59Z'), 'long')).to.equal(
+      'Feb 15, 2025',
+    );
+
+    // Explicit `useLocalTime: false` option
+    const options = { useLocalTime: false };
+    expect(
+      formatDate(new Date('2025-02-15T00:00:00Z'), 'long', options),
+    ).to.equal('Feb 15, 2025');
+    expect(
+      formatDate(new Date('2025-02-15T23:59:59Z'), 'long', options),
+    ).to.equal('Feb 15, 2025');
+  });
+
+  it('uses local time zone when specified', () => {
+    // N.B.:
+    // - Positive offset corresponds to UTC-x zones
+    // - Negative offset corresponds to UTC+x zones
+    const offset = new Date().getTimezoneOffset();
+    const options = { useLocalTime: true };
+
+    // The expected behavior depends on the local time where the tests are run:
+    if (offset > 0) {
+      // If we're testing under a positive offset, the first second of the UTC day should locally fall on the previous day
+      expect(
+        formatDate(new Date('2025-02-15T00:00:00Z'), 'long', options),
+      ).to.equal('Feb 14, 2025');
+    } else if (offset < 0) {
+      // If we're testing under a negative offset, the last second of the UTC day should locally fall on the next day
+      expect(
+        formatDate(new Date('2025-02-15T23:59:59Z'), 'long', options),
+      ).to.equal('Feb 16, 2025');
+    } else {
+      // If we're testing *in* UTC, then both seconds should locally fall on the same day
+      expect(
+        formatDate(new Date('2025-02-15T00:00:00Z'), 'long', options),
+      ).to.equal('Feb 15, 2025');
+      expect(
+        formatDate(new Date('2025-02-15T23:59:59Z'), 'long', options),
+      ).to.equal('Feb 15, 2025');
+    }
+  });
+
   it('returns locale formatted date', () => {
-    expect(formatDate(testDate, 'long', 'de-DE')).to.equal('09. Dez. 2020');
+    expect(formatDate(testDate, 'long', { locale: 'de-DE' })).to.equal(
+      '09. Dez. 2020',
+    );
   });
 });

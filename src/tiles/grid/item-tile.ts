@@ -6,10 +6,11 @@ import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
 import type { SortParam } from '@internetarchive/search-service';
-import { DateFormat, formatDate } from '../../utils/format-date';
+import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
+import { SimpleLayoutType } from '../models';
 
 import '../image-block';
 import '../review-block';
@@ -17,7 +18,6 @@ import '../text-snippet-block';
 import '../item-image';
 import '../tile-mediatype-icon';
 import './tile-stats';
-import { SimpleLayoutType } from '../models';
 
 @customElement('item-tile')
 export class ItemTile extends BaseTileComponent {
@@ -35,6 +35,7 @@ export class ItemTile extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   @property({ type: Boolean }) showInfoButton = false;
@@ -139,11 +140,11 @@ export class ItemTile extends BaseTileComponent {
     if (!sortedValue?.value) {
       return nothing;
     }
+
+    const formattedDate = this.getFormattedDate(sortedValue.value, format);
     return html`
       <div class="date-sorted-by truncated">
-        <span>
-          ${sortedValue?.field} ${formatDate(sortedValue?.value, format)}
-        </span>
+        <span>${sortedValue.field} ${formattedDate}</span>
       </div>
     `;
   }

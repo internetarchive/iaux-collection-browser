@@ -13,7 +13,7 @@ import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
-import { formatDate, DateFormat } from '../../utils/format-date';
+import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 
 import '../image-block';
@@ -37,6 +37,7 @@ export class TileList extends BaseTileComponent {
    *  - mobileBreakpoint?: number;
    *  - loggedIn = false;
    *  - suppressBlurring = false;
+   *  - useLocalTime = false;
    */
 
   @property({ type: Object })
@@ -225,7 +226,10 @@ export class TileList extends BaseTileComponent {
       format = 'year-only';
     }
 
-    return this.metadataTemplate(formatDate(date, format), msg('Published'));
+    return this.metadataTemplate(
+      this.getFormattedDate(date, format),
+      msg('Published'),
+    );
   }
 
   // Show date label/value when sorted by date type
@@ -238,7 +242,7 @@ export class TileList extends BaseTileComponent {
         this.effectiveSort.field === 'publicdate')
     ) {
       return this.metadataTemplate(
-        formatDate(this.date, 'long'),
+        this.getFormattedDate(this.date, 'long'),
         this.displayValueProvider.dateLabel,
       );
     }
