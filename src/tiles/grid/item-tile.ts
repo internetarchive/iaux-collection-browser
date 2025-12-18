@@ -144,7 +144,7 @@ export class ItemTile extends BaseTileComponent {
     const formattedDate = this.getFormattedDate(sortedValue.value, format);
     return html`
       <div class="date-sorted-by truncated">
-        <span> ${sortedValue.field} ${formattedDate} </span>
+        <span>${sortedValue.field} ${formattedDate}</span>
       </div>
     `;
   }

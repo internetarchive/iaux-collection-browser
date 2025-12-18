@@ -2325,7 +2325,7 @@ export class CollectionBrowser
         .loggedIn=${this.loggedIn}
         .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
-        ?showTvClips=${isTVSearch || this.isTVCollection}
+        ?showTvClips=${isTVSearch || isTVCollection}
         ?enableHoverPane=${true}
         ?useLocalTime=${shouldUseLocalTime}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
