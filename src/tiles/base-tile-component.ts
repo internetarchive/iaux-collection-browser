@@ -3,6 +3,7 @@ import { property } from 'lit/decorators.js';
 import type { SortParam } from '@internetarchive/search-service';
 import { TileDisplayValueProvider } from './tile-display-value-provider';
 import type { TileModel } from '../models';
+import { DateFormat, formatDate } from '../utils/format-date';
 
 export abstract class BaseTileComponent extends LitElement {
   @property({ type: Object }) model?: TileModel;
@@ -51,5 +52,14 @@ export abstract class BaseTileComponent extends LitElement {
         creatorFilter: this.creatorFilter,
       });
     }
+  }
+
+  /**
+   * The formatted date string for given date and format type, taking into
+   * account whether this tile component should be using local time or UTC.
+   */
+  protected getFormattedDate(date?: Date, format?: DateFormat): string {
+    const { useLocalTime } = this;
+    return formatDate(date, format, { useLocalTime });
   }
 }
