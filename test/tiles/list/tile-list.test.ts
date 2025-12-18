@@ -281,6 +281,61 @@ describe('List Tile', () => {
     expect(dateRow?.textContent?.trim()).to.contain('Reviewed:  Jan 01, 2013');
   });
 
+  it('should display dates in UTC time zone by default', async () => {
+    const model: Partial<TileModel> = {
+      datePublished: new Date('2012-02-15T00:00:00Z'),
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+    expect(dateRow?.textContent?.trim()).to.contain('Published:  Feb 15, 2012');
+  });
+
+  it('should display dates in local time when useLocalTime option is true', async () => {
+    // Expected behavior depends on the time zone offset where the testing occurs
+    const offset = new Date().getTimezoneOffset();
+    let datePublished, expected;
+    if (offset > 0) {
+      // Positive local time zone offsets have earlier local dates than UTC
+      datePublished = new Date('2012-02-15T00:00:00Z');
+      expected = 'Published:  Feb 14, 2012';
+    } else if (offset < 0) {
+      // Negative local time zone offsets have later local dates than UTC
+      datePublished = new Date('2012-02-15T23:59:59Z');
+      expected = 'Published:  Feb 16, 2012';
+    } else {
+      // Local time may just be UTC itself
+      datePublished = new Date('2012-02-15T00:00:00Z');
+      expected = 'Published:  Feb 15, 2012';
+    }
+
+    const model: Partial<TileModel> = {
+      datePublished,
+    };
+
+    const el = await fixture<TileList>(html`
+      <tile-list
+        useLocalTime
+        .model=${model}
+        .sortParam=${{ field: 'date', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const dateRow = el.shadowRoot?.getElementById('dates-line');
+    expect(dateRow).to.exist;
+
+    expect(dateRow?.textContent?.trim()).to.contain(expected);
+  });
+
   it('should render links to /search pages (not search.php) for subject, creator, and source', async () => {
     const model: Partial<TileModel> = {
       subjects: ['foo'],
