@@ -6,7 +6,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
 import type { SortParam } from '@internetarchive/search-service';
-import { DateFormat, formatDate } from '../../utils/format-date';
+import { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
@@ -141,13 +141,10 @@ export class ItemTile extends BaseTileComponent {
       return nothing;
     }
 
-    const { useLocalTime } = this;
-    const formattedDate = formatDate(sortedValue?.value, format, {
-      useLocalTime,
-    });
+    const formattedDate = this.getFormattedDate(sortedValue.value, format);
     return html`
       <div class="date-sorted-by truncated">
-        <span> ${sortedValue?.field} ${formattedDate} </span>
+        <span> ${sortedValue.field} ${formattedDate} </span>
       </div>
     `;
   }
