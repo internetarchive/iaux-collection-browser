@@ -599,6 +599,7 @@ export class CollectionBrowserDataSource
 
     const trimmedQuery = this.host.baseQuery?.trim();
     const hasNonEmptyQuery = !!trimmedQuery;
+    const hasIdentifiers = !!this.host.identifiers?.length;
     const isCollectionSearch = !!this.host.withinCollection;
     const isProfileSearch = !!this.host.withinProfile;
     const hasProfileElement = !!this.host.profileElement;
@@ -617,6 +618,7 @@ export class CollectionBrowserDataSource
     // Otherwise, a non-empty query must be set.
     return (
       hasNonEmptyQuery ||
+      hasIdentifiers ||
       (isCollectionSearch && isValidForCollectionSearch) ||
       (isProfileSearch && isValidForProfileSearch)
     );
@@ -826,6 +828,11 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   get pageSpecifierParams(): PageSpecifierParams | null {
+    if (this.host.identifiers?.length) {
+      return {
+        pageType: 'client_document_fetch',
+      };
+    }
     if (this.host.withinCollection) {
       return {
         pageType: 'collection_details',
@@ -848,20 +855,20 @@ export class CollectionBrowserDataSource
    * The full query, including year facets and date range clauses
    */
   private get fullQuery(): string | undefined {
-    let fullQuery = this.host.baseQuery?.trim() ?? '';
+    const parts = [];
+    const trimmedQuery = this.host.baseQuery?.trim();
+    if (trimmedQuery) parts.push(trimmedQuery);
+
+    if (this.host.identifiers) {
+      parts.push(`identifier:(${this.host.identifiers.join(' OR ')})`);
+    }
 
     const { facetQuery, dateRangeQueryClause, sortFilterQueries } = this;
+    if (facetQuery) parts.push(facetQuery);
+    if (dateRangeQueryClause) parts.push(dateRangeQueryClause);
+    if (sortFilterQueries) parts.push(sortFilterQueries);
 
-    if (facetQuery) {
-      fullQuery += ` AND ${facetQuery}`;
-    }
-    if (dateRangeQueryClause) {
-      fullQuery += ` AND ${dateRangeQueryClause}`;
-    }
-    if (sortFilterQueries) {
-      fullQuery += ` AND ${sortFilterQueries}`;
-    }
-    return fullQuery.trim();
+    return parts.join(' AND ').trim();
   }
 
   /**
@@ -1001,6 +1008,7 @@ export class CollectionBrowserDataSource
     const params: SearchParams = {
       ...this.pageSpecifierParams,
       query: trimmedQuery || '',
+      identifiers: this.host.identifiers,
       rows: 0,
       filters: this.filterMap,
       // Fetch a few extra buckets beyond the 6 we show, in case some get suppressed
@@ -1133,6 +1141,7 @@ export class CollectionBrowserDataSource
     const params: SearchParams = {
       ...this.pageSpecifierParams,
       query: trimmedQuery || '',
+      identifiers: this.host.identifiers,
       page: pageNumber,
       rows: numRows,
       sort: sortParams,
@@ -1318,6 +1327,7 @@ export class CollectionBrowserDataSource
     const params: SearchParams = {
       ...this.pageSpecifierParams,
       query: trimmedQuery || '',
+      identifiers: this.host.identifiers,
       rows: 0,
       filters: this.filterMap,
       // Only fetch the firstTitle or firstCreator aggregation

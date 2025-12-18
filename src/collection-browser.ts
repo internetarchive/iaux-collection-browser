@@ -126,6 +126,16 @@ export class CollectionBrowser
   @property({ type: String }) baseQuery?: string;
 
   /**
+   * The base list of identifiers to fetch, if using the client_document_fetch feature
+   * of the search service.
+   *
+   * This approach allows many more identifiers to be retrieved than a query like
+   * `identifier:(foo OR bar OR ...)` would, but still may be more limited in what
+   * content is returned by the backend
+   */
+  @property({ type: Array }) identifiers?: string[];
+
+  /**
    * Which mode to display result tiles in (grid, extended list, or compact list)
    */
   @property({ type: String }) displayMode?: CollectionDisplayMode;
@@ -601,8 +611,10 @@ export class CollectionBrowser
   private setPlaceholderType() {
     const isInitialized = this.dataSource.queryInitialized;
     const hasQuery = !!this.baseQuery?.trim();
+    const hasIdentifiers = !!this.identifiers?.length;
     const isCollection = !!this.withinCollection;
     const isProfile = !!this.withinProfile;
+    const isSearchResults = !isCollection && !isProfile;
     const noResults =
       !this.searchResultsLoading &&
       (this.dataSource.size === 0 || !this.searchService);
@@ -612,7 +624,7 @@ export class CollectionBrowser
 
     if (!isInitialized) {
       this.placeholderType = 'empty-query';
-    } else if (!hasQuery && !isCollection && !isProfile) {
+    } else if (isSearchResults && !hasQuery && !hasIdentifiers) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
       // Within a collection, no query + no results means the collection simply has no viewable items.
@@ -1278,6 +1290,7 @@ export class CollectionBrowser
         .allowDatePickerMonths=${shouldUseTvInterface}
         .contentWidth=${this.contentWidth}
         .query=${this.baseQuery}
+        .identifiers=${this.identifiers}
         .filterMap=${this.dataSource.filterMap}
         .isManageView=${this.isManageView}
         .modalManager=${this.modalManager}
@@ -1525,6 +1538,7 @@ export class CollectionBrowser
 
     if (
       changed.has('baseQuery') ||
+      changed.has('identifiers') ||
       changed.has('searchType') ||
       changed.has('withinCollection')
     ) {
@@ -1573,6 +1587,7 @@ export class CollectionBrowser
 
     if (
       changed.has('baseQuery') ||
+      changed.has('identifiers') ||
       changed.has('minSelectedDate') ||
       changed.has('maxSelectedDate') ||
       changed.has('selectedFacets') ||
@@ -1605,6 +1620,7 @@ export class CollectionBrowser
 
     if (
       changed.has('baseQuery') ||
+      changed.has('identifiers') ||
       changed.has('searchType') ||
       changed.has('selectedTitleFilter') ||
       changed.has('selectedCreatorFilter') ||

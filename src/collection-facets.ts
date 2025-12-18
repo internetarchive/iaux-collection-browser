@@ -105,6 +105,8 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: String }) query?: string;
 
+  @property({ type: Array }) identifiers?: string[];
+
   @property({ type: Object }) pageSpecifierParams?: PageSpecifierParams;
 
   @property({ type: Array }) parentCollections: string[] = [];
@@ -794,6 +796,7 @@ export class CollectionFacets extends LitElement {
         .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
         .query=${this.query}
+        .identifiers=${this.identifiers}
         .filterMap=${this.filterMap}
         .pageSpecifierParams=${this.pageSpecifierParams}
         .modalManager=${this.modalManager}

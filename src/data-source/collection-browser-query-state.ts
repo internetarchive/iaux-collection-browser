@@ -19,6 +19,7 @@ import type { CollectionBrowserDataSourceInterface } from './collection-browser-
  */
 export interface CollectionBrowserQueryState {
   baseQuery?: string;
+  identifiers?: string[];
   withinCollection?: string;
   withinProfile?: string;
   profileElement?: PageElementName;

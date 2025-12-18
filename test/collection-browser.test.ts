@@ -308,6 +308,50 @@ describe('Collection Browser', () => {
     ).to.contains('Results');
   });
 
+  it('queries the search service when given a list of identifiers and no query', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.identifiers = ['foo', 'bar'];
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.identifiers).to.deep.equal([
+      'foo',
+      'bar',
+    ]);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
+    ).to.contains('Results');
+  });
+
+  it('queries the search service when given a list of identifiers with a query', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    el.identifiers = ['foo', 'bar'];
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.query).to.equal('collection:foo');
+    expect(searchService.searchParams?.identifiers).to.deep.equal([
+      'foo',
+      'bar',
+    ]);
+    expect(
+      el.shadowRoot?.querySelector('#big-results-label')?.textContent,
+    ).to.contains('Results');
+  });
+
   it('queries the search service with a metadata search', async () => {
     const searchService = new MockSearchService();
 
