@@ -316,12 +316,10 @@ describe('Collection Browser', () => {
       </collection-browser>`,
     );
 
-    el.baseQuery = '';
     el.identifiers = ['foo', 'bar'];
     await el.updateComplete;
     await el.initialSearchComplete;
 
-    console.log(el.shadowRoot);
     expect(searchService.searchParams?.identifiers).to.deep.equal([
       'foo',
       'bar',
