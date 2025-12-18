@@ -611,8 +611,10 @@ export class CollectionBrowser
   private setPlaceholderType() {
     const isInitialized = this.dataSource.queryInitialized;
     const hasQuery = !!this.baseQuery?.trim();
+    const hasIdentifiers = !!this.identifiers?.length;
     const isCollection = !!this.withinCollection;
     const isProfile = !!this.withinProfile;
+    const isSearchResults = !isCollection && !isProfile;
     const noResults =
       !this.searchResultsLoading &&
       (this.dataSource.size === 0 || !this.searchService);
@@ -622,7 +624,7 @@ export class CollectionBrowser
 
     if (!isInitialized) {
       this.placeholderType = 'empty-query';
-    } else if (!hasQuery && !isCollection && !isProfile) {
+    } else if (isSearchResults && !hasQuery && !hasIdentifiers) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
       // Within a collection, no query + no results means the collection simply has no viewable items.
