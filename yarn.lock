@@ -424,10 +424,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@2.6.1-alpha-webdev6778.8":
-  version "2.6.1-alpha-webdev6778.8"
-  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.6.1-alpha-webdev6778.8.tgz#1846b466d20fcbac3ea960b1f13fe587a24f8e4c"
-  integrity sha512-4INck9lI3Pm/MulVPNuNXqJtNPyO1ZXoQGMXCTrpK/Pu4BDaOMuj00G9Dy/loZpa2tnFjnnHEDteYk53Wxc+4A==
+"@internetarchive/search-service@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.7.0.tgz#76e2668ef8144811ff51b9b75b82d1f5cf4538ee"
+  integrity sha512-DB4W1NlsN1FAn/3tdIQITXE+H8hMoImXTvYqVPpqpR0CxqyPyJwSoSC1Fc7ZUXqdy/S3B6uPpd/hgi8QLCpiTw==
   dependencies:
     "@internetarchive/iaux-item-metadata" "^1.1.0"
     "@internetarchive/result-type" "^0.0.1"
