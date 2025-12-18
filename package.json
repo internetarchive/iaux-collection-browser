@@ -32,7 +32,7 @@
     "@internetarchive/iaux-item-metadata": "^1.0.5",
     "@internetarchive/infinite-scroller": "^1.0.1",
     "@internetarchive/modal-manager": "^2.0.1",
-    "@internetarchive/search-service": "2.6.1-alpha-webdev6778.5",
+    "@internetarchive/search-service": "2.6.1-alpha-webdev6778.7",
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.12.2",
     "dompurify": "^3.2.4",
