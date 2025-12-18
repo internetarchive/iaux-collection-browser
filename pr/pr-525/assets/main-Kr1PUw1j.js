@@ -1305,7 +1305,7 @@
       </image-block>
     `}get sortedDateInfoTemplate(){var e,t,i,o,s;let a,l="long";switch((e=this.effectiveSort)===null||e===void 0?void 0:e.field){case"date":{const u=(t=this.model)===null||t===void 0?void 0:t.datePublished;a={field:"published",value:u},Cs(u)&&(l="year-only");break}case"reviewdate":a={field:"reviewed",value:(i=this.model)===null||i===void 0?void 0:i.dateReviewed};break;case"addeddate":a={field:"added",value:(o=this.model)===null||o===void 0?void 0:o.dateAdded};break;case"publicdate":a={field:"archived",value:(s=this.model)===null||s===void 0?void 0:s.dateArchived};break}if(!(a!=null&&a.value))return b;const d=this.getFormattedDate(a.value,l);return h`
       <div class="date-sorted-by truncated">
-        <span> ${a.field} ${d} </span>
+        <span>${a.field} ${d}</span>
       </div>
     `}get infoButtonTemplate(){return this.showInfoButton?h`<button class="info-button" @click=${this.infoButtonPressed}>
           &#9432;
@@ -6392,7 +6392,7 @@ fill=""></path>
         .loggedIn=${this.loggedIn}
         .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
-        ?showTvClips=${i||this.isTVCollection}
+        ?showTvClips=${i||s}
         ?enableHoverPane=${!0}
         ?useLocalTime=${l}
         @resultSelected=${d=>this.resultSelected(d)}
