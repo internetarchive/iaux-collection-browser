@@ -79,6 +79,16 @@ export class TileDispatcher
   @query('tile-hover-pane')
   private hoverPane?: TileHoverPane;
 
+  @query('.tile-link')
+  private tileLinkElement?: HTMLAnchorElement;
+
+  onfocus: (this: GlobalEventHandlers, ev: FocusEvent) => any = (
+    e: FocusEvent,
+  ) => {
+    this.tileLinkElement?.focus();
+    console.log('tile-dispatcher onfocus', e, this.tileLinkElement);
+  };
+
   /** Maps each display mode to whether hover panes should appear in that mode */
   private static readonly HOVER_PANE_DISPLAY_MODES: Record<
     TileDisplayMode,
@@ -145,6 +155,7 @@ export class TileDispatcher
           : ifDefined(this.model?.title)}
         @click=${this.handleLinkClicked}
         @contextmenu=${this.handleLinkContextMenu}
+        class="tile-link"
       >
         ${this.tile}
       </a>

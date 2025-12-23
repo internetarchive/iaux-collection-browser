@@ -291,18 +291,17 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     switch (attachment) {
       case 'host':
         const hostRect = this.host.getBoundingClientRect();
+        // slight offset from host top left corner
         left = hostRect.left + 20;
         top = hostRect.top + 30;
         break;
       case 'cursor':
-        [left, top] = [
-          this.lastPointerClientPos.x,
-          this.lastPointerClientPos.y,
-        ];
+        left = this.lastPointerClientPos.x;
+        top = this.lastPointerClientPos.y;
         break;
     }
 
-    // Flip the hover pane according to which quadrant of the viewport the mouse is in.
+    // Flip the hover pane according to which quadrant of the viewport the coordinates are in.
     // (Similar to how Wikipedia's link hover panes work)
     const flipHorizontal = left > window.innerWidth / 2;
     const flipVertical = top > window.innerHeight / 2;
@@ -317,7 +316,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
         top -= hoverPaneRect.height;
       }
 
-      // Apply desired offsets from the mouse position
+      // Apply desired offsets from the target position
       left += (flipHorizontal ? -1 : 1) * this.offsetX;
       top += (flipVertical ? -1 : 1) * this.offsetY;
 
@@ -371,6 +370,11 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('touchend', this.handleLongPressCancel);
     this.host.removeEventListener('touchcancel', this.handleLongPressCancel);
     this.host.removeEventListener('contextmenu', this.handleContextMenu);
+
+    this.host.removeEventListener('focus', this.handleFocus);
+    this.host.removeEventListener('blur', this.handleBlur);
+    this.host.removeEventListener('keyup', this.handleKeyUp);
+    this.host.removeEventListener('keydown', this.handleKeyDown);
   }
 
   private handleFocus = (): void => {
@@ -395,7 +399,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   };
 
   private handleKeyUp = (e: KeyboardEvent): void => {
-    console.log('handleKeyUp', this.hoverPaneState, e.key, this.host);
     if (e.key === 'ArrowDown' && this.hoverPaneState !== 'hidden') {
       if (this.hoverPane) {
         this.hoverPane.tabIndex = 1;
@@ -411,8 +414,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       }
       this.hoverPaneState = 'hidden';
       this.fadeOutHoverPane();
-      console.log('focusing back to host', this.host.parentElement);
-      this.host.parentElement?.focus();
+      console.log('focusing back to host', this.host);
+      this.host.focus();
     }
   };
 
