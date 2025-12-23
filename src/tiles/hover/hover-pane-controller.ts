@@ -11,6 +11,12 @@ import type { CollectionTitles } from '../../data-source/models';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
+// the attachment point of the hover pane relative
+// can be either the mouse cursor or near the host element
+// in the case of mouse navigation, we want it to follow the cursor
+// in the case of keyboard navigation, we want it to appear near the host element
+type HoverPaneAttachment = 'host' | 'cursor';
+
 export interface HoverPaneProperties {
   model?: TileModel;
   baseNavigationUrl?: string;
@@ -186,6 +192,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       ? html` ${this.touchBackdropTemplate}
           <tile-hover-pane
             popover
+            tabindex="-1"
             .model=${this.hoverPaneProps?.model}
             .baseNavigationUrl=${this.hoverPaneProps?.baseNavigationUrl}
             .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
@@ -207,7 +214,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     } else {
       this.lastPointerClientPos = options.coords;
       this.forceTouchBackdrop = options.enableTouchBackdrop ?? false;
-      this.showHoverPane();
+      this.showHoverPane('cursor');
     }
   }
 
@@ -270,22 +277,35 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * correct width and height. If the hover pane is not present, the returned offsets
    * will simply represent the current pointer position.
    */
-  private get hoverPaneDesiredOffsets(): { top: number; left: number } {
+  private makePaneDesiredOffsets(attachment: HoverPaneAttachment): {
+    top: number;
+    left: number;
+  } {
     // Try to find offsets for the hover pane that:
     //  (a) cause it to lie entirely within the viewport, and
     //  (b) to the extent possible, minimize the distance between the
     //      nearest corner of the hover pane and the mouse position
     //      (with some additional offsets applied after the fact).
 
-    let [left, top] = [
-      this.lastPointerClientPos.x,
-      this.lastPointerClientPos.y,
-    ];
+    let [left, top] = [0, 0];
+    switch (attachment) {
+      case 'host':
+        const hostRect = this.host.getBoundingClientRect();
+        left = hostRect.left + 20;
+        top = hostRect.top + 30;
+        break;
+      case 'cursor':
+        [left, top] = [
+          this.lastPointerClientPos.x,
+          this.lastPointerClientPos.y,
+        ];
+        break;
+    }
 
     // Flip the hover pane according to which quadrant of the viewport the mouse is in.
     // (Similar to how Wikipedia's link hover panes work)
-    const flipHorizontal = this.lastPointerClientPos.x > window.innerWidth / 2;
-    const flipVertical = this.lastPointerClientPos.y > window.innerHeight / 2;
+    const flipHorizontal = left > window.innerWidth / 2;
+    const flipVertical = top > window.innerHeight / 2;
 
     const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
     if (hoverPaneRect) {
@@ -325,6 +345,11 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       this.host.addEventListener('mouseleave', this.handleMouseLeave);
     }
 
+    this.host.addEventListener('focus', this.handleFocus);
+    this.host.addEventListener('blur', this.handleBlur);
+    this.host.addEventListener('keyup', this.handleKeyUp);
+    this.host.addEventListener('keydown', this.handleKeyDown);
+
     if (this.isTouchEnabled && this.enableLongPress) {
       this.host.addEventListener('touchstart', this.handleTouchStart);
       this.host.addEventListener('touchmove', this.handleLongPressCancel);
@@ -347,6 +372,49 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('touchcancel', this.handleLongPressCancel);
     this.host.removeEventListener('contextmenu', this.handleContextMenu);
   }
+
+  private handleFocus = (): void => {
+    if (this.hoverPaneState === 'hidden') {
+      this.showHoverPane('host');
+    }
+  };
+
+  private handleBlur = (): void => {
+    if (this.hoverPaneState !== 'hidden') {
+      this.fadeOutHoverPane();
+    }
+  };
+
+  private handleKeyDown = (e: KeyboardEvent): void => {
+    if (
+      (e.key === 'ArrowDown' || e.key === 'ArrowUp') &&
+      this.hoverPaneState !== 'hidden'
+    ) {
+      e.preventDefault();
+    }
+  };
+
+  private handleKeyUp = (e: KeyboardEvent): void => {
+    console.log('handleKeyUp', this.hoverPaneState, e.key, this.host);
+    if (e.key === 'ArrowDown' && this.hoverPaneState !== 'hidden') {
+      if (this.hoverPane) {
+        this.hoverPane.tabIndex = 1;
+        this.hoverPane.focus();
+      }
+    }
+    if (
+      (e.key === 'ArrowUp' || e.key === 'Escape') &&
+      this.hoverPaneState !== 'hidden'
+    ) {
+      if (this.hoverPane) {
+        this.hoverPane.tabIndex = -1;
+      }
+      this.hoverPaneState = 'hidden';
+      this.fadeOutHoverPane();
+      console.log('focusing back to host', this.host.parentElement);
+      this.host.parentElement?.focus();
+    }
+  };
 
   /**
    * Handler for the mouseenter event on the host element.
@@ -409,7 +477,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     if (e.touches.length === 1) {
       this.longPressTimer = window.setTimeout(() => {
         if (this.hoverPaneState === 'hidden') {
-          this.showHoverPane();
+          this.showHoverPane('cursor');
         }
       }, this.longPressDelay);
 
@@ -456,14 +524,14 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   private restartShowHoverPaneTimer(): void {
     clearTimeout(this.showTimer);
     this.showTimer = window.setTimeout(() => {
-      this.showHoverPane();
+      this.showHoverPane('cursor');
     }, this.showDelay);
   }
 
   /**
    * Causes this tile's hover pane to be rendered, positioned, and made visible.
    */
-  private async showHoverPane(): Promise<void> {
+  private async showHoverPane(attachment: HoverPaneAttachment): Promise<void> {
     this.hoverPaneState = 'shown';
     this.host.requestUpdate();
 
@@ -481,7 +549,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     });
 
     // Apply the correct positioning to the hover pane
-    this.repositionHoverPane();
+    this.repositionHoverPane(attachment);
 
     // The hover pane is initially not visible (to avoid it shifting around
     // while being positioned). Since it now has the correct positioning, we
@@ -507,10 +575,13 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /**
    * Positions the hover pane with the correct offsets.
    */
-  private repositionHoverPane(): void {
+  private repositionHoverPane(attachment: HoverPaneAttachment): void {
     if (!this.hoverPane) return;
 
-    const { top, left } = this.hoverPaneDesiredOffsets;
+    const { top, left } = this.makePaneDesiredOffsets(attachment);
+
+    console.log('repositionHoverPane', top, left);
+
     this.hoverPane.style.top = `${top}px`;
     this.hoverPane.style.left = `${left}px`;
   }
