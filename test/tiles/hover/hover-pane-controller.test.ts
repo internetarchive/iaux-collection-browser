@@ -33,6 +33,10 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
     console.log('HostElement acquireFocus called');
   }
 
+  releaseFocus(): void {
+    console.log('HostElement releaseFocus called');
+  }
+
   getHoverPane(): HTMLElement | undefined {
     return this.suppressHoverPane ? undefined : this.hoverPane;
   }
