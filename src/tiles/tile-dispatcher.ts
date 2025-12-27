@@ -136,13 +136,14 @@ export class TileDispatcher
   }
 
   private get linkTileTemplate() {
+    // Don't show title tooltips when we have the tile info popups
+    const title = this.shouldPrepareHoverPane ? undefined : this.model?.title;
+
     return html`
       <a
-        href=${this.linkTileHref}
+        href=${ifDefined(this.linkTileHref)}
         aria-label=${this.model?.title ?? 'Untitled item'}
-        title=${this.shouldPrepareHoverPane
-          ? nothing // Don't show title tooltips when we have the tile info popups
-          : ifDefined(this.model?.title)}
+        title=${ifDefined(title)}
         @click=${this.handleLinkClicked}
         @contextmenu=${this.handleLinkContextMenu}
       >
@@ -151,9 +152,8 @@ export class TileDispatcher
     `;
   }
 
-  private get linkTileHref(): string | typeof nothing {
-    if (!this.model?.identifier || this.baseNavigationUrl == null)
-      return nothing;
+  private get linkTileHref(): string | undefined {
+    if (!this.model?.identifier || this.baseNavigationUrl == null) return;
 
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
@@ -264,7 +264,7 @@ export class TileDispatcher
    * In manage view, it opens the item in a new tab. Otherwise, does nothing.
    */
   private handleLinkContextMenu(e: Event): void {
-    if (this.isManageView && this.linkTileHref !== nothing) {
+    if (this.isManageView && this.linkTileHref !== undefined) {
       e.preventDefault();
       window.open(this.linkTileHref, '_blank');
     }

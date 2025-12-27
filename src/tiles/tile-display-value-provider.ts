@@ -96,11 +96,8 @@ export class TileDisplayValueProvider {
    * using the current base URL and the correct path based on whether the
    * item is specified to be a collection (default false).
    */
-  itemPageUrl(
-    identifier?: string,
-    isCollection = false,
-  ): string | typeof nothing {
-    if (!identifier || this.baseNavigationUrl == null) return nothing;
+  itemPageUrl(identifier?: string, isCollection = false): string | undefined {
+    if (!identifier || this.baseNavigationUrl == null) return;
     const basePath = isCollection ? this.collectionPagePath : '/details/';
     return `${this.baseNavigationUrl}${basePath}${identifier}`;
   }

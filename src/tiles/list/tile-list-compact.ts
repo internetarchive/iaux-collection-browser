@@ -1,5 +1,6 @@
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import DOMPurify from 'dompurify';
 import type { SortParam } from '@internetarchive/search-service';
 import { BaseTileComponent } from '../base-tile-component';
@@ -43,7 +44,7 @@ export class TileListCompact extends BaseTileComponent {
           .suppressBlurring=${this.suppressBlurring}
         >
         </image-block>
-        <a href=${this.href} id="title"
+        <a href=${ifDefined(this.href)} id="title"
           >${DOMPurify.sanitize(this.model?.title ?? '')}</a
         >
         <div id="creator">
@@ -62,9 +63,8 @@ export class TileListCompact extends BaseTileComponent {
     `;
   }
 
-  private get href(): string | typeof nothing {
-    if (!this.model?.identifier || this.baseNavigationUrl == null)
-      return nothing;
+  private get href(): string | undefined {
+    if (!this.model?.identifier || this.baseNavigationUrl == null) return;
 
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
