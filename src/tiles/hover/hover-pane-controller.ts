@@ -45,6 +45,8 @@ export interface HoverPaneProviderInterface {
   getHoverPaneProps(): HoverPaneProperties;
   /** When user has keyboard navigated out of more info, we want the host to get focus */
   acquireFocus(): void;
+  /** When user has keyboard navigated out of more info, we want the host to lose focus */
+  releaseFocus(): void;
 }
 
 export interface ToggleHoverPaneOptions {

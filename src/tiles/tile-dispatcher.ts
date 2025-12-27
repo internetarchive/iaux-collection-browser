@@ -86,6 +86,10 @@ export class TileDispatcher
     this.tileLinkElement?.focus();
   }
 
+  releaseFocus(): void {
+    this.tileLinkElement?.blur();
+  }
+
   /** Maps each display mode to whether hover panes should appear in that mode */
   private static readonly HOVER_PANE_DISPLAY_MODES: Record<
     TileDisplayMode,
