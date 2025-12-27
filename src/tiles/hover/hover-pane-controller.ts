@@ -288,7 +288,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     // Try to find offsets for the hover pane that:
     //  (a) cause it to lie entirely within the viewport, and
     //  (b) to the extent possible, minimize the distance between the
-    //      nearest corner of the hover pane and the mouse position
+    //      nearest corner of the hover pane and the mouse/host element position
     //      (with some additional offsets applied after the fact).
 
     let [left, top] = [0, 0];
@@ -383,7 +383,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  private handleFocus = (e: FocusEvent): void => {
+  private handleFocus = (): void => {
     if (this.hoverPaneState === 'hidden') {
       this.showHoverPane({
         attachment: 'host',
@@ -391,7 +391,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     }
   };
 
-  private handleBlur = (e: FocusEvent): void => {
+  private handleBlur = (): void => {
     if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
     }
@@ -466,7 +466,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     clearTimeout(this.showTimer);
 
     // Hide the hover pane if it's already been shown
-    clearTimeout(this.hideTimer);
     if (this.hoverPaneState !== 'hidden') {
       this.hideTimer = window.setTimeout(() => {
         this.fadeOutHoverPane();
@@ -583,6 +582,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     clearTimeout(this.hideTimer);
     this.hideTimer = window.setTimeout(() => {
       this.hoverPaneState = 'hidden';
+      this.host.releaseFocus();
       if (this.hoverPane) {
         this.hoverPane.tabIndex = -1;
       }
