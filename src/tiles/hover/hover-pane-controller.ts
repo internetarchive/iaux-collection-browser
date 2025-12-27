@@ -43,6 +43,8 @@ export interface HoverPaneProviderInterface {
   getHoverPane(): HTMLElement | undefined;
   /** Returns properties that should be passed to the hover pane. */
   getHoverPaneProps(): HoverPaneProperties;
+  /** When user has keyboard navigated out of more info, we want the host to get focus */
+  acquireFocus(): void;
 }
 
 export interface ToggleHoverPaneOptions {
@@ -214,7 +216,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     } else {
       this.lastPointerClientPos = options.coords;
       this.forceTouchBackdrop = options.enableTouchBackdrop ?? false;
-      this.showHoverPane('cursor');
+      this.showHoverPane();
     }
   }
 
@@ -291,7 +293,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     switch (attachment) {
       case 'host':
         const hostRect = this.host.getBoundingClientRect();
-        // slight offset from host top left corner
+        // slight inset from host top left corner
         left = hostRect.left + 20;
         top = hostRect.top + 30;
         break;
@@ -338,16 +340,17 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * hover pane functional.
    */
   private attachListeners(): void {
+    // keyboard navigation listeners
+    this.host.addEventListener('focus', this.handleFocus);
+    this.host.addEventListener('blur', this.handleBlur);
+    this.host.addEventListener('keyup', this.handleKeyUp);
+    this.host.addEventListener('keydown', this.handleKeyDown);
+
     if (this.isHoverEnabled) {
       this.host.addEventListener('mouseenter', this.handleMouseEnter);
       this.host.addEventListener('mousemove', this.handleMouseMove);
       this.host.addEventListener('mouseleave', this.handleMouseLeave);
     }
-
-    this.host.addEventListener('focus', this.handleFocus);
-    this.host.addEventListener('blur', this.handleBlur);
-    this.host.addEventListener('keyup', this.handleKeyUp);
-    this.host.addEventListener('keydown', this.handleKeyDown);
 
     if (this.isTouchEnabled && this.enableLongPress) {
       this.host.addEventListener('touchstart', this.handleTouchStart);
@@ -371,19 +374,22 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.host.removeEventListener('touchcancel', this.handleLongPressCancel);
     this.host.removeEventListener('contextmenu', this.handleContextMenu);
 
+    // keyboard navigation listeners
     this.host.removeEventListener('focus', this.handleFocus);
     this.host.removeEventListener('blur', this.handleBlur);
     this.host.removeEventListener('keyup', this.handleKeyUp);
     this.host.removeEventListener('keydown', this.handleKeyDown);
   }
 
-  private handleFocus = (): void => {
+  private handleFocus = (e: FocusEvent): void => {
     if (this.hoverPaneState === 'hidden') {
-      this.showHoverPane('host');
+      this.showHoverPane({
+        attachment: 'host',
+      });
     }
   };
 
-  private handleBlur = (): void => {
+  private handleBlur = (e: FocusEvent): void => {
     if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
     }
@@ -399,23 +405,21 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   };
 
   private handleKeyUp = (e: KeyboardEvent): void => {
-    if (e.key === 'ArrowDown' && this.hoverPaneState !== 'hidden') {
-      if (this.hoverPane) {
-        this.hoverPane.tabIndex = 1;
-        this.hoverPane.focus();
-      }
+    if (this.hoverPaneState === 'hidden' || !this.hoverPane) return;
+    if (e.key === 'ArrowDown') {
+      this.hoverPane.tabIndex = 1;
+      this.hoverPane.focus();
     }
-    if (
-      (e.key === 'ArrowUp' || e.key === 'Escape') &&
-      this.hoverPaneState !== 'hidden'
-    ) {
-      if (this.hoverPane) {
-        this.hoverPane.tabIndex = -1;
-      }
-      this.hoverPaneState = 'hidden';
+
+    const isArrowUp = e.key === 'ArrowUp';
+    const isEscape = e.key === 'Escape' || e.key === 'Esc';
+
+    if (isEscape) {
       this.fadeOutHoverPane();
-      console.log('focusing back to host', this.host);
-      this.host.focus();
+    }
+    if (isArrowUp || isEscape) {
+      this.hoverPane.tabIndex = -1;
+      this.host.acquireFocus();
     }
   };
 
@@ -467,6 +471,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
         this.fadeOutHoverPane();
       }, this.hideDelay);
     }
+
+    this.host.blur();
   };
 
   /**
@@ -480,7 +486,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     if (e.touches.length === 1) {
       this.longPressTimer = window.setTimeout(() => {
         if (this.hoverPaneState === 'hidden') {
-          this.showHoverPane('cursor');
+          this.showHoverPane();
         }
       }, this.longPressDelay);
 
@@ -527,14 +533,20 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   private restartShowHoverPaneTimer(): void {
     clearTimeout(this.showTimer);
     this.showTimer = window.setTimeout(() => {
-      this.showHoverPane('cursor');
+      this.showHoverPane();
     }, this.showDelay);
   }
 
   /**
    * Causes this tile's hover pane to be rendered, positioned, and made visible.
    */
-  private async showHoverPane(attachment: HoverPaneAttachment): Promise<void> {
+  private async showHoverPane(
+    options: {
+      attachment: HoverPaneAttachment;
+    } = {
+      attachment: 'cursor',
+    },
+  ): Promise<void> {
     this.hoverPaneState = 'shown';
     this.host.requestUpdate();
 
@@ -552,7 +564,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     });
 
     // Apply the correct positioning to the hover pane
-    this.repositionHoverPane(attachment);
+    this.repositionHoverPane(options.attachment);
 
     // The hover pane is initially not visible (to avoid it shifting around
     // while being positioned). Since it now has the correct positioning, we
