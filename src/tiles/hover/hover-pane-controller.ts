@@ -430,6 +430,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    */
   // NB: Arrow function so 'this' remains bound to the controller
   private handleMouseEnter = (e: MouseEvent): void => {
+    this.host.acquireFocus();
     // Delegate to the mousemove handler, as they are currently processed identically
     this.handleMouseMove(e);
   };

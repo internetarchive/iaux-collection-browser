@@ -448,8 +448,7 @@ export class TileDispatcher
         border-radius: 4px;
       }
 
-      #container.hoverable a:focus,
-      #container.hoverable:hover {
+      #container.hoverable a:focus {
         box-shadow: var(--tileHoverBoxShadow, 0 0 6px 2px rgba(8, 8, 32, 0.8));
         transition: box-shadow 0.1s ease;
       }
@@ -460,6 +459,7 @@ export class TileDispatcher
         color: unset;
         text-decoration: none;
         transition: transform 0.05s ease;
+        outline: none;
       }
 
       a :first-child {
