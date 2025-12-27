@@ -418,7 +418,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       this.fadeOutHoverPane();
     }
     if (isArrowUp || isEscape) {
-      this.hoverPane.tabIndex = -1;
       this.host.acquireFocus();
     }
   };
@@ -469,10 +468,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     if (this.hoverPaneState !== 'hidden') {
       this.hideTimer = window.setTimeout(() => {
         this.fadeOutHoverPane();
+        this.host.blur();
       }, this.hideDelay);
     }
-
-    this.host.blur();
   };
 
   /**
@@ -583,6 +581,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     clearTimeout(this.hideTimer);
     this.hideTimer = window.setTimeout(() => {
       this.hoverPaneState = 'hidden';
+      if (this.hoverPane) {
+        this.hoverPane.tabIndex = -1;
+      }
       this.host.requestUpdate();
     }, 100);
   }
