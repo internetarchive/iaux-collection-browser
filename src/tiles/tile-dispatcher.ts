@@ -79,6 +79,17 @@ export class TileDispatcher
   @query('tile-hover-pane')
   private hoverPane?: TileHoverPane;
 
+  @query('.tile-link')
+  private tileLinkElement?: HTMLAnchorElement;
+
+  acquireFocus(): void {
+    this.tileLinkElement?.focus();
+  }
+
+  releaseFocus(): void {
+    this.tileLinkElement?.blur();
+  }
+
   /** Maps each display mode to whether hover panes should appear in that mode */
   private static readonly HOVER_PANE_DISPLAY_MODES: Record<
     TileDisplayMode,
@@ -145,6 +156,7 @@ export class TileDispatcher
           : ifDefined(this.model?.title)}
         @click=${this.handleLinkClicked}
         @contextmenu=${this.handleLinkContextMenu}
+        class="tile-link"
       >
         ${this.tile}
       </a>
@@ -436,7 +448,7 @@ export class TileDispatcher
         border-radius: 4px;
       }
 
-      #container.hoverable:hover {
+      #container.hoverable a:focus {
         box-shadow: var(--tileHoverBoxShadow, 0 0 6px 2px rgba(8, 8, 32, 0.8));
         transition: box-shadow 0.1s ease;
       }
@@ -447,6 +459,7 @@ export class TileDispatcher
         color: unset;
         text-decoration: none;
         transition: transform 0.05s ease;
+        outline: none;
       }
 
       a :first-child {
