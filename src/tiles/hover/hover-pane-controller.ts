@@ -584,7 +584,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     clearTimeout(this.hideTimer);
     this.hideTimer = window.setTimeout(() => {
       this.hoverPaneState = 'hidden';
-      this.host.releaseFocus();
       if (this.hoverPane) {
         this.hoverPane.tabIndex = -1;
       }
