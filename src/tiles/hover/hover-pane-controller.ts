@@ -420,6 +420,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
       this.fadeOutHoverPane();
     }
     if (isArrowUp || isEscape) {
+      this.hoverPane.tabIndex = -1;
       this.host.acquireFocus();
     }
   };
