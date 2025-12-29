@@ -448,7 +448,8 @@ export class TileDispatcher
         border-radius: 4px;
       }
 
-      #container.hoverable a:focus {
+      #container.hoverable a:focus,
+      #container.hoverable a:hover {
         box-shadow: var(--tileHoverBoxShadow, 0 0 6px 2px rgba(8, 8, 32, 0.8));
         transition: box-shadow 0.1s ease;
       }
