@@ -150,7 +150,7 @@ export class TileDispatcher
   private get linkTileTemplate() {
     return html`
       <div id="link-description" class="sr-only">
-        Press Down Arrow to preview details
+        ${msg('Press Down Arrow to preview item details')}
       </div>
       <a
         href=${this.linkTileHref}
