@@ -460,6 +460,7 @@ export class TileDispatcher
         color: unset;
         text-decoration: none;
         transition: transform 0.05s ease;
+        border-radius: 4px;
         outline: none;
       }
 
