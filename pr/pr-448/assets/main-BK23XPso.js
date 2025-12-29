@@ -4006,7 +4006,8 @@ fill=""></path>
       />
     `}get minLabelTemplate(){return h`<label for="date-min" class="sr-only">Minimum date:</label>`}get maxLabelTemplate(){return h`<label for="date-max" class="sr-only">Maximum date:</label>`}get tooltipTemplate(){const e=tl({width:`${this.tooltipWidth}px`,height:`${this.tooltipHeight}px`,top:`${this._tooltipOffsetY}px`,left:`${this._tooltipOffsetX}px`});return h`
       <div id="tooltip" style=${e} popover>${this._tooltipContent}</div>
-    `}get noDataTemplate(){return h`
+    `}get histogramAccessibilityTemplate(){let e="";this.minSelectedDate&&this.maxSelectedDate?e=` from ${this.minSelectedDate} to ${this.maxSelectedDate}`:this.minSelectedDate?e=` from ${this.minSelectedDate}`:this.maxSelectedDate&&(e=` up to ${this.maxSelectedDate}`);const t=`Filter results for dates${e}`,i=`This histogram shows the distribution of dates${e}`;return h`<title id="histogram-title">${t}</title
+      ><desc id="histogram-desc">${i}</desc>`}get noDataTemplate(){return h`
       <div class="missing-data-message">${this.missingDataMessage}</div>
     `}get activityIndicatorTemplate(){return this.loading?h`
       <ia-activity-indicator mode="processing"> </ia-activity-indicator>
@@ -4027,9 +4028,10 @@ fill=""></path>
           <svg
             width="${this.width}"
             height="${this.height}"
+            aria-labelledby="histogram-title histogram-desc"
             @pointerleave="${this.drop}"
           >
-            ${this.selectedRangeTemplate}
+            ${this.histogramAccessibilityTemplate} ${this.selectedRangeTemplate}
             <svg id="histogram">${this.histogramTemplate}</svg>
             ${this.minSliderTemplate} ${this.maxSliderTemplate}
           </svg>
