@@ -463,6 +463,8 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    */
   // NB: Arrow function so 'this' remains bound to the controller
   private handleMouseLeave = (): void => {
+    this.host.releaseFocus();
+
     // Abort any timer to show the hover pane, as the mouse has left the tile
     clearTimeout(this.showTimer);
 
