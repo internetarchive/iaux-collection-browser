@@ -98,7 +98,7 @@ export class TileList extends BaseTileComponent {
     return html`<a
       id="image-link"
       title=${msg(str`View ${this.model?.title}`)}
-      href=${href}
+      href=${ifDefined(href)}
     >
       <image-block
         .model=${this.model}
@@ -134,7 +134,7 @@ export class TileList extends BaseTileComponent {
     return html`
       <a
         id="icon-right"
-        href=${this.mediatypeURL}
+        href=${ifDefined(this.mediatypeURL)}
         title=${msg(str`See more: ${this.model?.mediatype}`)}
       >
         <tile-mediatype-icon .model=${this.model}> </tile-mediatype-icon>
@@ -407,21 +407,22 @@ export class TileList extends BaseTileComponent {
       isCollection,
     );
 
-    return html`<a href=${linkHref}> ${DOMPurify.sanitize(linkText)} </a>`;
+    return html`<a href=${ifDefined(linkHref)}>
+      ${DOMPurify.sanitize(linkText)}
+    </a>`;
   }
 
   /** The URL of this item's mediatype collection, if defined. */
-  private get mediatypeURL(): string | typeof nothing {
+  private get mediatypeURL(): string | undefined {
     // NB: baseNavigationUrl can be an empty string
-    if (this.baseNavigationUrl === undefined || !this.model?.mediatype)
-      return nothing;
+    if (this.baseNavigationUrl === undefined || !this.model?.mediatype) return;
 
     // Need special handling for certain mediatypes that don't have a top-level collection page
     switch (this.model.mediatype) {
       case 'collection':
         return `${this.baseNavigationUrl}/search?query=mediatype:collection&sort=-downloads`;
       case 'account':
-        return nothing;
+        return;
       default:
         return this.displayValueProvider.itemPageUrl(
           this.model.mediatype,
