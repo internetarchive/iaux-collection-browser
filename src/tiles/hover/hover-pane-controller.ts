@@ -470,7 +470,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     if (this.hoverPaneState !== 'hidden') {
       this.hideTimer = window.setTimeout(() => {
         this.fadeOutHoverPane();
-        this.host.blur();
       }, this.hideDelay);
     }
   };
