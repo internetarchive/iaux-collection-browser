@@ -8,6 +8,8 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import '@a11y/focus-trap';
+
 import { suppressedCollections, type TileModel } from '../../models';
 import type { CollectionTitles } from '../../data-source/models';
 import '../list/tile-list';
@@ -36,20 +38,22 @@ export class TileHoverPane extends LitElement {
   protected render(): TemplateResult {
     return html`
       <div id="container">
-        ${this.headerTemplate}
-        <div id="hover-tile-list">
-          <tile-list
-            .model=${this.model}
-            .baseNavigationUrl=${this.baseNavigationUrl}
-            .baseImageUrl=${this.baseImageUrl}
-            .loggedIn=${this.loggedIn}
-            .suppressBlurring=${this.suppressBlurring}
-            .sortParam=${this.sortParam}
-            .collectionTitles=${this.collectionTitles}
-            .mobileBreakpoint=${this.mobileBreakpoint}
-            .currentWidth=${this.currentWidth}
-          ></tile-list>
-        </div>
+        <focus-trap>
+          ${this.headerTemplate}
+          <div id="hover-tile-list">
+            <tile-list
+              .model=${this.model}
+              .baseNavigationUrl=${this.baseNavigationUrl}
+              .baseImageUrl=${this.baseImageUrl}
+              .loggedIn=${this.loggedIn}
+              .suppressBlurring=${this.suppressBlurring}
+              .sortParam=${this.sortParam}
+              .collectionTitles=${this.collectionTitles}
+              .mobileBreakpoint=${this.mobileBreakpoint}
+              .currentWidth=${this.currentWidth}
+            ></tile-list>
+          </div>
+        </focus-trap>
       </div>
     `;
   }
