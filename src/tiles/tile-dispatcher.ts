@@ -149,13 +149,11 @@ export class TileDispatcher
 
   private get linkTileTemplate() {
     return html`
-      <div id="link-description" class="sr-only">
-        ${msg('Press Down Arrow to preview item details')}
-      </div>
       <a
         href=${this.linkTileHref}
         aria-label=${this.model?.title ?? 'Untitled item'}
-        aria-describedby="link-description"
+        aria-describedby="link-aria-description"
+        aria-haspopup=${this.shouldPrepareHoverPane ? 'dialog' : 'false'}
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
@@ -165,6 +163,9 @@ export class TileDispatcher
       >
         ${this.tile}
       </a>
+      <div id="link-aria-description" class="sr-only">
+        ${msg('Press Down Arrow to preview item details')}
+      </div>
     `;
   }
 

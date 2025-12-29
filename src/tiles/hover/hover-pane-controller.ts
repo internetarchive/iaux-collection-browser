@@ -8,6 +8,7 @@ import {
 } from 'lit';
 import type { TileModel } from '../../models';
 import type { CollectionTitles } from '../../data-source/models';
+import { msg } from '@lit/localize';
 
 type HoverPaneState = 'hidden' | 'shown' | 'fading-out';
 
@@ -193,10 +194,12 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     this.hoverPaneProps = this.host.getHoverPaneProps();
 
     return this.shouldRenderHoverPane
-      ? html` ${this.touchBackdropTemplate}
+      ? html`
+          ${this.touchBackdropTemplate}
           <tile-hover-pane
             popover
             tabindex="-1"
+            aria-describedby="tile-hover-pane-aria-description"
             .model=${this.hoverPaneProps?.model}
             .baseNavigationUrl=${this.hoverPaneProps?.baseNavigationUrl}
             .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
@@ -206,7 +209,11 @@ export class HoverPaneController implements HoverPaneControllerInterface {
             .collectionTitles=${this.hoverPaneProps?.collectionTitles}
             .mobileBreakpoint=${this.mobileBreakpoint}
             .currentWidth=${window.innerWidth}
-          ></tile-hover-pane>`
+          ></tile-hover-pane>
+          <div id="tile-hover-pane-aria-description" class="sr-only">
+            ${msg('Press Up Arrow to exit item detail preview')}
+          </div>
+        `
       : nothing;
   }
 
