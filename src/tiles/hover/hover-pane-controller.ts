@@ -607,8 +607,6 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
     const { top, left } = this.makePaneDesiredOffsets(anchor);
 
-    console.log('repositionHoverPane', top, left);
-
     this.hoverPane.style.top = `${top}px`;
     this.hoverPane.style.left = `${left}px`;
   }
