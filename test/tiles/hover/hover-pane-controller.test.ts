@@ -29,6 +29,10 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
     this.controller = new HoverPaneController(this, this.controllerOptions);
   }
 
+  acquireFocus(): void {}
+
+  releaseFocus(): void {}
+
   getHoverPane(): HTMLElement | undefined {
     return this.suppressHoverPane ? undefined : this.hoverPane;
   }
