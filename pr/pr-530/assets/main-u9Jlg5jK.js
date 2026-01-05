@@ -1805,13 +1805,13 @@
           </div>
         </focus-trap>
       </div>
-    `}get headerTemplate(){var e,t,i,o;if(((e=this.model)===null||e===void 0?void 0:e.collections.length)===0)return b;let r="",a="";for(const l of((t=this.model)===null||t===void 0?void 0:t.collections)||[])if(!qo[l]&&!l.startsWith("fav-")){r=(o=(i=this.collectionTitles)===null||i===void 0?void 0:i.get(l))!==null&&o!==void 0?o:l,a=l;break}return a?p`
+    `}get headerTemplate(){var e,t,i,o,r;if(((t=(e=this.model)===null||e===void 0?void 0:e.collections)===null||t===void 0?void 0:t.length)===0)return b;let a="",l="";for(const d of((i=this.model)===null||i===void 0?void 0:i.collections)||[])if(!qo[d]&&!d.startsWith("fav-")){a=(r=(o=this.collectionTitles)===null||o===void 0?void 0:o.get(d))!==null&&r!==void 0?r:d,l=d;break}return l?p`
       <div id="list-line-header">
-        <a href="${this.baseNavigationUrl}/details/${a}">
+        <a href="${this.baseNavigationUrl}/details/${l}">
           <img
-            src="${this.baseImageUrl}/services/img/${a}"
+            src="${this.baseImageUrl}/services/img/${l}"
             alt=""
-          /><span>${r}</span>
+          /><span>${a}</span>
         </a>
       </div>
     `:b}static get styles(){const e=f`var(--hoverPaneHeaderBGColor, #edf0ff)`,t=f`var(--ia-theme-link-color, #4b64ff)`,i=f`var(--ia-theme-base-font-family, "Helvetica Neue", Helvetica, Arial, sans-serif);`;return f`
@@ -2069,7 +2069,7 @@
           @mousemove=${e=>e.stopPropagation()}
           @mouseleave=${e=>e.stopPropagation()}
         ></div>`:b}get showTouchBackdrop(){return this.isTouchEnabled&&this.enableLongPress||this.forceTouchBackdrop}get isMobileView(){return!!this.mobileBreakpoint&&window.innerWidth<this.mobileBreakpoint}get isHoverEnabled(){return window.matchMedia("(hover: hover)").matches}get isTouchEnabled(){return"ontouchstart"in window&&window.matchMedia("(any-pointer: coarse)").matches}get shouldRenderHoverPane(){return this.hoverPaneState!=="hidden"}makePaneDesiredOffsets(e){var t;let[i,o]=[0,0];switch(e){case"host":const d=this.host.getBoundingClientRect();i=d.left+20,o=d.top+30;break;case"cursor":i=this.lastPointerClientPos.x,o=this.lastPointerClientPos.y;break}const r=i>window.innerWidth/2,a=o>window.innerHeight/2,l=(t=this.hoverPane)===null||t===void 0?void 0:t.getBoundingClientRect();return l&&(r&&(i-=l.width),a&&(o-=l.height),i+=(r?-1:1)*this.offsetX,o+=(a?-1:1)*this.offsetY,this.isMobileView&&(i=Ha(i,20,window.innerWidth-l.width-20),o=Ha(o,20,window.innerHeight-l.height-20))),i+=window.scrollX,o+=window.scrollY,{left:i,top:o}}attachListeners(){this.host.addEventListener("focus",this.handleFocus),this.host.addEventListener("blur",this.handleBlur),this.host.addEventListener("keyup",this.handleKeyUp),this.host.addEventListener("keydown",this.handleKeyDown),this.isHoverEnabled&&(this.host.addEventListener("mouseenter",this.handleMouseEnter),this.host.addEventListener("mousemove",this.handleMouseMove),this.host.addEventListener("mouseleave",this.handleMouseLeave)),this.isTouchEnabled&&this.enableLongPress&&(this.host.addEventListener("touchstart",this.handleTouchStart),this.host.addEventListener("touchmove",this.handleLongPressCancel),this.host.addEventListener("touchend",this.handleLongPressCancel),this.host.addEventListener("touchcancel",this.handleLongPressCancel),this.host.addEventListener("contextmenu",this.handleContextMenu))}detachListeners(){this.host.removeEventListener("mouseenter",this.handleMouseEnter),this.host.removeEventListener("mousemove",this.handleMouseMove),this.host.removeEventListener("mouseleave",this.handleMouseLeave),this.host.removeEventListener("touchstart",this.handleTouchStart),this.host.removeEventListener("touchmove",this.handleLongPressCancel),this.host.removeEventListener("touchend",this.handleLongPressCancel),this.host.removeEventListener("touchcancel",this.handleLongPressCancel),this.host.removeEventListener("contextmenu",this.handleContextMenu),this.host.removeEventListener("focus",this.handleFocus),this.host.removeEventListener("blur",this.handleBlur),this.host.removeEventListener("keyup",this.handleKeyUp),this.host.removeEventListener("keydown",this.handleKeyDown)}restartShowHoverPaneTimer(){clearTimeout(this.showTimer),this.showTimer=window.setTimeout(()=>{this.host.acquireFocus(),this.showHoverPane()},this.showDelay)}async showHoverPane(e={anchor:"cursor"}){var t,i,o,r;this.hoverPaneState="shown",this.host.requestUpdate(),await this.host.updateComplete,!((t=this.hoverPane)===null||t===void 0)&&t.isConnected&&((o=(i=this.hoverPane)===null||i===void 0?void 0:i.showPopover)===null||o===void 0||o.call(i),await new Promise(a=>{requestAnimationFrame(a)}),this.repositionHoverPane(e.anchor),(r=this.hoverPane)===null||r===void 0||r.classList.add("visible","fade-in"))}fadeOutHoverPane(){var e;this.hoverPaneState="fading-out",(e=this.hoverPane)===null||e===void 0||e.classList.remove("fade-in"),clearTimeout(this.hideTimer),this.hideTimer=window.setTimeout(()=>{this.hoverPaneState="hidden",this.hoverPane&&(this.hoverPane.tabIndex=-1),this.host.requestUpdate()},100)}repositionHoverPane(e){if(!this.hoverPane)return;const{top:t,left:i}=this.makePaneDesiredOffsets(e);this.hoverPane.style.top=`${t}px`,this.hoverPane.style.left=`${i}px`}}var rr;let Me=rr=class extends de{constructor(){super(...arguments),this.isManageView=!1,this.showTvClips=!1,this.simpleLayoutType="none",this.enableHoverPane=!1,this.manageCheckTitle=C("Remove this item from the list")}acquireFocus(){var e;(e=this.tileLinkElement)===null||e===void 0||e.focus()}releaseFocus(){var e;(e=this.tileLinkElement)===null||e===void 0||e.blur()}render(){var e,t;const i=this.tileDisplayMode==="grid",o=(t=(e=this.hoverPaneController)===null||e===void 0?void 0:e.getTemplate())!==null&&t!==void 0?t:b;return p`
-      <div id="container" class=${i?"hoverable":b}>
+      <div id="container" class=${i?"hoverable":""}>
         ${this.tileDisplayMode==="list-header"?this.headerTemplate:this.tileTemplate}
         ${this.manageCheckTemplate} ${o}
       </div>
@@ -2104,7 +2104,7 @@
         <input
           type="checkbox"
           title=${this.manageCheckTitle}
-          .checked=${(e=this.model)===null||e===void 0?void 0:e.checked}
+          ?checked=${(e=this.model)===null||e===void 0?void 0:e.checked}
           @change=${this.handleLinkClicked}
         />
       </div>
