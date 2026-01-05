@@ -60,7 +60,7 @@ export class TileHoverPane extends LitElement {
 
   private get headerTemplate(): TemplateResult | typeof nothing {
     // early return if item does't have parent collection
-    if (this.model?.collections.length === 0) return nothing;
+    if (this.model?.collections?.length === 0) return nothing;
 
     let collectionTitle = '';
     let collectionIdentifier = '';
