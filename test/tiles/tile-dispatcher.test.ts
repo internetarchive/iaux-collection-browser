@@ -214,4 +214,70 @@ describe('Tile Dispatcher', () => {
       expect(el.getHoverPane()).not.to.exist;
     });
   });
+
+  describe('Accessibility', () => {
+    it('should have proper aria-label on tile link', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{
+            title: 'Example Title',
+            mediatype: 'texts',
+          }}
+        >
+        </tile-dispatcher>
+      `);
+
+      const tileLink = el.shadowRoot?.querySelector(
+        '.tile-link',
+      ) as HTMLAnchorElement;
+      expect(tileLink).to.exist;
+      expect(tileLink.getAttribute('aria-label')).to.equal('Example Title');
+    });
+
+    it('should fallback to untitled aria-label on tile link when no title', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{
+            mediatype: 'texts',
+          }}
+        >
+        </tile-dispatcher>
+      `);
+
+      const tileLink = el.shadowRoot?.querySelector(
+        '.tile-link',
+      ) as HTMLAnchorElement;
+      expect(tileLink).to.exist;
+      expect(tileLink.getAttribute('aria-label')).to.equal('Untitled item');
+    });
+
+    it('should have no accessibility violations in grid mode', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{
+            title: 'Example Title',
+            mediatype: 'texts',
+          }}
+        >
+        </tile-dispatcher>
+      `);
+
+      await expect(el).to.be.accessible();
+    });
+
+    it('should have no accessibility violations in list mode', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'list-detail'}
+          .model=${{ mediatype: 'texts' }}
+        >
+        </tile-dispatcher>
+      `);
+
+      await expect(el).to.be.accessible();
+    });
+  });
 });
