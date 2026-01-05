@@ -142,6 +142,36 @@ describe('Tile Dispatcher', () => {
     );
   });
 
+  it('should focus the tile link when requested', async () => {
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher .tileDisplayMode=${'grid'}> </tile-dispatcher>
+    `);
+
+    const tileLink = el.shadowRoot?.querySelector(
+      '.tile-link',
+    ) as HTMLAnchorElement;
+    expect(tileLink).to.exist;
+
+    const spyFocus = sinon.spy(tileLink, 'focus');
+    el.acquireFocus();
+    expect(spyFocus.callCount).to.equal(1);
+  });
+
+  it('should blur the tile link when requested', async () => {
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher .tileDisplayMode=${'grid'}> </tile-dispatcher>
+    `);
+
+    const tileLink = el.shadowRoot?.querySelector(
+      '.tile-link',
+    ) as HTMLAnchorElement;
+    expect(tileLink).to.exist;
+
+    const spyBlur = sinon.spy(tileLink, 'blur');
+    el.releaseFocus();
+    expect(spyBlur.callCount).to.equal(1);
+  });
+
   describe('Hover pane info button behavior', () => {
     let oldMatchMedia: typeof window.matchMedia;
 
