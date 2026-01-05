@@ -107,7 +107,7 @@ export class TileDispatcher
     const hoverPaneTemplate =
       this.hoverPaneController?.getTemplate() ?? nothing;
     return html`
-      <div id="container" class=${isGridMode ? 'hoverable' : nothing}>
+      <div id="container" class=${isGridMode ? 'hoverable' : ''}>
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
@@ -193,7 +193,7 @@ export class TileDispatcher
         <input
           type="checkbox"
           title=${this.manageCheckTitle}
-          .checked=${this.model?.checked}
+          ?checked=${this.model?.checked}
           @change=${this.handleLinkClicked}
         />
       </div>
