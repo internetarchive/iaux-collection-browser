@@ -5572,8 +5572,7 @@ fill=""></path>
       ></expanded-date-picker>
     `,S=new Rt({bodyColor:"#fff",headerColor:"#194880",showHeaderLogo:!1,closeOnBackdropClick:!0,title:h`${k("Select a date range")}`});(e=this.modalManager)===null||e===void 0||e.classList.add("expanded-date-picker"),(t=this.modalManager)===null||t===void 0||t.showModal({config:S,customModalContent:x,userClosedModalCallback:this.handleExpandedDatePickerClosed}),(i=this.analyticsHandler)===null||i===void 0||i.sendEvent({category:rt.default,action:te.histogramExpanded,label:window.location.href})}updated(e){e.has("selectedFacets")&&this.dispatchFacetsChangedEvent()}dispatchFacetsChangedEvent(){const e=new CustomEvent("facetsChanged",{detail:this.selectedFacets});this.dispatchEvent(e)}get expandDatePickerBtnTemplate(){return this.allowExpandingDatePicker&&!this.facetsLoading?h`<button
           class="expand-date-picker-btn"
-          aria-hidden="true"
-          tabindex="-1"
+          aria-haspopup="dialog"
           @click=${this.showDatePickerModal}
         >
           ${R0}
