@@ -142,6 +142,36 @@ describe('Tile Dispatcher', () => {
     );
   });
 
+  it('should focus the tile link when requested', async () => {
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher .tileDisplayMode=${'grid'}> </tile-dispatcher>
+    `);
+
+    const tileLink = el.shadowRoot?.querySelector(
+      '.tile-link',
+    ) as HTMLAnchorElement;
+    expect(tileLink).to.exist;
+
+    const spyFocus = sinon.spy(tileLink, 'focus');
+    el.acquireFocus();
+    expect(spyFocus.callCount).to.equal(1);
+  });
+
+  it('should blur the tile link when requested', async () => {
+    const el = await fixture<TileDispatcher>(html`
+      <tile-dispatcher .tileDisplayMode=${'grid'}> </tile-dispatcher>
+    `);
+
+    const tileLink = el.shadowRoot?.querySelector(
+      '.tile-link',
+    ) as HTMLAnchorElement;
+    expect(tileLink).to.exist;
+
+    const spyBlur = sinon.spy(tileLink, 'blur');
+    el.releaseFocus();
+    expect(spyBlur.callCount).to.equal(1);
+  });
+
   describe('Hover pane info button behavior', () => {
     let oldMatchMedia: typeof window.matchMedia;
 
@@ -182,6 +212,72 @@ describe('Tile Dispatcher', () => {
       await aTimeout(500);
       await el.updateComplete;
       expect(el.getHoverPane()).not.to.exist;
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have proper aria-label on tile link', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{
+            title: 'Example Title',
+            mediatype: 'texts',
+          }}
+        >
+        </tile-dispatcher>
+      `);
+
+      const tileLink = el.shadowRoot?.querySelector(
+        '.tile-link',
+      ) as HTMLAnchorElement;
+      expect(tileLink).to.exist;
+      expect(tileLink.getAttribute('aria-label')).to.equal('Example Title');
+    });
+
+    it('should fallback to untitled aria-label on tile link when no title', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{
+            mediatype: 'texts',
+          }}
+        >
+        </tile-dispatcher>
+      `);
+
+      const tileLink = el.shadowRoot?.querySelector(
+        '.tile-link',
+      ) as HTMLAnchorElement;
+      expect(tileLink).to.exist;
+      expect(tileLink.getAttribute('aria-label')).to.equal('Untitled item');
+    });
+
+    it('should have no accessibility violations in grid mode', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{
+            title: 'Example Title',
+            mediatype: 'texts',
+          }}
+        >
+        </tile-dispatcher>
+      `);
+
+      await expect(el).to.be.accessible();
+    });
+
+    it('should have no accessibility violations in list mode', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'list-detail'}
+          .model=${{ mediatype: 'texts' }}
+        >
+        </tile-dispatcher>
+      `);
+
+      await expect(el).to.be.accessible();
     });
   });
 });

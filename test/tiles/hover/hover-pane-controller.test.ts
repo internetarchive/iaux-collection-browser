@@ -10,6 +10,7 @@ import {
 } from '../../../src/tiles/hover/hover-pane-controller';
 import type { TileHoverPane } from '../../../src/tiles/hover/tile-hover-pane';
 import { TileModel } from '../../../src/models';
+import sinon from 'sinon';
 
 @customElement('host-element')
 class HostElement extends LitElement implements HoverPaneProviderInterface {
@@ -28,6 +29,10 @@ class HostElement extends LitElement implements HoverPaneProviderInterface {
   protected firstUpdated(): void {
     this.controller = new HoverPaneController(this, this.controllerOptions);
   }
+
+  acquireFocus(): void {}
+
+  releaseFocus(): void {}
 
   getHoverPane(): HTMLElement | undefined {
     return this.suppressHoverPane ? undefined : this.hoverPane;
@@ -343,6 +348,66 @@ describe('Hover Pane Controller', () => {
       host.shadowRoot
         ?.querySelector('#touch-backdrop')
         ?.dispatchEvent(new TouchEvent('touchstart'));
+      await new Promise(resolve => {
+        setTimeout(resolve, 150);
+      });
+
+      expect(host.controller?.getTemplate()).to.equal(nothing);
+    });
+  });
+
+  describe('keyboard accessibility', () => {
+    it('should call host getBoundingClientRect if anchor is host', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+        ></host-element>`,
+      );
+
+      const getBoundingClientRectSpy = sinon.spy(host, 'getBoundingClientRect');
+
+      host.dispatchEvent(new FocusEvent('focus'));
+      // Need to wait a tick for the event handlers to run
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
+
+      expect(getBoundingClientRectSpy.called).to.be.true;
+    });
+
+    it('should show hover pane on focus', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+        ></host-element>`,
+      );
+
+      host.dispatchEvent(new FocusEvent('focus'));
+      // Need to wait a tick for the event handlers to run
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
+
+      expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
+    });
+
+    it('should hide hover pane on blur', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+        ></host-element>`,
+      );
+
+      host.dispatchEvent(new FocusEvent('focus'));
+      // Need to wait a tick for the event handlers to run
+      await new Promise(resolve => {
+        setTimeout(resolve, 0);
+      });
+
+      expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
+
+      host.dispatchEvent(new FocusEvent('blur'));
+      // Need to wait for the fade out transition
       await new Promise(resolve => {
         setTimeout(resolve, 150);
       });

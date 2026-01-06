@@ -25,6 +25,7 @@ import {
   HoverPaneProperties,
   HoverPaneProviderInterface,
 } from './hover/hover-pane-controller';
+import { srOnlyStyle } from '../styles/sr-only';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -79,6 +80,17 @@ export class TileDispatcher
   @query('tile-hover-pane')
   private hoverPane?: TileHoverPane;
 
+  @query('.tile-link')
+  private tileLinkElement?: HTMLAnchorElement;
+
+  acquireFocus(): void {
+    this.tileLinkElement?.focus();
+  }
+
+  releaseFocus(): void {
+    this.tileLinkElement?.blur();
+  }
+
   /** Maps each display mode to whether hover panes should appear in that mode */
   private static readonly HOVER_PANE_DISPLAY_MODES: Record<
     TileDisplayMode,
@@ -95,7 +107,7 @@ export class TileDispatcher
     const hoverPaneTemplate =
       this.hoverPaneController?.getTemplate() ?? nothing;
     return html`
-      <div id="container" class=${isGridMode ? 'hoverable' : nothing}>
+      <div id="container" class=${isGridMode ? 'hoverable' : ''}>
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
@@ -140,14 +152,20 @@ export class TileDispatcher
       <a
         href=${this.linkTileHref}
         aria-label=${this.model?.title ?? 'Untitled item'}
+        aria-describedby="link-aria-description"
+        aria-haspopup=${this.shouldPrepareHoverPane ? 'dialog' : 'false'}
         title=${this.shouldPrepareHoverPane
           ? nothing // Don't show title tooltips when we have the tile info popups
           : ifDefined(this.model?.title)}
         @click=${this.handleLinkClicked}
         @contextmenu=${this.handleLinkContextMenu}
+        class="tile-link"
       >
         ${this.tile}
       </a>
+      <div id="link-aria-description" class="sr-only">
+        ${msg('Press Down Arrow to preview item details')}
+      </div>
     `;
   }
 
@@ -175,7 +193,7 @@ export class TileDispatcher
         <input
           type="checkbox"
           title=${this.manageCheckTitle}
-          .checked=${this.model?.checked}
+          ?checked=${this.model?.checked}
           @change=${this.handleLinkClicked}
         />
       </div>
@@ -401,90 +419,99 @@ export class TileDispatcher
   }
 
   static get styles() {
-    return css`
-      :host {
-        display: block;
-        height: 100%;
-      }
+    return [
+      srOnlyStyle,
+      css`
+        :host {
+          display: block;
+          height: 100%;
+        }
 
-      collection-tile {
-        --tileBorderColor: #555555;
-        --tileBackgroundColor: #666666;
-        --imageBlockBackgroundColor: #666666;
-      }
+        collection-tile {
+          --tileBorderColor: #555555;
+          --tileBackgroundColor: #666666;
+          --imageBlockBackgroundColor: #666666;
+        }
 
-      account-tile {
-        --tileBorderColor: #dddddd;
-        --imageBlockBackgroundColor: #fcf5e6;
-      }
+        account-tile {
+          --tileBorderColor: #dddddd;
+          --imageBlockBackgroundColor: #fcf5e6;
+        }
 
-      item-tile {
-        --tileBorderColor: #dddddd;
-        --imageBlockBackgroundColor: #f1f1f4;
-      }
+        item-tile {
+          --tileBorderColor: #dddddd;
+          --imageBlockBackgroundColor: #f1f1f4;
+        }
 
-      search-tile {
-        --tileBorderColor: #555555;
-        --tileBackgroundColor: #666666;
-        --imageBlockBackgroundColor: #666666;
-        --iconFillColor: #2c2c2c;
-      }
+        search-tile {
+          --tileBorderColor: #555555;
+          --tileBackgroundColor: #666666;
+          --imageBlockBackgroundColor: #666666;
+          --iconFillColor: #2c2c2c;
+        }
 
-      #container {
-        position: relative;
-        height: 100%;
-        border-radius: 4px;
-      }
+        #container {
+          position: relative;
+          height: 100%;
+          border-radius: 4px;
+        }
 
-      #container.hoverable:hover {
-        box-shadow: var(--tileHoverBoxShadow, 0 0 6px 2px rgba(8, 8, 32, 0.8));
-        transition: box-shadow 0.1s ease;
-      }
+        #container.hoverable a:focus,
+        #container.hoverable a:hover {
+          box-shadow: var(
+            --tileHoverBoxShadow,
+            0 0 6px 2px rgba(8, 8, 32, 0.8)
+          );
+          transition: box-shadow 0.1s ease;
+        }
 
-      a {
-        display: block;
-        height: 100%;
-        color: unset;
-        text-decoration: none;
-        transition: transform 0.05s ease;
-      }
+        a {
+          display: block;
+          height: 100%;
+          color: unset;
+          text-decoration: none;
+          transition: transform 0.05s ease;
+          border-radius: 4px;
+          outline: none;
+        }
 
-      a :first-child {
-        display: block;
-        height: 100%;
-      }
+        a :first-child {
+          display: block;
+          height: 100%;
+        }
 
-      .manage-check {
-        position: absolute;
-        right: 0;
-        top: 0;
-        border: 5px solid #2c2c2c;
-        border-radius: 3px;
-        background-color: #2c2c2c;
-        z-index: 1;
-      }
+        .manage-check {
+          position: absolute;
+          right: 0;
+          top: 0;
+          border: 5px solid #2c2c2c;
+          border-radius: 3px;
+          background-color: #2c2c2c;
+          z-index: 1;
+        }
 
-      .manage-check > input[type='checkbox'] {
-        display: block;
-        margin: 0;
-      }
+        .manage-check > input[type='checkbox'] {
+          display: block;
+          margin: 0;
+        }
 
-      #touch-backdrop {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        top: 0;
-        left: 0;
-        z-index: 2;
-        background: transparent;
-      }
+        #touch-backdrop {
+          position: fixed;
+          width: 100vw;
+          height: 100vh;
+          top: 0;
+          left: 0;
+          z-index: 2;
+          background: transparent;
+        }
 
-      tile-hover-pane {
-        position: absolute;
-        top: 0;
-        left: -9999px;
-        z-index: 2;
-      }
-    `;
+        tile-hover-pane {
+          position: absolute;
+          top: 0;
+          left: -9999px;
+          z-index: 2;
+        }
+      `,
+    ];
   }
 }
