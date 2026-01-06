@@ -398,8 +398,7 @@ export class CollectionFacets extends LitElement {
     return this.allowExpandingDatePicker && !this.facetsLoading
       ? html`<button
           class="expand-date-picker-btn"
-          aria-hidden="true"
-          tabindex="-1"
+          aria-haspopup="dialog"
           @click=${this.showDatePickerModal}
         >
           ${expandIcon}
