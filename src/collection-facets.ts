@@ -170,6 +170,10 @@ export class CollectionFacets extends LitElement {
       managing: this.isManageView,
     });
 
+    const heading = this.isTvSearch
+      ? msg('Date Published')
+      : msg('Year Published');
+
     // Added data-testid for Playwright testing
     // Using facet-group class and aria-labels is not ideal for Playwright locator
     const datePickerLabelId = 'date-picker-label';
@@ -184,7 +188,7 @@ export class CollectionFacets extends LitElement {
                 data-testid="facet-group-header-label-date-picker"
               >
                 <h3 id=${datePickerLabelId}>
-                  Year Published <span class="sr-only">range filter</span>
+                  ${heading} <span class="sr-only">${msg('range filter')}</span>
                   ${this.expandDatePickerBtnTemplate}
                 </h3>
                 ${this.histogramTemplate}
