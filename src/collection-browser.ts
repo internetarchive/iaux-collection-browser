@@ -1368,6 +1368,20 @@ export class CollectionBrowser
     const shows = showEntries.map(([show]) => show);
     log('end filters template preprocess', Date.now());
 
+    const makeNetworkOption = (network: string) => html`
+      <option ?selected=${this.selectedTVNetwork === network}>
+        ${network}
+      </option>
+    `;
+
+    const makeShowOption = (show: string) => html`
+      <option ?selected=${this.selectedTVShow === show}>${show}</option>
+    `;
+
+    const loadingIndicator = html`
+      <img src="https://archive.org/images/loading.gif" />
+    `;
+
     return html`
       <div id="tv-filters" slot="facets-top">
         <div class="tv-filter-dropdown-wrap">
@@ -1380,16 +1394,11 @@ export class CollectionBrowser
             <option value="" ?selected=${!this.selectedTVNetwork}>
               ${msg('Filter by Network')}
             </option>
-            ${map(
-              networks,
-              n =>
-                html`<option ?selected=${this.selectedTVNetwork === n}>
-                  ${n}
-                </option>`,
-            )}
+            ${map(networks, makeNetworkOption)}
           </select>
-          <img src="https://archive.org/images/loading.gif" />
+          ${loadingIndicator}
         </div>
+
         <div class="tv-filter-dropdown-wrap">
           <select
             id="tv-shows"
@@ -1400,17 +1409,9 @@ export class CollectionBrowser
             <option value="" ?selected=${!this.selectedTVShow}>
               ${msg('Filter by Show')}
             </option>
-            ${this.shouldPopulateShows
-              ? map(
-                  shows,
-                  s =>
-                    html`<option ?selected=${this.selectedTVShow === s}>
-                      ${s}
-                    </option>`,
-                )
-              : nothing}
+            ${this.shouldPopulateShows ? map(shows, makeShowOption) : nothing}
           </select>
-          <img src="https://archive.org/images/loading.gif" />
+          ${loadingIndicator}
         </div>
       </div>
     `;
