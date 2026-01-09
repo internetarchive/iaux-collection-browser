@@ -532,6 +532,9 @@ export class CollectionBrowser
       this.selectedSort = SortField.default;
     }
 
+    this.selectedTVNetwork = undefined;
+    this.selectedTVShow = undefined;
+
     if (this.smartFacetBar) {
       this.smartFacetBar.deselectAll();
     }
@@ -1374,8 +1377,16 @@ export class CollectionBrowser
             @click=${this.networksDropdownClicked}
             @change=${this.networksDropdownChanged}
           >
-            <option selected value="">${msg('Filter by Network')}</option>
-            ${map(networks, n => html`<option>${n}</option>`)}
+            <option value="" ?selected=${!this.selectedTVNetwork}>
+              ${msg('Filter by Network')}
+            </option>
+            ${map(
+              networks,
+              n =>
+                html`<option ?selected=${this.selectedTVNetwork === n}>
+                  ${n}
+                </option>`,
+            )}
           </select>
           <img src="https://archive.org/images/loading.gif" />
         </div>
@@ -1386,9 +1397,17 @@ export class CollectionBrowser
             @click=${this.showsDropdownClicked}
             @change=${this.showsDropdownChanged}
           >
-            <option selected value="">${msg('Filter by Show')}</option>
+            <option value="" ?selected=${!this.selectedTVShow}>
+              ${msg('Filter by Show')}
+            </option>
             ${this.shouldPopulateShows
-              ? map(shows, s => html`<option>${s}</option>`)
+              ? map(
+                  shows,
+                  s =>
+                    html`<option ?selected=${this.selectedTVShow === s}>
+                      ${s}
+                    </option>`,
+                )
               : nothing}
           </select>
           <img src="https://archive.org/images/loading.gif" />
