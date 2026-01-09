@@ -50,6 +50,7 @@ import {
   defaultSortAvailability,
   favoritesSortAvailability,
   tvSortAvailability,
+  FacetBucket,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -1250,6 +1251,7 @@ export class CollectionBrowser
 
   @state() private selectedTVNetwork?: string = undefined;
   @state() private selectedTVShow?: string = undefined;
+  @state() private shouldPopulateShows: boolean = false;
 
   @query('#tv-networks') private tvNetworksDropdown?: HTMLSelectElement;
   @query('#tv-shows') private tvShowsDropdown?: HTMLSelectElement;
@@ -1263,58 +1265,81 @@ export class CollectionBrowser
   private async showsDropdownClicked(): Promise<void> {
     this.tvShowsDropdown?.classList.add('loading');
     await this.dataSource.populateTVChannelMaps();
+    // Delay for a single tick so that the loading indicator will be rendered
+    // while the dropdown options are being added
+    await new Promise(res => setTimeout(res, 0));
+    this.shouldPopulateShows = true;
+    await this.updateComplete;
     this.tvShowsDropdown?.classList.remove('loading');
   }
 
   private async networksDropdownChanged(): Promise<void> {
-    if (this.tvNetworksDropdown?.selectedIndex === 0) {
-      this.selectedTVNetwork = undefined;
-      return;
-    }
+    const previousNetwork = this.selectedTVNetwork;
+    this.selectedTVNetwork =
+      this.tvNetworksDropdown!.selectedOptions[0].value || undefined;
 
-    this.selectedTVNetwork = this.tvNetworksDropdown!.selectedOptions[0].value;
-    let newNetworkFacets: SelectedFacets = getDefaultSelectedFacets();
-    for (const [
-      channel,
-      network,
-    ] of this.dataSource.tvChannelMaps.channelToNetwork!.entries()) {
-      if (network === this.selectedTVNetwork) {
-        newNetworkFacets = updateSelectedFacetBucket(
-          newNetworkFacets,
+    const entries = this.dataSource.tvChannelMaps.channelToNetwork!.entries();
+    for (const [channel, network] of entries) {
+      if (network === previousNetwork) {
+        // Remove any previously-applied network filter
+        const removedBucket: FacetBucket = {
+          key: channel.toLowerCase(),
+          count: 0,
+          state: 'none',
+        };
+        this.selectedFacets = updateSelectedFacetBucket(
+          this.selectedFacets,
           'creator',
-          {
-            key: channel.toLowerCase(),
-            count: 0,
-            state: 'selected',
-          },
+          removedBucket,
+          true,
+        );
+      } else if (network === this.selectedTVNetwork) {
+        const newBucket: FacetBucket = {
+          key: channel.toLowerCase(),
+          count: 0,
+          state: 'selected',
+        };
+        this.selectedFacets = updateSelectedFacetBucket(
+          this.selectedFacets,
+          'creator',
+          newBucket,
         );
       }
     }
-
-    log(newNetworkFacets);
-    this.selectedFacets = mergeSelectedFacets(
-      this.selectedFacets,
-      newNetworkFacets,
-    );
-    log(this.selectedFacets);
   }
 
   private async showsDropdownChanged(): Promise<void> {
-    if (this.tvShowsDropdown?.selectedIndex === 0) {
-      this.selectedTVShow = undefined;
-      return;
+    const previousShow = this.selectedTVShow;
+    this.selectedTVShow =
+      this.tvShowsDropdown!.selectedOptions[0].value || undefined;
+
+    // Remove any previously-applied shows filter
+    if (previousShow !== undefined) {
+      const removedBucket: FacetBucket = {
+        key: previousShow,
+        count: 0,
+        state: 'none',
+      };
+      this.selectedFacets = updateSelectedFacetBucket(
+        this.selectedFacets,
+        'program',
+        removedBucket,
+        true,
+      );
     }
 
-    this.selectedTVShow = this.tvShowsDropdown!.selectedOptions[0].value;
-    this.selectedFacets = updateSelectedFacetBucket(
-      this.selectedFacets,
-      'program',
-      {
+    if (this.selectedTVShow) {
+      const newBucket: FacetBucket = {
         key: this.selectedTVShow,
         count: 0,
         state: 'selected',
-      },
-    );
+      };
+      this.selectedFacets = updateSelectedFacetBucket(
+        this.selectedFacets,
+        'program',
+        newBucket,
+      );
+    }
   }
 
   private get tvDropdownFiltersTemplate(): TemplateResult | typeof nothing {
@@ -1342,24 +1367,32 @@ export class CollectionBrowser
 
     return html`
       <div id="tv-filters" slot="facets-top">
-        <select
-          id="tv-networks"
-          class="tv-filter-dropdown"
-          @click=${this.networksDropdownClicked}
-          @change=${this.networksDropdownChanged}
-        >
-          <option selected value="">${msg('Filter by Network')}</option>
-          ${map(networks, n => html`<option>${n}</option>`)}
-        </select>
-        <select
-          id="tv-shows"
-          class="tv-filter-dropdown"
-          @click=${this.showsDropdownClicked}
-          @change=${this.showsDropdownChanged}
-        >
-          <option selected value="">${msg('Filter by Show')}</option>
-          ${map(shows, s => html`<option>${s}</option>`)}
-        </select>
+        <div class="tv-filter-dropdown-wrap">
+          <select
+            id="tv-networks"
+            class="tv-filter-dropdown"
+            @click=${this.networksDropdownClicked}
+            @change=${this.networksDropdownChanged}
+          >
+            <option selected value="">${msg('Filter by Network')}</option>
+            ${map(networks, n => html`<option>${n}</option>`)}
+          </select>
+          <img src="https://archive.org/images/loading.gif" />
+        </div>
+        <div class="tv-filter-dropdown-wrap">
+          <select
+            id="tv-shows"
+            class="tv-filter-dropdown"
+            @click=${this.showsDropdownClicked}
+            @change=${this.showsDropdownChanged}
+          >
+            <option selected value="">${msg('Filter by Show')}</option>
+            ${this.shouldPopulateShows
+              ? map(shows, s => html`<option>${s}</option>`)
+              : nothing}
+          </select>
+          <img src="https://archive.org/images/loading.gif" />
+        </div>
       </div>
     `;
   }
@@ -2783,7 +2816,22 @@ export class CollectionBrowser
         .tv-filter-dropdown {
           width: 100%;
           padding: 3px;
+        }
+
+        .tv-filter-dropdown-wrap {
+          display: flex;
+          align-items: center;
+          column-gap: 5px;
           margin-bottom: 5px;
+        }
+
+        .tv-filter-dropdown-wrap > img {
+          flex: 1;
+          visibility: hidden;
+        }
+
+        .tv-filter-dropdown.loading + img {
+          visibility: visible;
         }
 
         #facets-container {
