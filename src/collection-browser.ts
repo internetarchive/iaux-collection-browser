@@ -532,11 +532,26 @@ export class CollectionBrowser
       this.selectedSort = SortField.default;
     }
 
-    this.selectedTVNetwork = undefined;
-    this.selectedTVShow = undefined;
+    this.clearTVDropdowns();
 
     if (this.smartFacetBar) {
       this.smartFacetBar.deselectAll();
+    }
+  }
+
+  /**
+   * Resets any selected TV network/show dropdowns to their default state
+   */
+  private clearTVDropdowns(): void {
+    this.selectedTVNetwork = undefined;
+    this.selectedTVShow = undefined;
+
+    if (this.tvNetworksDropdown) {
+      this.tvNetworksDropdown.selectedIndex = 0;
+    }
+
+    if (this.tvShowsDropdown) {
+      this.tvShowsDropdown.selectedIndex = 0;
     }
   }
 
