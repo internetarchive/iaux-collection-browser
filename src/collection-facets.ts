@@ -401,6 +401,7 @@ export class CollectionFacets extends LitElement {
           aria-haspopup="dialog"
           @click=${this.showDatePickerModal}
         >
+          <span class="sr-only">${msg('Expand date histogram')}</span>
           ${expandIcon}
         </button>`
       : nothing;
