@@ -334,10 +334,10 @@
   dependencies:
     lit "^2.8.0"
 
-"@internetarchive/ia-dropdown@1.4.2-alpha-webdev7959.0":
-  version "1.4.2-alpha-webdev7959.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.4.2-alpha-webdev7959.0.tgz#dfc8df8fb9429c3ec408723f7a174bce2638bb03"
-  integrity sha512-UoPS+K0YnaMcvbsDxWGM93PUwqi0T4ia1EmfT/NNJllyJnxIN8ZPcmtJg1Jdi+57BqiU+Siv8dsuHAAbuGmZGA==
+"@internetarchive/ia-dropdown@1.4.2-alpha-webdev7959.3":
+  version "1.4.2-alpha-webdev7959.3"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.4.2-alpha-webdev7959.3.tgz#dd84c527947f3732e2df03ad9b177f66c3c74c33"
+  integrity sha512-+SsnNc45ueiFprhgbAINxXYwXAElUt0hVkTiZ//cMy8Hus7rZnRhgAPh2xgIjNhDCjVRPo6nhozF+gErpI/fvg==
   dependencies:
     lit "^2.8.0"
 
