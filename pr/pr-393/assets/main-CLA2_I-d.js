@@ -5745,7 +5745,8 @@ fill=""></path>
           aria-haspopup="dialog"
           @click=${this.showDatePickerModal}
         >
-          ${j0}
+          <span class="sr-only">${C("Expand date histogram")}</span>
+          <span aria-hidden="true">${j0}</span>
         </button>`:b}get histogramTemplate(){var e,t;if(this.histogramAggregationLoading)return p` <div class="histogram-loading-indicator">&hellip;</div> `;const{histogramProps:i}=this;if(!i)return b;const{buckets:o,dateFormat:r,tooltipDateFormat:a,tooltipLabel:l,binSnapping:d,barScaling:u,minDate:h,maxDate:m}=i;return p`
       <histogram-date-range
         class=${this.isTvSearch?"wide-inputs":""}
@@ -5935,7 +5936,7 @@ fill=""></path>
           cursor: pointer;
         }
 
-        .expand-date-picker-btn > svg {
+        .expand-date-picker-btn svg {
           width: 14px;
           height: 14px;
         }
