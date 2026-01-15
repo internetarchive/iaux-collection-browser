@@ -401,7 +401,8 @@ export class CollectionFacets extends LitElement {
           aria-haspopup="dialog"
           @click=${this.showDatePickerModal}
         >
-          ${expandIcon}
+          <span class="sr-only">${msg('Expand date histogram')}</span>
+          <span aria-hidden="true">${expandIcon}</span>
         </button>`
       : nothing;
   }
@@ -975,7 +976,7 @@ export class CollectionFacets extends LitElement {
           cursor: pointer;
         }
 
-        .expand-date-picker-btn > svg {
+        .expand-date-picker-btn svg {
           width: 14px;
           height: 14px;
         }
