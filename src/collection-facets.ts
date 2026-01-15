@@ -402,7 +402,7 @@ export class CollectionFacets extends LitElement {
           @click=${this.showDatePickerModal}
         >
           <span class="sr-only">${msg('Expand date histogram')}</span>
-          ${expandIcon}
+          <span aria-hidden="true">${expandIcon}</span>
         </button>`
       : nothing;
   }
@@ -976,7 +976,7 @@ export class CollectionFacets extends LitElement {
           cursor: pointer;
         }
 
-        .expand-date-picker-btn > svg {
+        .expand-date-picker-btn svg {
           width: 14px;
           height: 14px;
         }
