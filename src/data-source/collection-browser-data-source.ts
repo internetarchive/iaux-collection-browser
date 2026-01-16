@@ -1198,7 +1198,14 @@ export class CollectionBrowserDataSource
       // For collections, we want the UI to respect the default sort option
       // which can be specified in metadata, or otherwise assumed to be week:desc
       if (this.activeOnHost) {
-        this.host.applyDefaultCollectionSort(this.collectionExtraInfo);
+        // Normalize any backend-applied sort to an array and take the first element.
+        // This accounts for the backend sort being a string, a string[], or undefined entirely.
+        const backendSortRaw =
+          success.request.backendRequests['search']?.finalized_parameters.sort;
+        const backendSort = ([] as (string | undefined)[]).concat(
+          backendSortRaw,
+        )?.[0];
+        this.host.applyDefaultCollectionSort(backendSort);
       }
 
       if (this.collectionExtraInfo) {

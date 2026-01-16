@@ -2188,13 +2188,12 @@ export class CollectionBrowser
   }
 
   /**
-   * Applies any default sort option for the current collection, by checking
-   * for one in the collection's metadata. If none is found, defaults to sorting
-   * descending by:
+   * Applies any default sort option for the current collection, using the sort applied
+   * by the backend if applicable. If none is found, defaults to sorting descending by:
    *  - Date Favorited for fav-* collections
    *  - Weekly views for all other collections
    */
-  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void {
+  applyDefaultCollectionSort(backendSort?: string): void {
     if (this.baseQuery) {
       // If there's a query set, then we default to relevance sorting regardless of
       // the collection metadata-specified sort.
@@ -2205,17 +2204,14 @@ export class CollectionBrowser
 
     // Favorite collections sort on Date Favorited by default.
     // Other collections fall back to sorting on weekly views.
-    const baseDefaultSort: string =
-      collectionInfo?.public_metadata?.identifier?.startsWith('fav-')
-        ? '-favoritedate'
-        : '-week';
+    const baseDefaultSort: string = this.withinCollection?.startsWith('fav-')
+      ? '-favoritedate'
+      : '-week';
 
-    // The collection metadata may override the default sorting with something else
-    const metadataSort: string | undefined =
-      collectionInfo?.public_metadata?.['sort-by'];
-
-    // Prefer the metadata-specified sort if one exists
-    const defaultSortToApply = metadataSort ?? baseDefaultSort;
+    // The PPS may override the default sorting with something else
+    // E.g., sort-by metadata, or TV collection defaults
+    // Prefer the backend-specified sort if one exists
+    const defaultSortToApply = backendSort ?? baseDefaultSort;
 
     // Account for both -field and field:dir formats
     let [field, dir] = defaultSortToApply.split(':');
