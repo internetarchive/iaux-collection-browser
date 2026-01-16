@@ -339,10 +339,10 @@
   dependencies:
     lit "^2.8.0"
 
-"@internetarchive/ia-dropdown@^1.4.1":
-  version "1.4.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-1.4.1.tgz#06953e7a7d7e969c682b233cc9009ebae80446b5"
-  integrity sha512-Khxj96oEdMtyshjGvqAqQBx8BBE51SSScCU1xAllijJ48hd3LSSCFyX3vSqhAHK2p8lWEVz0XEjaNyjz8Bj0ig==
+"@internetarchive/ia-dropdown@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-2.0.0.tgz#72e4469c4363f08a09262ea457360900227253b5"
+  integrity sha512-7Bl2teU6gAwbMrgdhc8u+62TrH3uipF5sEXoyKbarc2eCBw+0I46ck+wBoHLQphFhIEZk1O08IHFa+D7s7jVVQ==
   dependencies:
     lit "^2.8.0"
 
