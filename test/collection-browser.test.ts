@@ -1314,7 +1314,7 @@ describe('Collection Browser', () => {
     );
   });
 
-  it('sets default sort from collection metadata', async () => {
+  it('sets default sort from backend applied sort', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
@@ -1339,7 +1339,7 @@ describe('Collection Browser', () => {
     expect(sortBar.sortDirection).to.be.null;
   });
 
-  it('sets default sort from collection metadata in "-field" format', async () => {
+  it('sets default sort from backend applied sort in "-field" format', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser

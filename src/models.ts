@@ -526,7 +526,7 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     handledBySearchService: false,
     searchServiceKey: 'favoritedate',
     displayName: 'Date favorited',
-    urlNames: ['favoritedate'],
+    urlNames: ['favoritedate', 'date_favorited'],
   },
   [SortField.creator]: {
     field: SortField.creator,
