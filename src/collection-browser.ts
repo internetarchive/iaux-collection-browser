@@ -379,6 +379,13 @@ export class CollectionBrowser
   private isScrollingToCell = false;
 
   /**
+   * When we attempt to scroll to a page before the infinite scroller has
+   * been populated, this flag will be set, allowing us to complete the scroll
+   * once it is possible.
+   */
+  private needsScrollToPage = false;
+
+  /**
    * When page width resizes from desktop to mobile, set true to
    * disable expand/collapse transition when loading.
    */
@@ -1679,6 +1686,15 @@ export class CollectionBrowser
     }
 
     this.ensureAvailableTilesDisplayed();
+
+    if (
+      this.needsScrollToPage &&
+      this.currentPage &&
+      this.infiniteScroller?.itemCount
+    ) {
+      this.needsScrollToPage = false;
+      this.scrollToPage(this.currentPage);
+    }
   }
 
   connectedCallback(): void {
@@ -2152,6 +2168,16 @@ export class CollectionBrowser
   private scrollToPage(pageNumber: number): Promise<void> {
     return new Promise(resolve => {
       const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
+      // If the desired cell is not yet present in the infinite scroller, flag it to be
+      // scrolled later one ready.
+      if (
+        !this.infiniteScroller ||
+        this.infiniteScroller.itemCount < cellIndexToScrollTo
+      ) {
+        this.needsScrollToPage = true;
+        return;
+      }
+
       // without this setTimeout, Safari just pauses until the `fetchPage` is complete
       // then scrolls to the cell
       setTimeout(() => {
