@@ -38,7 +38,7 @@ import type {
   PageSpecifierParams,
   TVChannelAliases,
 } from '../data-source/models';
-import '@internetarchive/ia-activity-indicator';
+import '@internetarchive/elements/ia-status-indicator/ia-status-indicator';
 import './more-facets-pagination';
 import './facets-template';
 import {
@@ -424,9 +424,12 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get loaderTemplate(): TemplateResult {
-    return html`<div class="facets-loader">
-      <ia-activity-indicator .mode=${'processing'}></ia-activity-indicator>
-    </div> `;
+    return html`
+      <ia-status-indicator
+        class="facets-loader"
+        mode="loading"
+      ></ia-status-indicator>
+    `;
   }
 
   /**
@@ -596,8 +599,8 @@ export class MoreFacetsContent extends LitElement {
           padding: 10px;
         }
         .facets-loader {
+          --icon-width: 70px;
           margin-bottom: 20px;
-          width: 70px;
           display: block;
           margin-left: auto;
           margin-right: auto;
