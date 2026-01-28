@@ -7,7 +7,7 @@
   "main": "dist/index.js",
   "module": "dist/index.js",
   "scripts": {
-    "start": "yarn run prepare && tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wds\"",
+    "start": "vite",
     "prepare:ghpages": "rimraf ghpages && yarn run prepare && vite build",
     "prepare": "rimraf dist && tsc && husky install",
     "lint": "eslint . && prettier \"**/*.ts\" --check",
@@ -49,6 +49,7 @@
     "@types/mocha": "^10.0.10",
     "@typescript-eslint/eslint-plugin": "^8.27.0",
     "@typescript-eslint/parser": "^8.27.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.4",
     "@web/dev-server": "^0.4.6",
     "@web/test-runner": "^0.20.0",
     "concurrently": "^9.1.2",
