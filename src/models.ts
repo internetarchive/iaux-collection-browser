@@ -731,15 +731,15 @@ export const defaultFacetDisplayOrder: FacetOption[] = [
  * Specialized facet ordering when displaying TV search results
  */
 export const tvFacetDisplayOrder: FacetOption[] = [
-  'clip_type',
   'program',
   'creator',
   'year',
   'subject',
-  'collection',
+  // 'collection',
   'person',
-  'sponsor',
+  // 'sponsor',
   'language',
+  'clip_type',
 ];
 
 /**

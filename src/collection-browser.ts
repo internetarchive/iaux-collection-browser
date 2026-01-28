@@ -4,10 +4,10 @@ import {
   LitElement,
   PropertyValues,
   TemplateResult,
+  HTMLTemplateResult,
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { map } from 'lit/directives/map.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 
@@ -32,6 +32,7 @@ import '@internetarchive/infinite-scroller';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
+import type { IAComboBox } from '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import {
   SelectedFacets,
   SortField,
@@ -70,6 +71,7 @@ import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+import { updateSelectedFacetBucket } from './utils/facet-utils';
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
@@ -78,6 +80,7 @@ import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
 
+import '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
@@ -86,10 +89,6 @@ import './manage/manage-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './collection-facets/smart-facets/smart-facet-bar';
-import {
-  mergeSelectedFacets,
-  updateSelectedFacetBucket,
-} from './utils/facet-utils';
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -359,6 +358,16 @@ export class CollectionBrowser
 
   @state() private placeholderType: PlaceholderType = null;
 
+  @state() private selectedTVNetwork?: string = undefined;
+
+  @state() private selectedTVShow?: string = undefined;
+
+  @state() private tvMapsPopulated: boolean = false;
+
+  @state() private loadingNetworks: boolean = false;
+
+  @state() private loadingShows: boolean = false;
+
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
@@ -368,6 +377,10 @@ export class CollectionBrowser
   @query('manage-bar') private manageBar?: ManageBar;
 
   @query('smart-facet-bar') private smartFacetBar?: SmartFacetBar;
+
+  @query('#tv-networks') private tvNetworksDropdown?: IAComboBox;
+
+  @query('#tv-shows') private tvShowsDropdown?: IAComboBox;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -547,11 +560,11 @@ export class CollectionBrowser
     this.selectedTVShow = undefined;
 
     if (this.tvNetworksDropdown) {
-      this.tvNetworksDropdown.selectedIndex = 0;
+      this.tvNetworksDropdown.clearSelectedOption();
     }
 
     if (this.tvShowsDropdown) {
-      this.tvShowsDropdown.selectedIndex = 0;
+      this.tvShowsDropdown.clearSelectedOption();
     }
   }
 
@@ -752,12 +765,13 @@ export class CollectionBrowser
 
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
+    const classes = classMap({ filtered: this.hasActiveFilters });
     const resultsCount = this.totalResults?.toLocaleString();
     const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
 
     // Added data-testid for Playwright testing
     return html`
-      <div id="results-total" data-testid="results-total">
+      <div id="results-total" class=${classes} data-testid="results-total">
         <span id="big-results-count">
           ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
         </span>
@@ -1267,34 +1281,26 @@ export class CollectionBrowser
     `;
   }
 
-  @state() private selectedTVNetwork?: string = undefined;
-  @state() private selectedTVShow?: string = undefined;
-  @state() private shouldPopulateShows: boolean = false;
-
-  @query('#tv-networks') private tvNetworksDropdown?: HTMLSelectElement;
-  @query('#tv-shows') private tvShowsDropdown?: HTMLSelectElement;
-
-  private async networksDropdownClicked(): Promise<void> {
-    this.tvNetworksDropdown?.classList.add('loading');
+  private async networksDropdownToggled(): Promise<void> {
+    if (this.tvMapsPopulated) return;
+    this.loadingNetworks = true;
     await this.dataSource.populateTVChannelMaps();
-    this.tvNetworksDropdown?.classList.remove('loading');
+    this.loadingNetworks = false;
+    this.tvMapsPopulated = true;
   }
 
-  private async showsDropdownClicked(): Promise<void> {
-    this.tvShowsDropdown?.classList.add('loading');
+  private async showsDropdownToggled(): Promise<void> {
+    if (this.tvMapsPopulated) return;
+    this.loadingShows = true;
     await this.dataSource.populateTVChannelMaps();
-    // Delay for a single tick so that the loading indicator will be rendered
-    // while the dropdown options are being added
-    await new Promise(res => setTimeout(res, 0));
-    this.shouldPopulateShows = true;
-    await this.updateComplete;
-    this.tvShowsDropdown?.classList.remove('loading');
+    this.loadingShows = false;
+    this.tvMapsPopulated = true;
   }
 
   private async networksDropdownChanged(): Promise<void> {
     const previousNetwork = this.selectedTVNetwork;
-    this.selectedTVNetwork =
-      this.tvNetworksDropdown!.selectedOptions[0].value || undefined;
+    const newNetwork = this.tvNetworksDropdown!.selectedOption?.text;
+    this.selectedTVNetwork = newNetwork ?? undefined;
 
     const entries = this.dataSource.tvChannelMaps.channelToNetwork!.entries();
     for (const [channel, network] of entries) {
@@ -1328,8 +1334,8 @@ export class CollectionBrowser
 
   private async showsDropdownChanged(): Promise<void> {
     const previousShow = this.selectedTVShow;
-    this.selectedTVShow =
-      this.tvShowsDropdown!.selectedOptions[0].value || undefined;
+    const newShow = this.tvShowsDropdown!.selectedOption?.text;
+    this.selectedTVShow = newShow ?? undefined;
 
     // Remove any previously-applied shows filter
     if (previousShow !== undefined) {
@@ -1363,7 +1369,6 @@ export class CollectionBrowser
   private get tvDropdownFiltersTemplate(): TemplateResult | typeof nothing {
     if (this.searchType !== SearchType.TV) return nothing;
 
-    log('start filters template preprocess', Date.now());
     const { channelToNetwork, programToChannels } =
       this.dataSource.tvChannelMaps;
     const networks = channelToNetwork
@@ -1381,53 +1386,45 @@ export class CollectionBrowser
     }
 
     const shows = showEntries.map(([show]) => show);
-    log('end filters template preprocess', Date.now());
-
-    const makeNetworkOption = (network: string) => html`
-      <option ?selected=${this.selectedTVNetwork === network}>
-        ${network}
-      </option>
-    `;
-
-    const makeShowOption = (show: string) => html`
-      <option ?selected=${this.selectedTVShow === show}>${show}</option>
-    `;
-
     const loadingIndicator = html`
       <img src="https://archive.org/images/loading.gif" />
     `;
 
     return html`
       <div id="tv-filters" slot="facets-top">
-        <div class="tv-filter-dropdown-wrap">
-          <select
-            id="tv-networks"
-            class="tv-filter-dropdown"
-            @click=${this.networksDropdownClicked}
-            @change=${this.networksDropdownChanged}
-          >
-            <option value="" ?selected=${!this.selectedTVNetwork}>
-              ${msg('Filter by Network')}
-            </option>
-            ${map(networks, makeNetworkOption)}
-          </select>
-          ${loadingIndicator}
-        </div>
-
-        <div class="tv-filter-dropdown-wrap">
-          <select
-            id="tv-shows"
-            class="tv-filter-dropdown"
-            @click=${this.showsDropdownClicked}
-            @change=${this.showsDropdownChanged}
-          >
-            <option value="" ?selected=${!this.selectedTVShow}>
-              ${msg('Filter by Show')}
-            </option>
-            ${this.shouldPopulateShows ? map(shows, makeShowOption) : nothing}
-          </select>
-          ${loadingIndicator}
-        </div>
+        <ia-combo-box
+          id="tv-networks"
+          class="tv-filter-dropdown"
+          placeholder="Filter by Network"
+          clearable
+          wrap-arrow-keys
+          sort
+          .options=${networks.map((n, i) => ({ id: `network-${i}`, text: n }))}
+          @toggle=${this.networksDropdownToggled}
+          @change=${this.networksDropdownChanged}
+        >
+          <span class="sr-only">${msg('Filter by Network')}</span>
+          ${this.loadingNetworks
+            ? html`<span slot="empty-options">${loadingIndicator}</span>`
+            : nothing}
+        </ia-combo-box>
+        <ia-combo-box
+          id="tv-shows"
+          class="tv-filter-dropdown"
+          placeholder="Filter by Show"
+          max-autocomplete-entries="500"
+          clearable
+          wrap-arrow-keys
+          sort
+          .options=${shows.map((s, i) => ({ id: `show-${i}`, text: s }))}
+          @toggle=${this.showsDropdownToggled}
+          @change=${this.showsDropdownChanged}
+        >
+          <span class="sr-only">${msg('Filter by Show')}</span>
+          ${this.loadingShows
+            ? html`<span slot="empty-options">${loadingIndicator}</span>`
+            : nothing}
+        </ia-combo-box>
       </div>
     `;
   }
@@ -1754,6 +1751,10 @@ export class CollectionBrowser
           ),
         });
       }
+    }
+
+    if (changed.has('searchType') && this.searchType === SearchType.TV) {
+      this.applyDefaultTVSearchSort();
     }
 
     if (changed.has('profileElement')) {
@@ -2262,10 +2263,11 @@ export class CollectionBrowser
   }
 
   private persistState() {
+    const isDefaultSort = this.selectedSort === this.defaultSortField;
     const restorationState: RestorationState = {
       displayMode: this.displayMode,
       searchType: this.suppressURLSinParam ? undefined : this.searchType,
-      selectedSort: this.selectedSort,
+      selectedSort: isDefaultSort ? SortField.default : this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
       selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
       baseQuery: this.suppressURLQuery ? undefined : this.baseQuery,
@@ -2368,6 +2370,14 @@ export class CollectionBrowser
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
+  }
+
+  /**
+   * Applies the default sort options for the TV search results page
+   */
+  applyDefaultTVSearchSort(): void {
+    this.defaultSortField = SortField.datearchived;
+    this.defaultSortDirection = 'desc';
   }
 
   /**
@@ -2493,7 +2503,7 @@ export class CollectionBrowser
     });
   }
 
-  cellForIndex(index: number): TemplateResult | undefined {
+  cellForIndex(index: number): HTMLTemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
 
@@ -2738,10 +2748,10 @@ export class CollectionBrowser
         #facets-bottom-fade {
           background: linear-gradient(
             to bottom,
-            #f5f5f700 0%,
-            #f5f5f7c0 50%,
-            #f5f5f7 80%,
-            #f5f5f7 100%
+            #fbfbfd00 0%,
+            #fbfbfdc0 50%,
+            #fbfbfd 80%,
+            #fbfbfd 100%
           );
           position: fixed;
           bottom: 0;
@@ -2848,25 +2858,29 @@ export class CollectionBrowser
           margin-bottom: 15px;
         }
 
-        .tv-filter-dropdown {
-          width: 100%;
-          padding: 3px;
+        #tv-shows {
+          --comboBoxListWidth: 300px;
         }
 
-        .tv-filter-dropdown-wrap {
-          display: flex;
-          align-items: center;
-          column-gap: 5px;
+        .tv-filter-dropdown {
+          display: block;
+          font-size: 14px;
+          margin-left: 1px;
           margin-bottom: 5px;
         }
 
-        .tv-filter-dropdown-wrap > img {
-          flex: 1;
-          visibility: hidden;
+        .tv-filter-dropdown::part(combo-box) {
+          outline-offset: 1px;
         }
 
-        .tv-filter-dropdown.loading + img {
-          visibility: visible;
+        .tv-filter-dropdown::part(option) {
+          line-height: 1.1;
+          padding: 7px;
+        }
+
+        .tv-filter-dropdown::part(clear-button) {
+          flex: 0 0 26px;
+          --combo-box-clear-icon-size: 14px;
         }
 
         #facets-container {
@@ -2874,7 +2888,7 @@ export class CollectionBrowser
           max-height: 0;
           transition: max-height 0.2s ease-in-out;
           z-index: 1;
-          margin-top: var(--facetsContainerMarginTop, 5rem);
+          margin-top: var(--facetsContainerMarginTop, 3rem);
           padding-bottom: 2rem;
         }
 
@@ -2902,6 +2916,10 @@ export class CollectionBrowser
         #results-total {
           display: flex;
           align-items: baseline;
+        }
+
+        #results-total:not(.filtered) {
+          padding-bottom: 2rem;
         }
 
         .mobile #results-total {

@@ -147,6 +147,10 @@ export class RestorationStateHandler
       const sortOption = SORT_OPTIONS[state.selectedSort];
       let prefix = this.sortDirectionPrefix(state.sortDirection);
 
+      const isTVRelevanceSort =
+        state.searchType === SearchType.TV &&
+        state.selectedSort === SortField.relevance;
+
       if (sortOption.field === SortField.unrecognized) {
         // For unrecognized sorts, use the existing param, possibly updating its direction
         const oldSortParam = oldParams.get('sort') ?? '';
@@ -161,7 +165,7 @@ export class RestorationStateHandler
         } else {
           newParams.set('sort', oldSortParam);
         }
-      } else if (sortOption.shownInURL) {
+      } else if (sortOption.shownInURL || isTVRelevanceSort) {
         // Otherwise, use the canonical API form of the sort option
         const canonicalApiSort = sortOption.urlNames[0];
         newParams.set('sort', `${prefix}${canonicalApiSort}`);
