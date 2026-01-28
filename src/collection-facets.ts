@@ -902,7 +902,7 @@ export class CollectionFacets extends LitElement {
 
         .histogram-loading-indicator {
           width: 100%;
-          height: 2.25rem;
+          height: 5.25rem;
           margin-top: 1.75rem;
           font-size: 1.4rem;
           text-align: center;
@@ -923,7 +923,7 @@ export class CollectionFacets extends LitElement {
           transform: rotate(90deg);
         }
 
-        .facet-group:not(:last-child) {
+        .facet-group {
           margin-bottom: 2rem;
         }
 
