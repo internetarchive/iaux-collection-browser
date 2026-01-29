@@ -636,6 +636,7 @@ export type FacetOption =
   | 'collection'
   | 'year'
   // TV-specific facet options:
+  | 'clip_type'
   | 'program'
   | 'person'
   | 'sponsor';
@@ -693,6 +694,7 @@ export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
   creator: {},
   collection: {},
   year: {},
+  clip_type: {},
   program: {},
   person: {},
   sponsor: {},
@@ -701,25 +703,15 @@ export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
 /**
  * For TV search results, what types of TV clips to restrict the results to.
  */
-export type TvClipFilterType = 'all' | 'commercials' | 'factchecks' | 'quotes';
-
-/**
- * Map from TV clip filter types to their corresponding URL params
- */
-export const tvClipFiltersToURLParams: Record<TvClipFilterType, string> = {
-  all: '',
-  commercials: 'only_commercials',
-  factchecks: 'only_factchecks',
-  quotes: 'only_quotes',
-};
+export type TvClipFilterType = 'commercial' | 'fact check' | 'quote';
 
 /**
  * Map from allowed TV filtering parameters in the URL to their corresponding filter type
  */
 export const tvClipURLParamsToFilters: Record<string, TvClipFilterType> = {
-  only_commercials: 'commercials',
-  only_factchecks: 'factchecks',
-  only_quotes: 'quotes',
+  only_commercials: 'commercial',
+  only_factchecks: 'fact check',
+  only_quotes: 'quote',
 };
 
 /**
@@ -743,10 +735,9 @@ export const tvFacetDisplayOrder: FacetOption[] = [
   'creator',
   'year',
   'subject',
-  'collection',
   'person',
-  'sponsor',
   'language',
+  'clip_type',
 ];
 
 /**
@@ -760,6 +751,7 @@ export const facetTitles: Record<FacetOption, string> = {
   creator: 'Creator',
   collection: 'Collection',
   year: 'Year',
+  clip_type: 'Clip Type',
   program: 'Program',
   person: 'Person',
   sponsor: 'Sponsor',
@@ -776,6 +768,7 @@ export const defaultFacetSort: Record<FacetOption, AggregationSortType> = {
   creator: AggregationSortType.COUNT,
   collection: AggregationSortType.COUNT,
   year: AggregationSortType.NUMERIC, // Year facets are ordered by their numeric value by default
+  clip_type: AggregationSortType.COUNT,
   program: AggregationSortType.COUNT,
   person: AggregationSortType.COUNT,
   sponsor: AggregationSortType.COUNT,
@@ -793,6 +786,7 @@ export const valueFacetSort: Record<FacetOption, AggregationSortType> = {
   creator: AggregationSortType.ALPHABETICAL,
   collection: AggregationSortType.ALPHABETICAL,
   year: AggregationSortType.NUMERIC, // Year facets' values should be compared numerically, not lexicographically (year 2001 > year 3)
+  clip_type: AggregationSortType.ALPHABETICAL,
   program: AggregationSortType.ALPHABETICAL,
   person: AggregationSortType.ALPHABETICAL,
   sponsor: AggregationSortType.ALPHABETICAL,

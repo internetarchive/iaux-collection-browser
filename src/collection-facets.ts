@@ -153,6 +153,7 @@ export class CollectionFacets extends LitElement {
     creator: false,
     collection: false,
     year: false,
+    clip_type: false,
     program: false,
     person: false,
     sponsor: false,
@@ -169,6 +170,10 @@ export class CollectionFacets extends LitElement {
       managing: this.isManageView,
     });
 
+    const heading = this.isTvSearch
+      ? msg('Date Published')
+      : msg('Year Published');
+
     // Added data-testid for Playwright testing
     // Using facet-group class and aria-labels is not ideal for Playwright locator
     const datePickerLabelId = 'date-picker-label';
@@ -183,7 +188,7 @@ export class CollectionFacets extends LitElement {
                 data-testid="facet-group-header-label-date-picker"
               >
                 <h3 id=${datePickerLabelId}>
-                  Year Published <span class="sr-only">range filter</span>
+                  ${heading} <span class="sr-only">${msg('range filter')}</span>
                   ${this.expandDatePickerBtnTemplate}
                 </h3>
                 ${this.histogramTemplate}
@@ -191,6 +196,7 @@ export class CollectionFacets extends LitElement {
             `
           : nothing}
         ${this.collectionPartOfTemplate}
+        <slot name="facets-top"></slot>
         ${this.mergedFacets.map(facetGroup =>
           this.getFacetGroupTemplate(facetGroup),
         )}
@@ -572,6 +578,15 @@ export class CollectionFacets extends LitElement {
           }
         });
       }
+      // For TV clip_type facets, capitalize the display text
+      if (facetKey === 'clip_type') {
+        bucketsWithCount.forEach(b => {
+          b.displayText ??= b.key;
+          b.displayText =
+            b.displayText.charAt(0).toLocaleUpperCase() +
+            b.displayText.slice(1);
+        });
+      }
 
       // slice off how many items we want to show in page facet area
       facetGroup.buckets = bucketsWithCount.slice(0, allowedFacetCount);
@@ -887,7 +902,7 @@ export class CollectionFacets extends LitElement {
 
         .histogram-loading-indicator {
           width: 100%;
-          height: 2.25rem;
+          height: 5.25rem;
           margin-top: 1.75rem;
           font-size: 1.4rem;
           text-align: center;
@@ -908,7 +923,7 @@ export class CollectionFacets extends LitElement {
           transform: rotate(90deg);
         }
 
-        .facet-group:not(:last-child) {
+        .facet-group {
           margin-bottom: 2rem;
         }
 
