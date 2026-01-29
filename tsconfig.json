@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2018",
+    "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmitOnError": true,
-    "lib": ["es2017", "dom", "dom.iterable"],
+    "lib": [
+      "ESNext",
+      "dom",
+      "dom.iterable"
+    ],
     "strict": true,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
@@ -15,6 +19,7 @@
     "inlineSources": true,
     "rootDir": "./",
     "declaration": true,
+    "useDefineForClassFields": false,
   },
   "include": ["src", "test", "index.ts", "types"],
 }

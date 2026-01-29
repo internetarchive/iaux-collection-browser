@@ -16,6 +16,7 @@ import type {
   PageSpecifierParams,
   CollectionTitles,
   TVChannelAliases,
+  TVChannelMaps,
 } from './models';
 
 export interface CollectionBrowserDataSourceInterface
@@ -97,6 +98,11 @@ export interface CollectionBrowserDataSourceInterface
    * more human-readable network names.
    */
   readonly tvChannelAliases: TVChannelAliases;
+
+  /**
+   * An object holding mappings from channels to networks, and programs to channels.
+   */
+  readonly tvChannelMaps: TVChannelMaps;
 
   /**
    * The "extra info" package provided by the PPS for collection pages, including details
@@ -330,4 +336,10 @@ export interface CollectionBrowserDataSourceInterface
    * of the data source to account for any new gaps in the data.
    */
   removeCheckedTiles(): void;
+
+  /**
+   * Fires requests to populate the TV channel mappings (chan2network and programs2chan),
+   * or returns the existing Promise for any such request that has already been made.
+   */
+  populateTVChannelMaps(): Promise<TVChannelMaps>;
 }
