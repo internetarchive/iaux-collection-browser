@@ -364,9 +364,9 @@ export class CollectionBrowser
 
   @state() private tvMapsPopulated: boolean = false;
 
-  @state() private loadingNetworks: boolean = false;
+  @state() private loadingTVMaps: boolean = false;
 
-  @state() private loadingShows: boolean = false;
+  @state() private tvMapsErrored: boolean = false;
 
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
@@ -1281,20 +1281,24 @@ export class CollectionBrowser
     `;
   }
 
-  private async networksDropdownToggled(): Promise<void> {
+  /**
+   * Handler for when either of the TV dropdown filters are toggled, loading their
+   * contents if necessary.
+   */
+  private async tvDropdownToggled(e: CustomEvent<boolean>): Promise<void> {
+    if (!e.detail) return; // Only run when toggled open
     if (this.tvMapsPopulated) return;
-    this.loadingNetworks = true;
-    await this.dataSource.populateTVChannelMaps();
-    this.loadingNetworks = false;
-    this.tvMapsPopulated = true;
-  }
 
-  private async showsDropdownToggled(): Promise<void> {
-    if (this.tvMapsPopulated) return;
-    this.loadingShows = true;
-    await this.dataSource.populateTVChannelMaps();
-    this.loadingShows = false;
-    this.tvMapsPopulated = true;
+    this.loadingTVMaps = true;
+    this.tvMapsErrored = false;
+    try {
+      await this.dataSource.populateTVChannelMaps();
+      this.tvMapsPopulated = true;
+    } catch (err) {
+      this.tvMapsErrored = true;
+    }
+
+    this.loadingTVMaps = false;
   }
 
   private async networksDropdownChanged(): Promise<void> {
@@ -1389,7 +1393,14 @@ export class CollectionBrowser
     const filterByShowLabel = msg('Filter by Show');
     const shows = showEntries.map(([show]) => show);
     const loadingIndicator = html`
-      <img src="https://archive.org/images/loading.gif" />
+      <span slot="empty-options">
+        <img src="https://archive.org/images/loading.gif" />
+      </span>
+    `;
+    const errorMessage = html`
+      <span slot="empty-options">
+        ${msg('Unable to fetch options, try again later')}
+      </span>
     `;
 
     return html`
@@ -1402,13 +1413,12 @@ export class CollectionBrowser
           wrap-arrow-keys
           sort
           .options=${networks.map((n, i) => ({ id: `network-${i}`, text: n }))}
-          @toggle=${this.networksDropdownToggled}
+          @toggle=${this.tvDropdownToggled}
           @change=${this.networksDropdownChanged}
         >
           <span slot="label" class="sr-only">${filterByNetworkLabel}</span>
-          ${this.loadingNetworks
-            ? html`<span slot="empty-options">${loadingIndicator}</span>`
-            : nothing}
+          ${this.loadingTVMaps ? loadingIndicator : nothing}
+          ${this.tvMapsErrored ? errorMessage : nothing}
         </ia-combo-box>
         <ia-combo-box
           id="tv-shows"
@@ -1419,13 +1429,12 @@ export class CollectionBrowser
           wrap-arrow-keys
           sort
           .options=${shows.map((s, i) => ({ id: `show-${i}`, text: s }))}
-          @toggle=${this.showsDropdownToggled}
+          @toggle=${this.tvDropdownToggled}
           @change=${this.showsDropdownChanged}
         >
           <span slot="label" class="sr-only">${filterByShowLabel}</span>
-          ${this.loadingShows
-            ? html`<span slot="empty-options">${loadingIndicator}</span>`
-            : nothing}
+          ${this.loadingTVMaps ? loadingIndicator : nothing}
+          ${this.tvMapsErrored ? errorMessage : nothing}
         </ia-combo-box>
       </div>
     `;
