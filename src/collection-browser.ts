@@ -1403,7 +1403,7 @@ export class CollectionBrowser
           @toggle=${this.networksDropdownToggled}
           @change=${this.networksDropdownChanged}
         >
-          <span class="sr-only">${msg('Filter by Network')}</span>
+          <span slot="label" class="sr-only">${msg('Filter by Network')}</span>
           ${this.loadingNetworks
             ? html`<span slot="empty-options">${loadingIndicator}</span>`
             : nothing}
@@ -1420,7 +1420,7 @@ export class CollectionBrowser
           @toggle=${this.showsDropdownToggled}
           @change=${this.showsDropdownChanged}
         >
-          <span class="sr-only">${msg('Filter by Show')}</span>
+          <span slot="label" class="sr-only">${msg('Filter by Show')}</span>
           ${this.loadingShows
             ? html`<span slot="empty-options">${loadingIndicator}</span>`
             : nothing}
@@ -2881,6 +2881,11 @@ export class CollectionBrowser
         .tv-filter-dropdown::part(clear-button) {
           flex: 0 0 26px;
           --combo-box-clear-icon-size: 14px;
+        }
+
+        .tv-filter-dropdown::part(icon) {
+          width: 1.4rem;
+          height: 1.4rem;
         }
 
         #facets-container {

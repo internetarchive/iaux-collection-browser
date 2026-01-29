@@ -306,10 +306,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/elements@0.1.1-webdev-8119.0":
-  version "0.1.1-webdev-8119.0"
-  resolved "https://registry.npmjs.org/@internetarchive/elements/-/elements-0.1.1-webdev-8119.0.tgz"
-  integrity sha512-YU4oit1iKDHnLthxeTEIFbC7kuE9bCsWtcu9H6Cr9iL2+35Be1f7IiHLbAhM4Yhxhi0CYqFrxbIk7vpSbUV5hg==
+"@internetarchive/elements@0.1.1-webdev-8119.1":
+  version "0.1.1-webdev-8119.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.1.1-webdev-8119.1.tgz#9da0c395085da77c449771c5de5121b87f7e544d"
+  integrity sha512-aLCLtdLlYA/yY5xED0BjN6abNQ1oG9mXi90YT+9dqEoOrAiCbL7t9esaPVvbCqXyNTRqd4R7E21eAdmLXuG2YA==
   dependencies:
     "@lit/localize" "^0.12.2"
     lit "^3.3.1"
