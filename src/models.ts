@@ -735,9 +735,7 @@ export const tvFacetDisplayOrder: FacetOption[] = [
   'creator',
   'year',
   'subject',
-  // 'collection',
   'person',
-  // 'sponsor',
   'language',
   'clip_type',
 ];
