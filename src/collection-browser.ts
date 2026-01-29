@@ -1385,6 +1385,8 @@ export class CollectionBrowser
       );
     }
 
+    const filterByNetworkLabel = msg('Filter by Network');
+    const filterByShowLabel = msg('Filter by Show');
     const shows = showEntries.map(([show]) => show);
     const loadingIndicator = html`
       <img src="https://archive.org/images/loading.gif" />
@@ -1395,7 +1397,7 @@ export class CollectionBrowser
         <ia-combo-box
           id="tv-networks"
           class="tv-filter-dropdown"
-          placeholder="Filter by Network"
+          placeholder=${filterByNetworkLabel}
           clearable
           wrap-arrow-keys
           sort
@@ -1403,7 +1405,7 @@ export class CollectionBrowser
           @toggle=${this.networksDropdownToggled}
           @change=${this.networksDropdownChanged}
         >
-          <span slot="label" class="sr-only">${msg('Filter by Network')}</span>
+          <span slot="label" class="sr-only">${filterByNetworkLabel}</span>
           ${this.loadingNetworks
             ? html`<span slot="empty-options">${loadingIndicator}</span>`
             : nothing}
@@ -1411,7 +1413,7 @@ export class CollectionBrowser
         <ia-combo-box
           id="tv-shows"
           class="tv-filter-dropdown"
-          placeholder="Filter by Show"
+          placeholder=${filterByShowLabel}
           max-autocomplete-entries="500"
           clearable
           wrap-arrow-keys
@@ -1420,7 +1422,7 @@ export class CollectionBrowser
           @toggle=${this.showsDropdownToggled}
           @change=${this.showsDropdownChanged}
         >
-          <span slot="label" class="sr-only">${msg('Filter by Show')}</span>
+          <span slot="label" class="sr-only">${filterByShowLabel}</span>
           ${this.loadingShows
             ? html`<span slot="empty-options">${loadingIndicator}</span>`
             : nothing}
