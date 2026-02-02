@@ -14,6 +14,19 @@ export type CollectionTitles = Map<string, string>;
 export type TVChannelAliases = Map<string, string>;
 
 /**
+ * A Map from program (show) names to a mapping of all the channels that run them.
+ */
+export type TVProgramChannels = Map<string, Record<string, number>>;
+
+/**
+ * Object storing the different TV channel mappings used by the data source.
+ */
+export type TVChannelMaps = {
+  channelToNetwork?: TVChannelAliases;
+  programToChannels?: TVProgramChannels;
+};
+
+/**
  * The subset of search service params that uniquely specify the type of results
  * that are sought by an instance of collection browser.
  */

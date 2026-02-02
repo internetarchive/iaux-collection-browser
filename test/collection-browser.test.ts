@@ -1087,7 +1087,7 @@ describe('Collection Browser', () => {
     });
   });
 
-  it('applies correct search filter when TV clip filter set to commercials', async () => {
+  it('applies correct TV search filter for commercials', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
@@ -1096,16 +1096,20 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'tv-fields';
     el.searchType = SearchType.TV;
-    el.tvClipFilter = 'commercials';
+    el.selectedFacets = {
+      clip_type: {
+        commercial: { key: 'commercial', count: 1, state: 'selected' },
+      },
+    };
     await el.updateComplete;
     await el.initialSearchComplete;
 
-    expect(searchService.searchParams?.filters?.ad_id?.['*']).to.equal(
+    expect(searchService.searchParams?.filters?.clip_type?.commercial).to.equal(
       FilterConstraint.INCLUDE,
     );
   });
 
-  it('applies correct search filter when TV clip filter set to factchecks', async () => {
+  it('applies correct TV search filter for fact checks', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
@@ -1114,16 +1118,20 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'tv-fields';
     el.searchType = SearchType.TV;
-    el.tvClipFilter = 'factchecks';
+    el.selectedFacets = {
+      clip_type: {
+        'fact check': { key: 'fact check', count: 1, state: 'selected' },
+      },
+    };
     await el.updateComplete;
     await el.initialSearchComplete;
 
-    expect(searchService.searchParams?.filters?.factcheck?.['*']).to.equal(
-      FilterConstraint.INCLUDE,
-    );
+    expect(
+      searchService.searchParams?.filters?.clip_type?.['fact check'],
+    ).to.equal(FilterConstraint.INCLUDE);
   });
 
-  it('applies correct search filter when TV clip filter set to quotes', async () => {
+  it('applies correct TV search filter for quotes', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser .searchService=${searchService}>
@@ -1132,11 +1140,13 @@ describe('Collection Browser', () => {
 
     el.baseQuery = 'tv-fields';
     el.searchType = SearchType.TV;
-    el.tvClipFilter = 'quotes';
+    el.selectedFacets = {
+      clip_type: { quote: { key: 'quote', count: 1, state: 'selected' } },
+    };
     await el.updateComplete;
     await el.initialSearchComplete;
 
-    expect(searchService.searchParams?.filters?.clip?.['1']).to.equal(
+    expect(searchService.searchParams?.filters?.clip_type?.quote).to.equal(
       FilterConstraint.INCLUDE,
     );
   });

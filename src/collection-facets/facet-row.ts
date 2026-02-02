@@ -70,6 +70,9 @@ export class FacetRow extends LitElement {
             ${this.collectionTitles?.get(bucket.key) ?? bucket.key}
           </a> `;
 
+    const bucketCountText =
+      bucket.count > 0 ? bucket.count.toLocaleString() : '';
+
     const facetHidden = bucket.state === 'hidden';
     const facetSelected = bucket.state === 'selected';
 
@@ -130,7 +133,7 @@ export class FacetRow extends LitElement {
           aria-label=${ariaLabel}
         >
           <div class="facet-title">${bucketTextDisplay}</div>
-          <div class="facet-count">${bucket.count.toLocaleString()}</div>
+          <div class="facet-count">${bucketCountText}</div>
         </label>
       </div>
     `;

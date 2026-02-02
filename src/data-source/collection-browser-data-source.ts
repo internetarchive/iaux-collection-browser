@@ -24,7 +24,11 @@ import {
   SORT_OPTIONS,
   HitRequestSource,
 } from '../models';
-import { FACETLESS_PAGE_ELEMENTS, type PageSpecifierParams } from './models';
+import {
+  FACETLESS_PAGE_ELEMENTS,
+  TVChannelMaps,
+  type PageSpecifierParams,
+} from './models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
@@ -124,6 +128,11 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  tvChannelMaps: TVChannelMaps = {};
+
+  /**
+   * @inheritdoc
+   */
   tvChannelAliases = new Map<string, string>();
 
   /**
@@ -161,6 +170,11 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   queryErrorMessage?: string;
+
+  /**
+   * Internal property to store the promise for any current TV channel maps fetch.
+   */
+  private _tvMapsPromise?: Promise<TVChannelMaps>;
 
   /**
    * Internal property to store the private value backing the `initialSearchComplete` getter.
@@ -773,24 +787,6 @@ export class CollectionBrowserDataSource
       );
     }
 
-    // Add any TV clip type filter, if applicable
-    if (this.host.searchType === SearchType.TV) {
-      switch (this.host.tvClipFilter) {
-        case 'commercials':
-          builder.addFilter('ad_id', '*', FilterConstraint.INCLUDE);
-          break;
-        case 'factchecks':
-          builder.addFilter('factcheck', '*', FilterConstraint.INCLUDE);
-          break;
-        case 'quotes':
-          builder.addFilter('clip', '1', FilterConstraint.INCLUDE);
-          break;
-        case 'all':
-        default:
-          break;
-      }
-    }
-
     const filterMap = builder.build();
     return filterMap;
   }
@@ -1397,5 +1393,49 @@ export class CollectionBrowserDataSource
     }
     this.updatePrefixFiltersForCurrentSort();
     this.requestHostUpdate();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  populateTVChannelMaps(): Promise<TVChannelMaps> {
+    // To ensure that we only make these requests once, cache the Promise returned by the
+    // first call, and return the same Promise on repeated calls.
+    // Resolves once both maps have been retrieved and saved in the data source.
+    if (!this._tvMapsPromise) {
+      this._tvMapsPromise = this._fetchTVChannelMaps();
+    }
+
+    return this._tvMapsPromise;
+  }
+
+  /**
+   * Internal function implementing the actual fetches for TV channel mappings.
+   * This should only called by the public populateTVChannelMaps method, which is guarded so
+   * that we do not make extra requests for these rather large mappings.
+   */
+  private async _fetchTVChannelMaps(): Promise<TVChannelMaps> {
+    const baseURL = 'https://av.archive.org/etc';
+    const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const chan2networkPromise = fetch(
+      `${baseURL}/chan2network.json?date=${dateStr}`,
+    );
+    const program2chansPromise = fetch(
+      `${baseURL}/program2chans.json?date=${dateStr}`,
+    );
+
+    const [chan2networkResponse, program2chansResponse] = await Promise.all([
+      chan2networkPromise,
+      program2chansPromise,
+    ]);
+    this.tvChannelMaps.channelToNetwork = new Map(
+      Object.entries(await chan2networkResponse.json()),
+    );
+    this.tvChannelMaps.programToChannels = new Map(
+      Object.entries(await program2chansResponse.json()),
+    );
+
+    this.requestHostUpdate();
+    return this.tvChannelMaps;
   }
 }

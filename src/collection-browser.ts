@@ -4,6 +4,7 @@ import {
   LitElement,
   PropertyValues,
   TemplateResult,
+  HTMLTemplateResult,
   nothing,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -31,6 +32,7 @@ import '@internetarchive/infinite-scroller';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { FeatureFeedbackServiceInterface } from '@internetarchive/feature-feedback';
 import type { RecaptchaManagerInterface } from '@internetarchive/recaptcha-manager';
+import type { IAComboBox } from '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import {
   SelectedFacets,
   SortField,
@@ -45,11 +47,11 @@ import {
   FacetLoadStrategy,
   defaultFacetDisplayOrder,
   tvFacetDisplayOrder,
-  TvClipFilterType,
   TileBlurOverrideState,
   defaultSortAvailability,
   favoritesSortAvailability,
   tvSortAvailability,
+  FacetBucket,
 } from './models';
 import {
   RestorationStateHandlerInterface,
@@ -69,6 +71,7 @@ import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
+import { updateSelectedFacetBucket } from './utils/facet-utils';
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
@@ -77,6 +80,7 @@ import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
 
+import '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import './empty-placeholder';
 import './tiles/tile-dispatcher';
 import './tiles/collection-browser-loading-tile';
@@ -145,8 +149,6 @@ export class CollectionBrowser
   @property({ type: String }) selectedTitleFilter: string | null = null;
 
   @property({ type: String }) selectedCreatorFilter: string | null = null;
-
-  @property({ type: String }) tvClipFilter: TvClipFilterType = 'all';
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
@@ -356,6 +358,16 @@ export class CollectionBrowser
 
   @state() private placeholderType: PlaceholderType = null;
 
+  @state() private selectedTVNetwork?: string = undefined;
+
+  @state() private selectedTVShow?: string = undefined;
+
+  @state() private tvMapsPopulated: boolean = false;
+
+  @state() private tvMapsLoading: boolean = false;
+
+  @state() private tvMapsErrored: boolean = false;
+
   @query('#content-container') private contentContainer!: HTMLDivElement;
 
   @query('#left-column') private leftColumn?: HTMLDivElement;
@@ -365,6 +377,10 @@ export class CollectionBrowser
   @query('manage-bar') private manageBar?: ManageBar;
 
   @query('smart-facet-bar') private smartFacetBar?: SmartFacetBar;
+
+  @query('#tv-networks') private tvNetworksDropdown?: IAComboBox;
+
+  @query('#tv-shows') private tvShowsDropdown?: IAComboBox;
 
   @property({ type: Object, attribute: false })
   analyticsHandler?: AnalyticsManagerInterface;
@@ -529,8 +545,26 @@ export class CollectionBrowser
       this.selectedSort = SortField.default;
     }
 
+    this.clearTVDropdowns();
+
     if (this.smartFacetBar) {
       this.smartFacetBar.deselectAll();
+    }
+  }
+
+  /**
+   * Resets any selected TV network/show dropdowns to their default state
+   */
+  private clearTVDropdowns(): void {
+    this.selectedTVNetwork = undefined;
+    this.selectedTVShow = undefined;
+
+    if (this.tvNetworksDropdown) {
+      this.tvNetworksDropdown.clearSelectedOption();
+    }
+
+    if (this.tvShowsDropdown) {
+      this.tvShowsDropdown.clearSelectedOption();
     }
   }
 
@@ -731,12 +765,13 @@ export class CollectionBrowser
 
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
+    const classes = classMap({ filtered: this.hasActiveFilters });
     const resultsCount = this.totalResults?.toLocaleString();
     const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
 
     // Added data-testid for Playwright testing
     return html`
-      <div id="results-total" data-testid="results-total">
+      <div id="results-total" class=${classes} data-testid="results-total">
         <span id="big-results-count">
           ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
         </span>
@@ -1247,6 +1282,165 @@ export class CollectionBrowser
   }
 
   /**
+   * Handler for when either of the TV dropdown filters are toggled, loading their
+   * contents if necessary.
+   */
+  private async tvDropdownToggled(e: CustomEvent<boolean>): Promise<void> {
+    if (!e.detail) return; // Only run when toggled open
+    if (this.tvMapsPopulated) return;
+
+    this.tvMapsLoading = true;
+    this.tvMapsErrored = false;
+    try {
+      await this.dataSource.populateTVChannelMaps();
+      this.tvMapsPopulated = true;
+    } catch (err) {
+      this.tvMapsErrored = true;
+    }
+
+    this.tvMapsLoading = false;
+  }
+
+  private async networksDropdownChanged(): Promise<void> {
+    const previousNetwork = this.selectedTVNetwork;
+    const newNetwork = this.tvNetworksDropdown!.selectedOption?.text;
+    this.selectedTVNetwork = newNetwork ?? undefined;
+
+    const entries = this.dataSource.tvChannelMaps.channelToNetwork!.entries();
+    for (const [channel, network] of entries) {
+      if (network === previousNetwork) {
+        // Remove any previously-applied network filter
+        const removedBucket: FacetBucket = {
+          key: channel.toLowerCase(),
+          count: 0,
+          state: 'none',
+        };
+        this.selectedFacets = updateSelectedFacetBucket(
+          this.selectedFacets,
+          'creator',
+          removedBucket,
+          true,
+        );
+      } else if (network === this.selectedTVNetwork) {
+        const newBucket: FacetBucket = {
+          key: channel.toLowerCase(),
+          count: 0,
+          state: 'selected',
+        };
+        this.selectedFacets = updateSelectedFacetBucket(
+          this.selectedFacets,
+          'creator',
+          newBucket,
+        );
+      }
+    }
+  }
+
+  private async showsDropdownChanged(): Promise<void> {
+    const previousShow = this.selectedTVShow;
+    const newShow = this.tvShowsDropdown!.selectedOption?.text;
+    this.selectedTVShow = newShow ?? undefined;
+
+    // Remove any previously-applied shows filter
+    if (previousShow !== undefined) {
+      const removedBucket: FacetBucket = {
+        key: previousShow,
+        count: 0,
+        state: 'none',
+      };
+      this.selectedFacets = updateSelectedFacetBucket(
+        this.selectedFacets,
+        'program',
+        removedBucket,
+        true,
+      );
+    }
+
+    if (this.selectedTVShow) {
+      const newBucket: FacetBucket = {
+        key: this.selectedTVShow,
+        count: 0,
+        state: 'selected',
+      };
+      this.selectedFacets = updateSelectedFacetBucket(
+        this.selectedFacets,
+        'program',
+        newBucket,
+      );
+    }
+  }
+
+  private get tvDropdownFiltersTemplate(): TemplateResult | typeof nothing {
+    if (this.searchType !== SearchType.TV) return nothing;
+
+    const { channelToNetwork, programToChannels } =
+      this.dataSource.tvChannelMaps;
+    const networks = channelToNetwork
+      ? [...new Set(channelToNetwork.values())]
+      : [];
+
+    let showEntries = programToChannels ? [...programToChannels.entries()] : [];
+
+    if (channelToNetwork && this.selectedTVNetwork) {
+      showEntries = showEntries.filter(([, channels]) =>
+        Object.keys(channels).some(
+          c => channelToNetwork.get(c) === this.selectedTVNetwork,
+        ),
+      );
+    }
+
+    const filterByNetworkLabel = msg('Filter by Network');
+    const filterByShowLabel = msg('Filter by Show');
+    const shows = showEntries.map(([show]) => show);
+    const loadingIndicator = html`
+      <span slot="empty-options">
+        <img src="https://archive.org/images/loading.gif" />
+      </span>
+    `;
+    const errorMessage = html`
+      <span slot="empty-options">
+        ${msg('Unable to fetch options, try again later')}
+      </span>
+    `;
+
+    return html`
+      <div id="tv-filters" slot="facets-top">
+        <ia-combo-box
+          id="tv-networks"
+          class="tv-filter-dropdown"
+          placeholder=${filterByNetworkLabel}
+          clearable
+          wrap-arrow-keys
+          sort
+          .options=${networks.map((n, i) => ({ id: `network-${i}`, text: n }))}
+          @toggle=${this.tvDropdownToggled}
+          @change=${this.networksDropdownChanged}
+        >
+          <span slot="label" class="sr-only">${filterByNetworkLabel}</span>
+          ${this.tvMapsLoading ? loadingIndicator : nothing}
+          ${this.tvMapsErrored ? errorMessage : nothing}
+        </ia-combo-box>
+        <ia-combo-box
+          id="tv-shows"
+          class="tv-filter-dropdown"
+          placeholder=${filterByShowLabel}
+          max-autocomplete-entries="500"
+          clearable
+          wrap-arrow-keys
+          sort
+          .options=${shows.map((s, i) => ({ id: `show-${i}`, text: s }))}
+          @toggle=${this.tvDropdownToggled}
+          @change=${this.showsDropdownChanged}
+        >
+          <span slot="label" class="sr-only">${filterByShowLabel}</span>
+          ${this.tvMapsLoading ? loadingIndicator : nothing}
+          ${this.tvMapsErrored ? errorMessage : nothing}
+        </ia-combo-box>
+      </div>
+    `;
+  }
+
+  /**
    * The template for the facets component alone, without any surrounding wrappers.
    */
   private get facetsTemplate() {
@@ -1305,6 +1499,7 @@ export class CollectionBrowser
         @facetsChanged=${this.facetsChanged}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
       >
+        ${this.tvDropdownFiltersTemplate}
       </collection-facets>
     `;
 
@@ -1461,7 +1656,6 @@ export class CollectionBrowser
     this.sortDirection = queryState.sortDirection;
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
-    this.tvClipFilter = queryState.tvClipFilter ?? 'all';
 
     this.pagesToRender = this.initialPageNumber;
 
@@ -1568,6 +1762,10 @@ export class CollectionBrowser
           ),
         });
       }
+    }
+
+    if (changed.has('searchType') && this.searchType === SearchType.TV) {
+      this.applyDefaultTVSearchSort();
     }
 
     if (changed.has('profileElement')) {
@@ -1907,7 +2105,6 @@ export class CollectionBrowser
           sortDirection: this.sortDirection,
           selectedTitleFilter: this.selectedTitleFilter,
           selectedCreatorFilter: this.selectedCreatorFilter,
-          tvClipFilter: this.tvClipFilter,
         },
       }),
     );
@@ -2071,17 +2268,17 @@ export class CollectionBrowser
     this.currentPage = restorationState.currentPage ?? 1;
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
-    this.tvClipFilter = restorationState.tvClipFilter ?? 'all';
     if (this.currentPage > 1) {
       this.goToPage(this.currentPage);
     }
   }
 
   private persistState() {
+    const isDefaultSort = this.selectedSort === this.defaultSortField;
     const restorationState: RestorationState = {
       displayMode: this.displayMode,
       searchType: this.suppressURLSinParam ? undefined : this.searchType,
-      selectedSort: this.selectedSort,
+      selectedSort: isDefaultSort ? SortField.default : this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
       selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
       baseQuery: this.suppressURLQuery ? undefined : this.baseQuery,
@@ -2092,7 +2289,6 @@ export class CollectionBrowser
       maxSelectedDate: this.maxSelectedDate,
       selectedTitleFilter: this.selectedTitleFilter ?? undefined,
       selectedCreatorFilter: this.selectedCreatorFilter ?? undefined,
-      tvClipFilter: this.tvClipFilter,
     };
     const persistOptions: RestorationStatePersistOptions = {
       forceReplace: this.dataSourceInstallInProgress,
@@ -2185,6 +2381,14 @@ export class CollectionBrowser
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
+  }
+
+  /**
+   * Applies the default sort options for the TV search results page
+   */
+  applyDefaultTVSearchSort(): void {
+    this.defaultSortField = SortField.datearchived;
+    this.defaultSortDirection = 'desc';
   }
 
   /**
@@ -2310,7 +2514,7 @@ export class CollectionBrowser
     });
   }
 
-  cellForIndex(index: number): TemplateResult | undefined {
+  cellForIndex(index: number): HTMLTemplateResult | undefined {
     const model = this.tileModelAtCellIndex(index);
     if (!model) return undefined;
 
@@ -2555,10 +2759,10 @@ export class CollectionBrowser
         #facets-bottom-fade {
           background: linear-gradient(
             to bottom,
-            #f5f5f700 0%,
-            #f5f5f7c0 50%,
-            #f5f5f7 80%,
-            #f5f5f7 100%
+            #fbfbfd00 0%,
+            #fbfbfdc0 50%,
+            #fbfbfd 80%,
+            #fbfbfd 100%
           );
           position: fixed;
           bottom: 0;
@@ -2661,12 +2865,46 @@ export class CollectionBrowser
           line-height: 1.3rem;
         }
 
+        #tv-filters {
+          margin-bottom: 15px;
+        }
+
+        #tv-shows {
+          --comboBoxListWidth: 300px;
+        }
+
+        .tv-filter-dropdown {
+          display: block;
+          font-size: 14px;
+          margin-left: 1px;
+          margin-bottom: 5px;
+        }
+
+        .tv-filter-dropdown::part(combo-box) {
+          outline-offset: 1px;
+        }
+
+        .tv-filter-dropdown::part(option) {
+          line-height: 1.1;
+          padding: 7px;
+        }
+
+        .tv-filter-dropdown::part(clear-button) {
+          flex: 0 0 26px;
+          --combo-box-clear-icon-size: 14px;
+        }
+
+        .tv-filter-dropdown::part(icon) {
+          width: 1.4rem;
+          height: 1.4rem;
+        }
+
         #facets-container {
           position: relative;
           max-height: 0;
           transition: max-height 0.2s ease-in-out;
           z-index: 1;
-          margin-top: var(--facetsContainerMarginTop, 5rem);
+          margin-top: var(--facetsContainerMarginTop, 3rem);
           padding-bottom: 2rem;
         }
 
@@ -2694,6 +2932,10 @@ export class CollectionBrowser
         #results-total {
           display: flex;
           align-items: baseline;
+        }
+
+        #results-total:not(.filtered) {
+          padding-bottom: 2rem;
         }
 
         .mobile #results-total {
