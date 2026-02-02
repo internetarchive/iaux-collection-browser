@@ -364,7 +364,7 @@ export class CollectionBrowser
 
   @state() private tvMapsPopulated: boolean = false;
 
-  @state() private loadingTVMaps: boolean = false;
+  @state() private tvMapsLoading: boolean = false;
 
   @state() private tvMapsErrored: boolean = false;
 
@@ -1289,7 +1289,7 @@ export class CollectionBrowser
     if (!e.detail) return; // Only run when toggled open
     if (this.tvMapsPopulated) return;
 
-    this.loadingTVMaps = true;
+    this.tvMapsLoading = true;
     this.tvMapsErrored = false;
     try {
       await this.dataSource.populateTVChannelMaps();
@@ -1298,7 +1298,7 @@ export class CollectionBrowser
       this.tvMapsErrored = true;
     }
 
-    this.loadingTVMaps = false;
+    this.tvMapsLoading = false;
   }
 
   private async networksDropdownChanged(): Promise<void> {
@@ -1417,7 +1417,7 @@ export class CollectionBrowser
           @change=${this.networksDropdownChanged}
         >
           <span slot="label" class="sr-only">${filterByNetworkLabel}</span>
-          ${this.loadingTVMaps ? loadingIndicator : nothing}
+          ${this.tvMapsLoading ? loadingIndicator : nothing}
           ${this.tvMapsErrored ? errorMessage : nothing}
         </ia-combo-box>
         <ia-combo-box
@@ -1433,7 +1433,7 @@ export class CollectionBrowser
           @change=${this.showsDropdownChanged}
         >
           <span slot="label" class="sr-only">${filterByShowLabel}</span>
-          ${this.loadingTVMaps ? loadingIndicator : nothing}
+          ${this.tvMapsLoading ? loadingIndicator : nothing}
           ${this.tvMapsErrored ? errorMessage : nothing}
         </ia-combo-box>
       </div>
