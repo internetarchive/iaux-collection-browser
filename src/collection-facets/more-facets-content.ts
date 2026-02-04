@@ -32,6 +32,7 @@ import {
   defaultFacetSort,
   getDefaultSelectedFacets,
   FacetEventDetails,
+  tvMoreFacetSort,
 } from '../models';
 import type {
   CollectionTitles,
@@ -141,9 +142,7 @@ export class MoreFacetsContent extends LitElement {
       // store it for reuse across pages.
       this.facetGroup = this.mergedFacets;
     }
-  }
 
-  updated(changed: PropertyValues): void {
     // If any of the search properties change, it triggers a facet fetch
     if (
       changed.has('facetKey') ||
@@ -153,7 +152,10 @@ export class MoreFacetsContent extends LitElement {
     ) {
       this.facetsLoading = true;
       this.pageNumber = 1;
-      this.sortedBy = defaultFacetSort[this.facetKey as FacetOption];
+      this.sortedBy =
+        this.searchType === SearchType.TV
+          ? tvMoreFacetSort[this.facetKey as FacetOption]
+          : defaultFacetSort[this.facetKey as FacetOption];
 
       this.updateSpecificFacets();
     }
