@@ -37,7 +37,7 @@
     "@internetarchive/shared-resize-observer": "^0.2.0",
     "@lit/localize": "^0.12.2",
     "dompurify": "^3.2.4",
-    "lit": "^3.3.1",
+    "lit": "^2.7.0 || ^3.0.0",
     "typescript-cookie": "^1.0.6"
   },
   "devDependencies": {
