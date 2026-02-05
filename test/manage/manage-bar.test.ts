@@ -1,14 +1,12 @@
+import '@internetarchive/modal-manager';
+import { ModalManagerInterface } from '@internetarchive/modal-manager';
+import { msg } from '@lit/localize';
 import { fixture } from '@open-wc/testing-helpers';
-import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 import Sinon from 'sinon';
+import { describe, expect, it } from 'vitest';
+
 import '../../src/manage/manage-bar';
-import {
-  ModalManager,
-  ModalManagerInterface,
-} from '@internetarchive/modal-manager';
-import '@internetarchive/modal-manager';
-import { msg } from '@lit/localize';
 import type { ManageBar } from '../../src/manage/manage-bar';
 
 describe('Manage bar', () => {

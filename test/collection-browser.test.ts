@@ -1246,7 +1246,7 @@ describe('Collection Browser', () => {
     el.baseQuery = 'months'; // Includes date_histogram aggregation in response
     el.searchType = SearchType.TV;
     el.showHistogramDatePicker = true;
-    // await el.updateComplete;
+    await el.updateComplete;
 
     const facets = el.shadowRoot?.querySelector(
       'collection-facets',

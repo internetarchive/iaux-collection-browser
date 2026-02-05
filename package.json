@@ -13,7 +13,7 @@
     "lint": "eslint . && prettier \"**/*.ts\" --check",
     "format": "eslint . --fix && prettier \"**/*.ts\" --write",
     "circular": "madge --circular --extensions ts .",
-    "test": "yarn circular && yarn lint && vitest run --config=vite.config.ci.ts --coverage",
+    "test": "yarn circular && yarn lint && vitest run --coverage",
     "test:watch": "yarn circular && yarn lint && vitest",
     "deploy": "yarn run deploy:run -e $(git branch --show-current)",
     "deploy:run": "yarn run prepare:ghpages && touch ghpages/.nojekyll && yarn run deploy:gh",
