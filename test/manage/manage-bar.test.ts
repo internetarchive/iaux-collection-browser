@@ -120,7 +120,7 @@ describe('Manage bar', () => {
   });
 
   it('opens the remove items modal when showRemoveItemsModal is clicked', async () => {
-    const modalManager = await fixture<ModalManager>(
+    const modalManager = await fixture<ModalManagerInterface>(
       html`<modal-manager></modal-manager>`,
     );
 
@@ -149,7 +149,7 @@ describe('Manage bar', () => {
     console.log(showModalSpy.args[0][0].config.title?.values[0]);
 
     expect(showModalSpy.callCount).to.equal(1);
-    expect(el.modalManager?.classList.contains('remove-items')).to.be;
+    expect(el.modalManager?.classList.contains('remove-items')).to.be.true;
     expect(showModalSpy.args[0][0].config.title?.values[0]).to.equal(
       msg('Are you sure you want to remove these items?'),
     );
