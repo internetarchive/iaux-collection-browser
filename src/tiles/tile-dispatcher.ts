@@ -325,6 +325,7 @@ export class TileDispatcher
               .creatorFilter=${creatorFilter}
               .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
+              .simpleLayoutType=${this.simpleLayoutType}
               ?showInfoButton=${!this.isHoverEnabled}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >

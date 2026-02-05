@@ -51,6 +51,7 @@ export class ItemTile extends BaseTileComponent {
       simple: this.simpleLayoutType !== 'none',
       'stats-only': this.simpleLayoutType === 'stats-only',
       'snippets-only': this.simpleLayoutType === 'snippets-only',
+      minimal: this.simpleLayoutType === 'minimal',
     });
 
     return html`
@@ -175,8 +176,10 @@ export class ItemTile extends BaseTileComponent {
   }
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
-    if (!this.hasSnippets || this.simpleLayoutType === 'stats-only')
+    if (!this.hasSnippets) return nothing;
+    if (['stats-only', 'minimal'].includes(this.simpleLayoutType)) {
       return nothing;
+    }
 
     return html`
       <text-snippet-block viewsize="grid" .snippets=${this.model?.snippets}>
@@ -221,7 +224,9 @@ export class ItemTile extends BaseTileComponent {
    * Template for the stats row along the bottom of the tile.
    */
   private get tileStatsTemplate(): TemplateResult | typeof nothing {
-    if (this.simpleLayoutType === 'snippets-only') return nothing;
+    if (['snippets-only', 'minimal'].includes(this.simpleLayoutType)) {
+      return nothing;
+    }
 
     const effectiveSort = this.sortParam ?? this.defaultSortParam;
     const [viewCount, viewLabel] =
@@ -301,7 +306,8 @@ export class ItemTile extends BaseTileComponent {
           -webkit-line-clamp: 1;
         }
 
-        .simple.snippets-only .item-info {
+        .simple.snippets-only .item-info,
+        .simple.minimal .item-info {
           padding-bottom: 5px;
         }
 
