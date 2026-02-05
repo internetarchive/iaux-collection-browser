@@ -1,4 +1,6 @@
 // import { playwrightLauncher } from '@web/test-runner-playwright';
+import rollupImage from "@rollup/plugin-image";
+import { rollupAdapter } from '@web/dev-server-rollup';
 
 const filteredLogs = ['Running in dev mode', 'lit-html is in dev mode'];
 
@@ -10,6 +12,14 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   nodeResolve: {
     exportConditions: ['browser', 'development'],
   },
+  
+  mimeTypes: {
+    "**/*.svg": "js",
+  },
+
+  plugins: [
+    rollupAdapter(rollupImage()),
+  ],
 
   /** Filter out lit dev mode logs */
   filterBrowserLogs(log) {
