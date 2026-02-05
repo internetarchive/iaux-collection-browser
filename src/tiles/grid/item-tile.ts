@@ -175,8 +175,10 @@ export class ItemTile extends BaseTileComponent {
   }
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
-    if (!this.hasSnippets || this.simpleLayoutType === 'stats-only')
+    if (!this.hasSnippets) return nothing;
+    if (['stats-only', 'minimal'].includes(this.simpleLayoutType)) {
       return nothing;
+    }
 
     return html`
       <text-snippet-block viewsize="grid" .snippets=${this.model?.snippets}>
@@ -221,7 +223,9 @@ export class ItemTile extends BaseTileComponent {
    * Template for the stats row along the bottom of the tile.
    */
   private get tileStatsTemplate(): TemplateResult | typeof nothing {
-    if (this.simpleLayoutType === 'snippets-only') return nothing;
+    if (['snippets-only', 'minimal'].includes(this.simpleLayoutType)) {
+      return nothing;
+    }
 
     const effectiveSort = this.sortParam ?? this.defaultSortParam;
     const [viewCount, viewLabel] =
