@@ -129,6 +129,12 @@ export class MoreFacetsContent extends LitElement {
    */
   @state() private pageNumber = 1;
 
+  /**
+   * Text entered by the user to filter facet buckets.
+   * Applied to bucket.key for case-insensitive matching.
+   */
+  @state() private filterText = '';
+
   willUpdate(changed: PropertyValues): void {
     if (
       changed.has('aggregations') ||
@@ -140,6 +146,11 @@ export class MoreFacetsContent extends LitElement {
       // Convert the merged selected facets & aggregations into a facet group, and
       // store it for reuse across pages.
       this.facetGroup = this.mergedFacets;
+    }
+
+    // Reset to page 1 when filter text changes
+    if (changed.has('filterText')) {
+      this.pageNumber = 1;
     }
   }
 
@@ -385,10 +396,35 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
+   * Returns the facet group with buckets filtered by the current filter text.
+   * Filters are applied to the full bucket list before pagination.
+   */
+  private get filteredFacetGroup(): FacetGroup | undefined {
+    const { facetGroup, filterText } = this;
+    if (!facetGroup) return undefined;
+
+    // If no filter text, return the full group
+    if (!filterText.trim()) {
+      return facetGroup;
+    }
+
+    // Filter buckets case-insensitively by bucket key
+    const lowerFilter = filterText.toLowerCase().trim();
+    const filteredBuckets = facetGroup.buckets.filter(bucket =>
+      bucket.key.toLowerCase().includes(lowerFilter),
+    );
+
+    return {
+      ...facetGroup,
+      buckets: filteredBuckets,
+    };
+  }
+
+  /**
    * Returns a FacetGroup representing only the current page of facet buckets to show.
    */
   private get facetGroupForCurrentPage(): FacetGroup | undefined {
-    const { facetGroup } = this;
+    const facetGroup = this.filteredFacetGroup;
     if (!facetGroup) return undefined;
 
     // Slice out only the current page of facet buckets
@@ -405,9 +441,19 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get moreFacetsTemplate(): TemplateResult {
+    const facetGroup = this.facetGroupForCurrentPage;
+
+    // Show empty state if filtering returned no results
+    if (
+      this.filterText.trim() &&
+      (!facetGroup || facetGroup.buckets.length === 0)
+    ) {
+      return this.emptyFilterResultsTemplate;
+    }
+
     return html`
       <facets-template
-        .facetGroup=${this.facetGroupForCurrentPage}
+        .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .collectionTitles=${this.collectionTitles}
         @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
@@ -432,14 +478,23 @@ export class MoreFacetsContent extends LitElement {
     `;
   }
 
+  private get emptyFilterResultsTemplate(): TemplateResult {
+    return html`
+      <div class="empty-results">
+        <p>${msg('No matching values found.')}</p>
+        <p class="hint">${msg('Try a different search term.')}</p>
+      </div>
+    `;
+  }
+
   /**
    * How many pages of facets to show in the modal pagination widget
    */
   private get paginationSize(): number {
-    if (!this.aggregations || !this.facetKey) return 0;
+    if (!this.filteredFacetGroup) return 0;
 
     // Calculate the appropriate number of pages to show in the modal pagination widget
-    const length = this.aggregations[this.facetKey]?.buckets.length;
+    const length = this.filteredFacetGroup.buckets.length;
     return Math.ceil(length / this.facetsPerPage);
   }
 
@@ -485,6 +540,14 @@ export class MoreFacetsContent extends LitElement {
     );
   }
 
+  /**
+   * Handler for filter input changes. Updates the filter text and triggers re-render.
+   */
+  private handleFilterInput(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    this.filterText = input.value;
+  }
+
   private get modalHeaderTemplate(): TemplateResult {
     const facetSort =
       this.sortedBy ?? defaultFacetSort[this.facetKey as FacetOption];
@@ -511,6 +574,19 @@ export class MoreFacetsContent extends LitElement {
               }}
             ></toggle-switch>`
           : nothing}
+
+        <label class="filter-label" for="facet-filter"
+          >${msg('Filter by:')}</label
+        >
+        <input
+          id="facet-filter"
+          type="text"
+          class="filter-input"
+          .value=${this.filterText}
+          @input=${this.handleFilterInput}
+          placeholder=${msg('Search...')}
+          aria-label=${msg('Filter facets')}
+        />
       </span>`;
   }
 
@@ -544,6 +620,9 @@ export class MoreFacetsContent extends LitElement {
     // Reset the unapplied changes back to default, now that they have been applied
     this.unappliedFacetChanges = getDefaultSelectedFacets();
 
+    // Reset filter text
+    this.filterText = '';
+
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
@@ -555,6 +634,9 @@ export class MoreFacetsContent extends LitElement {
   private cancelClick() {
     // Reset the unapplied changes back to default
     this.unappliedFacetChanges = getDefaultSelectedFacets();
+
+    // Reset filter text
+    this.filterText = '';
 
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
@@ -590,6 +672,38 @@ export class MoreFacetsContent extends LitElement {
 
         .sort-toggle {
           font-weight: normal;
+        }
+
+        .filter-label {
+          margin-left: 20px;
+          font-size: 1.3rem;
+        }
+
+        .filter-input {
+          font-size: 1.3rem;
+          padding: 4px 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          margin-left: 5px;
+          width: 150px;
+          font-family: inherit;
+        }
+
+        .filter-input:focus {
+          outline: 2px solid #194880;
+          outline-offset: 1px;
+          border-color: #194880;
+        }
+
+        .empty-results {
+          text-align: center;
+          padding: 40px 20px;
+          color: #666;
+        }
+
+        .empty-results .hint {
+          font-size: 1.1rem;
+          margin-top: 10px;
         }
 
         .facets-content {
@@ -634,6 +748,10 @@ export class MoreFacetsContent extends LitElement {
           .facets-content {
             overflow-y: auto;
             height: 300px;
+          }
+          .filter-input {
+            width: 120px;
+            font-size: 1.2rem;
           }
         }
       `,
