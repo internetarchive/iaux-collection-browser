@@ -681,12 +681,14 @@ export class MoreFacetsContent extends LitElement {
 
         /* Horizontal scroll mode: fixed column height for horizontal overflow */
         section#more-facets.horizontal-scroll-mode {
+          --facetsColumnCount: 3;
           --facetsMaxHeight: 280px;
         }
 
-        /* Pagination mode: no fixed height, allow normal vertical column layout */
+        /* Pagination mode: set height for proper column layout with vertical scroll */
         section#more-facets.pagination-mode {
-          --facetsMaxHeight: none;
+          --facetsColumnCount: 3;
+          --facetsMaxHeight: 280px; /* Columns need height constraint to flow properly */
         }
         .header-content .title {
           display: block;
@@ -746,10 +748,12 @@ export class MoreFacetsContent extends LitElement {
           scrollbar-color: #888 #f1f1f1; /* Firefox - thumb and track colors */
         }
 
-        /* Pagination mode: vertical scrolling */
+        /* Pagination mode: vertical scrolling, allow taller height for multiple columns */
         .facets-content.pagination-mode {
           overflow-y: auto;
           overflow-x: hidden;
+          max-height: none; /* Remove height constraint to allow columns to flow properly */
+          height: 300px; /* Fixed height to enable vertical scroll */
         }
 
         /* Horizontal scroll mode: horizontal scrolling only */
@@ -819,7 +823,8 @@ export class MoreFacetsContent extends LitElement {
         }
 
         @media (max-width: 560px) {
-          section#more-facets {
+          section#more-facets.horizontal-scroll-mode,
+          section#more-facets.pagination-mode {
             max-height: 450px;
             --facetsColumnCount: 1; /* Single column on mobile */
             --facetsMaxHeight: none; /* Remove fixed height for vertical scrolling */
