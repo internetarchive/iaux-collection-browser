@@ -24,7 +24,7 @@
   "dependencies": {
     "@a11y/focus-trap": "^1.0.5",
     "@internetarchive/analytics-manager": "^0.1.4",
-    "@internetarchive/elements": "^0.2.0",
+    "@internetarchive/elements": "0.2.1-webdev-8162.1",
     "@internetarchive/feature-feedback": "^1.0.0",
     "@internetarchive/field-parsers": "^1.0.0",
     "@internetarchive/histogram-date-range": "^1.4.1",
