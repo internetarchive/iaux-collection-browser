@@ -1,4 +1,5 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 import Sinon from 'sinon';
 import type { ManageableItem } from '../../src/models';

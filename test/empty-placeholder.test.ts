@@ -1,4 +1,5 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 import '../src/empty-placeholder';
 
@@ -15,7 +16,7 @@ describe('Empty Placeholder', () => {
 
     const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
     expect(placeholderElem).to.exist;
-    expect(placeholderElem).to.have.class('empty-query');
+    expect(placeholderElem?.classList.contains('empty-query')).to.be.true;
   });
 
   it('should render with empty-collection placeholder', async () => {
@@ -28,7 +29,7 @@ describe('Empty Placeholder', () => {
 
     const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
     expect(placeholderElem).to.exist;
-    expect(placeholderElem).to.have.class('empty-collection');
+    expect(placeholderElem?.classList.contains('empty-collection')).to.be.true;
   });
 
   it('should render with no-results placeholder', async () => {
@@ -41,7 +42,7 @@ describe('Empty Placeholder', () => {
 
     const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
     expect(placeholderElem).to.exist;
-    expect(placeholderElem).to.have.class('no-results');
+    expect(placeholderElem?.classList.contains('no-results')).to.be.true;
   });
 
   it('should render with query-error placeholder', async () => {
@@ -54,7 +55,7 @@ describe('Empty Placeholder', () => {
 
     const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
     expect(placeholderElem).to.exist;
-    expect(placeholderElem).to.have.class('query-error');
+    expect(placeholderElem?.classList.contains('query-error')).to.be.true;
   });
 
   it('should render with collection-error placeholder', async () => {
@@ -67,7 +68,7 @@ describe('Empty Placeholder', () => {
 
     const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
     expect(placeholderElem).to.exist;
-    expect(placeholderElem).to.have.class('collection-error');
+    expect(placeholderElem?.classList.contains('collection-error')).to.be.true;
   });
 
   it('should not render any empty placeholder', async () => {

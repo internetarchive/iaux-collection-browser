@@ -1,4 +1,5 @@
-import { aTimeout, expect, fixture } from '@open-wc/testing';
+import { aTimeout, fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 import type { MoreFacetsContent } from '../../src/collection-facets/more-facets-content';
 import '../../src/collection-facets/more-facets-content';
