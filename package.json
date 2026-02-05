@@ -8,7 +8,7 @@
   "module": "dist/index.js",
   "scripts": {
     "start": "vite",
-    "prepare:ghpages": "rimraf ghpages && yarn run prepare && vite build",
+    "prepare:ghpages": "rimraf ghpages && yarn run prepare && vite build --config vite.config.ghpages.ts",
     "prepare": "rimraf dist && tsc && husky install",
     "lint": "eslint . && prettier \"**/*.ts\" --check",
     "format": "eslint . --fix && prettier \"**/*.ts\" --write",
