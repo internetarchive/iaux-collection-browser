@@ -19,8 +19,7 @@ import type {
   TVChannelMaps,
 } from './models';
 
-export interface CollectionBrowserDataSourceInterface
-  extends ReactiveController {
+export interface CollectionBrowserDataSourceInterface extends ReactiveController {
   /**
    * How many tile models are present in this data source
    */

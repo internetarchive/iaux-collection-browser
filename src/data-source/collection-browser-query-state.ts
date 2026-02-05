@@ -33,8 +33,7 @@ export interface CollectionBrowserQueryState {
  * Interface representing search-related state and operations required by the
  * data source on its host component.
  */
-export interface CollectionBrowserSearchInterface
-  extends CollectionBrowserQueryState {
+export interface CollectionBrowserSearchInterface extends CollectionBrowserQueryState {
   searchService?: SearchServiceInterface;
   isTVCollection: boolean;
   readonly sortParam: SortParam | null;
