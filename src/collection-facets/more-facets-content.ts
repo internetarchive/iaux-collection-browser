@@ -551,6 +551,14 @@ export class MoreFacetsContent extends LitElement {
    */
   private pageNumberClicked(e: CustomEvent<{ page: number }>) {
     this.pageNumber = e.detail.page;
+
+    // Track page navigation in analytics
+    this.analyticsHandler?.sendEvent({
+      category: analyticsCategories.default,
+      action: analyticsActions.moreFacetsPageChange,
+      label: `${this.pageNumber}`,
+    });
+
     this.dispatchEvent(
       new CustomEvent('pageChanged', { detail: this.pageNumber }),
     );

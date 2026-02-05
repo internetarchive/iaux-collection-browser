@@ -327,4 +327,52 @@ describe('More facets content', () => {
     expect(el.shadowRoot?.querySelector('.facets-horizontal-container')).to.not
       .exist;
   });
+
+  it('pagination page change should send analytics event', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    // Manually create aggregations with 1000+ facets
+    const buckets: Bucket[] = [];
+    for (let i = 0; i < 1000; i++) {
+      buckets.push({ key: `value-${i}`, doc_count: i + 1 });
+    }
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'subject'}
+        .selectedFacets=${{
+          mediatype: {},
+          lending: {},
+          year: {},
+          subject: {},
+          collection: {},
+          creator: {},
+          language: {},
+        }}
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></more-facets-content>`,
+    );
+
+    // @ts-expect-error - accessing private property for testing
+    el.aggregations = {
+      subject: new Aggregation({ buckets }),
+    };
+    el.facetsLoading = false;
+    await el.updateComplete;
+
+    // Get the pagination component
+    const pagination = el.shadowRoot?.querySelector(
+      'more-facets-pagination',
+    ) as any;
+    expect(pagination).to.exist;
+
+    // Simulate clicking page 2
+    pagination.currentPage = 2;
+    await pagination.updateComplete;
+
+    // Verify analytics event was sent
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('moreFacetsPageChange');
+    expect(mockAnalyticsHandler.callLabel).to.equal('2');
+  });
 });
