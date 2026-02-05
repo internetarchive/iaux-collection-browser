@@ -51,6 +51,7 @@ export class ItemTile extends BaseTileComponent {
       simple: this.simpleLayoutType !== 'none',
       'stats-only': this.simpleLayoutType === 'stats-only',
       'snippets-only': this.simpleLayoutType === 'snippets-only',
+      minimal: this.simpleLayoutType === 'minimal',
     });
 
     return html`
@@ -305,7 +306,8 @@ export class ItemTile extends BaseTileComponent {
           -webkit-line-clamp: 1;
         }
 
-        .simple.snippets-only .item-info {
+        .simple.snippets-only .item-info,
+        .simple.minimal .item-info {
           padding-bottom: 5px;
         }
 
