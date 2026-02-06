@@ -1,6 +1,5 @@
 import { aTimeout, fixture } from '@open-wc/testing-helpers';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { axe } from 'vitest-axe';
 import { html } from 'lit';
 import sinon from 'sinon';
 import type { TileDispatcher } from '../../src/tiles/tile-dispatcher';
