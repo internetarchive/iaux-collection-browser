@@ -35,9 +35,7 @@ import { sha1 } from '../utils/sha1';
 import { log } from '../utils/log';
 import { mergeSelectedFacets } from '../utils/facet-utils';
 
-export class CollectionBrowserDataSource
-  implements CollectionBrowserDataSourceInterface
-{
+export class CollectionBrowserDataSource implements CollectionBrowserDataSourceInterface {
   /**
    * All pages of tile models that have been fetched so far, indexed by their page
    * number (with the first being page 1).

@@ -42,3 +42,5 @@ lerna-debug.log*
 
 # We use yarn.lock
 package-lock.json
+
+__screenshots__

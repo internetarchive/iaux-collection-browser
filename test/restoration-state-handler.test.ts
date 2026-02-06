@@ -1,5 +1,5 @@
 import { SearchType } from '@internetarchive/search-service';
-import { expect } from '@open-wc/testing';
+import { describe, it, expect } from 'vitest';
 import { SortField, getDefaultSelectedFacets } from '../src/models';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 

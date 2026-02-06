@@ -1,4 +1,5 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import {
@@ -69,14 +70,14 @@ describe('Hover Pane Controller', () => {
   let oldMatchMedia: typeof window.matchMedia;
   let oldOnTouchStart: typeof window.ontouchstart;
 
-  before(() => {
+  beforeEach(() => {
     oldMatchMedia = window.matchMedia;
     oldOnTouchStart = window.ontouchstart;
     window.matchMedia = () => ({ matches: true }) as MediaQueryList;
     window.ontouchstart = () => {};
   });
 
-  after(() => {
+  afterEach(() => {
     window.matchMedia = oldMatchMedia;
     window.ontouchstart = oldOnTouchStart;
   });

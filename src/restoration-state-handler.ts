@@ -44,9 +44,7 @@ export interface RestorationStateHandlerInterface {
   getRestorationState(): RestorationState;
 }
 
-export class RestorationStateHandler
-  implements RestorationStateHandlerInterface
-{
+export class RestorationStateHandler implements RestorationStateHandlerInterface {
   private context: CollectionBrowserContext;
 
   private cookieDomain = '.archive.org';

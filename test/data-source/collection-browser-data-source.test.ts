@@ -1,4 +1,5 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { html } from 'lit';
 import sinon from 'sinon';
 import { ItemHit, SearchType } from '@internetarchive/search-service';

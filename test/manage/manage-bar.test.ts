@@ -1,13 +1,12 @@
-import { expect, fixture } from '@open-wc/testing';
+import '@internetarchive/modal-manager';
+import { ModalManagerInterface } from '@internetarchive/modal-manager';
+import { msg } from '@lit/localize';
+import { fixture } from '@open-wc/testing-helpers';
 import { html } from 'lit';
 import Sinon from 'sinon';
+import { describe, expect, it } from 'vitest';
+
 import '../../src/manage/manage-bar';
-import {
-  ModalManager,
-  ModalManagerInterface,
-} from '@internetarchive/modal-manager';
-import '@internetarchive/modal-manager';
-import { msg } from '@lit/localize';
 import type { ManageBar } from '../../src/manage/manage-bar';
 
 describe('Manage bar', () => {
@@ -119,7 +118,7 @@ describe('Manage bar', () => {
   });
 
   it('opens the remove items modal when showRemoveItemsModal is clicked', async () => {
-    const modalManager = await fixture<ModalManager>(
+    const modalManager = await fixture<ModalManagerInterface>(
       html`<modal-manager></modal-manager>`,
     );
 
@@ -148,7 +147,7 @@ describe('Manage bar', () => {
     console.log(showModalSpy.args[0][0].config.title?.values[0]);
 
     expect(showModalSpy.callCount).to.equal(1);
-    expect(el.modalManager?.classList.contains('remove-items')).to.be;
+    expect(el.modalManager?.classList.contains('remove-items')).to.be.true;
     expect(showModalSpy.args[0][0].config.title?.values[0]).to.equal(
       msg('Are you sure you want to remove these items?'),
     );

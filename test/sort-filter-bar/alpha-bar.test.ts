@@ -1,4 +1,5 @@
-import { aTimeout, expect, fixture } from '@open-wc/testing';
+import { aTimeout, fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 import type { AlphaBar } from '../../src/sort-filter-bar/alpha-bar';
 

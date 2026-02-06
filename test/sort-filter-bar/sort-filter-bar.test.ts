@@ -1,4 +1,5 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import sinon from 'sinon';
 import { html } from 'lit';
 import type { IaDropdown } from '@internetarchive/ia-dropdown';
@@ -702,12 +703,12 @@ describe('Sort/filter bar letter behavior', () => {
 
 describe('Sort/filter bar mobile view', () => {
   let origWindowSize: { width: number; height: number };
-  before(() => {
+  beforeEach(() => {
     origWindowSize = { width: window.innerWidth, height: window.innerHeight };
     window.resizeTo(500, 600);
   });
 
-  after(() => {
+  afterEach(() => {
     window.resizeTo(origWindowSize.width, origWindowSize.height);
   });
 

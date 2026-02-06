@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing';
+import { describe, it, expect } from 'vitest';
 import { nothing } from 'lit';
 import { formatUnitSize } from '../../src/utils/format-unit-size';
 

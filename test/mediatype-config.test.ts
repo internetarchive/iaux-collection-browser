@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing';
+import { describe, it, expect } from 'vitest';
 import { mediatypeConfig } from '../src/mediatype/mediatype-config';
 
 describe('mediatypeConfig', () => {

@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing';
+import { describe, it, expect } from 'vitest';
 import { formatDate } from '../../src/utils/format-date';
 
 const testDate = new Date(2020, 11, 9);
