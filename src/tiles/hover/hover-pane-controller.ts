@@ -157,6 +157,14 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   /** A record of the last mouse position on the host element, for positioning the hover pane */
   private lastPointerClientPos = { x: 0, y: 0 };
 
+  /**
+   * A flag to track whether the host element is being clicked by a pointer device, so that we
+   * don't trigger unnecessary keyboard focus behaviors on click. This is needed, e.g., to prevent
+   * the hover pane from appearing immediately at its `host` positioning on click, which can
+   * obstruct the host element itself (due to the ordering of events fired).
+   */
+  private clicking = false;
+
   constructor(
     /** The host element to which this controller should attach listeners */
     private readonly host: ReactiveControllerHost &
@@ -352,6 +360,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     // keyboard navigation listeners
     this.host.addEventListener('focus', this.handleFocus);
     this.host.addEventListener('blur', this.handleBlur);
+    this.host.addEventListener('pointerdown', this.handlePointerDown);
     this.host.addEventListener('keyup', this.handleKeyUp);
     this.host.addEventListener('keydown', this.handleKeyDown);
 
@@ -391,17 +400,22 @@ export class HoverPaneController implements HoverPaneControllerInterface {
   }
 
   private handleFocus = (): void => {
-    if (this.hoverPaneState === 'hidden') {
+    if (!this.clicking && this.hoverPaneState === 'hidden') {
       this.showHoverPane({
         anchor: 'host',
       });
     }
+    this.clicking = false;
   };
 
   private handleBlur = (): void => {
     if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
     }
+  };
+
+  private handlePointerDown = (): void => {
+    this.clicking = true;
   };
 
   private handleKeyDown = (e: KeyboardEvent): void => {
