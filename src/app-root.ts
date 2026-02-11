@@ -609,7 +609,7 @@ export class AppRoot extends LitElement {
     if (target.checked) {
       tileDispatchers?.forEach(tile => (tile.layoutType = 'minimal'));
     } else {
-      tileDispatchers?.forEach(tile => (tile.layoutType = 'none'));
+      tileDispatchers?.forEach(tile => (tile.layoutType = 'default'));
     }
   }
 
