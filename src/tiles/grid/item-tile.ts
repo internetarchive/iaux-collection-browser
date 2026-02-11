@@ -10,7 +10,7 @@ import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { BaseTileComponent } from '../base-tile-component';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
-import { SimpleLayoutType } from '../models';
+import { LayoutType } from '../models';
 
 import '../image-block';
 import '../review-block';
@@ -42,16 +42,16 @@ export class ItemTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showTvClips = false;
 
-  @property({ type: String }) simpleLayoutType: SimpleLayoutType = 'none';
+  @property({ type: String }) layoutType: LayoutType = 'default';
 
   render() {
     const itemTitle = this.model?.title;
     const containerClasses = classMap({
       container: true,
-      simple: this.simpleLayoutType !== 'none',
-      'stats-only': this.simpleLayoutType === 'stats-only',
-      'snippets-only': this.simpleLayoutType === 'snippets-only',
-      minimal: this.simpleLayoutType === 'minimal',
+      simple: this.layoutType !== 'default',
+      'stats-only': this.layoutType === 'stats-only',
+      'snippets-only': this.layoutType === 'snippets-only',
+      minimal: this.layoutType === 'minimal',
     });
 
     return html`
@@ -177,7 +177,7 @@ export class ItemTile extends BaseTileComponent {
 
   private get textSnippetsTemplate(): TemplateResult | typeof nothing {
     if (!this.hasSnippets) return nothing;
-    if (['stats-only', 'minimal'].includes(this.simpleLayoutType)) {
+    if (['stats-only', 'minimal'].includes(this.layoutType)) {
       return nothing;
     }
 
@@ -224,7 +224,7 @@ export class ItemTile extends BaseTileComponent {
    * Template for the stats row along the bottom of the tile.
    */
   private get tileStatsTemplate(): TemplateResult | typeof nothing {
-    if (['snippets-only', 'minimal'].includes(this.simpleLayoutType)) {
+    if (['snippets-only', 'minimal'].includes(this.layoutType)) {
       return nothing;
     }
 

@@ -6,7 +6,7 @@ import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { formatUnitSize } from '../../utils/format-unit-size';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import { BaseTileComponent } from '../base-tile-component';
-import { SimpleLayoutType } from '../models';
+import { LayoutType } from '../models';
 import '../image-block';
 
 @customElement('collection-tile')
@@ -29,12 +29,12 @@ export class CollectionTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showInfoButton = false;
 
-  @property({ type: String }) simpleLayoutType: SimpleLayoutType = 'none';
+  @property({ type: String }) layoutType: LayoutType = 'default';
 
   render() {
     const containerClasses = classMap({
       container: true,
-      minimal: this.simpleLayoutType === 'minimal',
+      minimal: this.layoutType === 'minimal',
     });
 
     return html`
