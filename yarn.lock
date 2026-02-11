@@ -306,13 +306,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/elements@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.2.0.tgz#9028a0531258725c251b09e112a3afd35ec09f34"
-  integrity sha512-e9k3CCpGj4p3MefIVi/qWlPv9iq3fzNwHs7OoTFtsZMTP8NX3YNK/j0CVrVEefSXFYnDqdTkEa4L81wbyVs51Q==
+"@internetarchive/elements@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.2.2.tgz#19f537053d4c25a776b9d4ed752bafef831e3c3e"
+  integrity sha512-SYhlGrqxXXuAyWdCAXI7IAJ1VqON34fbdif4/++JI89ScMjeH5225kFoW8F27OeGphbUALoIXpkvW06d8Uctug==
   dependencies:
     "@lit/localize" "^0.12.2"
-    lit "^3.3.1"
+    lit "^2.8.0 || ^3.3.2"
     magic-snowflakes "^7.0.2"
     tslib "^2.8.1"
 
@@ -379,26 +379,19 @@
     "@internetarchive/field-parsers" "^1.0.0"
     typescript-memoize "^1.1.1"
 
-"@internetarchive/icon-close@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.npmjs.org/@internetarchive/icon-close/-/icon-close-1.3.4.tgz"
-  integrity sha512-1pYEV64zRhK3eZEY7F7bxs+TMW2zZKB8vd7fhJgbJMEGdJAPRahSUYPdlEZFg6cNDC/WzbcfERgFSstdRkolDw==
+"@internetarchive/icon-close@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/icon-close/-/icon-close-1.4.0.tgz#c52e63a12ac13516a68deedaa7c7a9034f146bba"
+  integrity sha512-MDNwjt2PubjhsxwY0Td3Fl2LPLwhTvLT717Eju06ogHFt8SFDRbxY8iU0dIebM9LvT+2k4cAQdtbUEfCVWnRog==
   dependencies:
-    lit "^2.0.2"
+    lit-html "^1.2.1"
 
-"@internetarchive/icon-ia-logo@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.npmjs.org/@internetarchive/icon-ia-logo/-/icon-ia-logo-1.3.4.tgz"
-  integrity sha512-QsP14B+/MHHP3wu/HF52GQbcVV9nOorCUsweQppZrzVZlSwFm/gfd+yjm6g6vynYn6e7qsP2JK9ot47XzRT00w==
+"@internetarchive/icon-user@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/icon-user/-/icon-user-1.4.0.tgz#3a74f3caf4f8387066479d2ff8705ad063952270"
+  integrity sha512-3WK5oVjoAMcHKzrTE+exHRmh211uH49LqLJGMTa+dhTGtIvumaL06w3o0jIkaPZK2AG1a52lMyTjYfgXuCOBCg==
   dependencies:
-    lit "^2.0.2"
-
-"@internetarchive/icon-user@^1.3.4":
-  version "1.3.4"
-  resolved "https://registry.npmjs.org/@internetarchive/icon-user/-/icon-user-1.3.4.tgz"
-  integrity sha512-GXdGKGsYVW0mlc3RpmY1/MsuKU6pEn/YXueS+xX0e620pcsjTRrtKn2RqwBmqkeQki4QakFg0gpM1NhauaKMtw==
-  dependencies:
-    lit "^2.0.2"
+    lit-html "^1.2.1"
 
 "@internetarchive/infinite-scroller@^1.0.1":
   version "1.0.1"
@@ -414,17 +407,16 @@
   dependencies:
     nanoevents "^6.0.2"
 
-"@internetarchive/modal-manager@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.npmjs.org/@internetarchive/modal-manager/-/modal-manager-2.0.1.tgz"
-  integrity sha512-wBYnxBvJTeFd/DM5NkPex86Z1pmyTEvYlVR2vIC1PoJYV551xvHMM3UX594Oejxo5n4Q7/Wtkoe7rfQHMgY98w==
+"@internetarchive/modal-manager@2.0.5-webdev-8155.8":
+  version "2.0.5-webdev-8155.8"
+  resolved "https://registry.yarnpkg.com/@internetarchive/modal-manager/-/modal-manager-2.0.5-webdev-8155.8.tgz#580a3031a60d7ef7574f71d06c1b8a5df77f0745"
+  integrity sha512-3bOpyw0IkUb6HWMrFSbeVRudjVFItsg+A7tjynOipR8PmU9a94MeF0wH3pKC14hDEGiKiQxaSeYs099CvkraWw==
   dependencies:
     "@internetarchive/ia-activity-indicator" "^0.0.6"
-    "@internetarchive/icon-close" "^1.3.4"
-    "@internetarchive/icon-ia-logo" "^1.3.4"
-    "@internetarchive/icon-user" "^1.3.4"
-    lit "^2.8.0"
-    throttle-debounce "^5.0.0"
+    "@internetarchive/icon-close" "^1.4.0"
+    "@internetarchive/icon-user" "^1.4.0"
+    lit "^2.7.0 || ^3.0.0"
+    throttle-debounce "^5.0.2"
 
 "@internetarchive/recaptcha-manager@^0.1.1":
   version "0.1.1"
@@ -615,6 +607,14 @@
     semver "^7.7.1"
     tar-fs "^3.0.8"
     yargs "^17.7.2"
+
+"@rollup/plugin-image@^3.0.3":
+  version "3.0.3"
+  resolved "https://registry.yarnpkg.com/@rollup/plugin-image/-/plugin-image-3.0.3.tgz#025b557180bae20f2349ff5130ef2114169feaac"
+  integrity sha512-qXWQwsXpvD4trSb8PeFPFajp8JLpRtqqOeNYRUKnEQNHm7e5UP7fuSRcbjQAJ7wDZBbnJvSdY5ujNBQd9B1iFg==
+  dependencies:
+    "@rollup/pluginutils" "^5.0.1"
+    mini-svg-data-uri "^1.4.4"
 
 "@rollup/plugin-node-resolve@^15.0.1":
   version "15.3.1"
@@ -1076,7 +1076,7 @@
 
 "@types/trusted-types@^2.0.2", "@types/trusted-types@^2.0.7":
   version "2.0.7"
-  resolved "https://registry.npmjs.org/@types/trusted-types/-/trusted-types-2.0.7.tgz"
+  resolved "https://registry.yarnpkg.com/@types/trusted-types/-/trusted-types-2.0.7.tgz#baccb07a970b91707df3a3e8ba6896c57ead2d11"
   integrity sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==
 
 "@types/ws@^7.4.0":
@@ -1262,7 +1262,7 @@
     picomatch "^2.2.2"
     ws "^7.5.10"
 
-"@web/dev-server-rollup@^0.6.1":
+"@web/dev-server-rollup@^0.6.1", "@web/dev-server-rollup@^0.6.4":
   version "0.6.4"
   resolved "https://registry.npmjs.org/@web/dev-server-rollup/-/dev-server-rollup-0.6.4.tgz"
   integrity sha512-sJZfTGCCrdku5xYnQQG51odGI092hKY9YFM0X3Z0tRY3iXKXcYRaLZrErw5KfCxr6g0JRuhe4BBhqXTA5Q2I3Q==
@@ -3875,12 +3875,17 @@ lit-element@^3.3.0:
 
 lit-element@^4.2.0:
   version "4.2.2"
-  resolved "https://registry.npmjs.org/lit-element/-/lit-element-4.2.2.tgz"
+  resolved "https://registry.yarnpkg.com/lit-element/-/lit-element-4.2.2.tgz#f74fcbfbea945eae5614ece22a674fa52ca3365b"
   integrity sha512-aFKhNToWxoyhkNDmWZwEva2SlQia+jfG0fjIWV//YeTaWrVnOxD89dPKfigCUspXFmjzOEUQpOkejH5Ly6sG0w==
   dependencies:
     "@lit-labs/ssr-dom-shim" "^1.5.0"
     "@lit/reactive-element" "^2.1.0"
     lit-html "^3.3.0"
+
+lit-html@^1.2.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-1.4.1.tgz#0c6f3ee4ad4eb610a49831787f0478ad8e9ae5e0"
+  integrity sha512-B9btcSgPYb1q4oSOb/PrOT6Z/H+r6xuNzfH4lFli/AWhYwdtrgQkQWBbIc6mdnf6E2IL3gDXdkkqNktpU0OZQA==
 
 "lit-html@^2.0.0 || ^3.0.0":
   version "3.2.1"
@@ -3898,12 +3903,12 @@ lit-html@^2.8.0:
 
 lit-html@^3.3.0:
   version "3.3.2"
-  resolved "https://registry.npmjs.org/lit-html/-/lit-html-3.3.2.tgz"
+  resolved "https://registry.yarnpkg.com/lit-html/-/lit-html-3.3.2.tgz#4db11fdbf98fc8a0c5eabd9b1e7d088d3bb201a2"
   integrity sha512-Qy9hU88zcmaxBXcc10ZpdK7cOLXvXpRoBxERdtqV9QOrfpMZZ6pSYP91LhpPtap3sFMUiL7Tw2RImbe0Al2/kw==
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
-"lit@^2.0.0 || ^3.0.0", lit@^3.0.0, lit@^3.2.0, lit@^3.3.1:
+"lit@^2.0.0 || ^3.0.0", "lit@^2.7.0 || ^3.0.0", "lit@^2.8.0 || ^3.3.2", lit@^3.0.0, lit@^3.2.0:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/lit/-/lit-3.3.2.tgz#d9230ebbf237bfd3d2091bc0b56c576a470ac4d7"
   integrity sha512-NF9zbsP79l4ao2SNrH3NkfmFgN/hBYSQo90saIVI1o5GpjAdCPVstVzO1MrLOakHoEhYkrtRjPK6Ob521aoYWQ==
@@ -4081,6 +4086,11 @@ mimic-fn@^2.1.0:
   version "2.1.0"
   resolved "https://registry.npmjs.org/mimic-fn/-/mimic-fn-2.1.0.tgz"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
+
+mini-svg-data-uri@^1.4.4:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/mini-svg-data-uri/-/mini-svg-data-uri-1.4.4.tgz#8ab0aabcdf8c29ad5693ca595af19dd2ead09939"
+  integrity sha512-r9deDe9p5FJUPZAk3A59wGH7Ii9YrjjWw0jmw/liSbHl2CHiyXj6FcDXDu2K3TjVAXqiJdaw3xxwlZZr9E6nHg==
 
 minimatch@^10.0.0:
   version "10.0.1"
@@ -5301,9 +5311,9 @@ text-decoder@^1.1.0:
   dependencies:
     b4a "^1.6.4"
 
-throttle-debounce@^5.0.0:
+throttle-debounce@^5.0.2:
   version "5.0.2"
-  resolved "https://registry.npmjs.org/throttle-debounce/-/throttle-debounce-5.0.2.tgz"
+  resolved "https://registry.yarnpkg.com/throttle-debounce/-/throttle-debounce-5.0.2.tgz#ec5549d84e053f043c9fd0f2a6dd892ff84456b1"
   integrity sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A==
 
 to-regex-range@^5.0.1:

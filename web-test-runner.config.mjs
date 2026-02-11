@@ -1,3 +1,5 @@
+import rollupImage from '@rollup/plugin-image';
+import { rollupAdapter } from '@web/dev-server-rollup';
 // import { playwrightLauncher } from '@web/test-runner-playwright';
 
 const filteredLogs = ['Running in dev mode', 'lit-html is in dev mode'];
@@ -11,6 +13,13 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
     exportConditions: ['browser', 'development'],
   },
 
+  mimeTypes: {
+    '**/*.scss': 'js',
+    '**/*.css': 'js',
+    '**/*.svg': 'js',
+    '**/*.json': 'js',
+  },
+
   /** Filter out lit dev mode logs */
   filterBrowserLogs(log) {
     for (const arg of log.args) {
@@ -20,6 +29,8 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
     }
     return true;
   },
+
+  plugins: [rollupAdapter(rollupImage())],
 
   /** Compile JS for older browsers. Requires @web/dev-server-esbuild plugin */
   // esbuildTarget: 'auto',
