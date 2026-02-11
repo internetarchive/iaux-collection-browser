@@ -306,13 +306,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/elements@0.2.2-webdev-8162.0":
-  version "0.2.2-webdev-8162.0"
-  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.2.2-webdev-8162.0.tgz#9068dd40372d961f2b93d959bb83412678ed011e"
-  integrity sha512-KTGT8JKu/iBQsm5Ui3hAilthEuCj5sE4mm35EfRN4k42QknCgjuu6wDqbjrVHneVLIKc6NMZRZCvAUY+I6uG+g==
+"@internetarchive/elements@^0.2.2":
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.2.2.tgz#19f537053d4c25a776b9d4ed752bafef831e3c3e"
+  integrity sha512-SYhlGrqxXXuAyWdCAXI7IAJ1VqON34fbdif4/++JI89ScMjeH5225kFoW8F27OeGphbUALoIXpkvW06d8Uctug==
   dependencies:
     "@lit/localize" "^0.12.2"
-    lit "^2.7.0 || ^3.0.0"
+    lit "^2.8.0 || ^3.3.2"
     magic-snowflakes "^7.0.2"
     tslib "^2.8.1"
 
@@ -3908,7 +3908,7 @@ lit-html@^3.3.0:
   dependencies:
     "@types/trusted-types" "^2.0.2"
 
-"lit@^2.0.0 || ^3.0.0", "lit@^2.7.0 || ^3.0.0", lit@^3.0.0, lit@^3.2.0:
+"lit@^2.0.0 || ^3.0.0", "lit@^2.7.0 || ^3.0.0", "lit@^2.8.0 || ^3.3.2", lit@^3.0.0, lit@^3.2.0:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/lit/-/lit-3.3.2.tgz#d9230ebbf237bfd3d2091bc0b56c576a470ac4d7"
   integrity sha512-NF9zbsP79l4ao2SNrH3NkfmFgN/hBYSQo90saIVI1o5GpjAdCPVstVzO1MrLOakHoEhYkrtRjPK6Ob521aoYWQ==
