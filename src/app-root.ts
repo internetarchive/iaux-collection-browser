@@ -16,6 +16,8 @@ import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manag
 import type { CollectionBrowser } from '../src/collection-browser';
 
 import '../src/collection-browser';
+import { InfiniteScroller } from '@internetarchive/infinite-scroller';
+import { TileDispatcher } from './tiles/tile-dispatcher';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -396,6 +398,14 @@ export class AppRoot extends LitElement {
               />
               <label for="show-outline-check">Show cell outlines</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="minimal-tiles-check"
+                @click=${this.minimalTilesChanged}
+              />
+              <label for="minimal-tiles-check">Minimal tile layouts</label>
+            </div>
           </fieldset>
 
           <fieldset class="user-profile-controls">
@@ -584,6 +594,22 @@ export class AppRoot extends LitElement {
       this.collectionBrowser.style.removeProperty(
         '--infiniteScrollerCellOutline',
       );
+    }
+  }
+
+  private minimalTilesChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const scroller = this.collectionBrowser?.shadowRoot!.querySelector(
+      'infinite-scroller',
+    ) as InfiniteScroller;
+    const tileDispatchers = [
+      ...scroller.shadowRoot!.querySelectorAll('tile-dispatcher'),
+    ] as TileDispatcher[];
+
+    if (target.checked) {
+      tileDispatchers?.forEach(tile => (tile.layoutType = 'minimal'));
+    } else {
+      tileDispatchers?.forEach(tile => (tile.layoutType = 'default'));
     }
   }
 

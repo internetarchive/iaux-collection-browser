@@ -1,10 +1,12 @@
 import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { formatUnitSize } from '../../utils/format-unit-size';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import { BaseTileComponent } from '../base-tile-component';
+import { LayoutType } from '../models';
 import '../image-block';
 
 @customElement('collection-tile')
@@ -27,9 +29,16 @@ export class CollectionTile extends BaseTileComponent {
 
   @property({ type: Boolean }) showInfoButton = false;
 
+  @property({ type: String }) layoutType: LayoutType = 'default';
+
   render() {
+    const containerClasses = classMap({
+      container: true,
+      minimal: this.layoutType === 'minimal',
+    });
+
     return html`
-      <div class="container">
+      <div class=${containerClasses}>
         ${this.infoButtonTemplate}
         <div class="tile-details">
           <div class="item-info">
@@ -156,6 +165,18 @@ export class CollectionTile extends BaseTileComponent {
           color: ${whiteColor};
           flex-direction: column;
           margin-left: 10px;
+        }
+
+        .minimal #item-stats {
+          display: none;
+        }
+
+        .minimal .truncated {
+          -webkit-line-clamp: initial;
+        }
+
+        .minimal .item-info {
+          padding-bottom: 5px;
         }
       `,
     ];
