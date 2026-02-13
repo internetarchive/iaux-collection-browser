@@ -1,4 +1,5 @@
-import { expect, fixture, oneEvent } from '@open-wc/testing';
+import { fixture, oneEvent } from '@open-wc/testing-helpers';
+import { describe, it, expect, afterEach } from 'vitest';
 import { html } from 'lit';
 import sinon from 'sinon';
 import '../../src/collection-facets/more-facets-pagination';
@@ -103,7 +104,7 @@ describe('More facets pagination', () => {
     it('sets off side effects with `onChange`', async () => {
       const el = await fixture<MoreFacetsPagination>(
         html`<more-facets-pagination
-          .size=${'10'}
+          .size=${10}
           .currentPage=${2}
         ></more-facets-pagination>`,
       );
@@ -137,7 +138,7 @@ describe('More facets pagination', () => {
     it('going backwards', async () => {
       const el = await fixture<MoreFacetsPagination>(
         html`<more-facets-pagination
-          .size=${'10'}
+          .size=${10}
           .currentPage=${2}
         ></more-facets-pagination>`,
       );
@@ -173,7 +174,7 @@ describe('More facets pagination', () => {
     it('going forwards', async () => {
       const el = await fixture<MoreFacetsPagination>(
         html`<more-facets-pagination
-          .size=${'10'}
+          .size=${10}
           .currentPage=${5}
         ></more-facets-pagination>`,
       );

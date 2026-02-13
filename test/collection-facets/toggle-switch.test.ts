@@ -1,4 +1,5 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import sinon from 'sinon';
 import { html } from 'lit';
 import type { ToggleSwitch } from '../../src/collection-facets/toggle-switch';

@@ -1,4 +1,4 @@
-import { expect } from '@open-wc/testing';
+import { describe, it, expect } from 'vitest';
 import { arrayEquals } from '../../src/utils/array-equals';
 
 describe('arrayEquals', () => {

@@ -4,7 +4,8 @@ import {
   ModalManagerInterface,
   ModalManagerMode,
 } from '@internetarchive/modal-manager';
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 import sinon from 'sinon';
 import '../src/expanded-date-picker';

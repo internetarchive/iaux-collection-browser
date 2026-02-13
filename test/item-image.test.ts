@@ -1,11 +1,11 @@
-import { expect, fixture } from '@open-wc/testing';
+import { fixture } from '@open-wc/testing-helpers';
+import { describe, it, expect } from 'vitest';
 import { html } from 'lit';
 
 import { TileModel } from '../src/models';
 import type { ItemImage } from '../src/tiles/item-image';
 
 import '../src/tiles/item-image';
-import { MediaType } from '@internetarchive/field-parsers';
 
 const baseImageUrl = 'https://archive.org';
 const testBookModel: TileModel = new TileModel({});
@@ -80,7 +80,7 @@ describe('ItemImage component', () => {
     // simulate image onLoad event check if image className is waveform
     setTimeout(() => {
       const imgClassName = image?.className;
-      expect(imgClassName).to.eql(' waveform ');
+      expect(imgClassName).to.eql('waveform');
     }, 1000);
   });
 
