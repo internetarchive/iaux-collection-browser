@@ -775,6 +775,15 @@ export const defaultFacetSort: Record<FacetOption, AggregationSortType> = {
 };
 
 /**
+ * The default sort type to use for each facet type in TV search More... dialogs only
+ */
+export const tvMoreFacetSort: Record<FacetOption, AggregationSortType> = {
+  ...defaultFacetSort,
+  creator: AggregationSortType.ALPHABETICAL,
+  program: AggregationSortType.ALPHABETICAL,
+};
+
+/**
  * The sort type corresponding to facet bucket values, for each facet type
  * (i.e., the opposite of "sort by count" for that type).
  */
