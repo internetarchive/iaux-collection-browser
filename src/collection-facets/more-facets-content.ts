@@ -32,6 +32,7 @@ import {
   defaultFacetSort,
   getDefaultSelectedFacets,
   FacetEventDetails,
+  tvMoreFacetSort,
 } from '../models';
 import type {
   CollectionTitles,
@@ -165,7 +166,6 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
-  updated(changed: PropertyValues): void {
     // If any of the search properties change, it triggers a facet fetch
     if (
       changed.has('facetKey') ||
@@ -174,8 +174,11 @@ export class MoreFacetsContent extends LitElement {
       changed.has('filterMap')
     ) {
       this.facetsLoading = true;
-      this.pageNumber = 1; // Reset to page 1 on new search
-      this.sortedBy = defaultFacetSort[this.facetKey as FacetOption];
+      this.pageNumber = 1;
+      this.sortedBy =
+        this.searchType === SearchType.TV
+          ? tvMoreFacetSort[this.facetKey as FacetOption]
+          : defaultFacetSort[this.facetKey as FacetOption];
 
       this.updateSpecificFacets();
     }
