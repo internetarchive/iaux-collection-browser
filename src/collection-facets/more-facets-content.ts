@@ -141,6 +141,11 @@ export class MoreFacetsContent extends LitElement {
    */
   @state() private pageNumber = 1;
 
+  /**
+   * Whether the viewport is narrow enough to warrant compact pagination.
+   */
+  @state() private isCompactView = false;
+
   willUpdate(changed: PropertyValues): void {
     if (
       changed.has('aggregations') ||
@@ -174,10 +179,31 @@ export class MoreFacetsContent extends LitElement {
 
       this.updateSpecificFacets();
     }
+
+    // Reset horizontal scroll when filter text changes (e.g., switching from
+    // horizontal-scroll mode back to pagination mode)
+    if (changed.has('filterText')) {
+      const facetsContent = this.shadowRoot?.querySelector('.facets-content');
+      if (facetsContent) {
+        facetsContent.scrollLeft = 0;
+      }
+    }
   }
 
   firstUpdated(): void {
     this.setupEscapeListeners();
+    this.setupCompactViewListener();
+  }
+
+  /**
+   * Sets up a matchMedia listener to toggle compact pagination on narrow viewports.
+   */
+  private setupCompactViewListener(): void {
+    const mql = window.matchMedia('(max-width: 560px)');
+    this.isCompactView = mql.matches;
+    mql.addEventListener('change', (e: MediaQueryListEvent) => {
+      this.isCompactView = e.matches;
+    });
   }
 
   /**
@@ -508,6 +534,7 @@ export class MoreFacetsContent extends LitElement {
     return html`<more-facets-pagination
       .size=${this.paginationSize}
       .currentPage=${this.pageNumber}
+      .compact=${this.isCompactView}
       @pageNumberClicked=${this.pageNumberClicked}
     ></more-facets-pagination>`;
   }
@@ -546,6 +573,17 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
+   * Clears the filter text and refocuses the input.
+   */
+  private handleFilterClear(): void {
+    this.filterText = '';
+    const input = this.shadowRoot?.querySelector(
+      '#facet-filter',
+    ) as HTMLInputElement;
+    input?.focus();
+  }
+
+  /**
    * Handler for pagination page number clicks.
    * Only used when facet count >= PAGINATION_THRESHOLD.
    */
@@ -571,38 +609,53 @@ export class MoreFacetsContent extends LitElement {
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
 
     return html`<span class="sr-only">${msg('More facets for:')}</span>
-      <span class="title">
-        ${this.facetGroup?.title}
+      <span class="title"> ${this.facetGroup?.title} </span>
+      <span class="header-controls">
+        <span class="sort-controls">
+          <label class="sort-label">${msg('Sort by:')}</label>
+          ${this.facetKey
+            ? html`<toggle-switch
+                class="sort-toggle"
+                leftValue=${AggregationSortType.COUNT}
+                leftLabel="Count"
+                rightValue=${valueFacetSort[this.facetKey]}
+                .rightLabel=${this.facetGroup?.title}
+                side=${defaultSwitchSide}
+                @change=${(e: CustomEvent<string>) => {
+                  this.sortFacetAggregation(
+                    Number(e.detail) as AggregationSortType,
+                  );
+                }}
+              ></toggle-switch>`
+            : nothing}
+        </span>
 
-        <label class="sort-label">${msg('Sort by:')}</label>
-        ${this.facetKey
-          ? html`<toggle-switch
-              class="sort-toggle"
-              leftValue=${AggregationSortType.COUNT}
-              leftLabel="Count"
-              rightValue=${valueFacetSort[this.facetKey]}
-              .rightLabel=${this.facetGroup?.title}
-              side=${defaultSwitchSide}
-              @change=${(e: CustomEvent<string>) => {
-                this.sortFacetAggregation(
-                  Number(e.detail) as AggregationSortType,
-                );
-              }}
-            ></toggle-switch>`
-          : nothing}
-
-        <label class="filter-label" for="facet-filter"
-          >${msg('Filter by:')}</label
-        >
-        <input
-          id="facet-filter"
-          type="text"
-          class="filter-input"
-          .value=${this.filterText}
-          @input=${this.handleFilterInput}
-          placeholder=${msg('Search...')}
-          aria-label=${msg('Filter facets')}
-        />
+        <span class="filter-controls">
+          <label class="filter-label" for="facet-filter"
+            >${msg('Filter by:')}</label
+          >
+          <span class="filter-input-container">
+            <input
+              id="facet-filter"
+              type="text"
+              class="filter-input"
+              .value=${this.filterText}
+              @input=${this.handleFilterInput}
+              placeholder=${msg('Search...')}
+              aria-label=${msg('Filter facets')}
+            />
+            ${this.filterText
+              ? html`<button
+                  class="filter-clear-btn"
+                  type="button"
+                  @click=${this.handleFilterClear}
+                  aria-label=${msg('Clear filter')}
+                >
+                  &#x2715;
+                </button>`
+              : nothing}
+          </span>
+        </span>
       </span>`;
   }
 
@@ -682,8 +735,11 @@ export class MoreFacetsContent extends LitElement {
       srOnlyStyle,
       css`
         section#more-facets {
-          overflow: auto;
-          padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
+          display: flex;
+          flex-direction: column;
+          max-height: calc(100vh - 16.5rem);
+          padding: 10px;
+          box-sizing: border-box;
           --facetsColumnCount: 3;
         }
 
@@ -698,6 +754,10 @@ export class MoreFacetsContent extends LitElement {
           --facetsColumnCount: 3;
           --facetsMaxHeight: 280px; /* Columns need height constraint to flow properly */
         }
+        .header-content {
+          flex-shrink: 0;
+        }
+
         .header-content .title {
           display: block;
           text-align: left;
@@ -706,8 +766,22 @@ export class MoreFacetsContent extends LitElement {
           font-weight: bold;
         }
 
+        .header-controls {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 4px 20px;
+          padding: 0 10px;
+        }
+
+        .sort-controls {
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+          gap: 5px;
+        }
+
         .sort-label {
-          margin-left: 20px;
           font-size: 1.3rem;
         }
 
@@ -715,17 +789,28 @@ export class MoreFacetsContent extends LitElement {
           font-weight: normal;
         }
 
+        .filter-controls {
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+        }
+
         .filter-label {
-          margin-left: 20px;
           font-size: 1.3rem;
+        }
+
+        .filter-input-container {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          margin-left: 5px;
         }
 
         .filter-input {
           font-size: 1.3rem;
-          padding: 4px 8px;
+          padding: 4px 24px 4px 8px;
           border: 1px solid #ccc;
           border-radius: 4px;
-          margin-left: 5px;
           width: 150px;
           font-family: inherit;
         }
@@ -736,6 +821,25 @@ export class MoreFacetsContent extends LitElement {
           border-color: #194880;
         }
 
+        .filter-clear-btn {
+          position: absolute;
+          right: 4px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 1.1rem;
+          color: #666;
+          padding: 0 4px;
+          line-height: 1;
+          font-family: inherit;
+        }
+
+        .filter-clear-btn:hover {
+          color: #333;
+        }
+
         .empty-results {
           text-align: center;
           padding: 40px 20px;
@@ -743,25 +847,19 @@ export class MoreFacetsContent extends LitElement {
         }
 
         .empty-results .hint {
-          font-size: 1.1rem;
           margin-top: 10px;
         }
 
         .facets-content {
           font-size: 1.2rem;
-          max-height: 300px;
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
           padding: 10px;
           /* Force scrollbar to always be visible */
           scrollbar-width: thin; /* Firefox */
           scrollbar-color: #888 #f1f1f1; /* Firefox - thumb and track colors */
-        }
-
-        /* Pagination mode: vertical scrolling, allow taller height for multiple columns */
-        .facets-content.pagination-mode {
-          overflow-y: auto;
-          overflow-x: hidden;
-          max-height: none; /* Remove height constraint to allow columns to flow properly */
-          height: 300px; /* Fixed height to enable vertical scroll */
         }
 
         /* Horizontal scroll mode: horizontal scrolling only */
@@ -816,6 +914,7 @@ export class MoreFacetsContent extends LitElement {
           width: auto;
           border-radius: 4px;
           cursor: pointer;
+          font-family: inherit;
         }
         .btn-cancel {
           background-color: #2c2c2c;
@@ -825,25 +924,27 @@ export class MoreFacetsContent extends LitElement {
           background-color: ${modalSubmitButton};
           color: white;
         }
+        more-facets-pagination {
+          flex-shrink: 0;
+        }
+
         .footer {
           text-align: center;
           margin-top: 10px;
+          flex-shrink: 0;
         }
 
         @media (max-width: 560px) {
           section#more-facets.horizontal-scroll-mode,
           section#more-facets.pagination-mode {
-            max-height: 450px;
             --facetsColumnCount: 1; /* Single column on mobile */
             --facetsMaxHeight: none; /* Remove fixed height for vertical scrolling */
           }
           /* On mobile, always use vertical scrolling regardless of mode */
           .facets-content,
-          .facets-content.pagination-mode,
           .facets-content.horizontal-scroll-mode {
             overflow-y: auto;
             overflow-x: hidden;
-            height: 300px;
           }
           .filter-input {
             width: 120px;

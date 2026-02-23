@@ -375,4 +375,72 @@ describe('More facets content', () => {
     expect(mockAnalyticsHandler.callAction).to.equal('moreFacetsPageChange');
     expect(mockAnalyticsHandler.callLabel).to.equal('2');
   });
+
+  it('should show clear button when filter text is present', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
+        .searchService=${searchService}
+        .selectedFacets=${yearSelectedFacets}
+      ></more-facets-content>`,
+    );
+
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Initially, no clear button should exist
+    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.not.exist;
+
+    // Type into the filter input
+    const filterInput = el.shadowRoot?.querySelector(
+      '#facet-filter',
+    ) as HTMLInputElement;
+    expect(filterInput).to.exist;
+
+    filterInput.value = 'test';
+    filterInput.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+
+    // Now clear button should exist
+    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.exist;
+  });
+
+  it('should clear filter text when clear button is clicked', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
+        .searchService=${searchService}
+        .selectedFacets=${yearSelectedFacets}
+      ></more-facets-content>`,
+    );
+
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Type into the filter input
+    const filterInput = el.shadowRoot?.querySelector(
+      '#facet-filter',
+    ) as HTMLInputElement;
+    filterInput.value = 'test';
+    filterInput.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+
+    // Click the clear button
+    const clearBtn = el.shadowRoot?.querySelector(
+      '.filter-clear-btn',
+    ) as HTMLButtonElement;
+    expect(clearBtn).to.exist;
+    clearBtn.click();
+    await el.updateComplete;
+
+    // Filter input should be empty and clear button should be gone
+    expect(filterInput.value).to.equal('');
+    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.not.exist;
+  });
 });
