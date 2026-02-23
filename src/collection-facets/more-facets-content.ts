@@ -166,6 +166,7 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
+  updated(changed: PropertyValues): void {
     // If any of the search properties change, it triggers a facet fetch
     if (
       changed.has('facetKey') ||
