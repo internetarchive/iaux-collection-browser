@@ -566,6 +566,7 @@ export class SortFilterBar extends LitElement {
           display: flex;
           justify-content: flex-start;
           align-items: center;
+          padding-bottom: 1px;
           border-bottom: 1px solid #2c2c2c;
           font-size: 1.4rem;
         }
@@ -602,10 +603,16 @@ export class SortFilterBar extends LitElement {
         }
 
         .sort-direction-selector {
-          padding: 0;
-          border: none;
+          display: flex;
+          justify-content: center;
+          width: 30px;
+          margin: 0 5px 0 3px;
+          padding: 7px 8px;
+          max-height: fit-content;
+          border-radius: 5px;
+          background: white;
+          border: 1px solid rgb(25, 72, 128);
           appearance: none;
-          background: transparent;
           cursor: pointer;
         }
 
@@ -621,8 +628,8 @@ export class SortFilterBar extends LitElement {
           border: none;
           padding: 0;
           outline: inherit;
-          width: 14px;
-          height: 14px;
+          width: 12px;
+          height: 12px;
         }
 
         .sort-direction-icon > svg {
