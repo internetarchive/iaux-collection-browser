@@ -2248,12 +2248,8 @@ export class CollectionBrowser
     this.displayMode = restorationState.displayMode;
     if (!this.suppressURLSinParam && restorationState.searchType != null)
       this.searchType = restorationState.searchType;
-    this.selectedSort =
-      restorationState.selectedSort ??
-      this.defaultSortField ??
-      SortField.default;
-    this.sortDirection =
-      restorationState.sortDirection ?? this.defaultSortDirection ?? null;
+    this.selectedSort = restorationState.selectedSort ?? SortField.default;
+    this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;

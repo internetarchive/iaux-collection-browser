@@ -970,7 +970,7 @@ describe('Collection Browser', () => {
       </collection-browser>`,
     );
 
-    expect(el.selectedSort).to.equal(SortField.relevance);
+    expect(el.selectedSort).to.equal(SortField.default);
 
     el.baseQuery = 'foo';
     await el.updateComplete;
