@@ -446,7 +446,7 @@ export class SortFilterBar extends LitElement {
     this.emitCreatorLetterChangedEvent();
   }
 
-  private setSortDirection(sortDirection: SortDirection) {
+  setSortDirection(sortDirection: SortDirection) {
     this.sortDirection = sortDirection;
     this.emitSortChangedEvent();
   }
@@ -474,7 +474,7 @@ export class SortFilterBar extends LitElement {
     this.toggleSortDirection();
   }
 
-  private setSelectedSort(sort: SortField) {
+  setSelectedSort(sort: SortField) {
     this.selectedSort = sort;
     // Apply this field's default sort direction
     const sortOption = SORT_OPTIONS[sort];
