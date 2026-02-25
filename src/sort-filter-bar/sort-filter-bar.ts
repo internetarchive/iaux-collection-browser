@@ -11,8 +11,6 @@ import { msg } from '@lit/localize';
 import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
-  ALL_DATE_SORT_FIELDS,
-  ALL_VIEWS_SORT_FIELDS,
   CollectionDisplayMode,
   defaultSortAvailability,
   PrefixFilterCounts,
@@ -187,7 +185,7 @@ export class SortFilterBar extends LitElement {
 
   private boundSortBarSelectorEscapeListener = (e: KeyboardEvent) => {
     if (e.key === 'Escape') {
-      this.closeDropdowns();
+      this.closeDropdown();
     }
   };
 
@@ -283,8 +281,6 @@ export class SortFilterBar extends LitElement {
    *  selected appearance
    * @param options.onOptionSelected A handler for optionSelected events coming from the dropdown
    * @param options.onDropdownClick A handler for click events on the dropdown
-   * @param options.onLabelInteraction A handler for click events and Enter/Space keydown events
-   *  on the dropdown's label
    */
   private getSortDropdown(options: {
     displayName: string;
@@ -294,7 +290,6 @@ export class SortFilterBar extends LitElement {
     selected: boolean;
     onOptionSelected?: (e: CustomEvent<{ option: optionInterface }>) => void;
     onDropdownClick?: (e: PointerEvent) => void;
-    onLabelInteraction?: (e: Event) => void;
   }): TemplateResult {
     return html`
       <ia-dropdown
@@ -313,14 +308,6 @@ export class SortFilterBar extends LitElement {
           class="dropdown-label"
           slot="dropdown-label"
           data-title=${options.displayName}
-          @click=${options.onLabelInteraction ?? nothing}
-          @keydown=${options.onLabelInteraction
-            ? (e: KeyboardEvent) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  options.onLabelInteraction?.(e);
-                }
-              }
-            : nothing}
         >
           ${options.displayName}
         </span>
@@ -417,14 +404,14 @@ export class SortFilterBar extends LitElement {
     return html`
       <div
         id="sort-selector-backdrop"
-        @keyup=${this.closeDropdowns}
-        @click=${this.closeDropdowns}
+        @keyup=${this.closeDropdown}
+        @click=${this.closeDropdown}
       ></div>
     `;
   }
 
-  /** Closes all of the sorting dropdown components' menus */
-  private closeDropdowns() {
+  /** Closes the sorting dropdown component's menus */
+  private closeDropdown() {
     this.dropdownBackdropVisible = false;
 
     if (!this.sortOptionsDropdown) return;
@@ -436,14 +423,6 @@ export class SortFilterBar extends LitElement {
     // When a dropdown sort option is selected, we additionally need to clear the backdrop
     this.dropdownBackdropVisible = false;
     this.setSelectedSort(sortField);
-  }
-
-  private clearAlphaBarFilters() {
-    this.alphaSelectorVisible = null;
-    this.selectedTitleFilter = null;
-    this.selectedCreatorFilter = null;
-    this.emitTitleLetterChangedEvent();
-    this.emitCreatorLetterChangedEvent();
   }
 
   setSortDirection(sortDirection: SortDirection) {
@@ -499,63 +478,6 @@ export class SortFilterBar extends LitElement {
   /** Whether the sort direction button should be enabled for the current sort */
   private get canChangeSortDirection(): boolean {
     return SORT_OPTIONS[this.finalizedSortField].canSetDirection;
-  }
-
-  /**
-   * There are four date sort options.
-   *
-   * This checks to see if the current sort is one of them.
-   *
-   * @readonly
-   * @private
-   * @type {boolean}
-   * @memberof SortFilterBar
-   */
-  private get dateOptionSelected(): boolean {
-    const dateSortFields: SortField[] = [
-      SortField.datefavorited,
-      SortField.datearchived,
-      SortField.date,
-      SortField.datereviewed,
-      SortField.dateadded,
-    ];
-    return dateSortFields.includes(this.finalizedSortField);
-  }
-
-  /**
-   * There are two view sort options.
-   *
-   * This checks to see if the current sort is one of them.
-   *
-   * @readonly
-   * @private
-   * @type {boolean}
-   * @memberof SortFilterBar
-   */
-  private get viewOptionSelected(): boolean {
-    const viewSortFields: SortField[] = [
-      SortField.alltimeview,
-      SortField.weeklyview,
-    ];
-    return viewSortFields.includes(this.finalizedSortField);
-  }
-
-  /**
-   * Array of all the views sorts that should be shown
-   */
-  private get availableViewsFields(): SortField[] {
-    return ALL_VIEWS_SORT_FIELDS.filter(
-      field => this.sortFieldAvailability[field],
-    );
-  }
-
-  /**
-   * Array of all the date sorts that should be shown
-   */
-  private get availableDateFields(): SortField[] {
-    return ALL_DATE_SORT_FIELDS.filter(
-      field => this.sortFieldAvailability[field],
-    );
   }
 
   private get titleSelectorBar() {
