@@ -250,7 +250,6 @@ export class CollectionBrowserDataSource
    * @inheritdoc
    */
   reset(): void {
-    log('Resetting CB data source');
     this.pages = {};
     this.aggregations = {};
     this.histogramAggregation = undefined;

@@ -1633,7 +1633,6 @@ export class CollectionBrowser
     dataSource: CollectionBrowserDataSourceInterface,
     queryState: CollectionBrowserQueryState,
   ): Promise<void> {
-    log('Installing data source & query state in CB:', dataSource, queryState);
     if (this.dataSource) this.removeController(this.dataSource);
     this.dataSource = dataSource;
     this.addController(this.dataSource);
