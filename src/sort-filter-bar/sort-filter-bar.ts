@@ -555,6 +555,8 @@ export class SortFilterBar extends LitElement {
   }
 
   static get styles() {
+    const disabledIconColor = css`#bbbbbb`;
+
     return [
       srOnlyStyle,
       css`
@@ -599,14 +601,14 @@ export class SortFilterBar extends LitElement {
           display: flex;
           align-self: stretch;
           flex: 0;
-          margin: 0 5px;
+          margin: 0 3px;
         }
 
         .sort-direction-selector {
           display: flex;
           justify-content: center;
           width: 30px;
-          margin: 0 5px 0 3px;
+          margin: 0 5px 0 0;
           padding: 7px 8px;
           max-height: fit-content;
           border-radius: 5px;
@@ -617,7 +619,8 @@ export class SortFilterBar extends LitElement {
         }
 
         .sort-direction-selector:disabled {
-          cursor: default;
+          cursor: not-allowed;
+          border-color: ${disabledIconColor};
         }
 
         .sort-direction-icon {
@@ -670,7 +673,7 @@ export class SortFilterBar extends LitElement {
           appearance: none;
           cursor: pointer;
           -webkit-appearance: none;
-          fill: #bbbbbb;
+          fill: ${disabledIconColor};
         }
 
         #display-style-selector button.active {
