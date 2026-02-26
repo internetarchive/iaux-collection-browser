@@ -1761,6 +1761,17 @@ export class CollectionBrowser
       this.applyDefaultProfileSort();
     }
 
+    if (changed.has('withinCollection') && this.withinCollection) {
+      // Set a sensible default collection sort while we load results, which we will later
+      // adjust based on any sort-by metadata once the response arrives.
+      if (!this.baseQuery) {
+        this.defaultSortField = this.withinCollection.startsWith('fav-')
+          ? SortField.datefavorited
+          : SortField.weeklyview;
+        this.defaultSortDirection = 'desc';
+      }
+    }
+
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
     }
