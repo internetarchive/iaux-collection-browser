@@ -7,7 +7,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { msg } from '@lit/localize';
+import { msg, str } from '@lit/localize';
 import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
@@ -211,16 +211,19 @@ export class SortFilterBar extends LitElement {
   /** Template to render the sort direction toggle button */
   private get sortDirectionSelectorTemplate(): TemplateResult {
     const oppositeSortDirectionReadable =
-      this.sortDirection === 'asc' ? 'descending' : 'ascending';
-    const srLabel = `Change to ${oppositeSortDirectionReadable} sort`;
+      this.sortDirection === 'asc' ? msg('descending') : msg('ascending');
+    const buttonLabel = this.canChangeSortDirection
+      ? msg(str`Change to ${oppositeSortDirectionReadable} sort`)
+      : msg('Directions are not available for the current sort option');
 
     return html`
       <button
         class="sort-direction-selector"
+        title=${buttonLabel}
         ?disabled=${!this.canChangeSortDirection}
         @click=${this.handleSortDirectionClicked}
       >
-        <span class="sr-only">${srLabel}</span>
+        <span class="sr-only">${buttonLabel}</span>
         ${this.sortDirectionIcon}
       </button>
     `;
