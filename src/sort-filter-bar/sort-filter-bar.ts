@@ -17,6 +17,7 @@ import {
   PrefixFilterType,
   SORT_OPTIONS,
   SortField,
+  SortOption,
 } from '../models';
 
 import { sortUpIcon } from './img/sort-toggle-up';
@@ -466,9 +467,15 @@ export class SortFilterBar extends LitElement {
 
   /** The current sort field, or the default one if no explicit sort is set */
   private get finalizedSortField(): SortField {
-    return this.selectedSort === SortField.default
-      ? this.defaultSortField
-      : this.selectedSort;
+    const resolvedField =
+      this.selectedSort === SortField.default
+        ? this.defaultSortField
+        : this.selectedSort;
+    if (this.sortFieldAvailability[resolvedField]) return resolvedField;
+
+    // Fall back to the first available sort option shown in the sort bar, if
+    // the requested one isn't available
+    return this.firstAvailableOption?.field ?? resolvedField;
   }
 
   /** The current sort direction, or the default one if no explicit direction is set */
@@ -476,6 +483,13 @@ export class SortFilterBar extends LitElement {
     return this.sortDirection === null
       ? this.defaultSortDirection
       : this.sortDirection;
+  }
+
+  /** The first option shown in the sort dropdown, or undefined if none are available */
+  private get firstAvailableOption(): SortOption | undefined {
+    return Object.values(SORT_OPTIONS).find(
+      opt => opt.shownInSortBar && this.sortFieldAvailability[opt.field],
+    );
   }
 
   /** Whether the sort direction button should be enabled for the current sort */

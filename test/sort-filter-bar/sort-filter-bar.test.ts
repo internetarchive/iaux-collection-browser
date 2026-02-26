@@ -88,6 +88,20 @@ describe('Sort dropdown behavior', () => {
     expect(label?.textContent?.trim()).to.equal('All-time views');
   });
 
+  it('falls back to first available sort when default is unavailable', async () => {
+    el.selectedSort = SortField.default;
+    el.defaultSortField = SortField.relevance;
+    el.sortFieldAvailability = {
+      ...defaultSortAvailability,
+      [SortField.relevance]: false,
+    };
+    await el.updateComplete;
+
+    const label = sortDropdown?.querySelector('.dropdown-label');
+    // No relevance, so fall back to the first one in the list
+    expect(label?.textContent?.trim()).to.equal('All-time views');
+  });
+
   it('changes selected sort when dropdown option selected', async () => {
     expect(sortDropdown).to.exist;
 
