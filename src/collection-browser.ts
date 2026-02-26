@@ -75,7 +75,6 @@ import { updateSelectedFacetBucket } from './utils/facet-utils';
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
-import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';

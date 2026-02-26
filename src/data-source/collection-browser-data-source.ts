@@ -32,7 +32,6 @@ import {
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
-import { log } from '../utils/log';
 import { mergeSelectedFacets } from '../utils/facet-utils';
 
 export class CollectionBrowserDataSource
