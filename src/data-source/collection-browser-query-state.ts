@@ -39,6 +39,7 @@ export interface CollectionBrowserSearchInterface
   isTVCollection: boolean;
   readonly sortParam: SortParam | null;
   readonly defaultSortField: SortField | null;
+  readonly defaultSortDirection: SortDirection | null;
   readonly facetLoadStrategy: FacetLoadStrategy;
   readonly initialPageNumber: number;
   readonly maxPagesToManage: number;

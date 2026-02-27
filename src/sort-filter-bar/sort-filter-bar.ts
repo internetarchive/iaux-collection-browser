@@ -323,9 +323,6 @@ export class SortFilterBar extends LitElement {
   private getDropdownOption(sortField: SortField): optionInterface {
     return {
       id: sortField,
-      selectedHandler: () => {
-        this.selectDropdownSortField(sortField);
-      },
       label: html`
         <span class="dropdown-option-label">
           ${SORT_OPTIONS[sortField].displayName}
@@ -421,12 +418,6 @@ export class SortFilterBar extends LitElement {
     if (!this.sortOptionsDropdown) return;
     this.sortOptionsDropdown.open = false;
     this.sortOptionsDropdown.classList.remove('open');
-  }
-
-  private selectDropdownSortField(sortField: SortField) {
-    // When a dropdown sort option is selected, we additionally need to clear the backdrop
-    this.dropdownBackdropVisible = false;
-    this.setSelectedSort(sortField);
   }
 
   setSortDirection(sortDirection: SortDirection) {
