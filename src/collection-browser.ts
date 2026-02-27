@@ -75,7 +75,6 @@ import { updateSelectedFacetBucket } from './utils/facet-utils';
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
-import { log } from './utils/log';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
@@ -858,21 +857,14 @@ export class CollectionBrowser
     if (this.suppressSortBar) return nothing;
 
     // Determine the set of sortable fields that should be shown in the sort bar
-    let defaultViewSort = SortField.weeklyview;
-    let defaultDateSort = SortField.date;
     let sortFieldAvailability = defaultSortAvailability;
 
-    // We adjust the sort options for a couple of special cases...
+    // We adjust the available sort options for a couple of special cases...
     if (this.withinCollection?.startsWith('fav-')) {
-      // When viewing a fav- collection, we include the Date Favorited option and show
-      // it as the default in the date dropdown.
-      defaultDateSort = SortField.datefavorited;
+      // When viewing a fav- collection, we include the Date Favorited option as the default
       sortFieldAvailability = favoritesSortAvailability;
     } else if (!this.withinCollection && this.searchType === SearchType.TV) {
-      // When viewing TV search results, we default the views dropdown to All-time Views
-      // and exclude several of the usual date sort options.
-      defaultViewSort = SortField.alltimeview;
-      defaultDateSort = SortField.datearchived;
+      // When viewing TV search results, we exclude several of the usual date sort options.
       sortFieldAvailability = tvSortAvailability;
     }
 
@@ -883,8 +875,6 @@ export class CollectionBrowser
       <sort-filter-bar
         .defaultSortField=${this.defaultSortField}
         .defaultSortDirection=${this.defaultSortDirection}
-        .defaultViewSort=${defaultViewSort}
-        .defaultDateSort=${defaultDateSort}
         .selectedSort=${this.selectedSort}
         .sortDirection=${this.sortDirection}
         .sortFieldAvailability=${sortFieldAvailability}
@@ -892,7 +882,6 @@ export class CollectionBrowser
         .selectedTitleFilter=${this.selectedTitleFilter}
         .selectedCreatorFilter=${this.selectedCreatorFilter}
         .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
-        .resizeObserver=${this.resizeObserver}
         .enableSortOptionsSlot=${this.enableSortOptionsSlot}
         .suppressDisplayModes=${this.suppressDisplayModes}
         @sortChanged=${this.userChangedSort}
@@ -1643,7 +1632,6 @@ export class CollectionBrowser
     dataSource: CollectionBrowserDataSourceInterface,
     queryState: CollectionBrowserQueryState,
   ): Promise<void> {
-    log('Installing data source & query state in CB:', dataSource, queryState);
     if (this.dataSource) this.removeController(this.dataSource);
     this.dataSource = dataSource;
     this.addController(this.dataSource);
@@ -1770,6 +1758,17 @@ export class CollectionBrowser
 
     if (changed.has('profileElement')) {
       this.applyDefaultProfileSort();
+    }
+
+    if (changed.has('withinCollection') && this.withinCollection) {
+      // Set a sensible default collection sort while we load results, which we will later
+      // adjust based on any sort-by metadata once the response arrives.
+      if (!this.baseQuery) {
+        this.defaultSortField = this.withinCollection.startsWith('fav-')
+          ? SortField.datefavorited
+          : SortField.weeklyview;
+        this.defaultSortDirection = 'desc';
+      }
     }
 
     if (changed.has('baseQuery')) {
@@ -2259,12 +2258,8 @@ export class CollectionBrowser
     this.displayMode = restorationState.displayMode;
     if (!this.suppressURLSinParam && restorationState.searchType != null)
       this.searchType = restorationState.searchType;
-    this.selectedSort =
-      restorationState.selectedSort ??
-      this.defaultSortField ??
-      SortField.default;
-    this.sortDirection =
-      restorationState.sortDirection ?? this.defaultSortDirection ?? null;
+    this.selectedSort = restorationState.selectedSort ?? SortField.default;
+    this.sortDirection = restorationState.sortDirection ?? null;
     this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;

@@ -970,7 +970,7 @@ describe('Collection Browser', () => {
       </collection-browser>`,
     );
 
-    expect(el.selectedSort).to.equal(SortField.relevance);
+    expect(el.selectedSort).to.equal(SortField.default);
 
     el.baseQuery = 'foo';
     await el.updateComplete;
@@ -978,31 +978,20 @@ describe('Collection Browser', () => {
 
     const sortBar = el.shadowRoot?.querySelector(
       '#content-container sort-filter-bar',
-    );
-    const sortSelector = sortBar?.shadowRoot?.querySelector(
-      '#desktop-sort-selector',
-    );
-    expect(sortSelector, 'sort bar').to.exist;
+    ) as SortFilterBar;
+    expect(sortBar, 'sort bar').to.exist;
 
-    // Click the title sorter
-    Array.from(sortSelector!.children)
-      .find(child => child.textContent?.trim() === 'Title')
-      ?.querySelector('button')
-      ?.click();
-
+    // Switch to title sort
+    sortBar.setSelectedSort(SortField.title);
     await el.updateComplete;
-
     expect(el.selectedSort).to.equal(SortField.title);
+    expect(el.sortDirection).to.equal('asc'); // Default for title sort
 
-    // Click the creator sorter
-    Array.from(sortSelector!.children)
-      .find(child => child.textContent?.trim() === 'Creator')
-      ?.querySelector('button')
-      ?.click();
-
+    // Switch to descending sort order
+    sortBar.setSortDirection('desc');
     await el.updateComplete;
-
-    expect(el.selectedSort).to.equal(SortField.creator);
+    expect(el.selectedSort).to.equal(SortField.title);
+    expect(el.sortDirection).to.equal('desc');
   });
 
   it('sets sort filter properties when user selects title filter', async () => {
