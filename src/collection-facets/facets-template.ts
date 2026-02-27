@@ -63,11 +63,16 @@ export class FacetsTemplate extends LitElement {
   static get styles(): CSSResultGroup {
     const columnCount = css`var(--facetsColumnCount, 1)`;
     const columnGap = css`var(--facetsColumnGap, 15px)`;
+    const columnWidth = css`var(--facetsColumnWidth, auto)`;
+    const maxHeight = css`var(--facetsMaxHeight, none)`;
 
     return css`
       .facet-rows {
         column-count: ${columnCount};
         column-gap: ${columnGap};
+        column-width: ${columnWidth};
+        max-height: ${maxHeight};
+        column-fill: auto;
       }
 
       a:link,
