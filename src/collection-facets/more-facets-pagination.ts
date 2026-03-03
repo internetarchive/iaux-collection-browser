@@ -25,6 +25,12 @@ export class MoreFacetsPagination extends LitElement {
 
   @property({ type: Number }) currentPage: number = 1;
 
+  /**
+   * When true, shows a more compact set of page numbers
+   * (only 1 neighbor on each side of the current page).
+   */
+  @property({ type: Boolean }) compact = false;
+
   @state() pages?: number[] = [];
 
   firstUpdated() {
@@ -33,7 +39,7 @@ export class MoreFacetsPagination extends LitElement {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override updated(changed: Map<string, any>) {
-    if (changed.has('size')) {
+    if (changed.has('size') || changed.has('compact')) {
       this.observePageCount();
     }
     if (changed.has('currentPage')) {
@@ -52,6 +58,11 @@ export class MoreFacetsPagination extends LitElement {
    */
   observePageCount() {
     this.pages = []; /* `0` is elipses marker */
+
+    if (this.compact) {
+      this.observePageCountCompact();
+      return;
+    }
 
     const paginatorMaxPagesToShow = 7;
     const atMinThreshold = this.size <= paginatorMaxPagesToShow;
@@ -166,6 +177,52 @@ export class MoreFacetsPagination extends LitElement {
     }
   }
 
+  /**
+   * Compact page calculation: shows first, ..., prev, current, next, ..., last.
+   * Only 1 neighbor on each side of the current page for minimal width.
+   */
+  private observePageCountCompact() {
+    if (this.size <= 3) {
+      this.pages = [...Array(this.size).keys()].map(i => i + 1);
+      return;
+    }
+
+    const pages: number[] = [];
+
+    // First page
+    pages.push(1);
+
+    // Ellipsis after first if current is far enough away
+    if (this.currentPage > 3) {
+      pages.push(0);
+    }
+
+    // Previous page (if not already shown as first)
+    if (this.currentPage - 1 > 1) {
+      pages.push(this.currentPage - 1);
+    }
+
+    // Current page (if not first or last)
+    if (this.currentPage !== 1 && this.currentPage !== this.size) {
+      pages.push(this.currentPage);
+    }
+
+    // Next page (if not already the last)
+    if (this.currentPage + 1 < this.size) {
+      pages.push(this.currentPage + 1);
+    }
+
+    // Ellipsis before last if current is far enough away
+    if (this.currentPage < this.size - 2) {
+      pages.push(0);
+    }
+
+    // Last page
+    pages.push(this.size);
+
+    this.pages = pages;
+  }
+
   private get getEllipsisTemplate() {
     return html`<i class="ellipses">...</i>`;
   }
@@ -250,6 +307,10 @@ export class MoreFacetsPagination extends LitElement {
           margin-top: 10px;
           background-color: #eee;
           text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-wrap: nowrap;
         }
         .facets-pagination button {
           border: none;
@@ -276,6 +337,7 @@ export class MoreFacetsPagination extends LitElement {
           vertical-align: baseline;
           display: inline-block;
           min-width: 2.5rem;
+          font-family: inherit;
         }
         .facets-pagination i {
           cursor: auto;
@@ -287,6 +349,16 @@ export class MoreFacetsPagination extends LitElement {
         }
         .page-numbers {
           display: inline-block;
+        }
+
+        @media (max-width: 560px) {
+          .facets-pagination button,
+          .facets-pagination i {
+            margin: 5px 2px;
+            padding: 3px;
+            min-width: 2rem;
+            font-size: 1.2rem;
+          }
         }
       `,
     ];

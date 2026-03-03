@@ -6,6 +6,7 @@ import { MockSearchService } from '../mocks/mock-search-service';
 import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
 import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
 import type { SelectedFacets } from '../../src/models';
+import { Aggregation, type Bucket } from '@internetarchive/search-service';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -54,7 +55,7 @@ describe('More facets content', () => {
     expect(el.shadowRoot?.querySelector('.facets-loader')).to.exist;
   });
 
-  it('should render pagination for more facets', async () => {
+  it('should NOT render pagination when facet count < 1000', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<MoreFacetsContent>(
@@ -64,11 +65,22 @@ describe('More facets content', () => {
     );
 
     el.facetKey = 'year';
-    el.query = 'more-facets'; // Produces a response with 40+ aggregations for multiple pages
+    el.query = 'more-facets'; // Produces a response with 45 aggregations (< 1000)
     await el.updateComplete;
     await aTimeout(50); // Give it a moment to perform the (mock) search query after the initial update
 
-    expect(el.shadowRoot?.querySelectorAll('more-facets-pagination')).to.exist;
+    // Verify pagination component is NOT present (horizontal scroll mode)
+    expect(el.shadowRoot?.querySelector('more-facets-pagination')).to.not.exist;
+
+    // Verify horizontal scroll mode CSS class is applied
+    expect(
+      el.shadowRoot?.querySelector('.facets-content.horizontal-scroll-mode'),
+    ).to.exist;
+
+    // Verify footer still exists with buttons
+    expect(el.shadowRoot?.querySelector('.footer')).to.exist;
+    expect(el.shadowRoot?.querySelector('.btn-cancel')).to.exist;
+    expect(el.shadowRoot?.querySelector('.btn-submit')).to.exist;
   });
 
   it('query for more facets content using search service', async () => {
@@ -227,5 +239,208 @@ describe('More facets content', () => {
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
     expect(mockAnalyticsHandler.callAction).to.equal('applyMoreFacetsModal');
     expect(mockAnalyticsHandler.callLabel).to.equal('collection');
+  });
+
+  it('should have horizontal scrolling enabled', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+      ></more-facets-content>`,
+    );
+
+    el.facetKey = 'year';
+    el.query = 'more-facets';
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const facetsContent = el.shadowRoot?.querySelector(
+      '.facets-content',
+    ) as HTMLElement;
+    const styles = window.getComputedStyle(facetsContent);
+
+    expect(styles.overflowX).to.equal('auto');
+    expect(styles.overflowY).to.equal('hidden');
+  });
+
+  it('should have horizontal container wrapper', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+      ></more-facets-content>`,
+    );
+
+    el.facetKey = 'year';
+    el.query = 'more-facets';
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const container = el.shadowRoot?.querySelector(
+      '.facets-horizontal-container',
+    );
+    expect(container).to.exist;
+
+    const facetsTemplate = container?.querySelector('facets-template');
+    expect(facetsTemplate).to.exist;
+  });
+
+  it('should render pagination when facet count >= 1000', async () => {
+    // Manually create aggregations with 1000+ facets
+    const buckets: Bucket[] = [];
+    for (let i = 0; i < 1000; i++) {
+      buckets.push({ key: `value-${i}`, doc_count: i + 1 });
+    }
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'subject'}
+        .selectedFacets=${{
+          mediatype: {},
+          lending: {},
+          year: {},
+          subject: {},
+          collection: {},
+          creator: {},
+          language: {},
+        }}
+      ></more-facets-content>`,
+    );
+
+    // @ts-expect-error - accessing private property for testing
+    el.aggregations = {
+      subject: new Aggregation({ buckets }),
+    };
+    el.facetsLoading = false;
+    await el.updateComplete;
+
+    // Verify pagination component IS present
+    expect(el.shadowRoot?.querySelector('more-facets-pagination')).to.exist;
+
+    // Verify pagination mode CSS class is applied
+    expect(el.shadowRoot?.querySelector('.facets-content.pagination-mode')).to
+      .exist;
+
+    // Verify horizontal container wrapper does NOT exist in pagination mode
+    expect(el.shadowRoot?.querySelector('.facets-horizontal-container')).to.not
+      .exist;
+  });
+
+  it('pagination page change should send analytics event', async () => {
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    // Manually create aggregations with 1000+ facets
+    const buckets: Bucket[] = [];
+    for (let i = 0; i < 1000; i++) {
+      buckets.push({ key: `value-${i}`, doc_count: i + 1 });
+    }
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'subject'}
+        .selectedFacets=${{
+          mediatype: {},
+          lending: {},
+          year: {},
+          subject: {},
+          collection: {},
+          creator: {},
+          language: {},
+        }}
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></more-facets-content>`,
+    );
+
+    // @ts-expect-error - accessing private property for testing
+    el.aggregations = {
+      subject: new Aggregation({ buckets }),
+    };
+    el.facetsLoading = false;
+    await el.updateComplete;
+
+    // Get the pagination component
+    const pagination = el.shadowRoot?.querySelector(
+      'more-facets-pagination',
+    ) as any;
+    expect(pagination).to.exist;
+
+    // Simulate clicking page 2
+    pagination.currentPage = 2;
+    await pagination.updateComplete;
+
+    // Verify analytics event was sent
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('moreFacetsPageChange');
+    expect(mockAnalyticsHandler.callLabel).to.equal('2');
+  });
+
+  it('should show clear button when filter text is present', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
+        .searchService=${searchService}
+        .selectedFacets=${yearSelectedFacets}
+      ></more-facets-content>`,
+    );
+
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Initially, no clear button should exist
+    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.not.exist;
+
+    // Type into the filter input
+    const filterInput = el.shadowRoot?.querySelector(
+      '#facet-filter',
+    ) as HTMLInputElement;
+    expect(filterInput).to.exist;
+
+    filterInput.value = 'test';
+    filterInput.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+
+    // Now clear button should exist
+    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.exist;
+  });
+
+  it('should clear filter text when clear button is clicked', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
+        .searchService=${searchService}
+        .selectedFacets=${yearSelectedFacets}
+      ></more-facets-content>`,
+    );
+
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Type into the filter input
+    const filterInput = el.shadowRoot?.querySelector(
+      '#facet-filter',
+    ) as HTMLInputElement;
+    filterInput.value = 'test';
+    filterInput.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+
+    // Click the clear button
+    const clearBtn = el.shadowRoot?.querySelector(
+      '.filter-clear-btn',
+    ) as HTMLButtonElement;
+    expect(clearBtn).to.exist;
+    clearBtn.click();
+    await el.updateComplete;
+
+    // Filter input should be empty and clear button should be gone
+    expect(filterInput.value).to.equal('');
+    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.not.exist;
   });
 });

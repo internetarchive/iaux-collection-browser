@@ -198,4 +198,88 @@ describe('More facets pagination', () => {
       expect(el.currentPage).to.equal(6); // brings us forward 1 page
     });
   });
+
+  describe('Compact mode', () => {
+    it('shows all pages when size <= 3', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${3}
+          .compact=${true}
+        ></more-facets-pagination>`,
+      );
+
+      await el.updateComplete;
+      expect(el.pages).to.deep.equal([1, 2, 3]);
+    });
+
+    it('shows first, prev, current, next, ..., last for middle page', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${20}
+          .currentPage=${10}
+          .compact=${true}
+        ></more-facets-pagination>`,
+      );
+
+      await el.updateComplete;
+      // first, ..., prev, current, next, ..., last
+      expect(el.pages).to.deep.equal([1, 0, 9, 10, 11, 0, 20]);
+    });
+
+    it('shows correct pages when on page 1', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${20}
+          .currentPage=${1}
+          .compact=${true}
+        ></more-facets-pagination>`,
+      );
+
+      await el.updateComplete;
+      // first (current), next, ..., last
+      expect(el.pages).to.deep.equal([1, 2, 0, 20]);
+    });
+
+    it('shows correct pages when on last page', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${20}
+          .currentPage=${20}
+          .compact=${true}
+        ></more-facets-pagination>`,
+      );
+
+      await el.updateComplete;
+      // first, ..., prev, last (current)
+      expect(el.pages).to.deep.equal([1, 0, 19, 20]);
+    });
+
+    it('shows correct pages when on page 2', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${20}
+          .currentPage=${2}
+          .compact=${true}
+        ></more-facets-pagination>`,
+      );
+
+      await el.updateComplete;
+      // first, current, next, ..., last
+      expect(el.pages).to.deep.equal([1, 2, 3, 0, 20]);
+    });
+
+    it('shows correct pages when on second-to-last page', async () => {
+      const el = await fixture<MoreFacetsPagination>(
+        html`<more-facets-pagination
+          .size=${20}
+          .currentPage=${19}
+          .compact=${true}
+        ></more-facets-pagination>`,
+      );
+
+      await el.updateComplete;
+      // first, ..., prev, current, last
+      expect(el.pages).to.deep.equal([1, 0, 18, 19, 20]);
+    });
+  });
 });
