@@ -33,17 +33,16 @@ export class MoreFacetsPagination extends LitElement {
 
   @state() pages?: number[] = [];
 
-  firstUpdated() {
-    this.updatePages();
-  }
-
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  override updated(changed: Map<string, any>) {
-    if (changed.has('size') || changed.has('compact')) {
+  override willUpdate(changed: Map<string, any>) {
+    if (
+      changed.has('size') ||
+      changed.has('compact') ||
+      changed.has('currentPage')
+    ) {
       this.updatePages();
     }
     if (changed.has('currentPage')) {
-      this.updatePages();
       this.emitPageClick();
     }
   }
