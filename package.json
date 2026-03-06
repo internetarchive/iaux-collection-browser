@@ -29,6 +29,7 @@
     "@internetarchive/feature-feedback": "^1.0.0",
     "@internetarchive/field-parsers": "^1.0.0",
     "@internetarchive/histogram-date-range": "^1.4.1",
+    "@internetarchive/ia-clearable-text-input": "^1.1.1",
     "@internetarchive/ia-dropdown": "^2.0.0",
     "@internetarchive/iaux-item-metadata": "^1.0.5",
     "@internetarchive/infinite-scroller": "^1.0.1",
