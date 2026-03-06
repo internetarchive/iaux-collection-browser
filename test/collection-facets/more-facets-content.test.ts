@@ -5,8 +5,10 @@ import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
 import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
 import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
-import type { SelectedFacets } from '../../src/models';
-import { Aggregation, type Bucket } from '@internetarchive/search-service';
+import {
+  getDefaultSelectedFacets,
+  type SelectedFacets,
+} from '../../src/models';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -288,33 +290,19 @@ describe('More facets content', () => {
   });
 
   it('should render pagination when facet count >= 1000', async () => {
-    // Manually create aggregations with 1000+ facets
-    const buckets: Bucket[] = [];
-    for (let i = 0; i < 1000; i++) {
-      buckets.push({ key: `value-${i}`, doc_count: i + 1 });
-    }
+    const searchService = new MockSearchService();
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
-        .facetKey=${'subject'}
-        .selectedFacets=${{
-          mediatype: {},
-          lending: {},
-          year: {},
-          subject: {},
-          collection: {},
-          creator: {},
-          language: {},
-        }}
+        .searchService=${searchService}
+        .selectedFacets=${getDefaultSelectedFacets()}
       ></more-facets-content>`,
     );
 
-    // @ts-expect-error - accessing private property for testing
-    el.aggregations = {
-      subject: new Aggregation({ buckets }),
-    };
-    el.facetsLoading = false;
+    el.facetKey = 'subject';
+    el.query = 'large-facets'; // Produces a response with 1100 aggregations (>= 1000)
     await el.updateComplete;
+    await aTimeout(50);
 
     // Verify pagination component IS present
     expect(el.shadowRoot?.querySelector('more-facets-pagination')).to.exist;
@@ -329,36 +317,21 @@ describe('More facets content', () => {
   });
 
   it('pagination page change should send analytics event', async () => {
+    const searchService = new MockSearchService();
     const mockAnalyticsHandler = new MockAnalyticsHandler();
-
-    // Manually create aggregations with 1000+ facets
-    const buckets: Bucket[] = [];
-    for (let i = 0; i < 1000; i++) {
-      buckets.push({ key: `value-${i}`, doc_count: i + 1 });
-    }
 
     const el = await fixture<MoreFacetsContent>(
       html`<more-facets-content
-        .facetKey=${'subject'}
-        .selectedFacets=${{
-          mediatype: {},
-          lending: {},
-          year: {},
-          subject: {},
-          collection: {},
-          creator: {},
-          language: {},
-        }}
+        .searchService=${searchService}
+        .selectedFacets=${getDefaultSelectedFacets()}
         .analyticsHandler=${mockAnalyticsHandler}
       ></more-facets-content>`,
     );
 
-    // @ts-expect-error - accessing private property for testing
-    el.aggregations = {
-      subject: new Aggregation({ buckets }),
-    };
-    el.facetsLoading = false;
+    el.facetKey = 'subject';
+    el.query = 'large-facets'; // Produces a response with 1100 aggregations (>= 1000)
     await el.updateComplete;
+    await aTimeout(50);
 
     // Get the pagination component
     const pagination = el.shadowRoot?.querySelector(
@@ -376,7 +349,7 @@ describe('More facets content', () => {
     expect(mockAnalyticsHandler.callLabel).to.equal('2');
   });
 
-  it('should show clear button when filter text is present', async () => {
+  it('should render clearable text input for filtering', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<MoreFacetsContent>(
@@ -391,24 +364,14 @@ describe('More facets content', () => {
     await el.updateComplete;
     await aTimeout(50);
 
-    // Initially, no clear button should exist
-    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.not.exist;
-
-    // Type into the filter input
-    const filterInput = el.shadowRoot?.querySelector(
-      '#facet-filter',
-    ) as HTMLInputElement;
-    expect(filterInput).to.exist;
-
-    filterInput.value = 'test';
-    filterInput.dispatchEvent(new Event('input'));
-    await el.updateComplete;
-
-    // Now clear button should exist
-    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.exist;
+    // Verify the clearable text input component is present
+    const clearableInput = el.shadowRoot?.querySelector(
+      'ia-clearable-text-input',
+    ) as HTMLElement;
+    expect(clearableInput).to.exist;
   });
 
-  it('should clear filter text when clear button is clicked', async () => {
+  it('should clear filter text when clear event is dispatched', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<MoreFacetsContent>(
@@ -423,24 +386,21 @@ describe('More facets content', () => {
     await el.updateComplete;
     await aTimeout(50);
 
-    // Type into the filter input
-    const filterInput = el.shadowRoot?.querySelector(
-      '#facet-filter',
-    ) as HTMLInputElement;
-    filterInput.value = 'test';
-    filterInput.dispatchEvent(new Event('input'));
+    // Simulate typing into the clearable input by dispatching input event
+    const clearableInput = el.shadowRoot?.querySelector(
+      'ia-clearable-text-input',
+    ) as HTMLElement & { value: string };
+    expect(clearableInput).to.exist;
+
+    clearableInput.value = 'test';
+    clearableInput.dispatchEvent(new Event('input'));
     await el.updateComplete;
 
-    // Click the clear button
-    const clearBtn = el.shadowRoot?.querySelector(
-      '.filter-clear-btn',
-    ) as HTMLButtonElement;
-    expect(clearBtn).to.exist;
-    clearBtn.click();
+    // Dispatch clear event
+    clearableInput.dispatchEvent(new CustomEvent('clear', { detail: 'test' }));
     await el.updateComplete;
 
-    // Filter input should be empty and clear button should be gone
-    expect(filterInput.value).to.equal('');
-    expect(el.shadowRoot?.querySelector('.filter-clear-btn')).to.not.exist;
+    // Verify the filter was cleared
+    expect(clearableInput.value).to.equal('');
   });
 });

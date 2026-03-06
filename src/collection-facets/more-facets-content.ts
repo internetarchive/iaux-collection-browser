@@ -7,7 +7,9 @@ import {
   PropertyValues,
   TemplateResult,
 } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { when } from 'lit/directives/when.js';
 import {
   Aggregation,
   Bucket,
@@ -47,6 +49,7 @@ import {
 } from '../utils/analytics-events';
 import './toggle-switch';
 import './more-facets-pagination';
+import '@internetarchive/ia-clearable-text-input';
 import { srOnlyStyle } from '../styles/sr-only';
 import {
   mergeSelectedFacets,
@@ -143,9 +146,13 @@ export class MoreFacetsContent extends LitElement {
   @state() private pageNumber = 1;
 
   /**
-   * Whether the viewport is narrow enough to warrant compact pagination.
+   * Whether the component is narrow enough to warrant compact pagination.
+   * Updated via a ResizeObserver-based container query approach.
    */
   @state() private isCompactView = false;
+
+  @query('ia-clearable-text-input')
+  private filterInput!: HTMLElement;
 
   willUpdate(changed: PropertyValues): void {
     if (
@@ -158,6 +165,12 @@ export class MoreFacetsContent extends LitElement {
       // Convert the merged selected facets & aggregations into a facet group, and
       // store it for reuse across pages.
       this.facetGroup = this.mergedFacets;
+
+      // Pre-lowercase bucket keys for efficient filtering
+      this.lowerCaseKeyMap.clear();
+      this.facetGroup?.buckets.forEach(bucket => {
+        this.lowerCaseKeyMap.set(bucket, bucket.key.toLowerCase());
+      });
     }
 
     // Reset to page 1 when filter text changes (only matters for pagination mode)
@@ -194,20 +207,28 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
+  private resizeObserver?: ResizeObserver;
+
   firstUpdated(): void {
     this.setupEscapeListeners();
-    this.setupCompactViewListener();
+    this.setupCompactViewObserver();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.resizeObserver?.disconnect();
   }
 
   /**
-   * Sets up a matchMedia listener to toggle compact pagination on narrow viewports.
+   * Sets up a ResizeObserver to toggle compact pagination based on component width.
    */
-  private setupCompactViewListener(): void {
-    const mql = window.matchMedia('(max-width: 560px)');
-    this.isCompactView = mql.matches;
-    mql.addEventListener('change', (e: MediaQueryListEvent) => {
-      this.isCompactView = e.matches;
+  private setupCompactViewObserver(): void {
+    this.resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        this.isCompactView = entry.contentRect.width <= 560;
+      }
     });
+    this.resizeObserver.observe(this);
   }
 
   /**
@@ -416,6 +437,12 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
+   * A map of pre-lowercased bucket keys, rebuilt whenever the facet group changes.
+   * Avoids re-lowercasing on every keystroke during filtering.
+   */
+  private lowerCaseKeyMap = new Map<FacetBucket, string>();
+
+  /**
    * Returns the facet group with buckets filtered by the current filter text.
    * Filters are applied to the full bucket list before pagination.
    */
@@ -428,11 +455,13 @@ export class MoreFacetsContent extends LitElement {
       return facetGroup;
     }
 
-    // Filter buckets case-insensitively by bucket key
+    // Filter buckets using pre-lowercased keys for performance
     const lowerFilter = filterText.toLowerCase().trim();
-    const filteredBuckets = facetGroup.buckets.filter(bucket =>
-      bucket.key.toLowerCase().includes(lowerFilter),
-    );
+    const filteredBuckets = facetGroup.buckets.filter(bucket => {
+      const lowerKey =
+        this.lowerCaseKeyMap.get(bucket) ?? bucket.key.toLowerCase();
+      return lowerKey.includes(lowerFilter);
+    });
 
     return {
       ...facetGroup,
@@ -530,11 +559,9 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
-   * Template for pagination component (only shown when facet count >= PAGINATION_THRESHOLD).
+   * Template for pagination component.
    */
   private get facetsPaginationTemplate() {
-    if (!this.usePagination) return nothing;
-
     return html`<more-facets-pagination
       .size=${this.paginationSize}
       .currentPage=${this.pageNumber}
@@ -545,7 +572,7 @@ export class MoreFacetsContent extends LitElement {
 
   private get footerTemplate() {
     return html`
-      ${this.facetsPaginationTemplate}
+      ${when(this.usePagination, () => this.facetsPaginationTemplate)}
       <div class="footer">
         <button class="btn btn-cancel" type="button" @click=${this.cancelClick}>
           Cancel
@@ -572,19 +599,15 @@ export class MoreFacetsContent extends LitElement {
    * Handler for filter input changes. Updates the filter text and triggers re-render.
    */
   private handleFilterInput(e: Event): void {
-    const input = e.target as HTMLInputElement;
+    const input = e.target as HTMLElement & { value: string };
     this.filterText = input.value;
   }
 
   /**
-   * Clears the filter text and refocuses the input.
+   * Handler for when the filter input is cleared via the clear button.
    */
   private handleFilterClear(): void {
     this.filterText = '';
-    const input = this.shadowRoot?.querySelector(
-      '#facet-filter',
-    ) as HTMLInputElement;
-    input?.focus();
   }
 
   /**
@@ -635,49 +658,38 @@ export class MoreFacetsContent extends LitElement {
         </span>
 
         <span class="filter-controls">
-          <label class="filter-label" for="facet-filter"
-            >${msg('Filter by:')}</label
-          >
-          <span class="filter-input-container">
-            <input
-              id="facet-filter"
-              type="text"
-              class="filter-input"
-              .value=${this.filterText}
-              @input=${this.handleFilterInput}
-              placeholder=${msg('Search...')}
-              aria-label=${msg('Filter facets')}
-            />
-            ${this.filterText
-              ? html`<button
-                  class="filter-clear-btn"
-                  type="button"
-                  @click=${this.handleFilterClear}
-                  aria-label=${msg('Clear filter')}
-                >
-                  &#x2715;
-                </button>`
-              : nothing}
-          </span>
+          <label class="filter-label">${msg('Filter by:')}</label>
+          <ia-clearable-text-input
+            class="filter-input"
+            .value=${this.filterText}
+            .placeholder=${msg('Search...')}
+            .screenReaderLabel=${msg('Filter facets')}
+            .clearButtonScreenReaderLabel=${msg('Clear filter')}
+            @input=${this.handleFilterInput}
+            @clear=${this.handleFilterClear}
+          ></ia-clearable-text-input>
         </span>
       </span>`;
   }
 
   render() {
-    const contentClass = this.usePagination
-      ? 'facets-content pagination-mode'
-      : 'facets-content horizontal-scroll-mode';
-    const sectionClass = this.usePagination
-      ? 'pagination-mode'
-      : 'horizontal-scroll-mode';
+    const sectionClasses = classMap({
+      'pagination-mode': this.usePagination,
+      'horizontal-scroll-mode': !this.usePagination,
+    });
+    const contentClasses = classMap({
+      'facets-content': true,
+      'pagination-mode': this.usePagination,
+      'horizontal-scroll-mode': !this.usePagination,
+    });
 
     return html`
       ${this.facetsLoading
         ? this.loaderTemplate
         : html`
-            <section id="more-facets" class="${sectionClass}">
+            <section id="more-facets" class=${sectionClasses}>
               <div class="header-content">${this.modalHeaderTemplate}</div>
-              <div class="${contentClass}">
+              <div class=${contentClasses}>
                 ${this.usePagination
                   ? this.moreFacetsTemplate
                   : html`<div class="facets-horizontal-container">
@@ -803,45 +815,14 @@ export class MoreFacetsContent extends LitElement {
           font-size: 1.3rem;
         }
 
-        .filter-input-container {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          margin-left: 5px;
-        }
-
         .filter-input {
-          font-size: 1.3rem;
-          padding: 4px 24px 4px 8px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
+          --input-height: 2.5rem;
+          --input-font-size: 1.3rem;
+          --input-border-radius: 4px;
+          --input-padding: 4px 8px;
+          --input-focused-border-color: ${modalSubmitButton};
           width: 150px;
-          font-family: inherit;
-        }
-
-        .filter-input:focus {
-          outline: 2px solid #194880;
-          outline-offset: 1px;
-          border-color: #194880;
-        }
-
-        .filter-clear-btn {
-          position: absolute;
-          right: 4px;
-          top: 50%;
-          transform: translateY(-50%);
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 1.1rem;
-          color: #666;
-          padding: 0 4px;
-          line-height: 1;
-          font-family: inherit;
-        }
-
-        .filter-clear-btn:hover {
-          color: #333;
+          margin-left: 5px;
         }
 
         .empty-results {
@@ -952,7 +933,7 @@ export class MoreFacetsContent extends LitElement {
           }
           .filter-input {
             width: 120px;
-            font-size: 1.2rem;
+            --input-font-size: 1.2rem;
           }
         }
       `,

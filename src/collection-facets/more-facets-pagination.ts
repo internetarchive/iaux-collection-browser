@@ -34,16 +34,16 @@ export class MoreFacetsPagination extends LitElement {
   @state() pages?: number[] = [];
 
   firstUpdated() {
-    this.observePageCount();
+    this.updatePages();
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   override updated(changed: Map<string, any>) {
     if (changed.has('size') || changed.has('compact')) {
-      this.observePageCount();
+      this.updatePages();
     }
     if (changed.has('currentPage')) {
-      this.observePageCount();
+      this.updatePages();
       this.emitPageClick();
     }
   }
@@ -56,11 +56,11 @@ export class MoreFacetsPagination extends LitElement {
    * - outlier: last page selected, show 1 ... N-2 N-1 _N_
    * - outlier: if page count = 7, & selected is either [2, 3, 4, 5, 6], show all pages
    */
-  observePageCount() {
+  updatePages() {
     this.pages = []; /* `0` is elipses marker */
 
     if (this.compact) {
-      this.observePageCountCompact();
+      this.updatePagesCompact();
       return;
     }
 
@@ -181,7 +181,7 @@ export class MoreFacetsPagination extends LitElement {
    * Compact page calculation: shows first, ..., prev, current, next, ..., last.
    * Only 1 neighbor on each side of the current page for minimal width.
    */
-  private observePageCountCompact() {
+  private updatePagesCompact() {
     if (this.size <= 3) {
       this.pages = [...Array(this.size).keys()].map(i => i + 1);
       return;

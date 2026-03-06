@@ -112,7 +112,7 @@ describe('More facets pagination', () => {
 
       const fake1 = sinon.fake();
       const fake2 = sinon.fake();
-      el.observePageCount = fake1;
+      el.updatePages = fake1;
       el.emitPageClick = fake2;
 
       // select first page button
@@ -146,7 +146,7 @@ describe('More facets pagination', () => {
 
       const fake1 = sinon.fake();
       const fake2 = sinon.fake();
-      el.observePageCount = fake1;
+      el.updatePages = fake1;
       el.emitPageClick = fake2;
 
       // select first page button
@@ -182,7 +182,7 @@ describe('More facets pagination', () => {
 
       const fake1 = sinon.fake();
       const fake2 = sinon.fake();
-      el.observePageCount = fake1;
+      el.updatePages = fake1;
       el.emitPageClick = fake2;
 
       // select first page button
