@@ -224,6 +224,8 @@ export class MoreFacetsContent extends LitElement {
     // Manage scroll listener for horizontal scroll mode arrows
     if (!this.usePagination) {
       this.attachScrollListener();
+      // Refresh scroll state whenever content may have changed (e.g., filtering)
+      requestAnimationFrame(() => this.updateScrollState());
     } else {
       this.removeScrollListener();
     }
@@ -807,27 +809,35 @@ export class MoreFacetsContent extends LitElement {
                     ${this.moreFacetsTemplate}
                   </div>`
                 : html`<div class="scroll-nav-container">
-                    <button
-                      class="scroll-arrow scroll-left"
-                      @click=${this.onScrollLeft}
-                      ?disabled=${this.atScrollStart}
-                      aria-label="Scroll facets left"
-                    >
-                      ${arrowLeftIcon}
-                    </button>
+                    ${when(
+                      !this.atScrollStart || !this.atScrollEnd,
+                      () =>
+                        html`<button
+                          class="scroll-arrow scroll-left"
+                          @click=${this.onScrollLeft}
+                          ?disabled=${this.atScrollStart}
+                          aria-label="Scroll facets left"
+                        >
+                          ${arrowLeftIcon}
+                        </button>`,
+                    )}
                     <div class=${contentClasses}>
                       <div class="facets-horizontal-container">
                         ${this.moreFacetsTemplate}
                       </div>
                     </div>
-                    <button
-                      class="scroll-arrow scroll-right"
-                      @click=${this.onScrollRight}
-                      ?disabled=${this.atScrollEnd}
-                      aria-label="Scroll facets right"
-                    >
-                      ${arrowRightIcon}
-                    </button>
+                    ${when(
+                      !this.atScrollStart || !this.atScrollEnd,
+                      () =>
+                        html`<button
+                          class="scroll-arrow scroll-right"
+                          @click=${this.onScrollRight}
+                          ?disabled=${this.atScrollEnd}
+                          aria-label="Scroll facets right"
+                        >
+                          ${arrowRightIcon}
+                        </button>`,
+                    )}
                   </div>`}
               ${this.footerTemplate}
             </section>
