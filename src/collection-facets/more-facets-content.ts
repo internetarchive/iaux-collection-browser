@@ -570,12 +570,13 @@ export class MoreFacetsContent extends LitElement {
       return facetGroup;
     }
 
-    // Filter buckets using pre-lowercased keys for performance
+    // Filter buckets by the text the user actually sees.
+    // For collections, match against the displayed collection title (not the identifier).
+    // For other facet types, match against the bucket key (which is also the display text).
     const lowerFilter = filterText.toLowerCase().trim();
     const filteredBuckets = facetGroup.buckets.filter(bucket => {
-      const lowerKey =
-        this.lowerCaseKeyMap.get(bucket) ?? bucket.key.toLowerCase();
-      return lowerKey.includes(lowerFilter);
+      const displayText = this.collectionTitles?.get(bucket.key) ?? bucket.key;
+      return displayText.toLowerCase().includes(lowerFilter);
     });
 
     return {
