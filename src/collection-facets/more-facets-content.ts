@@ -180,12 +180,6 @@ export class MoreFacetsContent extends LitElement {
       // Convert the merged selected facets & aggregations into a facet group, and
       // store it for reuse across pages.
       this.facetGroup = this.mergedFacets;
-
-      // Pre-lowercase bucket keys for efficient filtering
-      this.lowerCaseKeyMap.clear();
-      this.facetGroup?.buckets.forEach(bucket => {
-        this.lowerCaseKeyMap.set(bucket, bucket.key.toLowerCase());
-      });
     }
 
     // Reset to page 1 when filter text changes (only matters for pagination mode)
@@ -221,13 +215,23 @@ export class MoreFacetsContent extends LitElement {
       }
     }
 
-    // Manage scroll listener for horizontal scroll mode arrows
-    if (!this.usePagination) {
-      this.attachScrollListener();
-      // Refresh scroll state whenever content may have changed (e.g., filtering)
-      requestAnimationFrame(() => this.updateScrollState());
-    } else {
-      this.removeScrollListener();
+    // Manage scroll listener for horizontal scroll mode arrows.
+    // Only re-evaluate when properties that affect the displayed content change.
+    if (
+      changed.has('filterText') ||
+      changed.has('aggregations') ||
+      changed.has('facetKey') ||
+      changed.has('sortedBy') ||
+      changed.has('selectedFacets') ||
+      changed.has('unappliedFacetChanges')
+    ) {
+      if (!this.usePagination) {
+        this.attachScrollListener();
+        // Refresh scroll state whenever content may have changed (e.g., filtering)
+        requestAnimationFrame(() => this.updateScrollState());
+      } else {
+        this.removeScrollListener();
+      }
     }
   }
 
@@ -550,12 +554,6 @@ export class MoreFacetsContent extends LitElement {
       buckets: facetBuckets,
     };
   }
-
-  /**
-   * A map of pre-lowercased bucket keys, rebuilt whenever the facet group changes.
-   * Avoids re-lowercasing on every keystroke during filtering.
-   */
-  private lowerCaseKeyMap = new Map<FacetBucket, string>();
 
   /**
    * Returns the facet group with buckets filtered by the current filter text.
@@ -903,16 +901,10 @@ export class MoreFacetsContent extends LitElement {
           --facetsColumnCount: 3;
         }
 
-        /* Horizontal scroll mode: fixed column height for horizontal overflow */
-        section#more-facets.horizontal-scroll-mode {
-          --facetsColumnCount: 3;
-          --facetsMaxHeight: 280px;
-        }
-
-        /* Pagination mode: set height for proper column layout with vertical scroll */
+        /* Both modes need a height constraint for proper column flow */
+        section#more-facets.horizontal-scroll-mode,
         section#more-facets.pagination-mode {
-          --facetsColumnCount: 3;
-          --facetsMaxHeight: 280px; /* Columns need height constraint to flow properly */
+          --facetsMaxHeight: 280px;
         }
         .header-content {
           flex-shrink: 0;
