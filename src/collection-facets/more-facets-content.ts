@@ -1094,6 +1094,9 @@ export class MoreFacetsContent extends LitElement {
             overflow-y: auto;
             overflow-x: hidden;
           }
+          .scroll-nav-container {
+            display: contents; /* Remove wrapper from layout so section flex-column works */
+          }
           .scroll-arrow {
             display: none;
           }
