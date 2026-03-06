@@ -50,6 +50,8 @@ import {
 import './toggle-switch';
 import './more-facets-pagination';
 import '@internetarchive/ia-clearable-text-input';
+import arrowLeftIcon from '../assets/img/icons/arrow-left';
+import arrowRightIcon from '../assets/img/icons/arrow-right';
 import { srOnlyStyle } from '../styles/sr-only';
 import {
   mergeSelectedFacets,
@@ -151,8 +153,21 @@ export class MoreFacetsContent extends LitElement {
    */
   @state() private isCompactView = false;
 
+  /**
+   * Whether the horizontal scroll is at the leftmost position.
+   */
+  @state() private atScrollStart = true;
+
+  /**
+   * Whether the horizontal scroll is at the rightmost position.
+   */
+  @state() private atScrollEnd = false;
+
   @query('ia-clearable-text-input')
   private filterInput!: HTMLElement;
+
+  @query('.facets-content')
+  private facetsContentEl!: HTMLElement;
 
   willUpdate(changed: PropertyValues): void {
     if (
@@ -205,6 +220,13 @@ export class MoreFacetsContent extends LitElement {
         facetsContent.scrollLeft = 0;
       }
     }
+
+    // Manage scroll listener for horizontal scroll mode arrows
+    if (!this.usePagination) {
+      this.attachScrollListener();
+    } else {
+      this.removeScrollListener();
+    }
   }
 
   private resizeObserver?: ResizeObserver;
@@ -217,6 +239,97 @@ export class MoreFacetsContent extends LitElement {
   disconnectedCallback(): void {
     super.disconnectedCallback();
     this.resizeObserver?.disconnect();
+    this.removeScrollListener();
+  }
+
+  private scrollHandler = () => this.updateScrollState();
+
+  private scrollListenerAttached = false;
+
+  /**
+   * Attaches a scroll event listener to the facets content element
+   * to track horizontal scroll position for arrow button states.
+   */
+  private attachScrollListener(): void {
+    if (this.scrollListenerAttached || !this.facetsContentEl) return;
+    this.facetsContentEl.addEventListener('scroll', this.scrollHandler, {
+      passive: true,
+    });
+    this.scrollListenerAttached = true;
+    // Defer initial state check until after browser layout, so scrollWidth
+    // reflects the actual content dimensions.
+    requestAnimationFrame(() => this.updateScrollState());
+  }
+
+  private removeScrollListener(): void {
+    if (!this.scrollListenerAttached || !this.facetsContentEl) return;
+    this.facetsContentEl.removeEventListener('scroll', this.scrollHandler);
+    this.scrollListenerAttached = false;
+  }
+
+  /**
+   * Updates the scroll arrow disabled states based on current scroll position.
+   */
+  private updateScrollState(): void {
+    const el = this.facetsContentEl;
+    if (!el) return;
+    this.atScrollStart = el.scrollLeft <= 0;
+    this.atScrollEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+  }
+
+  /**
+   * Calculates the width of one column step (column width + gap) based on
+   * the CSS multi-column layout of the scroll container.
+   */
+  private getColumnStep(): number {
+    const el = this.facetsContentEl;
+    if (!el) return 0;
+
+    const facetRows = el.querySelector('.facet-rows') as HTMLElement;
+    const styles = facetRows
+      ? getComputedStyle(facetRows)
+      : getComputedStyle(el);
+
+    const columnCount = parseInt(styles.columnCount, 10) || 3;
+    const columnGap = parseInt(styles.columnGap, 10) || 15;
+
+    // Column width = (visible width - total gaps) / column count
+    // Column step = column width + gap = (visible width + gap) / column count
+    return (el.clientWidth + columnGap) / columnCount;
+  }
+
+  /**
+   * Snaps a scroll target to the nearest column boundary.
+   */
+  private snapToColumn(target: number): number {
+    const step = this.getColumnStep();
+    if (step <= 0) return target;
+    return Math.round(target / step) * step;
+  }
+
+  /**
+   * Scrolls the facet content left by approximately one page, snapping to
+   * the nearest column boundary.
+   */
+  private onScrollLeft(): void {
+    const el = this.facetsContentEl;
+    if (!el) return;
+    const rawTarget = el.scrollLeft - el.clientWidth;
+    const snapped = Math.max(0, this.snapToColumn(rawTarget));
+    el.scrollTo({ left: snapped, behavior: 'smooth' });
+  }
+
+  /**
+   * Scrolls the facet content right by approximately one page, snapping to
+   * the nearest column boundary.
+   */
+  private onScrollRight(): void {
+    const el = this.facetsContentEl;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const rawTarget = el.scrollLeft + el.clientWidth;
+    const snapped = Math.min(maxScroll, this.snapToColumn(rawTarget));
+    el.scrollTo({ left: snapped, behavior: 'smooth' });
   }
 
   /**
@@ -689,13 +802,33 @@ export class MoreFacetsContent extends LitElement {
         : html`
             <section id="more-facets" class=${sectionClasses}>
               <div class="header-content">${this.modalHeaderTemplate}</div>
-              <div class=${contentClasses}>
-                ${this.usePagination
-                  ? this.moreFacetsTemplate
-                  : html`<div class="facets-horizontal-container">
-                      ${this.moreFacetsTemplate}
-                    </div>`}
-              </div>
+              ${this.usePagination
+                ? html`<div class=${contentClasses}>
+                    ${this.moreFacetsTemplate}
+                  </div>`
+                : html`<div class="scroll-nav-container">
+                    <button
+                      class="scroll-arrow scroll-left"
+                      @click=${this.onScrollLeft}
+                      ?disabled=${this.atScrollStart}
+                      aria-label="Scroll facets left"
+                    >
+                      ${arrowLeftIcon}
+                    </button>
+                    <div class=${contentClasses}>
+                      <div class="facets-horizontal-container">
+                        ${this.moreFacetsTemplate}
+                      </div>
+                    </div>
+                    <button
+                      class="scroll-arrow scroll-right"
+                      @click=${this.onScrollRight}
+                      ?disabled=${this.atScrollEnd}
+                      aria-label="Scroll facets right"
+                    >
+                      ${arrowRightIcon}
+                    </button>
+                  </div>`}
               ${this.footerTemplate}
             </section>
           `}
@@ -885,6 +1018,36 @@ export class MoreFacetsContent extends LitElement {
           /* Allow natural width expansion based on content */
           width: fit-content;
         }
+
+        .scroll-nav-container {
+          display: flex;
+          align-items: center;
+          flex: 1 1 auto;
+          min-height: 0;
+        }
+
+        .scroll-nav-container .facets-content {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+
+        .scroll-arrow {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 5px;
+          flex-shrink: 0;
+        }
+
+        .scroll-arrow svg {
+          height: 14px;
+          fill: #2c2c2c;
+        }
+
+        .scroll-arrow:disabled {
+          opacity: 0.3;
+          cursor: default;
+        }
         .facets-loader {
           --icon-width: 70px;
           margin-bottom: 20px;
@@ -930,6 +1093,9 @@ export class MoreFacetsContent extends LitElement {
           .facets-content.horizontal-scroll-mode {
             overflow-y: auto;
             overflow-x: hidden;
+          }
+          .scroll-arrow {
+            display: none;
           }
           .filter-input {
             width: 120px;

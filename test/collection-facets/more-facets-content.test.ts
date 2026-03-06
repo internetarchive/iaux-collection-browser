@@ -403,4 +403,76 @@ describe('More facets content', () => {
     // Verify the filter was cleared
     expect(clearableInput.value).to.equal('');
   });
+
+  describe('Horizontal scroll navigation arrows', () => {
+    it('should show scroll arrows in horizontal scroll mode', async () => {
+      const searchService = new MockSearchService();
+
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          .searchService=${searchService}
+        ></more-facets-content>`,
+      );
+
+      el.facetKey = 'year';
+      el.query = 'more-facets'; // Produces < 1000 aggregations
+      await el.updateComplete;
+      await aTimeout(50);
+
+      // Verify scroll navigation container exists
+      expect(el.shadowRoot?.querySelector('.scroll-nav-container')).to.exist;
+
+      // Verify both arrow buttons exist
+      const leftArrow = el.shadowRoot?.querySelector(
+        '.scroll-arrow.scroll-left',
+      ) as HTMLButtonElement;
+      const rightArrow = el.shadowRoot?.querySelector(
+        '.scroll-arrow.scroll-right',
+      ) as HTMLButtonElement;
+      expect(leftArrow).to.exist;
+      expect(rightArrow).to.exist;
+    });
+
+    it('should NOT show scroll arrows in pagination mode', async () => {
+      const searchService = new MockSearchService();
+
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          .searchService=${searchService}
+          .selectedFacets=${getDefaultSelectedFacets()}
+        ></more-facets-content>`,
+      );
+
+      el.facetKey = 'subject';
+      el.query = 'large-facets'; // Produces >= 1000 aggregations
+      await el.updateComplete;
+      await aTimeout(50);
+
+      // Verify scroll navigation container does NOT exist
+      expect(el.shadowRoot?.querySelector('.scroll-nav-container')).to.not
+        .exist;
+      expect(el.shadowRoot?.querySelector('.scroll-arrow')).to.not.exist;
+    });
+
+    it('should have left arrow disabled at scroll start', async () => {
+      const searchService = new MockSearchService();
+
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          .searchService=${searchService}
+        ></more-facets-content>`,
+      );
+
+      el.facetKey = 'year';
+      el.query = 'more-facets';
+      await el.updateComplete;
+      await aTimeout(50);
+
+      const leftArrow = el.shadowRoot?.querySelector(
+        '.scroll-arrow.scroll-left',
+      ) as HTMLButtonElement;
+      expect(leftArrow).to.exist;
+      expect(leftArrow.disabled).to.be.true;
+    });
+  });
 });
