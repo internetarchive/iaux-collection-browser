@@ -62,6 +62,7 @@ export class ToggleSwitch extends LitElement {
           id="switch-button"
           class=${this.side}
           aria-hidden="true"
+          tabindex="-1"
           @click=${this.handleClick}
         >
           <div id="knob"></div>
