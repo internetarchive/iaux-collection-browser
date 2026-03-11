@@ -928,6 +928,9 @@ export class MoreFacetsContent extends LitElement {
         }
         .header-content {
           flex-shrink: 0;
+          position: relative;
+          z-index: 1;
+          background: #fff;
         }
 
         .header-content .title {
@@ -942,8 +945,8 @@ export class MoreFacetsContent extends LitElement {
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 4px 20px;
-          padding: 0 10px;
+          gap: 8px 20px;
+          padding: 0 10px 8px;
         }
 
         .sort-controls {
