@@ -500,7 +500,10 @@ export class MoreFacetsContent extends LitElement {
 
     const buckets: FacetBucket[] = Object.entries(selectedFacetsForKey).map(
       ([value, data]) => {
-        const displayText: string = value;
+        const displayText =
+          (this.facetKey === 'collection'
+            ? this.collectionTitles?.get(value)
+            : undefined) ?? value;
         return {
           displayText,
           key: value,
@@ -544,16 +547,32 @@ export class MoreFacetsContent extends LitElement {
       });
     }
 
-    // Construct the array of facet buckets from the aggregation buckets
+    // Construct the array of facet buckets from the aggregation buckets,
+    // using collection display titles where available.
     const facetBuckets: FacetBucket[] = sortedBuckets.map(bucket => {
       const bucketKeyStr = `${bucket.key}`;
+      const displayText =
+        (this.facetKey === 'collection'
+          ? this.collectionTitles?.get(bucketKeyStr)
+          : undefined) ?? bucketKeyStr;
       return {
-        displayText: `${bucketKeyStr}`,
+        displayText,
         key: `${bucketKeyStr}`,
         count: bucket.doc_count,
         state: 'none',
       };
     });
+
+    // For collection facets sorted alphabetically, re-sort by display title
+    // instead of the raw identifier used by getSortedBuckets.
+    if (
+      this.facetKey === 'collection' &&
+      this.sortedBy === AggregationSortType.ALPHABETICAL
+    ) {
+      facetBuckets.sort((a, b) =>
+        (a.displayText ?? a.key).localeCompare(b.displayText ?? b.key),
+      );
+    }
 
     return {
       title: facetGroupTitle,
