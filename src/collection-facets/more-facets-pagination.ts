@@ -42,7 +42,10 @@ export class MoreFacetsPagination extends LitElement {
     ) {
       this.updatePages();
     }
-    if (changed.has('currentPage')) {
+    if (
+      changed.has('currentPage') &&
+      changed.get('currentPage') !== undefined
+    ) {
       this.emitPageClick();
     }
   }

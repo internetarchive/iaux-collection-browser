@@ -161,7 +161,7 @@ export class MoreFacetsContent extends LitElement {
   /**
    * Whether the horizontal scroll is at the rightmost position.
    */
-  @state() private atScrollEnd = false;
+  @state() private atScrollEnd = true;
 
   @query('ia-clearable-text-input')
   private filterInput!: HTMLElement;
@@ -246,11 +246,14 @@ export class MoreFacetsContent extends LitElement {
     super.disconnectedCallback();
     this.resizeObserver?.disconnect();
     this.removeScrollListener();
+    document.removeEventListener('keydown', this.escapeHandler);
   }
 
   private scrollHandler = () => this.updateScrollState();
 
   private scrollListenerAttached = false;
+
+  private scrollListenerTarget?: HTMLElement;
 
   /**
    * Attaches a scroll event listener to the facets content element
@@ -258,7 +261,8 @@ export class MoreFacetsContent extends LitElement {
    */
   private attachScrollListener(): void {
     if (this.scrollListenerAttached || !this.facetsContentEl) return;
-    this.facetsContentEl.addEventListener('scroll', this.scrollHandler, {
+    this.scrollListenerTarget = this.facetsContentEl;
+    this.scrollListenerTarget.addEventListener('scroll', this.scrollHandler, {
       passive: true,
     });
     this.scrollListenerAttached = true;
@@ -268,8 +272,9 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private removeScrollListener(): void {
-    if (!this.scrollListenerAttached || !this.facetsContentEl) return;
-    this.facetsContentEl.removeEventListener('scroll', this.scrollHandler);
+    if (!this.scrollListenerAttached || !this.scrollListenerTarget) return;
+    this.scrollListenerTarget.removeEventListener('scroll', this.scrollHandler);
+    this.scrollListenerTarget = undefined;
     this.scrollListenerAttached = false;
   }
 
@@ -344,7 +349,8 @@ export class MoreFacetsContent extends LitElement {
   private setupCompactViewObserver(): void {
     this.resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
-        this.isCompactView = entry.contentRect.width <= 560;
+        const compact = entry.contentRect.width <= 560;
+        if (this.isCompactView !== compact) this.isCompactView = compact;
       }
     });
     this.resizeObserver.observe(this);
@@ -353,15 +359,13 @@ export class MoreFacetsContent extends LitElement {
   /**
    * Close more facets modal on Escape click
    */
+  private escapeHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this.modalManager?.closeModal();
+  };
+
   private setupEscapeListeners() {
     if (this.modalManager) {
-      document.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          this.modalManager?.closeModal();
-        }
-      });
-    } else {
-      document.removeEventListener('keydown', () => {});
+      document.addEventListener('keydown', this.escapeHandler);
     }
   }
 
@@ -400,15 +404,18 @@ export class MoreFacetsContent extends LitElement {
       rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
-    const results = await this.searchService?.search(params, this.searchType);
-    this.aggregations = results?.success?.response.aggregations;
-    this.facetsLoading = false;
+    try {
+      const results = await this.searchService?.search(params, this.searchType);
+      this.aggregations = results?.success?.response.aggregations;
 
-    const collectionTitles = results?.success?.response?.collectionTitles;
-    if (collectionTitles) {
-      for (const [id, title] of Object.entries(collectionTitles)) {
-        this.collectionTitles?.set(id, title);
+      const collectionTitles = results?.success?.response?.collectionTitles;
+      if (collectionTitles) {
+        for (const [id, title] of Object.entries(collectionTitles)) {
+          this.collectionTitles?.set(id, title);
+        }
       }
+    } finally {
+      this.facetsLoading = false;
     }
   }
 
@@ -739,7 +746,11 @@ export class MoreFacetsContent extends LitElement {
     });
 
     this.dispatchEvent(
-      new CustomEvent('pageChanged', { detail: this.pageNumber }),
+      new CustomEvent('pageChanged', {
+        detail: this.pageNumber,
+        bubbles: true,
+        composed: true,
+      }),
     );
   }
 
@@ -786,6 +797,46 @@ export class MoreFacetsContent extends LitElement {
       </span>`;
   }
 
+  private get horizontalScrollTemplate(): TemplateResult {
+    const contentClasses = classMap({
+      'facets-content': true,
+      'horizontal-scroll-mode': true,
+    });
+    const showArrows = !this.atScrollStart || !this.atScrollEnd;
+
+    return html`<div class="scroll-nav-container">
+      ${when(
+        showArrows,
+        () =>
+          html`<button
+            class="scroll-arrow scroll-left"
+            @click=${this.onScrollLeft}
+            ?disabled=${this.atScrollStart}
+            aria-label="Scroll facets left"
+          >
+            ${arrowLeftIcon}
+          </button>`,
+      )}
+      <div class=${contentClasses}>
+        <div class="facets-horizontal-container">
+          ${this.moreFacetsTemplate}
+        </div>
+      </div>
+      ${when(
+        showArrows,
+        () =>
+          html`<button
+            class="scroll-arrow scroll-right"
+            @click=${this.onScrollRight}
+            ?disabled=${this.atScrollEnd}
+            aria-label="Scroll facets right"
+          >
+            ${arrowRightIcon}
+          </button>`,
+      )}
+    </div>`;
+  }
+
   render() {
     const sectionClasses = classMap({
       'pagination-mode': this.usePagination,
@@ -794,7 +845,6 @@ export class MoreFacetsContent extends LitElement {
     const contentClasses = classMap({
       'facets-content': true,
       'pagination-mode': this.usePagination,
-      'horizontal-scroll-mode': !this.usePagination,
     });
 
     return html`
@@ -807,37 +857,7 @@ export class MoreFacetsContent extends LitElement {
                 ? html`<div class=${contentClasses}>
                     ${this.moreFacetsTemplate}
                   </div>`
-                : html`<div class="scroll-nav-container">
-                    ${when(
-                      !this.atScrollStart || !this.atScrollEnd,
-                      () =>
-                        html`<button
-                          class="scroll-arrow scroll-left"
-                          @click=${this.onScrollLeft}
-                          ?disabled=${this.atScrollStart}
-                          aria-label="Scroll facets left"
-                        >
-                          ${arrowLeftIcon}
-                        </button>`,
-                    )}
-                    <div class=${contentClasses}>
-                      <div class="facets-horizontal-container">
-                        ${this.moreFacetsTemplate}
-                      </div>
-                    </div>
-                    ${when(
-                      !this.atScrollStart || !this.atScrollEnd,
-                      () =>
-                        html`<button
-                          class="scroll-arrow scroll-right"
-                          @click=${this.onScrollRight}
-                          ?disabled=${this.atScrollEnd}
-                          aria-label="Scroll facets right"
-                        >
-                          ${arrowRightIcon}
-                        </button>`,
-                    )}
-                  </div>`}
+                : this.horizontalScrollTemplate}
               ${this.footerTemplate}
             </section>
           `}
