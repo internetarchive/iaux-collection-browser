@@ -240,6 +240,7 @@ export class MoreFacetsContent extends LitElement {
   firstUpdated(): void {
     this.setupEscapeListeners();
     this.setupCompactViewObserver();
+    this.constrainToScrollContainer();
   }
 
   disconnectedCallback(): void {
@@ -354,6 +355,41 @@ export class MoreFacetsContent extends LitElement {
       }
     });
     this.resizeObserver.observe(this);
+  }
+
+  /**
+   * Constrains the section's max-height to fit within the nearest
+   * scroll-container ancestor (e.g., the modal's content area).
+   * This prevents the footer buttons from overflowing when the modal
+   * has a smaller available height than calc(100vh - 16.5rem) assumes.
+   */
+  private constrainToScrollContainer(): void {
+    requestAnimationFrame(() => {
+      const section = this.shadowRoot?.querySelector(
+        'section#more-facets',
+      ) as HTMLElement;
+      if (!section) return;
+
+      // Walk up from the assigned slot to find the nearest overflow container
+      let el = this.assignedSlot?.parentElement;
+      while (el) {
+        const cs = getComputedStyle(el);
+        if (
+          cs.overflowY === 'auto' ||
+          cs.overflowY === 'scroll' ||
+          cs.overflowY === 'hidden'
+        ) {
+          const containerBottom = el.getBoundingClientRect().bottom;
+          const sectionTop = section.getBoundingClientRect().top;
+          const available = containerBottom - sectionTop;
+          if (available > 0 && available < section.offsetHeight) {
+            section.style.maxHeight = `${available}px`;
+          }
+          return;
+        }
+        el = el.parentElement;
+      }
+    });
   }
 
   /**
