@@ -153,6 +153,14 @@ export class MoreFacetsContent extends LitElement {
    */
   @state() private isCompactView = false;
 
+  /** Column gap in px — matches the --facetsColumnGap default (never overridden). */
+  private static readonly COLUMN_GAP = 15;
+
+  /** Column count derived from the same breakpoint as the CSS media query. */
+  private get columnCount(): number {
+    return this.isCompactView ? 1 : 3;
+  }
+
   /**
    * Whether the horizontal scroll is at the leftmost position.
    */
@@ -296,18 +304,8 @@ export class MoreFacetsContent extends LitElement {
   private getColumnStep(): number {
     const el = this.facetsContentEl;
     if (!el) return 0;
-
-    const facetRows = el.querySelector('.facet-rows') as HTMLElement;
-    const styles = facetRows
-      ? getComputedStyle(facetRows)
-      : getComputedStyle(el);
-
-    const columnCount = parseInt(styles.columnCount, 10) || 3;
-    const columnGap = parseInt(styles.columnGap, 10) || 15;
-
-    // Column width = (visible width - total gaps) / column count
     // Column step = column width + gap = (visible width + gap) / column count
-    return (el.clientWidth + columnGap) / columnCount;
+    return (el.clientWidth + MoreFacetsContent.COLUMN_GAP) / this.columnCount;
   }
 
   /**
