@@ -360,8 +360,8 @@ export class MoreFacetsContent extends LitElement {
   /**
    * Constrains the section's max-height to fit within the nearest
    * scroll-container ancestor (e.g., the modal's content area).
-   * This prevents the footer buttons from overflowing when the modal
-   * has a smaller available height than calc(100vh - 16.5rem) assumes.
+   * This is a safety net for cases where the CSS max-height calculation
+   * doesn't perfectly match the container's available space.
    */
   private constrainToScrollContainer(): void {
     requestAnimationFrame(() => {
@@ -382,7 +382,10 @@ export class MoreFacetsContent extends LitElement {
           const containerBottom = el.getBoundingClientRect().bottom;
           const sectionTop = section.getBoundingClientRect().top;
           const available = containerBottom - sectionTop;
-          if (available > 0 && available < section.offsetHeight) {
+          // Compare against the CSS max-height rather than actual height,
+          // since content may not have loaded yet at firstUpdated time
+          const computedMax = parseFloat(getComputedStyle(section).maxHeight);
+          if (available > 0 && available < computedMax) {
             section.style.maxHeight = `${available}px`;
           }
           return;
@@ -970,7 +973,7 @@ export class MoreFacetsContent extends LitElement {
         section#more-facets {
           display: flex;
           flex-direction: column;
-          max-height: calc(100vh - 16.5rem);
+          max-height: calc(100vh - 16.5rem - var(--modalBottomMargin, 2.5rem));
           padding: 10px;
           box-sizing: border-box;
           --facetsColumnCount: 3;
