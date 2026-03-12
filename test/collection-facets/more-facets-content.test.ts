@@ -5,7 +5,10 @@ import '../../src/collection-facets/more-facets-content';
 import { MockSearchService } from '../mocks/mock-search-service';
 import { MockAnalyticsHandler } from '../mocks/mock-analytics-handler';
 import type { FacetsTemplate } from '../../src/collection-facets/facets-template';
-import type { SelectedFacets } from '../../src/models';
+import {
+  getDefaultSelectedFacets,
+  type SelectedFacets,
+} from '../../src/models';
 
 const selectedFacetsGroup = {
   title: 'Media Type',
@@ -54,7 +57,7 @@ describe('More facets content', () => {
     expect(el.shadowRoot?.querySelector('.facets-loader')).to.exist;
   });
 
-  it('should render pagination for more facets', async () => {
+  it('should NOT render pagination when facet count < 1000', async () => {
     const searchService = new MockSearchService();
 
     const el = await fixture<MoreFacetsContent>(
@@ -64,11 +67,22 @@ describe('More facets content', () => {
     );
 
     el.facetKey = 'year';
-    el.query = 'more-facets'; // Produces a response with 40+ aggregations for multiple pages
+    el.query = 'more-facets'; // Produces a response with 45 aggregations (< 1000)
     await el.updateComplete;
     await aTimeout(50); // Give it a moment to perform the (mock) search query after the initial update
 
-    expect(el.shadowRoot?.querySelectorAll('more-facets-pagination')).to.exist;
+    // Verify pagination component is NOT present (horizontal scroll mode)
+    expect(el.shadowRoot?.querySelector('more-facets-pagination')).to.not.exist;
+
+    // Verify horizontal scroll mode CSS class is applied
+    expect(
+      el.shadowRoot?.querySelector('.facets-content.horizontal-scroll-mode'),
+    ).to.exist;
+
+    // Verify footer still exists with buttons
+    expect(el.shadowRoot?.querySelector('.footer')).to.exist;
+    expect(el.shadowRoot?.querySelector('.btn-cancel')).to.exist;
+    expect(el.shadowRoot?.querySelector('.btn-submit')).to.exist;
   });
 
   it('query for more facets content using search service', async () => {
@@ -227,5 +241,313 @@ describe('More facets content', () => {
     expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
     expect(mockAnalyticsHandler.callAction).to.equal('applyMoreFacetsModal');
     expect(mockAnalyticsHandler.callLabel).to.equal('collection');
+  });
+
+  it('should have horizontal scrolling enabled', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+      ></more-facets-content>`,
+    );
+
+    el.facetKey = 'year';
+    el.query = 'more-facets';
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const facetsContent = el.shadowRoot?.querySelector(
+      '.facets-content',
+    ) as HTMLElement;
+    const styles = window.getComputedStyle(facetsContent);
+
+    expect(styles.overflowX).to.equal('auto');
+    expect(styles.overflowY).to.equal('hidden');
+  });
+
+  it('should have horizontal container wrapper', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+      ></more-facets-content>`,
+    );
+
+    el.facetKey = 'year';
+    el.query = 'more-facets';
+    await el.updateComplete;
+    await aTimeout(50);
+
+    const container = el.shadowRoot?.querySelector(
+      '.facets-horizontal-container',
+    );
+    expect(container).to.exist;
+
+    const facetsTemplate = container?.querySelector('facets-template');
+    expect(facetsTemplate).to.exist;
+  });
+
+  it('should render pagination when facet count >= 1000', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+        .selectedFacets=${getDefaultSelectedFacets()}
+      ></more-facets-content>`,
+    );
+
+    el.facetKey = 'subject';
+    el.query = 'large-facets'; // Produces a response with 1100 aggregations (>= 1000)
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Verify pagination component IS present
+    expect(el.shadowRoot?.querySelector('more-facets-pagination')).to.exist;
+
+    // Verify pagination mode CSS class is applied
+    expect(el.shadowRoot?.querySelector('.facets-content.pagination-mode')).to
+      .exist;
+
+    // Verify horizontal container wrapper does NOT exist in pagination mode
+    expect(el.shadowRoot?.querySelector('.facets-horizontal-container')).to.not
+      .exist;
+  });
+
+  it('pagination page change should send analytics event', async () => {
+    const searchService = new MockSearchService();
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .searchService=${searchService}
+        .selectedFacets=${getDefaultSelectedFacets()}
+        .analyticsHandler=${mockAnalyticsHandler}
+      ></more-facets-content>`,
+    );
+
+    el.facetKey = 'subject';
+    el.query = 'large-facets'; // Produces a response with 1100 aggregations (>= 1000)
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Get the pagination component
+    const pagination = el.shadowRoot?.querySelector(
+      'more-facets-pagination',
+    ) as any;
+    expect(pagination).to.exist;
+
+    // Simulate clicking page 2
+    pagination.currentPage = 2;
+    await pagination.updateComplete;
+
+    // Verify analytics event was sent
+    expect(mockAnalyticsHandler.callCategory).to.equal('collection-browser');
+    expect(mockAnalyticsHandler.callAction).to.equal('moreFacetsPageChange');
+    expect(mockAnalyticsHandler.callLabel).to.equal('2');
+  });
+
+  it('should render clearable text input for filtering', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
+        .searchService=${searchService}
+        .selectedFacets=${yearSelectedFacets}
+      ></more-facets-content>`,
+    );
+
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Verify the clearable text input component is present
+    const clearableInput = el.shadowRoot?.querySelector(
+      'ia-clearable-text-input',
+    ) as HTMLElement;
+    expect(clearableInput).to.exist;
+  });
+
+  it('should clear filter text when clear event is dispatched', async () => {
+    const searchService = new MockSearchService();
+
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'year'}
+        .query=${'more-facets'}
+        .searchService=${searchService}
+        .selectedFacets=${yearSelectedFacets}
+      ></more-facets-content>`,
+    );
+
+    await el.updateComplete;
+    await aTimeout(50);
+
+    // Simulate typing into the clearable input by dispatching input event
+    const clearableInput = el.shadowRoot?.querySelector(
+      'ia-clearable-text-input',
+    ) as HTMLElement & { value: string };
+    expect(clearableInput).to.exist;
+
+    clearableInput.value = 'test';
+    clearableInput.dispatchEvent(new Event('input'));
+    await el.updateComplete;
+
+    // Dispatch clear event
+    clearableInput.dispatchEvent(new CustomEvent('clear', { detail: 'test' }));
+    await el.updateComplete;
+
+    // Verify the filter was cleared
+    expect(clearableInput.value).to.equal('');
+  });
+
+  describe('Modal container height constraint', () => {
+    // Register a test wrapper element to simulate the modal's scroll container
+    if (!customElements.get('test-scroll-wrapper')) {
+      customElements.define(
+        'test-scroll-wrapper',
+        class extends HTMLElement {
+          constructor() {
+            super();
+            this.attachShadow({ mode: 'open' });
+            this.shadowRoot!.innerHTML = `
+              <style>
+                :host { display: block; }
+                .content { overflow-y: auto; max-height: 300px; }
+              </style>
+              <div class="content"><slot></slot></div>
+            `;
+          }
+        },
+      );
+    }
+
+    it('should constrain section height when inside a scroll container', async () => {
+      const el = await fixture<MoreFacetsContent>(html`
+        <test-scroll-wrapper>
+          <more-facets-content></more-facets-content>
+        </test-scroll-wrapper>
+      `);
+
+      const mfc = el.querySelector('more-facets-content') as MoreFacetsContent;
+      mfc.facetsLoading = false;
+      await mfc.updateComplete;
+
+      // Wait for the constrainToScrollContainer rAF callback
+      await new Promise(r =>
+        requestAnimationFrame(() => requestAnimationFrame(r)),
+      );
+
+      const section = mfc.shadowRoot?.querySelector(
+        'section#more-facets',
+      ) as HTMLElement;
+
+      // The section's inline max-height should be set when it would
+      // overflow the 300px scroll container
+      const sectionHeight = section.getBoundingClientRect().height;
+      const wrapper = el.shadowRoot?.querySelector('.content') as HTMLElement;
+      const wrapperBottom = wrapper.getBoundingClientRect().bottom;
+      const sectionTop = section.getBoundingClientRect().top;
+      const availableSpace = wrapperBottom - sectionTop;
+
+      // The section should not exceed the available space in the container
+      expect(sectionHeight).to.be.at.most(availableSpace + 1); // +1 for rounding
+    });
+
+    it('should not constrain section when no scroll container exists', async () => {
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content></more-facets-content>`,
+      );
+
+      el.facetsLoading = false;
+      await el.updateComplete;
+
+      // Wait for the constrainToScrollContainer rAF callback
+      await new Promise(r =>
+        requestAnimationFrame(() => requestAnimationFrame(r)),
+      );
+
+      const section = el.shadowRoot?.querySelector(
+        'section#more-facets',
+      ) as HTMLElement;
+
+      // No inline max-height should be set when there's no scroll container
+      expect(section.style.maxHeight).to.equal('');
+    });
+  });
+
+  describe('Horizontal scroll navigation arrows', () => {
+    it('should use scroll-nav-container in horizontal scroll mode', async () => {
+      const searchService = new MockSearchService();
+
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          .searchService=${searchService}
+        ></more-facets-content>`,
+      );
+
+      el.facetKey = 'year';
+      el.query = 'more-facets'; // Produces < 1000 aggregations
+      await el.updateComplete;
+      await aTimeout(50);
+
+      // Verify scroll navigation container exists in horizontal scroll mode
+      expect(el.shadowRoot?.querySelector('.scroll-nav-container')).to.exist;
+
+      // Verify horizontal container and facets-content exist inside it
+      expect(
+        el.shadowRoot?.querySelector(
+          '.scroll-nav-container .facets-content.horizontal-scroll-mode',
+        ),
+      ).to.exist;
+      expect(
+        el.shadowRoot?.querySelector(
+          '.scroll-nav-container .facets-horizontal-container',
+        ),
+      ).to.exist;
+    });
+
+    it('should NOT show scroll arrows in pagination mode', async () => {
+      const searchService = new MockSearchService();
+
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          .searchService=${searchService}
+          .selectedFacets=${getDefaultSelectedFacets()}
+        ></more-facets-content>`,
+      );
+
+      el.facetKey = 'subject';
+      el.query = 'large-facets'; // Produces >= 1000 aggregations
+      await el.updateComplete;
+      await aTimeout(50);
+
+      // Verify scroll navigation container does NOT exist
+      expect(el.shadowRoot?.querySelector('.scroll-nav-container')).to.not
+        .exist;
+      expect(el.shadowRoot?.querySelector('.scroll-arrow')).to.not.exist;
+    });
+
+    it('should hide scroll arrows when content does not overflow', async () => {
+      const searchService = new MockSearchService();
+
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          .searchService=${searchService}
+        ></more-facets-content>`,
+      );
+
+      el.facetKey = 'year';
+      el.query = 'more-facets';
+      await el.updateComplete;
+      await aTimeout(50);
+
+      // In test environment, there's no real layout so scrollWidth === clientWidth.
+      // Arrows should be hidden when there's no horizontal overflow.
+      expect(el.shadowRoot?.querySelector('.scroll-arrow')).to.not.exist;
+    });
   });
 });

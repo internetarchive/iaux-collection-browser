@@ -7,7 +7,9 @@ import {
   PropertyValues,
   TemplateResult,
 } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { when } from 'lit/directives/when.js';
 import {
   Aggregation,
   Bucket,
@@ -40,13 +42,16 @@ import type {
   TVChannelAliases,
 } from '../data-source/models';
 import '@internetarchive/elements/ia-status-indicator/ia-status-indicator';
-import './more-facets-pagination';
 import './facets-template';
 import {
   analyticsActions,
   analyticsCategories,
 } from '../utils/analytics-events';
 import './toggle-switch';
+import './more-facets-pagination';
+import '@internetarchive/ia-clearable-text-input';
+import arrowLeftIcon from '../assets/img/icons/arrow-left';
+import arrowRightIcon from '../assets/img/icons/arrow-right';
 import { srOnlyStyle } from '../styles/sr-only';
 import {
   mergeSelectedFacets,
@@ -57,6 +62,12 @@ import {
   MORE_FACETS__DEFAULT_PAGE_SIZE,
   MORE_FACETS__MAX_AGGREGATIONS,
 } from './models';
+
+/**
+ * Threshold for switching from horizontal scroll to pagination.
+ * If facet count >= this value, use pagination. Otherwise use horizontal scroll.
+ */
+const PAGINATION_THRESHOLD = 1000;
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -126,9 +137,45 @@ export class MoreFacetsContent extends LitElement {
     getDefaultSelectedFacets();
 
   /**
-   * Which page of facets we are showing.
+   * Text entered by the user to filter facet buckets.
+   * Applied to bucket.key for case-insensitive matching.
+   */
+  @state() private filterText = '';
+
+  /**
+   * Current page number for pagination (when facet count >= PAGINATION_THRESHOLD).
    */
   @state() private pageNumber = 1;
+
+  /**
+   * Whether the component is narrow enough to warrant compact pagination.
+   * Updated via a ResizeObserver-based container query approach.
+   */
+  @state() private isCompactView = false;
+
+  /** Column gap in px — matches the --facetsColumnGap default (never overridden). */
+  private static readonly COLUMN_GAP = 15;
+
+  /** Column count derived from the same breakpoint as the CSS media query. */
+  private get columnCount(): number {
+    return this.isCompactView ? 1 : 3;
+  }
+
+  /**
+   * Whether the horizontal scroll is at the leftmost position.
+   */
+  @state() private atScrollStart = true;
+
+  /**
+   * Whether the horizontal scroll is at the rightmost position.
+   */
+  @state() private atScrollEnd = true;
+
+  @query('ia-clearable-text-input')
+  private filterInput!: HTMLElement;
+
+  @query('.facets-content')
+  private facetsContentEl!: HTMLElement;
 
   willUpdate(changed: PropertyValues): void {
     if (
@@ -143,6 +190,13 @@ export class MoreFacetsContent extends LitElement {
       this.facetGroup = this.mergedFacets;
     }
 
+    // Reset to page 1 when filter text changes (only matters for pagination mode)
+    if (changed.has('filterText')) {
+      this.pageNumber = 1;
+    }
+  }
+
+  updated(changed: PropertyValues): void {
     // If any of the search properties change, it triggers a facet fetch
     if (
       changed.has('facetKey') ||
@@ -159,24 +213,196 @@ export class MoreFacetsContent extends LitElement {
 
       this.updateSpecificFacets();
     }
+
+    // Reset horizontal scroll when filter text changes (e.g., switching from
+    // horizontal-scroll mode back to pagination mode)
+    if (changed.has('filterText')) {
+      const facetsContent = this.shadowRoot?.querySelector('.facets-content');
+      if (facetsContent) {
+        facetsContent.scrollLeft = 0;
+      }
+    }
+
+    // Manage scroll listener for horizontal scroll mode arrows.
+    // Only re-evaluate when properties that affect the displayed content change.
+    if (
+      changed.has('filterText') ||
+      changed.has('aggregations') ||
+      changed.has('facetKey') ||
+      changed.has('sortedBy') ||
+      changed.has('selectedFacets') ||
+      changed.has('unappliedFacetChanges')
+    ) {
+      if (!this.usePagination) {
+        this.attachScrollListener();
+        // Refresh scroll state whenever content may have changed (e.g., filtering)
+        requestAnimationFrame(() => this.updateScrollState());
+      } else {
+        this.removeScrollListener();
+      }
+    }
   }
+
+  private resizeObserver?: ResizeObserver;
 
   firstUpdated(): void {
     this.setupEscapeListeners();
+    this.setupCompactViewObserver();
+    this.constrainToScrollContainer();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this.resizeObserver?.disconnect();
+    this.removeScrollListener();
+    document.removeEventListener('keydown', this.escapeHandler);
+  }
+
+  private scrollHandler = () => this.updateScrollState();
+
+  private scrollListenerAttached = false;
+
+  private scrollListenerTarget?: HTMLElement;
+
+  /**
+   * Attaches a scroll event listener to the facets content element
+   * to track horizontal scroll position for arrow button states.
+   */
+  private attachScrollListener(): void {
+    if (this.scrollListenerAttached || !this.facetsContentEl) return;
+    this.scrollListenerTarget = this.facetsContentEl;
+    this.scrollListenerTarget.addEventListener('scroll', this.scrollHandler, {
+      passive: true,
+    });
+    this.scrollListenerAttached = true;
+    // Defer initial state check until after browser layout, so scrollWidth
+    // reflects the actual content dimensions.
+    requestAnimationFrame(() => this.updateScrollState());
+  }
+
+  private removeScrollListener(): void {
+    if (!this.scrollListenerAttached || !this.scrollListenerTarget) return;
+    this.scrollListenerTarget.removeEventListener('scroll', this.scrollHandler);
+    this.scrollListenerTarget = undefined;
+    this.scrollListenerAttached = false;
+  }
+
+  /**
+   * Updates the scroll arrow disabled states based on current scroll position.
+   */
+  private updateScrollState(): void {
+    const el = this.facetsContentEl;
+    if (!el) return;
+    this.atScrollStart = el.scrollLeft <= 0;
+    this.atScrollEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+  }
+
+  /**
+   * Calculates the width of one column step (column width + gap) based on
+   * the CSS multi-column layout of the scroll container.
+   */
+  private getColumnStep(): number {
+    const el = this.facetsContentEl;
+    if (!el) return 0;
+    // Column step = column width + gap = (visible width + gap) / column count
+    return (el.clientWidth + MoreFacetsContent.COLUMN_GAP) / this.columnCount;
+  }
+
+  /**
+   * Snaps a scroll target to the nearest column boundary.
+   */
+  private snapToColumn(target: number): number {
+    const step = this.getColumnStep();
+    if (step <= 0) return target;
+    return Math.round(target / step) * step;
+  }
+
+  /**
+   * Scrolls the facet content left by approximately one page, snapping to
+   * the nearest column boundary.
+   */
+  private onScrollLeft(): void {
+    const el = this.facetsContentEl;
+    if (!el) return;
+    const rawTarget = el.scrollLeft - el.clientWidth;
+    const snapped = Math.max(0, this.snapToColumn(rawTarget));
+    el.scrollTo({ left: snapped, behavior: 'smooth' });
+  }
+
+  /**
+   * Scrolls the facet content right by approximately one page, snapping to
+   * the nearest column boundary.
+   */
+  private onScrollRight(): void {
+    const el = this.facetsContentEl;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const rawTarget = el.scrollLeft + el.clientWidth;
+    const snapped = Math.min(maxScroll, this.snapToColumn(rawTarget));
+    el.scrollTo({ left: snapped, behavior: 'smooth' });
+  }
+
+  /**
+   * Sets up a ResizeObserver to toggle compact pagination based on component width.
+   */
+  private setupCompactViewObserver(): void {
+    this.resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const compact = entry.contentRect.width <= 560;
+        if (this.isCompactView !== compact) this.isCompactView = compact;
+      }
+    });
+    this.resizeObserver.observe(this);
+  }
+
+  /**
+   * Constrains the section's max-height to fit within the nearest
+   * scroll-container ancestor (e.g., the modal's content area).
+   * This is a safety net for cases where the CSS max-height calculation
+   * doesn't perfectly match the container's available space.
+   */
+  private constrainToScrollContainer(): void {
+    requestAnimationFrame(() => {
+      const section = this.shadowRoot?.querySelector(
+        'section#more-facets',
+      ) as HTMLElement;
+      if (!section) return;
+
+      // Walk up from the assigned slot to find the nearest overflow container
+      let el = this.assignedSlot?.parentElement;
+      while (el) {
+        const cs = getComputedStyle(el);
+        if (
+          cs.overflowY === 'auto' ||
+          cs.overflowY === 'scroll' ||
+          cs.overflowY === 'hidden'
+        ) {
+          const containerBottom = el.getBoundingClientRect().bottom;
+          const sectionTop = section.getBoundingClientRect().top;
+          const available = containerBottom - sectionTop;
+          // Compare against the CSS max-height rather than actual height,
+          // since content may not have loaded yet at firstUpdated time
+          const computedMax = parseFloat(getComputedStyle(section).maxHeight);
+          if (available > 0 && available < computedMax) {
+            section.style.maxHeight = `${available}px`;
+          }
+          return;
+        }
+        el = el.parentElement;
+      }
+    });
   }
 
   /**
    * Close more facets modal on Escape click
    */
+  private escapeHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') this.modalManager?.closeModal();
+  };
+
   private setupEscapeListeners() {
     if (this.modalManager) {
-      document.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          this.modalManager?.closeModal();
-        }
-      });
-    } else {
-      document.removeEventListener('keydown', () => {});
+      document.addEventListener('keydown', this.escapeHandler);
     }
   }
 
@@ -215,32 +441,19 @@ export class MoreFacetsContent extends LitElement {
       rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
-    const results = await this.searchService?.search(params, this.searchType);
-    this.aggregations = results?.success?.response.aggregations;
-    this.facetsLoading = false;
+    try {
+      const results = await this.searchService?.search(params, this.searchType);
+      this.aggregations = results?.success?.response.aggregations;
 
-    const collectionTitles = results?.success?.response?.collectionTitles;
-    if (collectionTitles) {
-      for (const [id, title] of Object.entries(collectionTitles)) {
-        this.collectionTitles?.set(id, title);
+      const collectionTitles = results?.success?.response?.collectionTitles;
+      if (collectionTitles) {
+        for (const [id, title] of Object.entries(collectionTitles)) {
+          this.collectionTitles?.set(id, title);
+        }
       }
+    } finally {
+      this.facetsLoading = false;
     }
-  }
-
-  /**
-   * Handler for page number changes from the pagination widget.
-   */
-  private pageNumberClicked(e: CustomEvent<{ page: number }>) {
-    const page = e?.detail?.page;
-    if (page) {
-      this.pageNumber = Number(page);
-    }
-
-    this.analyticsHandler?.sendEvent({
-      category: analyticsCategories.default,
-      action: analyticsActions.moreFacetsPageChange,
-      label: `${this.pageNumber}`,
-    });
   }
 
   /**
@@ -324,7 +537,10 @@ export class MoreFacetsContent extends LitElement {
 
     const buckets: FacetBucket[] = Object.entries(selectedFacetsForKey).map(
       ([value, data]) => {
-        const displayText: string = value;
+        const displayText =
+          (this.facetKey === 'collection'
+            ? this.collectionTitles?.get(value)
+            : undefined) ?? value;
         return {
           displayText,
           key: value,
@@ -368,16 +584,32 @@ export class MoreFacetsContent extends LitElement {
       });
     }
 
-    // Construct the array of facet buckets from the aggregation buckets
+    // Construct the array of facet buckets from the aggregation buckets,
+    // using collection display titles where available.
     const facetBuckets: FacetBucket[] = sortedBuckets.map(bucket => {
       const bucketKeyStr = `${bucket.key}`;
+      const displayText =
+        (this.facetKey === 'collection'
+          ? this.collectionTitles?.get(bucketKeyStr)
+          : undefined) ?? bucketKeyStr;
       return {
-        displayText: `${bucketKeyStr}`,
+        displayText,
         key: `${bucketKeyStr}`,
         count: bucket.doc_count,
         state: 'none',
       };
     });
+
+    // For collection facets sorted alphabetically, re-sort by display title
+    // instead of the raw identifier used by getSortedBuckets.
+    if (
+      this.facetKey === 'collection' &&
+      this.sortedBy === AggregationSortType.ALPHABETICAL
+    ) {
+      facetBuckets.sort((a, b) =>
+        (a.displayText ?? a.key).localeCompare(b.displayText ?? b.key),
+      );
+    }
 
     return {
       title: facetGroupTitle,
@@ -387,29 +619,81 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
-   * Returns a FacetGroup representing only the current page of facet buckets to show.
+   * Returns the facet group with buckets filtered by the current filter text.
+   * Filters are applied to the full bucket list before pagination.
    */
-  private get facetGroupForCurrentPage(): FacetGroup | undefined {
-    const { facetGroup } = this;
+  private get filteredFacetGroup(): FacetGroup | undefined {
+    const { facetGroup, filterText } = this;
     if (!facetGroup) return undefined;
 
-    // Slice out only the current page of facet buckets
-    const firstBucketIndexOnPage = (this.pageNumber - 1) * this.facetsPerPage;
-    const truncatedBuckets = facetGroup.buckets.slice(
-      firstBucketIndexOnPage,
-      firstBucketIndexOnPage + this.facetsPerPage,
-    );
+    // If no filter text, return the full group
+    if (!filterText.trim()) {
+      return facetGroup;
+    }
+
+    // Filter buckets by the text the user actually sees.
+    // For collections, match against the displayed collection title (not the identifier).
+    // For other facet types, match against the bucket key (which is also the display text).
+    const lowerFilter = filterText.toLowerCase().trim();
+    const filteredBuckets = facetGroup.buckets.filter(bucket => {
+      const displayText = this.collectionTitles?.get(bucket.key) ?? bucket.key;
+      return displayText.toLowerCase().includes(lowerFilter);
+    });
 
     return {
       ...facetGroup,
-      buckets: truncatedBuckets,
+      buckets: filteredBuckets,
+    };
+  }
+
+  /**
+   * Determines whether to use pagination based on the number of filtered facets.
+   * Returns true if facet count >= PAGINATION_THRESHOLD, false otherwise.
+   */
+  private get usePagination(): boolean {
+    const facetCount = this.filteredFacetGroup?.buckets.length ?? 0;
+    return facetCount >= PAGINATION_THRESHOLD;
+  }
+
+  /**
+   * Returns the facet group for the current page.
+   * If using pagination (>= 1000 facets), slices to show only the current page.
+   * Otherwise, returns all facets for horizontal scrolling.
+   */
+  private get facetGroupForCurrentPage(): FacetGroup | undefined {
+    const filteredGroup = this.filteredFacetGroup;
+    if (!filteredGroup) return undefined;
+
+    // If facet count is below threshold, show all facets with horizontal scroll
+    if (!this.usePagination) {
+      return filteredGroup;
+    }
+
+    // Otherwise, use pagination - slice to current page
+    const startIndex = (this.pageNumber - 1) * this.facetsPerPage;
+    const endIndex = startIndex + this.facetsPerPage;
+    const slicedBuckets = filteredGroup.buckets.slice(startIndex, endIndex);
+
+    return {
+      ...filteredGroup,
+      buckets: slicedBuckets,
     };
   }
 
   private get moreFacetsTemplate(): TemplateResult {
+    const facetGroup = this.facetGroupForCurrentPage;
+
+    // Show empty state if filtering returned no results
+    if (
+      this.filterText.trim() &&
+      (!facetGroup || facetGroup.buckets.length === 0)
+    ) {
+      return this.emptyFilterResultsTemplate;
+    }
+
     return html`
       <facets-template
-        .facetGroup=${this.facetGroupForCurrentPage}
+        .facetGroup=${facetGroup}
         .selectedFacets=${this.selectedFacets}
         .collectionTitles=${this.collectionTitles}
         @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
@@ -434,56 +718,95 @@ export class MoreFacetsContent extends LitElement {
     `;
   }
 
-  /**
-   * How many pages of facets to show in the modal pagination widget
-   */
-  private get paginationSize(): number {
-    if (!this.aggregations || !this.facetKey) return 0;
-
-    // Calculate the appropriate number of pages to show in the modal pagination widget
-    const length = this.aggregations[this.facetKey]?.buckets.length;
-    return Math.ceil(length / this.facetsPerPage);
+  private get emptyFilterResultsTemplate(): TemplateResult {
+    return html`
+      <div class="empty-results">
+        <p>${msg('No matching values found.')}</p>
+        <p class="hint">${msg('Try a different search term.')}</p>
+      </div>
+    `;
   }
 
-  // render pagination if more then 1 page
+  /**
+   * Number of pages for pagination (only used when facet count >= PAGINATION_THRESHOLD).
+   */
+  private get paginationSize(): number {
+    const filteredBuckets = this.filteredFacetGroup?.buckets ?? [];
+    return Math.ceil(filteredBuckets.length / this.facetsPerPage);
+  }
+
+  /**
+   * Template for pagination component.
+   */
   private get facetsPaginationTemplate() {
-    return this.paginationSize > 1
-      ? html`<more-facets-pagination
-          .size=${this.paginationSize}
-          .currentPage=${1}
-          @pageNumberClicked=${this.pageNumberClicked}
-        ></more-facets-pagination>`
-      : nothing;
+    return html`<more-facets-pagination
+      .size=${this.paginationSize}
+      .currentPage=${this.pageNumber}
+      .compact=${this.isCompactView}
+      @pageNumberClicked=${this.pageNumberClicked}
+    ></more-facets-pagination>`;
   }
 
   private get footerTemplate() {
-    if (this.paginationSize > 0) {
-      return html`${this.facetsPaginationTemplate}
-        <div class="footer">
-          <button
-            class="btn btn-cancel"
-            type="button"
-            @click=${this.cancelClick}
-          >
-            Cancel
-          </button>
-          <button
-            class="btn btn-submit"
-            type="button"
-            @click=${this.applySearchFacetsClicked}
-          >
-            Apply filters
-          </button>
-        </div> `;
-    }
-
-    return nothing;
+    return html`
+      ${when(this.usePagination, () => this.facetsPaginationTemplate)}
+      <div class="footer">
+        <button class="btn btn-cancel" type="button" @click=${this.cancelClick}>
+          Cancel
+        </button>
+        <button
+          class="btn btn-submit"
+          type="button"
+          @click=${this.applySearchFacetsClicked}
+        >
+          Apply filters
+        </button>
+      </div>
+    `;
   }
 
   private sortFacetAggregation(facetSortType: AggregationSortType) {
     this.sortedBy = facetSortType;
     this.dispatchEvent(
       new CustomEvent('sortedFacets', { detail: this.sortedBy }),
+    );
+  }
+
+  /**
+   * Handler for filter input changes. Updates the filter text and triggers re-render.
+   */
+  private handleFilterInput(e: Event): void {
+    const input = e.target as HTMLElement & { value: string };
+    this.filterText = input.value;
+  }
+
+  /**
+   * Handler for when the filter input is cleared via the clear button.
+   */
+  private handleFilterClear(): void {
+    this.filterText = '';
+  }
+
+  /**
+   * Handler for pagination page number clicks.
+   * Only used when facet count >= PAGINATION_THRESHOLD.
+   */
+  private pageNumberClicked(e: CustomEvent<{ page: number }>) {
+    this.pageNumber = e.detail.page;
+
+    // Track page navigation in analytics
+    this.analyticsHandler?.sendEvent({
+      category: analyticsCategories.default,
+      action: analyticsActions.moreFacetsPageChange,
+      label: `${this.pageNumber}`,
+    });
+
+    this.dispatchEvent(
+      new CustomEvent('pageChanged', {
+        detail: this.pageNumber,
+        bubbles: true,
+        composed: true,
+      }),
     );
   }
 
@@ -494,36 +817,103 @@ export class MoreFacetsContent extends LitElement {
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
 
     return html`<span class="sr-only">${msg('More facets for:')}</span>
-      <span class="title">
-        ${this.facetGroup?.title}
+      <span class="title"> ${this.facetGroup?.title} </span>
+      <span class="header-controls">
+        <span class="sort-controls">
+          <label class="sort-label">${msg('Sort by:')}</label>
+          ${this.facetKey
+            ? html`<toggle-switch
+                class="sort-toggle"
+                leftValue=${AggregationSortType.COUNT}
+                leftLabel="Count"
+                rightValue=${valueFacetSort[this.facetKey]}
+                .rightLabel=${this.facetGroup?.title}
+                side=${defaultSwitchSide}
+                @change=${(e: CustomEvent<string>) => {
+                  this.sortFacetAggregation(
+                    Number(e.detail) as AggregationSortType,
+                  );
+                }}
+              ></toggle-switch>`
+            : nothing}
+        </span>
 
-        <label class="sort-label">${msg('Sort by:')}</label>
-        ${this.facetKey
-          ? html`<toggle-switch
-              class="sort-toggle"
-              leftValue=${AggregationSortType.COUNT}
-              leftLabel="Count"
-              rightValue=${valueFacetSort[this.facetKey]}
-              .rightLabel=${this.facetGroup?.title}
-              side=${defaultSwitchSide}
-              @change=${(e: CustomEvent<string>) => {
-                this.sortFacetAggregation(
-                  Number(e.detail) as AggregationSortType,
-                );
-              }}
-            ></toggle-switch>`
-          : nothing}
+        <span class="filter-controls">
+          <label class="filter-label">${msg('Filter by:')}</label>
+          <ia-clearable-text-input
+            class="filter-input"
+            .value=${this.filterText}
+            .placeholder=${msg('Search...')}
+            .screenReaderLabel=${msg('Filter facets')}
+            .clearButtonScreenReaderLabel=${msg('Clear filter')}
+            @input=${this.handleFilterInput}
+            @clear=${this.handleFilterClear}
+          ></ia-clearable-text-input>
+        </span>
       </span>`;
   }
 
+  private get horizontalScrollTemplate(): TemplateResult {
+    const contentClasses = classMap({
+      'facets-content': true,
+      'horizontal-scroll-mode': true,
+    });
+    const showArrows = !this.atScrollStart || !this.atScrollEnd;
+
+    return html`<div class="scroll-nav-container">
+      ${when(
+        showArrows,
+        () =>
+          html`<button
+            class="scroll-arrow scroll-left"
+            @click=${this.onScrollLeft}
+            ?disabled=${this.atScrollStart}
+            aria-label="Scroll facets left"
+          >
+            ${arrowLeftIcon}
+          </button>`,
+      )}
+      <div class=${contentClasses}>
+        <div class="facets-horizontal-container">
+          ${this.moreFacetsTemplate}
+        </div>
+      </div>
+      ${when(
+        showArrows,
+        () =>
+          html`<button
+            class="scroll-arrow scroll-right"
+            @click=${this.onScrollRight}
+            ?disabled=${this.atScrollEnd}
+            aria-label="Scroll facets right"
+          >
+            ${arrowRightIcon}
+          </button>`,
+      )}
+    </div>`;
+  }
+
   render() {
+    const sectionClasses = classMap({
+      'pagination-mode': this.usePagination,
+      'horizontal-scroll-mode': !this.usePagination,
+    });
+    const contentClasses = classMap({
+      'facets-content': true,
+      'pagination-mode': this.usePagination,
+    });
+
     return html`
       ${this.facetsLoading
         ? this.loaderTemplate
         : html`
-            <section id="more-facets">
+            <section id="more-facets" class=${sectionClasses}>
               <div class="header-content">${this.modalHeaderTemplate}</div>
-              <div class="facets-content">${this.moreFacetsTemplate}</div>
+              ${this.usePagination
+                ? html`<div class=${contentClasses}>
+                    ${this.moreFacetsTemplate}
+                  </div>`
+                : this.horizontalScrollTemplate}
               ${this.footerTemplate}
             </section>
           `}
@@ -546,6 +936,9 @@ export class MoreFacetsContent extends LitElement {
     // Reset the unapplied changes back to default, now that they have been applied
     this.unappliedFacetChanges = getDefaultSelectedFacets();
 
+    // Reset filter text
+    this.filterText = '';
+
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
       category: analyticsCategories.default,
@@ -557,6 +950,9 @@ export class MoreFacetsContent extends LitElement {
   private cancelClick() {
     // Reset the unapplied changes back to default
     this.unappliedFacetChanges = getDefaultSelectedFacets();
+
+    // Reset filter text
+    this.filterText = '';
 
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
@@ -573,10 +969,26 @@ export class MoreFacetsContent extends LitElement {
       srOnlyStyle,
       css`
         section#more-facets {
-          overflow: auto;
-          padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
+          display: flex;
+          flex-direction: column;
+          max-height: calc(100vh - 16.5rem - var(--modalBottomMargin, 2.5rem));
+          padding: 10px;
+          box-sizing: border-box;
           --facetsColumnCount: 3;
         }
+
+        /* Both modes need a height constraint for proper column flow */
+        section#more-facets.horizontal-scroll-mode,
+        section#more-facets.pagination-mode {
+          --facetsMaxHeight: 280px;
+        }
+        .header-content {
+          flex-shrink: 0;
+          position: relative;
+          z-index: 1;
+          background: #fff;
+        }
+
         .header-content .title {
           display: block;
           text-align: left;
@@ -585,8 +997,22 @@ export class MoreFacetsContent extends LitElement {
           font-weight: bold;
         }
 
+        .header-controls {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px 20px;
+          padding: 0 10px 8px;
+        }
+
+        .sort-controls {
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+          gap: 5px;
+        }
+
         .sort-label {
-          margin-left: 20px;
           font-size: 1.3rem;
         }
 
@@ -594,11 +1020,115 @@ export class MoreFacetsContent extends LitElement {
           font-weight: normal;
         }
 
+        .filter-controls {
+          display: inline-flex;
+          align-items: center;
+          white-space: nowrap;
+        }
+
+        .filter-label {
+          font-size: 1.3rem;
+        }
+
+        .filter-input {
+          --input-height: 2.5rem;
+          --input-font-size: 1.3rem;
+          --input-border-radius: 4px;
+          --input-padding: 4px 8px;
+          --input-focused-border-color: ${modalSubmitButton};
+          width: 150px;
+          margin-left: 5px;
+        }
+
+        .empty-results {
+          text-align: center;
+          padding: 40px 20px;
+          color: #666;
+        }
+
+        .empty-results .hint {
+          margin-top: 10px;
+        }
+
         .facets-content {
           font-size: 1.2rem;
-          max-height: 300px;
-          overflow: auto;
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
           padding: 10px;
+          /* Force scrollbar to always be visible */
+          scrollbar-width: thin; /* Firefox */
+          scrollbar-color: #888 #f1f1f1; /* Firefox - thumb and track colors */
+        }
+
+        /* Horizontal scroll mode: horizontal scrolling only */
+        .facets-content.horizontal-scroll-mode {
+          overflow-x: auto;
+          overflow-y: hidden;
+        }
+
+        /* Webkit browsers scrollbar styling - always visible */
+        .facets-content::-webkit-scrollbar {
+          width: 12px; /* Vertical scrollbar width */
+          height: 12px; /* Horizontal scrollbar height */
+        }
+
+        .facets-content::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 6px;
+        }
+
+        .facets-content::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 6px;
+          min-height: 30px; /* Ensure thumb is always visible when scrolling is possible */
+        }
+
+        .facets-content::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+
+        /* Force corner to match track color */
+        .facets-content::-webkit-scrollbar-corner {
+          background: #f1f1f1;
+        }
+
+        .facets-horizontal-container {
+          display: inline-block;
+          min-width: 100%;
+          /* Allow natural width expansion based on content */
+          width: fit-content;
+        }
+
+        .scroll-nav-container {
+          display: flex;
+          align-items: center;
+          flex: 1 1 auto;
+          min-height: 0;
+        }
+
+        .scroll-nav-container .facets-content {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+
+        .scroll-arrow {
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 5px;
+          flex-shrink: 0;
+        }
+
+        .scroll-arrow svg {
+          height: 14px;
+          fill: #2c2c2c;
+        }
+
+        .scroll-arrow:disabled {
+          opacity: 0.3;
+          cursor: default;
         }
         .facets-loader {
           --icon-width: 70px;
@@ -614,6 +1144,7 @@ export class MoreFacetsContent extends LitElement {
           width: auto;
           border-radius: 4px;
           cursor: pointer;
+          font-family: inherit;
         }
         .btn-cancel {
           background-color: #2c2c2c;
@@ -623,19 +1154,37 @@ export class MoreFacetsContent extends LitElement {
           background-color: ${modalSubmitButton};
           color: white;
         }
+        more-facets-pagination {
+          flex-shrink: 0;
+        }
+
         .footer {
           text-align: center;
           margin-top: 10px;
+          flex-shrink: 0;
         }
 
         @media (max-width: 560px) {
-          section#more-facets {
-            max-height: 450px;
-            --facetsColumnCount: 1;
+          section#more-facets.horizontal-scroll-mode,
+          section#more-facets.pagination-mode {
+            --facetsColumnCount: 1; /* Single column on mobile */
+            --facetsMaxHeight: none; /* Remove fixed height for vertical scrolling */
           }
-          .facets-content {
+          /* On mobile, always use vertical scrolling regardless of mode */
+          .facets-content,
+          .facets-content.horizontal-scroll-mode {
             overflow-y: auto;
-            height: 300px;
+            overflow-x: hidden;
+          }
+          .scroll-nav-container {
+            display: contents; /* Remove wrapper from layout so section flex-column works */
+          }
+          .scroll-arrow {
+            display: none;
+          }
+          .filter-input {
+            width: 120px;
+            --input-font-size: 1.2rem;
           }
         }
       `,

@@ -1349,6 +1349,54 @@ export const getMockSuccessWithManyAggregations: () => Result<
   },
 });
 
+/**
+ * Returns a mock response with 1000+ subject aggregation buckets,
+ * used to test pagination mode in the More Facets dialog.
+ */
+export const getMockSuccessWithLargeAggregations: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => {
+  const buckets = Array.from({ length: 1100 }, (_, i) => ({
+    key: `subject-${i}`,
+    doc_count: 1100 - i,
+  }));
+  return {
+    success: {
+      request: {
+        kind: 'aggregations' as const,
+        clientParameters: {
+          user_query: 'large-facets',
+          sort: [],
+        },
+        backendRequests: {
+          primary: {
+            kind: 'aggregations' as const,
+            finalized_parameters: {
+              user_query: 'large-facets',
+              sort: [],
+            },
+          },
+        },
+      },
+      rawResponse: {},
+      sessionContext: {},
+      response: {
+        totalResults: 0,
+        returnedCount: 0,
+        results: [],
+        aggregations: {
+          subject: new Aggregation({ buckets }),
+        },
+      },
+      responseHeader: {
+        succeeded: true,
+        query_time: 0,
+      },
+    },
+  };
+};
+
 export const getMockErrorResult: () => Result<
   SearchResponse,
   SearchServiceError
