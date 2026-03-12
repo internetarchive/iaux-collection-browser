@@ -404,6 +404,81 @@ describe('More facets content', () => {
     expect(clearableInput.value).to.equal('');
   });
 
+  describe('Modal container height constraint', () => {
+    // Register a test wrapper element to simulate the modal's scroll container
+    if (!customElements.get('test-scroll-wrapper')) {
+      customElements.define(
+        'test-scroll-wrapper',
+        class extends HTMLElement {
+          constructor() {
+            super();
+            this.attachShadow({ mode: 'open' });
+            this.shadowRoot!.innerHTML = `
+              <style>
+                :host { display: block; }
+                .content { overflow-y: auto; max-height: 300px; }
+              </style>
+              <div class="content"><slot></slot></div>
+            `;
+          }
+        },
+      );
+    }
+
+    it('should constrain section height when inside a scroll container', async () => {
+      const el = await fixture<MoreFacetsContent>(html`
+        <test-scroll-wrapper>
+          <more-facets-content></more-facets-content>
+        </test-scroll-wrapper>
+      `);
+
+      const mfc = el.querySelector('more-facets-content') as MoreFacetsContent;
+      mfc.facetsLoading = false;
+      await mfc.updateComplete;
+
+      // Wait for the constrainToScrollContainer rAF callback
+      await new Promise(r =>
+        requestAnimationFrame(() => requestAnimationFrame(r)),
+      );
+
+      const section = mfc.shadowRoot?.querySelector(
+        'section#more-facets',
+      ) as HTMLElement;
+
+      // The section's inline max-height should be set when it would
+      // overflow the 300px scroll container
+      const sectionHeight = section.getBoundingClientRect().height;
+      const wrapper = el.shadowRoot?.querySelector('.content') as HTMLElement;
+      const wrapperBottom = wrapper.getBoundingClientRect().bottom;
+      const sectionTop = section.getBoundingClientRect().top;
+      const availableSpace = wrapperBottom - sectionTop;
+
+      // The section should not exceed the available space in the container
+      expect(sectionHeight).to.be.at.most(availableSpace + 1); // +1 for rounding
+    });
+
+    it('should not constrain section when no scroll container exists', async () => {
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content></more-facets-content>`,
+      );
+
+      el.facetsLoading = false;
+      await el.updateComplete;
+
+      // Wait for the constrainToScrollContainer rAF callback
+      await new Promise(r =>
+        requestAnimationFrame(() => requestAnimationFrame(r)),
+      );
+
+      const section = el.shadowRoot?.querySelector(
+        'section#more-facets',
+      ) as HTMLElement;
+
+      // No inline max-height should be set when there's no scroll container
+      expect(section.style.maxHeight).to.equal('');
+    });
+  });
+
   describe('Horizontal scroll navigation arrows', () => {
     it('should use scroll-nav-container in horizontal scroll mode', async () => {
       const searchService = new MockSearchService();

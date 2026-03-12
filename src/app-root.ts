@@ -950,10 +950,6 @@ export class AppRoot extends LitElement {
       --modalBorder: 2px solid var(--primaryButtonBGColor, #194880);
       --modalTitleLineHeight: 4rem;
       --modalTitleFontSize: 1.8rem;
-      --modalCornerRadius: 0;
-      --modalBottomPadding: 0;
-      --modalBottomMargin: 0;
-      --modalScrollOffset: 0;
       --modalCornerRadius: 0.5rem;
     }
     modal-manager.expanded-date-picker {
