@@ -45,7 +45,7 @@ export interface CollectionBrowserSearchInterface
   searchService?: SearchServiceInterface;
   isTVCollection: boolean;
   readonly sortParam: SortParam | null;
-  readonly defaultSortField: SortField | null;
+  readonly defaultSortField: ExplicitSortField;
   readonly defaultSortDirection: SortDirection | null;
   readonly facetLoadStrategy: FacetLoadStrategy;
   readonly initialPageNumber: number;
@@ -60,6 +60,9 @@ export interface CollectionBrowserSearchInterface
   setTotalResultCount(count: number): void;
   setTileCount(count: number): void;
   applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void;
+  emitCollectionExtraInfoLoaded(
+    collectionExtraInfo?: CollectionExtraInfo,
+  ): void;
   emitEmptyResults(): void;
   emitSearchError(): void;
   emitQueryStateChanged(): void;

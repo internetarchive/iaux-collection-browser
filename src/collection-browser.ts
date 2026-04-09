@@ -2089,6 +2089,22 @@ export class CollectionBrowser
   }
 
   /**
+   * Emits a `collectionExtraInfoLoaded` event when the data source has received
+   * collection metadata from the backend. This allows parent components to react
+   * to the metadata (e.g., to update their default sort based on the collection's
+   * `sort-by` metadata field).
+   */
+  emitCollectionExtraInfoLoaded(
+    collectionExtraInfo?: CollectionExtraInfo,
+  ): void {
+    this.dispatchEvent(
+      new CustomEvent('collectionExtraInfoLoaded', {
+        detail: collectionExtraInfo,
+      }),
+    );
+  }
+
+  /**
    * Emits a `queryStateChanged` event indicating that one or more of this component's
    * properties have changed in a way that could affect the set of search results.
    */

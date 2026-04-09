@@ -1198,6 +1198,7 @@ export class CollectionBrowserDataSource
       // which can be specified in metadata, or otherwise assumed to be week:desc
       if (this.activeOnHost) {
         this.host.applyDefaultCollectionSort(this.collectionExtraInfo);
+        this.host.emitCollectionExtraInfoLoaded(this.collectionExtraInfo);
       }
 
       if (this.collectionExtraInfo) {
