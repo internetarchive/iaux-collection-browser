@@ -6,7 +6,12 @@ import type {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
-import type { FacetLoadStrategy, SelectedFacets, SortField } from '../models';
+import type {
+  ExplicitSortField,
+  FacetLoadStrategy,
+  SelectedFacets,
+  SortField,
+} from '../models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 
 /**
@@ -27,6 +32,8 @@ export interface CollectionBrowserQueryState {
   selectedCreatorFilter: string | null;
   selectedSort?: SortField;
   sortDirection: SortDirection | null;
+  defaultSortField?: ExplicitSortField;
+  defaultSortDirection?: SortDirection | null;
 }
 
 /**

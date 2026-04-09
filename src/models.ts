@@ -3,6 +3,7 @@ import { msg } from '@lit/localize';
 import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
+  CollectionExtraInfo,
   HitType,
   SearchReview,
   SearchResult,
@@ -561,6 +562,47 @@ export function sortOptionFromAPIString(sortName?: string | null): SortOption {
       opt.urlNames.some(name => sortName === name),
     ) ?? SORT_OPTIONS[SortField.unrecognized]
   );
+}
+
+/**
+ * Resolves the default sort option for a collection based on its metadata.
+ *
+ * - Favorite collections (`fav-*`) default to Date Favorited descending.
+ * - Other collections default to Weekly Views descending.
+ * - If the collection metadata specifies a `sort-by` field, that overrides the above.
+ *
+ * Supports both `-field` (dash prefix = desc) and `field:dir` metadata formats.
+ *
+ * Note: This does NOT handle the "relevance when a query is present" rule,
+ * which is managed separately by collection-browser itself.
+ */
+export function resolveCollectionDefaultSort(
+  collectionInfo?: CollectionExtraInfo,
+): { field: ExplicitSortField; direction: SortDirection } {
+  const isFav = collectionInfo?.public_metadata?.identifier?.startsWith('fav-');
+  const baseDefaultSort: string = isFav ? '-favoritedate' : '-week';
+  const metadataSort: string | undefined =
+    collectionInfo?.public_metadata?.['sort-by'];
+  const defaultSortToApply = metadataSort ?? baseDefaultSort;
+
+  // Account for both -field and field:dir formats
+  let [field, dir] = defaultSortToApply.split(':');
+  if (field.startsWith('-')) {
+    field = field.slice(1);
+    dir = 'desc';
+  } else if (!['asc', 'desc'].includes(dir)) {
+    dir = 'asc';
+  }
+
+  const sortOption = sortOptionFromAPIString(field);
+  const sortField = sortOption.field;
+  if (sortField && sortField !== SortField.default) {
+    return {
+      field: sortField as ExplicitSortField,
+      direction: dir as SortDirection,
+    };
+  }
+  return { field: SortField.weeklyview, direction: 'desc' };
 }
 
 export const defaultSortAvailability: Record<SortField, boolean> = {

@@ -1645,6 +1645,12 @@ export class CollectionBrowser
     this.maxSelectedDate = queryState.maxSelectedDate;
     this.selectedSort = queryState.selectedSort ?? SortField.default;
     this.sortDirection = queryState.sortDirection;
+    if (queryState.defaultSortField) {
+      this.defaultSortField = queryState.defaultSortField;
+    }
+    if (queryState.defaultSortDirection !== undefined) {
+      this.defaultSortDirection = queryState.defaultSortDirection;
+    }
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
 
