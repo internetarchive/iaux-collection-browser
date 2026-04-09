@@ -323,6 +323,16 @@ export enum SortField {
 }
 
 /**
+ * A sort field other than the abstract "default" placeholder.
+ * This is useful because the "default" sort field is just an indicator to
+ * revert to an explicitly defined fallback value. So when defining default
+ * sort logic, this type should be preferred to avoid accidentally permitting
+ * that fallback to itself equal the "default" placeholder (which would be
+ * rather circular/ill-defined).
+ */
+export type ExplicitSortField = Exclude<SortField, SortField.default>;
+
+/**
  * Views-related sort fields
  */
 export const ALL_VIEWS_SORT_FIELDS = [
@@ -580,10 +590,7 @@ export const tvSortAvailability: Record<SortField, boolean> = {
   [SortField.dateadded]: false,
 };
 
-export const defaultProfileElementSorts: Record<
-  string,
-  Exclude<SortField, SortField.default>
-> = {
+export const defaultProfileElementSorts: Record<string, ExplicitSortField> = {
   uploads: SortField.datearchived,
   reviews: SortField.datereviewed,
   collections: SortField.datearchived,

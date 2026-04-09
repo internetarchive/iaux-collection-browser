@@ -6,6 +6,7 @@ export { SortFilterBar } from './src/sort-filter-bar/sort-filter-bar';
 export {
   CollectionDisplayMode,
   SortField,
+  ExplicitSortField,
   TileModel,
   FacetOption,
   SelectedFacets,

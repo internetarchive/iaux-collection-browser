@@ -36,6 +36,7 @@ import type { IAComboBox } from '@internetarchive/elements/ia-combo-box/ia-combo
 import {
   SelectedFacets,
   SortField,
+  type ExplicitSortField,
   CollectionBrowserContext,
   getDefaultSelectedFacets,
   TileModel,
@@ -151,10 +152,8 @@ export class CollectionBrowser
 
   @property({ type: String }) sortDirection: SortDirection | null = null;
 
-  @property({ type: String }) defaultSortField: Exclude<
-    SortField,
-    SortField.default
-  > = SortField.relevance;
+  @property({ type: String }) defaultSortField: ExplicitSortField =
+    SortField.relevance;
 
   @property({ type: String }) defaultSortDirection: SortDirection | null = null;
 
