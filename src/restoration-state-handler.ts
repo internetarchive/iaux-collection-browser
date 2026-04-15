@@ -337,7 +337,9 @@ export class RestorationStateHandler
     if (facetAnds) {
       facetAnds.forEach(and => {
         // eslint-disable-next-line prefer-const
-        let [field, value] = and.split(':');
+        let [field, ...valueParts] = and.split(':');
+        if (!valueParts.length) return;
+        const value = valueParts.join(':');
 
         // Legacy search allowed and[] fields like 'creatorSorter', 'languageSorter', etc.
         // which we want to normalize to 'creator', 'language', etc. if redirected here.
@@ -396,7 +398,9 @@ export class RestorationStateHandler
 
     if (facetNots) {
       facetNots.forEach(not => {
-        const [field, value] = not.split(':');
+        const [field, ...valueParts] = not.split(':');
+        if (!valueParts.length) return;
+        const value = valueParts.join(':');
         this.setSelectedFacetState(
           restorationState.selectedFacets,
           field as FacetOption,
@@ -531,7 +535,7 @@ export class RestorationStateHandler
     if (!facet) return; // Unrecognized facet group, ignore it.
 
     const unQuotedValue = this.stripQuotes(value);
-    facet[unQuotedValue] ??= this.getDefaultBucket(value);
+    facet[unQuotedValue] ??= this.getDefaultBucket(unQuotedValue);
     facet[unQuotedValue].state = state;
   }
 
