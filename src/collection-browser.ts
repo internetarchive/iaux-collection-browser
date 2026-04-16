@@ -42,9 +42,7 @@ import {
   TileModel,
   CollectionDisplayMode,
   FacetEventDetails,
-  sortOptionFromAPIString,
   SORT_OPTIONS,
-  defaultProfileElementSorts,
   FacetLoadStrategy,
   defaultFacetDisplayOrder,
   tvFacetDisplayOrder,
@@ -600,10 +598,6 @@ export class CollectionBrowser
 
   willUpdate(changed: PropertyValues): void {
     this.setPlaceholderType();
-
-    if (changed.has('searchType') && this.searchType === SearchType.TV) {
-      this.applyDefaultTVSearchSort();
-    }
   }
 
   render() {
@@ -1761,21 +1755,6 @@ export class CollectionBrowser
       }
     }
 
-    if (changed.has('profileElement')) {
-      this.applyDefaultProfileSort();
-    }
-
-    if (changed.has('withinCollection') && this.withinCollection) {
-      // Set a sensible default collection sort while we load results, which we will later
-      // adjust based on any sort-by metadata once the response arrives.
-      if (!this.baseQuery) {
-        this.defaultSortField = this.withinCollection.startsWith('fav-')
-          ? SortField.datefavorited
-          : SortField.weeklyview;
-        this.defaultSortDirection = 'desc';
-      }
-    }
-
     if (changed.has('baseQuery')) {
       this.emitBaseQueryChanged();
     }
@@ -2241,11 +2220,6 @@ export class CollectionBrowser
       this.infiniteScroller.reload();
     }
 
-    if (this.withinCollection && this.baseQuery?.trim()) {
-      this.defaultSortField = SortField.relevance;
-      this.defaultSortDirection = null;
-    }
-
     if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
       this.scrollToPage(this.initialPageNumber);
     }
@@ -2401,75 +2375,6 @@ export class CollectionBrowser
     if (this.infiniteScroller) {
       this.infiniteScroller.itemCount = count;
     }
-  }
-
-  /**
-   * Applies the default sort options for the TV search results page
-   */
-  applyDefaultTVSearchSort(): void {
-    this.defaultSortField = SortField.datearchived;
-    this.defaultSortDirection = 'desc';
-  }
-
-  /**
-   * Applies any default sort option for the current collection, by checking
-   * for one in the collection's metadata. If none is found, defaults to sorting
-   * descending by:
-   *  - Date Favorited for fav-* collections
-   *  - Weekly views for all other collections
-   */
-  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void {
-    if (this.baseQuery) {
-      // If there's a query set, then we default to relevance sorting regardless of
-      // the collection metadata-specified sort.
-      this.defaultSortField = SortField.relevance;
-      this.defaultSortDirection = null;
-      return;
-    }
-
-    // Favorite collections sort on Date Favorited by default.
-    // Other collections fall back to sorting on weekly views.
-    const baseDefaultSort: string =
-      collectionInfo?.public_metadata?.identifier?.startsWith('fav-')
-        ? '-favoritedate'
-        : '-week';
-
-    // The collection metadata may override the default sorting with something else
-    const metadataSort: string | undefined =
-      collectionInfo?.public_metadata?.['sort-by'];
-
-    // Prefer the metadata-specified sort if one exists
-    const defaultSortToApply = metadataSort ?? baseDefaultSort;
-
-    // Account for both -field and field:dir formats
-    let [field, dir] = defaultSortToApply.split(':');
-    if (field.startsWith('-')) {
-      field = field.slice(1);
-      dir = 'desc';
-    } else if (!['asc', 'desc'].includes(dir)) {
-      dir = 'asc';
-    }
-
-    const sortOption = sortOptionFromAPIString(field);
-    const sortField = sortOption.field;
-    if (sortField && sortField !== SortField.default) {
-      this.defaultSortField = sortField;
-      this.defaultSortDirection = dir as SortDirection;
-    }
-  }
-
-  /**
-   * Applies the default sort option for the current profile element
-   */
-  applyDefaultProfileSort(): void {
-    if (this.profileElement) {
-      const defaultSortField = defaultProfileElementSorts[this.profileElement];
-      this.defaultSortField = defaultSortField ?? SortField.weeklyview;
-    } else {
-      this.defaultSortField = SortField.weeklyview;
-    }
-
-    this.defaultSortDirection = 'desc';
   }
 
   /**
