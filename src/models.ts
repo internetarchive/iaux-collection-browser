@@ -3,6 +3,7 @@ import { msg } from '@lit/localize';
 import type { MediaType } from '@internetarchive/field-parsers';
 import {
   AggregationSortType,
+  CollectionExtraInfo,
   HitType,
   SearchReview,
   SearchResult,
@@ -323,6 +324,16 @@ export enum SortField {
 }
 
 /**
+ * A sort field other than the abstract "default" placeholder.
+ * This is useful because the "default" sort field is just an indicator to
+ * revert to an explicitly defined fallback value. So when defining default
+ * sort logic, this type should be preferred to avoid accidentally permitting
+ * that fallback to itself equal the "default" placeholder (which would be
+ * rather circular/ill-defined).
+ */
+export type ExplicitSortField = Exclude<SortField, SortField.default>;
+
+/**
  * Views-related sort fields
  */
 export const ALL_VIEWS_SORT_FIELDS = [
@@ -553,6 +564,47 @@ export function sortOptionFromAPIString(sortName?: string | null): SortOption {
   );
 }
 
+/**
+ * Resolves the default sort option for a collection based on its metadata.
+ *
+ * - Favorite collections (`fav-*`) default to Date Favorited descending.
+ * - Other collections default to Weekly Views descending.
+ * - If the collection metadata specifies a `sort-by` field, that overrides the above.
+ *
+ * Supports both `-field` (dash prefix = desc) and `field:dir` metadata formats.
+ *
+ * Note: This does NOT handle the "relevance when a query is present" rule,
+ * which is managed separately by collection-browser itself.
+ */
+export function resolveCollectionDefaultSort(
+  collectionInfo?: CollectionExtraInfo,
+): { field: ExplicitSortField; direction: SortDirection } {
+  const isFav = collectionInfo?.public_metadata?.identifier?.startsWith('fav-');
+  const baseDefaultSort: string = isFav ? '-favoritedate' : '-week';
+  const metadataSort: string | undefined =
+    collectionInfo?.public_metadata?.['sort-by'];
+  const defaultSortToApply = metadataSort ?? baseDefaultSort;
+
+  // Account for both -field and field:dir formats
+  let [field, dir] = defaultSortToApply.split(':');
+  if (field.startsWith('-')) {
+    field = field.slice(1);
+    dir = 'desc';
+  } else if (!['asc', 'desc'].includes(dir)) {
+    dir = 'asc';
+  }
+
+  const sortOption = sortOptionFromAPIString(field);
+  const sortField = sortOption.field;
+  if (sortField && sortField !== SortField.default) {
+    return {
+      field: sortField as ExplicitSortField,
+      direction: dir as SortDirection,
+    };
+  }
+  return { field: SortField.weeklyview, direction: 'desc' };
+}
+
 export const defaultSortAvailability: Record<SortField, boolean> = {
   [SortField.relevance]: true,
   [SortField.weeklyview]: true,
@@ -580,10 +632,7 @@ export const tvSortAvailability: Record<SortField, boolean> = {
   [SortField.dateadded]: false,
 };
 
-export const defaultProfileElementSorts: Record<
-  string,
-  Exclude<SortField, SortField.default>
-> = {
+export const defaultProfileElementSorts: Record<string, ExplicitSortField> = {
   uploads: SortField.datearchived,
   reviews: SortField.datereviewed,
   collections: SortField.datearchived,

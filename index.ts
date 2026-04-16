@@ -6,10 +6,15 @@ export { SortFilterBar } from './src/sort-filter-bar/sort-filter-bar';
 export {
   CollectionDisplayMode,
   SortField,
+  ExplicitSortField,
   TileModel,
   FacetOption,
   SelectedFacets,
   getDefaultSelectedFacets,
+  sortOptionFromAPIString,
+  resolveCollectionDefaultSort,
+  SORT_OPTIONS,
+  defaultProfileElementSorts,
 } from './src/models';
 export { CollectionBrowserLoadingTile } from './src/tiles/collection-browser-loading-tile';
 export { CollectionTile } from './src/tiles/grid/collection-tile';

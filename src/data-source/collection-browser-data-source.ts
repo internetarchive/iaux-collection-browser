@@ -1194,10 +1194,9 @@ export class CollectionBrowserDataSource
     if (withinCollection) {
       this.collectionExtraInfo = success.response.collectionExtraInfo;
 
-      // For collections, we want the UI to respect the default sort option
-      // which can be specified in metadata, or otherwise assumed to be week:desc
+      // Emit the collection metadata so the parent page can set default sort
       if (this.activeOnHost) {
-        this.host.applyDefaultCollectionSort(this.collectionExtraInfo);
+        this.host.emitCollectionExtraInfoLoaded(this.collectionExtraInfo);
       }
 
       if (this.collectionExtraInfo) {

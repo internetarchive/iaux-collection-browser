@@ -13,6 +13,7 @@ import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
   defaultSortAvailability,
+  type ExplicitSortField,
   PrefixFilterCounts,
   PrefixFilterType,
   SORT_OPTIONS,
@@ -42,10 +43,8 @@ export class SortFilterBar extends LitElement {
   @property({ type: String }) defaultSortDirection: SortDirection | null = null;
 
   /** The default sort field to use if none is set */
-  @property({ type: String }) defaultSortField: Exclude<
-    SortField,
-    SortField.default
-  > = SortField.relevance;
+  @property({ type: String }) defaultSortField: ExplicitSortField =
+    SortField.relevance;
 
   /** The current sort direction (asc/desc), or null if none is set */
   @property({ type: String }) sortDirection: SortDirection | null = null;

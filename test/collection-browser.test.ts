@@ -1313,20 +1313,19 @@ describe('Collection Browser', () => {
     );
   });
 
-  it('sets default sort from collection metadata', async () => {
+  it('sets default sort from externally-provided values', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
+        .withinCollection=${'test-collection'}
+        .defaultSortField=${SortField.title}
+        .defaultSortDirection=${'asc'}
       ></collection-browser>`,
     );
 
-    el.withinCollection = 'default-sort';
     await el.updateComplete;
-    await el.initialSearchComplete;
-    await el.updateComplete;
-    await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
       'sort-filter-bar',
@@ -1338,20 +1337,19 @@ describe('Collection Browser', () => {
     expect(sortBar.sortDirection).to.be.null;
   });
 
-  it('sets default sort from collection metadata in "-field" format', async () => {
+  it('reflects updated default sort field/direction on sort bar', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
+        .withinCollection=${'test-collection'}
+        .defaultSortField=${SortField.dateadded}
+        .defaultSortDirection=${'desc'}
       ></collection-browser>`,
     );
 
-    el.withinCollection = 'default-sort-concise';
     await el.updateComplete;
-    await el.initialSearchComplete;
-    await el.updateComplete;
-    await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
       'sort-filter-bar',
@@ -1363,60 +1361,34 @@ describe('Collection Browser', () => {
     expect(sortBar.sortDirection).to.be.null;
   });
 
-  it('falls back to weekly views default sorting on profiles when tab not set', async () => {
+  it('uses weekly views as default sort when set externally for profiles', async () => {
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .withinProfile=${'@foobar'}
+        .defaultSortField=${SortField.weeklyview}
+        .defaultSortDirection=${'desc'}
       ></collection-browser>`,
     );
 
-    el.applyDefaultProfileSort();
     expect(el.defaultSortParam).to.deep.equal({
       field: 'week',
       direction: 'desc',
     });
   });
 
-  it('uses relevance sort as default when a query is set', async () => {
+  it('uses date favorited sort as default when set externally for fav- collection', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
       html`<collection-browser
         .searchService=${searchService}
         .baseNavigationUrl=${''}
+        .withinCollection=${'fav-sort'}
+        .defaultSortField=${SortField.datefavorited}
+        .defaultSortDirection=${'desc'}
       ></collection-browser>`,
     );
 
-    el.withinCollection = 'default-sort';
-    el.baseQuery = 'default-sort';
     await el.updateComplete;
-    await el.initialSearchComplete;
-    await el.updateComplete;
-    await aTimeout(50);
-
-    const sortBar = el.shadowRoot?.querySelector(
-      'sort-filter-bar',
-    ) as SortFilterBar;
-    expect(sortBar).to.exist;
-    expect(sortBar.defaultSortField).to.equal(SortField.relevance);
-    expect(sortBar.defaultSortDirection).to.be.null;
-    expect(sortBar.selectedSort).to.equal(SortField.default);
-    expect(sortBar.sortDirection).to.be.null;
-  });
-
-  it('uses date favorited sort as default when targeting fav- collection', async () => {
-    const searchService = new MockSearchService();
-    const el = await fixture<CollectionBrowser>(
-      html`<collection-browser
-        .searchService=${searchService}
-        .baseNavigationUrl=${''}
-      ></collection-browser>`,
-    );
-
-    el.withinCollection = 'fav-sort';
-    await el.updateComplete;
-    await el.initialSearchComplete;
-    await el.updateComplete;
-    await aTimeout(50);
 
     const sortBar = el.shadowRoot?.querySelector(
       'sort-filter-bar',

@@ -6,7 +6,12 @@ import type {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
-import type { FacetLoadStrategy, SelectedFacets, SortField } from '../models';
+import type {
+  ExplicitSortField,
+  FacetLoadStrategy,
+  SelectedFacets,
+  SortField,
+} from '../models';
 import type { CollectionBrowserDataSourceInterface } from './collection-browser-data-source-interface';
 
 /**
@@ -27,6 +32,8 @@ export interface CollectionBrowserQueryState {
   selectedCreatorFilter: string | null;
   selectedSort?: SortField;
   sortDirection: SortDirection | null;
+  defaultSortField?: ExplicitSortField;
+  defaultSortDirection?: SortDirection | null;
 }
 
 /**
@@ -38,7 +45,7 @@ export interface CollectionBrowserSearchInterface
   searchService?: SearchServiceInterface;
   isTVCollection: boolean;
   readonly sortParam: SortParam | null;
-  readonly defaultSortField: SortField | null;
+  readonly defaultSortField: ExplicitSortField;
   readonly defaultSortDirection: SortDirection | null;
   readonly facetLoadStrategy: FacetLoadStrategy;
   readonly initialPageNumber: number;
@@ -52,7 +59,9 @@ export interface CollectionBrowserSearchInterface
   setFacetsLoading(loading: boolean): void;
   setTotalResultCount(count: number): void;
   setTileCount(count: number): void;
-  applyDefaultCollectionSort(collectionInfo?: CollectionExtraInfo): void;
+  emitCollectionExtraInfoLoaded(
+    collectionExtraInfo?: CollectionExtraInfo,
+  ): void;
   emitEmptyResults(): void;
   emitSearchError(): void;
   emitQueryStateChanged(): void;
