@@ -1653,14 +1653,6 @@ export class CollectionBrowser
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
 
-    // Apply the correct default sort for the new profile element immediately,
-    // so it is in place before hostUpdate() fires on the data source.
-    // Without this, a stale defaultSortField from a previously-active tab
-    // could be used in the first fetch for the incoming tab.
-    if (this.profileElement) {
-      this.applyDefaultProfileSort();
-    }
-
     this.pagesToRender = this.initialPageNumber;
 
     // We set this flag during the update to prevent the URL state persistence
