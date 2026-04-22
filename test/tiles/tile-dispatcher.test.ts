@@ -213,6 +213,23 @@ describe('Tile Dispatcher', () => {
       await el.updateComplete;
       expect(el.getHoverPane()).not.to.exist;
     });
+
+    it('should not show info button when hover pane is not enabled', async () => {
+      const el = await fixture<TileDispatcher>(html`
+        <tile-dispatcher
+          .tileDisplayMode=${'grid'}
+          .model=${{ mediatype: 'texts' }}
+          .enableHoverPane=${false}
+        >
+        </tile-dispatcher>
+      `);
+
+      const itemTile = el.shadowRoot?.querySelector('item-tile') as ItemTile;
+      expect(itemTile).to.exist;
+
+      const infoButton = itemTile.shadowRoot?.querySelector('.info-button');
+      expect(infoButton).to.not.exist;
+    });
   });
 
   describe('Accessibility', () => {

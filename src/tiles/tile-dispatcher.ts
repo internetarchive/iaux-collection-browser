@@ -218,6 +218,15 @@ export class TileDispatcher
     return window.matchMedia('(hover: hover)').matches;
   }
 
+  /**
+   * Whether the info button should be shown on this tile.
+   * Only shown on touch/non-hover devices where a hover pane is available,
+   * so the button always has something to toggle.
+   */
+  private get shouldShowInfoButton(): boolean {
+    return !this.isHoverEnabled && this.shouldPrepareHoverPane;
+  }
+
   /** @inheritdoc */
   getHoverPane(): TileHoverPane | undefined {
     return this.hoverPane;
@@ -326,7 +335,7 @@ export class TileDispatcher
               .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
               .layoutType=${this.layoutType}
-              ?showInfoButton=${!this.isHoverEnabled}
+              ?showInfoButton=${this.shouldShowInfoButton}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </collection-tile>`;
@@ -340,7 +349,7 @@ export class TileDispatcher
               .creatorFilter=${creatorFilter}
               .suppressBlurring=${this.suppressBlurring}
               .isManageView=${this.isManageView}
-              ?showInfoButton=${!this.isHoverEnabled}
+              ?showInfoButton=${this.shouldShowInfoButton}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </account-tile>`;
@@ -373,7 +382,7 @@ export class TileDispatcher
               .isManageView=${this.isManageView}
               .layoutType=${this.layoutType}
               ?showTvClips=${this.showTvClips}
-              ?showInfoButton=${!this.isHoverEnabled}
+              ?showInfoButton=${this.shouldShowInfoButton}
               ?useLocalTime=${this.useLocalTime}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
