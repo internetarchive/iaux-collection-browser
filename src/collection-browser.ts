@@ -860,8 +860,12 @@ export class CollectionBrowser
     let sortFieldAvailability = defaultSortAvailability;
 
     // We adjust the available sort options for a couple of special cases...
-    if (this.withinCollection?.startsWith('fav-')) {
-      // When viewing a fav- collection, we include the Date Favorited option as the default
+    if (
+      this.withinCollection?.startsWith('fav-') ||
+      this.profileElement === 'favorites'
+    ) {
+      // When viewing a fav- collection or the favorites profile tab,
+      // we include the Date Favorited option as the default
       sortFieldAvailability = favoritesSortAvailability;
     } else if (!this.withinCollection && this.searchType === SearchType.TV) {
       // When viewing TV search results, we exclude several of the usual date sort options.
@@ -1648,6 +1652,14 @@ export class CollectionBrowser
     this.sortDirection = queryState.sortDirection;
     this.selectedTitleFilter = queryState.selectedTitleFilter;
     this.selectedCreatorFilter = queryState.selectedCreatorFilter;
+
+    // Apply the correct default sort for the new profile element immediately,
+    // so it is in place before hostUpdate() fires on the data source.
+    // Without this, a stale defaultSortField from a previously-active tab
+    // could be used in the first fetch for the incoming tab.
+    if (this.profileElement) {
+      this.applyDefaultProfileSort();
+    }
 
     this.pagesToRender = this.initialPageNumber;
 

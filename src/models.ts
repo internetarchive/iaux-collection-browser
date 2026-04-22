@@ -588,6 +588,7 @@ export const defaultProfileElementSorts: Record<
   reviews: SortField.datereviewed,
   collections: SortField.datearchived,
   web_archives: SortField.datearchived,
+  favorites: SortField.datefavorited,
 };
 
 /** A union of the fields that permit prefix filtering (e.g., alphabetical filtering) */
