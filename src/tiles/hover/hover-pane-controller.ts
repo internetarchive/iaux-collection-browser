@@ -227,7 +227,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
 
   /** @inheritdoc */
   toggleHoverPane(options: ToggleHoverPaneOptions): void {
-    if (this.hoverPaneState === 'shown') {
+    if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
       this.forceTouchBackdrop = false;
     } else {
@@ -546,6 +546,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     if (this.hoverPaneState !== 'hidden') {
       this.fadeOutHoverPane();
     }
+    e.preventDefault();
     e.stopPropagation();
   };
 
