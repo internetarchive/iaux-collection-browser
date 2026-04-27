@@ -1127,10 +1127,11 @@ export class CollectionBrowserDataSource
       this.host.defaultSortField
     ) {
       const sortOption = SORT_OPTIONS[this.host.defaultSortField];
-      if (sortOption.searchServiceKey) {
+      const { searchServiceKey, handledBySearchService } = sortOption;
+      if (searchServiceKey && handledBySearchService) {
         sortParams = [
           {
-            field: sortOption.searchServiceKey,
+            field: searchServiceKey,
             direction: this.host.defaultSortDirection ?? 'desc',
           },
         ];

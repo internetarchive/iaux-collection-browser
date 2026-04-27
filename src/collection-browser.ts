@@ -860,8 +860,12 @@ export class CollectionBrowser
     let sortFieldAvailability = defaultSortAvailability;
 
     // We adjust the available sort options for a couple of special cases...
-    if (this.withinCollection?.startsWith('fav-')) {
-      // When viewing a fav- collection, we include the Date Favorited option as the default
+    if (
+      this.withinCollection?.startsWith('fav-') ||
+      this.profileElement === 'favorites'
+    ) {
+      // When viewing a fav- collection or the favorites profile tab,
+      // we include the Date Favorited option as the default
       sortFieldAvailability = favoritesSortAvailability;
     } else if (!this.withinCollection && this.searchType === SearchType.TV) {
       // When viewing TV search results, we exclude several of the usual date sort options.
