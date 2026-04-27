@@ -431,10 +431,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/result-type/-/result-type-0.0.1.tgz"
   integrity sha512-sWahff5oP1xAK1CwAu1/5GTG2RXsdx/sQKn4SSOWH0r0vU2QoX9kAom/jSXeBsmgK0IjTc+9Ty9407SMORi+nQ==
 
-"@internetarchive/search-service@^2.7.0":
-  version "2.7.0"
-  resolved "https://registry.npmjs.org/@internetarchive/search-service/-/search-service-2.7.0.tgz"
-  integrity sha512-DB4W1NlsN1FAn/3tdIQITXE+H8hMoImXTvYqVPpqpR0CxqyPyJwSoSC1Fc7ZUXqdy/S3B6uPpd/hgi8QLCpiTw==
+"@internetarchive/search-service@^2.7.1":
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/search-service/-/search-service-2.7.1.tgz#669f162bdbfa61d5f476ad75fea2460f798ff4e0"
+  integrity sha512-XpZGTYM0ZRBI+LYWLrUYQMlK/3hpU005wqy0uboMZF+adPqhAAPwrKD8oJsgwTOidymBqxoDssv2YmK/0Rwxcw==
   dependencies:
     "@internetarchive/iaux-item-metadata" "^1.1.0"
     "@internetarchive/result-type" "^0.0.1"
@@ -2585,7 +2585,7 @@ eslint-plugin-import@^2.26.0, eslint-plugin-import@^2.31.0:
     string.prototype.trimend "^1.0.8"
     tsconfig-paths "^3.15.0"
 
-eslint-plugin-lit-a11y@^4.1.1, eslint-plugin-lit-a11y@^4.1.4:
+eslint-plugin-lit-a11y@^4.1.1:
   version "4.1.4"
   resolved "https://registry.npmjs.org/eslint-plugin-lit-a11y/-/eslint-plugin-lit-a11y-4.1.4.tgz"
   integrity sha512-u39vE1KNOzO99Nrz51oVGY0Iauzf59l9tZgBluE/cU1l86X9/peBMQHUAeGC536dlV4acFYj5yq/VLPsalvnzA==
@@ -2601,6 +2601,22 @@ eslint-plugin-lit-a11y@^4.1.1, eslint-plugin-lit-a11y@^4.1.4:
     parse5 "^7.1.2"
     parse5-htmlparser2-tree-adapter "^6.0.1"
     requireindex "~1.2.0"
+
+eslint-plugin-lit-a11y@^5.0.0:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-lit-a11y/-/eslint-plugin-lit-a11y-5.1.1.tgz#977a7e44f69e954d3e330c6b5d8d101c8d262aaa"
+  integrity sha512-3/hEMop4MvwgaX5RONpklc/YPy9LecfrrHAm9yiUlV6EUdws2OnW0bP3oLs25PIHYlKH5/VdcPKxsi2LxN4gcA==
+  dependencies:
+    "@thepassle/axobject-query" "^4.0.0"
+    aria-query "^5.1.3"
+    axe-core "^4.3.3"
+    dom5 "^3.0.1"
+    emoji-regex "^10.2.1"
+    eslint-plugin-lit "^2.0.0"
+    eslint-rule-extender "0.0.1"
+    language-tags "^1.0.5"
+    parse5 "^7.1.2"
+    parse5-htmlparser2-tree-adapter "^6.0.1"
 
 eslint-plugin-lit@^1.10.1:
   version "1.15.0"
