@@ -605,6 +605,43 @@ export class CollectionBrowser
     if (changed.has('searchType') && this.searchType === SearchType.TV) {
       this.applyDefaultTVSearchSort();
     }
+
+    // If we need to clear filters due to a query change or other reset, we do so *before* any
+    // updates happen, to prevent unnecessary update cycles and ensure there's a clean slate
+    // for any search requests that fire.
+    if (
+      changed.has('baseQuery') ||
+      changed.has('identifiers') ||
+      changed.has('searchType') ||
+      changed.has('withinCollection')
+    ) {
+      // Unless this query/search type update is from the initial page load or the
+      // result of hitting the back button,
+      // we need to clear any existing filters since they may no longer be valid for
+      // the new set of search results.
+      if (!this.historyPopOccurred && this.initialQueryChangeHappened) {
+        // Ordinarily, we leave the sort param unchanged between searches.
+        // However, if we are changing the target collection itself, we want the sort cleared too,
+        // since different collections may have different sorting options available.
+        const shouldClearSort =
+          changed.has('withinCollection') &&
+          !changed.has('selectedSort') &&
+          !changed.has('sortDirection');
+
+        // Otherwise, only clear filters that haven't been simultaneously applied in this update
+        this.clearFilters({
+          sort: shouldClearSort,
+          facets: !changed.has('selectedFacets'),
+          dateRange: !(
+            changed.has('minSelectedDate') || changed.has('maxSelectedDate')
+          ),
+          letterFilters: !(
+            changed.has('selectedTitleFilter') ||
+            changed.has('selectedCreatorFilter')
+          ),
+        });
+      }
+    }
   }
 
   render() {
@@ -1724,40 +1761,6 @@ export class CollectionBrowser
       changed.has('loggedIn')
     ) {
       this.infiniteScroller?.reload();
-    }
-
-    if (
-      changed.has('baseQuery') ||
-      changed.has('identifiers') ||
-      changed.has('searchType') ||
-      changed.has('withinCollection')
-    ) {
-      // Unless this query/search type update is from the initial page load or the
-      // result of hitting the back button,
-      // we need to clear any existing filters since they may no longer be valid for
-      // the new set of search results.
-      if (!this.historyPopOccurred && this.initialQueryChangeHappened) {
-        // Ordinarily, we leave the sort param unchanged between searches.
-        // However, if we are changing the target collection itself, we want the sort cleared too,
-        // since different collections may have different sorting options available.
-        const shouldClearSort =
-          changed.has('withinCollection') &&
-          !changed.has('selectedSort') &&
-          !changed.has('sortDirection');
-
-        // Otherwise, only clear filters that haven't been simultaneously applied in this update
-        this.clearFilters({
-          sort: shouldClearSort,
-          facets: !changed.has('selectedFacets'),
-          dateRange: !(
-            changed.has('minSelectedDate') || changed.has('maxSelectedDate')
-          ),
-          letterFilters: !(
-            changed.has('selectedTitleFilter') ||
-            changed.has('selectedCreatorFilter')
-          ),
-        });
-      }
     }
 
     if (changed.has('profileElement')) {
