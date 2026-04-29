@@ -736,7 +736,7 @@ export const tvFacetDisplayOrder: FacetOption[] = [
   'creator',
   'year',
   'subject',
-  'person',
+  // 'person', Omitting the Person facet group for now, though it may be re-added later with new semantics
   'language',
   'clip_type',
 ];
