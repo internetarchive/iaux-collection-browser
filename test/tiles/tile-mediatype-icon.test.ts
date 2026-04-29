@@ -45,7 +45,7 @@ describe('Mediatype Icon', () => {
     expect(iconDiv.title).to.equal('TV');
   });
 
-  it('renders TV Commercial mediatype for TV items with ad ids', async () => {
+  it('renders TV Political Ad mediatype for TV items with ad ids', async () => {
     model.mediatype = 'movies';
     model.collections = ['tvnews'];
     model.adIds = ['foo'];
@@ -54,10 +54,10 @@ describe('Mediatype Icon', () => {
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
-    expect(iconDiv.title).to.equal('TV Commercial');
+    expect(iconDiv.title).to.equal('TV Political Ad');
   });
 
-  it('renders TV Commercial mediatype for TV items in tv_ads collection', async () => {
+  it('renders TV Political Ad mediatype for TV items in tv_ads collection', async () => {
     model.mediatype = 'movies';
     model.collections = ['tvnews', 'tv_ads'];
     const el = await fixture<TileMediatypeIcon>(html`
@@ -65,7 +65,7 @@ describe('Mediatype Icon', () => {
     `);
 
     const iconDiv = el.shadowRoot?.querySelector('#icon') as HTMLDivElement;
-    expect(iconDiv.title).to.equal('TV Commercial');
+    expect(iconDiv.title).to.equal('TV Political Ad');
   });
 
   it('renders TV Fact Check mediatype for TV search results with fact check URLs', async () => {

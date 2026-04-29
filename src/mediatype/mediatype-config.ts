@@ -116,7 +116,7 @@ export const mediatypeConfig: Record<MediatypeConfigKey, MediatypeConfig> = {
   tvCommercial: {
     color: '#84b648',
     icon: tvCommercialIcon,
-    text: 'TV Commercial',
+    text: 'TV Political Ad',
   },
   tvFactCheck: {
     color: '#f1644b',
