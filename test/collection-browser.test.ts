@@ -1906,6 +1906,111 @@ describe('Collection Browser', () => {
     expect(el.maxSelectedDate).not.to.exist;
   });
 
+  it('does not include stale facets in the search request when query changes', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    // Perform an initial search with a facet applied
+    const selectedFacets = getDefaultSelectedFacets();
+    selectedFacets.collection.radio = {
+      count: 1,
+      key: 'radio',
+      state: 'selected',
+    } as FacetBucket;
+    el.baseQuery = 'cookies';
+    el.selectedFacets = selectedFacets;
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    // The initial search should include the facet filter
+    expect(searchService.searchParams?.filters?.collection?.radio).to.equal(
+      FilterConstraint.INCLUDE,
+    );
+
+    // Ensure that the first search after the query change doesn't have stale facets
+    const searchSpy = sinon.spy(searchService, 'search');
+    el.baseQuery = 'cookies AND NOT collection:radio';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const firstCall = searchSpy.firstCall;
+    expect(firstCall.args[0].query).to.equal(
+      'cookies AND NOT collection:radio',
+    );
+    expect(firstCall.args[0].filters?.collection).not.to.exist;
+
+    searchSpy.restore();
+  });
+
+  it('does not include stale date range in the search request when query changes', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    // Perform an initial search with a date range applied
+    el.baseQuery = 'foo';
+    el.minSelectedDate = '2000';
+    el.maxSelectedDate = '2010';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.year?.['2000']).to.equal(
+      FilterConstraint.GREATER_OR_EQUAL,
+    );
+    expect(searchService.searchParams?.filters?.year?.['2010']).to.equal(
+      FilterConstraint.LESS_OR_EQUAL,
+    );
+
+    // Change the query, which should clear the date range before searching
+    el.baseQuery = 'bar';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.year).not.to.exist;
+    expect(el.minSelectedDate).not.to.exist;
+    expect(el.maxSelectedDate).not.to.exist;
+  });
+
+  it('does not include stale letter filters in the search request when query changes', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    // Perform an initial search with a letter filter applied
+    el.baseQuery = 'first-creator';
+    el.selectedSort = 'creator' as SortField;
+    el.sortDirection = 'asc';
+    el.selectedCreatorFilter = 'X';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await nextTick();
+
+    expect(searchService.searchParams?.filters?.firstCreator?.X).to.equal(
+      FilterConstraint.INCLUDE,
+    );
+
+    // Change the query, which should clear the letter filter before searching.
+    // Check the first search call to ensure stale filters aren't sent initially.
+    const searchSpy = sinon.spy(searchService, 'search');
+    el.baseQuery = 'bar';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await nextTick();
+
+    // The very first search after the query change should not include the old filter
+    const firstCall = searchSpy.firstCall;
+    expect(firstCall.args[0].filters?.firstCreator).not.to.exist;
+
+    searchSpy.restore();
+  });
+
   it('correctly retrieves web archive hits', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
