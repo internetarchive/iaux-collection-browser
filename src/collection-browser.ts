@@ -78,6 +78,7 @@ import { sha1 } from './utils/sha1';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
+import type { TileAction } from './tiles/models';
 
 import '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import './empty-placeholder';
@@ -296,6 +297,9 @@ export class CollectionBrowser
    * If item management UI active
    */
   @property({ type: Boolean }) isManageView = false;
+
+  /** Action buttons to display on each tile (grid mode only) */
+  @property({ type: Array }) tileActions: TileAction[] = [];
 
   @property({ type: String }) manageViewLabel = 'Select items to remove';
 
@@ -1758,7 +1762,8 @@ export class CollectionBrowser
       changed.has('displayMode') ||
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl') ||
-      changed.has('loggedIn')
+      changed.has('loggedIn') ||
+      changed.has('tileActions')
     ) {
       this.infiniteScroller?.reload();
     }
@@ -2551,6 +2556,7 @@ export class CollectionBrowser
         .loggedIn=${this.loggedIn}
         .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
+        .tileActions=${this.tileActions}
         ?showTvClips=${isTVSearch || isTVCollection}
         ?enableHoverPane=${true}
         ?useLocalTime=${shouldUseLocalTime}
