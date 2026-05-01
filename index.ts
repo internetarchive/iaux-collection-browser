@@ -19,6 +19,7 @@ export { TileList } from './src/tiles/list/tile-list';
 export { TileListCompact } from './src/tiles/list/tile-list-compact';
 export { TileDispatcher } from './src/tiles/tile-dispatcher';
 export { LayoutType } from './src/tiles/models';
+export type { TileAction } from './src/tiles/models';
 export {
   SmartQueryHeuristic,
   KeywordFacetMap,
