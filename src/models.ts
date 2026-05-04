@@ -736,7 +736,7 @@ export const tvFacetDisplayOrder: FacetOption[] = [
   'creator',
   'year',
   'subject',
-  'person',
+  // 'person', Omitting the Person facet group for now, though it may be re-added later with new semantics
   'language',
   'clip_type',
 ];
@@ -825,14 +825,35 @@ export const lendingFacetKeysVisibility: Record<LendingFacetKey, boolean> = {
 };
 
 /**
- * Maps valid, visible lending keys to their facet sidebar display text
+ * Most facet options allow any string as keys, while some others can only take on a
+ * limited set of strings. This type just defines those restrictions for the specific
+ * facet types where they apply.
  */
-export const lendingFacetDisplayNames: Partial<
-  Record<LendingFacetKey, string>
-> = {
-  is_lendable: 'Lending Library',
-  available_to_borrow: 'Borrow 14 Days',
-  is_readable: 'Always Available',
+export type AllowedFacetKey<T extends FacetOption> = T extends 'lending'
+  ? LendingFacetKey
+  : T extends 'clip_type'
+    ? TvClipFilterType
+    : string;
+
+/**
+ * A type mapping FacetOptions to objects that define custom display names for some
+ * or all of their valid keys.
+ */
+export type FacetDisplayNameMap = {
+  [K in FacetOption]?: Partial<Record<AllowedFacetKey<K>, string>>;
+};
+
+export const customFacetDisplayNames: FacetDisplayNameMap = {
+  lending: {
+    is_lendable: 'Lending Library',
+    available_to_borrow: 'Borrow 14 Days',
+    is_readable: 'Always Available',
+  },
+  clip_type: {
+    quote: 'Quote',
+    commercial: 'Political Ad',
+    'fact check': 'Fact Check',
+  },
 };
 
 /**

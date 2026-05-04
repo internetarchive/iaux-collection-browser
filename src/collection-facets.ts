@@ -42,7 +42,7 @@ import {
   FacetBucket,
   defaultFacetDisplayOrder,
   facetTitles,
-  lendingFacetDisplayNames,
+  customFacetDisplayNames,
   lendingFacetKeysVisibility,
   LendingFacetKey,
   suppressedCollections,
@@ -612,10 +612,12 @@ export class CollectionFacets extends LitElement {
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, facetData]) => {
             let displayText: string = value;
-            // for lending facets, convert the key to a readable format
-            if (option === 'lending') {
-              displayText =
-                lendingFacetDisplayNames[value as LendingFacetKey] ?? value;
+            // For certain facet types/keys, we use a custom readable display name
+            const currentGroupCustomNames = customFacetDisplayNames[
+              option
+            ] as Record<string, string>;
+            if (currentGroupCustomNames) {
+              displayText = currentGroupCustomNames[value] ?? value;
             }
             return {
               displayText,
@@ -667,11 +669,12 @@ export class CollectionFacets extends LitElement {
       const facetBuckets: FacetBucket[] = castedBuckets.map(bucket => {
         const bucketKey = bucket.key;
         let displayText = `${bucket.key}`;
-        // for lending facets, convert the bucket key to a readable format
-        if (option === 'lending') {
-          displayText =
-            lendingFacetDisplayNames[bucket.key as LendingFacetKey] ??
-            `${bucket.key}`;
+        // For certain facet types/keys, we use a custom readable display name
+        const currentGroupCustomNames = customFacetDisplayNames[
+          option
+        ] as Record<string, string>;
+        if (currentGroupCustomNames) {
+          displayText = currentGroupCustomNames[bucket.key] ?? `${bucket.key}`;
         }
         return {
           displayText,
