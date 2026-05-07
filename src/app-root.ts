@@ -471,7 +471,8 @@ export class AppRoot extends LitElement {
             </div>
             <details class="profile-element-controls">
               <summary>
-                Profile tab (profileElement)${this.profileElement
+                Profile tab
+                (profileElement)${this.profileElement
                   ? html`: <strong>${this.profileElement}</strong>`
                   : ''}
               </summary>
