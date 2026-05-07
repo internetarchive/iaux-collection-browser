@@ -121,7 +121,7 @@ export class CollectionBrowser
   /**
    * Which section of the profile page searches are for (e.g., uploads, reviews, ...)
    */
-  @property({ type: String }) profileElement: PageElementName = 'favorites';
+  @property({ type: String }) profileElement?: PageElementName;
 
   /**
    * The base query to use for all searches, updated to match the current user query.

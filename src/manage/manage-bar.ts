@@ -54,7 +54,6 @@ export class ManageBar extends LitElement {
   @property({ type: Boolean }) removeAllowed = false;
 
   render(): TemplateResult {
-    console.log(this.profileElement, this.manageViewModalMsg);
     return html`
       <div class="manage-container">
         <span class="manage-label">${this.label}</span>
