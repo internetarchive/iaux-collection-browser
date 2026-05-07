@@ -129,7 +129,9 @@ export class ManageBar extends LitElement {
         return '';
     }
 
-    return msg(str`Note: It may take a few minutes for ${subject} to stop appearing in your ${listName}.`);
+    return msg(
+      str`Note: It may take a few minutes for ${subject} to stop appearing in your ${listName}.`,
+    );
   }
 
   private cancelClicked(): void {
