@@ -3,6 +3,7 @@ import {
   AnalyticsManager,
 } from '@internetarchive/analytics-manager';
 import {
+  PageElementName,
   SearchService,
   SearchServiceInterface,
   SearchType,
@@ -49,6 +50,8 @@ export class AppRoot extends LitElement {
   @state() private loggedIn: boolean = false;
 
   @state() private searchType: SearchType = SearchType.METADATA;
+
+  @state() private profileElement?: PageElementName;
 
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
@@ -466,6 +469,50 @@ export class AppRoot extends LitElement {
                 Show replaced sort options
               </label>
             </div>
+            <details class="profile-element-controls">
+              <summary>
+                Profile tab (profileElement)${this.profileElement
+                  ? html`: <strong>${this.profileElement}</strong>`
+                  : ''}
+              </summary>
+              <div class="profile-element-options">
+                <div class="checkbox-control">
+                  <input
+                    type="radio"
+                    id="profile-none"
+                    name="profile-element"
+                    value=""
+                    checked
+                    @click=${this.profileElementChanged}
+                  />
+                  <label for="profile-none">None</label>
+                </div>
+                ${(
+                  [
+                    'uploads',
+                    'favorites',
+                    'reviews',
+                    'collections',
+                    'lending',
+                    'web_archives',
+                    'forum_posts',
+                  ] as PageElementName[]
+                ).map(
+                  tab => html`
+                    <div class="checkbox-control">
+                      <input
+                        type="radio"
+                        id="profile-${tab}"
+                        name="profile-element"
+                        value="${tab}"
+                        @click=${this.profileElementChanged}
+                      />
+                      <label for="profile-${tab}">${tab}</label>
+                    </div>
+                  `,
+                )}
+              </div>
+            </details>
           </fieldset>
 
           <fieldset class="user-profile-controls">
@@ -510,6 +557,7 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
+          .profileElement=${this.profileElement}
           .pageContext=${'search'}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
@@ -922,6 +970,11 @@ export class AppRoot extends LitElement {
     }
   }
 
+  private profileElementChanged(e: Event) {
+    const input = e.target as HTMLInputElement;
+    this.profileElement = (input.value as PageElementName) || undefined;
+  }
+
   static styles = css`
     :host {
       display: block;
@@ -1134,6 +1187,22 @@ export class AppRoot extends LitElement {
     /* user profile controls */
     .user-profile-controls {
       width: fit-content;
+    }
+
+    .profile-element-controls {
+      margin-top: 4px;
+    }
+
+    .profile-element-controls summary {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .profile-element-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 8px;
+      margin-top: 4px;
     }
 
     fieldset {
