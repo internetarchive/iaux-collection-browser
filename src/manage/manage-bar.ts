@@ -9,6 +9,7 @@ import {
 import type { ManageableItem } from '../models';
 import iaButtonStyle from '../styles/ia-button';
 import './remove-items-modal-content';
+import { PageElementName } from '@internetarchive/search-service';
 
 @customElement('manage-bar')
 export class ManageBar extends LitElement {
@@ -25,12 +26,12 @@ export class ManageBar extends LitElement {
   /**
    * Array of items that have been selected for management
    */
-  @property({ type: Object }) selectedItems: Array<ManageableItem> = [];
+  @property({ type: Array }) selectedItems: Array<ManageableItem> = [];
 
   /**
-   * Message shows as note in the modal when removing items
+   * Which section of the profile page searches are for (e.g., uploads, reviews, ...)
    */
-  @property({ type: String }) manageViewModalMsg?: string;
+  @property({ type: String }) profileElement?: PageElementName;
 
   /**
    * Whether to show the "Select All" button (default false)
@@ -53,6 +54,7 @@ export class ManageBar extends LitElement {
   @property({ type: Boolean }) removeAllowed = false;
 
   render(): TemplateResult {
+    console.log(this.profileElement, this.manageViewModalMsg);
     return html`
       <div class="manage-container">
         <span class="manage-label">${this.label}</span>
@@ -103,6 +105,34 @@ export class ManageBar extends LitElement {
         </div>
       </div>
     `;
+  }
+
+  /**
+   * Message to show in the manage view modal, depending on context.
+   */
+  private get manageViewModalMsg(): string {
+    const pluralize = this.selectedItems.length > 1;
+    const subject = pluralize ? 'these items' : 'this item';
+
+    let listName = '';
+
+    switch (this.profileElement) {
+      case 'uploads':
+        listName = 'uploads list';
+        break;
+      case 'web_archives':
+        listName = 'web archives list';
+        break;
+      case 'favorites':
+        listName = 'favorites list';
+        break;
+      default:
+        return '';
+    }
+
+    return msg(
+      `Note: It may take a few minutes for ${subject} to stop appearing in your ${listName}.`,
+    );
   }
 
   private cancelClicked(): void {
