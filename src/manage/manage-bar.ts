@@ -1,4 +1,4 @@
-import { msg } from '@lit/localize';
+import { msg, str } from '@lit/localize';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
@@ -7,9 +7,9 @@ import {
   type ModalManagerInterface,
 } from '@internetarchive/modal-manager';
 import type { ManageableItem } from '../models';
+import { PageElementName } from '@internetarchive/search-service';
 import iaButtonStyle from '../styles/ia-button';
 import './remove-items-modal-content';
-import { PageElementName } from '@internetarchive/search-service';
 
 @customElement('manage-bar')
 export class ManageBar extends LitElement {
@@ -129,9 +129,7 @@ export class ManageBar extends LitElement {
         return '';
     }
 
-    return msg(
-      `Note: It may take a few minutes for ${subject} to stop appearing in your ${listName}.`,
-    );
+    return msg(str`Note: It may take a few minutes for ${subject} to stop appearing in your ${listName}.`);
   }
 
   private cancelClicked(): void {
