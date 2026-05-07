@@ -128,4 +128,66 @@ describe('Collection Browser Data Source', () => {
     dataSource.refreshLetterCounts();
     expect(dataSource.prefixFilterCountMap).to.deep.equal({});
   });
+
+  describe('empty FTS query in collection falls back to metadata search', () => {
+    it('allows search with empty query and FTS in a collection', async () => {
+      const searchService = new MockSearchService();
+      host.searchService = searchService;
+      host.withinCollection = 'test-collection';
+      host.searchType = SearchType.FULLTEXT;
+      host.baseQuery = '';
+      await host.updateComplete;
+
+      const dataSource = new CollectionBrowserDataSource(host);
+      host.addController(dataSource);
+      expect(dataSource.canPerformSearch).to.be.true;
+      host.removeController(dataSource);
+    });
+
+    it('uses metadata search type for fetch when FTS query is empty in a collection', async () => {
+      const searchService = new MockSearchService();
+      host.searchService = searchService;
+      host.withinCollection = 'test-collection';
+      host.searchType = SearchType.FULLTEXT;
+      host.baseQuery = '';
+      await host.updateComplete;
+
+      const dataSource = new CollectionBrowserDataSource(host);
+      host.addController(dataSource);
+      await dataSource.fetchPage(1);
+
+      expect(searchService.searchType).to.equal(SearchType.METADATA);
+      host.removeController(dataSource);
+    });
+
+    it('uses FTS search type for fetch when FTS query is non-empty in a collection', async () => {
+      const searchService = new MockSearchService();
+      host.searchService = searchService;
+      host.withinCollection = 'test-collection';
+      host.searchType = SearchType.FULLTEXT;
+      host.baseQuery = 'some query';
+      await host.updateComplete;
+
+      const dataSource = new CollectionBrowserDataSource(host);
+      host.addController(dataSource);
+      await dataSource.fetchPage(1);
+
+      expect(searchService.searchType).to.equal(SearchType.FULLTEXT);
+      host.removeController(dataSource);
+    });
+
+    it('does not allow search with empty FTS query outside a collection', async () => {
+      const searchService = new MockSearchService();
+      host.searchService = searchService;
+      host.withinCollection = undefined;
+      host.searchType = SearchType.FULLTEXT;
+      host.baseQuery = '';
+      await host.updateComplete;
+
+      const dataSource = new CollectionBrowserDataSource(host);
+      host.addController(dataSource);
+      expect(dataSource.canPerformSearch).to.be.false;
+      host.removeController(dataSource);
+    });
+  });
 });
