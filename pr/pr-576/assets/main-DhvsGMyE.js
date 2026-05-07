@@ -7617,7 +7617,8 @@ fill=""></path>
             </div>
             <details class="profile-element-controls">
               <summary>
-                Profile tab (profileElement)${this.profileElement?T`: <strong>${this.profileElement}</strong>`:``}
+                Profile tab
+                (profileElement)${this.profileElement?T`: <strong>${this.profileElement}</strong>`:``}
               </summary>
               <div class="profile-element-options">
                 <div class="checkbox-control">
