@@ -604,6 +604,24 @@ export class CollectionBrowserDataSource
   }
 
   /**
+   * Returns the search type to actually use for fetches.
+   * When within a collection with an empty query and FTS selected,
+   * falls back to metadata search since FTS requires a non-empty query
+   * and we'd still like to show the unfiltered collection in that case.
+   */
+  private get effectiveSearchType(): SearchType {
+    const trimmedQuery = this.host.baseQuery?.trim();
+    if (
+      !trimmedQuery &&
+      this.host.withinCollection &&
+      this.host.searchType === SearchType.FULLTEXT
+    ) {
+      return SearchType.METADATA;
+    }
+    return this.host.searchType;
+  }
+
+  /**
    * @inheritdoc
    */
   get canPerformSearch(): boolean {
@@ -615,9 +633,11 @@ export class CollectionBrowserDataSource
     const isCollectionSearch = !!this.host.withinCollection;
     const isProfileSearch = !!this.host.withinProfile;
     const hasProfileElement = !!this.host.profileElement;
-    const isDefaultedSearch = this.host.searchType === SearchType.DEFAULT;
-    const isMetadataSearch = this.host.searchType === SearchType.METADATA;
-    const isTvSearch = this.host.searchType === SearchType.TV;
+
+    const searchType = this.effectiveSearchType;
+    const isDefaultedSearch = searchType === SearchType.DEFAULT;
+    const isMetadataSearch = searchType === SearchType.METADATA;
+    const isTvSearch = searchType === SearchType.TV;
 
     // Metadata/tv searches within a collection are allowed to have no query.
     const isValidForCollectionSearch =
@@ -696,7 +716,7 @@ export class CollectionBrowserDataSource
     const pageTarget = this.host.withinCollection ?? profileKey;
     const sortField = this.host.selectedSort ?? 'none';
     const sortDirection = this.host.sortDirection ?? 'none';
-    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}-sf:${sortField}-sd:${sortDirection}`;
+    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}-sf:${sortField}-sd:${sortDirection}`;
   }
 
   /**
@@ -706,7 +726,7 @@ export class CollectionBrowserDataSource
   get facetFetchQueryKey(): string {
     const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
-    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.host.searchType}`;
+    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}`;
   }
 
   /**
@@ -1017,7 +1037,7 @@ export class CollectionBrowserDataSource
 
     const searchResponse = await this.host.searchService?.search(
       params,
-      this.host.searchType,
+      this.effectiveSearchType,
     );
     const success = searchResponse?.success;
 
@@ -1153,7 +1173,7 @@ export class CollectionBrowserDataSource
     // log('=== FIRING PAGE REQUEST ===', params);
     const searchResponse = await this.host.searchService?.search(
       params,
-      this.host.searchType,
+      this.effectiveSearchType,
     );
     // log('=== RECEIVED PAGE RESPONSE IN CB ===', searchResponse);
     const success = searchResponse?.success;
@@ -1342,7 +1362,7 @@ export class CollectionBrowserDataSource
 
     const searchResponse = await this.host.searchService?.search(
       params,
-      this.host.searchType,
+      this.effectiveSearchType,
     );
 
     return (searchResponse?.success?.response?.aggregations?.[
