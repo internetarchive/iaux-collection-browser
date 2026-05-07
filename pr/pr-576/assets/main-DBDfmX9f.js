@@ -4127,7 +4127,7 @@ fill=""></path>
           </div>
         </div>
       </div>
-    `}get manageViewModalMsg(){let e=this.selectedItems.length>1?`these items`:`this item`,t=``;switch(this.profileElement){case`uploads`:t=`uploads list`;break;case`web_archives`:t=`web archives list`;break;case`favorites`:t=`favorites list`;break;default:return``}return N(`Note: It may take a few minutes for ${e} to stop appearing in your ${t}.`)}cancelClicked(){this.dispatchEvent(new CustomEvent(`cancel`))}removeItemsClicked(){this.dispatchEvent(new CustomEvent(`removeItems`))}manageItemsClicked(){this.dispatchEvent(new CustomEvent(`manageItems`))}selectAllClicked(){this.dispatchEvent(new CustomEvent(`selectAll`))}unselectAllClicked(){this.dispatchEvent(new CustomEvent(`unselectAll`))}showRemoveItemsModal(){let e=T`
+    `}get manageViewModalMsg(){let e=this.selectedItems.length>1?`these items`:`this item`,t=``;switch(this.profileElement){case`uploads`:t=`uploads list`;break;case`web_archives`:t=`web archives list`;break;case`favorites`:t=`favorites list`;break;default:return``}return N(or`Note: It may take a few minutes for ${e} to stop appearing in your ${t}.`)}cancelClicked(){this.dispatchEvent(new CustomEvent(`cancel`))}removeItemsClicked(){this.dispatchEvent(new CustomEvent(`removeItems`))}manageItemsClicked(){this.dispatchEvent(new CustomEvent(`manageItems`))}selectAllClicked(){this.dispatchEvent(new CustomEvent(`selectAll`))}unselectAllClicked(){this.dispatchEvent(new CustomEvent(`unselectAll`))}showRemoveItemsModal(){let e=T`
       <remove-items-modal-content
         .items=${this.selectedItems}
         .message=${this.manageViewModalMsg}
