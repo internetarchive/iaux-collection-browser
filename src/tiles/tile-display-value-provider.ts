@@ -92,6 +92,16 @@ export class TileDisplayValueProvider {
   }
 
   /**
+   * The readable label for the current views column, based on whether
+   * weekly or all-time views are being shown.
+   */
+  get viewsLabel(): string {
+    return this.sortParam?.field === 'week'
+      ? msg('Weekly views')
+      : msg('All-time views');
+  }
+
+  /**
    * Produces a URL pointing at the item page for the given identifier,
    * using the current base URL and the correct path based on whether the
    * item is specified to be a collection (default false).
