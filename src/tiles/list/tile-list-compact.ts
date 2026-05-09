@@ -185,7 +185,7 @@ export class TileListCompact extends BaseTileComponent {
       }
 
       #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 100px;
       }
 
       #list-line:hover #title {
