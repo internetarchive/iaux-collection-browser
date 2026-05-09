@@ -2214,7 +2214,7 @@
       }
 
       #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 95px 30px 100px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 115px;
       }
 
       #list-line:hover #title {
@@ -2306,7 +2306,7 @@
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 2fr 95px 30px 100px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 115px;
       }
     `}};jc=B([k(`tile-list-compact-header`)],jc);var Mc=(e,t=-1/0,n=1/0)=>Math.max(t,Math.min(e,n)),Nc=class{constructor(e,t={}){this.host=e,this.mobileBreakpoint=600,this.offsetX=-10,this.offsetY=15,this.showDelay=300,this.hideDelay=100,this.longPressDelay=600,this.enableLongPress=!1,this.hoverPaneState=`hidden`,this.forceTouchBackdrop=!1,this.lastPointerClientPos={x:0,y:0},this.clicking=!1,this.handleFocus=()=>{!this.clicking&&this.hoverPaneState===`hidden`&&this.showHoverPane({anchor:`host`}),this.clicking=!1},this.handleBlur=()=>{this.hoverPaneState!==`hidden`&&this.fadeOutHoverPane()},this.handlePointerDown=()=>{this.clicking=!0},this.handleKeyDown=e=>{(e.key===`ArrowDown`||e.key===`ArrowUp`)&&this.hoverPaneState!==`hidden`&&e.preventDefault()},this.handleKeyUp=e=>{if(this.hoverPaneState===`hidden`||!this.hoverPane)return;e.key===`ArrowDown`&&(this.hoverPane.tabIndex=1,this.hoverPane.focus());let t=e.key===`ArrowUp`,n=e.key===`Escape`||e.key===`Esc`;n&&this.fadeOutHoverPane(),(t||n)&&(this.hoverPane.tabIndex=-1,this.host.acquireFocus())},this.handleMouseEnter=e=>{this.handleMouseMove(e)},this.handleMouseMove=e=>{clearTimeout(this.hideTimer),this.hoverPaneState===`fading-out`&&(this.hoverPaneState=`shown`,this.hoverPane?.classList.add(`fade-in`)),this.hoverPaneState===`hidden`&&(this.restartShowHoverPaneTimer(),this.lastPointerClientPos={x:e.clientX,y:e.clientY})},this.handleMouseLeave=()=>{this.host.releaseFocus(),clearTimeout(this.showTimer),this.hoverPaneState!==`hidden`&&(this.hideTimer=window.setTimeout(()=>{this.fadeOutHoverPane()},this.hideDelay))},this.handleTouchStart=e=>{clearTimeout(this.longPressTimer),e.touches.length===1&&(this.longPressTimer=window.setTimeout(()=>{this.hoverPaneState===`hidden`&&this.showHoverPane()},this.longPressDelay),this.lastPointerClientPos={x:e.touches[0].clientX,y:e.touches[0].clientY})},this.handleLongPressCancel=()=>{clearTimeout(this.longPressTimer)},this.handleContextMenu=e=>{e.preventDefault()},this.handleBackdropInteraction=e=>{this.hoverPaneState!==`hidden`&&this.fadeOutHoverPane(),e.preventDefault(),e.stopPropagation()},this.mobileBreakpoint=t.mobileBreakpoint??this.mobileBreakpoint,this.offsetX=t.offsetX??this.offsetX,this.offsetY=t.offsetY??this.offsetY,this.showDelay=t.showDelay??this.showDelay,this.hideDelay=t.hideDelay??this.hideDelay,this.longPressDelay=t.longPressDelay??this.longPressDelay,this.enableLongPress=t.enableLongPress??this.enableLongPress,this.host.addController(this)}hostConnected(){this.attachListeners()}hostDisconnected(){this.detachListeners()}hostUpdated(){this.hoverPane=this.host.getHoverPane(),this.hoverPaneProps=this.host.getHoverPaneProps()}getTemplate(){return this.hoverPaneProps=this.host.getHoverPaneProps(),this.shouldRenderHoverPane?T`
           ${this.touchBackdropTemplate}
