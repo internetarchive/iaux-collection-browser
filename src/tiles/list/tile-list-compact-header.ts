@@ -79,7 +79,7 @@ export class TileListCompactHeader extends BaseTileComponent {
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 2fr 95px 30px 100px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 115px;
       }
     `;
   }
