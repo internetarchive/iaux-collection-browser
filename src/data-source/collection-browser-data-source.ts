@@ -611,13 +611,13 @@ export class CollectionBrowserDataSource
    */
   private get effectiveSearchType(): SearchType {
     const trimmedQuery = this.host.baseQuery?.trim();
-    if (
+
+    const shouldUseMetadataSearch =
       !trimmedQuery &&
       this.host.withinCollection &&
-      this.host.searchType === SearchType.FULLTEXT
-    ) {
-      return SearchType.METADATA;
-    }
+      this.host.searchType === SearchType.FULLTEXT;
+    if (shouldUseMetadataSearch) return SearchType.METADATA;
+
     return this.host.searchType;
   }
 
