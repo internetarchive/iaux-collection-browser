@@ -30,7 +30,7 @@ export class TileListCompactHeader extends BaseTileComponent {
           ${this.displayValueProvider.dateLabel || msg('Published')}
         </div>
         <div id="icon">${msg('Type')}</div>
-        <div id="views">${msg('Views')}</div>
+        <div id="views">${this.displayValueProvider.viewsLabel}</div>
       </div>
     `;
   }
@@ -79,7 +79,7 @@ export class TileListCompactHeader extends BaseTileComponent {
       }
 
       #list-line-header.desktop {
-        grid-template-columns: 51px 3fr 2fr 95px 30px 60px;
+        grid-template-columns: 51px 3fr 2fr 95px 30px 115px;
       }
     `;
   }

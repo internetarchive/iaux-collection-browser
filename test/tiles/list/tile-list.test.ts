@@ -143,7 +143,31 @@ describe('List Tile', () => {
 
     const viewsRow = el.shadowRoot?.getElementById('views-line');
     expect(viewsRow).to.exist;
-    expect(viewsRow?.textContent?.trim()).to.equal('Views:  10');
+    expect(viewsRow?.textContent?.trim()).to.equal('Weekly views:  10');
+  });
+
+  it('should render all-time views when sorting by non-week field', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{ viewCount: 50, weeklyViewCount: 10 }}
+        .sortParam=${{ field: 'downloads', direction: 'desc' }}
+      >
+      </tile-list>
+    `);
+
+    const viewsRow = el.shadowRoot?.getElementById('views-line');
+    expect(viewsRow).to.exist;
+    expect(viewsRow?.textContent?.trim()).to.equal('All-time views:  50');
+  });
+
+  it('should render all-time views with no sort param', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list .model=${{ viewCount: 50, weeklyViewCount: 10 }}> </tile-list>
+    `);
+
+    const viewsRow = el.shadowRoot?.getElementById('views-line');
+    expect(viewsRow).to.exist;
+    expect(viewsRow?.textContent?.trim()).to.equal('All-time views:  50');
   });
 
   it('should render published date when sorting by it', async () => {

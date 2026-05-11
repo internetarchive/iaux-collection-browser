@@ -250,10 +250,10 @@ export class TileList extends BaseTileComponent {
   }
 
   private get viewsTemplate() {
-    const viewCount =
-      this.effectiveSort?.field === 'week'
-        ? this.model?.weeklyViewCount // weekly views
-        : this.model?.viewCount; // all-time views
+    const isWeeklySort = this.effectiveSort?.field === 'week';
+    const viewCount = isWeeklySort
+      ? this.model?.weeklyViewCount // weekly views
+      : this.model?.viewCount; // all-time views
     if (viewCount == null) return nothing;
 
     // when its a search-tile, we don't have any stats to show
@@ -263,7 +263,7 @@ export class TileList extends BaseTileComponent {
 
     return this.metadataTemplate(
       `${formatCount(viewCount, this.formatSize)}`,
-      msg('Views'),
+      this.displayValueProvider.viewsLabel,
     );
   }
 
