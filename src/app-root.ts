@@ -53,6 +53,8 @@ export class AppRoot extends LitElement {
 
   @state() private profileElement?: PageElementName;
 
+  @state() private withinProfile?: string;
+
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
@@ -469,6 +471,18 @@ export class AppRoot extends LitElement {
                 Show replaced sort options
               </label>
             </div>
+            <div class="text-input-control">
+              <label for="within-profile-input">withinProfile</label>
+              <input
+                type="text"
+                id="within-profile-input"
+                placeholder="e.g. @foobar"
+                @change=${(e: Event) => {
+                  const val = (e.target as HTMLInputElement).value.trim();
+                  this.withinProfile = val || undefined;
+                }}
+              />
+            </div>
             <details class="profile-element-controls">
               <summary>
                 Profile tab
@@ -558,6 +572,7 @@ export class AppRoot extends LitElement {
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
+          .withinProfile=${this.withinProfile}
           .profileElement=${this.profileElement}
           .pageContext=${'search'}
           @visiblePageChanged=${this.visiblePageChanged}

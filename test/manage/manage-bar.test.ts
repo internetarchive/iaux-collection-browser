@@ -190,7 +190,7 @@ describe('Manage bar', () => {
       <manage-bar
         showItemManageButton
         removeAllowed
-        @manageItems=${() => spy()}
+        @manageItems=${spy}
       ></manage-bar>
     `);
     const manageBtn = el.shadowRoot?.querySelector(
@@ -211,7 +211,7 @@ describe('Manage bar', () => {
         .modalManager=${modalManager}
         .selectedItems=${[{ identifier: '1', title: 'Item 1' }]}
         removeAllowed
-        @removeItems=${() => removeItemsSpy()}
+        @removeItems=${removeItemsSpy}
       ></manage-bar>
     `);
     await el.updateComplete;
