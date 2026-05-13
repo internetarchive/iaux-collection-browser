@@ -964,34 +964,6 @@ export class CollectionBrowser
   }
 
   /**
-   * Message to show in the manage view modal, depending on context.
-   */
-  private get manageViewModalMsg(): string {
-    const pluralize = this.dataSource.checkedTileModels.length > 1;
-
-    switch (this.profileElement) {
-      case 'uploads':
-        return pluralize
-          ? msg(
-              'Note: It may take a few minutes for these items to stop appearing in your uploads list.',
-            )
-          : msg(
-              'Note: It may take a few minutes for this item to stop appearing in your uploads list.',
-            );
-      case 'web_archives':
-        return pluralize
-          ? msg(
-              'Note: It may take a few minutes for these items to stop appearing in your web archives list.',
-            )
-          : msg(
-              'Note: It may take a few minutes for this item to stop appearing in your web archives list.',
-            );
-      default:
-        return '';
-    }
-  }
-
-  /**
    * Template for the manage bar UI that appears atop the search results when we are
    * showing the management view. This generally replaces the sort bar when present.
    */
@@ -1001,7 +973,7 @@ export class CollectionBrowser
         .label=${this.manageViewLabel}
         .modalManager=${this.modalManager}
         .selectedItems=${this.dataSource.checkedTileModels}
-        .manageViewModalMsg=${this.manageViewModalMsg}
+        .profileElement=${this.profileElement}
         showSelectAll
         showUnselectAll
         ?showItemManageButton=${this.pageContext === 'search'}
