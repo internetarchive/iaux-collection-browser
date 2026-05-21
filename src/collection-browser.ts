@@ -78,7 +78,7 @@ import { sha1 } from './utils/sha1';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
-import type { TileAction } from './tiles/models';
+import type { LayoutType, TileAction } from './tiles/models';
 
 import '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import './empty-placeholder';
@@ -298,8 +298,14 @@ export class CollectionBrowser
    */
   @property({ type: Boolean }) isManageView = false;
 
-  /** Action buttons to display on each tile (grid mode only) */
+  /** Action buttons to display on each tile */
   @property({ type: Array }) tileActions: TileAction[] = [];
+
+  /**
+   * The simplified layout to apply to grid-mode tiles, if any. See
+   * `LayoutType` for available options. Has no effect on list display modes.
+   */
+  @property({ type: String }) tileLayoutType: LayoutType = 'default';
 
   @property({ type: String }) manageViewLabel = 'Select items to remove';
 
@@ -1585,6 +1591,7 @@ export class CollectionBrowser
           .mobileBreakpoint=${this.mobileBreakpoint}
           .loggedIn=${this.loggedIn}
           .suppressBlurring=${this.shouldSuppressTileBlurring}
+          .tileActions=${this.tileActions}
         >
         </tile-dispatcher>
       </div>
@@ -2529,6 +2536,7 @@ export class CollectionBrowser
         .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
         .tileActions=${this.tileActions}
+        .layoutType=${this.tileLayoutType}
         ?showTvClips=${isTVSearch || isTVCollection}
         ?enableHoverPane=${true}
         ?useLocalTime=${shouldUseLocalTime}
