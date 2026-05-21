@@ -7,6 +7,7 @@ import { BaseTileComponent } from '../base-tile-component';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
+import { tileActionStyles } from '../../styles/tile-action-styles';
 
 import '../image-block';
 import '../tile-mediatype-icon';
@@ -16,6 +17,7 @@ export class TileListCompact extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:
    *  - model?: TileModel;
+   *  - tileActions: TileAction[] = [];
    *  - currentWidth?: number;
    *  - currentHeight?: number;
    *  - baseNavigationUrl?: string;
@@ -31,8 +33,11 @@ export class TileListCompact extends BaseTileComponent {
    */
 
   render() {
+    const lineClasses = `${this.classSize}${
+      this.tileActions.length > 0 ? ' has-actions' : ''
+    }`;
     return html`
-      <div id="list-line" class="${this.classSize}">
+      <div id="list-line" class="${lineClasses}">
         <image-block
           .model=${this.model}
           .baseImageUrl=${this.baseImageUrl}
@@ -43,6 +48,11 @@ export class TileListCompact extends BaseTileComponent {
           .suppressBlurring=${this.suppressBlurring}
         >
         </image-block>
+        ${this.tileActions.length > 0
+          ? html`<div id="actions">
+              ${this.renderTileActions('list-compact')}
+            </div>`
+          : nothing}
         <a href=${this.href} id="title"
           >${DOMPurify.sanitize(this.model?.title ?? '')}</a
         >
@@ -161,79 +171,103 @@ export class TileListCompact extends BaseTileComponent {
   }
 
   static get styles() {
-    return css`
-      html {
-        font-size: unset;
-      }
+    return [
+      tileActionStyles,
+      css`
+        html {
+          font-size: unset;
+        }
 
-      div {
-        font-size: 14px;
-      }
+        div {
+          font-size: 14px;
+        }
 
-      #list-line {
-        display: grid;
-        column-gap: 10px;
-        border-top: 1px solid #ddd;
-        align-items: center;
-        line-height: 20px;
-        padding-top: 5px;
-        margin-bottom: -5px;
-      }
+        #list-line {
+          display: grid;
+          column-gap: 10px;
+          border-top: 1px solid #ddd;
+          align-items: center;
+          line-height: 20px;
+          padding-top: 5px;
+          margin-bottom: -5px;
+        }
 
-      #list-line.mobile {
-        grid-template-columns: 36px 3fr 2fr 68px 35px;
-      }
+        #list-line.mobile {
+          grid-template-columns: 36px 3fr 2fr 68px 35px;
+        }
 
-      #list-line.desktop {
-        grid-template-columns: 51px 3fr 2fr 95px 30px 115px;
-      }
+        #list-line.desktop {
+          grid-template-columns: 51px 3fr 2fr 95px 30px 115px;
+        }
 
-      #list-line:hover #title {
-        text-decoration: underline;
-      }
+        /*
+         * When tile actions are present, insert an extra column for them
+         * between the thumbnail and the title.
+         */
+        #list-line.mobile.has-actions {
+          grid-template-columns:
+            36px var(--tileActionColumnWidth, 90px)
+            3fr 2fr 68px 35px;
+        }
 
-      #title {
-        text-decoration: none;
-      }
+        #list-line.desktop.has-actions {
+          grid-template-columns:
+            51px var(--tileActionColumnWidth, 100px)
+            3fr 2fr 95px 30px 115px;
+        }
 
-      #title:link {
-        color: var(--ia-theme-link-color, #4b64ff);
-      }
+        #actions {
+          /* The flex container inside is what holds the action buttons */
+          display: flex;
+        }
 
-      #title,
-      #creator {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
+        #list-line:hover #title {
+          text-decoration: underline;
+        }
 
-      #icon {
-        margin-left: 2px;
-      }
+        #title {
+          text-decoration: none;
+        }
 
-      #views {
-        text-align: right;
-        padding-right: 8px;
-      }
+        #title:link {
+          color: var(--ia-theme-link-color, #4b64ff);
+        }
 
-      .mobile #views {
-        display: none;
-      }
+        #title,
+        #creator {
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
 
-      .mobile tile-mediatype-icon {
-        --iconHeight: 14px;
-        --iconWidth: 14px;
-      }
+        #icon {
+          margin-left: 2px;
+        }
 
-      .desktop #icon {
-        --iconHeight: 20px;
-        --iconWidth: 20px;
-      }
+        #views {
+          text-align: right;
+          padding-right: 8px;
+        }
 
-      item-image {
-        --imgHeight: 100%;
-        --imgWidth: 100%;
-      }
-    `;
+        .mobile #views {
+          display: none;
+        }
+
+        .mobile tile-mediatype-icon {
+          --iconHeight: 14px;
+          --iconWidth: 14px;
+        }
+
+        .desktop #icon {
+          --iconHeight: 20px;
+          --iconWidth: 20px;
+        }
+
+        item-image {
+          --imgHeight: 100%;
+          --imgWidth: 100%;
+        }
+      `,
+    ];
   }
 }
