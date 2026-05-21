@@ -1082,11 +1082,6 @@ export class AppRoot extends LitElement {
       /* Same as production */
       max-width: 135rem;
       margin: auto;
-
-      /* Danger-style tile action buttons (matching iaux-book-actions) */
-      --tileActionColor: #fff;
-      --tileActionBg: #d9534f;
-      --tileActionHoverBg: rgba(229, 28, 38, 0.9);
     }
 
     #collection-browser-container {
