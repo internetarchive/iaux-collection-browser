@@ -8,17 +8,14 @@
 export type LayoutType = 'default' | 'stats-only' | 'snippets-only' | 'minimal';
 
 /**
- * Describes an action button to render at the bottom of a tile.
- * Styling is controlled via CSS custom properties on the host:
- *  - `--tileActionColor` (default: #333)
- *  - `--tileActionBg` (default: #fff)
- *  - `--tileActionHoverBg` (default: #f0f0f0)
- *  - `--tileActionSeparatorColor` (default: #ddd)
+ * Describes an action button to render on a tile.
+ * Styling is controlled via the CSS custom properties documented in
+ * `src/styles/tile-action-styles.ts`.
  */
 export interface TileAction {
-  /** Unique identifier for this action */
+  /** Unique identifier for this action, included in the `tileActionClicked` event */
   id: string;
 
-  /** Label text displayed on the button */
+  /** Visible label text displayed on the button */
   label: string;
 }

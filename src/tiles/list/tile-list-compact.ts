@@ -1,5 +1,6 @@
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import DOMPurify from 'dompurify';
 import type { SortParam } from '@internetarchive/search-service';
 import { BaseTileComponent } from '../base-tile-component';
@@ -33,11 +34,15 @@ export class TileListCompact extends BaseTileComponent {
    */
 
   render() {
-    const lineClasses = `${this.classSize}${
-      this.tileActions.length > 0 ? ' has-actions' : ''
-    }`;
+    const hasActions = this.tileActions.length > 0;
+    const lineClasses = classMap({
+      mobile: this.classSize === 'mobile',
+      desktop: this.classSize === 'desktop',
+      'has-actions': hasActions,
+    });
+
     return html`
-      <div id="list-line" class="${lineClasses}">
+      <div id="list-line" class=${lineClasses}>
         <image-block
           .model=${this.model}
           .baseImageUrl=${this.baseImageUrl}
@@ -48,7 +53,7 @@ export class TileListCompact extends BaseTileComponent {
           .suppressBlurring=${this.suppressBlurring}
         >
         </image-block>
-        ${this.tileActions.length > 0
+        ${hasActions
           ? html`<div id="actions">
               ${this.renderTileActions('list-compact')}
             </div>`

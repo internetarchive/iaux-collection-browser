@@ -1,5 +1,6 @@
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { msg } from '@lit/localize';
 import { BaseTileComponent } from '../base-tile-component';
 
@@ -23,9 +24,14 @@ export class TileListCompactHeader extends BaseTileComponent {
 
   render() {
     const hasActions = this.tileActions.length > 0;
-    const headerClasses = `${this.classSize}${hasActions ? ' has-actions' : ''}`;
+    const headerClasses = classMap({
+      mobile: this.classSize === 'mobile',
+      desktop: this.classSize === 'desktop',
+      'has-actions': hasActions,
+    });
+
     return html`
-      <div id="list-line-header" class="${headerClasses}">
+      <div id="list-line-header" class=${headerClasses}>
         <div id="thumb"></div>
         ${hasActions ? html`<div id="actions-header"></div>` : nothing}
         <div id="title">${msg('Title')}</div>

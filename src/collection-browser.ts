@@ -1742,7 +1742,8 @@ export class CollectionBrowser
       changed.has('baseNavigationUrl') ||
       changed.has('baseImageUrl') ||
       changed.has('loggedIn') ||
-      changed.has('tileActions')
+      changed.has('tileActions') ||
+      changed.has('tileLayoutType')
     ) {
       this.infiniteScroller?.reload();
     }

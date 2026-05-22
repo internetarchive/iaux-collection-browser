@@ -7,10 +7,10 @@ import { css } from 'lit';
  * container's default flex behavior.
  *
  * Customizable via CSS custom properties:
- *  - `--tileActionColor` (default: #d9534f)
+ *  - `--tileActionColor` (defaults to --primaryErrorCTAFill, then #d9534f)
  *  - `--tileActionBg` (default: #fff)
- *  - `--tileActionBorderColor` (default: #d9534f)
- *  - `--tileActionHoverBg` (default: rgba(217, 83, 79, 0.1))
+ *  - `--tileActionBorderColor` (defaults to --primaryErrorCTAFill, then #d9534f)
+ *  - `--tileActionHoverBg` (defaults to --primaryErrorCTAFillRGB at 20% alpha)
  *  - `--tileActionHoverColor` (defaults to --tileActionColor)
  */
 export const tileActionStyles = css`
@@ -23,14 +23,15 @@ export const tileActionStyles = css`
   .tile-action-btn {
     flex: 1;
     padding: 6px 5px;
-    border: 2px solid var(--tileActionBorderColor, #d9534f);
+    border: 2px solid
+      var(--tileActionBorderColor, var(--primaryErrorCTAFill, #d9534f));
     border-radius: var(--tileActionBorderRadius, 0);
     /* Inherit from the surrounding tile rather than the UA default for <button> */
     font-family: inherit;
     font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
-    color: var(--tileActionColor, #d9534f);
+    color: var(--tileActionColor, var(--primaryErrorCTAFill, #d9534f));
     background: var(--tileActionBg, #fff);
     transition:
       background 0.15s,
@@ -46,7 +47,13 @@ export const tileActionStyles = css`
   }
 
   .tile-action-btn:hover {
-    background: var(--tileActionHoverBg, rgba(217, 83, 79, 0.2));
-    color: var(--tileActionHoverColor, var(--tileActionColor, #d9534f));
+    background: var(
+      --tileActionHoverBg,
+      rgba(var(--primaryErrorCTAFillRGB, 229, 28, 38), 0.2)
+    );
+    color: var(
+      --tileActionHoverColor,
+      var(--tileActionColor, var(--primaryErrorCTAFill, #d9534f))
+    );
   }
 `;

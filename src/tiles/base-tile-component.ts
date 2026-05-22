@@ -1,5 +1,6 @@
 import { html, LitElement, nothing, PropertyValues, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import type { SortParam } from '@internetarchive/search-service';
 import { TileDisplayValueProvider } from './tile-display-value-provider';
 import type { TileModel } from '../models';
@@ -77,11 +78,13 @@ export abstract class BaseTileComponent extends LitElement {
   ): TemplateResult | typeof nothing {
     if (!this.tileActions.length) return nothing;
 
-    const containerClass = extraClass
-      ? `tile-actions ${extraClass}`
-      : 'tile-actions';
+    const containerClasses = classMap({
+      'tile-actions': true,
+      ...(extraClass && { [extraClass]: true }),
+    });
+
     return html`
-      <div class=${containerClass}>
+      <div class=${containerClasses}>
         ${this.tileActions.map(
           action => html`
             <button
