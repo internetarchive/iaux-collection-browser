@@ -1168,7 +1168,7 @@ export class CollectionBrowser
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
     }
-    this.currentPage = 1;
+    this.setCurrentPage(1);
   }
 
   /**
@@ -2198,27 +2198,45 @@ export class CollectionBrowser
   private visibleCellsChanged(
     e: CustomEvent<{ visibleCellIndices: number[] }>,
   ) {
+    this.updateVisiblePage(e.detail.visibleCellIndices);
+  }
+
+  /**
+   * Recomputes the current page from the given set of visible cell indices
+   * and emits `visiblePageChanged` if the page actually changed.
+   */
+  private updateVisiblePage(visibleCellIndices: number[]): void {
     if (this.isScrollingToCell) return;
-    const { visibleCellIndices } = e.detail;
     if (visibleCellIndices.length === 0) return;
+
+    // The indices aren't necessarily sorted, so sort them here to ensure our
+    // calculations below find the right cell/page.
+    const sorted = [...visibleCellIndices].sort((a, b) => a - b);
 
     // For page determination, do not count more than a single page of visible cells,
     // since otherwise patrons using very tall screens will be treated as one page
     // further than they actually are.
     const lastIndexWithinCurrentPage =
-      Math.min(this.pageSize, visibleCellIndices.length) - 1;
-    const lastVisibleCellIndex = visibleCellIndices[lastIndexWithinCurrentPage];
+      Math.min(this.pageSize, sorted.length) - 1;
+    const lastVisibleCellIndex = sorted[lastIndexWithinCurrentPage];
     const lastVisibleCellPage =
       Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
-    if (this.currentPage !== lastVisibleCellPage) {
-      this.currentPage = lastVisibleCellPage;
-    }
-    const event = new CustomEvent('visiblePageChanged', {
-      detail: {
-        pageNumber: lastVisibleCellPage,
-      },
-    });
-    this.dispatchEvent(event);
+
+    this.setCurrentPage(lastVisibleCellPage);
+  }
+
+  /**
+   * Sets the current page number and emits a `visiblePageChanged`
+   * event if the new page differs from the previous one.
+   */
+  private setCurrentPage(pageNumber: number): void {
+    if (this.currentPage === pageNumber) return;
+    this.currentPage = pageNumber;
+    this.dispatchEvent(
+      new CustomEvent('visiblePageChanged', {
+        detail: { pageNumber },
+      }),
+    );
   }
 
   // we only want to scroll on the very first query change
@@ -2318,10 +2336,10 @@ export class CollectionBrowser
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;
     if (!this.suppressURLQuery) this.baseQuery = restorationState.baseQuery;
-    this.currentPage = restorationState.currentPage ?? 1;
+    this.setCurrentPage(restorationState.currentPage ?? 1);
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
-    if (this.currentPage > 1) {
+    if (this.currentPage && this.currentPage > 1) {
       this.goToPage(this.currentPage);
     }
   }
@@ -2423,9 +2441,18 @@ export class CollectionBrowser
     });
 
     this.isScrollingToCell = true;
-    await this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+    const scrolled = await this.infiniteScroller.scrollToCell(
+      cellIndexToScrollTo,
+      true,
+    );
     this.isScrollingToCell = false;
     this.infiniteScroller.refreshAllVisibleCells();
+
+    // After we finish scrolling, recompute the visible page from the new state
+    // so that it doesn't fall out of sync.
+    if (scrolled) {
+      this.updateVisiblePage(this.infiniteScroller.getVisibleCellIndices());
+    }
   }
 
   /**
