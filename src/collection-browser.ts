@@ -866,6 +866,7 @@ export class CollectionBrowser
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
       ariaLandmarkLabel="Search results"
+      .estimatedCellHeight=${this.estimatedTileHeight}
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
@@ -885,6 +886,25 @@ export class CollectionBrowser
       [this.displayMode ?? '']: !!this.displayMode,
       hidden: !!this.placeholderType,
     });
+  }
+
+  /**
+   * Best-effort hint of how tall a single rendered tile is, by display mode.
+   * The scroller uses this to better estimate the size its initial scroll
+   * spacer and buffer position before real cell heights are measured.
+   * Should roughly match the placeholder heights since the initial render
+   * of a new page generally shows placeholders only anyway.
+   */
+  private get estimatedTileHeight(): number {
+    switch (this.displayMode) {
+      case 'list-detail':
+        return 80;
+      case 'list-compact':
+        return 45;
+      case 'grid':
+      default:
+        return 225;
+    }
   }
 
   /**
@@ -2323,25 +2343,34 @@ export class CollectionBrowser
     });
   }
 
-  private scrollToPage(pageNumber: number): Promise<void> {
-    return new Promise(resolve => {
-      const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
-      // without this setTimeout, Safari just pauses until the `fetchPage` is complete
-      // then scrolls to the cell
-      setTimeout(() => {
-        this.isScrollingToCell = true;
-        this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
-        // This timeout is to give the scroll animation time to finish
-        // then updating the infinite scroller once we're done scrolling
-        // There's no scroll animation completion callback so we're
-        // giving it 0.5s to finish.
-        setTimeout(() => {
-          this.isScrollingToCell = false;
-          this.infiniteScroller?.refreshAllVisibleCells();
-          resolve();
-        }, 500);
-      }, 0);
+  private async scrollToPage(pageNumber: number): Promise<void> {
+    const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
+
+    // Wait for the infinite scroller be rendered before proceeding
+    let waitAttempts = 0;
+    while (!this.infiniteScroller && waitAttempts < 20) {
+      await this.updateComplete;
+      waitAttempts++;
+    }
+    if (!this.infiniteScroller) return;
+
+    // The scroller have its default `itemCount=0`, so propagate our estimated
+    // tile count before jumping to the desired page.
+    if (this.infiniteScroller.itemCount < this.estimatedTileCount) {
+      this.infiniteScroller.itemCount = this.estimatedTileCount;
+      await this.updateComplete;
+    }
+
+    // Without this setTimeout(0), Safari just pauses until the `fetchPage`
+    // is complete then scrolls to the cell.
+    await new Promise<void>(resolve => {
+      setTimeout(resolve, 0);
     });
+
+    this.isScrollingToCell = true;
+    await this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+    this.isScrollingToCell = false;
+    this.infiniteScroller.refreshAllVisibleCells();
   }
 
   /**
