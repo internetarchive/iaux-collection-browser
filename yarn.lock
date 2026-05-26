@@ -269,10 +269,10 @@
   dependencies:
     lit-html "^1.2.1"
 
-"@internetarchive/infinite-scroller@1.1.0-alpha-webdev7939.3":
-  version "1.1.0-alpha-webdev7939.3"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-1.1.0-alpha-webdev7939.3.tgz#3bcb24b293f3a93d3c39a6475e1ff661463bcdd6"
-  integrity sha512-rH6v/KbYi6KdaI7C04PZCnwtCG7GJeNjCnhBphviV3Cd7RmM1daMw2pvGJwOM75Y9rmtNF94YmoGRYZ17JSCxw==
+"@internetarchive/infinite-scroller@1.1.0-alpha-webdev7939.4":
+  version "1.1.0-alpha-webdev7939.4"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-1.1.0-alpha-webdev7939.4.tgz#b8be01c7b4f1355378b706cf129b4c5f4da989a7"
+  integrity sha512-hL7hb4ULni+vT5vP/FZVuRmITp/zlE1swPJsClhFsksODoqG72VMdhYKcyUScODdQyPlC9rEt9B2rcBZjuNZig==
   dependencies:
     lit "^2.0.2"
 
