@@ -2367,7 +2367,7 @@
       <div id="link-aria-description" class="sr-only">
         ${N(`Press Down Arrow to preview item details`)}
       </div>
-    `}get linkTileHref(){return!this.model?.identifier||this.baseNavigationUrl==null?D:this.model.href?`${this.baseNavigationUrl}${this.model.href}`:this.displayValueProvider.itemPageUrl(this.model.identifier,this.model.mediatype===`collection`)}get manageCheckTemplate(){return!this.isManageView||this.tileDisplayMode!==`grid`?D:T`
+    `}get linkTileHref(){if(!this.model?.identifier||this.baseNavigationUrl==null)return D;if(this.model.href){let e=/%3A/i.test(this.model.href)?decodeURIComponent(this.model.href):this.model.href;return`${this.baseNavigationUrl}${e}`}return this.displayValueProvider.itemPageUrl(this.model.identifier,this.model.mediatype===`collection`)}get manageCheckTemplate(){return!this.isManageView||this.tileDisplayMode!==`grid`?D:T`
       <div class="manage-check">
         <input
           type="checkbox"
