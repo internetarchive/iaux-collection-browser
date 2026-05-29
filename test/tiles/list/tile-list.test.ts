@@ -509,7 +509,7 @@ describe('List Tile', () => {
     const firstDateLink = captureDatesUl?.children[0]?.querySelector('a[href]');
     expect(firstDateLink, 'first date link').to.exist;
     expect(firstDateLink?.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20100102123456/https%3A%2F%2Fexample.com%2F',
+      'https://web.archive.org/web/20100102123456/https://example.com/',
     );
     expect(firstDateLink?.textContent?.trim()).to.equal('Jan 02, 2010');
 
@@ -517,7 +517,7 @@ describe('List Tile', () => {
       captureDatesUl?.children[1]?.querySelector('a[href]');
     expect(secondDateLink, 'second date link').to.exist;
     expect(secondDateLink?.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20110203124321/https%3A%2F%2Fexample.com%2F',
+      'https://web.archive.org/web/20110203124321/https://example.com/',
     );
     expect(secondDateLink?.textContent?.trim()).to.equal('Feb 03, 2011');
   });
