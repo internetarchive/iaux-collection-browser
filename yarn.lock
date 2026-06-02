@@ -269,12 +269,12 @@
   dependencies:
     lit-html "^1.2.1"
 
-"@internetarchive/infinite-scroller@1.1.0-alpha-webdev7939.10":
-  version "1.1.0-alpha-webdev7939.10"
-  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-1.1.0-alpha-webdev7939.10.tgz#877fd1dab29e5a68a3ee8d9f2cadc08452e5286a"
-  integrity sha512-9LNNFR0euX/y6gnog3GnoDLabNvOCWuIwyRl0jG+3hQtwR4NZh4oakFz2aUNc8nejem05ePRspJCsG1svvPWnQ==
+"@internetarchive/infinite-scroller@^2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/infinite-scroller/-/infinite-scroller-2.0.0.tgz#b7fbc9ad94c12225653b3718174d0712838638be"
+  integrity sha512-PGfi0eqdSfsVd3xS2W9abY+iAJQPcw/Z8x9kWYARhiwot35eAMWxFzCXm5FaRTTjEQjZFEOBdXrQFNlO8GBNsQ==
   dependencies:
-    lit "^2.8.0"
+    lit "^2.8.0 || ^3.3.2"
 
 "@internetarchive/lazy-loader-service@^0.2.0":
   version "0.2.0"

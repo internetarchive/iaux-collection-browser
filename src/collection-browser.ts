@@ -917,6 +917,7 @@ export class CollectionBrowser
       itemCount=${this.placeholderType ? 0 : nothing}
       ariaLandmarkLabel="Search results"
       .estimatedCellHeight=${this.estimatedTileHeight}
+      .minBufferMarginCells=${this.pageSize}
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
