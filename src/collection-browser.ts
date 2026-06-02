@@ -421,7 +421,7 @@ export class CollectionBrowser
     const model = this.dataSource.getTileModelAt(index);
     /**
      * If we encounter a model we don't have yet and we're not in the middle of an
-     * automated scroll, fetch the page and just return undefined.
+     * automated scroll, schedule a fetch for the missing page and return undefined.
      * The datasource will be updated once the page is loaded and the cell will be rendered.
      *
      * We disable it during the automated scroll since we don't want to fetch pages for intervening cells the
@@ -429,9 +429,59 @@ export class CollectionBrowser
      */
     if (!model && !this.isScrollingToCell && this.dataSource.queryInitialized) {
       const pageNumber = Math.floor(index / this.pageSize) + 1;
-      this.dataSource.fetchPage(pageNumber);
+      this.scheduleDeferredPageFetch(pageNumber);
     }
     return model;
+  }
+
+  /**
+   * Debounce delay for page fetches initiated by new cells becoming visible.
+   * Tuned so quick scrolling through unloaded regions doesn't send rapid-fire
+   * search requests for every page we pass through, but to still feel responsive
+   * when the scroll ends.
+   */
+  private static readonly DEFERRED_FETCH_DELAY_MS = 150;
+
+  private deferredFetchTimer = 0;
+
+  /**
+   * Schedules a fetch for the given page, debounced to ensure we don't
+   * rapid-fire fetches while scrolling through pages quickly.
+   *
+   * If there's no pending fetch timer yet, it will fire a fetch immediately.
+   * Otherwise, it will reset any existing timer. In either case, a deferred
+   * fetch for the visible pages is scheduled after a brief delay to account
+   * for whatever pages we land on after scrolling.
+   */
+  private scheduleDeferredPageFetch(pageNumber: number): void {
+    if (!this.deferredFetchTimer) {
+      this.dataSource.fetchPage(pageNumber);
+    } else {
+      window.clearTimeout(this.deferredFetchTimer);
+    }
+
+    this.deferredFetchTimer = window.setTimeout(() => {
+      this.deferredFetchTimer = 0;
+      this.fetchVisiblePages();
+    }, CollectionBrowser.DEFERRED_FETCH_DELAY_MS);
+  }
+
+  /**
+   * Fetch each currently-visible page whose first cell still has no
+   * loaded model.
+   */
+  private fetchVisiblePages(): void {
+    const visibleIndices = this.infiniteScroller?.getVisibleCellIndices() ?? [];
+    const visiblePages = new Set(
+      visibleIndices.map(i => Math.floor(i / this.pageSize) + 1),
+    );
+
+    for (const page of visiblePages) {
+      const firstCellOfPage = (page - 1) * this.pageSize;
+      if (!this.dataSource.getTileModelAt(firstCellOfPage)) {
+        this.dataSource.fetchPage(page);
+      }
+    }
   }
 
   // this is the total number of tiles we expect if
@@ -866,6 +916,8 @@ export class CollectionBrowser
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
       ariaLandmarkLabel="Search results"
+      .estimatedCellHeight=${this.estimatedTileHeight}
+      .minBufferMarginCells=${this.pageSize}
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
       @scrollThresholdReached=${this.scrollThresholdReached}
@@ -885,6 +937,25 @@ export class CollectionBrowser
       [this.displayMode ?? '']: !!this.displayMode,
       hidden: !!this.placeholderType,
     });
+  }
+
+  /**
+   * Best-effort hint of how tall a single rendered tile is, by display mode.
+   * The scroller uses this to better estimate the size its initial scroll
+   * spacer and buffer position before real cell heights are measured.
+   * Should roughly match the placeholder heights since the initial render
+   * of a new page generally shows placeholders only anyway.
+   */
+  private get estimatedTileHeight(): number {
+    switch (this.displayMode) {
+      case 'list-detail':
+        return 80;
+      case 'list-compact':
+        return 45;
+      case 'grid':
+      default:
+        return 225;
+    }
   }
 
   /**
@@ -1098,7 +1169,7 @@ export class CollectionBrowser
     if ((this.currentPage ?? 1) > 1) {
       this.goToPage(1);
     }
-    this.currentPage = 1;
+    this.setCurrentPage(1);
   }
 
   /**
@@ -1871,6 +1942,11 @@ export class CollectionBrowser
       window.removeEventListener('popstate', this.boundNavigationHandler);
     }
 
+    if (this.deferredFetchTimer) {
+      window.clearTimeout(this.deferredFetchTimer);
+      this.deferredFetchTimer = 0;
+    }
+
     this.leftColIntersectionObserver?.disconnect();
     this.facetsIntersectionObserver?.disconnect();
     window.removeEventListener('resize', this.updateLeftColumnHeight);
@@ -2123,27 +2199,45 @@ export class CollectionBrowser
   private visibleCellsChanged(
     e: CustomEvent<{ visibleCellIndices: number[] }>,
   ) {
+    this.updateVisiblePage(e.detail.visibleCellIndices);
+  }
+
+  /**
+   * Recomputes the current page from the given set of visible cell indices
+   * and emits `visiblePageChanged` if the page actually changed.
+   */
+  private updateVisiblePage(visibleCellIndices: number[]): void {
     if (this.isScrollingToCell) return;
-    const { visibleCellIndices } = e.detail;
     if (visibleCellIndices.length === 0) return;
+
+    // The indices aren't necessarily sorted, so sort them here to ensure our
+    // calculations below find the right cell/page.
+    const sorted = [...visibleCellIndices].sort((a, b) => a - b);
 
     // For page determination, do not count more than a single page of visible cells,
     // since otherwise patrons using very tall screens will be treated as one page
     // further than they actually are.
     const lastIndexWithinCurrentPage =
-      Math.min(this.pageSize, visibleCellIndices.length) - 1;
-    const lastVisibleCellIndex = visibleCellIndices[lastIndexWithinCurrentPage];
+      Math.min(this.pageSize, sorted.length) - 1;
+    const lastVisibleCellIndex = sorted[lastIndexWithinCurrentPage];
     const lastVisibleCellPage =
       Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
-    if (this.currentPage !== lastVisibleCellPage) {
-      this.currentPage = lastVisibleCellPage;
-    }
-    const event = new CustomEvent('visiblePageChanged', {
-      detail: {
-        pageNumber: lastVisibleCellPage,
-      },
-    });
-    this.dispatchEvent(event);
+
+    this.setCurrentPage(lastVisibleCellPage);
+  }
+
+  /**
+   * Sets the current page number and emits a `visiblePageChanged`
+   * event if the new page differs from the previous one.
+   */
+  private setCurrentPage(pageNumber: number): void {
+    if (this.currentPage === pageNumber) return;
+    this.currentPage = pageNumber;
+    this.dispatchEvent(
+      new CustomEvent('visiblePageChanged', {
+        detail: { pageNumber },
+      }),
+    );
   }
 
   // we only want to scroll on the very first query change
@@ -2243,10 +2337,10 @@ export class CollectionBrowser
     this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
     this.selectedFacets = restorationState.selectedFacets;
     if (!this.suppressURLQuery) this.baseQuery = restorationState.baseQuery;
-    this.currentPage = restorationState.currentPage ?? 1;
+    this.setCurrentPage(restorationState.currentPage ?? 1);
     this.minSelectedDate = restorationState.minSelectedDate;
     this.maxSelectedDate = restorationState.maxSelectedDate;
-    if (this.currentPage > 1) {
+    if (this.currentPage && this.currentPage > 1) {
       this.goToPage(this.currentPage);
     }
   }
@@ -2323,25 +2417,43 @@ export class CollectionBrowser
     });
   }
 
-  private scrollToPage(pageNumber: number): Promise<void> {
-    return new Promise(resolve => {
-      const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
-      // without this setTimeout, Safari just pauses until the `fetchPage` is complete
-      // then scrolls to the cell
-      setTimeout(() => {
-        this.isScrollingToCell = true;
-        this.infiniteScroller?.scrollToCell(cellIndexToScrollTo, true);
-        // This timeout is to give the scroll animation time to finish
-        // then updating the infinite scroller once we're done scrolling
-        // There's no scroll animation completion callback so we're
-        // giving it 0.5s to finish.
-        setTimeout(() => {
-          this.isScrollingToCell = false;
-          this.infiniteScroller?.refreshAllVisibleCells();
-          resolve();
-        }, 500);
-      }, 0);
+  private async scrollToPage(pageNumber: number): Promise<void> {
+    const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
+
+    // Wait for the infinite scroller be rendered before proceeding
+    let waitAttempts = 0;
+    while (!this.infiniteScroller && waitAttempts < 20) {
+      await this.updateComplete;
+      waitAttempts++;
+    }
+    if (!this.infiniteScroller) return;
+
+    // The scroller have its default `itemCount=0`, so propagate our estimated
+    // tile count before jumping to the desired page.
+    if (this.infiniteScroller.itemCount < this.estimatedTileCount) {
+      this.infiniteScroller.itemCount = this.estimatedTileCount;
+      await this.updateComplete;
+    }
+
+    // Without this setTimeout(0), Safari just pauses until the `fetchPage`
+    // is complete then scrolls to the cell.
+    await new Promise<void>(resolve => {
+      setTimeout(resolve, 0);
     });
+
+    this.isScrollingToCell = true;
+    const scrolled = await this.infiniteScroller.scrollToCell(
+      cellIndexToScrollTo,
+      true,
+    );
+    this.isScrollingToCell = false;
+    this.infiniteScroller.refreshAllVisibleCells();
+
+    // After we finish scrolling, recompute the visible page from the new state
+    // so that it doesn't fall out of sync.
+    if (scrolled) {
+      this.updateVisiblePage(this.infiniteScroller.getVisibleCellIndices());
+    }
   }
 
   /**

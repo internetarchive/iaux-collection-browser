@@ -1,4 +1,11 @@
-import { css, CSSResultGroup, html, LitElement, nothing } from 'lit';
+import {
+  css,
+  CSSResultGroup,
+  html,
+  LitElement,
+  nothing,
+  PropertyValues,
+} from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { ClassInfo, classMap } from 'lit/directives/class-map.js';
 
@@ -12,6 +19,14 @@ import { searchIcon } from '../assets/img/icons/mediatype/search';
 
 @customElement('item-image')
 export class ItemImage extends LitElement {
+  /**
+   * Map to cache which identifiers have waveform-style thumbnails, so that
+   * they can have their waveform styling applied immediately, rather than
+   * waiting for the image content to load before applying it (which can
+   * cause noticeable flicker when such tiles refresh).
+   */
+  private static readonly waveformByIdentifier = new Map<string, boolean>();
+
   @property({ type: Object }) model?: TileModel;
 
   @property({ type: String }) baseImageUrl?: string;
@@ -29,6 +44,15 @@ export class ItemImage extends LitElement {
   @state() private isNotFound = false;
 
   @query('img') private baseImage!: HTMLImageElement;
+
+  protected willUpdate(changed: PropertyValues): void {
+    if (changed.has('model')) {
+      // If this identifier is known to have a waveform image, then set isWaveform upfront
+      const identifier = this.model?.identifier;
+      this.isWaveform =
+        ItemImage.waveformByIdentifier.get(identifier as string) === true;
+    }
+  }
 
   render() {
     return html`
@@ -149,6 +173,9 @@ export class ItemImage extends LitElement {
       this.baseImage.naturalWidth / this.baseImage.naturalHeight === 4
     ) {
       this.isWaveform = true;
+      if (this.model?.identifier) {
+        ItemImage.waveformByIdentifier.set(this.model.identifier, true);
+      }
     }
   }
 

@@ -112,6 +112,9 @@ export class AppRoot extends LitElement {
     const page = this.currentPage ?? 1;
     if (page > 1) {
       this.collectionBrowser.goToPage(page);
+    } else {
+      // Ensure we reset the initial page
+      this.collectionBrowser.initialPageNumber = 1;
     }
   }
 
