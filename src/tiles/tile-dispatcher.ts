@@ -176,21 +176,7 @@ export class TileDispatcher
     // Use the server-specified href if available.
     // Otherwise, construct a details page URL from the item identifier.
     if (this.model.href) {
-      // Decode over-encoded Wayback target URLs from old stored data (%3A%2F%2F
-      // is an unambiguous sign the whole URL was percent-encoded). Only decode
-      // the segment after /web/{timestamp}/ to avoid corrupting the prefix.
-      const href = this.model.href.replace(
-        /(\/web\/\d+\/)(.+)/,
-        (_, prefix, target) => {
-          if (!/%3A%2F%2F/i.test(target)) return `${prefix}${target}`;
-          try {
-            return `${prefix}${decodeURIComponent(target)}`;
-          } catch {
-            return `${prefix}${target}`;
-          }
-        },
-      );
-      return `${this.baseNavigationUrl}${href}`;
+      return `${this.baseNavigationUrl}${this.model.href}`;
     }
 
     return this.displayValueProvider.itemPageUrl(

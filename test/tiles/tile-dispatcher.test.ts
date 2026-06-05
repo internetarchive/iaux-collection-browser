@@ -110,7 +110,7 @@ describe('Tile Dispatcher', () => {
     window.open = oldWindowOpen;
   });
 
-  it('should use model href as-is when not percent-encoded', async () => {
+  it('should use model href as link href', async () => {
     const el = await fixture<TileDispatcher>(html`
       <tile-dispatcher
         .model=${{
@@ -128,45 +128,6 @@ describe('Tile Dispatcher', () => {
     expect(tileLink.getAttribute('href')).to.equal(
       'https://web.archive.org/web/20180613065659/http://www.sankei.com/',
     );
-  });
-
-  it('should decode percent-encoded model href before use', async () => {
-    const el = await fixture<TileDispatcher>(html`
-      <tile-dispatcher
-        .model=${{
-          identifier: 'foo',
-          href: 'https://web.archive.org/web/20180613065659/http%3A%2F%2Fwww.sankei.com%2F',
-        }}
-        .baseNavigationUrl=${''}
-      ></tile-dispatcher>
-    `);
-
-    const tileLink = el.shadowRoot?.querySelector(
-      'a[href]',
-    ) as HTMLAnchorElement;
-    expect(tileLink).to.exist;
-    expect(tileLink.getAttribute('href')).to.equal(
-      'https://web.archive.org/web/20180613065659/http://www.sankei.com/',
-    );
-  });
-
-  it('should not decode %3A in Wayback URL path when not an encoded scheme', async () => {
-    // %3A in the path (e.g. /path/%3Asomething) is not a sign of over-encoding;
-    // only %3A%2F%2F (encoded "://") is.
-    const href =
-      'https://web.archive.org/web/20180613065659/https://example.com/path/%3Asomething';
-    const el = await fixture<TileDispatcher>(html`
-      <tile-dispatcher
-        .model=${{ identifier: 'foo', href }}
-        .baseNavigationUrl=${''}
-      ></tile-dispatcher>
-    `);
-
-    const tileLink = el.shadowRoot?.querySelector(
-      'a[href]',
-    ) as HTMLAnchorElement;
-    expect(tileLink).to.exist;
-    expect(tileLink.getAttribute('href')).to.equal(href);
   });
 
   it('should toggle model checked state when manage check clicked', async () => {
