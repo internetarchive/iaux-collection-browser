@@ -35,7 +35,7 @@ export class FacetRow extends LitElement {
    * Has no effect if the facet bucket is itself hidden, in which case the hide
    * button *must* be shown to represent the state accurately.
    */
-  @property({ type: Boolean }) omitHideButton?: boolean;
+  @property({ type: Boolean, reflect: true }) omitHideButton = false;
 
   /** The collection name cache for converting collection identifiers to titles */
   @property({ type: Object })
