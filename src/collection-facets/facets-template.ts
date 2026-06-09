@@ -36,6 +36,7 @@ export class FacetsTemplate extends LitElement {
     if (!facetGroup) return nothing;
 
     const facetBuckets = facetGroup.buckets as FacetBucket[];
+    const isLoneBucket = facetBuckets.length === 1;
 
     // Added data-testid for Playwright testing
     // Using className and aria-labels is not ideal for Playwright locator
@@ -49,6 +50,7 @@ export class FacetsTemplate extends LitElement {
               .facetType=${facetGroup.key}
               .bucket=${bucket}
               .collectionTitles=${this.collectionTitles}
+              ?omitHideButton=${isLoneBucket}
               @facetClick=${this.facetClicked}
             ></facet-row>`,
         )}

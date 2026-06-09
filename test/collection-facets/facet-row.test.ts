@@ -122,6 +122,52 @@ describe('Facet row', () => {
     );
   });
 
+  it('omits hide button when property is specified (and facet state is not hidden)', async () => {
+    const bucket = {
+      key: 'foo',
+      state: 'none' as FacetState,
+      count: 5,
+    };
+
+    const el = await fixture<FacetRow>(
+      html`<facet-row
+        .facetType=${'subject'}
+        .bucket=${bucket}
+        omitHideButton
+      ></facet-row>`,
+    );
+
+    // Hide button's container is hidden
+    expect(
+      el.shadowRoot
+        ?.querySelector('.hide-facet-container')
+        ?.hasAttribute('hidden'),
+    ).to.be.true;
+  });
+
+  it('does not omit hide button when facet state is hidden, even if property specified', async () => {
+    const bucket = {
+      key: 'foo',
+      state: 'hidden' as FacetState,
+      count: 5,
+    };
+
+    const el = await fixture<FacetRow>(
+      html`<facet-row
+        .facetType=${'subject'}
+        .bucket=${bucket}
+        omitHideButton
+      ></facet-row>`,
+    );
+
+    // Hide button's container is NOT hidden (i.e., we SHOW the hide button like normal)
+    expect(
+      el.shadowRoot
+        ?.querySelector('.hide-facet-container')
+        ?.hasAttribute('hidden'),
+    ).to.be.false;
+  });
+
   it('renders correct accessible label for unchecked negative facets', async () => {
     const bucket = {
       key: 'foo',

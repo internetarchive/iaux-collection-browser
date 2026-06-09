@@ -30,6 +30,13 @@ export class FacetRow extends LitElement {
   /** The facet bucket containing details about the state, count, and key for this row */
   @property({ type: Object }) bucket?: FacetBucket;
 
+  /**
+   * Whether to omit the negative/hide button from this facet row if possible.
+   * Has no effect if the facet bucket is itself hidden, in which case the hide
+   * button *must* be shown to represent the state accurately.
+   */
+  @property({ type: Boolean }) omitHideButton?: boolean;
+
   /** The collection name cache for converting collection identifiers to titles */
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
@@ -102,7 +109,10 @@ export class FacetRow extends LitElement {
             id=${showOnlyCheckboxId}
             data-testid=${showOnlyCheckboxId}
           />
-          <div class="hide-facet-container">
+          <div
+            class="hide-facet-container"
+            ?hidden=${this.omitHideButton && !facetHidden}
+          >
             <input
               type="checkbox"
               id=${negativeCheckboxId}
