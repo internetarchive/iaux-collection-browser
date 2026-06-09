@@ -5690,7 +5690,10 @@ fill=""></path>
             id=${n}
             data-testid=${n}
           />
-          <div class="hide-facet-container">
+          <div
+            class="hide-facet-container"
+            ?hidden=${this.omitHideButton&&!s}
+          >
             <input
               type="checkbox"
               id=${r}
@@ -5814,12 +5817,13 @@ fill=""></path>
       a:hover {
         text-decoration: underline;
       }
-    `]}};L([A({type:String})],Lh.prototype,`facetType`,void 0),L([A({type:Object})],Lh.prototype,`bucket`,void 0),L([A({type:Object})],Lh.prototype,`collectionTitles`,void 0),Lh=Ih=L([k(`facet-row`)],Lh);var Rh=class extends O{facetClicked(e){this.dispatchFacetClickEvent(e.detail)}dispatchFacetClickEvent(e){let t=new CustomEvent(`facetClick`,{detail:e,composed:!0});this.dispatchEvent(t)}get facetsTemplate(){let{facetGroup:e}=this;if(!e)return D;let t=e.buckets;return T`
+    `]}};L([A({type:String})],Lh.prototype,`facetType`,void 0),L([A({type:Object})],Lh.prototype,`bucket`,void 0),L([A({type:Boolean})],Lh.prototype,`omitHideButton`,void 0),L([A({type:Object})],Lh.prototype,`collectionTitles`,void 0),Lh=Ih=L([k(`facet-row`)],Lh);var Rh=class extends O{facetClicked(e){this.dispatchFacetClickEvent(e.detail)}dispatchFacetClickEvent(e){let t=new CustomEvent(`facetClick`,{detail:e,composed:!0});this.dispatchEvent(t)}get facetsTemplate(){let{facetGroup:e}=this;if(!e)return D;let t=e.buckets,n=t.length===1;return T`
       <div class="facet-rows" data-testid="facets-on-${e.key}">
         ${Nh(t,t=>`${e.key}:${t.key}`,t=>T`<facet-row
               .facetType=${e.key}
               .bucket=${t}
               .collectionTitles=${this.collectionTitles}
+              ?omitHideButton=${n}
               @facetClick=${this.facetClicked}
             ></facet-row>`)}
       </div>
