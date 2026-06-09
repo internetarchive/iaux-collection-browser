@@ -124,9 +124,8 @@ export class TileDisplayValueProvider {
       .toISOString()
       .replace(/[TZ:-]/g, '')
       .replace(/\..*/, '');
-    const captureHref = `https://web.archive.org/web/${captureDateStr}/${encodeURIComponent(
-      url,
-    )}`;
+    // url must not be percent-encoded — Wayback Machine matches on the raw URL
+    const captureHref = `https://web.archive.org/web/${captureDateStr}/${url}`;
     const captureText = formatDate(date, 'long');
 
     return html` <a href=${captureHref}> ${captureText} </a> `;
