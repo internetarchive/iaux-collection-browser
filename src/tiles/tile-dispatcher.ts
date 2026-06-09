@@ -1,5 +1,6 @@
 import { css, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { msg } from '@lit/localize';
 import type {
@@ -26,6 +27,7 @@ import {
   HoverPaneProviderInterface,
 } from './hover/hover-pane-controller';
 import { srOnlyStyle } from '../styles/sr-only';
+import { tileActionStyles } from '../styles/tile-action-styles';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -37,6 +39,7 @@ export class TileDispatcher
   /*
    * Reactive properties inherited from BaseTileComponent:
    *  - model?: TileModel;
+   *  - tileActions: TileAction[] = [];
    *  - currentWidth?: number;
    *  - currentHeight?: number;
    *  - baseNavigationUrl?: string;
@@ -104,14 +107,20 @@ export class TileDispatcher
 
   render() {
     const isGridMode = this.tileDisplayMode === 'grid';
+    const hasTileActions = isGridMode && this.showGridTileActions;
     const hoverPaneTemplate =
       this.hoverPaneController?.getTemplate() ?? nothing;
+    const containerClasses = classMap({
+      hoverable: isGridMode,
+      'has-tile-actions': hasTileActions,
+    });
     return html`
-      <div id="container" class=${isGridMode ? 'hoverable' : ''}>
+      <div id="container" class=${containerClasses}>
         ${this.tileDisplayMode === 'list-header'
           ? this.headerTemplate
           : this.tileTemplate}
-        ${this.manageCheckTemplate} ${hoverPaneTemplate}
+        ${this.gridTileActionsTemplate} ${this.manageCheckTemplate}
+        ${hoverPaneTemplate}
       </div>
     `;
   }
@@ -134,6 +143,7 @@ export class TileDispatcher
         .currentWidth=${currentWidth}
         .sortParam=${sortParam ?? defaultSortParam}
         .mobileBreakpoint=${mobileBreakpoint}
+        .tileActions=${this.tileActions}
       >
       </tile-list-compact-header>
     `;
@@ -306,6 +316,52 @@ export class TileDispatcher
     });
   }
 
+  /** Whether tile action buttons should be rendered in grid mode */
+  private get showGridTileActions(): boolean {
+    return (
+      this.tileActions.length > 0 &&
+      !this.isManageView &&
+      this.tileDisplayMode === 'grid'
+    );
+  }
+
+  /**
+   * Template for the grid-mode action buttons. Rendered alongside the inner
+   * tile link inside the dispatcher's shadow root so the action buttons can
+   * suppress the hover pane on hover.
+   */
+  private get gridTileActionsTemplate() {
+    if (!this.showGridTileActions) return nothing;
+
+    return html`
+      <div
+        class="tile-actions grid-tile-actions"
+        @mouseenter=${this.handleGridActionsMouseEnter}
+        @mousemove=${(e: Event) => e.stopPropagation()}
+      >
+        ${this.tileActions.map(
+          action => html`
+            <button
+              class="tile-action-btn"
+              @click=${(e: Event) => this.handleTileActionClick(e, action)}
+            >
+              ${action.label}
+            </button>
+          `,
+        )}
+      </div>
+    `;
+  }
+
+  /**
+   * When the mouse enters the grid-mode tile actions area, dispatch a
+   * synthetic mouseleave on the host to cancel the hover pane's show timer
+   * and hide any visible pane.
+   */
+  private handleGridActionsMouseEnter = (): void => {
+    this.dispatchEvent(new MouseEvent('mouseleave', { bubbles: false }));
+  };
+
   private get tile() {
     const {
       model,
@@ -402,6 +458,7 @@ export class TileDispatcher
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
           .suppressBlurring=${this.suppressBlurring}
+          .tileActions=${this.isManageView ? [] : this.tileActions}
           ?useLocalTime=${this.useLocalTime}
         >
         </tile-list-compact>`;
@@ -420,6 +477,7 @@ export class TileDispatcher
           .baseImageUrl=${this.baseImageUrl}
           .loggedIn=${this.loggedIn}
           .suppressBlurring=${this.suppressBlurring}
+          .tileActions=${this.isManageView ? [] : this.tileActions}
           ?useLocalTime=${this.useLocalTime}
         >
         </tile-list>`;
@@ -431,6 +489,7 @@ export class TileDispatcher
   static get styles() {
     return [
       srOnlyStyle,
+      tileActionStyles,
       css`
         :host {
           display: block;
@@ -466,8 +525,45 @@ export class TileDispatcher
           border-radius: 4px;
         }
 
-        #container.hoverable a:focus,
-        #container.hoverable a:hover {
+        /*
+         * When tile actions are present, the container takes on the role of
+         * the tile's visual card so the tile content and action row appear
+         * as a single unified element. The inner tile's own shadow/radius
+         * are disabled via CSS variable overrides to avoid visual
+         * duplication, and the action row sits as a footer inside the same
+         * card.
+         */
+        #container.has-tile-actions {
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: var(--tileShadow, 1px 1px 2px 0);
+          --tileBoxShadow: none;
+          --tileCornerRadius: 0;
+        }
+
+        #container.has-tile-actions .tile-link {
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+          border-radius: 0;
+        }
+
+        /* Normal hover shadow lives on the inner anchor for plain tiles */
+        #container.hoverable:not(.has-tile-actions) a:focus,
+        #container.hoverable:not(.has-tile-actions) a:hover {
+          box-shadow: var(
+            --tileHoverBoxShadow,
+            0 0 6px 2px rgba(8, 8, 32, 0.8)
+          );
+          transition: box-shadow 0.1s ease;
+        }
+
+        /*
+         * When the container owns the card visuals, the hover shadow needs
+         * to move up to the container so it wraps the action row too.
+         */
+        #container.hoverable.has-tile-actions:hover {
           box-shadow: var(
             --tileHoverBoxShadow,
             0 0 6px 2px rgba(8, 8, 32, 0.8)
@@ -520,6 +616,20 @@ export class TileDispatcher
           top: 0;
           left: -9999px;
           z-index: 2;
+        }
+
+        /*
+         * Grid-mode action row sits flush against the bottom of the card —
+         * the buttons' own borders form the visible bottom edge. The outer
+         * buttons get rounded bottom corners to match the container so the
+         * red border traces cleanly around the card's bottom corners.
+         */
+        .grid-tile-actions .tile-action-btn:first-child {
+          border-bottom-left-radius: 4px;
+        }
+
+        .grid-tile-actions .tile-action-btn:last-child {
+          border-bottom-right-radius: 4px;
         }
       `,
     ];

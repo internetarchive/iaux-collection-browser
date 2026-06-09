@@ -1,12 +1,17 @@
-import { LitElement, PropertyValues } from 'lit';
+import { html, LitElement, nothing, PropertyValues, TemplateResult } from 'lit';
 import { property } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
 import type { SortParam } from '@internetarchive/search-service';
 import { TileDisplayValueProvider } from './tile-display-value-provider';
 import type { TileModel } from '../models';
 import { DateFormat, formatDate } from '../utils/format-date';
+import type { TileAction } from './models';
 
 export abstract class BaseTileComponent extends LitElement {
   @property({ type: Object }) model?: TileModel;
+
+  /** Action buttons to display on this tile (rendered by subclasses) */
+  @property({ type: Array }) tileActions: TileAction[] = [];
 
   @property({ type: Number }) currentWidth?: number;
 
@@ -61,5 +66,59 @@ export abstract class BaseTileComponent extends LitElement {
   protected getFormattedDate(date?: Date, format?: DateFormat): string {
     const { useLocalTime } = this;
     return formatDate(date, format, { useLocalTime });
+  }
+
+  /**
+   * Renders the action buttons configured for this tile, or `nothing` if
+   * there are none. Optional `extraClass` is appended to the container's
+   * class list so subclasses can target their own layout tweaks.
+   */
+  protected renderTileActions(
+    extraClass: string = '',
+  ): TemplateResult | typeof nothing {
+    if (!this.tileActions.length) return nothing;
+
+    const containerClasses = classMap({
+      'tile-actions': true,
+      ...(extraClass && { [extraClass]: true }),
+    });
+
+    return html`
+      <div class=${containerClasses}>
+        ${this.tileActions.map(
+          action => html`
+            <button
+              class="tile-action-btn"
+              @click=${(e: Event) => this.handleTileActionClick(e, action)}
+            >
+              ${action.label}
+            </button>
+          `,
+        )}
+      </div>
+    `;
+  }
+
+  /**
+   * Click handler for tile action buttons. Stops propagation so the click
+   * doesn't activate a wrapping tile link, and dispatches a
+   * `tileActionClicked` event (bubbling + composed) carrying the action ID
+   * and the tile model.
+   */
+  protected handleTileActionClick(e: Event, action: TileAction): void {
+    e.preventDefault();
+    e.stopPropagation();
+    // Pre-set the hover pane controller's clicking flag so that focus
+    // restoration after a consumer-opened modal won't trigger the hover pane.
+    this.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, composed: true }),
+    );
+    this.dispatchEvent(
+      new CustomEvent('tileActionClicked', {
+        detail: { actionId: action.id, model: this.model },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 }

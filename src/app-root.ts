@@ -384,6 +384,16 @@ export class AppRoot extends LitElement {
               />
               <label for="enable-smart-facet-bar">Enable smart facet bar</label>
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-tile-actions"
+                @click=${this.tileActionsCheckboxChanged}
+              />
+              <label for="enable-tile-actions"
+                >Enable tile action buttons</label
+              >
+            </div>
           </fieldset>
 
           <fieldset class="cb-visual-appearance">
@@ -584,6 +594,7 @@ export class AppRoot extends LitElement {
           @manageModeChanged=${this.manageModeChanged}
           @itemRemovalRequested=${this.handleItemRemovalRequest}
           @itemManagerRequested=${this.handleItemManagerRequest}
+          @tileActionClicked=${this.handleTileActionClicked}
         >
           ${this.toggleSlots
             ? html`<div slot="sortbar-left-slot">Sort Slot</div>`
@@ -803,6 +814,25 @@ export class AppRoot extends LitElement {
   private smartFacetBarCheckboxChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.collectionBrowser.showSmartFacetBar = target.checked;
+  }
+
+  /**
+   * Handler for when the dev panel's "Enable tile action buttons" checkbox is changed.
+   */
+  private tileActionsCheckboxChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.collectionBrowser.tileActions = target.checked
+      ? [{ id: 'demo-action', label: 'Return' }]
+      : [];
+  }
+
+  /**
+   * Handler for tile action button clicks (logs to console for QA).
+   */
+  private handleTileActionClicked(
+    e: CustomEvent<{ actionId: string; model: unknown }>,
+  ) {
+    console.log('Tile action clicked:', e.detail.actionId, e.detail.model);
   }
 
   /**

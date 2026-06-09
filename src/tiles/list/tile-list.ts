@@ -15,6 +15,7 @@ import { BaseTileComponent } from '../base-tile-component';
 import { formatCount, NumberFormat } from '../../utils/format-count';
 import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
+import { tileActionStyles } from '../../styles/tile-action-styles';
 
 import '../image-block';
 import '../review-block';
@@ -26,6 +27,7 @@ export class TileList extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:
    *  - model?: TileModel;
+   *  - tileActions: TileAction[] = [];
    *  - currentWidth?: number;
    *  - currentHeight?: number;
    *  - baseNavigationUrl?: string;
@@ -61,7 +63,9 @@ export class TileList extends BaseTileComponent {
   private get mobileTemplate() {
     return html`
       <div id="list-line-top">
-        <div id="list-line-left">${this.imageBlockTemplate}</div>
+        <div id="list-line-left">
+          ${this.imageBlockTemplate} ${this.renderTileActions('list-detail')}
+        </div>
         <div id="list-line-right">
           <div id="title-line">
             <div id="title">${this.titleTemplate}</div>
@@ -75,7 +79,9 @@ export class TileList extends BaseTileComponent {
 
   private get desktopTemplate() {
     return html`
-      <div id="list-line-left">${this.imageBlockTemplate}</div>
+      <div id="list-line-left">
+        ${this.imageBlockTemplate} ${this.renderTileActions('list-detail')}
+      </div>
       <div id="list-line-right">
         <div id="title-line">
           <div id="title">${this.titleTemplate}</div>
@@ -511,190 +517,202 @@ export class TileList extends BaseTileComponent {
   }
 
   static get styles() {
-    return css`
-      html {
-        font-size: unset;
-      }
+    return [
+      tileActionStyles,
+      css`
+        html {
+          font-size: unset;
+        }
 
-      div {
-        font-size: 14px;
-      }
+        div {
+          font-size: 14px;
+        }
 
-      div a {
-        text-decoration: none;
-      }
+        div a {
+          text-decoration: none;
+        }
 
-      div a:link {
-        color: var(--ia-theme-link-color, #4b64ff);
-      }
+        div a:link {
+          color: var(--ia-theme-link-color, #4b64ff);
+        }
 
-      .label {
-        font-weight: bold;
-      }
+        .label {
+          font-weight: bold;
+        }
 
-      #list-line.mobile {
-        --infiniteScrollerRowGap: 20px;
-        --infiniteScrollerRowHeight: auto;
-      }
+        #list-line.mobile {
+          --infiniteScrollerRowGap: 20px;
+          --infiniteScrollerRowHeight: auto;
+        }
 
-      #list-line.desktop {
-        --infiniteScrollerRowGap: 30px;
-        --infiniteScrollerRowHeight: auto;
-      }
+        #list-line.desktop {
+          --infiniteScrollerRowGap: 30px;
+          --infiniteScrollerRowHeight: auto;
+        }
 
-      /* fields */
-      #icon-right {
-        width: 20px;
-        padding-top: 5px;
-        --iconHeight: 20px;
-        --iconWidth: 20px;
-        --iconTextAlign: right;
-        margin-top: -8px;
-        text-align: right;
-      }
+        /* fields */
+        #icon-right {
+          width: 20px;
+          padding-top: 5px;
+          --iconHeight: 20px;
+          --iconWidth: 20px;
+          --iconTextAlign: right;
+          margin-top: -8px;
+          text-align: right;
+        }
 
-      #title {
-        color: #4b64ff;
-        text-decoration: none;
-        font-size: 22px;
-        font-weight: bold;
-        /* align top of text with image */
-        line-height: 25px;
-        margin-top: -4px;
-        padding-bottom: 2px;
-        flex-grow: 1;
+        #title {
+          color: #4b64ff;
+          text-decoration: none;
+          font-size: 22px;
+          font-weight: bold;
+          /* align top of text with image */
+          line-height: 25px;
+          margin-top: -4px;
+          padding-bottom: 2px;
+          flex-grow: 1;
 
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-        overflow: hidden;
-        overflow-wrap: anywhere;
-      }
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+          overflow: hidden;
+          overflow-wrap: anywhere;
+        }
 
-      .metadata {
-        line-height: 20px;
-      }
+        .metadata {
+          line-height: 20px;
+        }
 
-      #description,
-      #creator,
-      #topics,
-      #source {
-        text-align: left;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        -webkit-box-orient: vertical;
-        display: -webkit-box;
-        word-break: break-word;
-        -webkit-line-clamp: 3; /* number of lines to show */
-        line-clamp: 3;
+        #description,
+        #creator,
+        #topics,
+        #source {
+          text-align: left;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          -webkit-box-orient: vertical;
+          display: -webkit-box;
+          word-break: break-word;
+          -webkit-line-clamp: 3; /* number of lines to show */
+          line-clamp: 3;
 
-        /*
+          /*
          * Safari doesn't always respect the line-clamping rules above,
          * so we add this to ensure these fields still get truncated
          */
-        max-height: 60px;
-      }
+          max-height: 60px;
+        }
 
-      #collections {
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 3;
-        overflow: hidden;
-        overflow-wrap: anywhere;
-      }
+        #collections {
+          display: -webkit-box;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 3;
+          overflow: hidden;
+          overflow-wrap: anywhere;
+        }
 
-      #collections > a {
-        display: inline-block;
-      }
+        #collections > a {
+          display: inline-block;
+        }
 
-      #icon {
-        padding-top: 5px;
-      }
+        #icon {
+          padding-top: 5px;
+        }
 
-      #description {
-        padding-top: 10px;
-      }
+        #description {
+          padding-top: 10px;
+        }
 
-      /* Top level container */
-      #list-line {
-        display: flex;
-      }
+        /* Top level container */
+        #list-line {
+          display: flex;
+        }
 
-      #list-line.mobile {
-        flex-direction: column;
-      }
+        #list-line.mobile {
+          flex-direction: column;
+        }
 
-      #list-line.desktop {
-        column-gap: 10px;
-      }
+        #list-line.desktop {
+          column-gap: 10px;
+        }
 
-      #list-line-top {
-        display: flex;
-        column-gap: 7px;
-      }
+        #list-line-top {
+          display: flex;
+          column-gap: 7px;
+        }
 
-      #list-line-bottom {
-        padding-top: 4px;
-      }
+        #list-line-bottom {
+          padding-top: 4px;
+        }
 
-      #list-line-right,
-      #list-line-top,
-      #list-line-bottom {
-        width: 100%;
-      }
+        #list-line-right,
+        #list-line-top,
+        #list-line-bottom {
+          width: 100%;
+        }
 
-      /*
+        /*
        * If the container becomes very tiny, don't let the thumbnail side take
        * up too much space. Shouldn't make a difference on ordinary viewport sizes.
        */
-      #list-line-left {
-        max-width: 25%;
+        #list-line-left {
+          max-width: 25%;
 
-        display: flex;
-        flex-direction: column;
-        row-gap: 5px;
-      }
+          display: flex;
+          flex-direction: column;
+          row-gap: 5px;
+        }
 
-      div a:hover {
-        text-decoration: underline;
-      }
+        div a:hover {
+          text-decoration: underline;
+        }
 
-      /* Lines containing multiple div as row */
-      #item-line,
-      #dates-line,
-      #views-line,
-      #title-line {
-        display: flex;
-        flex-direction: row;
-        column-gap: 10px;
-      }
+        /* Lines containing multiple div as row */
+        #item-line,
+        #dates-line,
+        #views-line,
+        #title-line {
+          display: flex;
+          flex-direction: row;
+          column-gap: 10px;
+        }
 
-      /*
+        /*
        * With the exception of the title line, allow these to wrap if
        * the space becomes too small to accommodate them together.
        *
        * The title line is excluded because it contains the mediatype icon
        * which we don't want to wrap.
        */
-      #item-line,
-      #dates-line,
-      #views-line {
-        flex-wrap: wrap;
-      }
+        #item-line,
+        #dates-line,
+        #views-line {
+          flex-wrap: wrap;
+        }
 
-      .capture-dates {
-        margin: 0;
-        padding: 0;
-        list-style-type: none;
-      }
+        .capture-dates {
+          margin: 0;
+          padding: 0;
+          list-style-type: none;
+        }
 
-      .capture-dates a:link {
-        text-decoration: none;
-        color: var(--ia-theme-link-color, #4b64ff);
-      }
-      .capture-dates a:hover {
-        text-decoration: underline;
-      }
-    `;
+        .capture-dates a:link {
+          text-decoration: none;
+          color: var(--ia-theme-link-color, #4b64ff);
+        }
+        .capture-dates a:hover {
+          text-decoration: underline;
+        }
+
+        /*
+       * Tile-list (extended) action row sits under the thumbnail in the left
+       * column. The image-block above already has its own bottom padding via
+       * the parent's row-gap, so we don't need extra spacing here.
+       */
+        .tile-actions.list-detail {
+          width: 100%;
+        }
+      `,
+    ];
   }
 }

@@ -24,6 +24,7 @@ export class ItemTile extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:
    *  - model?: TileModel;
+   *  - tileActions: TileAction[] = [];
    *  - currentWidth?: number;
    *  - currentHeight?: number;
    *  - baseNavigationUrl?: string;
