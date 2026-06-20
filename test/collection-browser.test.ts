@@ -2504,4 +2504,136 @@ describe('Collection Browser', () => {
     const initialResults = el.dataSource.getAllPages();
     expect(Object.keys(initialResults).length).to.deep.equal(numberOfPages);
   });
+
+  it('uses date filter field for YYYY-MM selected dates', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'months';
+    el.searchType = SearchType.TV;
+    el.minSelectedDate = '2001-02';
+    el.maxSelectedDate = '2002-12';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.date?.['2001-02']).to.equal(
+      FilterConstraint.GREATER_OR_EQUAL,
+    );
+    expect(searchService.searchParams?.filters?.date?.['2002-12']).to.equal(
+      FilterConstraint.LESS_OR_EQUAL,
+    );
+    expect(searchService.searchParams?.filters?.year).not.to.exist;
+  });
+
+  it('still uses year filter field for YYYY selected dates', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'years';
+    el.minSelectedDate = '1950';
+    el.maxSelectedDate = '1970';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(searchService.searchParams?.filters?.year?.['1950']).to.equal(
+      FilterConstraint.GREATER_OR_EQUAL,
+    );
+    expect(searchService.searchParams?.filters?.year?.['1970']).to.equal(
+      FilterConstraint.LESS_OR_EQUAL,
+    );
+    expect(searchService.searchParams?.filters?.date).not.to.exist;
+  });
+
+  it('selects date_histogram for isTVCollection even with metadata searchType', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .suppressPlaceholders=${true}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'months';
+    el.isTVCollection = true;
+    el.showHistogramDatePicker = true;
+    await el.updateComplete;
+    await el.initialSearchComplete;
+    await nextTick();
+
+    const facets = el.shadowRoot?.querySelector(
+      'collection-facets',
+    ) as CollectionFacets;
+    await facets?.updateComplete;
+    await nextTick();
+
+    const histogram = facets?.shadowRoot?.querySelector(
+      'histogram-date-range',
+    ) as HistogramDateRange;
+
+    expect(histogram, 'histogram exists').to.exist;
+  });
+
+  it('uses date: query clause for YYYY-MM date ranges', async () => {
+    const searchService = new MockSearchService();
+    const mockAnalyticsHandler = new MockAnalyticsHandler();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .analyticsHandler=${mockAnalyticsHandler}
+        .suppressPlaceholders=${true}
+      >
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'months';
+    el.searchType = SearchType.TV;
+    el.showHistogramDatePicker = true;
+    await el.updateComplete;
+
+    const facets = el.shadowRoot?.querySelector(
+      'collection-facets',
+    ) as CollectionFacets;
+    await facets?.updateComplete;
+
+    await nextTick();
+
+    const histogram = facets?.shadowRoot?.querySelector(
+      'histogram-date-range',
+    ) as HistogramDateRange;
+
+    expect(histogram, 'histogram exists').to.exist;
+
+    // Enter a new min date into the date picker
+    const minDateInput = histogram.shadowRoot?.querySelector(
+      '#date-min',
+    ) as HTMLInputElement;
+
+    const pressEnterEvent = new KeyboardEvent('keyup', {
+      key: 'Enter',
+    });
+
+    minDateInput.value = '2001-02';
+    minDateInput.dispatchEvent(pressEnterEvent);
+
+    // Wait for the histogram's update delay
+    await aTimeout(histogram.updateDelay + 50);
+
+    await el.updateComplete;
+    expect(el.minSelectedDate).to.equal('2001-02');
+    expect(el.maxSelectedDate).to.equal('2002-12');
+
+    // Verify the analytics event used date: not year:
+    expect(mockAnalyticsHandler.callAction).to.equal(
+      analyticsActions.histogramChanged,
+    );
+    expect(mockAnalyticsHandler.callLabel).to.include('date:');
+    expect(mockAnalyticsHandler.callLabel).not.to.include('year:');
+  });
 });
