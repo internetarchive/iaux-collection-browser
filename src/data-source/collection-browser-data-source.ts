@@ -33,6 +33,7 @@ import type { CollectionBrowserDataSourceInterface } from './collection-browser-
 import type { CollectionBrowserSearchInterface } from './collection-browser-query-state';
 import { sha1 } from '../utils/sha1';
 import { mergeSelectedFacets } from '../utils/facet-utils';
+import { dateFilterField } from '../utils/date-filter-field';
 
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
@@ -746,7 +747,10 @@ export class CollectionBrowserDataSource
       selectedCreatorFilter,
     } = this.host;
 
-    const dateField = this.host.searchType === SearchType.TV ? 'date' : 'year';
+    const dateField = dateFilterField(
+      this.host.minSelectedDate,
+      this.host.maxSelectedDate,
+    );
 
     if (minSelectedDate) {
       builder.addFilter(
@@ -901,12 +905,16 @@ export class CollectionBrowserDataSource
     return this.joinFacetClauses(facetClauses)?.trim();
   }
 
-  private get dateRangeQueryClause(): string | undefined {
+  get dateRangeQueryClause(): string | undefined {
     if (!this.host.minSelectedDate || !this.host.maxSelectedDate) {
       return undefined;
     }
 
-    return `year:[${this.host.minSelectedDate} TO ${this.host.maxSelectedDate}]`;
+    const dateField = dateFilterField(
+      this.host.minSelectedDate,
+      this.host.maxSelectedDate,
+    );
+    return `${dateField}:[${this.host.minSelectedDate} TO ${this.host.maxSelectedDate}]`;
   }
 
   private get sortFilterQueries(): string {
@@ -1069,10 +1077,11 @@ export class CollectionBrowserDataSource
       success.response;
     this.aggregations = aggregations;
 
-    this.histogramAggregation =
-      this.host.searchType === SearchType.TV
-        ? aggregations?.date_histogram
-        : aggregations?.year_histogram;
+    const useDateHistogram =
+      this.host.searchType === SearchType.TV || this.host.isTVCollection;
+    this.histogramAggregation = useDateHistogram
+      ? (aggregations?.date_histogram ?? aggregations?.year_histogram)
+      : aggregations?.year_histogram;
 
     if (collectionTitles) {
       for (const [id, title] of Object.entries(collectionTitles)) {
