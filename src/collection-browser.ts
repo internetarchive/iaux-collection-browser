@@ -1684,19 +1684,8 @@ export class CollectionBrowser
     this.analyticsHandler?.sendEvent({
       category: this.searchContext,
       action: analyticsActions.histogramChanged,
-      label: this.dateRangeQueryClause,
+      label: this.dataSource.dateRangeQueryClause,
     });
-  }
-
-  /**
-   * The Lucene query corresponding to the current date range.
-   */
-  private get dateRangeQueryClause() {
-    if (!this.minSelectedDate || !this.maxSelectedDate) {
-      return undefined;
-    }
-
-    return `year:[${this.minSelectedDate} TO ${this.maxSelectedDate}]`;
   }
 
   /**
