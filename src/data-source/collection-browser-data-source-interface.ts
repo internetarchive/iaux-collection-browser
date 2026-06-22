@@ -72,6 +72,12 @@ export interface CollectionBrowserDataSourceInterface
   readonly pageSpecifierParams: PageSpecifierParams | null;
 
   /**
+   * The Lucene query clause corresponding to the current date range,
+   * e.g. `year:[2000 TO 2020]` or `date:[2020-01 TO 2020-12]`.
+   */
+  readonly dateRangeQueryClause: string | undefined;
+
+  /**
    * A FilterMap object representing all filters applied to the current search,
    * including any facets, letter filters, and date ranges.
    */

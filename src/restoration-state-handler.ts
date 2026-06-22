@@ -14,6 +14,7 @@ import {
   tvClipURLParamsToFilters,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
+import { dateFilterField } from './utils/date-filter-field';
 
 export interface RestorationState {
   displayMode?: CollectionDisplayMode;
@@ -190,11 +191,10 @@ export class RestorationStateHandler
       }
     }
 
-    const dateField =
-      state.minSelectedDate?.includes('-') ||
-      state.maxSelectedDate?.includes('-')
-        ? 'date'
-        : 'year';
+    const dateField = dateFilterField(
+      state.minSelectedDate,
+      state.maxSelectedDate,
+    );
 
     if (state.minSelectedDate && state.maxSelectedDate) {
       newParams.append(
