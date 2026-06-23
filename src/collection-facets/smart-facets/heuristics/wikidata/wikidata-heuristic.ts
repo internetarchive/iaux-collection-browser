@@ -76,11 +76,13 @@ export class WikidataHeuristic implements SmartQueryHeuristic {
 
       for (const [keyword, facets] of Object.entries(WIKIDATA_ENTITIES)) {
         const keywordRegex = new RegExp(`\\b${keyword}\\b`);
-        if (keywordRegex.test(searchResults.search[0]?.description)) {
-          const entityName = searchResults.search[0].label;
-          recommendations.push(
-            ...this.replaceQueryPlaceholders(facets, entityName),
-          );
+        for (const searchResult of searchResults.search.slice(0, 3)) {
+          if (keywordRegex.test(searchResult?.description)) {
+            const entityName = searchResult.label;
+            recommendations.push(
+              ...this.replaceQueryPlaceholders(facets, entityName),
+            );
+          }
         }
       }
 
