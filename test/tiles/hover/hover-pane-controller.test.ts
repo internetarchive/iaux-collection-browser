@@ -182,6 +182,42 @@ describe('Hover Pane Controller', () => {
     );
   });
 
+  it('should not call showPopover when the hover pane is already open', async () => {
+    const host = await fixture<HostElement>(
+      html`<host-element
+        .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+      ></host-element>`,
+    );
+
+    // Show the pane and confirm the :popover-open state
+    host.dispatchEvent(new MouseEvent('mousemove'));
+    await new Promise(resolve => {
+      setTimeout(resolve, 0);
+    });
+    await host.updateComplete;
+
+    const pane = host.getHoverPane() as TileHoverPane;
+    expect(pane?.matches(':popover-open')).to.be.true;
+
+    const showPopoverSpy = sinon.spy(pane, 'showPopover');
+
+    // Simulate the condition where the hover pane has finished its fade out
+    // but its popover has not yet been hidden.
+    (host.controller as unknown as { hoverPaneState: string }).hoverPaneState =
+      'hidden';
+
+    // Subsequent mousemove tries to re-show the hover pane...
+    host.dispatchEvent(new MouseEvent('mousemove'));
+    await new Promise(resolve => {
+      setTimeout(resolve, 10);
+    });
+    await host.updateComplete;
+
+    // ...but should NOT call showPopover() again
+    expect(showPopoverSpy.called).to.be.false;
+    expect(host.getHoverPane()?.matches(':popover-open')).to.be.true;
+  });
+
   it('should gracefully handle undefined hover pane from host element', async () => {
     const host = await fixture<HostElement>(
       html`<host-element
