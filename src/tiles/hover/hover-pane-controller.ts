@@ -581,7 +581,9 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     // as it might have been removed by the previous update.
     if (!this.hoverPane?.isConnected) return;
 
-    this.hoverPane?.showPopover?.();
+    if (this.hoverPane && !this.hoverPane.matches(':popover-open')) {
+      this.hoverPane.showPopover?.();
+    }
     await new Promise(resolve => {
       // Pane sizes aren't accurate until next frame
       requestAnimationFrame(resolve);
