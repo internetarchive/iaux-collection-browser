@@ -1,4 +1,4 @@
-import { expect, fixture } from '@open-wc/testing';
+import { expect, fixture, waitUntil } from '@open-wc/testing';
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import {
@@ -403,12 +403,10 @@ describe('Hover Pane Controller', () => {
       const getBoundingClientRectSpy = sinon.spy(host, 'getBoundingClientRect');
 
       host.dispatchEvent(new FocusEvent('focus'));
-      // Need to wait a tick for the event handlers to run
-      await new Promise(resolve => {
-        setTimeout(resolve, 0);
-      });
-
-      expect(getBoundingClientRectSpy.called).to.be.true;
+      await waitUntil(
+        () => getBoundingClientRectSpy.called,
+        'host getBoundingClientRect was never consulted for positioning',
+      );
     });
 
     it('should show hover pane on focus', async () => {
@@ -419,12 +417,15 @@ describe('Hover Pane Controller', () => {
       );
 
       host.dispatchEvent(new FocusEvent('focus'));
-      // Need to wait a tick for the event handlers to run
-      await new Promise(resolve => {
-        setTimeout(resolve, 0);
-      });
 
-      expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
+      // The controller template becomes available synchronously with the focus event
+      expect(host.controller?.getTemplate()).not.to.equal(nothing);
+
+      // The pane element then renders and opens as a popover
+      await waitUntil(
+        () => host.getHoverPane()?.matches(':popover-open') ?? false,
+        'Hover pane never opened as a popover',
+      );
     });
 
     it('should hide hover pane on blur', async () => {
@@ -435,20 +436,16 @@ describe('Hover Pane Controller', () => {
       );
 
       host.dispatchEvent(new FocusEvent('focus'));
-      // Need to wait a tick for the event handlers to run
-      await new Promise(resolve => {
-        setTimeout(resolve, 0);
-      });
-
-      expect(host.controller?.getTemplate()).not.to.equal(nothing); // Is a TemplateResult
+      await waitUntil(
+        () => host.getHoverPane()?.matches(':popover-open') ?? false,
+        'Hover pane never opened as a popover',
+      );
 
       host.dispatchEvent(new FocusEvent('blur'));
-      // Need to wait for the fade out transition
-      await new Promise(resolve => {
-        setTimeout(resolve, 150);
-      });
-
-      expect(host.controller?.getTemplate()).to.equal(nothing);
+      await waitUntil(
+        () => !host.getHoverPane(),
+        'Hover pane was not removed after blur',
+      );
     });
   });
 });
