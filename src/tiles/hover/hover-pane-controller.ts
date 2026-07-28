@@ -584,10 +584,18 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     if (this.hoverPane && !this.hoverPane.matches(':popover-open')) {
       this.hoverPane.showPopover?.();
     }
-    await new Promise(resolve => {
-      // Pane sizes aren't accurate until next frame
-      requestAnimationFrame(resolve);
-    });
+    // Pane sizes aren't accurate until the pane's full descendant tree has
+    // rendered. The next animation frame guarantees that to be true, but
+    // frames are skipped when the page is not visible, so fall back to a
+    // short timer as a backstop in such cases.
+    await Promise.race([
+      new Promise(resolve => {
+        requestAnimationFrame(resolve);
+      }),
+      new Promise(resolve => {
+        setTimeout(resolve, 50);
+      }),
+    ]);
 
     // Apply the correct positioning to the hover pane
     this.repositionHoverPane(options.anchor);
