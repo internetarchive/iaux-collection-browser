@@ -448,4 +448,35 @@ describe('Hover Pane Controller', () => {
       );
     });
   });
+
+  describe('frame-starved environments', () => {
+    let realRaf: typeof window.requestAnimationFrame;
+
+    before(() => {
+      realRaf = window.requestAnimationFrame;
+      // Simulate an environment that never produces rendering frames:
+      // callbacks are accepted but never invoked.
+      window.requestAnimationFrame = () => 0;
+    });
+
+    after(() => {
+      window.requestAnimationFrame = realRaf;
+    });
+
+    it('should position the hover pane even when animation frames never fire', async () => {
+      const host = await fixture<HostElement>(
+        html`<host-element
+          .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+        ></host-element>`,
+      );
+
+      const getBoundingClientRectSpy = sinon.spy(host, 'getBoundingClientRect');
+
+      host.dispatchEvent(new FocusEvent('focus'));
+      await waitUntil(
+        () => getBoundingClientRectSpy.called,
+        'host getBoundingClientRect was never consulted for positioning',
+      );
+    });
+  });
 });
