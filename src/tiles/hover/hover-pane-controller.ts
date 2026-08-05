@@ -581,7 +581,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     // as it might have been removed by the previous update.
     if (!this.hoverPane?.isConnected) return;
 
-    if (this.hoverPane && !this.hoverPane.matches(':popover-open')) {
+    if (this.hoverPane && !this.isHoverPanePopoverOpen()) {
       this.hoverPane.showPopover?.();
     }
     // Pane sizes aren't accurate until the pane's full descendant tree has
@@ -604,6 +604,18 @@ export class HoverPaneController implements HoverPaneControllerInterface {
     // while being positioned). Since it now has the correct positioning, we
     // can make it visible and begin its fade-in animation.
     this.hoverPane?.classList.add('visible', 'fade-in');
+  }
+
+  /**
+   * Whether the hover pane is currently being shown as an open popover.
+   * Returns `false` in browsers that don't yet recognize `:popover-open`.
+   */
+  private isHoverPanePopoverOpen(): boolean {
+    try {
+      return !!this.hoverPane?.matches(':popover-open');
+    } catch {
+      return false;
+    }
   }
 
   /**
