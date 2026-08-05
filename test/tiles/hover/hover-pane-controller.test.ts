@@ -1,4 +1,4 @@
-import { expect, fixture, waitUntil } from '@open-wc/testing';
+import { aTimeout, expect, fixture, waitUntil } from '@open-wc/testing';
 import { html, LitElement, nothing, TemplateResult } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import {
@@ -215,6 +215,42 @@ describe('Hover Pane Controller', () => {
 
     // ...but should NOT call showPopover() again
     expect(showPopoverSpy.called).to.be.false;
+    expect(host.getHoverPane()?.matches(':popover-open')).to.be.true;
+  });
+
+  it('should still show the hover pane when :popover-open is not a supported selector', async () => {
+    const host = await fixture<HostElement>(
+      html`<host-element
+        .controllerOptions=${{ showDelay: 0, hideDelay: 0 }}
+      ></host-element>`,
+    );
+
+    // Simulate a browser that doesn't recognize the :popover-open pseudo and throws when matched against it
+    const originalMatches = Element.prototype.matches;
+    const matchesStub = sinon
+      .stub(Element.prototype, 'matches')
+      .callsFake(function (this: Element, selector: string): boolean {
+        if (selector.includes(':popover-open')) {
+          throw new DOMException(
+            `Failed to execute 'matches' on 'Element': '${selector}' is not a valid selector.`,
+            'SyntaxError',
+          );
+        }
+        return originalMatches.call(this, selector);
+      });
+
+    const showPopoverSpy = sinon.spy(HTMLElement.prototype, 'showPopover');
+
+    try {
+      host.dispatchEvent(new MouseEvent('mousemove'));
+      await aTimeout(10);
+      await host.updateComplete;
+    } finally {
+      matchesStub.restore();
+      showPopoverSpy.restore();
+    }
+
+    expect(showPopoverSpy.calledOnce).to.be.true;
     expect(host.getHoverPane()?.matches(':popover-open')).to.be.true;
   });
 
