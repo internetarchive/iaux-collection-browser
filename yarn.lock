@@ -182,10 +182,10 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/elements@^0.4.1 || ^1.0.0":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.4.1.tgz#825848b85165a747c978c8b3501798a587604118"
-  integrity sha512-4UOP2wC4ZodXwXhVfl18FcF2+/zhw6Fw9PPJaq1Vt5tYuRwd7Ekr9v6LkjgahdSjlhSeUDDE4Ggys0Lk/+m2dA==
+"@internetarchive/elements@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-1.0.0.tgz#bc5d3b2612fe99e33d22df16025a4ba37a70711e"
+  integrity sha512-JlG67KC5AS7uQYZq2xPXPKM5fzzc/xWG804Jh+S+7nhPMNH/huhULjB2TK1NI+aX2Kgi+DiVpJzFlALFHDgLMg==
   dependencies:
     "@internetarchive/ia-clearable-text-input" "^1.1.1"
     "@internetarchive/ia-dropdown" "^2.2.0"
