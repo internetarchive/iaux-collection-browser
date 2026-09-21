@@ -182,11 +182,13 @@
   resolved "https://registry.npmjs.org/@internetarchive/analytics-manager/-/analytics-manager-0.1.4.tgz"
   integrity sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==
 
-"@internetarchive/elements@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.npmjs.org/@internetarchive/elements/-/elements-0.2.2.tgz"
-  integrity sha512-SYhlGrqxXXuAyWdCAXI7IAJ1VqON34fbdif4/++JI89ScMjeH5225kFoW8F27OeGphbUALoIXpkvW06d8Uctug==
+"@internetarchive/elements@^0.4.1 || ^1.0.0":
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/elements/-/elements-0.4.1.tgz#825848b85165a747c978c8b3501798a587604118"
+  integrity sha512-4UOP2wC4ZodXwXhVfl18FcF2+/zhw6Fw9PPJaq1Vt5tYuRwd7Ekr9v6LkjgahdSjlhSeUDDE4Ggys0Lk/+m2dA==
   dependencies:
+    "@internetarchive/ia-clearable-text-input" "^1.1.1"
+    "@internetarchive/ia-dropdown" "^2.2.0"
     "@lit/localize" "^0.12.2"
     lit "^2.8.0 || ^3.3.2"
     magic-snowflakes "^7.0.2"
@@ -225,12 +227,27 @@
   dependencies:
     lit "^2.8.0"
 
+"@internetarchive/ia-clearable-text-input@^1.1.1":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-clearable-text-input/-/ia-clearable-text-input-1.2.0.tgz#25878202d56e40d79b2b69c0d93c53ca0c6d098b"
+  integrity sha512-cuGukMwz5pCGApsZ5iLMaA7fCC0FDZrbPSZ8IdRj6jQZHJx2UQ9ofYsnz6GNsbrLGIeA8HXJV/Ksco15jvEjBA==
+  dependencies:
+    "@internetarchive/icon-close" "^1.4.1"
+    lit "^2.2.7 || ^3.3.2"
+
 "@internetarchive/ia-dropdown@^2.0.0":
   version "2.0.0"
   resolved "https://registry.npmjs.org/@internetarchive/ia-dropdown/-/ia-dropdown-2.0.0.tgz"
   integrity sha512-7Bl2teU6gAwbMrgdhc8u+62TrH3uipF5sEXoyKbarc2eCBw+0I46ck+wBoHLQphFhIEZk1O08IHFa+D7s7jVVQ==
   dependencies:
     lit "^2.8.0"
+
+"@internetarchive/ia-dropdown@^2.2.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/ia-dropdown/-/ia-dropdown-2.3.0.tgz#6e6ad76dc0fbf262597ef5d0199fd9fbe04a8084"
+  integrity sha512-Pt7z4GdDxHsLtXE7SxYY7Fndk1JSUmMZdIIzKZONnQ5qSXHhU5V8zLT4vciDtAnxU3oSKo/EKiC3cDISsmfwDw==
+  dependencies:
+    lit "^2.8.0 || ^3.3.2"
 
 "@internetarchive/ia-styles@^1.0.0":
   version "1.0.0"
@@ -261,6 +278,13 @@
   integrity sha512-MDNwjt2PubjhsxwY0Td3Fl2LPLwhTvLT717Eju06ogHFt8SFDRbxY8iU0dIebM9LvT+2k4cAQdtbUEfCVWnRog==
   dependencies:
     lit-html "^1.2.1"
+
+"@internetarchive/icon-close@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@internetarchive/icon-close/-/icon-close-1.4.1.tgz#ae4d81cbb6356f207631bae7bfa1d0848df7bf30"
+  integrity sha512-nN1rGfScGssGFpfEew4azsrsMyUJtkDWqUDlckJi31PtyQnbZqUmZ07UO3Aw+wZIo3cU1MHxb5VxDy3Rmr8QGA==
+  dependencies:
+    lit "^2.0.2 || ^3.0.0"
 
 "@internetarchive/icon-user@^1.4.0":
   version "1.4.0"
@@ -4051,6 +4075,15 @@ lit-html@^3.3.0:
   version "3.3.2"
   resolved "https://registry.npmjs.org/lit/-/lit-3.3.2.tgz"
   integrity sha512-NF9zbsP79l4ao2SNrH3NkfmFgN/hBYSQo90saIVI1o5GpjAdCPVstVzO1MrLOakHoEhYkrtRjPK6Ob521aoYWQ==
+  dependencies:
+    "@lit/reactive-element" "^2.1.0"
+    lit-element "^4.2.0"
+    lit-html "^3.3.0"
+
+"lit@^2.0.2 || ^3.0.0", "lit@^2.2.7 || ^3.3.2":
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/lit/-/lit-3.3.3.tgz#93579885e51a20a772c68482a34706fe1636e8f0"
+  integrity sha512-fycuvZg/hkpozL00lm1pEJH5nN/lr9ZXd6mJI2HSN4+Bzc+LDNdEApJ6HFbPkdFNHLvOplIIuJvxkS4XUxqirw==
   dependencies:
     "@lit/reactive-element" "^2.1.0"
     lit-element "^4.2.0"
