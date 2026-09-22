@@ -207,9 +207,9 @@
     lit "^2.2.7"
 
 "@internetarchive/field-parsers@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@internetarchive/field-parsers/-/field-parsers-1.0.0.tgz"
-  integrity sha512-cbD0FtJOjzBm7exxFrzrkHnqbmalKbEXA4i7KrwhUGBojF/QTTLAvaIRXH/bfoiTyCh6YT1/E/mULAQPdB6yvQ==
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@internetarchive/field-parsers/-/field-parsers-1.2.0.tgz#e24d992f1b97195375fa73ad774e9a6e18f8d3ea"
+  integrity sha512-qldfCN0w5QDeKzZG80h54hxQ9oyQ10uulazMy451846BHeklqTb3sNLzqyUWzSiqr/vopvQlCHITaGrPtkUlrw==
 
 "@internetarchive/histogram-date-range@^1.4.2":
   version "1.4.2"
