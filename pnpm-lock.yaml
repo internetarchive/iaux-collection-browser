@@ -19,8 +19,8 @@ importers:
         specifier: ^0.1.4
         version: 0.1.4
       '@internetarchive/elements':
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: ^1.0.0
+        version: 1.0.0
       '@internetarchive/feature-feedback':
         specifier: ^1.0.0
         version: 1.1.0
@@ -274,8 +274,9 @@ packages:
   '@internetarchive/analytics-manager@0.1.4':
     resolution: {integrity: sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==}
 
-  '@internetarchive/elements@0.2.2':
-    resolution: {integrity: sha512-SYhlGrqxXXuAyWdCAXI7IAJ1VqON34fbdif4/++JI89ScMjeH5225kFoW8F27OeGphbUALoIXpkvW06d8Uctug==}
+  '@internetarchive/elements@1.0.0':
+    resolution: {integrity: sha512-JlG67KC5AS7uQYZq2xPXPKM5fzzc/xWG804Jh+S+7nhPMNH/huhULjB2TK1NI+aX2Kgi+DiVpJzFlALFHDgLMg==}
+    engines: {node: '>=24', pnpm: '>=11'}
 
   '@internetarchive/feature-feedback@1.1.0':
     resolution: {integrity: sha512-wuoiO2rArQ7P9sKA0Nkf5MlttaLMTnsco/LX/JH07RehGtY4sAWSEOED03/ZIKC24Mn8BGYWC/JbCkifCWCioQ==}
@@ -292,8 +293,14 @@ packages:
   '@internetarchive/ia-activity-indicator@0.0.6':
     resolution: {integrity: sha512-Llut9sdsmmVqgxASqSlCqoiXSNb4M7xWY3/O7QUh3NnuR7WMfAcYBqNRDsLve7t/VkbVVBOVyeVAROnjvYHGNQ==}
 
+  '@internetarchive/ia-clearable-text-input@1.2.0':
+    resolution: {integrity: sha512-cuGukMwz5pCGApsZ5iLMaA7fCC0FDZrbPSZ8IdRj6jQZHJx2UQ9ofYsnz6GNsbrLGIeA8HXJV/Ksco15jvEjBA==}
+
   '@internetarchive/ia-dropdown@2.0.0':
     resolution: {integrity: sha512-7Bl2teU6gAwbMrgdhc8u+62TrH3uipF5sEXoyKbarc2eCBw+0I46ck+wBoHLQphFhIEZk1O08IHFa+D7s7jVVQ==}
+
+  '@internetarchive/ia-dropdown@2.3.0':
+    resolution: {integrity: sha512-Pt7z4GdDxHsLtXE7SxYY7Fndk1JSUmMZdIIzKZONnQ5qSXHhU5V8zLT4vciDtAnxU3oSKo/EKiC3cDISsmfwDw==}
 
   '@internetarchive/ia-styles@1.0.0':
     resolution: {integrity: sha512-7xvfROl5sUasM3cB+bCwOrO/Qyy08Tk50V7NAGgPKjmHr8LBUk4Q/Qj/ExKcoaiROQE3JlVy9TDANEl8WSLJCw==}
@@ -3705,8 +3712,10 @@ snapshots:
 
   '@internetarchive/analytics-manager@0.1.4': {}
 
-  '@internetarchive/elements@0.2.2':
+  '@internetarchive/elements@1.0.0':
     dependencies:
+      '@internetarchive/ia-clearable-text-input': 1.2.0
+      '@internetarchive/ia-dropdown': 2.3.0
       '@lit/localize': 0.12.2
       lit: 3.3.2
       magic-snowflakes: 7.0.2
@@ -3735,9 +3744,18 @@ snapshots:
     dependencies:
       lit: 2.8.0
 
+  '@internetarchive/ia-clearable-text-input@1.2.0':
+    dependencies:
+      '@internetarchive/icon-close': 1.4.1
+      lit: 3.3.2
+
   '@internetarchive/ia-dropdown@2.0.0':
     dependencies:
       lit: 2.8.0
+
+  '@internetarchive/ia-dropdown@2.3.0':
+    dependencies:
+      lit: 3.3.2
 
   '@internetarchive/ia-styles@1.0.0':
     dependencies:
