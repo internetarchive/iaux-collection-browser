@@ -18,8 +18,8 @@ importers:
         specifier: ^0.1.4
         version: 0.1.4
       '@internetarchive/elements':
-        specifier: 1.0.1-webdev-9121.1
-        version: 1.0.1-webdev-9121.1
+        specifier: ^1.1.0
+        version: 1.1.0
       '@internetarchive/feature-feedback':
         specifier: ^1.0.0
         version: 1.1.0
@@ -270,8 +270,8 @@ packages:
   '@internetarchive/analytics-manager@0.1.4':
     resolution: {integrity: sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==}
 
-  '@internetarchive/elements@1.0.1-webdev-9121.1':
-    resolution: {integrity: sha512-eBFYKLwLPLtHAnq9idx6ziCv2m2c7MRth7vlJxAPMp3gVbXfAaNv6nwSeEbwoJ7uwdbONQk2l6TFuNcYq7OO2w==}
+  '@internetarchive/elements@1.1.0':
+    resolution: {integrity: sha512-NrT/1BTW3km1XaUTxh4JHav2PcgpJh9VBXRLIeM3nJyN2G2vOTFcZpOY1zuJ7XhwmBCzt+/R0RiHonK6qDtBhQ==}
     engines: {node: '>=24', pnpm: '>=11'}
 
   '@internetarchive/feature-feedback@1.1.0':
@@ -3705,7 +3705,7 @@ snapshots:
 
   '@internetarchive/analytics-manager@0.1.4': {}
 
-  '@internetarchive/elements@1.0.1-webdev-9121.1':
+  '@internetarchive/elements@1.1.0':
     dependencies:
       '@internetarchive/ia-clearable-text-input': 1.2.0
       '@internetarchive/ia-dropdown': 2.3.0
