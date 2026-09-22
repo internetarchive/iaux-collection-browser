@@ -14,13 +14,13 @@ import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manag
 import {
   BarScalingOption,
   BinSnappingInterval,
-} from '@internetarchive/histogram-date-range';
+} from '@internetarchive/elements/ia-histogram-date-range/models';
 import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
 
-import '@internetarchive/histogram-date-range';
+import '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
 
 @customElement('expanded-date-picker')
 export class ExpandedDatePicker extends LitElement {
@@ -53,7 +53,7 @@ export class ExpandedDatePicker extends LitElement {
   render(): TemplateResult {
     return html`
       <div id="container">
-        <histogram-date-range
+        <ia-histogram-date-range
           id="date-picker"
           .minDate=${this.minDate}
           .maxDate=${this.maxDate}
@@ -79,7 +79,7 @@ export class ExpandedDatePicker extends LitElement {
           >
             ${msg('Apply date range')}
           </button>
-        </histogram-date-range>
+        </ia-histogram-date-range>
       </div>
     `;
   }

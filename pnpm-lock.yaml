@@ -6,7 +6,6 @@ settings:
 
 overrides:
   '@types/chai': ^4.3.20
-  '@internetarchive/modal-manager': 2.0.5
 
 importers:
 
@@ -19,17 +18,14 @@ importers:
         specifier: ^0.1.4
         version: 0.1.4
       '@internetarchive/elements':
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: 1.0.1-webdev-9121.1
+        version: 1.0.1-webdev-9121.1
       '@internetarchive/feature-feedback':
         specifier: ^1.0.0
         version: 1.1.0
       '@internetarchive/field-parsers':
         specifier: ^1.0.0
         version: 1.0.0
-      '@internetarchive/histogram-date-range':
-        specifier: ^1.4.2
-        version: 1.4.2
       '@internetarchive/ia-dropdown':
         specifier: ^2.0.0
         version: 2.0.0
@@ -40,8 +36,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       '@internetarchive/modal-manager':
-        specifier: 2.0.5
-        version: 2.0.5
+        specifier: ^2.0.6
+        version: 2.0.6
       '@internetarchive/recaptcha-manager':
         specifier: ^0.1.1
         version: 0.1.1
@@ -274,8 +270,8 @@ packages:
   '@internetarchive/analytics-manager@0.1.4':
     resolution: {integrity: sha512-2GcEkotsWduirbFoTiNXWzNnzLQArYfJIlW67/alqEKKl95G5jUepYu6FYCd4fj9PwCiPRAp1gDbRSnF9+GsIA==}
 
-  '@internetarchive/elements@1.0.0':
-    resolution: {integrity: sha512-JlG67KC5AS7uQYZq2xPXPKM5fzzc/xWG804Jh+S+7nhPMNH/huhULjB2TK1NI+aX2Kgi+DiVpJzFlALFHDgLMg==}
+  '@internetarchive/elements@1.0.1-webdev-9121.1':
+    resolution: {integrity: sha512-eBFYKLwLPLtHAnq9idx6ziCv2m2c7MRth7vlJxAPMp3gVbXfAaNv6nwSeEbwoJ7uwdbONQk2l6TFuNcYq7OO2w==}
     engines: {node: '>=24', pnpm: '>=11'}
 
   '@internetarchive/feature-feedback@1.1.0':
@@ -286,9 +282,6 @@ packages:
 
   '@internetarchive/field-parsers@1.2.0':
     resolution: {integrity: sha512-qldfCN0w5QDeKzZG80h54hxQ9oyQ10uulazMy451846BHeklqTb3sNLzqyUWzSiqr/vopvQlCHITaGrPtkUlrw==}
-
-  '@internetarchive/histogram-date-range@1.4.2':
-    resolution: {integrity: sha512-7zBl8nmVJ8fVsOpWPLujNoHYJ6MBWrxibGPxhoFHV5AYd59MyOIEEnf5davXGZFLmGmGGLmdfqh4hm+ZCuQw3w==}
 
   '@internetarchive/ia-activity-indicator@0.0.6':
     resolution: {integrity: sha512-Llut9sdsmmVqgxASqSlCqoiXSNb4M7xWY3/O7QUh3NnuR7WMfAcYBqNRDsLve7t/VkbVVBOVyeVAROnjvYHGNQ==}
@@ -323,8 +316,8 @@ packages:
   '@internetarchive/lazy-loader-service@0.2.0':
     resolution: {integrity: sha512-SI/ADWnIhdtuAbxkeOItb0xOqco+ueVtwEAdEb0D60sFngUCUpBr/EXeIeh+ykXveO9pmd5J0ZVpgEfKdbhE+g==}
 
-  '@internetarchive/modal-manager@2.0.5':
-    resolution: {integrity: sha512-u4Qtslp2T03KMAshSHe45RxHs/rBUQCCjNXIXL4wKEPcdqj0K/gyNSz3F/eMqxf2TutHLewCtnXOmS7W42xwxA==}
+  '@internetarchive/modal-manager@2.0.6':
+    resolution: {integrity: sha512-PDEXz005tgjhKxrJLnd1sn8wn3DceEQqDluDhcn8+gxxhFKX714jyicKlbgvHzQOLtJYTdJjnNdmiyziF7ZIVA==}
 
   '@internetarchive/recaptcha-manager@0.1.1':
     resolution: {integrity: sha512-+ENMfFm/yqAr6wXji7SZEwEywwvfLazU7KnWkCcHpQU0uwbb//OJ5Lag2tv2QtU7fsrgirFBcOth833HaNcynw==}
@@ -3712,11 +3705,12 @@ snapshots:
 
   '@internetarchive/analytics-manager@0.1.4': {}
 
-  '@internetarchive/elements@1.0.0':
+  '@internetarchive/elements@1.0.1-webdev-9121.1':
     dependencies:
       '@internetarchive/ia-clearable-text-input': 1.2.0
       '@internetarchive/ia-dropdown': 2.3.0
       '@lit/localize': 0.12.2
+      dayjs: 1.11.23
       lit: 3.3.2
       magic-snowflakes: 7.0.2
       tslib: 2.8.1
@@ -3733,12 +3727,6 @@ snapshots:
   '@internetarchive/field-parsers@1.0.0': {}
 
   '@internetarchive/field-parsers@1.2.0': {}
-
-  '@internetarchive/histogram-date-range@1.4.2':
-    dependencies:
-      '@internetarchive/ia-activity-indicator': 0.0.6
-      dayjs: 1.11.23
-      lit: 2.8.0
 
   '@internetarchive/ia-activity-indicator@0.0.6':
     dependencies:
@@ -3787,7 +3775,7 @@ snapshots:
     dependencies:
       nanoevents: 6.0.2
 
-  '@internetarchive/modal-manager@2.0.5':
+  '@internetarchive/modal-manager@2.0.6':
     dependencies:
       '@internetarchive/ia-activity-indicator': 0.0.6
       '@internetarchive/icon-close': 1.4.1
