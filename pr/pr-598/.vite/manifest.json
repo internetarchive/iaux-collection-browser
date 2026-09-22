@@ -1,6 +1,6 @@
 {
   "index.html": {
-    "file": "assets/main-FfjiXzMR.js",
+    "file": "assets/main-DN4XeAc2.js",
     "name": "main",
     "src": "index.html",
     "isEntry": true,
@@ -8,8 +8,8 @@
       "assets/video-BEzxxlRF.svg"
     ]
   },
-  "node_modules/@internetarchive/elements/dist/src/elements/ia-status-indicator/icons/video.svg": {
+  "node_modules/.pnpm/@internetarchive+elements@1.0.0/node_modules/@internetarchive/elements/dist/src/elements/ia-status-indicator/icons/video.svg": {
     "file": "assets/video-BEzxxlRF.svg",
-    "src": "node_modules/@internetarchive/elements/dist/src/elements/ia-status-indicator/icons/video.svg"
+    "src": "node_modules/.pnpm/@internetarchive+elements@1.0.0/node_modules/@internetarchive/elements/dist/src/elements/ia-status-indicator/icons/video.svg"
   }
 }
