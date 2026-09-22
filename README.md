@@ -17,48 +17,32 @@ import '@internetarchive/collection-browser';
 
 ## Local Demo with `web-dev-server`
 ```bash
-yarn install
-yarn start
+pnpm install
+pnpm start
 ```
 To run a local development server that serves the basic demo located in `index.html`
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run
 ```bash
-yarn run test
+pnpm run test
 ```
 
 To run the tests in watch mode (for &lt;abbr title=&#34;test driven development&#34;&gt;TDD&lt;/abbr&gt;, for example), run
 
 ```bash
-yarn run test:watch
+pnpm run test:watch
 ```
 
 ## Linting with ESLint, Prettier, and Types
 To scan the project for linting errors, run
 ```bash
-yarn run lint
-```
-
-You can lint with ESLint and Prettier individually as well
-```bash
-yarn run lint:eslint
-```
-```bash
-yarn run lint:prettier
+pnpm run lint
 ```
 
 To automatically fix many linting errors, run
 ```bash
-yarn run format
-```
-
-You can format using ESLint and Prettier individually as well
-```bash
-yarn run format:eslint
-```
-```bash
-yarn run format:prettier
+pnpm run format
 ```
 
 ## Tooling configs
@@ -72,7 +56,7 @@ If you customize the configuration a lot, you can consider moving them to indivi
 Live demo app from current main branch: [https://internetarchive.github.io/iaux-collection-browser](https://internetarchive.github.io/iaux-collection-browser)
 
 ```
-yarn run deploy
+pnpm run deploy
 ```
 
 ## Automatic Deploy of Demo App
