@@ -2482,6 +2482,61 @@ describe('Collection Browser', () => {
     expect(infiniteScroller).not.to.exist;
   });
 
+  it('lays out results-aside content beside the result tiles', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+        <div slot="results-aside" id="aside" style="width: 200px">Aside</div>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const resultsBody = el.shadowRoot?.querySelector('#results-body');
+    const asideSlot = resultsBody?.querySelector(
+      'slot[name="results-aside"]',
+    ) as HTMLSlotElement;
+    const scroller = resultsBody?.querySelector(
+      '#results-main > infinite-scroller',
+    ) as HTMLElement;
+    const aside = el.querySelector('#aside') as HTMLElement;
+
+    expect(asideSlot?.assignedElements()).to.deep.equal([aside]);
+    expect(scroller).to.exist;
+
+    // The aside sits to the right of the tiles, sharing the results row
+    const scrollerRect = scroller.getBoundingClientRect();
+    const asideRect = aside.getBoundingClientRect();
+    expect(asideRect.left).to.be.at.least(scrollerRect.right);
+    expect(asideRect.top).to.be.at.most(scrollerRect.bottom);
+  });
+
+  it('forwards sort-bar-end content into the sort bar', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+        <button slot="sort-bar-end" id="end-button">End</button>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar',
+    ) as SortFilterBar;
+    const forwardingSlot = sortBar?.querySelector(
+      'slot[name="sort-bar-end"]',
+    ) as HTMLSlotElement;
+    const button = el.querySelector('#end-button');
+
+    expect(forwardingSlot?.slot).to.equal('sort-bar-end');
+    expect(forwardingSlot?.assignedElements()).to.deep.equal([button]);
+  });
+
   it('fetch larger result on search page for admin user to manage items', async () => {
     const resultsSpy = sinon.spy();
     const searchService = new MockSearchService({

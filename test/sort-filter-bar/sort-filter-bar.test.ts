@@ -259,6 +259,35 @@ describe('Sort dropdown behavior', () => {
     expect(slotEl?.shadowRoot?.querySelector('#sort-selector-container')).to.not
       .exist;
   });
+
+  it('renders the sort-bar-end slot after the display mode buttons', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar>
+        <button slot="sort-bar-end" id="end-button">End</button>
+      </sort-filter-bar>
+    `);
+
+    const sortBar = el.shadowRoot?.querySelector('#sort-bar');
+    const displayModes = sortBar?.querySelector('#display-style-selector');
+    const endSlot = sortBar?.querySelector(
+      'slot[name="sort-bar-end"]',
+    ) as HTMLSlotElement;
+
+    expect(endSlot).to.exist;
+    expect(sortBar?.lastElementChild).to.equal(endSlot);
+    expect(displayModes?.nextElementSibling).to.equal(endSlot);
+    expect(endSlot.assignedElements()[0]?.id).to.equal('end-button');
+  });
+
+  it('keeps the sort-bar-end slot when display modes are suppressed', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar suppressDisplayModes></sort-filter-bar>
+    `);
+
+    const sortBar = el.shadowRoot?.querySelector('#sort-bar');
+    expect(sortBar?.querySelector('#display-style-selector')).to.not.exist;
+    expect(sortBar?.querySelector('slot[name="sort-bar-end"]')).to.exist;
+  });
 });
 
 describe('Sort direction button behavior', () => {

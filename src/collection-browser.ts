@@ -909,10 +909,17 @@ export class CollectionBrowser
             ? this.manageBarTemplate
             : this.sortFilterBarTemplate}
           <slot name="cb-results"></slot>
-          ${this.displayMode === `list-compact` && this.totalResults
-            ? this.listHeaderTemplate
-            : nothing}
-          ${this.suppressResultTiles ? nothing : this.infiniteScrollerTemplate}
+          <div id="results-body">
+            <div id="results-main">
+              ${this.displayMode === `list-compact` && this.totalResults
+                ? this.listHeaderTemplate
+                : nothing}
+              ${this.suppressResultTiles
+                ? nothing
+                : this.infiniteScrollerTemplate}
+            </div>
+            <slot name="results-aside"></slot>
+          </div>
         </section>
       </div>
     `;
@@ -1015,6 +1022,7 @@ export class CollectionBrowser
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
         <slot name="sort-options-right" slot="sort-options-right"></slot>
+        <slot name="sort-bar-end" slot="sort-bar-end"></slot>
       </sort-filter-bar>
     `;
   }
@@ -2795,6 +2803,20 @@ export class CollectionBrowser
 
         .mobile #results {
           padding: 5px 5px 0;
+        }
+
+        /*
+         * The results sit in a row with the optional results-aside slot, which
+         * lays out beside them as a flex item and takes its own width and spacing
+         */
+        #results-body {
+          display: flex;
+          align-items: flex-start;
+        }
+
+        #results-main {
+          flex: 1;
+          min-width: 0;
         }
 
         #left-column {

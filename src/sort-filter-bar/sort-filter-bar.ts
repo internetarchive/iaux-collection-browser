@@ -129,6 +129,7 @@ export class SortFilterBar extends LitElement {
             : html`<div id="display-style-selector">
                 ${this.displayOptionTemplate}
               </div>`}
+          <slot name="sort-bar-end"></slot>
         </section>
 
         ${this.dropdownBackdropVisible ? this.dropdownBackdrop : nothing}
