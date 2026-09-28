@@ -1349,6 +1349,60 @@ export const getMockSuccessWithManyAggregations: () => Result<
   },
 });
 
+/**
+ * Returns a mock response with thousands of subject aggregation buckets
+ * (`subject-0` through `subject-4999`, in descending order of count), plus a
+ * few with punctuation and accents for exercising the More... dialog's filter.
+ */
+export const getMockSuccessWithLargeAggregations: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => {
+  const buckets = [
+    ...Array.from({ length: 5000 }, (_, i) => ({
+      key: `subject-${i}`,
+      doc_count: 10000 - i,
+    })),
+    { key: 'Dr. Drew', doc_count: 3 },
+    { key: 'A.O.R.', doc_count: 2 },
+    { key: 'Café society', doc_count: 1 },
+  ];
+  return {
+    success: {
+      request: {
+        kind: 'aggregations',
+        clientParameters: {
+          user_query: 'large-facets',
+          sort: [],
+        },
+        backendRequests: {
+          primary: {
+            kind: 'aggregations',
+            finalized_parameters: {
+              user_query: 'large-facets',
+              sort: [],
+            },
+          },
+        },
+      },
+      rawResponse: {},
+      sessionContext: {},
+      response: {
+        totalResults: 0,
+        returnedCount: 0,
+        results: [],
+        aggregations: {
+          subject: new Aggregation({ buckets }),
+        },
+      },
+      responseHeader: {
+        succeeded: true,
+        query_time: 0,
+      },
+    },
+  };
+};
+
 export const getMockErrorResult: () => Result<
   SearchResponse,
   SearchServiceError
