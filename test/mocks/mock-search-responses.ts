@@ -1366,6 +1366,8 @@ export const getMockSuccessWithLargeAggregations: () => Result<
     { key: 'Dr. Drew', doc_count: 3 },
     { key: 'A.O.R.', doc_count: 2 },
     { key: 'Café society', doc_count: 1 },
+    { key: 'WC-TV', doc_count: 1 },
+    { key: 'Human-animal relationships', doc_count: 1 },
   ];
   return {
     success: {

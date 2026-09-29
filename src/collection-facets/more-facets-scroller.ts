@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { guard } from 'lit/directives/guard.js';
 import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
@@ -60,6 +61,17 @@ export class MoreFacetsScroller extends LitElement {
   /** How many buckets to stack in each column before starting the next one */
   @property({ type: Number }) rowsPerColumn = MORE_FACETS__ROWS_PER_COLUMN;
 
+  /**
+   * Whether rows leave out their hide (eye) button, unless the value is
+   * already hidden. Set it when the facet has only one value in all, since
+   * hiding that would leave no results. Don't base it on how many rows are
+   * showing: a filter that leaves a single row still needs its hide button.
+   */
+  @property({ type: Boolean }) omitHideButtons = false;
+
+  /** Accessible name for the columns, e.g. "Subject values" */
+  @property({ type: String }) label?: string;
+
   private win = new PageWindow(this, {
     colWidth: MORE_FACETS__COLUMN_WIDTH,
     total: 0,
@@ -108,10 +120,13 @@ export class MoreFacetsScroller extends LitElement {
         <div class="frame">
           <div
             class="scroller"
-            tabindex="-1"
+            role="group"
+            aria-label=${ifDefined(this.label)}
+            tabindex=${w.pageCount > 0 ? 0 : -1}
             style="--rowsPerColumn: ${this.rowsPerColumn}"
             ${ref(w.attach)}
             @click=${this.rowClicked}
+            @focusin=${this.rowFocused}
           >
             <div class="sizer" style="width:${w.totalWidth}px">
               ${guard([w.pageCount, w.pageWidth, w.totalWidth], () =>
@@ -167,7 +182,6 @@ export class MoreFacetsScroller extends LitElement {
       firstCol + colsPerPage,
       Math.ceil(buckets.length / rowsPerColumn),
     );
-    const omitHideButton = buckets.length === 1;
 
     const columns: TemplateResult[] = [];
     for (let col = firstCol; col < endCol; col++) {
@@ -180,7 +194,7 @@ export class MoreFacetsScroller extends LitElement {
               facetType,
               bucket,
               collectionTitles: this.collectionTitles,
-              omitHideButton,
+              omitHideButton: this.omitHideButtons,
             }),
           )}
         </div>`,
@@ -240,9 +254,52 @@ export class MoreFacetsScroller extends LitElement {
   }
 
   /**
+   * When focus comes into the rows from outside them, or from the scroller
+   * itself (a tab stop just before the rows), keeps it on the page being
+   * shown. Otherwise Tab lands on the mounted page before this one, and
+   * Shift+Tab on the last one after it, and the browser scrolls there.
+   * Moving from row to row is left alone, so Tab and Shift+Tab still carry on
+   * into the next or previous page.
+   */
+  private rowFocused(e: FocusEvent): void {
+    const { scroller } = this;
+    const row = e.target;
+    if (!scroller || !(row instanceof HTMLElement) || row === scroller) return;
+
+    const from = e.relatedTarget;
+    const fromRows =
+      from instanceof Node && from !== scroller && scroller.contains(from);
+    if (fromRows) return;
+
+    const page = Number(row.closest<HTMLElement>('.page')?.dataset.page);
+    const { currentPage } = this.win;
+    if (Number.isNaN(page) || page === currentPage) return;
+
+    const rowsOnPage = [
+      ...scroller.querySelectorAll<HTMLElement>(
+        `.page[data-page="${currentPage}"] input`,
+      ),
+    ].filter(input => !input.closest('[hidden]'));
+    const target =
+      page < currentPage ? rowsOnPage[0] : rowsOnPage[rowsOnPage.length - 1];
+    target?.focus({ preventScroll: true });
+
+    // Whatever moved focus may also scroll to the row it picked: in the
+    // dialog, modal-manager's focus trap already has, before this event; the
+    // browser's own Tab does just after this handler returns. Put the page
+    // back now, and again before the next frame is painted (and before the
+    // window is recomputed, so this page stays mounted).
+    this.win.scrollToPage(currentPage);
+    requestAnimationFrame(() => this.win.scrollToPage(currentPage));
+  }
+
+  /**
    * If a row has focus and its page is about to leave the window, moves focus
    * to the scroller itself. Otherwise focus would fall back to the document
-   * when the page is removed, and the arrow keys would stop scrolling.
+   * when the page is removed, and the arrow keys would stop scrolling. The
+   * scroller being a tab stop matters here: modal-manager's focus trap only
+   * moves Tab between tabbable elements, and from anything else it goes back
+   * to the start of the dialog.
    */
   private keepFocusOnScreen(): void {
     const focusedPage =

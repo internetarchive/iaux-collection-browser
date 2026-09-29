@@ -1,4 +1,11 @@
-import { expect, fixture, oneEvent, waitUntil } from '@open-wc/testing';
+import {
+  aTimeout,
+  expect,
+  fixture,
+  oneEvent,
+  waitUntil,
+} from '@open-wc/testing';
+import { sendKeys } from '@web/test-runner-commands';
 import { html } from 'lit';
 import type { MoreFacetsScroller } from '../../src/collection-facets/more-facets-scroller';
 import '../../src/collection-facets/more-facets-scroller';
@@ -237,6 +244,20 @@ describe('More facets scroller', () => {
     await waitUntil(() => el.currentPage === 26, 'prev did not move');
   });
 
+  it('only leaves out hide buttons when told to', async () => {
+    const buckets = makeBuckets(1);
+    const lone = await createScroller({ buckets });
+    const hideContainer = (el: MoreFacetsScroller) =>
+      el.shadowRoot?.querySelector('.hide-facet-container') as HTMLElement;
+
+    // One row on its own doesn't mean there's only one value in all
+    expect(hideContainer(lone).hidden).to.be.false;
+
+    lone.omitHideButtons = true;
+    await lone.updateComplete;
+    expect(hideContainer(lone).hidden).to.be.true;
+  });
+
   it('hides the arrow buttons when every value fits on one page', async () => {
     const el = await createScroller({ buckets: makeBuckets(10) });
     const arrows = el.shadowRoot?.querySelectorAll('.scroll-arrow');
@@ -253,6 +274,121 @@ describe('More facets scroller', () => {
     await restOnPage(el, 10);
 
     expect(el.shadowRoot?.activeElement).to.equal(scrollerOf(el));
+  });
+
+  describe('keyboard focus', () => {
+    const pageWidth = 3 * COL_WIDTH;
+    const rowsPerPage = 3 * 12;
+
+    function focused(el: MoreFacetsScroller): string {
+      const active = el.shadowRoot?.activeElement as HTMLInputElement | null;
+      if (!active) return 'nothing';
+      if (active === scrollerOf(el)) return 'scroller';
+      const kind = active.classList.contains('hide-facet-checkbox')
+        ? 'hide'
+        : 'select';
+      return `${kind}:${active.value}`;
+    }
+
+    function arrow(el: MoreFacetsScroller, which: 'prev' | 'next') {
+      return el.shadowRoot?.querySelector(
+        `.scroll-arrow.${which}`,
+      ) as HTMLButtonElement;
+    }
+
+    /** Presses Shift+Tab (this runner's sendKeys doesn't take key combos) */
+    async function shiftTab() {
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+    }
+
+    /** Waits long enough for any scroll the focus change set off to settle */
+    async function settle(el: MoreFacetsScroller) {
+      await aTimeout(300);
+      await el.updateComplete;
+    }
+
+    it('is a labeled tab stop of its own while there are values', async () => {
+      const el = await createScroller();
+      el.label = 'Subject values';
+      await el.updateComplete;
+      const scroller = scrollerOf(el);
+
+      expect(scroller.tabIndex).to.equal(0);
+      expect(scroller.getAttribute('role')).to.equal('group');
+      expect(scroller.getAttribute('aria-label')).to.equal('Subject values');
+
+      el.buckets = [];
+      await el.updateComplete;
+      expect(scroller.tabIndex).to.equal(-1);
+    });
+
+    it('lands on the current page when tabbing in from the previous arrow', async () => {
+      const el = await createScroller();
+      await restOnPage(el, 3);
+      arrow(el, 'prev').focus();
+
+      await sendKeys({ press: 'Tab' });
+      await settle(el);
+      expect(focused(el)).to.equal('scroller');
+
+      await sendKeys({ press: 'Tab' });
+      await settle(el);
+      expect(focused(el)).to.equal(`select:value-${3 * rowsPerPage}`);
+      expect(el.currentPage).to.equal(3);
+      expect(scrollerOf(el).scrollLeft).to.equal(3 * pageWidth);
+    });
+
+    it('lands on the last row of the current page when tabbing back in from the next arrow', async () => {
+      const el = await createScroller();
+      await restOnPage(el, 3);
+      arrow(el, 'next').focus();
+
+      await shiftTab();
+      await settle(el);
+
+      expect(focused(el)).to.equal(`hide:value-${4 * rowsPerPage - 1}`);
+      expect(el.currentPage).to.equal(3);
+      expect(scrollerOf(el).scrollLeft).to.equal(3 * pageWidth);
+    });
+
+    it('still tabs from the last row of a page on into the next page', async () => {
+      const el = await createScroller();
+      await restOnPage(el, 3);
+      checkbox(el, `value-${4 * rowsPerPage - 1}`, 'hide').focus();
+
+      await sendKeys({ press: 'Tab' });
+      await settle(el);
+
+      expect(focused(el)).to.equal(`select:value-${4 * rowsPerPage}`);
+      await waitUntil(() => el.currentPage === 4, 'did not follow focus');
+    });
+
+    it('still tabs back from the first row of a page into the previous page', async () => {
+      const el = await createScroller();
+      await restOnPage(el, 3);
+      checkbox(el, `value-${3 * rowsPerPage}`).focus();
+
+      await shiftTab();
+      await settle(el);
+
+      expect(focused(el)).to.equal(`hide:value-${3 * rowsPerPage - 1}`);
+      await waitUntil(() => el.currentPage === 2, 'did not follow focus');
+    });
+
+    it('lands on the current page when tabbing on from the scroller itself', async () => {
+      const el = await createScroller();
+      checkbox(el, 'value-0').focus();
+      await restOnPage(el, 10);
+      expect(focused(el)).to.equal('scroller');
+
+      await sendKeys({ press: 'Tab' });
+      await settle(el);
+
+      expect(focused(el)).to.equal(`select:value-${10 * rowsPerPage}`);
+      expect(el.currentPage).to.equal(10);
+    });
   });
 
   it('renders no pages for an empty list', async () => {

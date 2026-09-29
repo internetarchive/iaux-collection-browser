@@ -8,6 +8,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { when } from 'lit/directives/when.js';
 import {
@@ -59,7 +60,12 @@ import {
   mergeSelectedFacets,
   updateSelectedFacetBucket,
 } from '../utils/facet-utils';
-import { normalizeFilterText } from '../utils/normalize-filter-text';
+import {
+  filterTextIncludes,
+  normalizeFilterText,
+  type NormalizedFilterText,
+} from '../utils/normalize-filter-text';
+import { log } from '../utils/log';
 import { MORE_FACETS__MAX_AGGREGATIONS } from './models';
 
 @customElement('more-facets-content')
@@ -130,6 +136,12 @@ export class MoreFacetsContent extends LitElement {
   @state() private filterText = '';
 
   /**
+   * Whether the search for this facet's values failed, either with an error
+   * result or by throwing.
+   */
+  @state() private loadFailed = false;
+
+  /**
    * The buckets from `facetGroup` that match `filterText`, in display order.
    * Derived in `willUpdate`.
    */
@@ -140,7 +152,7 @@ export class MoreFacetsContent extends LitElement {
    * against, keyed by bucket key. Filled lazily so that each value is only
    * normalized once, however many times the filter text changes.
    */
-  private filterKeys = new Map<string, string>();
+  private filterKeys = new Map<string, NormalizedFilterText>();
 
   /**
    * The values currently selected or hidden, in the order they were selected.
@@ -188,6 +200,7 @@ export class MoreFacetsContent extends LitElement {
       changed.has('filterMap')
     ) {
       this.facetsLoading = true;
+      this.loadFailed = false;
       this.sortedBy =
         this.searchType === SearchType.TV
           ? tvMoreFacetSort[this.facetKey as FacetOption]
@@ -274,17 +287,28 @@ export class MoreFacetsContent extends LitElement {
 
     try {
       const results = await this.searchService?.search(params, this.searchType);
+      const response = results?.success?.response;
+      if (!response) {
+        log('More facets search failed', results?.error);
+        this.loadFailed = true;
+        this.aggregations = undefined;
+        return;
+      }
 
       // Record collection titles before the aggregations, so that they're
       // available for sorting & filtering once the facet group is built.
-      const collectionTitles = results?.success?.response?.collectionTitles;
+      const { collectionTitles } = response;
       if (collectionTitles) {
         for (const [id, title] of Object.entries(collectionTitles)) {
           this.collectionTitles?.set(id, title);
         }
       }
 
-      this.aggregations = results?.success?.response.aggregations;
+      this.aggregations = response.aggregations;
+    } catch (err) {
+      log('More facets search threw', err);
+      this.loadFailed = true;
+      this.aggregations = undefined;
     } finally {
       this.facetsLoading = false;
     }
@@ -362,9 +386,17 @@ export class MoreFacetsContent extends LitElement {
    */
   private listChosenBuckets(): FacetBucket[] {
     const byKey = new Map(this.facetGroup?.buckets.map(b => [b.key, b]));
-    return Object.keys(this.currentSelections)
-      .map(key => byKey.get(key))
-      .filter((b): b is FacetBucket => !!b && b.state !== 'none');
+    // Without a list (e.g. the search failed), fall back on the selections
+    // themselves, so they can still be seen and cleared.
+    return Object.entries(this.currentSelections)
+      .map(
+        ([key, selection]) =>
+          byKey.get(key) ?? {
+            ...selection,
+            displayText: this.displayTextFor(key),
+          },
+      )
+      .filter(bucket => bucket.state !== 'none');
   }
 
   /**
@@ -466,11 +498,13 @@ export class MoreFacetsContent extends LitElement {
   private filterBuckets(): FacetBucket[] {
     const buckets = this.facetGroup?.buckets ?? [];
     const needle = normalizeFilterText(this.filterText);
-    if (!needle) return buckets;
-    return buckets.filter(bucket => this.filterKeyFor(bucket).includes(needle));
+    if (!needle.spaced) return buckets;
+    return buckets.filter(bucket =>
+      filterTextIncludes(this.filterKeyFor(bucket), needle),
+    );
   }
 
-  private filterKeyFor(bucket: FacetBucket): string {
+  private filterKeyFor(bucket: FacetBucket): NormalizedFilterText {
     let filterKey = this.filterKeys.get(bucket.key);
     if (filterKey === undefined) {
       const visibleText = [bucket.displayText ?? bucket.key, bucket.extraNote]
@@ -486,20 +520,29 @@ export class MoreFacetsContent extends LitElement {
    * Whether the patron's filter text has ruled out every value
    */
   private get noValuesMatch(): boolean {
-    const isFiltering = normalizeFilterText(this.filterText) !== '';
+    const isFiltering = normalizeFilterText(this.filterText).spaced !== '';
     return isFiltering && this.filteredBuckets.length === 0;
   }
 
   private get moreFacetsTemplate(): TemplateResult {
+    const valuesLabel = this.facetKey
+      ? msg(str`${facetTitles[this.facetKey]} values`)
+      : undefined;
     return html`
       <more-facets-scroller
         .facetType=${this.facetKey}
         .buckets=${this.filteredBuckets}
         .collectionTitles=${this.collectionTitles}
+        ?omitHideButtons=${this.facetGroup?.buckets.length === 1}
+        label=${ifDefined(valuesLabel)}
         @facetClick=${this.facetClicked}
         @pageChanged=${this.pageChanged}
       ></more-facets-scroller>
-      ${when(this.noValuesMatch, () => this.noMatchesTemplate)}
+      ${when(
+        this.loadFailed,
+        () => this.loadErrorTemplate,
+        () => when(this.noValuesMatch, () => this.noMatchesTemplate),
+      )}
     `;
   }
 
@@ -550,8 +593,14 @@ export class MoreFacetsContent extends LitElement {
   }
 
   private get noMatchesTemplate(): TemplateResult {
-    return html`<p class="no-matches" role="status">
+    return html`<p class="facets-message no-matches" role="status">
       ${msg('No matching values found.')}
+    </p>`;
+  }
+
+  private get loadErrorTemplate(): TemplateResult {
+    return html`<p class="facets-message load-error" role="alert">
+      ${msg('Sorry, these values couldn’t be loaded. Please try again later.')}
     </p>`;
   }
 
@@ -594,9 +643,12 @@ export class MoreFacetsContent extends LitElement {
     const defaultSwitchSide =
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
     const valuesName = this.facetKey ? facetPluralTitles[this.facetKey] : '';
+    // From the facet key rather than the facet group, which is missing
+    // until the values load (or if they fail to)
+    const title = this.facetKey ? facetTitles[this.facetKey] : '';
 
     return html`<span class="sr-only">${msg('More facets for:')}</span>
-      <span class="title">${this.facetGroup?.title}</span>
+      <span class="title">${title}</span>
       <span class="header-controls">
         <span class="sort-controls">
           <label class="sort-label">${msg('Sort by:')}</label>
@@ -606,7 +658,7 @@ export class MoreFacetsContent extends LitElement {
                 leftValue=${AggregationSortType.COUNT}
                 leftLabel="Count"
                 rightValue=${valueFacetSort[this.facetKey]}
-                .rightLabel=${this.facetGroup?.title}
+                .rightLabel=${title}
                 side=${defaultSwitchSide}
                 @change=${(e: CustomEvent<string>) => {
                   this.sortFacetAggregation(
@@ -842,7 +894,7 @@ export class MoreFacetsContent extends LitElement {
           padding: 10px 0;
         }
 
-        .no-matches {
+        .facets-message {
           position: absolute;
           inset: 0;
           display: flex;

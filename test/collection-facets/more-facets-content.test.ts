@@ -322,7 +322,7 @@ describe('More facets content', () => {
     const scroller = scrollerIn(el) as MoreFacetsScroller;
     const rows = scroller.shadowRoot?.querySelectorAll('.facet-row-container');
 
-    expect(scroller.buckets).to.have.length(5003);
+    expect(scroller.buckets).to.have.length(5005);
     expect(scroller.pageCount).to.be.greaterThan(100);
     expect(rows?.length).to.be.at.most(4 * 3 * 12);
   });
@@ -369,6 +369,39 @@ describe('More facets content', () => {
     expect(bucketKeys(el)).to.deep.equal(['Café society']);
   });
 
+  it('finds values with hyphens or slashes whether the words are typed apart or together', async () => {
+    const el = await createDialog('subject', 'large-facets');
+
+    await typeFilter(el, 'wc tv');
+    expect(bucketKeys(el)).to.deep.equal(['WC-TV']);
+
+    await typeFilter(el, 'wctv');
+    expect(bucketKeys(el)).to.deep.equal(['WC-TV']);
+
+    await typeFilter(el, 'human animal');
+    expect(bucketKeys(el)).to.deep.equal(['Human-animal relationships']);
+
+    await typeFilter(el, 'human-animal');
+    expect(bucketKeys(el)).to.deep.equal(['Human-animal relationships']);
+  });
+
+  it('keeps the hide button when a filter leaves a single value', async () => {
+    const el = await createDialog('subject', 'large-facets');
+
+    await typeFilter(el, 'Dr. Drew');
+    expect(bucketKeys(el)).to.deep.equal(['Dr. Drew']);
+    const scroller = scrollerIn(el) as MoreFacetsScroller;
+    await scroller.updateComplete;
+    const hideButton = scroller.shadowRoot?.querySelector(
+      '.hide-facet-container',
+    ) as HTMLElement;
+    expect(hideButton.hidden).to.be.false;
+
+    await clickRow(el, 'Dr. Drew', 'hide');
+    expect(stateOf(el, 'Dr. Drew')).to.equal('hidden');
+    expect(chiclets(el)).to.deep.equal(['Hidden: Dr. Drew']);
+  });
+
   it('shows a message when no values match the filter, and hides it once cleared', async () => {
     const el = await createDialog('subject', 'large-facets');
 
@@ -378,7 +411,7 @@ describe('More facets content', () => {
 
     await typeFilter(el, '');
     expect(el.shadowRoot?.querySelector('.no-matches')).not.to.exist;
-    expect(bucketKeys(el)).to.have.length(5003);
+    expect(bucketKeys(el)).to.have.length(5005);
   });
 
   it('returns to the first page when the filter changes', async () => {
@@ -609,6 +642,75 @@ describe('More facets content', () => {
         'subject-7',
         'subject-1',
       ]);
+    });
+  });
+
+  describe('when the search fails', () => {
+    async function createFailedDialog(
+      searchService: unknown,
+      selectedFacets = getDefaultSelectedFacets(),
+    ): Promise<MoreFacetsContent> {
+      const el = await fixture<MoreFacetsContent>(
+        html`<more-facets-content
+          style="display: block; width: 900px"
+          .facetKey=${'subject'}
+          .query=${'error'}
+          .searchService=${searchService}
+          .selectedFacets=${selectedFacets}
+        ></more-facets-content>`,
+      );
+      await waitUntil(() => !el.facetsLoading, 'never finished loading');
+      await el.updateComplete;
+      return el;
+    }
+
+    it('says so when the search returns an error', async () => {
+      const el = await createFailedDialog(new MockSearchService());
+
+      const message = el.shadowRoot?.querySelector('.load-error');
+      expect(message?.textContent?.trim()).to.equal(
+        'Sorry, these values couldn’t be loaded. Please try again later.',
+      );
+      expect(el.shadowRoot?.querySelector('.no-matches')).not.to.exist;
+      expect(bucketKeys(el)).to.be.empty;
+      // The header still names the facet
+      expect(
+        el.shadowRoot?.querySelector('.title')?.textContent?.trim(),
+      ).to.equal('Subject');
+    });
+
+    it('says so, rather than failing, when the search throws', async () => {
+      const throwingService = {
+        search: async () => {
+          throw new Error('Network down');
+        },
+      };
+      const el = await createFailedDialog(throwingService);
+
+      expect(el.shadowRoot?.querySelector('.load-error')).to.exist;
+      expect(el.shadowRoot?.querySelector('.facets-loader')).not.to.exist;
+    });
+
+    it('still shows existing selections as chiclets that can be cleared', async () => {
+      const el = await createFailedDialog(new MockSearchService(), {
+        ...getDefaultSelectedFacets(),
+        subject: {
+          Dogs: { key: 'Dogs', count: 10, state: 'selected' },
+        },
+      });
+      const changed = sinon.spy();
+      el.addEventListener('facetsChanged', changed);
+
+      expect(chiclets(el)).to.deep.equal(['Selected: Dogs']);
+      (el.shadowRoot?.querySelector('.chiclet-remove') as HTMLElement).click();
+      await el.updateComplete;
+      expect(chiclets(el)).to.be.empty;
+
+      (
+        el.shadowRoot?.querySelector('.btn-submit') as HTMLButtonElement
+      ).click();
+      const selections = changed.firstCall.args[0].detail as SelectedFacets;
+      expect(selections.subject?.Dogs).to.be.undefined;
     });
   });
 });
