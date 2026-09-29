@@ -1,0 +1,5 @@
+import { svg } from 'lit';
+
+export default svg`
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="m14 53 24 24 48-52" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+`;

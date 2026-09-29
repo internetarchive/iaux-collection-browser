@@ -8,6 +8,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { when } from 'lit/directives/when.js';
 import {
   Aggregation,
@@ -51,9 +52,11 @@ import {
 } from '../utils/analytics-events';
 import './toggle-switch';
 import { srOnlyStyle } from '../styles/sr-only';
+import checkIcon from '../assets/img/icons/check';
+import eyeClosedIcon from '../assets/img/icons/eye-closed';
+import closeCircleDark from '../assets/img/icons/close-circle-dark';
 import {
   mergeSelectedFacets,
-  sortBucketsBySelectionState,
   updateSelectedFacetBucket,
 } from '../utils/facet-utils';
 import { normalizeFilterText } from '../utils/normalize-filter-text';
@@ -139,8 +142,23 @@ export class MoreFacetsContent extends LitElement {
    */
   private filterKeys = new Map<string, string>();
 
+  /**
+   * The values currently selected or hidden, in the order they were selected.
+   * Shown as chiclets above the list. Derived in `willUpdate`.
+   */
+  private chosenBuckets: FacetBucket[] = [];
+
+  /**
+   * Position of a chiclet that was just removed, whose neighbor should get
+   * focus once it's gone.
+   */
+  private chicletFocusIndex?: number;
+
   @query('more-facets-scroller')
   private scroller?: MoreFacetsScroller;
+
+  @query('ia-clearable-text-input')
+  private filterInput?: HTMLElement;
 
   willUpdate(changed: PropertyValues): void {
     if (changed.has('aggregations')) {
@@ -155,6 +173,7 @@ export class MoreFacetsContent extends LitElement {
     if (facetGroupChanged) {
       // Convert the merged selected facets & aggregations into a facet group
       this.facetGroup = this.mergedFacets;
+      this.chosenBuckets = this.listChosenBuckets();
     }
 
     if (facetGroupChanged || changed.has('filterText')) {
@@ -183,6 +202,16 @@ export class MoreFacetsContent extends LitElement {
     // the first page rather than somewhere in the middle of them.
     if (changed.has('filterText') || changed.has('sortedBy')) {
       this.scroller?.scrollToPage(0);
+    }
+
+    // A removed chiclet took its focused button with it; move focus to the
+    // chiclet that took its place, or back to the filter field if none are left.
+    if (this.chicletFocusIndex !== undefined) {
+      const buttons =
+        this.shadowRoot?.querySelectorAll<HTMLElement>('.chiclet-remove') ?? [];
+      const index = Math.min(this.chicletFocusIndex, buttons.length - 1);
+      this.chicletFocusIndex = undefined;
+      (buttons[index] ?? this.filterInput)?.focus();
     }
   }
 
@@ -262,59 +291,46 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
-   * Combines the selected facets with the aggregations to create a single list of facets
+   * Combines the selected facets with the aggregations into the single list of
+   * values the dialog shows. Selected and hidden values keep their place in the
+   * current sort order rather than moving to the front; the chiclets above the
+   * list are what call them out.
    */
   private get mergedFacets(): FacetGroup | undefined {
     if (!this.facetKey || !this.selectedFacets) return undefined;
 
-    const { selectedFacetGroup, aggregationFacetGroup } = this;
+    const { aggregationFacetGroup } = this;
 
     // If we don't have any aggregations, then there is nothing to show yet
     if (!aggregationFacetGroup) return undefined;
 
-    // Start with either the selected group if we have one, or the aggregate group otherwise
-    const facetGroup = { ...(selectedFacetGroup ?? aggregationFacetGroup) };
+    const selections = this.currentSelections;
 
-    // Attach the counts to the selected buckets
-    const bucketsWithCount =
-      selectedFacetGroup?.buckets.map(bucket => {
-        const selectedBucket = aggregationFacetGroup.buckets.find(
-          b => b.key === bucket.key,
-        );
-        return selectedBucket
-          ? {
-              ...bucket,
-              count: selectedBucket.count,
-            }
-          : bucket;
-      }) ?? [];
-
-    // Sort the buckets by selection state
-    // We do this *prior* to considering unapplied selections, because we want the facets
-    // to remain in position when they are selected/unselected, rather than re-sort themselves.
-    sortBucketsBySelectionState(bucketsWithCount, this.sortedBy);
-
-    // Append any additional buckets that were not selected
-    aggregationFacetGroup.buckets.forEach(bucket => {
-      const existingBucket = selectedFacetGroup?.buckets.find(
-        b => b.key === bucket.key,
-      );
-      if (existingBucket) return;
-      bucketsWithCount.push(bucket);
+    // Mark each aggregated value with its selection state, if it has one
+    const buckets = aggregationFacetGroup.buckets.map(bucket => {
+      const selection = selections[bucket.key];
+      return selection ? { ...bucket, state: selection.state } : bucket;
     });
 
-    // Apply any unapplied selections
-    const unappliedBuckets = this.unappliedFacetChanges[this.facetKey];
-    for (const [index, bucket] of bucketsWithCount.entries()) {
-      const unappliedBucket = unappliedBuckets?.[bucket.key];
-      if (unappliedBucket) {
-        bucketsWithCount[index] = { ...unappliedBucket };
-      }
+    // Values selected before the dialog opened can be missing from the
+    // aggregations (a hidden value is excluded from the results it would be
+    // counted in). Slot them in where the current sort puts them, so they can
+    // still be changed from the list.
+    const aggregatedKeys = new Set(buckets.map(b => b.key));
+    const preexisting = this.selectedFacets[this.facetKey] ?? {};
+    for (const [key, data] of Object.entries(preexisting)) {
+      if (aggregatedKeys.has(key)) continue;
+      this.insertInSortOrder(buckets, {
+        displayText: this.displayTextFor(key),
+        key,
+        count: data.count,
+        state: selections[key]?.state ?? data.state,
+      });
     }
 
     // For TV creator facets, uppercase the display text
     if (this.facetKey === 'creator' && this.isTvSearch) {
-      bucketsWithCount.forEach(b => {
+      buckets.forEach(b => {
         b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
 
         const channelLabel = this.tvChannelAliases?.get(b.displayText);
@@ -324,8 +340,55 @@ export class MoreFacetsContent extends LitElement {
       });
     }
 
-    facetGroup.buckets = bucketsWithCount;
-    return facetGroup;
+    return { ...aggregationFacetGroup, buckets };
+  }
+
+  /**
+   * This facet type's selections: the ones made before the dialog opened,
+   * overridden by any unapplied changes made in it. Values stay in the order
+   * they were first selected, and cleared ones remain with state `'none'`.
+   */
+  private get currentSelections(): Record<string, FacetBucket> {
+    if (!this.facetKey) return {};
+    return {
+      ...this.selectedFacets?.[this.facetKey],
+      ...this.unappliedFacetChanges[this.facetKey],
+    };
+  }
+
+  /**
+   * The values that are currently selected or hidden, in the order they were
+   * selected, as they appear in `facetGroup`.
+   */
+  private listChosenBuckets(): FacetBucket[] {
+    const byKey = new Map(this.facetGroup?.buckets.map(b => [b.key, b]));
+    return Object.keys(this.currentSelections)
+      .map(key => byKey.get(key))
+      .filter((b): b is FacetBucket => !!b && b.state !== 'none');
+  }
+
+  /**
+   * Inserts `bucket` ahead of the first bucket that the current sort would put
+   * after it.
+   */
+  private insertInSortOrder(buckets: FacetBucket[], bucket: FacetBucket): void {
+    const index = buckets.findIndex(b => this.compareForSort(bucket, b) < 0);
+    buckets.splice(index === -1 ? buckets.length : index, 0, bucket);
+  }
+
+  /**
+   * Orders two buckets the way the aggregations are ordered for the current
+   * sort (see `getSortedBuckets` in search-service).
+   */
+  private compareForSort(a: FacetBucket, b: FacetBucket): number {
+    switch (this.sortedBy) {
+      case AggregationSortType.ALPHABETICAL:
+        return (a.displayText ?? a.key).localeCompare(b.displayText ?? b.key);
+      case AggregationSortType.NUMERIC:
+        return Number(b.key) - Number(a.key);
+      default:
+        return b.count - a.count;
+    }
   }
 
   /**
@@ -338,36 +401,6 @@ export class MoreFacetsContent extends LitElement {
         ? this.collectionTitles?.get(key)
         : undefined;
     return collectionTitle ?? key;
-  }
-
-  /**
-   * Converts the selected facets for the current facet key to a `FacetGroup`,
-   * which is easier to work with.
-   */
-  private get selectedFacetGroup(): FacetGroup | undefined {
-    if (!this.selectedFacets || !this.facetKey) return undefined;
-
-    const selectedFacetsForKey = this.selectedFacets[this.facetKey];
-    if (!selectedFacetsForKey) return undefined;
-
-    const facetGroupTitle = facetTitles[this.facetKey];
-
-    const buckets: FacetBucket[] = Object.entries(selectedFacetsForKey).map(
-      ([value, data]) => {
-        return {
-          displayText: this.displayTextFor(value),
-          key: value,
-          count: data?.count,
-          state: data?.state,
-        };
-      },
-    );
-
-    return {
-      title: facetGroupTitle,
-      key: this.facetKey,
-      buckets,
-    };
   }
 
   /**
@@ -470,6 +503,52 @@ export class MoreFacetsContent extends LitElement {
     `;
   }
 
+  /**
+   * A chiclet for each selected or hidden value, each with a button to clear it
+   */
+  private get chicletsTemplate(): TemplateResult {
+    const valuesName = this.facetKey ? facetPluralTitles[this.facetKey] : '';
+    return html`
+      <ul class="chiclets" aria-label=${msg(str`Selected ${valuesName}`)}>
+        ${repeat(
+          this.chosenBuckets,
+          bucket => bucket.key,
+          (bucket, index) => this.chicletTemplate(bucket, index),
+        )}
+      </ul>
+    `;
+  }
+
+  private chicletTemplate(bucket: FacetBucket, index: number): TemplateResult {
+    const isHidden = bucket.state === 'hidden';
+    const text = [bucket.displayText ?? bucket.key, bucket.extraNote]
+      .filter(Boolean)
+      .join(' ');
+    const removeLabel = isHidden
+      ? msg(str`Unhide ${text}`)
+      : msg(str`Deselect ${text}`);
+
+    return html`
+      <li class="chiclet" title=${text}>
+        <span class="chiclet-icon" aria-hidden="true"
+          >${isHidden ? eyeClosedIcon : checkIcon}</span
+        >
+        <span class="sr-only"
+          >${isHidden ? msg('Hidden:') : msg('Selected:')}</span
+        >
+        <span class="chiclet-text">${text}</span>
+        <button
+          type="button"
+          class="chiclet-remove"
+          aria-label=${removeLabel}
+          @click=${() => this.chicletRemoved(bucket, index)}
+        >
+          ${closeCircleDark}
+        </button>
+      </li>
+    `;
+  }
+
   private get noMatchesTemplate(): TemplateResult {
     return html`<p class="no-matches" role="status">
       ${msg('No matching values found.')}
@@ -558,6 +637,7 @@ export class MoreFacetsContent extends LitElement {
         : html`
             <section id="more-facets">
               <div class="header-content">${this.modalHeaderTemplate}</div>
+              ${when(this.chosenBuckets.length, () => this.chicletsTemplate)}
               <div class="facets-content">${this.moreFacetsTemplate}</div>
               ${this.footerTemplate}
             </section>
@@ -580,6 +660,20 @@ export class MoreFacetsContent extends LitElement {
       this.facetKey,
       e.detail.bucket,
     );
+  }
+
+  /**
+   * Clears the selection a chiclet stands for, which removes the chiclet and
+   * unchecks the value in the list.
+   */
+  private chicletRemoved(bucket: FacetBucket, index: number): void {
+    if (!this.facetKey) return;
+    this.unappliedFacetChanges = updateSelectedFacetBucket(
+      this.unappliedFacetChanges,
+      this.facetKey,
+      { ...bucket, state: 'none' },
+    );
+    this.chicletFocusIndex = index;
   }
 
   private pageChanged(e: CustomEvent<number>): void {
@@ -679,6 +773,69 @@ export class MoreFacetsContent extends LitElement {
           width: 16rem;
         }
 
+        .chiclets {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin: 0;
+          padding: 10px 10px 0;
+          list-style: none;
+          /* About three rows; any more scroll, so the values stay in view */
+          max-height: 7.8rem;
+          overflow-y: auto;
+        }
+
+        .chiclet {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          max-width: 24rem;
+          padding: 2px 3px 2px 6px;
+          border: 1px solid ${modalSubmitButton};
+          border-radius: 5px;
+          background: #fff;
+          color: #2c2c2c;
+          font-size: 1.2rem;
+          line-height: normal;
+        }
+
+        .chiclet-icon {
+          display: flex;
+          flex: none;
+        }
+
+        .chiclet-icon svg {
+          width: 12px;
+          height: 12px;
+        }
+
+        .chiclet-text {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .chiclet-remove {
+          display: flex;
+          flex: none;
+          padding: 2px;
+          border: none;
+          border-radius: 50%;
+          background: none;
+          cursor: pointer;
+        }
+
+        .chiclet-remove svg {
+          width: 10px;
+          height: 10px;
+          opacity: 0.55;
+        }
+
+        .chiclet-remove:hover svg,
+        .chiclet-remove:focus-visible svg {
+          opacity: 1;
+        }
+
         .facets-content {
           position: relative;
           font-size: 1.2rem;
@@ -725,8 +882,14 @@ export class MoreFacetsContent extends LitElement {
         }
 
         @media (max-width: 560px) {
+          /* The filter gets a line of its own here, so let it fill that line */
+          .filter-controls {
+            flex: 1 1 auto;
+          }
           .filter-input {
-            width: 12rem;
+            flex: 1 1 auto;
+            width: auto;
+            min-width: 12rem;
             --input-font-size: 1.2rem;
           }
         }

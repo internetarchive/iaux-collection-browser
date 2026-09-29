@@ -39,7 +39,13 @@ const yearSelectedFacets: SelectedFacets = {
 async function createDialog(
   facetKey: string,
   query: string,
-  analyticsHandler?: MockAnalyticsHandler,
+  {
+    analyticsHandler,
+    selectedFacets = getDefaultSelectedFacets(),
+  }: {
+    analyticsHandler?: MockAnalyticsHandler;
+    selectedFacets?: SelectedFacets;
+  } = {},
 ): Promise<MoreFacetsContent> {
   const el = await fixture<MoreFacetsContent>(
     html`<more-facets-content
@@ -47,7 +53,7 @@ async function createDialog(
       .facetKey=${facetKey}
       .query=${query}
       .searchService=${new MockSearchService()}
-      .selectedFacets=${getDefaultSelectedFacets()}
+      .selectedFacets=${selectedFacets}
       .analyticsHandler=${analyticsHandler}
     ></more-facets-content>`,
   );
@@ -62,6 +68,36 @@ async function createDialog(
 
 function scrollerIn(el: MoreFacetsContent): MoreFacetsScroller | undefined {
   return el.shadowRoot?.querySelector('more-facets-scroller') ?? undefined;
+}
+
+/** The chiclets' labels, e.g. "Selected: subject-0" */
+function chiclets(el: MoreFacetsContent): string[] {
+  const chips = el.shadowRoot?.querySelectorAll('.chiclet') ?? [];
+  return [...chips].map(chip =>
+    [
+      chip.querySelector('.sr-only')?.textContent?.trim(),
+      chip.querySelector('.chiclet-text')?.textContent?.trim(),
+    ].join(' '),
+  );
+}
+
+/** Clicks a row's checkbox, if its page is mounted */
+async function clickRow(
+  el: MoreFacetsContent,
+  key: string,
+  kind: 'select' | 'hide' = 'select',
+) {
+  const inputs = scrollerIn(el)?.shadowRoot?.querySelectorAll<HTMLInputElement>(
+    `.${kind}-facet-checkbox`,
+  );
+  const input = [...(inputs ?? [])].find(i => i.value === key);
+  if (!input) throw new Error(`no ${kind} checkbox for ${key}`);
+  input.click();
+  await el.updateComplete;
+}
+
+function stateOf(el: MoreFacetsContent, key: string) {
+  return scrollerIn(el)?.buckets.find(b => b.key === key)?.state;
 }
 
 /** Types into the dialog's filter field */
@@ -221,15 +257,14 @@ describe('More facets content', () => {
       el.shadowRoot?.querySelector('.title')?.textContent?.trim(),
     ).to.equal('Year');
 
-    // First bucket is the one that was included in the selected facets
-    const firstBucket = scroller?.buckets[0];
-    expect(firstBucket?.key).to.equal('2000');
-    expect(firstBucket?.count).to.equal(5);
-
-    // Second bucket is the most recent year, since year facets default to descending order of year
-    const secondBucket = scroller?.buckets[1];
-    expect(secondBucket?.key).to.equal('2024');
-    expect(secondBucket?.count).to.equal(5);
+    // Year facets default to descending order of year, and the selected year
+    // keeps its place in that order rather than moving to the front
+    const keys = scroller?.buckets.map(b => b.key);
+    expect(keys?.slice(0, 2)).to.deep.equal(['2024', '2023']);
+    const selected = scroller?.buckets.find(b => b.key === '2000');
+    expect(keys?.indexOf('2000')).to.equal(24);
+    expect(selected?.state).to.equal('selected');
+    expect(selected?.count).to.equal(5);
   });
 
   it('cancel button clicked event', async () => {
@@ -397,7 +432,9 @@ describe('More facets content', () => {
 
   it('records page changes in analytics', async () => {
     const analyticsHandler = new MockAnalyticsHandler();
-    const el = await createDialog('subject', 'large-facets', analyticsHandler);
+    const el = await createDialog('subject', 'large-facets', {
+      analyticsHandler,
+    });
     const scroller = scrollerIn(el) as MoreFacetsScroller;
 
     scroller.scrollToPage(3);
@@ -417,5 +454,161 @@ describe('More facets content', () => {
     el.remove();
 
     expect(removeSpy.calledWith('keydown')).to.be.true;
+  });
+
+  describe('chiclets', () => {
+    const preselected = (): SelectedFacets => ({
+      ...getDefaultSelectedFacets(),
+      subject: {
+        'subject-3': { key: 'subject-3', count: 9997, state: 'selected' },
+        'subject-7': { key: 'subject-7', count: 9993, state: 'hidden' },
+      },
+    });
+
+    it('shows no chiclets when nothing is selected', async () => {
+      const el = await createDialog('subject', 'large-facets');
+
+      expect(el.shadowRoot?.querySelector('.chiclets')).not.to.exist;
+    });
+
+    it('shows existing selections as chiclets and in their sorted place in the list', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: preselected(),
+      });
+
+      expect(chiclets(el)).to.deep.equal([
+        'Selected: subject-3',
+        'Hidden: subject-7',
+      ]);
+      expect(bucketKeys(el).slice(0, 8)).to.deep.equal(
+        Array.from({ length: 8 }, (_, i) => `subject-${i}`),
+      );
+      expect(stateOf(el, 'subject-3')).to.equal('selected');
+      expect(stateOf(el, 'subject-7')).to.equal('hidden');
+    });
+
+    it('slots a selection missing from the aggregations into its sorted place', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: {
+          ...getDefaultSelectedFacets(),
+          subject: {
+            excluded: { key: 'excluded', count: 9995, state: 'hidden' },
+          },
+        },
+      });
+
+      // Right after subject-5, the last value with at least as many results
+      expect(bucketKeys(el).slice(5, 8)).to.deep.equal([
+        'subject-5',
+        'excluded',
+        'subject-6',
+      ]);
+      expect(chiclets(el)).to.deep.equal(['Hidden: excluded']);
+    });
+
+    it('adds a chiclet when a value is checked or hidden in the list', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: preselected(),
+      });
+
+      await clickRow(el, 'subject-1');
+      await clickRow(el, 'subject-2', 'hide');
+
+      expect(chiclets(el)).to.deep.equal([
+        'Selected: subject-3',
+        'Hidden: subject-7',
+        'Selected: subject-1',
+        'Hidden: subject-2',
+      ]);
+      // Checking a value doesn't move it
+      expect(bucketKeys(el)[1]).to.equal('subject-1');
+    });
+
+    it('removes the chiclet when a value is unchecked in the list', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: preselected(),
+      });
+
+      await clickRow(el, 'subject-3');
+      await clickRow(el, 'subject-7', 'hide');
+
+      expect(chiclets(el)).to.be.empty;
+      expect(el.shadowRoot?.querySelector('.chiclets')).not.to.exist;
+    });
+
+    it('clears the value in the list when its chiclet is removed', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: preselected(),
+      });
+      const removeButtons = () =>
+        el.shadowRoot?.querySelectorAll<HTMLButtonElement>('.chiclet-remove') ??
+        [];
+
+      removeButtons()[0].focus();
+      removeButtons()[0].click();
+      await el.updateComplete;
+
+      expect(chiclets(el)).to.deep.equal(['Hidden: subject-7']);
+      expect(stateOf(el, 'subject-3')).to.equal('none');
+      const checkbox = [
+        ...(scrollerIn(el)?.shadowRoot?.querySelectorAll<HTMLInputElement>(
+          '.select-facet-checkbox',
+        ) ?? []),
+      ].find(i => i.value === 'subject-3');
+      await scrollerIn(el)?.updateComplete;
+      expect(checkbox?.checked).to.be.false;
+      // Focus moves to the chiclet that took its place
+      expect(el.shadowRoot?.activeElement).to.equal(removeButtons()[0]);
+    });
+
+    it('moves focus to the filter field once the last chiclet is removed', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: {
+          ...getDefaultSelectedFacets(),
+          subject: {
+            'subject-3': { key: 'subject-3', count: 9997, state: 'selected' },
+          },
+        },
+      });
+
+      (el.shadowRoot?.querySelector('.chiclet-remove') as HTMLElement).click();
+      await el.updateComplete;
+
+      expect(el.shadowRoot?.activeElement?.tagName).to.equal(
+        'IA-CLEARABLE-TEXT-INPUT',
+      );
+    });
+
+    it('keeps showing every chiclet while the list is filtered', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: preselected(),
+      });
+
+      await typeFilter(el, 'drew');
+
+      expect(bucketKeys(el)).to.deep.equal(['Dr. Drew']);
+      expect(chiclets(el)).to.have.length(2);
+    });
+
+    it('applies the selections the chiclets show', async () => {
+      const el = await createDialog('subject', 'large-facets', {
+        selectedFacets: preselected(),
+      });
+      const changed = sinon.spy();
+      el.addEventListener('facetsChanged', changed);
+
+      (el.shadowRoot?.querySelector('.chiclet-remove') as HTMLElement).click();
+      await el.updateComplete;
+      await clickRow(el, 'subject-1');
+      (
+        el.shadowRoot?.querySelector('.btn-submit') as HTMLButtonElement
+      ).click();
+
+      const selections = changed.firstCall.args[0].detail as SelectedFacets;
+      expect(Object.keys(selections.subject ?? {})).to.have.members([
+        'subject-7',
+        'subject-1',
+      ]);
+    });
   });
 });
