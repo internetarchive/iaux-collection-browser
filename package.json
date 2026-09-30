@@ -3,6 +3,10 @@
   "description": "The Internet Archive Collection Browser.",
   "license": "AGPL-3.0-only",
   "author": "Internet Archive",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/internetarchive/iaux-collection-browser.git"
+  },
   "version": "4.8.1-webdev-9227.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
