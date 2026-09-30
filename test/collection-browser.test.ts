@@ -3,7 +3,7 @@ import { html } from 'lit';
 import sinon from 'sinon';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { FilterConstraint, SearchType } from '@internetarchive/search-service';
-import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
+import type { IAHistogramDateRange } from '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
 import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import {
@@ -1193,8 +1193,8 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
-      'histogram-date-range',
-    ) as HistogramDateRange;
+      'ia-histogram-date-range',
+    ) as IAHistogramDateRange;
 
     expect(histogram, 'histogram exists').to.exist;
 
@@ -1244,8 +1244,8 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
-      'histogram-date-range',
-    ) as HistogramDateRange;
+      'ia-histogram-date-range',
+    ) as IAHistogramDateRange;
 
     expect(histogram, 'histogram exists').to.exist;
 
@@ -2574,8 +2574,8 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
-      'histogram-date-range',
-    ) as HistogramDateRange;
+      'ia-histogram-date-range',
+    ) as IAHistogramDateRange;
 
     expect(histogram, 'histogram exists').to.exist;
   });
@@ -2605,8 +2605,8 @@ describe('Collection Browser', () => {
     await nextTick();
 
     const histogram = facets?.shadowRoot?.querySelector(
-      'histogram-date-range',
-    ) as HistogramDateRange;
+      'ia-histogram-date-range',
+    ) as IAHistogramDateRange;
 
     expect(histogram, 'histogram exists').to.exist;
 

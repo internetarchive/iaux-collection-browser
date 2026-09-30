@@ -1,4 +1,4 @@
-import type { HistogramDateRange } from '@internetarchive/histogram-date-range';
+import type { IAHistogramDateRange } from '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
 import {
   ModalManager,
   ModalManagerInterface,
@@ -39,7 +39,7 @@ describe('Expanded Date Picker', () => {
 
     const datePicker = el.shadowRoot?.querySelector(
       '#date-picker',
-    ) as HistogramDateRange;
+    ) as IAHistogramDateRange;
     expect(datePicker).to.exist;
 
     datePicker.minSelectedDate = '2';
@@ -174,7 +174,7 @@ describe('Expanded Date Picker', () => {
 
     const datePicker = el.shadowRoot?.querySelector(
       '#date-picker',
-    ) as HistogramDateRange;
+    ) as IAHistogramDateRange;
     expect(datePicker).to.exist;
 
     datePicker.minSelectedDate = '2';

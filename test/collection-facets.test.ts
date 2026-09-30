@@ -90,7 +90,7 @@ describe('Collection Facets', () => {
     });
     await el.updateComplete;
 
-    const histogram = el.shadowRoot?.querySelector('histogram-date-range');
+    const histogram = el.shadowRoot?.querySelector('ia-histogram-date-range');
     expect(histogram).to.exist;
   });
 
@@ -108,7 +108,7 @@ describe('Collection Facets', () => {
     });
     await el.updateComplete;
 
-    const histogram = el.shadowRoot?.querySelector('histogram-date-range');
+    const histogram = el.shadowRoot?.querySelector('ia-histogram-date-range');
     expect(histogram).to.be.null;
   });
 
