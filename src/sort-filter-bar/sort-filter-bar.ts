@@ -7,7 +7,7 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
@@ -34,6 +34,7 @@ import './alpha-bar';
 type AlphaSelector = 'creator' | 'title';
 
 @customElement('sort-filter-bar')
+@localized()
 export class SortFilterBar extends LitElement {
   /** Which display mode the tiles are being rendered with (grid/list-detail/list-compact) */
   @property({ type: String }) displayMode?: CollectionDisplayMode;

@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 
 import type { SortParam } from '@internetarchive/search-service';
 import type { DateFormat } from '../../utils/format-date';
@@ -20,6 +20,7 @@ import '../tile-mediatype-icon';
 import './tile-stats';
 
 @customElement('item-tile')
+@localized()
 export class ItemTile extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:

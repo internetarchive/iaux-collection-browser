@@ -23,7 +23,7 @@ import {
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import {
   SelectedFacets,
   FacetGroup,
@@ -69,6 +69,7 @@ import { log } from '../utils/log';
 import { MORE_FACETS__MAX_AGGREGATIONS } from './models';
 
 @customElement('more-facets-content')
+@localized()
 export class MoreFacetsContent extends LitElement {
   @property({ type: String }) facetKey?: FacetOption;
 

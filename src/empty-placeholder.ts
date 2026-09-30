@@ -8,7 +8,7 @@ import {
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { choose } from 'lit/directives/choose.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 
 import emptyQueryIcon from './assets/img/icons/empty-query';
 import nullResultIcon from './assets/img/icons/null-result';
@@ -21,26 +21,33 @@ export type PlaceholderType =
   | 'collection-error'
   | null;
 @customElement('empty-placeholder')
+@localized()
 export class EmptyPlaceholder extends LitElement {
-  private static readonly MESSAGE_EMPTY_QUERY = msg(
-    'To begin searching, enter a search term in the box above and hit "Go".',
-  );
+  private static get MESSAGE_EMPTY_QUERY() {
+    return msg(
+      'To begin searching, enter a search term in the box above and hit "Go".',
+    );
+  }
 
-  private static readonly MESSAGE_NO_SEARCH_RESULTS = msg(
-    'Your search did not match any items in the Archive. ' +
-      'Try different keywords or a more general search.',
-  );
+  private static get MESSAGE_NO_SEARCH_RESULTS() {
+    return msg(
+      'Your search did not match any items in the Archive. Try different keywords or a more general search.',
+    );
+  }
 
-  private static readonly MESSAGE_NO_COLLECTION_RESULTS = msg(
-    'Your search did not match any items in this collection. ' +
-      'Try different keywords or a more general search.',
-  );
+  private static get MESSAGE_NO_COLLECTION_RESULTS() {
+    return msg(
+      'Your search did not match any items in this collection. Try different keywords or a more general search.',
+    );
+  }
 
-  private static readonly MESSAGE_NO_VIEWABLE_MEMBERS = msg(
-    'This collection contains no viewable items.',
-  );
+  private static get MESSAGE_NO_VIEWABLE_MEMBERS() {
+    return msg('This collection contains no viewable items.');
+  }
 
-  private static readonly MESSAGE_QUERY_ERROR = msg(
+  private static get MESSAGE_QUERY_ERROR() {
+    // prettier-ignore
+    return msg(
     html`The search engine encountered an error, which might be related to your
       search query.
       <a
@@ -48,15 +55,21 @@ export class EmptyPlaceholder extends LitElement {
       >
         Tips for constructing search queries.
       </a> `,
-  );
+    );
+  }
 
-  private static readonly MESSAGE_COLLECTION_ERROR = msg(
+  private static get MESSAGE_COLLECTION_ERROR() {
+    // prettier-ignore
+    return msg(
     html`The search engine encountered an error while loading this collection.
       If the problem persists, please let us know at
       <a href="mailto:info@archive.org">info@archive.org</a>.`,
-  );
+    );
+  }
 
-  private static readonly QUERY_ERROR_DETAILS_MESSAGE = msg('Error details:');
+  private static get QUERY_ERROR_DETAILS_MESSAGE() {
+    return msg('Error details:');
+  }
 
   @property({ type: String }) placeholderType: PlaceholderType = null;
 

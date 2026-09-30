@@ -4,7 +4,7 @@ import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
 import type { SortParam } from '@internetarchive/search-service';
@@ -23,6 +23,7 @@ import '../text-snippet-block';
 import '../tile-mediatype-icon';
 
 @customElement('tile-list')
+@localized()
 export class TileList extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:

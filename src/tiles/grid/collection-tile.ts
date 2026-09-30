@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { formatUnitSize } from '../../utils/format-unit-size';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
@@ -10,6 +10,7 @@ import { LayoutType } from '../models';
 import '../image-block';
 
 @customElement('collection-tile')
+@localized()
 export class CollectionTile extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:

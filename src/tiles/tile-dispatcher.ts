@@ -2,7 +2,7 @@ import { css, html, nothing, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
@@ -30,6 +30,7 @@ import { srOnlyStyle } from '../styles/sr-only';
 import { tileActionStyles } from '../styles/tile-action-styles';
 
 @customElement('tile-dispatcher')
+@localized()
 export class TileDispatcher
   extends BaseTileComponent
   implements
@@ -71,9 +72,8 @@ export class TileDispatcher
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
 
-  @property({ type: String }) manageCheckTitle = msg(
-    'Remove this item from the list',
-  );
+  /** Title for the manage checkbox. Defaults to a localized "Remove this item from the list". */
+  @property({ type: String }) manageCheckTitle?: string;
 
   private hoverPaneController?: HoverPaneControllerInterface;
 
@@ -202,7 +202,8 @@ export class TileDispatcher
       <div class="manage-check">
         <input
           type="checkbox"
-          title=${this.manageCheckTitle}
+          title=${this.manageCheckTitle ??
+          msg('Remove this item from the list')}
           ?checked=${this.model?.checked}
           @change=${this.handleLinkClicked}
         />

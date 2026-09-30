@@ -9,7 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type {
@@ -91,6 +91,7 @@ import './circular-activity-indicator';
 import './collection-facets/smart-facets/smart-facet-bar';
 
 @customElement('collection-browser')
+@localized()
 export class CollectionBrowser
   extends LitElement
   implements
@@ -307,7 +308,8 @@ export class CollectionBrowser
    */
   @property({ type: String }) tileLayoutType: LayoutType = 'default';
 
-  @property({ type: String }) manageViewLabel = 'Select items to remove';
+  /** Label for the manage bar. Defaults to the manage bar's own localized label. */
+  @property({ type: String }) manageViewLabel?: string;
 
   /** Whether to replace the default sort options with a slot for customization (default: false) */
   @property({ type: Boolean }) enableSortOptionsSlot = false;

@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="es" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="sa8beb6b1182241ac">
+  <source>Filters</source>
+<target>Filtros</target>
+</trans-unit>
+<trans-unit id="sfc4264fee3bf9b72">
+  <source>Blurring</source>
+<target>Difuminado</target>
+</trans-unit>
+<trans-unit id="s4f11a5992a021fa2">
+  <source>Filter by Network</source>
+<target>Filtrar por cadena</target>
+</trans-unit>
+<trans-unit id="sa508c606cd13dcc5">
+  <source>Filter by Show</source>
+<target>Filtrar por programa</target>
+</trans-unit>
+<trans-unit id="s322628256693c6d8">
+  <source>Unable to fetch options, try again later</source>
+<target>No se pudieron cargar las opciones, inténtalo de nuevo más tarde</target>
+</trans-unit>
+<trans-unit id="s77fd410a7f33bb55">
+  <source>Facets are temporarily unavailable.</source>
+<target>Los filtros no están disponibles temporalmente.</target>
+</trans-unit>
+<trans-unit id="se1c1137c3638e1eb">
+  <source>Date Published</source>
+<target>Fecha de publicación</target>
+</trans-unit>
+<trans-unit id="s471bd7615c164fb6">
+  <source>Year Published</source>
+<target>Año de publicación</target>
+</trans-unit>
+<trans-unit id="sd1d0f1053fc888f0">
+  <source>range filter</source>
+<target>filtro de rango</target>
+</trans-unit>
+<trans-unit id="s60ca4026935af5bd">
+  <source>Part Of</source>
+<target>Forma parte de</target>
+</trans-unit>
+<trans-unit id="sd58c6c0227ea9fc3">
+  <source>Select a date range</source>
+<target>Selecciona un rango de fechas</target>
+</trans-unit>
+<trans-unit id="s99181a7e454a7a81">
+  <source>Expand date histogram</source>
+<target>Ampliar el histograma de fechas</target>
+</trans-unit>
+<trans-unit id="sd733957613ccaa59">
+  <source><x id="0" equiv-text="${facetTitles[this.facetKey]}"/> values</source>
+<target>Valores de <x id="0" equiv-text="${facetTitles[this.facetKey]}"/></target>
+</trans-unit>
+<trans-unit id="s320992e58900cc86">
+  <source>Selected <x id="0" equiv-text="${valuesName}"/></source>
+<target><x id="0" equiv-text="${valuesName}"/> seleccionados</target>
+</trans-unit>
+<trans-unit id="see0d40a42ac78160">
+  <source>Unhide <x id="0" equiv-text="${text}"/></source>
+<target>Mostrar <x id="0" equiv-text="${text}"/></target>
+</trans-unit>
+<trans-unit id="s879330fe73e46610">
+  <source>Deselect <x id="0" equiv-text="${text}"/></source>
+<target>Deseleccionar <x id="0" equiv-text="${text}"/></target>
+</trans-unit>
+<trans-unit id="s1895d4e46cff35f9">
+  <source>Hidden:</source>
+<target>Ocultos:</target>
+</trans-unit>
+<trans-unit id="s2805bb246d30384a">
+  <source>Selected:</source>
+<target>Seleccionados:</target>
+</trans-unit>
+<trans-unit id="s355c4153fe27a589">
+  <source>No matching values found.</source>
+<target>No se han encontrado valores que coincidan.</target>
+</trans-unit>
+<trans-unit id="s76f86c7568d51abc">
+  <source>Sorry, these values couldn’t be loaded. Please try again later.</source>
+<target>Lo sentimos, no se pudieron cargar estos valores. Inténtalo de nuevo más tarde.</target>
+</trans-unit>
+<trans-unit id="s4c1025a7d399cd6b">
+  <source>More facets for:</source>
+<target>Más filtros de:</target>
+</trans-unit>
+<trans-unit id="s9b288e9b7f945b0c">
+  <source>Sort by:</source>
+<target>Ordenar por:</target>
+</trans-unit>
+<trans-unit id="sc32bb2e1a8047c9a">
+  <source>Filter by:</source>
+<target>Filtrar por:</target>
+</trans-unit>
+<trans-unit id="s10badbbb7458756b">
+  <source>Search <x id="0" equiv-text="${valuesName}"/>…</source>
+<target>Buscar <x id="0" equiv-text="${valuesName}"/>…</target>
+</trans-unit>
+<trans-unit id="sdf6c22ec03252c91">
+  <source>Filter <x id="0" equiv-text="${valuesName}"/></source>
+<target>Filtrar <x id="0" equiv-text="${valuesName}"/></target>
+</trans-unit>
+<trans-unit id="s22759aae8f547d20">
+  <source>Clear filter</source>
+<target>Borrar el filtro</target>
+</trans-unit>
+<trans-unit id="s01a8d1dbd588ac19">
+  <source>Show previous page of values</source>
+<target>Mostrar la página anterior de valores</target>
+</trans-unit>
+<trans-unit id="s16a6528db8e36fe5">
+  <source>Show next page of values</source>
+<target>Mostrar la página siguiente de valores</target>
+</trans-unit>
+<trans-unit id="sa4610b7e117b7870">
+  <source>To begin searching, enter a search term in the box above and hit "Go".</source>
+<target>Para empezar a buscar, escribe un término en el cuadro de arriba y pulsa "Ir".</target>
+</trans-unit>
+<trans-unit id="sab1e212a875eb996">
+  <source>Your search did not match any items in the Archive. Try different keywords or a more general search.</source>
+<target>Tu búsqueda no coincide con ningún elemento del Archive. Prueba con otras palabras o una búsqueda más general.</target>
+</trans-unit>
+<trans-unit id="s08118dc8355966af">
+  <source>Your search did not match any items in this collection. Try different keywords or a more general search.</source>
+<target>Tu búsqueda no coincide con ningún elemento de esta colección. Prueba con otras palabras o una búsqueda más general.</target>
+</trans-unit>
+<trans-unit id="sb5228c24c24cc18a">
+  <source>This collection contains no viewable items.</source>
+<target>Esta colección no contiene elementos que se puedan ver.</target>
+</trans-unit>
+<trans-unit id="h920c92659184f0bc">
+  <source>The search engine encountered an error, which might be related to your
+      search query.
+      <x id="0" equiv-text="&lt;a href=&quot;https://help.archive.org/help/search-building-powerful-complex-queries/&quot;&gt;"/>
+        Tips for constructing search queries.
+      <x id="1" equiv-text="&lt;/a&gt; "/></source>
+<target>El motor de búsqueda encontró un error, que puede tener que ver con tu búsqueda. <x id="0" equiv-text="&lt;a href=&quot;https://help.archive.org/help/search-building-powerful-complex-queries/&quot;&gt;"/> Consejos para construir búsquedas. <x id="1" equiv-text="&lt;/a&gt; "/></target>
+</trans-unit>
+<trans-unit id="h13064d5156c615de">
+  <source>The search engine encountered an error while loading this collection.
+      If the problem persists, please let us know at
+      <x id="0" equiv-text="&lt;a href=&quot;mailto:info@archive.org&quot;&gt;"/>info@archive.org<x id="1" equiv-text="&lt;/a&gt;"/>.</source>
+<target>El motor de búsqueda encontró un error al cargar esta colección. Si el problema continúa, avísanos en <x id="0" equiv-text="&lt;a href=&quot;mailto:info@archive.org&quot;&gt;"/>info@archive.org<x id="1" equiv-text="&lt;/a&gt;"/>.</target>
+</trans-unit>
+<trans-unit id="sb0ff4efb0328eb4b">
+  <source>Error details:</source>
+<target>Detalles del error:</target>
+</trans-unit>
+<trans-unit id="s10c473ba9d85039c">
+  <source>Apply date range</source>
+<target>Aplicar el rango de fechas</target>
+</trans-unit>
+<trans-unit id="s04a2e4a6caf07c66">
+  <source>Select items to remove</source>
+<target>Selecciona los elementos que quieres quitar</target>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>Cancelar</target>
+</trans-unit>
+<trans-unit id="sb58c82618718d16e">
+  <source>Remove selected items</source>
+<target>Quitar los elementos seleccionados</target>
+</trans-unit>
+<trans-unit id="s350e83d078cf47d6">
+  <source>Item Manager the items</source>
+<target>Gestionar los elementos en Item Manager</target>
+</trans-unit>
+<trans-unit id="sd0b6082239185272">
+  <source>Select all</source>
+<target>Seleccionar todo</target>
+</trans-unit>
+<trans-unit id="s03c4a59d394f8285">
+  <source>Unselect all</source>
+<target>Deseleccionar todo</target>
+</trans-unit>
+<trans-unit id="sc6d075ebd993b94b">
+  <source>Note: It may take a few minutes for <x id="0" equiv-text="${subject}"/> to stop appearing in your <x id="1" equiv-text="${listName}"/>.</source>
+<target>Nota: <x id="0" equiv-text="${subject}"/> puede tardar unos minutos en dejar de aparecer en tu <x id="1" equiv-text="${listName}"/>.</target>
+</trans-unit>
+<trans-unit id="sd2dc41d0d42a188b">
+  <source>Are you sure you want to remove these items?</source>
+<target>¿Seguro que quieres quitar estos elementos?</target>
+</trans-unit>
+<trans-unit id="sc81c9ceea4c97767">
+  <source>Removing selected items...</source>
+<target>Quitando los elementos seleccionados...</target>
+</trans-unit>
+<trans-unit id="s2037bf213b8e419b">
+  <source>Error: unable to remove items</source>
+<target>Error: no se pudieron quitar los elementos</target>
+</trans-unit>
+<trans-unit id="se9ab756faba48167">
+  <source>An error occurred while removing items. Please try again in a few minutes.</source>
+<target>Se ha producido un error al quitar los elementos. Inténtalo de nuevo dentro de unos minutos.</target>
+</trans-unit>
+<trans-unit id="s4e1b7bc897f8c089">
+  <source>Remove items</source>
+<target>Quitar elementos</target>
+</trans-unit>
+<trans-unit id="s4f7142f34f35ed6d">
+  <source>Log in to view this item</source>
+<target>Inicia sesión para ver este elemento</target>
+</trans-unit>
+<trans-unit id="sa731b8677f830182">
+  <source>Content may be inappropriate</source>
+<target>El contenido puede ser inapropiado</target>
+</trans-unit>
+<trans-unit id="s84d3dbcd121dd01b">
+  <source>descending</source>
+<target>descendente</target>
+</trans-unit>
+<trans-unit id="s8e68b824b99140a1">
+  <source>ascending</source>
+<target>ascendente</target>
+</trans-unit>
+<trans-unit id="sb7adab38b780c834">
+  <source>Change to <x id="0" equiv-text="${oppositeSortDirectionReadable}"/> sort</source>
+<target>Cambiar a orden <x id="0" equiv-text="${oppositeSortDirectionReadable}"/></target>
+</trans-unit>
+<trans-unit id="sb200fe325d3e0ab3">
+  <source>Directions are not available for the current sort option</source>
+<target>La opción de orden actual no tiene direcciones</target>
+</trans-unit>
+<trans-unit id="sd0d55e8a5b30ddbc">
+  <source>More info</source>
+<target>Más información</target>
+</trans-unit>
+<trans-unit id="s91c95e3f33defa93">
+  <source>Mediatype:</source>
+<target>Tipo de medio:</target>
+</trans-unit>
+<trans-unit id="s984a5e18d85b6d57">
+  <source><x id="0" equiv-text="${formattedCount} ${label}"/></source>
+<target><x id="0" equiv-text="${formattedCount} ${label}"/></target>
+</trans-unit>
+<trans-unit id="sebd0f6fd006a98ac">
+  <source>all-time views</source>
+<target>visualizaciones totales</target>
+</trans-unit>
+<trans-unit id="sb5b8614f47ae519d">
+  <source>uploads</source>
+<target>subidas</target>
+</trans-unit>
+<trans-unit id="s24d45627f1e95f7a">
+  <source>favorites</source>
+<target>favoritos</target>
+</trans-unit>
+<trans-unit id="s089297421a0eedd6">
+  <source>reviews</source>
+<target>reseñas</target>
+</trans-unit>
+<trans-unit id="s8ca015950940c078">
+  <source>clips</source>
+<target>clips</target>
+</trans-unit>
+<trans-unit id="sc6432b98425e5737">
+  <source>Press Up Arrow to exit item detail preview</source>
+<target>Pulsa la flecha arriba para salir de la vista previa del elemento</target>
+</trans-unit>
+<trans-unit id="s99f110d27e30b289">
+  <source>Title</source>
+<target>Título</target>
+</trans-unit>
+<trans-unit id="sb3f922fbbc355ef7">
+  <source>Creator</source>
+<target>Creador</target>
+</trans-unit>
+<trans-unit id="sd2223afb7d6b100d">
+  <source>Type</source>
+<target>Tipo</target>
+</trans-unit>
+<trans-unit id="s6fc9985cacb3eaa2">
+  <source>View <x id="0" equiv-text="${this.model?.title}"/></source>
+<target>Ver <x id="0" equiv-text="${this.model?.title}"/></target>
+</trans-unit>
+<trans-unit id="s8f87ca21cd0e0907">
+  <source>See more: <x id="0" equiv-text="${this.model?.mediatype}"/></source>
+<target>Ver más: <x id="0" equiv-text="${this.model?.mediatype}"/></target>
+</trans-unit>
+<trans-unit id="s5f43af3669b1e098">
+  <source>Source</source>
+<target>Fuente</target>
+</trans-unit>
+<trans-unit id="s5b528a7f6c0c40af">
+  <source>Volume</source>
+<target>Volumen</target>
+</trans-unit>
+<trans-unit id="sd8adbc60f2886b80">
+  <source>Issue</source>
+<target>Número</target>
+</trans-unit>
+<trans-unit id="s09134b07b5aacab4">
+  <source>By</source>
+<target>Por</target>
+</trans-unit>
+<trans-unit id="s5c225a179e34f704">
+  <source>Avg Rating</source>
+<target>Valoración media</target>
+</trans-unit>
+<trans-unit id="s7f3437809d931336">
+  <source>Reviews</source>
+<target>Reseñas</target>
+</trans-unit>
+<trans-unit id="s8865f02d9ebbd0f5">
+  <source>Topics</source>
+<target>Temas</target>
+</trans-unit>
+<trans-unit id="s3f5390ecd7d14626">
+  <source>Collections</source>
+<target>Colecciones</target>
+</trans-unit>
+<trans-unit id="sea80c016fb691d2e">
+  <source>out of 5 stars</source>
+<target>de 5 estrellas</target>
+</trans-unit>
+<trans-unit id="s1348f0497a99fe1b">
+  <source>Remove this item from the list</source>
+<target>Quitar este elemento de la lista</target>
+</trans-unit>
+<trans-unit id="s4369ef9b51b71a0b">
+  <source>Press Down Arrow to preview item details</source>
+<target>Pulsa la flecha abajo para ver la vista previa del elemento</target>
+</trans-unit>
+<trans-unit id="sfaa12ceed0995556">
+  <source>Archivist since <x id="0" equiv-text="${this.model.dateAdded.getFullYear()}"/></source>
+<target>Archivista desde <x id="0" equiv-text="${this.model.dateAdded.getFullYear()}"/></target>
+</trans-unit>
+<trans-unit id="s4bfc4d609ee1ab33">
+  <source>Archived</source>
+<target>Archivado</target>
+</trans-unit>
+<trans-unit id="sb89d8d8bc0c08e98">
+  <source>Reviewed</source>
+<target>Reseñado</target>
+</trans-unit>
+<trans-unit id="se871c20e39ace2a5">
+  <source>Added</source>
+<target>Añadido</target>
+</trans-unit>
+<trans-unit id="s6d3b5b0561ba34c9">
+  <source>Published</source>
+<target>Publicado</target>
+</trans-unit>
+<trans-unit id="s8ef9b6c2af31a130">
+  <source>Weekly views</source>
+<target>Visualizaciones semanales</target>
+</trans-unit>
+<trans-unit id="scc44d457ed96108c">
+  <source>All-time views</source>
+<target>Visualizaciones totales</target>
+</trans-unit>
+<trans-unit id="s087d0e07b52a8c19">
+  <source><x id="0" equiv-text="${rounded}"/>B</source>
+<target><x id="0" equiv-text="${rounded}"/>B</target>
+</trans-unit>
+<trans-unit id="sddc27cc22328fbf0">
+  <source><x id="0" equiv-text="${rounded}"/> billion</source>
+<target><x id="0" equiv-text="${rounded}"/> mil millones</target>
+</trans-unit>
+<trans-unit id="s087d1707b52a9b64">
+  <source><x id="0" equiv-text="${rounded}"/>M</source>
+<target><x id="0" equiv-text="${rounded}"/>M</target>
+</trans-unit>
+<trans-unit id="s7ac239996dd6d909">
+  <source><x id="0" equiv-text="${rounded}"/> million</source>
+<target><x id="0" equiv-text="${rounded}"/> millones</target>
+</trans-unit>
+<trans-unit id="s087d1507b52a97fe">
+  <source><x id="0" equiv-text="${rounded}"/>K</source>
+<target><x id="0" equiv-text="${rounded}"/>K</target>
+</trans-unit>
+<trans-unit id="sf95b96048b8e537d">
+  <source><x id="0" equiv-text="${rounded}"/> thousand</source>
+<target><x id="0" equiv-text="${rounded}"/> mil</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

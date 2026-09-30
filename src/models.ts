@@ -28,8 +28,12 @@ interface TileFlags {
 export type TileOverlayType = 'login-required' | 'content-warning';
 
 export const TILE_OVERLAY_TEXT: Record<TileOverlayType, string> = {
-  'login-required': msg('Log in to view this item'),
-  'content-warning': msg('Content may be inappropriate'),
+  get 'login-required'() {
+    return msg('Log in to view this item');
+  },
+  get 'content-warning'() {
+    return msg('Content may be inappropriate');
+  },
 };
 
 export const TILE_OVERLAY_ICONS: Record<TileOverlayType, TemplateResult> = {

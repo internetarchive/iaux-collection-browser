@@ -8,7 +8,7 @@ import {
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import {
@@ -23,6 +23,7 @@ import {
 import '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
 
 @customElement('expanded-date-picker')
+@localized()
 export class ExpandedDatePicker extends LitElement {
   @property({ type: String }) minDate?: string;
 

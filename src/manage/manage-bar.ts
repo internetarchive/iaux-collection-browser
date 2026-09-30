@@ -1,4 +1,4 @@
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
@@ -12,11 +12,13 @@ import iaButtonStyle from '../styles/ia-button';
 import './remove-items-modal-content';
 
 @customElement('manage-bar')
+@localized()
 export class ManageBar extends LitElement {
   /**
-   * The label displayed in front of the management buttons
+   * The label displayed in front of the management buttons. Defaults to a
+   * localized "Select items to remove".
    */
-  @property({ type: String }) label = msg('Select items to remove');
+  @property({ type: String }) label?: string;
 
   /**
    * The shared modal manager component for displaying modal dialogs on this page
@@ -56,7 +58,9 @@ export class ManageBar extends LitElement {
   render(): TemplateResult {
     return html`
       <div class="manage-container">
-        <span class="manage-label">${this.label}</span>
+        <span class="manage-label"
+          >${this.label ?? msg('Select items to remove')}</span
+        >
         <div class="manage-buttons">
           <button class="ia-button dark" @click=${this.cancelClicked}>
             ${msg('Cancel')}
