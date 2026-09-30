@@ -6,6 +6,10 @@
   "version": "4.8.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
+  "files": [
+    "dist",
+    "!dist/test"
+  ],
   "packageManager": "pnpm@11.27.1",
   "engines": {
     "node": ">=22",
