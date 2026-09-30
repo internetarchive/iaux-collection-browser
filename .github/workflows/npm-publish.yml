@@ -3,6 +3,10 @@
 # A normal release goes to the `latest` dist-tag. A release marked as a
 # prerelease goes to `alpha`, so an unfinished version never becomes what
 # `^` and unpinned installs resolve to.
+#
+# Auth is npm trusted publishing over OIDC, so there is no npm token here.
+# That also means every version published this way carries a provenance
+# attestation, which is how you tell it from a publish run by hand.
 
 name: Node.js Package
 
@@ -38,12 +42,10 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org/
       - run: pnpm install --frozen-lockfile
-      # Publish with npm rather than pnpm so npm provenance works.
+      # Publish with npm (not pnpm) so npm provenance / trusted publishing works.
       - run: |
           if ${{ github.event.release.prerelease }}; then
             npm publish --provenance --tag alpha
           else
             npm publish --provenance
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
