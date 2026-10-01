@@ -161,7 +161,7 @@ export class TileDispatcher
     return html`
       <a
         href=${this.linkTileHref}
-        aria-label=${this.model?.title ?? 'Untitled item'}
+        aria-label=${this.model?.title ?? msg('Untitled item')}
         aria-describedby="link-aria-description"
         aria-haspopup=${this.shouldPrepareHoverPane ? 'dialog' : 'false'}
         title=${this.shouldPrepareHoverPane

@@ -265,7 +265,7 @@ export class TileList extends BaseTileComponent {
 
     // when its a search-tile, we don't have any stats to show
     if (this.model?.mediatype === 'search') {
-      return this.metadataTemplate('(Favorited search query)', '');
+      return this.metadataTemplate(msg('(Favorited search query)'), '');
     }
 
     return this.metadataTemplate(

@@ -441,7 +441,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInSortBar: true,
     shownInURL: false,
     handledBySearchService: false,
-    displayName: 'Relevance',
+    get displayName() {
+      return msg('Relevance');
+    },
     urlNames: ['_score'],
   },
   [SortField.alltimeview]: {
@@ -452,7 +454,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'downloads',
-    displayName: 'All-time views',
+    get displayName() {
+      return msg('All-time views');
+    },
     urlNames: ['downloads'],
   },
   [SortField.weeklyview]: {
@@ -463,7 +467,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'week',
-    displayName: 'Weekly views',
+    get displayName() {
+      return msg('Weekly views');
+    },
     urlNames: ['week'],
   },
   [SortField.title]: {
@@ -474,7 +480,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'titleSorter',
-    displayName: 'Title',
+    get displayName() {
+      return msg('Title');
+    },
     urlNames: ['title', 'titleSorter'],
   },
   [SortField.date]: {
@@ -485,7 +493,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'date',
-    displayName: 'Date published',
+    get displayName() {
+      return msg('Date published');
+    },
     urlNames: ['date'],
   },
   [SortField.datearchived]: {
@@ -496,7 +506,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'publicdate',
-    displayName: 'Date archived',
+    get displayName() {
+      return msg('Date archived');
+    },
     urlNames: ['publicdate'],
   },
   [SortField.datereviewed]: {
@@ -507,7 +519,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'reviewdate',
-    displayName: 'Date reviewed',
+    get displayName() {
+      return msg('Date reviewed');
+    },
     urlNames: ['reviewdate'],
   },
   [SortField.dateadded]: {
@@ -518,7 +532,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'addeddate',
-    displayName: 'Date added',
+    get displayName() {
+      return msg('Date added');
+    },
     urlNames: ['addeddate'],
   },
   [SortField.datefavorited]: {
@@ -529,7 +545,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: false,
     handledBySearchService: false,
     searchServiceKey: 'favoritedate',
-    displayName: 'Date favorited',
+    get displayName() {
+      return msg('Date favorited');
+    },
     urlNames: ['favoritedate'],
   },
   [SortField.creator]: {
@@ -540,7 +558,9 @@ export const SORT_OPTIONS: Record<SortField, SortOption> = {
     shownInURL: true,
     handledBySearchService: true,
     searchServiceKey: 'creatorSorter',
-    displayName: 'Creator',
+    get displayName() {
+      return msg('Creator');
+    },
     urlNames: ['creator', 'creatorSorter'],
   },
 };
@@ -749,34 +769,78 @@ export const tvFacetDisplayOrder: FacetOption[] = [
  * Human-readable titles for each facet group.
  */
 export const facetTitles: Record<FacetOption, string> = {
-  subject: 'Subject',
-  lending: 'Availability',
-  mediatype: 'Media Type',
-  language: 'Language',
-  creator: 'Creator',
-  collection: 'Collection',
-  year: 'Year',
-  clip_type: 'Clip Type',
-  program: 'Program',
-  person: 'Person',
-  sponsor: 'Sponsor',
+  get subject() {
+    return msg('Subject');
+  },
+  get lending() {
+    return msg('Availability');
+  },
+  get mediatype() {
+    return msg('Media Type');
+  },
+  get language() {
+    return msg('Language');
+  },
+  get creator() {
+    return msg('Creator');
+  },
+  get collection() {
+    return msg('Collection');
+  },
+  get year() {
+    return msg('Year');
+  },
+  get clip_type() {
+    return msg('Clip Type');
+  },
+  get program() {
+    return msg('Program');
+  },
+  get person() {
+    return msg('Person');
+  },
+  get sponsor() {
+    return msg('Sponsor');
+  },
 };
 
 /**
  * Human-readable plural titles for each facet group, for referring to its values.
  */
 export const facetPluralTitles: Record<FacetOption, string> = {
-  subject: 'Subjects',
-  lending: 'Availability',
-  mediatype: 'Media Types',
-  language: 'Languages',
-  creator: 'Creators',
-  collection: 'Collections',
-  year: 'Years',
-  clip_type: 'Clip Types',
-  program: 'Programs',
-  person: 'People',
-  sponsor: 'Sponsors',
+  get subject() {
+    return msg('Subjects');
+  },
+  get lending() {
+    return msg('Availability');
+  },
+  get mediatype() {
+    return msg('Media Types');
+  },
+  get language() {
+    return msg('Languages');
+  },
+  get creator() {
+    return msg('Creators');
+  },
+  get collection() {
+    return msg('Collections');
+  },
+  get year() {
+    return msg('Years');
+  },
+  get clip_type() {
+    return msg('Clip Types');
+  },
+  get program() {
+    return msg('Programs');
+  },
+  get person() {
+    return msg('People');
+  },
+  get sponsor() {
+    return msg('Sponsors');
+  },
 };
 
 /**
@@ -866,14 +930,26 @@ export type FacetDisplayNameMap = {
 
 export const customFacetDisplayNames: FacetDisplayNameMap = {
   lending: {
-    is_lendable: 'Lending Library',
-    available_to_borrow: 'Borrow 14 Days',
-    is_readable: 'Always Available',
+    get is_lendable() {
+      return msg('Lending Library');
+    },
+    get available_to_borrow() {
+      return msg('Borrow 14 Days');
+    },
+    get is_readable() {
+      return msg('Always Available');
+    },
   },
   clip_type: {
-    quote: 'Quote',
-    commercial: 'Political Ad',
-    'fact check': 'Fact Check',
+    get quote() {
+      return msg('Quote');
+    },
+    get commercial() {
+      return msg('Political Ad');
+    },
+    get 'fact check'() {
+      return msg('Fact Check');
+    },
   },
 };
 

@@ -1,16 +1,22 @@
 import { expect, fixture } from '@open-wc/testing';
 import { configureLocalization } from '@lit/localize';
 import { html } from 'lit';
+import { SortField } from '../../src/models';
 import { templates } from '../../src/locales/es';
 import type { EmptyPlaceholder } from '../../src/empty-placeholder';
 import type { ManageBar } from '../../src/manage/manage-bar';
+import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
 import type { AccountTile } from '../../src/tiles/grid/account-tile';
+import type { CollectionTile } from '../../src/tiles/grid/collection-tile';
 import type { TileStats } from '../../src/tiles/grid/tile-stats';
 import type { TextOverlay } from '../../src/tiles/overlay/text-overlay';
 
 import '../../src/empty-placeholder';
 import '../../src/manage/manage-bar';
+import '../../src/sort-filter-bar/sort-filter-bar';
 import '../../src/tiles/grid/account-tile';
+import '../../src/tiles/grid/collection-tile';
+import '../../src/tiles/grid/tile-stats';
 import '../../src/tiles/overlay/text-overlay';
 
 // This package never configures localization. The app that uses it does, once,
@@ -87,6 +93,46 @@ describe('published es locale', () => {
     expect(manageLabel()).to.equal(
       'Selecciona los elementos que quieres quitar',
     );
+  });
+
+  it('re-renders sort names, stats labels and item counts when the locale changes', async () => {
+    // The sort names live in the module-level SORT_OPTIONS map, so they have
+    // to be read at render time to translate.
+    const sortBar = await fixture<SortFilterBar>(html`
+      <sort-filter-bar .selectedSort=${SortField.relevance}></sort-filter-bar>
+    `);
+    const tileStats = await fixture<TileStats>(html`
+      <tile-stats mediatype="texts"></tile-stats>
+    `);
+    const collectionTile = await fixture<CollectionTile>(html`
+      <collection-tile
+        .model=${{ identifier: 'foo', mediatype: 'collection', itemCount: 2 }}
+      ></collection-tile>
+    `);
+    const sortLabel = () =>
+      sortBar.shadowRoot
+        ?.querySelector('#sort-dropdown .dropdown-label')
+        ?.textContent?.trim();
+    const statsLabel = () =>
+      tileStats.shadowRoot
+        ?.querySelector('.item-stats > .sr-only')
+        ?.textContent?.trim();
+    const itemCount = () =>
+      collectionTile.shadowRoot
+        ?.querySelector('#item-count')
+        ?.textContent?.trim();
+    expect(sortLabel()).to.equal('Relevance');
+    expect(statsLabel()).to.equal('Item Stats');
+    expect(itemCount()).to.equal('2 items');
+
+    await setLocale('es');
+    await sortBar.updateComplete;
+    await tileStats.updateComplete;
+    await collectionTile.updateComplete;
+
+    expect(sortLabel()).to.equal('Relevancia');
+    expect(statsLabel()).to.equal('Estadísticas del elemento');
+    expect(itemCount()).to.equal('2 elementos');
   });
 
   it('renders a tile in Spanish once the app sets the locale', async () => {

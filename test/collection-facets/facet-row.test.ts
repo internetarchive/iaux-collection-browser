@@ -180,7 +180,7 @@ describe('Facet row', () => {
     );
 
     const hideFacetLabel = el.shadowRoot?.querySelector('.hide-facet-icon');
-    expect(hideFacetLabel?.textContent?.trim()).to.match(/^Hide subject: foo$/);
+    expect(hideFacetLabel?.textContent?.trim()).to.match(/^Hide Subject: foo$/);
   });
 
   it('renders correct accessible label for checked negative facets', async () => {
@@ -196,7 +196,7 @@ describe('Facet row', () => {
 
     const hideFacetLabel = el.shadowRoot?.querySelector('.hide-facet-icon');
     expect(hideFacetLabel?.textContent?.trim()).to.match(
-      /^Unhide subject: foo$/,
+      /^Unhide Subject: foo$/,
     );
   });
 

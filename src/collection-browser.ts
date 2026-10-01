@@ -869,13 +869,14 @@ export class CollectionBrowser
       this.searchResultsLoading || this.totalResults === undefined;
     const classes = classMap({ filtered: this.hasActiveFilters });
     const resultsCount = this.totalResults?.toLocaleString();
-    const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
+    const resultsLabel =
+      this.totalResults === 1 ? msg('Result') : msg('Results');
 
     // Added data-testid for Playwright testing
     return html`
       <div id="results-total" class=${classes} data-testid="results-total">
         <span id="big-results-count">
-          ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
+          ${shouldShowSearching ? msg('Searching…') : resultsCount}
         </span>
         <span id="big-results-label">
           ${shouldShowSearching ? nothing : resultsLabel}
@@ -927,7 +928,7 @@ export class CollectionBrowser
     return html`<infinite-scroller
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
-      ariaLandmarkLabel="Search results"
+      ariaLandmarkLabel=${msg('Search results')}
       .estimatedCellHeight=${this.estimatedTileHeight}
       .minBufferMarginCells=${this.pageSize}
       .cellProvider=${this}
@@ -1636,7 +1637,7 @@ export class CollectionBrowser
       mobile,
     });
 
-    const buttonText = mobile ? 'Clear all' : 'Clear all filters';
+    const buttonText = mobile ? msg('Clear all') : msg('Clear all filters');
 
     return html`
       <div class="clear-filters-btn-row">

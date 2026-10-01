@@ -108,7 +108,7 @@ export class SortFilterBar extends LitElement {
   render() {
     return html`
       <div id="container">
-        <section id="sort-bar" aria-label="Sorting options">
+        <section id="sort-bar" aria-label=${msg('Sorting options')}>
           <slot name="sort-options-left"></slot>
           <div id="sort-options">
             ${!this.enableSortOptionsSlot
@@ -362,7 +362,7 @@ export class SortFilterBar extends LitElement {
               this.displayMode = 'grid';
             }}
             class=${this.displayMode === 'grid' ? 'active' : ''}
-            title="Tile view"
+            title=${msg('Tile view')}
             data-testid="grid-button"
           >
             ${tileIcon}
@@ -375,7 +375,7 @@ export class SortFilterBar extends LitElement {
               this.displayMode = 'list-detail';
             }}
             class=${this.displayMode === 'list-detail' ? 'active' : ''}
-            title="List view"
+            title=${msg('List view')}
             data-testid="list-detail-button"
           >
             ${listIcon}
@@ -388,7 +388,7 @@ export class SortFilterBar extends LitElement {
               this.displayMode = 'list-compact';
             }}
             class=${this.displayMode === 'list-compact' ? 'active' : ''}
-            title="Compact list view"
+            title=${msg('Compact list view')}
             data-testid="list-compact-button"
           >
             ${compactIcon}
@@ -493,7 +493,7 @@ export class SortFilterBar extends LitElement {
     return html` <alpha-bar
       .selectedLetter=${this.selectedTitleFilter}
       .letterCounts=${this.prefixFilterCountMap?.title}
-      ariaLandmarkLabel="Filter by title letter"
+      ariaLandmarkLabel=${msg('Filter by title letter')}
       @letterChanged=${this.titleLetterChanged}
     ></alpha-bar>`;
   }
@@ -502,7 +502,7 @@ export class SortFilterBar extends LitElement {
     return html` <alpha-bar
       .selectedLetter=${this.selectedCreatorFilter}
       .letterCounts=${this.prefixFilterCountMap?.creator}
-      ariaLandmarkLabel="Filter by creator letter"
+      ariaLandmarkLabel=${msg('Filter by creator letter')}
       @letterChanged=${this.creatorLetterChanged}
     ></alpha-bar>`;
   }

@@ -46,7 +46,9 @@ export class TileStats extends LitElement {
     return html`
       <div class="item-stats">
         <p class="sr-only">
-          ${this.mediatype === 'account' ? 'Account Stats' : 'Item Stats'}
+          ${this.mediatype === 'account'
+            ? msg('Account Stats')
+            : msg('Item Stats')}
         </p>
         <ul id="stats-row">
           ${this.mediatypeIconColumnTemplate}

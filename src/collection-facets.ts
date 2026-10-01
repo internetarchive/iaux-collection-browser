@@ -731,7 +731,7 @@ export class CollectionFacets extends LitElement {
             @keyup=${toggleCollapsed}
           >
             ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
-            <span class="sr-only">filters</span>
+            <span class="sr-only">${msg('filters')}</span>
           </h3>
         </div>
         <div
@@ -802,7 +802,7 @@ export class CollectionFacets extends LitElement {
       }}
       data-testid="more-link-btn"
     >
-      More...
+      ${msg('More...')}
     </button>`;
   }
 
@@ -843,7 +843,7 @@ export class CollectionFacets extends LitElement {
       headerColor: '#194880',
       showHeaderLogo: false,
       closeOnBackdropClick: true, // TODO: want to fire analytics
-      title: html`Select filters`,
+      title: html`${msg('Select filters')}`,
     });
     this.modalManager?.classList.add('more-search-facets');
     this.modalManager?.showModal({

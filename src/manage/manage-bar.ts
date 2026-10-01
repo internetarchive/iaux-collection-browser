@@ -1,4 +1,4 @@
-import { localized, msg, str } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { LitElement, html, css, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { when } from 'lit/directives/when.js';
@@ -115,27 +115,35 @@ export class ManageBar extends LitElement {
    */
   private get manageViewModalMsg(): string {
     const pluralize = this.selectedItems.length > 1;
-    const subject = pluralize ? 'these items' : 'this item';
-
-    let listName = '';
 
     switch (this.profileElement) {
       case 'uploads':
-        listName = 'uploads list';
-        break;
+        return pluralize
+          ? msg(
+              'Note: It may take a few minutes for these items to stop appearing in your uploads list.',
+            )
+          : msg(
+              'Note: It may take a few minutes for this item to stop appearing in your uploads list.',
+            );
       case 'web_archives':
-        listName = 'web archives list';
-        break;
+        return pluralize
+          ? msg(
+              'Note: It may take a few minutes for these items to stop appearing in your web archives list.',
+            )
+          : msg(
+              'Note: It may take a few minutes for this item to stop appearing in your web archives list.',
+            );
       case 'favorites':
-        listName = 'favorites list';
-        break;
+        return pluralize
+          ? msg(
+              'Note: It may take a few minutes for these items to stop appearing in your favorites list.',
+            )
+          : msg(
+              'Note: It may take a few minutes for this item to stop appearing in your favorites list.',
+            );
       default:
         return '';
     }
-
-    return msg(
-      str`Note: It may take a few minutes for ${subject} to stop appearing in your ${listName}.`,
-    );
   }
 
   private cancelClicked(): void {

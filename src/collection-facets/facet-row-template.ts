@@ -1,7 +1,14 @@
 import { css, html, nothing, TemplateResult } from 'lit';
 import eyeIcon from '../assets/img/icons/eye';
 import eyeClosedIcon from '../assets/img/icons/eye-closed';
-import type { FacetOption, FacetBucket, FacetState } from '../models';
+import { msg, str } from '@lit/localize';
+import {
+  facetPluralTitles,
+  facetTitles,
+  type FacetOption,
+  type FacetBucket,
+  type FacetState,
+} from '../models';
 import type { CollectionTitles } from '../data-source/models';
 
 export type FacetRowTemplateOptions = {
@@ -71,14 +78,16 @@ export function facetRowTemplate({
   const facetHidden = bucket.state === 'hidden';
   const facetSelected = bucket.state === 'selected';
 
-  const titleText = `${facetType}: ${bucket.displayText ?? bucket.key}`;
+  const groupTitle = facetTitles[facetType];
+  const groupPluralTitle = facetPluralTitles[facetType];
+  const titleText = `${groupTitle}: ${bucket.displayText ?? bucket.key}`;
   const onlyShowText = facetSelected
-    ? `Show all ${facetType}s`
-    : `Only show ${titleText}`;
-  const hideText = `Hide ${titleText}`;
-  const unhideText = `Unhide ${titleText}`;
+    ? msg(str`Show all ${groupPluralTitle}`)
+    : msg(str`Only show ${titleText}`);
+  const hideText = msg(str`Hide ${titleText}`);
+  const unhideText = msg(str`Unhide ${titleText}`);
   const showHideText = facetHidden ? unhideText : hideText;
-  const ariaLabel = `${titleText}, ${bucket.count} results`;
+  const ariaLabel = msg(str`${titleText}, ${bucket.count} results`);
 
   const showOnlyClicked = onCheckboxClick
     ? (e: Event) => onCheckboxClick(e, false)

@@ -1,11 +1,13 @@
 import { LitElement, html, css, nothing, TemplateResult } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
+import { localized, msg, str } from '@lit/localize';
 import type { PrefixFilterCounts } from '../models';
 
 import './alpha-bar-tooltip';
 import type { AlphaBarTooltip } from './alpha-bar-tooltip';
 
 @customElement('alpha-bar')
+@localized()
 export class AlphaBar extends LitElement {
   @property({ type: String }) selectedLetter: string | null = null;
 
@@ -52,7 +54,8 @@ export class AlphaBar extends LitElement {
   }
 
   private letterButtonTemplate(letter: string) {
-    const ariaLabel = `${letter}: ${this.letterCounts?.[letter] ?? 0} results`;
+    const count = this.letterCounts?.[letter] ?? 0;
+    const ariaLabel = msg(str`${letter}: ${count} results`);
     return html`
       <button
         aria-label=${ariaLabel}

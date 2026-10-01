@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { formatUnitSize } from '../../utils/format-unit-size';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
@@ -83,11 +83,14 @@ export class CollectionTile extends BaseTileComponent {
   }
 
   private get getItemsTemplate() {
-    const collectionItems = this.model?.itemCount?.toLocaleString();
+    const itemCount = this.model?.itemCount;
+    const formattedCount = itemCount?.toLocaleString();
+    const itemsLabel =
+      itemCount === 1
+        ? msg(str`${formattedCount} item`)
+        : msg(str`${formattedCount} items`);
 
-    return html`<span id="item-count"
-      >${collectionItems} item${Number(collectionItems) !== 1 ? 's' : ''}</span
-    >`;
+    return html`<span id="item-count">${itemsLabel}</span>`;
   }
 
   private get getSizeTemplate() {

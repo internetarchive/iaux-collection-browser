@@ -1,7 +1,9 @@
 import { LitElement, html, css, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { localized, msg, str } from '@lit/localize';
 
 @customElement('alpha-bar-tooltip')
+@localized()
 export class AlphaBarTooltip extends LitElement {
   @property({ type: Number }) numResults: number = 0;
 
@@ -10,7 +12,9 @@ export class AlphaBarTooltip extends LitElement {
       <div id="tooltip-container" role="tooltip">
         <div id="arrow"></div>
         <div id="tooltip-text">
-          ${this.numResults} ${this.numResults === 1 ? 'result' : 'results'}
+          ${this.numResults === 1
+            ? msg(str`${this.numResults} result`)
+            : msg(str`${this.numResults} results`)}
         </div>
       </div>
     `;

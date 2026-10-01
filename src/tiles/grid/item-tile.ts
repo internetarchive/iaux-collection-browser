@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { map } from 'lit/directives/map.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { localized, msg } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 
 import type { SortParam } from '@internetarchive/search-service';
 import type { DateFormat } from '../../utils/format-date';
@@ -94,7 +94,7 @@ export class ItemTile extends BaseTileComponent {
     return html`
       <div class="created-by">
         <span class="truncated" title=${displayedCreator}>
-          by&nbsp;${displayedCreator}
+          ${msg(str`by\u00a0${displayedCreator}`)}
         </span>
       </div>
     `;
@@ -194,8 +194,10 @@ export class ItemTile extends BaseTileComponent {
 
     return html`
       <div class="volume-issue">
-        <span class="truncated" title="volume|issue">
-          Volume&nbsp;${this.model?.volume}, Issue&nbsp;${this.model?.issue}
+        <span class="truncated" title=${msg('volume|issue')}>
+          ${msg(
+            str`Volume\u00a0${this.model.volume}, Issue\u00a0${this.model.issue}`,
+          )}
         </span>
       </div>
     `;
@@ -233,8 +235,8 @@ export class ItemTile extends BaseTileComponent {
     const effectiveSort = this.sortParam ?? this.defaultSortParam;
     const [viewCount, viewLabel] =
       effectiveSort?.field === 'week'
-        ? [this.model?.weeklyViewCount, 'weekly views']
-        : [this.model?.viewCount, 'all-time views'];
+        ? [this.model?.weeklyViewCount, msg('weekly views')]
+        : [this.model?.viewCount, msg('all-time views')];
 
     return html`
       <tile-stats
