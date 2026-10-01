@@ -348,30 +348,6 @@
   <source>All-time views</source>
 <target>Visualizaciones totales</target>
 </trans-unit>
-<trans-unit id="s087d0e07b52a8c19">
-  <source><x id="0" equiv-text="${rounded}"/>B</source>
-<target><x id="0" equiv-text="${rounded}"/>B</target>
-</trans-unit>
-<trans-unit id="sddc27cc22328fbf0">
-  <source><x id="0" equiv-text="${rounded}"/> billion</source>
-<target><x id="0" equiv-text="${rounded}"/> mil millones</target>
-</trans-unit>
-<trans-unit id="s087d1707b52a9b64">
-  <source><x id="0" equiv-text="${rounded}"/>M</source>
-<target><x id="0" equiv-text="${rounded}"/>M</target>
-</trans-unit>
-<trans-unit id="s7ac239996dd6d909">
-  <source><x id="0" equiv-text="${rounded}"/> million</source>
-<target><x id="0" equiv-text="${rounded}"/> millones</target>
-</trans-unit>
-<trans-unit id="s087d1507b52a97fe">
-  <source><x id="0" equiv-text="${rounded}"/>K</source>
-<target><x id="0" equiv-text="${rounded}"/>K</target>
-</trans-unit>
-<trans-unit id="sf95b96048b8e537d">
-  <source><x id="0" equiv-text="${rounded}"/> thousand</source>
-<target><x id="0" equiv-text="${rounded}"/> mil</target>
-</trans-unit>
 <trans-unit id="s890e983a7be64da4">
   <source>Result</source>
 <target>Resultado</target>
@@ -421,7 +397,7 @@
 <target>Ocultar <x id="0" equiv-text="${titleText}"/></target>
 </trans-unit>
 <trans-unit id="sd8c92230dc431a1b">
-  <source><x id="0" equiv-text="${titleText}"/>, <x id="1" equiv-text="${bucket.count}"/> results</source>
+  <source><x id="0" equiv-text="${titleText}"/>, <x id="1" equiv-text="${new Intl.NumberFormat(getLocale()).format(bucket.count)}"/> results</source>
 <target><x id="0" equiv-text="${titleText}"/>, <x id="1" equiv-text="${bucket.count}"/> resultados</target>
 </trans-unit>
 <trans-unit id="sd574f2d5de170480">
@@ -673,15 +649,15 @@
 <target>Verificación de datos</target>
 </trans-unit>
 <trans-unit id="s1228605ee65ddefa">
-  <source><x id="0" equiv-text="${this.numResults}"/> result</source>
+  <source><x id="0" equiv-text="${formattedCount}"/> result</source>
 <target><x id="0" equiv-text="${this.numResults}"/> resultado</target>
 </trans-unit>
 <trans-unit id="s387a4a41718122cb">
-  <source><x id="0" equiv-text="${this.numResults}"/> results</source>
+  <source><x id="0" equiv-text="${formattedCount}"/> results</source>
 <target><x id="0" equiv-text="${this.numResults}"/> resultados</target>
 </trans-unit>
 <trans-unit id="s1649fb48f787df05">
-  <source><x id="0" equiv-text="${letter}"/>: <x id="1" equiv-text="${count}"/> results</source>
+  <source><x id="0" equiv-text="${letter}"/>: <x id="1" equiv-text="${formattedCount}"/> results</source>
 <target><x id="0" equiv-text="${letter}"/>: <x id="1" equiv-text="${count}"/> resultados</target>
 </trans-unit>
 <trans-unit id="sa63f9a6193ff70ad">
@@ -819,6 +795,10 @@
 <trans-unit id="sad216f43f9f9c91d">
   <source><x id="0" equiv-text="${size}"/> yottabytes</source>
 <target><x id="0" equiv-text="${size}"/> yottabytes</target>
+</trans-unit>
+<trans-unit id="s088e3807b53946aa">
+  <source>en</source>
+<target>es</target>
 </trans-unit>
 </body>
 </file>

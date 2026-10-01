@@ -13,6 +13,7 @@ import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
+import { getLocale } from '../../utils/get-locale';
 import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { tileActionStyles } from '../../styles/tile-action-styles';
@@ -275,11 +276,19 @@ export class TileList extends BaseTileComponent {
   }
 
   private get ratingTemplate() {
-    return this.metadataTemplate(this.model?.averageRating, msg('Avg Rating'));
+    const { averageRating } = this.model ?? {};
+    const formattedRating = averageRating
+      ? new Intl.NumberFormat(getLocale()).format(averageRating)
+      : averageRating;
+    return this.metadataTemplate(formattedRating, msg('Avg Rating'));
   }
 
   private get reviewsTemplate() {
-    return this.metadataTemplate(this.model?.commentCount, msg('Reviews'));
+    const { commentCount } = this.model ?? {};
+    const formattedCount = commentCount
+      ? new Intl.NumberFormat(getLocale()).format(commentCount)
+      : commentCount;
+    return this.metadataTemplate(formattedCount, msg('Reviews'));
   }
 
   private get topicsTemplate() {

@@ -160,4 +160,34 @@ describe('published es locale', () => {
       ?.querySelector('.sr-only');
     expect(uploads?.textContent).to.equal('subidas:');
   });
+
+  it('formats a count and a byte size for the active locale', async () => {
+    const collectionTile = await fixture<CollectionTile>(html`
+      <collection-tile
+        .model=${{
+          identifier: 'foo',
+          mediatype: 'collection',
+          itemCount: 76965,
+          collectionSize: 1125833936144957.5,
+        }}
+      ></collection-tile>
+    `);
+    const itemCount = () =>
+      collectionTile.shadowRoot
+        ?.querySelector('#item-count')
+        ?.textContent?.trim();
+    const itemSize = () =>
+      collectionTile.shadowRoot
+        ?.querySelector('#item-size')
+        ?.textContent?.trim();
+
+    expect(itemCount()).to.equal('76,965 items');
+    expect(itemSize()).to.equal('1,023.9 terabytes');
+
+    await setLocale('es');
+    await collectionTile.updateComplete;
+
+    expect(itemCount()).to.equal('76.965 elementos');
+    expect(itemSize()).to.equal('1023,9 terabytes');
+  });
 });

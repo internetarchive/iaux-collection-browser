@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 import { localized, msg, str } from '@lit/localize';
 import { collectionIcon } from '../../assets/img/icons/mediatype/collection';
 import { formatUnitSize } from '../../utils/format-unit-size';
+import { getLocale } from '../../utils/get-locale';
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
 import { BaseTileComponent } from '../base-tile-component';
 import { LayoutType } from '../models';
@@ -84,7 +85,10 @@ export class CollectionTile extends BaseTileComponent {
 
   private get getItemsTemplate() {
     const itemCount = this.model?.itemCount;
-    const formattedCount = itemCount?.toLocaleString();
+    const formattedCount =
+      itemCount === undefined
+        ? undefined
+        : new Intl.NumberFormat(getLocale()).format(itemCount);
     const itemsLabel =
       itemCount === 1
         ? msg(str`${formattedCount} item`)

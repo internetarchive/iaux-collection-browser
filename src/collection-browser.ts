@@ -75,6 +75,7 @@ import { updateSelectedFacetBucket } from './utils/facet-utils';
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
+import { getLocale } from './utils/get-locale';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
@@ -868,7 +869,10 @@ export class CollectionBrowser
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
     const classes = classMap({ filtered: this.hasActiveFilters });
-    const resultsCount = this.totalResults?.toLocaleString();
+    const resultsCount =
+      this.totalResults === undefined
+        ? undefined
+        : new Intl.NumberFormat(getLocale()).format(this.totalResults);
     const resultsLabel =
       this.totalResults === 1 ? msg('Result') : msg('Results');
 

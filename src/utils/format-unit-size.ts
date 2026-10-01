@@ -3,6 +3,7 @@
  */
 import { nothing } from 'lit';
 import { msg, str } from '@lit/localize';
+import { getLocale } from './get-locale';
 
 /**
  * Labels a formatted size with its unit, one entry per power of 1024 starting
@@ -30,7 +31,11 @@ const unitLabels: ((size: string, singular: boolean) => string)[] = [
     singular ? msg(str`${size} yottabyte`) : msg(str`${size} yottabytes`),
 ];
 
-export function formatUnitSize(size: number | undefined, nDecimals: number) {
+export function formatUnitSize(
+  size: number | undefined,
+  nDecimals: number,
+  locale: string = getLocale(),
+) {
   let itemSize = size;
   if (itemSize === undefined) return nothing; // early return.
 
@@ -45,5 +50,8 @@ export function formatUnitSize(size: number | undefined, nDecimals: number) {
   const magnitude = 10 ** nDecimals;
   itemSize = Math.round(itemSize * magnitude) / magnitude;
 
-  return unitLabels[unitIndex](itemSize.toLocaleString(), itemSize === 1);
+  return unitLabels[unitIndex](
+    new Intl.NumberFormat(locale).format(itemSize),
+    itemSize === 1,
+  );
 }

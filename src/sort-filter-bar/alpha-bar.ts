@@ -2,6 +2,7 @@ import { LitElement, html, css, nothing, TemplateResult } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
 import type { PrefixFilterCounts } from '../models';
+import { getLocale } from '../utils/get-locale';
 
 import './alpha-bar-tooltip';
 import type { AlphaBarTooltip } from './alpha-bar-tooltip';
@@ -55,7 +56,8 @@ export class AlphaBar extends LitElement {
 
   private letterButtonTemplate(letter: string) {
     const count = this.letterCounts?.[letter] ?? 0;
-    const ariaLabel = msg(str`${letter}: ${count} results`);
+    const formattedCount = new Intl.NumberFormat(getLocale()).format(count);
+    const ariaLabel = msg(str`${letter}: ${formattedCount} results`);
     return html`
       <button
         aria-label=${ariaLabel}
