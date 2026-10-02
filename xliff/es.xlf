@@ -799,6 +799,7 @@
 <trans-unit id="s088e3807b53946aa">
   <source>en</source>
 <target>es</target>
+  <note from="lit-localize">Not shown to users. Reports the active locale: translators should translate this to the ISO code of the locale they are translating into.</note>
 </trans-unit>
 </body>
 </file>

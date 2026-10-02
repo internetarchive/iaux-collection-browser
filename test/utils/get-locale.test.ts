@@ -26,4 +26,16 @@ describe('getLocale', () => {
     await setLocale('es');
     expect(getLocale()).to.equal('es');
   });
+
+  it('drives Intl.NumberFormat-based formatting (formatCount) once switched to es', async () => {
+    await setLocale('es');
+    const { getLocale } = await import('../../src/utils/get-locale');
+    const { formatCount } = await import('../../src/utils/format-count');
+
+    expect(getLocale()).to.equal('es');
+    // Spanish groups thousands with a period, not English's comma, so this
+    // only renders correctly when formatCount's default locale comes from
+    // the active probe translation rather than the untranslated source.
+    expect(formatCount(77312)).to.equal('77.312');
+  });
 });

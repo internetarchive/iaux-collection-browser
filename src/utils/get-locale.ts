@@ -14,5 +14,7 @@ import { msg } from '@lit/localize';
  * code itself once a target locale's translation is in place.
  */
 export function getLocale(): string {
-  return msg('en');
+  return msg('en', {
+    desc: 'Not shown to users. Reports the active locale: translators should translate this to the ISO code of the locale they are translating into.',
+  });
 }
