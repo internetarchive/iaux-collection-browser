@@ -1,4 +1,5 @@
 import { html, TemplateResult } from 'lit';
+import { msg } from '@lit/localize';
 import { accountIcon } from '../assets/img/icons/mediatype/account';
 import { audioIcon } from '../assets/img/icons/mediatype/audio';
 import { collectionIcon } from '../assets/img/icons/mediatype/collection';
@@ -51,42 +52,58 @@ export const mediatypeConfig: Record<MediatypeConfigKey, MediatypeConfig> = {
   account: {
     color: '#000000',
     icon: accountIcon,
-    text: 'Account',
+    get text() {
+      return msg('Account');
+    },
   },
   audio: {
     color: '#00adef',
     icon: audioIcon,
-    text: 'Audio',
+    get text() {
+      return msg('Audio');
+    },
   },
   collection: {
     color: '#4666ff',
     icon: collectionIcon,
-    text: 'Collection',
+    get text() {
+      return msg('Collection');
+    },
   },
   data: {
     color: '#333333',
     icon: dataIcon,
-    text: 'Data',
+    get text() {
+      return msg('Data');
+    },
   },
   etree: {
     color: '#00adef',
     icon: etreeIcon,
-    text: 'E-tree',
+    get text() {
+      return msg('E-tree');
+    },
   },
   film: {
     color: '#bf1b2c',
     icon: filmIcon,
-    text: 'Film',
+    get text() {
+      return msg('Film');
+    },
   },
   image: {
     color: '#aa99c9',
     icon: imagesIcon,
-    text: 'Image',
+    get text() {
+      return msg('Image');
+    },
   },
   movies: {
     color: '#f1644b',
     icon: filmIcon,
-    text: 'Movie',
+    get text() {
+      return msg('Movie');
+    },
   },
   none: {
     color: '#00000000',
@@ -96,51 +113,71 @@ export const mediatypeConfig: Record<MediatypeConfigKey, MediatypeConfig> = {
   radio: {
     color: '#8fdaef',
     icon: radioIcon,
-    text: 'Radio',
+    get text() {
+      return msg('Radio');
+    },
   },
   software: {
     color: '#9ecc4f',
     icon: softwareIcon,
-    text: 'Software',
+    get text() {
+      return msg('Software');
+    },
   },
   texts: {
     color: '#faab3c',
     icon: textsIcon,
-    text: 'Text',
+    get text() {
+      return msg('Text');
+    },
   },
   tv: {
     color: '#f1644b',
     icon: tvIcon,
-    text: 'TV',
+    get text() {
+      return msg('TV');
+    },
   },
   tvCommercial: {
     color: '#84b648',
     icon: tvCommercialIcon,
-    text: 'TV Political Ad',
+    get text() {
+      return msg('TV Political Ad');
+    },
   },
   tvFactCheck: {
     color: '#f1644b',
     icon: tvFactCheckIcon,
-    text: 'TV Fact Check',
+    get text() {
+      return msg('TV Fact Check');
+    },
   },
   tvQuote: {
     color: '#fe7a5f',
     icon: tvQuoteIcon,
-    text: 'TV Quote',
+    get text() {
+      return msg('TV Quote');
+    },
   },
   video: {
     color: '#f1644b',
     icon: videoIcon,
-    text: 'Video',
+    get text() {
+      return msg('Video');
+    },
   },
   web: {
     color: '#ffcd27',
     icon: webIcon,
-    text: 'Web',
+    get text() {
+      return msg('Web');
+    },
   },
   search: {
     color: '#000000',
     icon: searchIcon,
-    text: 'Search',
+    get text() {
+      return msg('Search');
+    },
   },
 };

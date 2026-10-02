@@ -1,0 +1,806 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="es" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="sa8beb6b1182241ac">
+  <source>Filters</source>
+<target>Filtros</target>
+</trans-unit>
+<trans-unit id="sfc4264fee3bf9b72">
+  <source>Blurring</source>
+<target>Difuminado</target>
+</trans-unit>
+<trans-unit id="s4f11a5992a021fa2">
+  <source>Filter by Network</source>
+<target>Filtrar por cadena</target>
+</trans-unit>
+<trans-unit id="sa508c606cd13dcc5">
+  <source>Filter by Show</source>
+<target>Filtrar por programa</target>
+</trans-unit>
+<trans-unit id="s322628256693c6d8">
+  <source>Unable to fetch options, try again later</source>
+<target>No se pudieron cargar las opciones, inténtalo de nuevo más tarde</target>
+</trans-unit>
+<trans-unit id="s77fd410a7f33bb55">
+  <source>Facets are temporarily unavailable.</source>
+<target>Los filtros no están disponibles temporalmente.</target>
+</trans-unit>
+<trans-unit id="se1c1137c3638e1eb">
+  <source>Date Published</source>
+<target>Fecha de publicación</target>
+</trans-unit>
+<trans-unit id="s471bd7615c164fb6">
+  <source>Year Published</source>
+<target>Año de publicación</target>
+</trans-unit>
+<trans-unit id="sd1d0f1053fc888f0">
+  <source>range filter</source>
+<target>filtro de rango</target>
+</trans-unit>
+<trans-unit id="s60ca4026935af5bd">
+  <source>Part Of</source>
+<target>Forma parte de</target>
+</trans-unit>
+<trans-unit id="sd58c6c0227ea9fc3">
+  <source>Select a date range</source>
+<target>Selecciona un rango de fechas</target>
+</trans-unit>
+<trans-unit id="s99181a7e454a7a81">
+  <source>Expand date histogram</source>
+<target>Ampliar el histograma de fechas</target>
+</trans-unit>
+<trans-unit id="sd733957613ccaa59">
+  <source><x id="0" equiv-text="${facetTitles[this.facetKey]}"/> values</source>
+<target>Valores de <x id="0" equiv-text="${facetTitles[this.facetKey]}"/></target>
+</trans-unit>
+<trans-unit id="s320992e58900cc86">
+  <source>Selected <x id="0" equiv-text="${valuesName}"/></source>
+<target><x id="0" equiv-text="${valuesName}"/> seleccionados</target>
+</trans-unit>
+<trans-unit id="see0d40a42ac78160">
+  <source>Unhide <x id="0" equiv-text="${titleText}"/></source>
+<target>Mostrar <x id="0" equiv-text="${titleText}"/></target>
+</trans-unit>
+<trans-unit id="s879330fe73e46610">
+  <source>Deselect <x id="0" equiv-text="${text}"/></source>
+<target>Deseleccionar <x id="0" equiv-text="${text}"/></target>
+</trans-unit>
+<trans-unit id="s1895d4e46cff35f9">
+  <source>Hidden:</source>
+<target>Ocultos:</target>
+</trans-unit>
+<trans-unit id="s2805bb246d30384a">
+  <source>Selected:</source>
+<target>Seleccionados:</target>
+</trans-unit>
+<trans-unit id="s355c4153fe27a589">
+  <source>No matching values found.</source>
+<target>No se han encontrado valores que coincidan.</target>
+</trans-unit>
+<trans-unit id="s76f86c7568d51abc">
+  <source>Sorry, these values couldn’t be loaded. Please try again later.</source>
+<target>Lo sentimos, no se pudieron cargar estos valores. Inténtalo de nuevo más tarde.</target>
+</trans-unit>
+<trans-unit id="s4c1025a7d399cd6b">
+  <source>More facets for:</source>
+<target>Más filtros de:</target>
+</trans-unit>
+<trans-unit id="s9b288e9b7f945b0c">
+  <source>Sort by:</source>
+<target>Ordenar por:</target>
+</trans-unit>
+<trans-unit id="sc32bb2e1a8047c9a">
+  <source>Filter by:</source>
+<target>Filtrar por:</target>
+</trans-unit>
+<trans-unit id="s10badbbb7458756b">
+  <source>Search <x id="0" equiv-text="${valuesName}"/>…</source>
+<target>Buscar <x id="0" equiv-text="${valuesName}"/>…</target>
+</trans-unit>
+<trans-unit id="sdf6c22ec03252c91">
+  <source>Filter <x id="0" equiv-text="${valuesName}"/></source>
+<target>Filtrar <x id="0" equiv-text="${valuesName}"/></target>
+</trans-unit>
+<trans-unit id="s22759aae8f547d20">
+  <source>Clear filter</source>
+<target>Borrar el filtro</target>
+</trans-unit>
+<trans-unit id="s01a8d1dbd588ac19">
+  <source>Show previous page of values</source>
+<target>Mostrar la página anterior de valores</target>
+</trans-unit>
+<trans-unit id="s16a6528db8e36fe5">
+  <source>Show next page of values</source>
+<target>Mostrar la página siguiente de valores</target>
+</trans-unit>
+<trans-unit id="sa4610b7e117b7870">
+  <source>To begin searching, enter a search term in the box above and hit "Go".</source>
+<target>Para empezar a buscar, escribe un término en el cuadro de arriba y pulsa "Ir".</target>
+</trans-unit>
+<trans-unit id="sab1e212a875eb996">
+  <source>Your search did not match any items in the Archive. Try different keywords or a more general search.</source>
+<target>Tu búsqueda no coincide con ningún elemento del Archive. Prueba con otras palabras o una búsqueda más general.</target>
+</trans-unit>
+<trans-unit id="s08118dc8355966af">
+  <source>Your search did not match any items in this collection. Try different keywords or a more general search.</source>
+<target>Tu búsqueda no coincide con ningún elemento de esta colección. Prueba con otras palabras o una búsqueda más general.</target>
+</trans-unit>
+<trans-unit id="sb5228c24c24cc18a">
+  <source>This collection contains no viewable items.</source>
+<target>Esta colección no contiene elementos que se puedan ver.</target>
+</trans-unit>
+<trans-unit id="h920c92659184f0bc">
+  <source>The search engine encountered an error, which might be related to your
+      search query.
+      <x id="0" equiv-text="&lt;a href=&quot;https://help.archive.org/help/search-building-powerful-complex-queries/&quot;&gt;"/>
+        Tips for constructing search queries.
+      <x id="1" equiv-text="&lt;/a&gt; "/></source>
+<target>El motor de búsqueda encontró un error, que puede tener que ver con tu búsqueda. <x id="0" equiv-text="&lt;a href=&quot;https://help.archive.org/help/search-building-powerful-complex-queries/&quot;&gt;"/> Consejos para construir búsquedas. <x id="1" equiv-text="&lt;/a&gt; "/></target>
+</trans-unit>
+<trans-unit id="h13064d5156c615de">
+  <source>The search engine encountered an error while loading this collection.
+      If the problem persists, please let us know at
+      <x id="0" equiv-text="&lt;a href=&quot;mailto:info@archive.org&quot;&gt;"/>info@archive.org<x id="1" equiv-text="&lt;/a&gt;"/>.</source>
+<target>El motor de búsqueda encontró un error al cargar esta colección. Si el problema continúa, avísanos en <x id="0" equiv-text="&lt;a href=&quot;mailto:info@archive.org&quot;&gt;"/>info@archive.org<x id="1" equiv-text="&lt;/a&gt;"/>.</target>
+</trans-unit>
+<trans-unit id="sb0ff4efb0328eb4b">
+  <source>Error details:</source>
+<target>Detalles del error:</target>
+</trans-unit>
+<trans-unit id="s10c473ba9d85039c">
+  <source>Apply date range</source>
+<target>Aplicar el rango de fechas</target>
+</trans-unit>
+<trans-unit id="s04a2e4a6caf07c66">
+  <source>Select items to remove</source>
+<target>Selecciona los elementos que quieres quitar</target>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+<target>Cancelar</target>
+</trans-unit>
+<trans-unit id="sb58c82618718d16e">
+  <source>Remove selected items</source>
+<target>Quitar los elementos seleccionados</target>
+</trans-unit>
+<trans-unit id="s350e83d078cf47d6">
+  <source>Item Manager the items</source>
+<target>Gestionar los elementos en Item Manager</target>
+</trans-unit>
+<trans-unit id="sd0b6082239185272">
+  <source>Select all</source>
+<target>Seleccionar todo</target>
+</trans-unit>
+<trans-unit id="s03c4a59d394f8285">
+  <source>Unselect all</source>
+<target>Deseleccionar todo</target>
+</trans-unit>
+<trans-unit id="sd2dc41d0d42a188b">
+  <source>Are you sure you want to remove these items?</source>
+<target>¿Seguro que quieres quitar estos elementos?</target>
+</trans-unit>
+<trans-unit id="sc81c9ceea4c97767">
+  <source>Removing selected items...</source>
+<target>Quitando los elementos seleccionados...</target>
+</trans-unit>
+<trans-unit id="s2037bf213b8e419b">
+  <source>Error: unable to remove items</source>
+<target>Error: no se pudieron quitar los elementos</target>
+</trans-unit>
+<trans-unit id="se9ab756faba48167">
+  <source>An error occurred while removing items. Please try again in a few minutes.</source>
+<target>Se ha producido un error al quitar los elementos. Inténtalo de nuevo dentro de unos minutos.</target>
+</trans-unit>
+<trans-unit id="s4e1b7bc897f8c089">
+  <source>Remove items</source>
+<target>Quitar elementos</target>
+</trans-unit>
+<trans-unit id="s4f7142f34f35ed6d">
+  <source>Log in to view this item</source>
+<target>Inicia sesión para ver este elemento</target>
+</trans-unit>
+<trans-unit id="sa731b8677f830182">
+  <source>Content may be inappropriate</source>
+<target>El contenido puede ser inapropiado</target>
+</trans-unit>
+<trans-unit id="s84d3dbcd121dd01b">
+  <source>descending</source>
+<target>descendente</target>
+</trans-unit>
+<trans-unit id="s8e68b824b99140a1">
+  <source>ascending</source>
+<target>ascendente</target>
+</trans-unit>
+<trans-unit id="sb7adab38b780c834">
+  <source>Change to <x id="0" equiv-text="${oppositeSortDirectionReadable}"/> sort</source>
+<target>Cambiar a orden <x id="0" equiv-text="${oppositeSortDirectionReadable}"/></target>
+</trans-unit>
+<trans-unit id="sb200fe325d3e0ab3">
+  <source>Directions are not available for the current sort option</source>
+<target>La opción de orden actual no tiene direcciones</target>
+</trans-unit>
+<trans-unit id="sd0d55e8a5b30ddbc">
+  <source>More info</source>
+<target>Más información</target>
+</trans-unit>
+<trans-unit id="s91c95e3f33defa93">
+  <source>Mediatype:</source>
+<target>Tipo de medio:</target>
+</trans-unit>
+<trans-unit id="s984a5e18d85b6d57">
+  <source><x id="0" equiv-text="${formattedCount} ${label}"/></source>
+<target><x id="0" equiv-text="${formattedCount} ${label}"/></target>
+</trans-unit>
+<trans-unit id="sebd0f6fd006a98ac">
+  <source>all-time views</source>
+<target>visualizaciones totales</target>
+</trans-unit>
+<trans-unit id="sb5b8614f47ae519d">
+  <source>uploads</source>
+<target>subidas</target>
+</trans-unit>
+<trans-unit id="s24d45627f1e95f7a">
+  <source>favorites</source>
+<target>favoritos</target>
+</trans-unit>
+<trans-unit id="s089297421a0eedd6">
+  <source>reviews</source>
+<target>reseñas</target>
+</trans-unit>
+<trans-unit id="s8ca015950940c078">
+  <source>clips</source>
+<target>clips</target>
+</trans-unit>
+<trans-unit id="sc6432b98425e5737">
+  <source>Press Up Arrow to exit item detail preview</source>
+<target>Pulsa la flecha arriba para salir de la vista previa del elemento</target>
+</trans-unit>
+<trans-unit id="s99f110d27e30b289">
+  <source>Title</source>
+<target>Título</target>
+</trans-unit>
+<trans-unit id="sb3f922fbbc355ef7">
+  <source>Creator</source>
+<target>Creador</target>
+</trans-unit>
+<trans-unit id="sd2223afb7d6b100d">
+  <source>Type</source>
+<target>Tipo</target>
+</trans-unit>
+<trans-unit id="s6fc9985cacb3eaa2">
+  <source>View <x id="0" equiv-text="${this.model?.title}"/></source>
+<target>Ver <x id="0" equiv-text="${this.model?.title}"/></target>
+</trans-unit>
+<trans-unit id="s8f87ca21cd0e0907">
+  <source>See more: <x id="0" equiv-text="${this.model?.mediatype}"/></source>
+<target>Ver más: <x id="0" equiv-text="${this.model?.mediatype}"/></target>
+</trans-unit>
+<trans-unit id="s5f43af3669b1e098">
+  <source>Source</source>
+<target>Fuente</target>
+</trans-unit>
+<trans-unit id="s5b528a7f6c0c40af">
+  <source>Volume</source>
+<target>Volumen</target>
+</trans-unit>
+<trans-unit id="sd8adbc60f2886b80">
+  <source>Issue</source>
+<target>Número</target>
+</trans-unit>
+<trans-unit id="s09134b07b5aacab4">
+  <source>By</source>
+<target>Por</target>
+</trans-unit>
+<trans-unit id="s5c225a179e34f704">
+  <source>Avg Rating</source>
+<target>Valoración media</target>
+</trans-unit>
+<trans-unit id="s7f3437809d931336">
+  <source>Reviews</source>
+<target>Reseñas</target>
+</trans-unit>
+<trans-unit id="s8865f02d9ebbd0f5">
+  <source>Topics</source>
+<target>Temas</target>
+</trans-unit>
+<trans-unit id="s3f5390ecd7d14626">
+  <source>Collections</source>
+<target>Colecciones</target>
+</trans-unit>
+<trans-unit id="sea80c016fb691d2e">
+  <source>out of 5 stars</source>
+<target>de 5 estrellas</target>
+</trans-unit>
+<trans-unit id="s1348f0497a99fe1b">
+  <source>Remove this item from the list</source>
+<target>Quitar este elemento de la lista</target>
+</trans-unit>
+<trans-unit id="s4369ef9b51b71a0b">
+  <source>Press Down Arrow to preview item details</source>
+<target>Pulsa la flecha abajo para ver la vista previa del elemento</target>
+</trans-unit>
+<trans-unit id="sfaa12ceed0995556">
+  <source>Archivist since <x id="0" equiv-text="${this.model.dateAdded.getFullYear()}"/></source>
+<target>Archivista desde <x id="0" equiv-text="${this.model.dateAdded.getFullYear()}"/></target>
+</trans-unit>
+<trans-unit id="s4bfc4d609ee1ab33">
+  <source>Archived</source>
+<target>Archivado</target>
+</trans-unit>
+<trans-unit id="sb89d8d8bc0c08e98">
+  <source>Reviewed</source>
+<target>Reseñado</target>
+</trans-unit>
+<trans-unit id="se871c20e39ace2a5">
+  <source>Added</source>
+<target>Añadido</target>
+</trans-unit>
+<trans-unit id="s6d3b5b0561ba34c9">
+  <source>Published</source>
+<target>Publicado</target>
+</trans-unit>
+<trans-unit id="s8ef9b6c2af31a130">
+  <source>Weekly views</source>
+<target>Visualizaciones semanales</target>
+</trans-unit>
+<trans-unit id="scc44d457ed96108c">
+  <source>All-time views</source>
+<target>Visualizaciones totales</target>
+</trans-unit>
+<trans-unit id="s890e983a7be64da4">
+  <source>Result</source>
+<target>Resultado</target>
+</trans-unit>
+<trans-unit id="sca1a826088564455">
+  <source>Results</source>
+<target>Resultados</target>
+</trans-unit>
+<trans-unit id="s9cfa7823fc62aba3">
+  <source>Searching…</source>
+<target>Buscando…</target>
+</trans-unit>
+<trans-unit id="s5643568b7c038f43">
+  <source>Search results</source>
+<target>Resultados de la búsqueda</target>
+</trans-unit>
+<trans-unit id="s8cda828dac449ea5">
+  <source>Clear all</source>
+<target>Borrar todo</target>
+</trans-unit>
+<trans-unit id="s078f25f106da59fe">
+  <source>Clear all filters</source>
+<target>Borrar todos los filtros</target>
+</trans-unit>
+<trans-unit id="s321d1672949e1c4c">
+  <source>filters</source>
+<target>filtros</target>
+</trans-unit>
+<trans-unit id="sd01d6e9b9f301ee6">
+  <source>More...</source>
+<target>Más...</target>
+</trans-unit>
+<trans-unit id="sf40c9c2d1e9606c6">
+  <source>Select filters</source>
+<target>Selecciona los filtros</target>
+</trans-unit>
+<trans-unit id="s640f3c29000a4c59">
+  <source>Show all <x id="0" equiv-text="${groupPluralTitle}"/></source>
+<target>Mostrar todo: <x id="0" equiv-text="${groupPluralTitle}"/></target>
+</trans-unit>
+<trans-unit id="s4a8d47364336fa6e">
+  <source>Only show <x id="0" equiv-text="${titleText}"/></source>
+<target>Mostrar solo <x id="0" equiv-text="${titleText}"/></target>
+</trans-unit>
+<trans-unit id="s9027f0f301703c8b">
+  <source>Hide <x id="0" equiv-text="${titleText}"/></source>
+<target>Ocultar <x id="0" equiv-text="${titleText}"/></target>
+</trans-unit>
+<trans-unit id="sd8c92230dc431a1b">
+  <source><x id="0" equiv-text="${titleText}"/>, <x id="1" equiv-text="${new Intl.NumberFormat(getLocale()).format(bucket.count)}"/> results</source>
+<target><x id="0" equiv-text="${titleText}"/>, <x id="1" equiv-text="${bucket.count}"/> resultados</target>
+</trans-unit>
+<trans-unit id="sd574f2d5de170480">
+  <source>Apply filters</source>
+<target>Aplicar los filtros</target>
+</trans-unit>
+<trans-unit id="s71a5c9f4b68ef4d4">
+  <source>Count</source>
+<target>Cantidad</target>
+</trans-unit>
+<trans-unit id="sfcc069f51592918b">
+  <source>Films by __QUERY</source>
+<target>Películas de __QUERY</target>
+</trans-unit>
+<trans-unit id="s8c6eb24d88673ed6">
+  <source>Writing by __QUERY</source>
+<target>Obras escritas de __QUERY</target>
+</trans-unit>
+<trans-unit id="s3297cc6f08d7b40a">
+  <source>Images by __QUERY</source>
+<target>Imágenes de __QUERY</target>
+</trans-unit>
+<trans-unit id="sb37c0f28ca696ddf">
+  <source>Music by __QUERY</source>
+<target>Música de __QUERY</target>
+</trans-unit>
+<trans-unit id="s8fd53d9e642d729c">
+  <source>Hide filters pane</source>
+<target>Ocultar el panel de filtros</target>
+</trans-unit>
+<trans-unit id="s26a52753e6884683">
+  <source>Show filters pane</source>
+<target>Mostrar el panel de filtros</target>
+</trans-unit>
+<trans-unit id="s675ca32d5ae11dcc">
+  <source>Note: It may take a few minutes for these items to stop appearing in your uploads list.</source>
+<target>Nota: estos elementos pueden tardar unos minutos en dejar de aparecer en tu lista de subidas.</target>
+</trans-unit>
+<trans-unit id="se1dd81cd767b2b98">
+  <source>Note: It may take a few minutes for this item to stop appearing in your uploads list.</source>
+<target>Nota: este elemento puede tardar unos minutos en dejar de aparecer en tu lista de subidas.</target>
+</trans-unit>
+<trans-unit id="s3659ff5488b62143">
+  <source>Note: It may take a few minutes for these items to stop appearing in your web archives list.</source>
+<target>Nota: estos elementos pueden tardar unos minutos en dejar de aparecer en tu lista de archivos web.</target>
+</trans-unit>
+<trans-unit id="s6e42e5e330244f67">
+  <source>Note: It may take a few minutes for this item to stop appearing in your web archives list.</source>
+<target>Nota: este elemento puede tardar unos minutos en dejar de aparecer en tu lista de archivos web.</target>
+</trans-unit>
+<trans-unit id="s583ff43301fa7817">
+  <source>Note: It may take a few minutes for these items to stop appearing in your favorites list.</source>
+<target>Nota: estos elementos pueden tardar unos minutos en dejar de aparecer en tu lista de favoritos.</target>
+</trans-unit>
+<trans-unit id="s7abf4f48abeedddb">
+  <source>Note: It may take a few minutes for this item to stop appearing in your favorites list.</source>
+<target>Nota: este elemento puede tardar unos minutos en dejar de aparecer en tu lista de favoritos.</target>
+</trans-unit>
+<trans-unit id="s846b3790b6e25c1c">
+  <source>Account</source>
+<target>Cuenta</target>
+</trans-unit>
+<trans-unit id="s08e6bd98452e6bb9">
+  <source>Audio</source>
+<target>Audio</target>
+</trans-unit>
+<trans-unit id="sac8256732f2ee1e5">
+  <source>Data</source>
+<target>Datos</target>
+</trans-unit>
+<trans-unit id="sd6ac8009a2a7effb">
+  <source>E-tree</source>
+<target>E-tree</target>
+</trans-unit>
+<trans-unit id="sd1f81a84eeb7c29b">
+  <source>Film</source>
+<target>Película</target>
+</trans-unit>
+<trans-unit id="s3d93f9ea0c5a13fa">
+  <source>Image</source>
+<target>Imagen</target>
+</trans-unit>
+<trans-unit id="se35de1f96af7ec6f">
+  <source>Movie</source>
+<target>Película</target>
+</trans-unit>
+<trans-unit id="s47d3bb78437e7f74">
+  <source>Radio</source>
+<target>Radio</target>
+</trans-unit>
+<trans-unit id="sfec0c302ab140e30">
+  <source>Software</source>
+<target>Software</target>
+</trans-unit>
+<trans-unit id="s2492f5fb1b05b45e">
+  <source>Text</source>
+<target>Texto</target>
+</trans-unit>
+<trans-unit id="s09352207b5c76b6f">
+  <source>TV</source>
+<target>TV</target>
+</trans-unit>
+<trans-unit id="sa052f7f79d739859">
+  <source>TV Political Ad</source>
+<target>Anuncio político de TV</target>
+</trans-unit>
+<trans-unit id="sa471309f46635717">
+  <source>TV Fact Check</source>
+<target>Verificación de datos de TV</target>
+</trans-unit>
+<trans-unit id="s7da36f2d9999ec0f">
+  <source>TV Quote</source>
+<target>Cita de TV</target>
+</trans-unit>
+<trans-unit id="s85186a61e0d55bac">
+  <source>Video</source>
+<target>Vídeo</target>
+</trans-unit>
+<trans-unit id="s74aa0119e62b2b51">
+  <source>Web</source>
+<target>Web</target>
+</trans-unit>
+<trans-unit id="s5d929ff1619ac0c9">
+  <source>Search</source>
+<target>Buscar</target>
+</trans-unit>
+<trans-unit id="saf30fc1eade20268">
+  <source>Relevance</source>
+<target>Relevancia</target>
+</trans-unit>
+<trans-unit id="s8b153325befe824b">
+  <source>Date published</source>
+<target>Fecha de publicación</target>
+</trans-unit>
+<trans-unit id="s6b35590c360852a5">
+  <source>Date archived</source>
+<target>Fecha de archivo</target>
+</trans-unit>
+<trans-unit id="s1b6ac21f2337d642">
+  <source>Date reviewed</source>
+<target>Fecha de reseña</target>
+</trans-unit>
+<trans-unit id="s621283dc7bb413cf">
+  <source>Date added</source>
+<target>Fecha Agregada</target>
+</trans-unit>
+<trans-unit id="sa666712981e141a5">
+  <source>Date favorited</source>
+<target>Fecha de favorito</target>
+</trans-unit>
+<trans-unit id="sbbc53e0e54d7946f">
+  <source>Subject</source>
+<target>Tema</target>
+</trans-unit>
+<trans-unit id="sbea4e386905763f6">
+  <source>Availability</source>
+<target>Disponibilidad</target>
+</trans-unit>
+<trans-unit id="s0864063d5cb2f8f1">
+  <source>Media Type</source>
+<target>Tipo de medio</target>
+</trans-unit>
+<trans-unit id="sefcf950b3cc4fc3b">
+  <source>Language</source>
+<target>Idioma</target>
+</trans-unit>
+<trans-unit id="sa7eea45fe1e4d231">
+  <source>Collection</source>
+<target>Colección</target>
+</trans-unit>
+<trans-unit id="sa6f2645578b2d2bc">
+  <source>Year</source>
+<target>Año</target>
+</trans-unit>
+<trans-unit id="s9dc9dd05aab83a09">
+  <source>Clip Type</source>
+<target>Tipo de clip</target>
+</trans-unit>
+<trans-unit id="s7cd7aa6578a69dab">
+  <source>Program</source>
+<target>Programa</target>
+</trans-unit>
+<trans-unit id="s40d76f1f51639ec0">
+  <source>Person</source>
+<target>Persona</target>
+</trans-unit>
+<trans-unit id="s963a29c7019722e9">
+  <source>Sponsor</source>
+<target>Patrocinador</target>
+</trans-unit>
+<trans-unit id="se7bc8e5a2a50ab94">
+  <source>Subjects</source>
+<target>Temas</target>
+</trans-unit>
+<trans-unit id="sf4ef1c44841c44e6">
+  <source>Media Types</source>
+<target>Tipos de medio</target>
+</trans-unit>
+<trans-unit id="s42b68a1842b8ae58">
+  <source>Languages</source>
+<target>Idiomas</target>
+</trans-unit>
+<trans-unit id="s05b4f5c0ceaf9a4c">
+  <source>Creators</source>
+<target>Creadores</target>
+</trans-unit>
+<trans-unit id="s60b34c3c17dc35bd">
+  <source>Years</source>
+<target>Años</target>
+</trans-unit>
+<trans-unit id="sd63d0aa1170b5d4e">
+  <source>Clip Types</source>
+<target>Tipos de clip</target>
+</trans-unit>
+<trans-unit id="sc914626c031e3608">
+  <source>Programs</source>
+<target>Programas</target>
+</trans-unit>
+<trans-unit id="s4854cd48f30ff8ee">
+  <source>People</source>
+<target>Personas</target>
+</trans-unit>
+<trans-unit id="sdbf79727b3cfcbae">
+  <source>Sponsors</source>
+<target>Patrocinadores</target>
+</trans-unit>
+<trans-unit id="sc1a39f411862864b">
+  <source>Lending Library</source>
+<target>Biblioteca de préstamo</target>
+</trans-unit>
+<trans-unit id="sbb362f844e236028">
+  <source>Borrow 14 Days</source>
+<target>Préstamo de 14 días</target>
+</trans-unit>
+<trans-unit id="s9fb0e3bc7de4bf8f">
+  <source>Always Available</source>
+<target>Siempre disponible</target>
+</trans-unit>
+<trans-unit id="s70a5d875c5467e57">
+  <source>Quote</source>
+<target>Cita</target>
+</trans-unit>
+<trans-unit id="s6be3ee5386181ff1">
+  <source>Political Ad</source>
+<target>Anuncio político</target>
+</trans-unit>
+<trans-unit id="s90a8434ed9c2a23f">
+  <source>Fact Check</source>
+<target>Verificación de datos</target>
+</trans-unit>
+<trans-unit id="s1228605ee65ddefa">
+  <source><x id="0" equiv-text="${formattedCount}"/> result</source>
+<target><x id="0" equiv-text="${this.numResults}"/> resultado</target>
+</trans-unit>
+<trans-unit id="s387a4a41718122cb">
+  <source><x id="0" equiv-text="${formattedCount}"/> results</source>
+<target><x id="0" equiv-text="${this.numResults}"/> resultados</target>
+</trans-unit>
+<trans-unit id="s1649fb48f787df05">
+  <source><x id="0" equiv-text="${letter}"/>: <x id="1" equiv-text="${formattedCount}"/> results</source>
+<target><x id="0" equiv-text="${letter}"/>: <x id="1" equiv-text="${count}"/> resultados</target>
+</trans-unit>
+<trans-unit id="sa63f9a6193ff70ad">
+  <source>Sorting options</source>
+<target>Opciones de orden</target>
+</trans-unit>
+<trans-unit id="s2c6298bfef78c37e">
+  <source>Tile view</source>
+<target>Vista de mosaico</target>
+</trans-unit>
+<trans-unit id="s45a359a3fa397256">
+  <source>List view</source>
+<target>Vista de lista</target>
+</trans-unit>
+<trans-unit id="s4d5665b24e24b9e3">
+  <source>Compact list view</source>
+<target>Vista de lista compacta</target>
+</trans-unit>
+<trans-unit id="s1aa21b9c0ffa83c2">
+  <source>Filter by title letter</source>
+<target>Filtrar por la letra del título</target>
+</trans-unit>
+<trans-unit id="s9ce6e713435f440c">
+  <source>Filter by creator letter</source>
+<target>Filtrar por la letra del creador</target>
+</trans-unit>
+<trans-unit id="s6a3c8edbec8d73b4">
+  <source><x id="0" equiv-text="${formattedCount}"/> item</source>
+<target><x id="0" equiv-text="${formattedCount}"/> elemento</target>
+</trans-unit>
+<trans-unit id="s125a86b2f45bbb25">
+  <source><x id="0" equiv-text="${formattedCount}"/> items</source>
+<target><x id="0" equiv-text="${formattedCount}"/> elementos</target>
+</trans-unit>
+<trans-unit id="s6793629c1db37a66">
+  <source>by <x id="0" equiv-text="${displayedCreator}"/></source>
+<target>por <x id="0" equiv-text="${displayedCreator}"/></target>
+</trans-unit>
+<trans-unit id="s5c73979f691e7fcc">
+  <source>volume|issue</source>
+<target>volumen|número</target>
+</trans-unit>
+<trans-unit id="sfdaff50162b13cc2">
+  <source>Volume <x id="0" equiv-text="${this.model.volume}"/>, Issue <x id="1" equiv-text="${this.model.issue}"/></source>
+<target>Volumen <x id="0" equiv-text="${this.model.volume}"/>, número <x id="1" equiv-text="${this.model.issue}"/></target>
+</trans-unit>
+<trans-unit id="s819258a281266f50">
+  <source>weekly views</source>
+<target>visualizaciones semanales</target>
+</trans-unit>
+<trans-unit id="s027d72711d00e2ff">
+  <source>Account Stats</source>
+<target>Estadísticas de la cuenta</target>
+</trans-unit>
+<trans-unit id="s46728ac92301a821">
+  <source>Item Stats</source>
+<target>Estadísticas del elemento</target>
+</trans-unit>
+<trans-unit id="sabc57021558fd9c2">
+  <source>(Favorited search query)</source>
+<target>(Búsqueda guardada en favoritos)</target>
+</trans-unit>
+<trans-unit id="scff6c3b650f37317">
+  <source>Untitled item</source>
+<target>Elemento sin título</target>
+</trans-unit>
+<trans-unit id="sd6dcb78ea83e6111">
+  <source><x id="0" equiv-text="${size}"/> byte</source>
+<target><x id="0" equiv-text="${size}"/> byte</target>
+</trans-unit>
+<trans-unit id="s576d4967e1ff7986">
+  <source><x id="0" equiv-text="${size}"/> bytes</source>
+<target><x id="0" equiv-text="${size}"/> bytes</target>
+</trans-unit>
+<trans-unit id="seb88e51c2513b62c">
+  <source><x id="0" equiv-text="${size}"/> kilobyte</source>
+<target><x id="0" equiv-text="${size}"/> kilobyte</target>
+</trans-unit>
+<trans-unit id="s4d53add3007ee36d">
+  <source><x id="0" equiv-text="${size}"/> kilobytes</source>
+<target><x id="0" equiv-text="${size}"/> kilobytes</target>
+</trans-unit>
+<trans-unit id="sdf69091630b88e37">
+  <source><x id="0" equiv-text="${size}"/> megabyte</source>
+<target><x id="0" equiv-text="${size}"/> megabyte</target>
+</trans-unit>
+<trans-unit id="s5808b4b4c999bd8c">
+  <source><x id="0" equiv-text="${size}"/> megabytes</source>
+<target><x id="0" equiv-text="${size}"/> megabytes</target>
+</trans-unit>
+<trans-unit id="s74cba6ca50670aa9">
+  <source><x id="0" equiv-text="${size}"/> gigabyte</source>
+<target><x id="0" equiv-text="${size}"/> gigabyte</target>
+</trans-unit>
+<trans-unit id="sdd1743c69f17706e">
+  <source><x id="0" equiv-text="${size}"/> gigabytes</source>
+<target><x id="0" equiv-text="${size}"/> gigabytes</target>
+</trans-unit>
+<trans-unit id="s919c97efeda9854f">
+  <source><x id="0" equiv-text="${size}"/> terabyte</source>
+<target><x id="0" equiv-text="${size}"/> terabyte</target>
+</trans-unit>
+<trans-unit id="s169b68b0d70d64f4">
+  <source><x id="0" equiv-text="${size}"/> terabytes</source>
+<target><x id="0" equiv-text="${size}"/> terabytes</target>
+</trans-unit>
+<trans-unit id="se0ce95409b2f48b1">
+  <source><x id="0" equiv-text="${size}"/> petabyte</source>
+<target><x id="0" equiv-text="${size}"/> petabyte</target>
+</trans-unit>
+<trans-unit id="s2e505ec7b158a1a6">
+  <source><x id="0" equiv-text="${size}"/> petabytes</source>
+<target><x id="0" equiv-text="${size}"/> petabytes</target>
+</trans-unit>
+<trans-unit id="s6471716d93a86047">
+  <source><x id="0" equiv-text="${size}"/> exabyte</source>
+<target><x id="0" equiv-text="${size}"/> exabyte</target>
+</trans-unit>
+<trans-unit id="s5523f131e71b785c">
+  <source><x id="0" equiv-text="${size}"/> exabytes</source>
+<target><x id="0" equiv-text="${size}"/> exabytes</target>
+</trans-unit>
+<trans-unit id="seaa8073d775d898b">
+  <source><x id="0" equiv-text="${size}"/> zettabyte</source>
+<target><x id="0" equiv-text="${size}"/> zettabyte</target>
+</trans-unit>
+<trans-unit id="s190e4571d3f17068">
+  <source><x id="0" equiv-text="${size}"/> zettabytes</source>
+<target><x id="0" equiv-text="${size}"/> zettabytes</target>
+</trans-unit>
+<trans-unit id="s37c1658491ef819c">
+  <source><x id="0" equiv-text="${size}"/> yottabyte</source>
+<target><x id="0" equiv-text="${size}"/> yottabyte</target>
+</trans-unit>
+<trans-unit id="sad216f43f9f9c91d">
+  <source><x id="0" equiv-text="${size}"/> yottabytes</source>
+<target><x id="0" equiv-text="${size}"/> yottabytes</target>
+</trans-unit>
+<trans-unit id="s088e3807b53946aa">
+  <source>en</source>
+<target>es</target>
+  <note from="lit-localize">Not shown to users. Reports the active locale: translators should translate this to the ISO code of the locale they are translating into.</note>
+</trans-unit>
+</body>
+</file>
+</xliff>

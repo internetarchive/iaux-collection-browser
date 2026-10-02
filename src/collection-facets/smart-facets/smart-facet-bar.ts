@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { customElement, property, state } from 'lit/decorators.js';
+import { localized, msg } from '@lit/localize';
 import type { Aggregation, Bucket } from '@internetarchive/search-service';
 import type { CollectionTitles } from '../../data-source/models';
 import type {
@@ -40,6 +41,7 @@ function capitalize(str: string) {
 }
 
 @customElement('smart-facet-bar')
+@localized()
 export class SmartFacetBar extends LitElement {
   @property({ type: String }) query?: string;
 
@@ -182,7 +184,9 @@ export class SmartFacetBar extends LitElement {
       <button
         id="filters-toggle"
         class=${this.filterToggleActive ? 'active' : ''}
-        title="${this.filterToggleActive ? 'Hide' : 'Show'} filters pane"
+        title=${this.filterToggleActive
+          ? msg('Hide filters pane')
+          : msg('Show filters pane')}
         @click=${this.filterToggleClicked}
       >
         ${filterIcon}

@@ -9,7 +9,7 @@ import {
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { ref } from 'lit/directives/ref.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { classMap } from 'lit/directives/class-map.js';
 import {
   Aggregation,
@@ -72,6 +72,7 @@ import './collection-facets/facet-tombstone-row';
 import './expanded-date-picker';
 
 @customElement('collection-facets')
+@localized()
 export class CollectionFacets extends LitElement {
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
@@ -730,7 +731,7 @@ export class CollectionFacets extends LitElement {
             @keyup=${toggleCollapsed}
           >
             ${this.collapsableFacets ? collapser : nothing} ${facetGroup.title}
-            <span class="sr-only">filters</span>
+            <span class="sr-only">${msg('filters')}</span>
           </h3>
         </div>
         <div
@@ -801,7 +802,7 @@ export class CollectionFacets extends LitElement {
       }}
       data-testid="more-link-btn"
     >
-      More...
+      ${msg('More...')}
     </button>`;
   }
 
@@ -842,7 +843,7 @@ export class CollectionFacets extends LitElement {
       headerColor: '#194880',
       showHeaderLogo: false,
       closeOnBackdropClick: true, // TODO: want to fire analytics
-      title: html`Select filters`,
+      title: html`${msg('Select filters')}`,
     });
     this.modalManager?.classList.add('more-search-facets');
     this.modalManager?.showModal({

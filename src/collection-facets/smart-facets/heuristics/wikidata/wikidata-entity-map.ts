@@ -1,3 +1,4 @@
+import { msg } from '@lit/localize';
 import type { KeywordFacetMap, SmartFacet } from '../../models';
 
 const WRITTEN_WORK_SMART_FACETS: SmartFacet[] = [
@@ -6,7 +7,9 @@ const WRITTEN_WORK_SMART_FACETS: SmartFacet[] = [
 
 const FILMMAKER_SMART_FACETS: SmartFacet[] = [
   {
-    label: 'Films by __QUERY',
+    get label() {
+      return msg('Films by __QUERY');
+    },
     facets: [
       { facetType: 'mediatype', bucketKey: 'movies' },
       { facetType: 'creator', bucketKey: '__QUERY' },
@@ -16,7 +19,9 @@ const FILMMAKER_SMART_FACETS: SmartFacet[] = [
 
 const AUTHOR_SMART_FACETS: SmartFacet[] = [
   {
-    label: 'Writing by __QUERY',
+    get label() {
+      return msg('Writing by __QUERY');
+    },
     facets: [
       { facetType: 'mediatype', bucketKey: 'texts' },
       { facetType: 'creator', bucketKey: '__QUERY' },
@@ -26,7 +31,9 @@ const AUTHOR_SMART_FACETS: SmartFacet[] = [
 
 const VISUAL_ARTIST_SMART_FACETS: SmartFacet[] = [
   {
-    label: 'Images by __QUERY',
+    get label() {
+      return msg('Images by __QUERY');
+    },
     facets: [
       { facetType: 'mediatype', bucketKey: 'image' },
       { facetType: 'creator', bucketKey: '__QUERY' },
@@ -36,7 +43,9 @@ const VISUAL_ARTIST_SMART_FACETS: SmartFacet[] = [
 
 const MUSICIAN_SMART_FACETS: SmartFacet[] = [
   {
-    label: 'Music by __QUERY',
+    get label() {
+      return msg('Music by __QUERY');
+    },
     facets: [
       { facetType: 'mediatype', bucketKey: 'audio' },
       { facetType: 'creator', bucketKey: '__QUERY' },

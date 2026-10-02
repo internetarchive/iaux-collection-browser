@@ -4,7 +4,7 @@ import { join } from 'lit/directives/join.js';
 import { map } from 'lit/directives/map.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { customElement, property, state } from 'lit/decorators.js';
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import DOMPurify from 'dompurify';
 
 import type { SortParam } from '@internetarchive/search-service';
@@ -13,6 +13,7 @@ import type { CollectionTitles } from '../../data-source/models';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { formatCount, NumberFormat } from '../../utils/format-count';
+import { getLocale } from '../../utils/get-locale';
 import type { DateFormat } from '../../utils/format-date';
 import { isFirstMillisecondOfUTCYear } from '../../utils/local-date-from-utc';
 import { tileActionStyles } from '../../styles/tile-action-styles';
@@ -23,6 +24,7 @@ import '../text-snippet-block';
 import '../tile-mediatype-icon';
 
 @customElement('tile-list')
+@localized()
 export class TileList extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:
@@ -264,7 +266,7 @@ export class TileList extends BaseTileComponent {
 
     // when its a search-tile, we don't have any stats to show
     if (this.model?.mediatype === 'search') {
-      return this.metadataTemplate('(Favorited search query)', '');
+      return this.metadataTemplate(msg('(Favorited search query)'), '');
     }
 
     return this.metadataTemplate(
@@ -274,11 +276,19 @@ export class TileList extends BaseTileComponent {
   }
 
   private get ratingTemplate() {
-    return this.metadataTemplate(this.model?.averageRating, msg('Avg Rating'));
+    const { averageRating } = this.model ?? {};
+    const formattedRating = averageRating
+      ? new Intl.NumberFormat(getLocale()).format(averageRating)
+      : averageRating;
+    return this.metadataTemplate(formattedRating, msg('Avg Rating'));
   }
 
   private get reviewsTemplate() {
-    return this.metadataTemplate(this.model?.commentCount, msg('Reviews'));
+    const { commentCount } = this.model ?? {};
+    const formattedCount = commentCount
+      ? new Intl.NumberFormat(getLocale()).format(commentCount)
+      : commentCount;
+    return this.metadataTemplate(formattedCount, msg('Reviews'));
   }
 
   private get topicsTemplate() {

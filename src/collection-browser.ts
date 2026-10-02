@@ -9,7 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import type {
@@ -75,6 +75,7 @@ import { updateSelectedFacetBucket } from './utils/facet-utils';
 import chevronIcon from './assets/img/icons/chevron';
 import { srOnlyStyle } from './styles/sr-only';
 import { sha1 } from './utils/sha1';
+import { getLocale } from './utils/get-locale';
 import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
@@ -91,6 +92,7 @@ import './circular-activity-indicator';
 import './collection-facets/smart-facets/smart-facet-bar';
 
 @customElement('collection-browser')
+@localized()
 export class CollectionBrowser
   extends LitElement
   implements
@@ -307,7 +309,8 @@ export class CollectionBrowser
    */
   @property({ type: String }) tileLayoutType: LayoutType = 'default';
 
-  @property({ type: String }) manageViewLabel = 'Select items to remove';
+  /** Label for the manage bar. Defaults to the manage bar's own localized label. */
+  @property({ type: String }) manageViewLabel?: string;
 
   /** Whether to replace the default sort options with a slot for customization (default: false) */
   @property({ type: Boolean }) enableSortOptionsSlot = false;
@@ -866,14 +869,18 @@ export class CollectionBrowser
     const shouldShowSearching =
       this.searchResultsLoading || this.totalResults === undefined;
     const classes = classMap({ filtered: this.hasActiveFilters });
-    const resultsCount = this.totalResults?.toLocaleString();
-    const resultsLabel = this.totalResults === 1 ? 'Result' : 'Results';
+    const resultsCount =
+      this.totalResults === undefined
+        ? undefined
+        : new Intl.NumberFormat(getLocale()).format(this.totalResults);
+    const resultsLabel =
+      this.totalResults === 1 ? msg('Result') : msg('Results');
 
     // Added data-testid for Playwright testing
     return html`
       <div id="results-total" class=${classes} data-testid="results-total">
         <span id="big-results-count">
-          ${shouldShowSearching ? html`Searching&hellip;` : resultsCount}
+          ${shouldShowSearching ? msg('Searching…') : resultsCount}
         </span>
         <span id="big-results-label">
           ${shouldShowSearching ? nothing : resultsLabel}
@@ -925,7 +932,7 @@ export class CollectionBrowser
     return html`<infinite-scroller
       class=${this.infiniteScrollerClasses}
       itemCount=${this.placeholderType ? 0 : nothing}
-      ariaLandmarkLabel="Search results"
+      ariaLandmarkLabel=${msg('Search results')}
       .estimatedCellHeight=${this.estimatedTileHeight}
       .minBufferMarginCells=${this.pageSize}
       .cellProvider=${this}
@@ -1634,7 +1641,7 @@ export class CollectionBrowser
       mobile,
     });
 
-    const buttonText = mobile ? 'Clear all' : 'Clear all filters';
+    const buttonText = mobile ? msg('Clear all') : msg('Clear all filters');
 
     return html`
       <div class="clear-filters-btn-row">

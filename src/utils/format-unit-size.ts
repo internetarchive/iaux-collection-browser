@@ -2,23 +2,39 @@
  * Replaces Petabox www/common/Util::humanSize()
  */
 import { nothing } from 'lit';
+import { msg, str } from '@lit/localize';
+import { getLocale } from './get-locale';
 
-enum unitSizes {
-  'bytes',
-  'kilobytes',
-  'megabytes',
-  'gigabytes',
-  'terabytes',
-  'petabytes',
-  'exabytes',
-  'zettabytes',
-  'yottabytes',
-}
+/**
+ * Labels a formatted size with its unit, one entry per power of 1024 starting
+ * at bytes. Each entry is a function so the label is read in the current
+ * locale at call time.
+ */
+const unitLabels: ((size: string, singular: boolean) => string)[] = [
+  (size, singular) =>
+    singular ? msg(str`${size} byte`) : msg(str`${size} bytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} kilobyte`) : msg(str`${size} kilobytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} megabyte`) : msg(str`${size} megabytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} gigabyte`) : msg(str`${size} gigabytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} terabyte`) : msg(str`${size} terabytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} petabyte`) : msg(str`${size} petabytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} exabyte`) : msg(str`${size} exabytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} zettabyte`) : msg(str`${size} zettabytes`),
+  (size, singular) =>
+    singular ? msg(str`${size} yottabyte`) : msg(str`${size} yottabytes`),
+];
 
 export function formatUnitSize(
   size: number | undefined,
   nDecimals: number,
-  separator: string = ' ',
+  locale: string = getLocale(),
 ) {
   let itemSize = size;
   if (itemSize === undefined) return nothing; // early return.
@@ -26,7 +42,7 @@ export function formatUnitSize(
   let unitIndex = 0;
 
   // convert byte to highest possible unit
-  while (itemSize > 1024) {
+  while (itemSize > 1024 && unitIndex < unitLabels.length - 1) {
     itemSize /= 1024;
     unitIndex += 1;
   }
@@ -34,10 +50,8 @@ export function formatUnitSize(
   const magnitude = 10 ** nDecimals;
   itemSize = Math.round(itemSize * magnitude) / magnitude;
 
-  let unitText = unitSizes[unitIndex];
-
-  // convert plural to singular.
-  unitText = itemSize === 1 ? unitText.slice(0, -1) : unitText;
-
-  return `${itemSize.toLocaleString() + separator + unitText}`;
+  return unitLabels[unitIndex](
+    new Intl.NumberFormat(locale).format(itemSize),
+    itemSize === 1,
+  );
 }
