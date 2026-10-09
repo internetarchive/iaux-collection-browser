@@ -16,6 +16,9 @@ import {
 import { arrayEquals } from './utils/array-equals';
 import { dateFilterField } from './utils/date-filter-field';
 
+/** `__proto__` can't be used as a facet value without reaching into the prototype chain. */
+const UNSAFE_FACET_VALUE = '__proto__';
+
 export interface RestorationState {
   displayMode?: CollectionDisplayMode;
   searchType?: SearchType;
@@ -531,11 +534,17 @@ export class RestorationStateHandler
     value: string,
     state: FacetState,
   ): void {
+    // Unrecognized facet group, ignore it.
+    if (!Object.prototype.hasOwnProperty.call(selectedFacets, field)) return;
     const facet = selectedFacets[field];
-    if (!facet) return; // Unrecognized facet group, ignore it.
+    if (!facet) return;
 
     const unQuotedValue = this.stripQuotes(value);
-    facet[unQuotedValue] ??= this.getDefaultBucket(unQuotedValue);
+    if (unQuotedValue === UNSAFE_FACET_VALUE) return;
+
+    if (!Object.prototype.hasOwnProperty.call(facet, unQuotedValue)) {
+      facet[unQuotedValue] = this.getDefaultBucket(unQuotedValue);
+    }
     facet[unQuotedValue].state = state;
   }
 

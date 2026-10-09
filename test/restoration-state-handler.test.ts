@@ -118,6 +118,64 @@ describe('Restoration state handler', () => {
     );
   });
 
+  describe('unsafe facet keys in the URL', () => {
+    const restoreFrom = (search: string) => {
+      const handler = new RestorationStateHandler({ context: 'search' });
+      const url = new URL(window.location.href);
+      url.search = search;
+      window.history.replaceState({ path: url.href }, '', url.href);
+      return handler.getRestorationState();
+    };
+
+    afterEach(() => {
+      const proto = Object.prototype as Record<string, unknown>;
+      for (const key of ['polluted', 'state']) delete proto[key];
+      for (const key of ['polluted', 'state']) {
+        delete (Object as unknown as Record<string, unknown>)[key];
+      }
+    });
+
+    ['__proto__', 'constructor', 'prototype'].forEach(key => {
+      it(`ignores "${key}" as a facet group`, async () => {
+        const { selectedFacets } = restoreFrom(
+          `?and[]=${key}:polluted&not[]=${key}:polluted`,
+        );
+
+        expect(selectedFacets).to.deep.equal(getDefaultSelectedFacets());
+        expect(({} as Record<string, unknown>).polluted).to.be.undefined;
+        expect((Object as unknown as Record<string, unknown>).polluted).to.be
+          .undefined;
+      });
+    });
+
+    it('ignores "__proto__" as a facet value', async () => {
+      const { selectedFacets } = restoreFrom(
+        '?and[]=creator:__proto__&not[]=creator:__proto__',
+      );
+
+      expect(selectedFacets).to.deep.equal(getDefaultSelectedFacets());
+      expect(({} as Record<string, unknown>).state).to.be.undefined;
+    });
+
+    ['constructor', 'prototype', 'toString'].forEach(key => {
+      it(`treats "${key}" as an ordinary facet value`, async () => {
+        const { selectedFacets } = restoreFrom(`?and[]=creator:${key}`);
+
+        expect(selectedFacets.creator?.[key]).to.deep.equal({
+          key,
+          count: 0,
+          state: 'selected',
+        });
+        expect((Object as unknown as Record<string, unknown>).state).to.be
+          .undefined;
+        expect(
+          (Object.prototype.toString as unknown as Record<string, unknown>)
+            .state,
+        ).to.be.undefined;
+      });
+    });
+  });
+
   it('should restore selected date range facets from URL', async () => {
     const handler = new RestorationStateHandler({ context: 'search' });
 
