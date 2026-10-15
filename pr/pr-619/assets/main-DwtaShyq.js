@@ -3474,25 +3474,28 @@ fill=""></path>
     }
   `}};R([N({type:String})],pc.prototype,`selectedLetter`,void 0),R([N({type:Object})],pc.prototype,`letterCounts`,void 0),R([N({type:String})],pc.prototype,`ariaLandmarkLabel`,void 0),R([P()],pc.prototype,`tooltipShown`,void 0),R([P()],pc.prototype,`hoveredLetter`,void 0),R([F(`alpha-bar-tooltip`)],pc.prototype,`tooltip`,void 0),pc=R([M(`alpha-bar`)],pc);var mc=class extends j{constructor(...e){super(...e),this.defaultSortDirection=null,this.defaultSortField=tr.relevance,this.sortDirection=null,this.selectedSort=tr.default,this.selectedTitleFilter=null,this.selectedCreatorFilter=null,this.sortFieldAvailability=ir,this.enableSortOptionsSlot=!1,this.suppressDisplayModes=!1,this.alphaSelectorVisible=null,this.dropdownBackdropVisible=!1,this.boundSortBarSelectorEscapeListener=e=>{e.key===`Escape`&&this.closeDropdown()}}render(){return O`
       <div id="container">
-        <section id="sort-bar" aria-label="Sorting options">
-          <slot name="sort-options-left"></slot>
-          <div id="sort-options">
-            ${this.enableSortOptionsSlot?O`<slot name="sort-options"></slot>`:O`
-                  <div class="sort-direction-container">
-                    ${this.sortDirectionSelectorTemplate}
-                  </div>
-                  <span class="sort-by-text">${I(`Sort by:`)}</span>
-                  <div id="sort-selector-container">
-                    ${this.sortSelectorTemplate}
-                  </div>
-                `}
-          </div>
-          <slot name="sort-options-right"></slot>
+        <div id="sort-bar-row">
+          <section id="sort-bar" aria-label="Sorting options">
+            <slot name="sort-options-left"></slot>
+            <div id="sort-options">
+              ${this.enableSortOptionsSlot?O`<slot name="sort-options"></slot>`:O`
+                    <div class="sort-direction-container">
+                      ${this.sortDirectionSelectorTemplate}
+                    </div>
+                    <span class="sort-by-text">${I(`Sort by:`)}</span>
+                    <div id="sort-selector-container">
+                      ${this.sortSelectorTemplate}
+                    </div>
+                  `}
+            </div>
+            <slot name="sort-options-right"></slot>
 
-          ${this.suppressDisplayModes?A:O`<div id="display-style-selector">
-                ${this.displayOptionTemplate}
-              </div>`}
-        </section>
+            ${this.suppressDisplayModes?A:O`<div id="display-style-selector">
+                  ${this.displayOptionTemplate}
+                </div>`}
+          </section>
+          <slot name="sort-bar-end"></slot>
+        </div>
 
         ${this.dropdownBackdropVisible?this.dropdownBackdrop:A}
         ${this.alphaBarTemplate}
@@ -3597,13 +3600,28 @@ fill=""></path>
           position: relative;
         }
 
-        #sort-bar {
+        /*
+         * The sort-bar-end slot shares this row with the sort bar but sits
+         * outside its "Sorting options" landmark. When the slotted content
+         * doesn't fit beside the sort controls, it wraps onto its own line at
+         * the right rather than overflowing the row.
+         */
+        #sort-bar-row {
           display: flex;
-          justify-content: flex-start;
+          flex-wrap: wrap;
+          justify-content: flex-end;
           align-items: center;
           padding-bottom: 1px;
           border-bottom: 1px solid #2c2c2c;
           font-size: 1.4rem;
+        }
+
+        #sort-bar {
+          flex: auto;
+          min-width: 0;
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
         }
 
         #sort-options {
@@ -7372,8 +7390,13 @@ fill=""></path>
           </div>
           ${this.isManageView?this.manageBarTemplate:this.sortFilterBarTemplate}
           <slot name="cb-results"></slot>
-          ${this.displayMode===`list-compact`&&this.totalResults?this.listHeaderTemplate:A}
-          ${this.suppressResultTiles?A:this.infiniteScrollerTemplate}
+          <div id="results-body">
+            <slot name="results-aside"></slot>
+            <div id="results-main">
+              ${this.displayMode===`list-compact`&&this.totalResults?this.listHeaderTemplate:A}
+              ${this.suppressResultTiles?A:this.infiniteScrollerTemplate}
+            </div>
+          </div>
         </section>
       </div>
     `}get infiniteScrollerTemplate(){return O`<infinite-scroller
@@ -7409,6 +7432,7 @@ fill=""></path>
         <slot name="sort-options-left" slot="sort-options-left"></slot>
         <slot name="sort-options" slot="sort-options"></slot>
         <slot name="sort-options-right" slot="sort-options-right"></slot>
+        <slot name="sort-bar-end" slot="sort-bar-end"></slot>
       </sort-filter-bar>
     `}get tileBlurCheckboxTemplate(){return this.dataSource.sessionContext?.is_archive_user?O`
       <label
@@ -7700,6 +7724,23 @@ fill=""></path>
 
         .mobile #results {
           padding: 5px 5px 0;
+        }
+
+        /*
+         * The results sit in a row with the optional results-aside slot, which
+         * lays out beside them as a flex item and takes its own width and spacing.
+         * The aside comes first in the DOM so keyboard and screen reader users
+         * reach it before the infinitely scrolling tiles, but it shows on the right.
+         */
+        #results-body {
+          display: flex;
+          align-items: flex-start;
+        }
+
+        #results-main {
+          order: -1;
+          flex: 1;
+          min-width: 0;
         }
 
         #left-column {
