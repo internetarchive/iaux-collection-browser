@@ -1,5 +1,6 @@
 import { html, LitElement, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { localized } from '@lit/localize';
 import type {
   FacetOption,
   FacetBucket,
@@ -15,6 +16,7 @@ import {
 } from './facet-row-template';
 
 @customElement('facet-row')
+@localized()
 export class FacetRow extends LitElement {
   //
   // UI STATE
