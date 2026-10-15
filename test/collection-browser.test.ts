@@ -1,6 +1,7 @@
-import { aTimeout, expect, fixture } from '@open-wc/testing';
+import { aTimeout, expect, fixture, waitUntil } from '@open-wc/testing';
 import { html } from 'lit';
 import sinon from 'sinon';
+import { sendKeys } from '@web/test-runner-commands';
 import type { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { FilterConstraint, SearchType } from '@internetarchive/search-service';
 import type { IAHistogramDateRange } from '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
@@ -2480,6 +2481,94 @@ describe('Collection Browser', () => {
 
     const infiniteScroller = el.shadowRoot?.querySelector('infinite-scroller');
     expect(infiniteScroller).not.to.exist;
+  });
+
+  it('lays out results-aside content beside the result tiles', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+        <div slot="results-aside" id="aside" style="width: 200px">Aside</div>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const resultsBody = el.shadowRoot?.querySelector('#results-body');
+    const asideSlot = resultsBody?.querySelector(
+      'slot[name="results-aside"]',
+    ) as HTMLSlotElement;
+    const scroller = resultsBody?.querySelector(
+      '#results-main > infinite-scroller',
+    ) as HTMLElement;
+    const aside = el.querySelector('#aside') as HTMLElement;
+    const assignedIds = asideSlot?.assignedElements().map(e => e.id);
+
+    expect(assignedIds).to.deep.equal(['aside']);
+    expect(scroller).to.exist;
+
+    // The aside sits to the right of the tiles, sharing the results row
+    const scrollerRect = scroller.getBoundingClientRect();
+    const asideRect = aside.getBoundingClientRect();
+    expect(asideRect.left).to.be.at.least(scrollerRect.right);
+    expect(asideRect.top).to.be.at.most(scrollerRect.bottom);
+  });
+
+  it('puts results-aside content before the result tiles in tab order', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${searchService}
+        .baseNavigationUrl=${''}
+      >
+        <button slot="cb-results" id="before-results">Before</button>
+        <button slot="results-aside" id="aside-button">Aside</button>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    // Wait until the first tile has a link that Tab could land on
+    await waitUntil(
+      () =>
+        el.shadowRoot
+          ?.querySelector('infinite-scroller')
+          ?.shadowRoot?.querySelector('tile-dispatcher')
+          ?.shadowRoot?.querySelector('a[href]'),
+      'tile link never rendered',
+    );
+
+    // Tabbing from just above the results reaches the aside before any tile
+    (el.querySelector('#before-results') as HTMLButtonElement).focus();
+    await sendKeys({ press: 'Tab' });
+    expect(document.activeElement?.id).to.equal('aside-button');
+  });
+
+  it('forwards sort-bar-end content into the sort bar', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+        <button slot="sort-bar-end" id="end-button">End</button>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const sortBar = el.shadowRoot?.querySelector(
+      'sort-filter-bar',
+    ) as SortFilterBar;
+    const forwardingSlot = sortBar?.querySelector(
+      'slot[name="sort-bar-end"]',
+    ) as HTMLSlotElement;
+    const assignedIds = forwardingSlot?.assignedElements().map(e => e.id);
+
+    expect(forwardingSlot?.slot).to.equal('sort-bar-end');
+    expect(assignedIds).to.deep.equal(['end-button']);
   });
 
   it('fetch larger result on search page for admin user to manage items', async () => {
