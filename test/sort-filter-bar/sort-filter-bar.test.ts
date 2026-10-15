@@ -259,6 +259,80 @@ describe('Sort dropdown behavior', () => {
     expect(slotEl?.shadowRoot?.querySelector('#sort-selector-container')).to.not
       .exist;
   });
+
+  it('renders the sort-bar-end slot after the sort bar, outside its landmark', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar>
+        <button slot="sort-bar-end" id="end-button">End</button>
+      </sort-filter-bar>
+    `);
+
+    const sortBar = el.shadowRoot?.querySelector('#sort-bar');
+    const endSlot = el.shadowRoot?.querySelector(
+      '#sort-bar-row > slot[name="sort-bar-end"]',
+    ) as HTMLSlotElement;
+    const assignedIds = endSlot?.assignedElements().map(e => e.id);
+
+    expect(endSlot).to.exist;
+    expect(sortBar?.querySelector('slot[name="sort-bar-end"]')).to.not.exist;
+    expect(sortBar?.lastElementChild?.id).to.equal('display-style-selector');
+    expect(sortBar?.nextElementSibling?.getAttribute('name')).to.equal(
+      'sort-bar-end',
+    );
+    expect(assignedIds).to.deep.equal(['end-button']);
+  });
+
+  it('lays out sort-bar-end content just after the display mode buttons', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar style="display: block; width: 1200px">
+        <button slot="sort-bar-end" id="end-button">End</button>
+      </sort-filter-bar>
+    `);
+
+    const displayModes = el.shadowRoot?.querySelector(
+      '#display-style-selector',
+    ) as HTMLElement;
+    const button = el.querySelector('#end-button') as HTMLElement;
+    const displayModesRect = displayModes.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+
+    // On the same line as the display mode buttons, to their right
+    expect(buttonRect.left).to.be.at.least(displayModesRect.right);
+    expect(buttonRect.top).to.be.below(displayModesRect.bottom);
+  });
+
+  it('wraps sort-bar-end content onto its own line when it does not fit', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar style="display: block; width: 400px">
+        <button slot="sort-bar-end" id="end-button" style="width: 350px">
+          End
+        </button>
+      </sort-filter-bar>
+    `);
+
+    const row = el.shadowRoot?.querySelector('#sort-bar-row') as HTMLElement;
+    const sortBar = el.shadowRoot?.querySelector('#sort-bar') as HTMLElement;
+    const button = el.querySelector('#end-button') as HTMLElement;
+    const rowRect = row.getBoundingClientRect();
+    const buttonRect = button.getBoundingClientRect();
+
+    // Below the sort controls, at the right end of the row and inside it
+    expect(buttonRect.top).to.be.at.least(
+      sortBar.getBoundingClientRect().bottom,
+    );
+    expect(buttonRect.right).to.be.closeTo(rowRect.right, 1);
+    expect(buttonRect.bottom).to.be.at.most(rowRect.bottom);
+  });
+
+  it('keeps the sort-bar-end slot when display modes are suppressed', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar suppressDisplayModes></sort-filter-bar>
+    `);
+
+    const sortBarRow = el.shadowRoot?.querySelector('#sort-bar-row');
+    expect(sortBarRow?.querySelector('#display-style-selector')).to.not.exist;
+    expect(sortBarRow?.querySelector('slot[name="sort-bar-end"]')).to.exist;
+  });
 });
 
 describe('Sort direction button behavior', () => {
