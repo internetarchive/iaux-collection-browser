@@ -9,6 +9,9 @@
 *.sln
 *.sw?
 
+# Claude Code settings and worktrees
+.claude/
+
 ## npm
 /node_modules/
 /npm-debug.log

@@ -19,7 +19,7 @@ import {
   SearchServiceInterface,
   SearchType,
 } from '@internetarchive/search-service';
-import '@internetarchive/histogram-date-range';
+import '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
 import '@internetarchive/feature-feedback';
 import {
   ModalConfig,
@@ -32,7 +32,7 @@ import type { SharedResizeObserverInterface } from '@internetarchive/shared-resi
 import type {
   BarScalingOption,
   BinSnappingInterval,
-} from '@internetarchive/histogram-date-range';
+} from '@internetarchive/elements/ia-histogram-date-range/models';
 import chevronIcon from './assets/img/icons/chevron';
 import expandIcon from './assets/img/icons/expand';
 import {
@@ -65,7 +65,7 @@ import {
   updateSelectedFacetBucket,
 } from './utils/facet-utils';
 
-import '@internetarchive/histogram-date-range';
+import '@internetarchive/elements/ia-histogram-date-range/ia-histogram-date-range';
 import './collection-facets/more-facets-content';
 import './collection-facets/facets-template';
 import './collection-facets/facet-tombstone-row';
@@ -433,7 +433,7 @@ export class CollectionFacets extends LitElement {
     } = histogramProps;
 
     return html`
-      <histogram-date-range
+      <ia-histogram-date-range
         class=${this.isTvSearch ? 'wide-inputs' : ''}
         .minDate=${minDate}
         .maxDate=${maxDate}
@@ -451,7 +451,7 @@ export class CollectionFacets extends LitElement {
           ? this.contentWidth
           : 180}
         @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
-      ></histogram-date-range>
+      ></ia-histogram-date-range>
     `;
   }
 
@@ -1004,7 +1004,7 @@ export class CollectionFacets extends LitElement {
           cursor: pointer;
         }
 
-        histogram-date-range.wide-inputs {
+        ia-histogram-date-range.wide-inputs {
           --histogramDateRangeInputWidth: 4.8rem;
         }
       `,

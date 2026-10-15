@@ -7,7 +7,10 @@ import {
   PropertyValues,
   TemplateResult,
 } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { repeat } from 'lit/directives/repeat.js';
+import { when } from 'lit/directives/when.js';
 import {
   Aggregation,
   Bucket,
@@ -20,13 +23,14 @@ import {
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
-import { msg } from '@lit/localize';
+import { msg, str } from '@lit/localize';
 import {
   SelectedFacets,
   FacetGroup,
   FacetBucket,
   FacetOption,
   facetTitles,
+  facetPluralTitles,
   suppressedCollections,
   valueFacetSort,
   defaultFacetSort,
@@ -40,23 +44,29 @@ import type {
   TVChannelAliases,
 } from '../data-source/models';
 import '@internetarchive/elements/ia-status-indicator/ia-status-indicator';
-import './more-facets-pagination';
-import './facets-template';
+import '@internetarchive/ia-clearable-text-input';
+import './more-facets-scroller';
+import type { MoreFacetsScroller } from './more-facets-scroller';
 import {
   analyticsActions,
   analyticsCategories,
 } from '../utils/analytics-events';
 import './toggle-switch';
 import { srOnlyStyle } from '../styles/sr-only';
+import checkIcon from '../assets/img/icons/check';
+import eyeClosedIcon from '../assets/img/icons/eye-closed';
+import closeCircleDark from '../assets/img/icons/close-circle-dark';
 import {
   mergeSelectedFacets,
-  sortBucketsBySelectionState,
   updateSelectedFacetBucket,
 } from '../utils/facet-utils';
 import {
-  MORE_FACETS__DEFAULT_PAGE_SIZE,
-  MORE_FACETS__MAX_AGGREGATIONS,
-} from './models';
+  filterTextIncludes,
+  normalizeFilterText,
+  type NormalizedFilterText,
+} from '../utils/normalize-filter-text';
+import { log } from '../utils/log';
+import { MORE_FACETS__MAX_AGGREGATIONS } from './models';
 
 @customElement('more-facets-content')
 export class MoreFacetsContent extends LitElement {
@@ -77,11 +87,6 @@ export class MoreFacetsContent extends LitElement {
 
   @property({ type: Object })
   tvChannelAliases?: TVChannelAliases;
-
-  /**
-   * Maximum number of facets to show per page within the modal.
-   */
-  @property({ type: Number }) facetsPerPage = MORE_FACETS__DEFAULT_PAGE_SIZE;
 
   /**
    * Whether we are waiting for facet data to load.
@@ -126,21 +131,65 @@ export class MoreFacetsContent extends LitElement {
     getDefaultSelectedFacets();
 
   /**
-   * Which page of facets we are showing.
+   * Text the patron has entered to narrow down the facet values shown.
    */
-  @state() private pageNumber = 1;
+  @state() private filterText = '';
+
+  /**
+   * Whether the search for this facet's values failed, either with an error
+   * result or by throwing.
+   */
+  @state() private loadFailed = false;
+
+  /**
+   * The buckets from `facetGroup` that match `filterText`, in display order.
+   * Derived in `willUpdate`.
+   */
+  private filteredBuckets: FacetBucket[] = [];
+
+  /**
+   * Each bucket's display text in the normalized form that filtering compares
+   * against, keyed by bucket key. Filled lazily so that each value is only
+   * normalized once, however many times the filter text changes.
+   */
+  private filterKeys = new Map<string, NormalizedFilterText>();
+
+  /**
+   * The values currently selected or hidden, in the order they were selected.
+   * Shown as chiclets above the list. Derived in `willUpdate`.
+   */
+  private chosenBuckets: FacetBucket[] = [];
+
+  /**
+   * Position of a chiclet that was just removed, whose neighbor should get
+   * focus once it's gone.
+   */
+  private chicletFocusIndex?: number;
+
+  @query('more-facets-scroller')
+  private scroller?: MoreFacetsScroller;
+
+  @query('ia-clearable-text-input')
+  private filterInput?: HTMLElement;
 
   willUpdate(changed: PropertyValues): void {
-    if (
+    if (changed.has('aggregations')) {
+      this.filterKeys.clear();
+    }
+
+    const facetGroupChanged =
       changed.has('aggregations') ||
-      changed.has('facetsPerPage') ||
       changed.has('sortedBy') ||
       changed.has('selectedFacets') ||
-      changed.has('unappliedFacetChanges')
-    ) {
-      // Convert the merged selected facets & aggregations into a facet group, and
-      // store it for reuse across pages.
+      changed.has('unappliedFacetChanges');
+    if (facetGroupChanged) {
+      // Convert the merged selected facets & aggregations into a facet group
       this.facetGroup = this.mergedFacets;
+      this.chosenBuckets = this.listChosenBuckets();
+    }
+
+    if (facetGroupChanged || changed.has('filterText')) {
+      this.filteredBuckets = this.filterBuckets();
     }
 
     // If any of the search properties change, it triggers a facet fetch
@@ -151,7 +200,7 @@ export class MoreFacetsContent extends LitElement {
       changed.has('filterMap')
     ) {
       this.facetsLoading = true;
-      this.pageNumber = 1;
+      this.loadFailed = false;
       this.sortedBy =
         this.searchType === SearchType.TV
           ? tvMoreFacetSort[this.facetKey as FacetOption]
@@ -161,22 +210,43 @@ export class MoreFacetsContent extends LitElement {
     }
   }
 
+  updated(changed: PropertyValues): void {
+    // A new filter or sort order shows different values, so start over from
+    // the first page rather than somewhere in the middle of them.
+    if (changed.has('filterText') || changed.has('sortedBy')) {
+      this.scroller?.scrollToPage(0);
+    }
+
+    // A removed chiclet took its focused button with it; move focus to the
+    // chiclet that took its place, or back to the filter field if none are left.
+    if (this.chicletFocusIndex !== undefined) {
+      const buttons =
+        this.shadowRoot?.querySelectorAll<HTMLElement>('.chiclet-remove') ?? [];
+      const index = Math.min(this.chicletFocusIndex, buttons.length - 1);
+      this.chicletFocusIndex = undefined;
+      (buttons[index] ?? this.filterInput)?.focus();
+    }
+  }
+
   firstUpdated(): void {
     this.setupEscapeListeners();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    document.removeEventListener('keydown', this.escapeHandler);
   }
 
   /**
    * Close more facets modal on Escape click
    */
+  private escapeHandler = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') this.modalManager?.closeModal();
+  };
+
   private setupEscapeListeners() {
     if (this.modalManager) {
-      document.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          this.modalManager?.closeModal();
-        }
-      });
-    } else {
-      document.removeEventListener('keydown', () => {});
+      document.addEventListener('keydown', this.escapeHandler);
     }
   }
 
@@ -215,88 +285,76 @@ export class MoreFacetsContent extends LitElement {
       rows: 0, // todo - do we want server-side pagination with offset/page/limit flag?
     };
 
-    const results = await this.searchService?.search(params, this.searchType);
-    this.aggregations = results?.success?.response.aggregations;
-    this.facetsLoading = false;
-
-    const collectionTitles = results?.success?.response?.collectionTitles;
-    if (collectionTitles) {
-      for (const [id, title] of Object.entries(collectionTitles)) {
-        this.collectionTitles?.set(id, title);
+    try {
+      const results = await this.searchService?.search(params, this.searchType);
+      const response = results?.success?.response;
+      if (!response) {
+        log('More facets search failed', results?.error);
+        this.loadFailed = true;
+        this.aggregations = undefined;
+        return;
       }
+
+      // Record collection titles before the aggregations, so that they're
+      // available for sorting & filtering once the facet group is built.
+      const { collectionTitles } = response;
+      if (collectionTitles) {
+        for (const [id, title] of Object.entries(collectionTitles)) {
+          this.collectionTitles?.set(id, title);
+        }
+      }
+
+      this.aggregations = response.aggregations;
+    } catch (err) {
+      log('More facets search threw', err);
+      this.loadFailed = true;
+      this.aggregations = undefined;
+    } finally {
+      this.facetsLoading = false;
     }
   }
 
   /**
-   * Handler for page number changes from the pagination widget.
-   */
-  private pageNumberClicked(e: CustomEvent<{ page: number }>) {
-    const page = e?.detail?.page;
-    if (page) {
-      this.pageNumber = Number(page);
-    }
-
-    this.analyticsHandler?.sendEvent({
-      category: analyticsCategories.default,
-      action: analyticsActions.moreFacetsPageChange,
-      label: `${this.pageNumber}`,
-    });
-  }
-
-  /**
-   * Combines the selected facets with the aggregations to create a single list of facets
+   * Combines the selected facets with the aggregations into the single list of
+   * values the dialog shows. Selected and hidden values keep their place in the
+   * current sort order rather than moving to the front; the chiclets above the
+   * list are what call them out.
    */
   private get mergedFacets(): FacetGroup | undefined {
     if (!this.facetKey || !this.selectedFacets) return undefined;
 
-    const { selectedFacetGroup, aggregationFacetGroup } = this;
+    const { aggregationFacetGroup } = this;
 
     // If we don't have any aggregations, then there is nothing to show yet
     if (!aggregationFacetGroup) return undefined;
 
-    // Start with either the selected group if we have one, or the aggregate group otherwise
-    const facetGroup = { ...(selectedFacetGroup ?? aggregationFacetGroup) };
+    const selections = this.currentSelections;
 
-    // Attach the counts to the selected buckets
-    const bucketsWithCount =
-      selectedFacetGroup?.buckets.map(bucket => {
-        const selectedBucket = aggregationFacetGroup.buckets.find(
-          b => b.key === bucket.key,
-        );
-        return selectedBucket
-          ? {
-              ...bucket,
-              count: selectedBucket.count,
-            }
-          : bucket;
-      }) ?? [];
-
-    // Sort the buckets by selection state
-    // We do this *prior* to considering unapplied selections, because we want the facets
-    // to remain in position when they are selected/unselected, rather than re-sort themselves.
-    sortBucketsBySelectionState(bucketsWithCount, this.sortedBy);
-
-    // Append any additional buckets that were not selected
-    aggregationFacetGroup.buckets.forEach(bucket => {
-      const existingBucket = selectedFacetGroup?.buckets.find(
-        b => b.key === bucket.key,
-      );
-      if (existingBucket) return;
-      bucketsWithCount.push(bucket);
+    // Mark each aggregated value with its selection state, if it has one
+    const buckets = aggregationFacetGroup.buckets.map(bucket => {
+      const selection = selections[bucket.key];
+      return selection ? { ...bucket, state: selection.state } : bucket;
     });
 
-    // Apply any unapplied selections that appear on this page
-    const unappliedBuckets = this.unappliedFacetChanges[this.facetKey];
-    for (const [index, bucket] of bucketsWithCount.entries()) {
-      const unappliedBucket = unappliedBuckets?.[bucket.key];
-      if (unappliedBucket) {
-        bucketsWithCount[index] = { ...unappliedBucket };
-      }
+    // Values selected before the dialog opened can be missing from the
+    // aggregations (a hidden value is excluded from the results it would be
+    // counted in). Slot them in where the current sort puts them, so they can
+    // still be changed from the list.
+    const aggregatedKeys = new Set(buckets.map(b => b.key));
+    const preexisting = this.selectedFacets[this.facetKey] ?? {};
+    for (const [key, data] of Object.entries(preexisting)) {
+      if (aggregatedKeys.has(key)) continue;
+      this.insertInSortOrder(buckets, {
+        displayText: this.displayTextFor(key),
+        key,
+        count: data.count,
+        state: selections[key]?.state ?? data.state,
+      });
     }
 
     // For TV creator facets, uppercase the display text
     if (this.facetKey === 'creator' && this.isTvSearch) {
-      bucketsWithCount.forEach(b => {
+      buckets.forEach(b => {
         b.displayText = (b.displayText ?? b.key)?.toLocaleUpperCase();
 
         const channelLabel = this.tvChannelAliases?.get(b.displayText);
@@ -306,39 +364,75 @@ export class MoreFacetsContent extends LitElement {
       });
     }
 
-    facetGroup.buckets = bucketsWithCount;
-    return facetGroup;
+    return { ...aggregationFacetGroup, buckets };
   }
 
   /**
-   * Converts the selected facets for the current facet key to a `FacetGroup`,
-   * which is easier to work with.
+   * This facet type's selections: the ones made before the dialog opened,
+   * overridden by any unapplied changes made in it. Values stay in the order
+   * they were first selected, and cleared ones remain with state `'none'`.
    */
-  private get selectedFacetGroup(): FacetGroup | undefined {
-    if (!this.selectedFacets || !this.facetKey) return undefined;
-
-    const selectedFacetsForKey = this.selectedFacets[this.facetKey];
-    if (!selectedFacetsForKey) return undefined;
-
-    const facetGroupTitle = facetTitles[this.facetKey];
-
-    const buckets: FacetBucket[] = Object.entries(selectedFacetsForKey).map(
-      ([value, data]) => {
-        const displayText: string = value;
-        return {
-          displayText,
-          key: value,
-          count: data?.count,
-          state: data?.state,
-        };
-      },
-    );
-
+  private get currentSelections(): Record<string, FacetBucket> {
+    if (!this.facetKey) return {};
     return {
-      title: facetGroupTitle,
-      key: this.facetKey,
-      buckets,
+      ...this.selectedFacets?.[this.facetKey],
+      ...this.unappliedFacetChanges[this.facetKey],
     };
+  }
+
+  /**
+   * The values that are currently selected or hidden, in the order they were
+   * selected, as they appear in `facetGroup`.
+   */
+  private listChosenBuckets(): FacetBucket[] {
+    const byKey = new Map(this.facetGroup?.buckets.map(b => [b.key, b]));
+    // Without a list (e.g. the search failed), fall back on the selections
+    // themselves, so they can still be seen and cleared.
+    return Object.entries(this.currentSelections)
+      .map(
+        ([key, selection]) =>
+          byKey.get(key) ?? {
+            ...selection,
+            displayText: this.displayTextFor(key),
+          },
+      )
+      .filter(bucket => bucket.state !== 'none');
+  }
+
+  /**
+   * Inserts `bucket` ahead of the first bucket that the current sort would put
+   * after it.
+   */
+  private insertInSortOrder(buckets: FacetBucket[], bucket: FacetBucket): void {
+    const index = buckets.findIndex(b => this.compareForSort(bucket, b) < 0);
+    buckets.splice(index === -1 ? buckets.length : index, 0, bucket);
+  }
+
+  /**
+   * Orders two buckets the way the aggregations are ordered for the current
+   * sort (see `getSortedBuckets` in search-service).
+   */
+  private compareForSort(a: FacetBucket, b: FacetBucket): number {
+    switch (this.sortedBy) {
+      case AggregationSortType.ALPHABETICAL:
+        return (a.displayText ?? a.key).localeCompare(b.displayText ?? b.key);
+      case AggregationSortType.NUMERIC:
+        return Number(b.key) - Number(a.key);
+      default:
+        return b.count - a.count;
+    }
+  }
+
+  /**
+   * The text patrons see for a bucket: the collection title for collections,
+   * and the bucket key for everything else.
+   */
+  private displayTextFor(key: string): string {
+    const collectionTitle =
+      this.facetKey === 'collection'
+        ? this.collectionTitles?.get(key)
+        : undefined;
+    return collectionTitle ?? key;
   }
 
   /**
@@ -372,12 +466,23 @@ export class MoreFacetsContent extends LitElement {
     const facetBuckets: FacetBucket[] = sortedBuckets.map(bucket => {
       const bucketKeyStr = `${bucket.key}`;
       return {
-        displayText: `${bucketKeyStr}`,
-        key: `${bucketKeyStr}`,
+        displayText: this.displayTextFor(bucketKeyStr),
+        key: bucketKeyStr,
         count: bucket.doc_count,
         state: 'none',
       };
     });
+
+    // Collections sorted alphabetically should be in order of the titles
+    // patrons see, not of the identifiers that getSortedBuckets used.
+    if (
+      this.facetKey === 'collection' &&
+      this.sortedBy === AggregationSortType.ALPHABETICAL
+    ) {
+      facetBuckets.sort((a, b) =>
+        (a.displayText ?? a.key).localeCompare(b.displayText ?? b.key),
+      );
+    }
 
     return {
       title: facetGroupTitle,
@@ -387,42 +492,116 @@ export class MoreFacetsContent extends LitElement {
   }
 
   /**
-   * Returns a FacetGroup representing only the current page of facet buckets to show.
+   * The buckets whose visible text contains the filter text, ignoring case,
+   * accents and punctuation.
    */
-  private get facetGroupForCurrentPage(): FacetGroup | undefined {
-    const { facetGroup } = this;
-    if (!facetGroup) return undefined;
-
-    // Slice out only the current page of facet buckets
-    const firstBucketIndexOnPage = (this.pageNumber - 1) * this.facetsPerPage;
-    const truncatedBuckets = facetGroup.buckets.slice(
-      firstBucketIndexOnPage,
-      firstBucketIndexOnPage + this.facetsPerPage,
+  private filterBuckets(): FacetBucket[] {
+    const buckets = this.facetGroup?.buckets ?? [];
+    const needle = normalizeFilterText(this.filterText);
+    if (!needle.spaced) return buckets;
+    return buckets.filter(bucket =>
+      filterTextIncludes(this.filterKeyFor(bucket), needle),
     );
+  }
 
-    return {
-      ...facetGroup,
-      buckets: truncatedBuckets,
-    };
+  private filterKeyFor(bucket: FacetBucket): NormalizedFilterText {
+    let filterKey = this.filterKeys.get(bucket.key);
+    if (filterKey === undefined) {
+      const visibleText = [bucket.displayText ?? bucket.key, bucket.extraNote]
+        .filter(Boolean)
+        .join(' ');
+      filterKey = normalizeFilterText(visibleText);
+      this.filterKeys.set(bucket.key, filterKey);
+    }
+    return filterKey;
+  }
+
+  /**
+   * Whether the patron's filter text has ruled out every value
+   */
+  private get noValuesMatch(): boolean {
+    const isFiltering = normalizeFilterText(this.filterText).spaced !== '';
+    return isFiltering && this.filteredBuckets.length === 0;
   }
 
   private get moreFacetsTemplate(): TemplateResult {
+    const valuesLabel = this.facetKey
+      ? msg(str`${facetTitles[this.facetKey]} values`)
+      : undefined;
     return html`
-      <facets-template
-        .facetGroup=${this.facetGroupForCurrentPage}
-        .selectedFacets=${this.selectedFacets}
+      <more-facets-scroller
+        .facetType=${this.facetKey}
+        .buckets=${this.filteredBuckets}
         .collectionTitles=${this.collectionTitles}
-        @facetClick=${(e: CustomEvent<FacetEventDetails>) => {
-          if (this.facetKey) {
-            this.unappliedFacetChanges = updateSelectedFacetBucket(
-              this.unappliedFacetChanges,
-              this.facetKey,
-              e.detail.bucket,
-            );
-          }
-        }}
-      ></facets-template>
+        ?omitHideButtons=${this.facetGroup?.buckets.length === 1}
+        label=${ifDefined(valuesLabel)}
+        @facetClick=${this.facetClicked}
+        @pageChanged=${this.pageChanged}
+      ></more-facets-scroller>
+      ${when(
+        this.loadFailed,
+        () => this.loadErrorTemplate,
+        () => when(this.noValuesMatch, () => this.noMatchesTemplate),
+      )}
     `;
+  }
+
+  /**
+   * A chiclet for each selected or hidden value, each with a button to clear it
+   */
+  private get chicletsTemplate(): TemplateResult {
+    const valuesName = this.facetKey ? facetPluralTitles[this.facetKey] : '';
+    return html`
+      <ul class="chiclets" aria-label=${msg(str`Selected ${valuesName}`)}>
+        ${repeat(
+          this.chosenBuckets,
+          bucket => bucket.key,
+          (bucket, index) => this.chicletTemplate(bucket, index),
+        )}
+      </ul>
+    `;
+  }
+
+  private chicletTemplate(bucket: FacetBucket, index: number): TemplateResult {
+    const isHidden = bucket.state === 'hidden';
+    const text = [bucket.displayText ?? bucket.key, bucket.extraNote]
+      .filter(Boolean)
+      .join(' ');
+    const removeLabel = isHidden
+      ? msg(str`Unhide ${text}`)
+      : msg(str`Deselect ${text}`);
+
+    return html`
+      <li class="chiclet" title=${text}>
+        <span class="chiclet-icon" aria-hidden="true"
+          >${isHidden ? eyeClosedIcon : checkIcon}</span
+        >
+        <span class="sr-only"
+          >${isHidden ? msg('Hidden:') : msg('Selected:')}</span
+        >
+        <span class="chiclet-text">${text}</span>
+        <button
+          type="button"
+          class="chiclet-remove"
+          aria-label=${removeLabel}
+          @click=${() => this.chicletRemoved(bucket, index)}
+        >
+          ${closeCircleDark}
+        </button>
+      </li>
+    `;
+  }
+
+  private get noMatchesTemplate(): TemplateResult {
+    return html`<p class="facets-message no-matches" role="status">
+      ${msg('No matching values found.')}
+    </p>`;
+  }
+
+  private get loadErrorTemplate(): TemplateResult {
+    return html`<p class="facets-message load-error" role="alert">
+      ${msg('Sorry, these values couldn’t be loaded. Please try again later.')}
+    </p>`;
   }
 
   private get loaderTemplate(): TemplateResult {
@@ -434,50 +613,21 @@ export class MoreFacetsContent extends LitElement {
     `;
   }
 
-  /**
-   * How many pages of facets to show in the modal pagination widget
-   */
-  private get paginationSize(): number {
-    if (!this.aggregations || !this.facetKey) return 0;
-
-    // Calculate the appropriate number of pages to show in the modal pagination widget
-    const length = this.aggregations[this.facetKey]?.buckets.length;
-    return Math.ceil(length / this.facetsPerPage);
-  }
-
-  // render pagination if more then 1 page
-  private get facetsPaginationTemplate() {
-    return this.paginationSize > 1
-      ? html`<more-facets-pagination
-          .size=${this.paginationSize}
-          .currentPage=${1}
-          @pageNumberClicked=${this.pageNumberClicked}
-        ></more-facets-pagination>`
-      : nothing;
-  }
-
-  private get footerTemplate() {
-    if (this.paginationSize > 0) {
-      return html`${this.facetsPaginationTemplate}
-        <div class="footer">
-          <button
-            class="btn btn-cancel"
-            type="button"
-            @click=${this.cancelClick}
-          >
-            Cancel
-          </button>
-          <button
-            class="btn btn-submit"
-            type="button"
-            @click=${this.applySearchFacetsClicked}
-          >
-            Apply filters
-          </button>
-        </div> `;
-    }
-
-    return nothing;
+  private get footerTemplate(): TemplateResult {
+    return html`
+      <div class="footer">
+        <button class="btn btn-cancel" type="button" @click=${this.cancelClick}>
+          Cancel
+        </button>
+        <button
+          class="btn btn-submit"
+          type="button"
+          @click=${this.applySearchFacetsClicked}
+        >
+          Apply filters
+        </button>
+      </div>
+    `;
   }
 
   private sortFacetAggregation(facetSortType: AggregationSortType) {
@@ -492,27 +642,43 @@ export class MoreFacetsContent extends LitElement {
       this.sortedBy ?? defaultFacetSort[this.facetKey as FacetOption];
     const defaultSwitchSide =
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
+    const valuesName = this.facetKey ? facetPluralTitles[this.facetKey] : '';
+    // From the facet key rather than the facet group, which is missing
+    // until the values load (or if they fail to)
+    const title = this.facetKey ? facetTitles[this.facetKey] : '';
 
     return html`<span class="sr-only">${msg('More facets for:')}</span>
-      <span class="title">
-        ${this.facetGroup?.title}
-
-        <label class="sort-label">${msg('Sort by:')}</label>
-        ${this.facetKey
-          ? html`<toggle-switch
-              class="sort-toggle"
-              leftValue=${AggregationSortType.COUNT}
-              leftLabel="Count"
-              rightValue=${valueFacetSort[this.facetKey]}
-              .rightLabel=${this.facetGroup?.title}
-              side=${defaultSwitchSide}
-              @change=${(e: CustomEvent<string>) => {
-                this.sortFacetAggregation(
-                  Number(e.detail) as AggregationSortType,
-                );
-              }}
-            ></toggle-switch>`
-          : nothing}
+      <span class="title">${title}</span>
+      <span class="header-controls">
+        <span class="sort-controls">
+          <label class="sort-label">${msg('Sort by:')}</label>
+          ${this.facetKey
+            ? html`<toggle-switch
+                class="sort-toggle"
+                leftValue=${AggregationSortType.COUNT}
+                leftLabel="Count"
+                rightValue=${valueFacetSort[this.facetKey]}
+                .rightLabel=${title}
+                side=${defaultSwitchSide}
+                @change=${(e: CustomEvent<string>) => {
+                  this.sortFacetAggregation(
+                    Number(e.detail) as AggregationSortType,
+                  );
+                }}
+              ></toggle-switch>`
+            : nothing}
+        </span>
+        <span class="filter-controls">
+          <label class="filter-label">${msg('Filter by:')}</label>
+          <ia-clearable-text-input
+            class="filter-input"
+            .value=${this.filterText}
+            .placeholder=${msg(str`Search ${valuesName}…`)}
+            .screenReaderLabel=${msg(str`Filter ${valuesName}`)}
+            .clearButtonScreenReaderLabel=${msg('Clear filter')}
+            @input=${this.filterTextChanged}
+          ></ia-clearable-text-input>
+        </span>
       </span>`;
   }
 
@@ -523,11 +689,51 @@ export class MoreFacetsContent extends LitElement {
         : html`
             <section id="more-facets">
               <div class="header-content">${this.modalHeaderTemplate}</div>
+              ${when(this.chosenBuckets.length, () => this.chicletsTemplate)}
               <div class="facets-content">${this.moreFacetsTemplate}</div>
               ${this.footerTemplate}
             </section>
           `}
     `;
+  }
+
+  /**
+   * Handler for typing in (or clearing) the filter text field
+   */
+  private filterTextChanged(e: Event): void {
+    const input = e.target as HTMLElement & { value: string };
+    this.filterText = input.value;
+  }
+
+  private facetClicked(e: CustomEvent<FacetEventDetails>): void {
+    if (!this.facetKey) return;
+    this.unappliedFacetChanges = updateSelectedFacetBucket(
+      this.unappliedFacetChanges,
+      this.facetKey,
+      e.detail.bucket,
+    );
+  }
+
+  /**
+   * Clears the selection a chiclet stands for, which removes the chiclet and
+   * unchecks the value in the list.
+   */
+  private chicletRemoved(bucket: FacetBucket, index: number): void {
+    if (!this.facetKey) return;
+    this.unappliedFacetChanges = updateSelectedFacetBucket(
+      this.unappliedFacetChanges,
+      this.facetKey,
+      { ...bucket, state: 'none' },
+    );
+    this.chicletFocusIndex = index;
+  }
+
+  private pageChanged(e: CustomEvent<number>): void {
+    this.analyticsHandler?.sendEvent({
+      category: analyticsCategories.default,
+      action: analyticsActions.moreFacetsPageChange,
+      label: `${e.detail + 1}`,
+    });
   }
 
   private applySearchFacetsClicked() {
@@ -573,10 +779,9 @@ export class MoreFacetsContent extends LitElement {
       srOnlyStyle,
       css`
         section#more-facets {
-          overflow: auto;
-          padding: 10px; /* leaves room for scroll bar to appear without overlaying on content */
-          --facetsColumnCount: 3;
+          padding: 10px;
         }
+
         .header-content .title {
           display: block;
           text-align: left;
@@ -585,8 +790,25 @@ export class MoreFacetsContent extends LitElement {
           font-weight: bold;
         }
 
-        .sort-label {
-          margin-left: 20px;
+        .header-controls {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px 20px;
+          padding: 5px 10px 0;
+        }
+
+        /* Each label stays on the same line as its control when these wrap */
+        .sort-controls,
+        .filter-controls {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          white-space: nowrap;
+        }
+
+        .sort-label,
+        .filter-label {
           font-size: 1.3rem;
         }
 
@@ -594,12 +816,95 @@ export class MoreFacetsContent extends LitElement {
           font-weight: normal;
         }
 
-        .facets-content {
-          font-size: 1.2rem;
-          max-height: 300px;
-          overflow: auto;
-          padding: 10px;
+        .filter-input {
+          --input-height: 2.5rem;
+          --input-font-size: 1.3rem;
+          --input-border-radius: 4px;
+          --input-padding: 4px 8px;
+          --input-focused-border-color: ${modalSubmitButton};
+          width: 16rem;
         }
+
+        .chiclets {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin: 0;
+          padding: 10px 10px 0;
+          list-style: none;
+          /* About three rows; any more scroll, so the values stay in view */
+          max-height: 7.8rem;
+          overflow-y: auto;
+        }
+
+        .chiclet {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          max-width: 24rem;
+          padding: 2px 3px 2px 6px;
+          border: 1px solid ${modalSubmitButton};
+          border-radius: 5px;
+          background: #fff;
+          color: #2c2c2c;
+          font-size: 1.2rem;
+          line-height: normal;
+        }
+
+        .chiclet-icon {
+          display: flex;
+          flex: none;
+        }
+
+        .chiclet-icon svg {
+          width: 12px;
+          height: 12px;
+        }
+
+        .chiclet-text {
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .chiclet-remove {
+          display: flex;
+          flex: none;
+          padding: 2px;
+          border: none;
+          border-radius: 50%;
+          background: none;
+          cursor: pointer;
+        }
+
+        .chiclet-remove svg {
+          width: 10px;
+          height: 10px;
+          opacity: 0.55;
+        }
+
+        .chiclet-remove:hover svg,
+        .chiclet-remove:focus-visible svg {
+          opacity: 1;
+        }
+
+        .facets-content {
+          position: relative;
+          font-size: 1.2rem;
+          padding: 10px 0;
+        }
+
+        .facets-message {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+          font-size: 1.4rem;
+          color: #666;
+        }
+
         .facets-loader {
           --icon-width: 70px;
           margin-bottom: 20px;
@@ -614,6 +919,7 @@ export class MoreFacetsContent extends LitElement {
           width: auto;
           border-radius: 4px;
           cursor: pointer;
+          font-family: inherit;
         }
         .btn-cancel {
           background-color: #2c2c2c;
@@ -625,17 +931,18 @@ export class MoreFacetsContent extends LitElement {
         }
         .footer {
           text-align: center;
-          margin-top: 10px;
         }
 
         @media (max-width: 560px) {
-          section#more-facets {
-            max-height: 450px;
-            --facetsColumnCount: 1;
+          /* The filter gets a line of its own here, so let it fill that line */
+          .filter-controls {
+            flex: 1 1 auto;
           }
-          .facets-content {
-            overflow-y: auto;
-            height: 300px;
+          .filter-input {
+            flex: 1 1 auto;
+            width: auto;
+            min-width: 12rem;
+            --input-font-size: 1.2rem;
           }
         }
       `,

@@ -759,6 +759,23 @@ export const facetTitles: Record<FacetOption, string> = {
 };
 
 /**
+ * Human-readable plural titles for each facet group, for referring to its values.
+ */
+export const facetPluralTitles: Record<FacetOption, string> = {
+  subject: 'Subjects',
+  lending: 'Availability',
+  mediatype: 'Media Types',
+  language: 'Languages',
+  creator: 'Creators',
+  collection: 'Collections',
+  year: 'Years',
+  clip_type: 'Clip Types',
+  program: 'Programs',
+  person: 'People',
+  sponsor: 'Sponsors',
+};
+
+/**
  * The default sort type to use for each facet type
  */
 export const defaultFacetSort: Record<FacetOption, AggregationSortType> = {

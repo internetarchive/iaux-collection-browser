@@ -38,8 +38,13 @@ export default /** @type {import("@web/test-runner").TestRunnerConfig} */ ({
   /** Amount of browsers to run concurrently */
   // concurrentBrowsers: 2,
 
-  /** Amount of test files per browser to test concurrently */
-  // concurrency: 1,
+  /**
+   * Amount of test files per browser to test concurrently. Files run in
+   * browser tabs, and Chrome doesn't render tabs in the background, so they
+   * get no animation frames or ResizeObserver callbacks. Running one at a time
+   * keeps each in the foreground (and is faster than the throttled default).
+   */
+  concurrency: 1,
 
   /** Browsers to run tests on */
   // browsers: [
