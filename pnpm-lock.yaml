@@ -25,7 +25,7 @@ importers:
         version: 1.1.0
       '@internetarchive/field-parsers':
         specifier: ^1.0.0
-        version: 1.0.0
+        version: 1.2.1
       '@internetarchive/ia-clearable-text-input':
         specifier: ^1.2.0
         version: 1.2.0
@@ -283,11 +283,8 @@ packages:
   '@internetarchive/feature-feedback@1.1.0':
     resolution: {integrity: sha512-wuoiO2rArQ7P9sKA0Nkf5MlttaLMTnsco/LX/JH07RehGtY4sAWSEOED03/ZIKC24Mn8BGYWC/JbCkifCWCioQ==}
 
-  '@internetarchive/field-parsers@1.0.0':
-    resolution: {integrity: sha512-cbD0FtJOjzBm7exxFrzrkHnqbmalKbEXA4i7KrwhUGBojF/QTTLAvaIRXH/bfoiTyCh6YT1/E/mULAQPdB6yvQ==}
-
-  '@internetarchive/field-parsers@1.2.0':
-    resolution: {integrity: sha512-qldfCN0w5QDeKzZG80h54hxQ9oyQ10uulazMy451846BHeklqTb3sNLzqyUWzSiqr/vopvQlCHITaGrPtkUlrw==}
+  '@internetarchive/field-parsers@1.2.1':
+    resolution: {integrity: sha512-4Dx1EBuiAbmYgBPwXFyJdUE+DV9VwwY7kx6qoEGfmRBNjCjgf+hS8Rdoe0GRVc9/6IqrKUJJPRZKMF7vc2G1XQ==}
 
   '@internetarchive/ia-activity-indicator@0.0.6':
     resolution: {integrity: sha512-Llut9sdsmmVqgxASqSlCqoiXSNb4M7xWY3/O7QUh3NnuR7WMfAcYBqNRDsLve7t/VkbVVBOVyeVAROnjvYHGNQ==}
@@ -3730,9 +3727,7 @@ snapshots:
       '@lit/localize': 0.11.4
       lit: 2.8.0
 
-  '@internetarchive/field-parsers@1.0.0': {}
-
-  '@internetarchive/field-parsers@1.2.0': {}
+  '@internetarchive/field-parsers@1.2.1': {}
 
   '@internetarchive/ia-activity-indicator@0.0.6':
     dependencies:
@@ -3757,12 +3752,12 @@ snapshots:
 
   '@internetarchive/iaux-item-metadata@1.0.6':
     dependencies:
-      '@internetarchive/field-parsers': 1.0.0
+      '@internetarchive/field-parsers': 1.2.1
       typescript-memoize: 1.1.1
 
   '@internetarchive/iaux-item-metadata@1.5.0':
     dependencies:
-      '@internetarchive/field-parsers': 1.2.0
+      '@internetarchive/field-parsers': 1.2.1
       typescript-memoize: 1.1.1
 
   '@internetarchive/icon-close@1.4.1':
