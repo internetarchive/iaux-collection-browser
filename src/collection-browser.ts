@@ -910,6 +910,7 @@ export class CollectionBrowser
             : this.sortFilterBarTemplate}
           <slot name="cb-results"></slot>
           <div id="results-body">
+            <slot name="results-aside"></slot>
             <div id="results-main">
               ${this.displayMode === `list-compact` && this.totalResults
                 ? this.listHeaderTemplate
@@ -918,7 +919,6 @@ export class CollectionBrowser
                 ? nothing
                 : this.infiniteScrollerTemplate}
             </div>
-            <slot name="results-aside"></slot>
           </div>
         </section>
       </div>
@@ -2807,7 +2807,9 @@ export class CollectionBrowser
 
         /*
          * The results sit in a row with the optional results-aside slot, which
-         * lays out beside them as a flex item and takes its own width and spacing
+         * lays out beside them as a flex item and takes its own width and spacing.
+         * The aside comes first in the DOM so keyboard and screen reader users
+         * reach it before the infinitely scrolling tiles, but it shows on the right.
          */
         #results-body {
           display: flex;
@@ -2815,6 +2817,7 @@ export class CollectionBrowser
         }
 
         #results-main {
+          order: -1;
           flex: 1;
           min-width: 0;
         }

@@ -107,30 +107,32 @@ export class SortFilterBar extends LitElement {
   render() {
     return html`
       <div id="container">
-        <section id="sort-bar" aria-label="Sorting options">
-          <slot name="sort-options-left"></slot>
-          <div id="sort-options">
-            ${!this.enableSortOptionsSlot
-              ? html`
-                  <div class="sort-direction-container">
-                    ${this.sortDirectionSelectorTemplate}
-                  </div>
-                  <span class="sort-by-text">${msg('Sort by:')}</span>
-                  <div id="sort-selector-container">
-                    ${this.sortSelectorTemplate}
-                  </div>
-                `
-              : html`<slot name="sort-options"></slot>`}
-          </div>
-          <slot name="sort-options-right"></slot>
+        <div id="sort-bar-row">
+          <section id="sort-bar" aria-label="Sorting options">
+            <slot name="sort-options-left"></slot>
+            <div id="sort-options">
+              ${!this.enableSortOptionsSlot
+                ? html`
+                    <div class="sort-direction-container">
+                      ${this.sortDirectionSelectorTemplate}
+                    </div>
+                    <span class="sort-by-text">${msg('Sort by:')}</span>
+                    <div id="sort-selector-container">
+                      ${this.sortSelectorTemplate}
+                    </div>
+                  `
+                : html`<slot name="sort-options"></slot>`}
+            </div>
+            <slot name="sort-options-right"></slot>
 
-          ${this.suppressDisplayModes
-            ? nothing
-            : html`<div id="display-style-selector">
-                ${this.displayOptionTemplate}
-              </div>`}
+            ${this.suppressDisplayModes
+              ? nothing
+              : html`<div id="display-style-selector">
+                  ${this.displayOptionTemplate}
+                </div>`}
+          </section>
           <slot name="sort-bar-end"></slot>
-        </section>
+        </div>
 
         ${this.dropdownBackdropVisible ? this.dropdownBackdrop : nothing}
         ${this.alphaBarTemplate}
@@ -573,13 +575,28 @@ export class SortFilterBar extends LitElement {
           position: relative;
         }
 
-        #sort-bar {
+        /*
+         * The sort-bar-end slot shares this row with the sort bar but sits
+         * outside its "Sorting options" landmark. When the slotted content
+         * doesn't fit beside the sort controls, it wraps onto its own line at
+         * the right rather than overflowing the row.
+         */
+        #sort-bar-row {
           display: flex;
-          justify-content: flex-start;
+          flex-wrap: wrap;
+          justify-content: flex-end;
           align-items: center;
           padding-bottom: 1px;
           border-bottom: 1px solid #2c2c2c;
           font-size: 1.4rem;
+        }
+
+        #sort-bar {
+          flex: auto;
+          min-width: 0;
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
         }
 
         #sort-options {
