@@ -97,6 +97,7 @@ export class TilePreviewController implements ReactiveController {
       true,
     );
     window.removeEventListener('scroll', this.onScroll, true);
+    this.removeZoomGuards();
     if (current?.owner === this.host) current = undefined;
     if (this.active) {
       this.active = false;
@@ -108,7 +109,37 @@ export class TilePreviewController implements ReactiveController {
     window.clearTimeout(this.timer);
     if (!this.options.enabled() || !previewsAllowed()) return;
     this.timer = window.setTimeout(() => this.activate(how), delay);
+    this.addZoomGuards();
   }
+
+  /**
+   * A pinch (a second finger, a Safari gesture or a trackpad ctrl+wheel) is a
+   * zoom, not a request for a preview, so it cancels a pending or active one.
+   * The listeners only exist while a preview is pending or showing.
+   */
+  private addZoomGuards(): void {
+    document.addEventListener('pointerdown', this.onAnyPointerDown, true);
+    window.addEventListener('gesturestart', this.onZoomGesture);
+    window.addEventListener('wheel', this.onWheel, { passive: true });
+  }
+
+  private removeZoomGuards(): void {
+    document.removeEventListener('pointerdown', this.onAnyPointerDown, true);
+    window.removeEventListener('gesturestart', this.onZoomGesture);
+    window.removeEventListener('wheel', this.onWheel);
+  }
+
+  private onAnyPointerDown = (e: PointerEvent): void => {
+    if (e.pointerType === 'touch' && !e.isPrimary) this.deactivate();
+  };
+
+  private onZoomGesture = (): void => {
+    this.deactivate();
+  };
+
+  private onWheel = (e: WheelEvent): void => {
+    if (e.ctrlKey) this.deactivate();
+  };
 
   private activate(how: Activation): void {
     if (!this.options.enabled() || !previewsAllowed()) return;
