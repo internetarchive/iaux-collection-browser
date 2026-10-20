@@ -61,6 +61,12 @@ export class ItemTile extends BaseTileComponent {
       minimal: this.layoutType === 'minimal',
     });
 
+    if (this.layoutType === 'thumbnail-only') {
+      return html`<div class=${containerClasses}>
+        ${this.imageBlockTemplate}
+      </div>`;
+    }
+
     return html`
       <div class=${containerClasses}>
         ${this.infoButtonTemplate}

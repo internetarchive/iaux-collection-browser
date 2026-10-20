@@ -9,6 +9,7 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { styleMap } from 'lit/directives/style-map.js';
 import { msg } from '@lit/localize';
 
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
@@ -68,6 +69,15 @@ import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
 import type { CollectionFacets } from './collection-facets';
 import type { CollectionBrowserDataSourceInterface } from './data-source/collection-browser-data-source-interface';
 import {
+  GRID_ZOOM_COLUMNS,
+  loadStoredZoomLevel,
+  nearestZoomLevel,
+  storeZoomLevel,
+  zoomLayoutType,
+  zoomLevelStyles,
+} from './utils/grid-zoom';
+import { GridZoomController, Point } from './utils/grid-zoom-controller';
+import {
   analyticsActions,
   analyticsCategories,
 } from './utils/analytics-events';
@@ -90,6 +100,18 @@ import './manage/manage-bar';
 import './collection-facets';
 import './circular-activity-indicator';
 import './collection-facets/smart-facets/smart-facet-bar';
+
+/** How long to keep a zoomed tile lined up with the focal point after a layout change. */
+const GRID_ZOOM_SETTLE_MS = 600;
+
+/** How long the grid stays hidden while the tile is lined up after a layout change. */
+const GRID_ZOOM_HIDDEN_MS = 250;
+
+/** A tile in the grid and how far down it a point fell (0 is its top edge, 1 its bottom). */
+interface GridZoomAnchor {
+  index: number;
+  fractionY: number;
+}
 
 @customElement('collection-browser')
 export class CollectionBrowser
@@ -317,6 +339,13 @@ export class CollectionBrowser
    */
   @property({ type: String }) tileLayoutType: LayoutType = 'default';
 
+  /**
+   * Prototype: lets viewers zoom the tile grid with a pinch, ctrl/cmd +/-,
+   * or a slider next to the display mode buttons. Off by default.
+   */
+  @property({ type: Boolean, attribute: 'enable-pinch-zoom' })
+  enablePinchZoom = false;
+
   @property({ type: String }) manageViewLabel = 'Select items to remove';
 
   /** Whether to replace the default sort options with a slot for customization (default: false) */
@@ -364,6 +393,24 @@ export class CollectionBrowser
   @state() private totalResults?: number;
 
   @state() private mobileView = false;
+
+  /** The zoom level the viewer has chosen, if any (an index into `GRID_ZOOM_COLUMNS`). */
+  @state() private gridZoomLevel?: number;
+
+  /** The zoom level closest to the layout the grid has when no zoom level is chosen. */
+  @state() private defaultGridZoomLevel = nearestZoomLevel(4);
+
+  /** Identifies the latest zoom, so that an earlier one stops lining up its tile. */
+  private gridZoomAlignment = 0;
+
+  private gridZoomController = new GridZoomController<GridZoomAnchor>({
+    getSurface: () => this.infiniteScroller,
+    getColumns: () => this.measureGridColumns(),
+    getLevel: () => this.effectiveGridZoomLevel,
+    captureAnchor: focal => this.tileAtPoint(focal),
+    commitLevel: (level, focal, anchor) =>
+      this.commitGridZoomLevel(level, focal, anchor),
+  });
 
   /**
    * Any temporarily overridden `on`/`off` state for the user's tile blurring preference if they
@@ -944,6 +991,7 @@ export class CollectionBrowser
       itemCount=${this.placeholderType ? 0 : nothing}
       ariaLandmarkLabel="Search results"
       .estimatedCellHeight=${this.estimatedTileHeight}
+      style=${styleMap(this.gridZoomStyles)}
       .minBufferMarginCells=${this.pageSize}
       .cellProvider=${this}
       .placeholderCellTemplate=${this.placeholderCellTemplate}
@@ -953,6 +1001,161 @@ export class CollectionBrowser
         ? html`<slot name="result-last-tile" slot="result-last-tile"></slot>`
         : nothing}
     </infinite-scroller>`;
+  }
+
+  /** Whether the grid zoom prototype is on and applies to what's showing. */
+  private get pinchZoomActive(): boolean {
+    return this.enablePinchZoom && this.displayMode === 'grid';
+  }
+
+  private get effectiveGridZoomLevel(): number {
+    return this.gridZoomLevel ?? this.defaultGridZoomLevel;
+  }
+
+  /** Inline CSS variables for the chosen zoom level, if the viewer has chosen one. */
+  private get gridZoomStyles(): Record<string, string> {
+    if (!this.pinchZoomActive || this.gridZoomLevel === undefined) return {};
+    return zoomLevelStyles(
+      this.gridZoomLevel,
+      this.infiniteScroller?.clientWidth ?? 0,
+    );
+  }
+
+  private get effectiveTileLayoutType(): LayoutType {
+    if (!this.pinchZoomActive || this.gridZoomLevel === undefined) {
+      return this.tileLayoutType;
+    }
+    return zoomLayoutType(this.gridZoomLevel) ?? this.tileLayoutType;
+  }
+
+  /** How many columns the scroller's grid currently has. */
+  private measureGridColumns(): number {
+    const cells =
+      this.infiniteScroller?.shadowRoot?.querySelectorAll('.cell-container');
+    if (!cells?.length) return GRID_ZOOM_COLUMNS[this.effectiveGridZoomLevel];
+    const firstTop = cells[0].getBoundingClientRect().top;
+    let columns = 0;
+    for (const cell of cells) {
+      if (cell.getBoundingClientRect().top !== firstTop) break;
+      columns += 1;
+    }
+    return columns;
+  }
+
+  /** Connects/disconnects the gesture handling and tracks the default zoom level. */
+  private updateGridZoom(changed: PropertyValues): void {
+    if (changed.has('enablePinchZoom') && this.enablePinchZoom) {
+      this.gridZoomLevel ??= loadStoredZoomLevel();
+    }
+    if (this.pinchZoomActive && this.infiniteScroller) {
+      this.gridZoomController.connect();
+      if (this.gridZoomLevel === undefined) {
+        this.defaultGridZoomLevel = nearestZoomLevel(this.measureGridColumns());
+      }
+    } else {
+      this.gridZoomAlignment += 1;
+      this.gridZoomController.disconnect();
+    }
+  }
+
+  private gridZoomSliderChanged(e: CustomEvent<{ level: number }>): void {
+    this.gridZoomController.zoomToLevel(e.detail.level);
+  }
+
+  /**
+   * Switches the grid to `level`, then scrolls so that the tile that was under
+   * `focal` (viewport coordinates) is still under it.
+   */
+  private async commitGridZoomLevel(
+    level: number,
+    focal: Point,
+    anchor?: GridZoomAnchor,
+  ): Promise<void> {
+    const scroller = this.infiniteScroller;
+    if (!scroller) return;
+
+    this.gridZoomLevel = level;
+    storeZoomLevel(level);
+    await this.updateComplete;
+    await scroller.bufferStabilized;
+
+    if (!anchor) return;
+    // The scroller keeps re-measuring rows for a moment after a layout change.
+    // The grid stays hidden for the first part of that, and the rest is corrected
+    // in the background.
+    this.gridZoomAlignment += 1;
+    const alignment = this.gridZoomAlignment;
+    await this.alignTile(
+      scroller,
+      anchor,
+      focal,
+      GRID_ZOOM_HIDDEN_MS,
+      alignment,
+    );
+    this.alignTile(
+      scroller,
+      anchor,
+      focal,
+      GRID_ZOOM_SETTLE_MS,
+      alignment,
+    ).catch(() => {});
+  }
+
+  /** Keeps `anchor`'s tile lined up with `focal` for `duration` ms. */
+  private async alignTile(
+    scroller: InfiniteScroller,
+    anchor: GridZoomAnchor,
+    focal: Point,
+    duration: number,
+    alignment: number,
+  ): Promise<void> {
+    const deadline = performance.now() + duration;
+    while (
+      performance.now() < deadline &&
+      alignment === this.gridZoomAlignment
+    ) {
+      const cell = scroller.shadowRoot?.querySelector(
+        `[data-cell-index="${anchor.index}"]`,
+      );
+      if (cell) {
+        const rect = cell.getBoundingClientRect();
+        const delta = rect.top + rect.height * anchor.fractionY - focal.y;
+        if (Math.abs(delta) > 1) this.scrollByWithin(scroller, delta);
+      } else {
+        await scroller.scrollToCell(anchor.index, false);
+      }
+      await new Promise(requestAnimationFrame);
+    }
+  }
+
+  /** Scrolls the nearest scrolling ancestor of `el` (or the page) by `delta` px. */
+  private scrollByWithin(el: HTMLElement, delta: number): void {
+    let node: Element | null = el;
+    while (node) {
+      const parent: Element | null =
+        node.parentElement ?? (node.getRootNode() as ShadowRoot).host ?? null;
+      if (!parent) break;
+      const { overflowY } = getComputedStyle(parent);
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        parent.scrollTop += delta;
+        return;
+      }
+      node = parent;
+    }
+    window.scrollBy(0, delta);
+  }
+
+  /** Finds the tile under a viewport point and where in the tile the point falls. */
+  private tileAtPoint(point: Point): GridZoomAnchor | undefined {
+    const cell = this.infiniteScroller?.shadowRoot
+      ?.elementsFromPoint(point.x, point.y)
+      .find(el => el.classList.contains('cell-container'));
+    if (!cell) return undefined;
+    const rect = cell.getBoundingClientRect();
+    return {
+      index: Number((cell as HTMLElement).dataset.cellIndex),
+      fractionY: (point.y - rect.top) / rect.height,
+    };
   }
 
   /**
@@ -1023,6 +1226,9 @@ export class CollectionBrowser
         .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
         .enableSortOptionsSlot=${this.enableSortOptionsSlot}
         .suppressDisplayModes=${this.suppressDisplayModes}
+        .showGridZoomSlider=${this.pinchZoomActive}
+        .gridZoomLevel=${this.effectiveGridZoomLevel}
+        @gridZoomLevelChanged=${this.gridZoomSliderChanged}
         @sortChanged=${this.userChangedSort}
         @displayModeChanged=${this.displayModeChanged}
         @titleLetterChanged=${this.titleLetterSelected}
@@ -1821,9 +2027,19 @@ export class CollectionBrowser
       changed.has('baseImageUrl') ||
       changed.has('loggedIn') ||
       changed.has('tileActions') ||
-      changed.has('tileLayoutType')
+      changed.has('tileLayoutType') ||
+      changed.has('gridZoomLevel')
     ) {
       this.infiniteScroller?.reload();
+    }
+
+    this.updateGridZoom(changed);
+    if (
+      changed.has('contentWidth') &&
+      this.gridZoomStyles['--imgBlockHeight']
+    ) {
+      // Thumbnail sizes come from the scroller's width, which has only just changed.
+      requestAnimationFrame(() => this.requestUpdate());
     }
 
     if (changed.has('profileElement')) {
@@ -1952,9 +2168,11 @@ export class CollectionBrowser
     super.connectedCallback?.();
     this.setupStateRestorationObserver();
     this.setupResizeObserver();
+    if (this.hasUpdated) this.updateGridZoom(new Map());
   }
 
   disconnectedCallback(): void {
+    this.gridZoomController.disconnect();
     if (this.resizeObserver) {
       this.disconnectResizeObserver(this.resizeObserver);
     }
@@ -2656,7 +2874,7 @@ export class CollectionBrowser
         .suppressBlurring=${this.shouldSuppressTileBlurring}
         .isManageView=${this.isManageView}
         .tileActions=${this.tileActions}
-        .layoutType=${this.tileLayoutType}
+        .layoutType=${this.effectiveTileLayoutType}
         ?showTvClips=${isTVSearch || isTVCollection}
         ?enableHoverPane=${true}
         ?enableTilePreview=${this.enableTilePreviews}

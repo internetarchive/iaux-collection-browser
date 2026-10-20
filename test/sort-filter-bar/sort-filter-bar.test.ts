@@ -515,3 +515,41 @@ describe('Sort/filter bar letter behavior', () => {
     expect(el.selectedCreatorFilter).to.equal('C');
   });
 });
+
+describe('Grid zoom slider', () => {
+  it('is hidden unless it is turned on', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar></sort-filter-bar>
+    `);
+    expect(el.shadowRoot?.querySelector('#grid-zoom-slider')).not.to.exist;
+  });
+
+  it('is an accessible range input that reports the level it is on', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar showGridZoomSlider .gridZoomLevel=${3}></sort-filter-bar>
+    `);
+    const slider = el.shadowRoot?.querySelector(
+      '#grid-zoom-slider',
+    ) as HTMLInputElement;
+    expect(slider.type).to.equal('range');
+    expect(slider.getAttribute('aria-label')).to.equal('Tile size');
+    expect(slider.getAttribute('aria-valuetext')).to.equal('4 columns');
+    // Bigger tiles are to the right, so the biggest level has the highest value.
+    expect(slider.value).to.equal('3');
+  });
+
+  it('emits the level that was picked', async () => {
+    const el = await fixture<SortFilterBar>(html`
+      <sort-filter-bar showGridZoomSlider .gridZoomLevel=${3}></sort-filter-bar>
+    `);
+    const spy = sinon.spy();
+    el.addEventListener('gridZoomLevelChanged', spy);
+    const slider = el.shadowRoot?.querySelector(
+      '#grid-zoom-slider',
+    ) as HTMLInputElement;
+    slider.value = '5';
+    slider.dispatchEvent(new Event('input'));
+    expect(spy.callCount).to.equal(1);
+    expect(spy.firstCall.args[0].detail.level).to.equal(1);
+  });
+});
