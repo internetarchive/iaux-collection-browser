@@ -111,4 +111,17 @@ describe('Collection Tile', () => {
 
     expect(infoButtonSpy.callCount).to.equal(1);
   });
+
+  it('should render only the thumbnail in the thumbnail-only layout', async () => {
+    const el = await fixture<CollectionTile>(html`
+      <collection-tile
+        .model=${{ identifier: 'foo', title: 'Foo' }}
+        .layoutType=${'thumbnail-only'}
+      ></collection-tile>
+    `);
+
+    expect(el.shadowRoot?.querySelector('image-block')).to.exist;
+    expect(el.shadowRoot?.querySelector('#title')).not.to.exist;
+    expect(el.shadowRoot?.querySelector('.tile-details')).not.to.exist;
+  });
 });

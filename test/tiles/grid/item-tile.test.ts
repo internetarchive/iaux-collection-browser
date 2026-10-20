@@ -517,4 +517,17 @@ describe('Item Tile', () => {
     const reviewBlock = el.shadowRoot?.querySelector('review-block');
     expect(reviewBlock).not.to.exist;
   });
+
+  it('should render only the thumbnail in the thumbnail-only layout', async () => {
+    const el = await fixture<ItemTile>(html`
+      <item-tile
+        .model=${{ identifier: 'foo', title: 'Foo' }}
+        .layoutType=${'thumbnail-only'}
+      ></item-tile>
+    `);
+
+    expect(el.shadowRoot?.querySelector('image-block')).to.exist;
+    expect(el.shadowRoot?.querySelector('#title')).not.to.exist;
+    expect(el.shadowRoot?.querySelector('.tile-details')).not.to.exist;
+  });
 });

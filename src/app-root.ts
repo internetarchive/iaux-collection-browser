@@ -45,6 +45,10 @@ export class AppRoot extends LitElement {
 
   @state() private suppressFacets: boolean = false;
 
+  @state() private enablePinchZoom: boolean = new URLSearchParams(
+    window.location.search,
+  ).has('pinchZoom');
+
   @state() private lazyLoadFacets: boolean = false;
 
   @state() private loggedIn: boolean = false;
@@ -363,6 +367,17 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
+                id="enable-pinch-zoom"
+                ?checked=${this.enablePinchZoom}
+                @click=${this.pinchZoomChanged}
+              />
+              <label for="enable-pinch-zoom"
+                >Enable pinch zoom (prototype)</label
+              >
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
                 id="enable-management"
                 @click=${this.manageModeCheckboxChanged}
               />
@@ -581,6 +596,7 @@ export class AppRoot extends LitElement {
           .resizeObserver=${this.resizeObserver}
           .showHistogramDatePicker=${true}
           .suppressFacets=${this.suppressFacets}
+          ?enable-pinch-zoom=${this.enablePinchZoom}
           .lazyLoadFacets=${this.lazyLoadFacets}
           .loggedIn=${this.loggedIn}
           .modalManager=${this.modalManager}
@@ -739,6 +755,10 @@ export class AppRoot extends LitElement {
   private facetsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.suppressFacets = !target.checked;
+  }
+
+  private pinchZoomChanged(e: Event) {
+    this.enablePinchZoom = (e.target as HTMLInputElement).checked;
   }
 
   private lazyLoadFacetsChanged(e: Event) {

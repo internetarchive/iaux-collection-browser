@@ -4,8 +4,14 @@
  *  - `stats-only`: Only show the tile stats row, but not text snippets.
  *  - `snippets-only`: Only show the text snippets row (if snippets exist), but not tile stats.
  *  - `minimal`: Show neither tile stats nor the text snippets.
+ *  - `thumbnail-only`: Show only the thumbnail (grid item tiles).
  */
-export type LayoutType = 'default' | 'stats-only' | 'snippets-only' | 'minimal';
+export type LayoutType =
+  | 'default'
+  | 'stats-only'
+  | 'snippets-only'
+  | 'minimal'
+  | 'thumbnail-only';
 
 /**
  * Describes an action button to render on a tile.

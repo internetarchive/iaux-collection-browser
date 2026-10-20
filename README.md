@@ -15,6 +15,17 @@ import '@internetarchive/collection-browser';
 </collection-browser>
 ```
 
+## Pinch zoom (prototype)
+
+Set the `enable-pinch-zoom` attribute (or `enablePinchZoom`) on `<collection-browser>` to let viewers zoom the tile grid, Apple Photos style. It's off by default and only applies to the grid display mode.
+
+- Pinch on a touch screen or a trackpad, or press ctrl/cmd + and - while the pointer is over the grid.
+- A slider next to the display mode buttons does the same thing.
+- The grid snaps to 1, 2, 3, 4, 6, 8 or 12 columns. The densest levels show only thumbnails.
+- The chosen level is remembered in `localStorage`.
+
+In the demo app, tick "Enable pinch zoom (prototype)" or add `?pinchZoom` to the URL.
+
 ## Local Demo with `web-dev-server`
 ```bash
 pnpm install
