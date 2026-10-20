@@ -81,4 +81,31 @@ describe('TilePreviewController', () => {
     el.dispatchEvent(click);
     expect(click.defaultPrevented).to.be.true;
   });
+
+  it('cancels a pending long-press when a second finger lands', async () => {
+    const el = await fixture<Host>(html`<preview-controller-host />`);
+    el.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        pointerType: 'touch',
+        isPrimary: true,
+      }),
+    );
+    document.dispatchEvent(
+      new PointerEvent('pointerdown', {
+        pointerType: 'touch',
+        isPrimary: false,
+      }),
+    );
+    clock.tick(600);
+    expect(el.controller.active).to.be.false;
+  });
+
+  it('cancels an active preview on ctrl+wheel', async () => {
+    const el = await fixture<Host>(html`<preview-controller-host />`);
+    hover(el, 'pointerenter');
+    clock.tick(HOVER_INTENT_MS);
+    expect(el.controller.active).to.be.true;
+    window.dispatchEvent(new WheelEvent('wheel', { ctrlKey: true }));
+    expect(el.controller.active).to.be.false;
+  });
 });
