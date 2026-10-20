@@ -38,19 +38,44 @@ describe('resolvePreviewMedia', () => {
     expect(media.urls[0]).to.not.contain('m_000000');
   });
 
-  it('only plays a clip when asked and a 512Kb derivative exists', async () => {
+  it('plays the smallest playable derivative only when clips are asked for', async () => {
     const list = [
-      { name: 'm.mp4', format: 'h.264', length: '600' },
-      { name: 'm_512kb.mp4', format: '512Kb MPEG4', length: '600' },
+      { name: 'm.mp4', format: 'h.264', length: '600', size: '68000000' },
+      {
+        name: 'm_512kb.mp4',
+        format: '512Kb MPEG4',
+        length: '600',
+        size: '45000000',
+      },
+      { name: 'm.ogv', format: 'Ogg Video', length: '600', size: '9000000' },
+      { name: 'm.thumbs/m_000001.jpg', format: 'Thumbnail', size: '1000' },
+      { name: 'm.thumbs/m_000002.jpg', format: 'Thumbnail', size: '1000' },
+      { name: 'm.thumbs/m_000003.jpg', format: 'Thumbnail', size: '1000' },
     ];
     fetchStub.callsFake(() => Promise.resolve(files(list)));
-    expect((await resolvePreviewMedia('m', 'movies')).kind).to.equal('zoom');
+    expect((await resolvePreviewMedia('m', 'movies')).kind).to.equal('slides');
     const clip = await resolvePreviewMedia('m', 'movies', undefined, {
       clips: true,
     });
     if (clip.kind !== 'video') throw new Error('expected video');
     expect(clip.src).to.contain('m_512kb.mp4');
     expect(clip.start).to.equal(60);
+    expect(clip.fallbackUrls.length).to.equal(2);
+  });
+
+  it('falls back to frames when a movie has no playable derivative', async () => {
+    fetchStub.resolves(
+      files([
+        { name: 'm.ogv', format: 'Ogg Video', size: '100' },
+        { name: 'm.thumbs/m_000001.jpg', format: 'Thumbnail', size: '10' },
+        { name: 'm.thumbs/m_000002.jpg', format: 'Thumbnail', size: '10' },
+        { name: 'm.thumbs/m_000003.jpg', format: 'Thumbnail', size: '10' },
+      ]),
+    );
+    const media = await resolvePreviewMedia('m', 'movies', undefined, {
+      clips: true,
+    });
+    expect(media.kind).to.equal('slides');
   });
 
   it('uses the waveform png beside the first mp3 for audio', async () => {

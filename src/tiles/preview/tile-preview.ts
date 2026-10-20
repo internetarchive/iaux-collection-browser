@@ -1,4 +1,5 @@
 import { css, html, LitElement, nothing, PropertyValues } from 'lit';
+import { msg } from '@lit/localize';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import {
@@ -9,6 +10,11 @@ import {
 } from './tile-preview-media';
 
 const SLIDE_INTERVAL_MS = 700;
+/** How long the first video frame may take before the frames take over. */
+const FIRST_FRAME_TIMEOUT_MS = 2500;
+const MAX_VOLUME = 0.5;
+const FADE_IN_MS = 250;
+const FADE_OUT_MS = 120;
 
 /**
  * Fills a tile's image area with a live preview of the item while `active`:
@@ -40,19 +46,34 @@ export class TilePreview extends LitElement {
 
   @state() private ready = false;
 
+  /** Whether sound is audibly playing, as opposed to muted or refused. */
+  @state() private audible = false;
+
   @query('video') private video?: HTMLVideoElement;
 
   @query('audio') private audio?: HTMLAudioElement;
 
   private slideTimer?: number;
 
+  private frameTimer?: number;
+
+  /** Pending fade animation frame per element, so one element's fade never cancels another's. */
+  private fadeFrames = new WeakMap<HTMLMediaElement, number>();
+
   /** Bumped on every activation so a slow resolve can't show a stale preview. */
   private activation = 0;
 
+  protected willUpdate(changed: PropertyValues<this>): void {
+    // Release while the media elements are still in the DOM.
+    if (changed.has('active') && !this.active) this.stop();
+  }
+
   protected updated(changed: PropertyValues<this>): void {
     if (changed.has('active') || changed.has('identifier')) {
-      if (this.active) this.start();
-      else this.stop();
+      if (this.active) {
+        this.stop();
+        this.start();
+      }
     }
   }
 
@@ -81,24 +102,124 @@ export class TilePreview extends LitElement {
 
     if (media.kind === 'slides') this.startSlides();
     if (media.kind === 'audio' && this.options.sound) this.playSnippet();
+    if (media.kind === 'video') {
+      this.frameTimer = window.setTimeout(
+        () => this.useFallbackFrames(),
+        FIRST_FRAME_TIMEOUT_MS,
+      );
+    }
   }
 
   private stop(): void {
     this.activation += 1;
     window.clearInterval(this.slideTimer);
+    window.clearTimeout(this.frameTimer);
     this.releaseMedia(this.video);
     this.releaseMedia(this.audio);
     this.media = undefined;
     this.slideUrls = [];
     this.ready = false;
+    this.audible = false;
   }
 
-  /** Pauses and drops the source so the browser stops downloading it. */
+  /**
+   * Stops a media element: a short fade-out when it is audible, then pause and
+   * drop the source so the browser stops downloading it.
+   */
   private releaseMedia(el?: HTMLMediaElement): void {
     if (!el) return;
-    el.pause();
-    el.removeAttribute('src');
-    el.load();
+    this.cancelFade(el);
+    const finish = () => {
+      el.pause();
+      el.removeAttribute('src');
+      el.load();
+    };
+    if (el.paused || el.muted || el.volume === 0) {
+      finish();
+      return;
+    }
+    this.fade(el, 0, FADE_OUT_MS, finish);
+  }
+
+  private cancelFade(el: HTMLMediaElement): void {
+    const frame = this.fadeFrames.get(el);
+    if (frame !== undefined) window.cancelAnimationFrame(frame);
+    this.fadeFrames.delete(el);
+  }
+
+  /** Ramps a media element's volume to `target` over `ms`. */
+  private fade(
+    el: HTMLMediaElement,
+    target: number,
+    ms: number,
+    done?: () => void,
+  ): void {
+    this.cancelFade(el);
+    const from = el.volume;
+    const t0 = performance.now();
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / ms);
+      el.volume = from + (target - from) * t;
+      if (t < 1) this.fadeFrames.set(el, window.requestAnimationFrame(step));
+      else {
+        this.fadeFrames.delete(el);
+        done?.();
+      }
+    };
+    this.fadeFrames.set(el, window.requestAnimationFrame(step));
+  }
+
+  /**
+   * Starts a media element, with sound when the options ask for it. A browser
+   * that refuses audible playback gets a muted one instead.
+   */
+  private async playMedia(
+    el: HTMLMediaElement,
+    activation: number,
+  ): Promise<boolean> {
+    if (this.options.sound) {
+      try {
+        el.muted = false;
+        el.volume = 0;
+        await el.play();
+        if (activation !== this.activation) return true;
+        this.audible = true;
+        this.fade(el, MAX_VOLUME, FADE_IN_MS);
+        return true;
+      } catch {
+        // Refused, so play it muted below.
+      }
+    }
+    try {
+      el.muted = true;
+      await el.play();
+      return true;
+    } catch {
+      // A stopped preview isn't a failure; only a current one needs the frames.
+      return activation !== this.activation;
+    }
+  }
+
+  /** Swaps a clip that is slow or unplayable for the item's frame thumbnails. */
+  private useFallbackFrames(): void {
+    window.clearTimeout(this.frameTimer);
+    if (this.media?.kind !== 'video') return;
+    const urls = this.media.fallbackUrls;
+    this.releaseMedia(this.video);
+    this.audible = false;
+    if (urls.length > 1) {
+      this.media = { kind: 'slides', fit: 'cover', urls };
+      this.slideUrls = urls;
+      this.slide = 0;
+      this.ready = false;
+      const { activation } = this;
+      this.updateComplete.then(() => {
+        if (activation === this.activation) this.startSlides();
+      });
+    } else {
+      this.media = { kind: 'zoom' };
+      this.ready = true;
+    }
   }
 
   private startSlides(): void {
@@ -139,6 +260,7 @@ export class TilePreview extends LitElement {
   }
 
   private onVideoPlaying(): void {
+    window.clearTimeout(this.frameTimer);
     this.ready = true;
   }
 
@@ -154,18 +276,15 @@ export class TilePreview extends LitElement {
     }
   }
 
-  private onVideoLoaded(): void {
-    this.video?.play().catch(() => {
-      // Autoplay refused: leave the thumbnail showing.
-      this.media = { kind: 'zoom' };
-      this.ready = true;
-    });
+  private async onVideoLoaded(): Promise<void> {
+    const { video, activation } = this;
+    if (video && !(await this.playMedia(video, activation))) {
+      this.useFallbackFrames();
+    }
   }
 
-  private playSnippet(): void {
-    this.audio?.play().catch(() => {
-      // Sound needs a user gesture on some browsers; the waveform still shows.
-    });
+  private async playSnippet(): Promise<void> {
+    if (this.audio) await this.playMedia(this.audio, this.activation);
   }
 
   render() {
@@ -174,8 +293,22 @@ export class TilePreview extends LitElement {
       class="layer ${this.media.kind} ${this.ready ? 'ready' : ''}"
       aria-hidden="true"
     >
-      ${this.mediaTemplate(this.media)}
+      ${this.mediaTemplate(this.media)} ${this.soundBadgeTemplate}
     </div>`;
+  }
+
+  /** A muted-speaker hint, so people know a clip or snippet could have sound. */
+  private get soundBadgeTemplate() {
+    const kind = this.media?.kind;
+    if ((kind !== 'video' && kind !== 'audio') || this.audible) return nothing;
+    return html`<span class="badge" title=${msg('Sound is off')}>
+      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4-2.7-2.7z"
+        />
+      </svg>
+    </span>`;
   }
 
   private mediaTemplate(media: TilePreviewMedia) {
@@ -188,6 +321,7 @@ export class TilePreview extends LitElement {
           preload="auto"
           src="${media.src}#t=${media.start}"
           @loadeddata=${this.onVideoLoaded}
+          @error=${this.useFallbackFrames}
           @playing=${this.onVideoPlaying}
           @timeupdate=${this.onVideoTimeUpdate}
         ></video>`;
@@ -291,6 +425,17 @@ export class TilePreview extends LitElement {
       object-fit: fill;
       filter: invert(1) hue-rotate(180deg);
       opacity: 0.85;
+    }
+
+    .badge {
+      position: absolute;
+      left: 6px;
+      bottom: 6px;
+      display: flex;
+      padding: 3px;
+      border-radius: 4px;
+      color: #fff;
+      background: rgb(0 0 0 / 0.65);
     }
 
     .playhead {

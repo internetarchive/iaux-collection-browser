@@ -1,6 +1,6 @@
 /** What a tile preview shows, resolved from an item's file list. */
 export type TilePreviewMedia =
-  | { kind: 'video'; src: string; start: number }
+  | { kind: 'video'; src: string; start: number; fallbackUrls: string[] }
   | { kind: 'slides'; urls: string[]; fit: 'contain' | 'cover' }
   | { kind: 'audio'; src: string; start: number; waveform?: string }
   | { kind: 'zoom' };
@@ -18,17 +18,23 @@ export const PREVIEW_CLIP_SECONDS = 4;
 /** What the previews are allowed to fetch. */
 export interface TilePreviewOptions {
   /**
-   * Play real video clips for movies that have a 512Kb derivative. A clip costs
-   * about 4 MB per preview, so by default movies cycle a few of their stored
-   * frame thumbnails instead (about 30 KB).
+   * Play a real clip of the movie, taken from its smallest playable derivative.
+   * A clip costs up to about 4 MB per preview (the browser buffers ahead), so by
+   * default movies cycle a few of their stored frame thumbnails instead (about
+   * 35 KB). Movies with no playable derivative always use the frames.
    */
   clips?: boolean;
-  /** Play audio snippets with sound (browsers may still refuse). */
+  /**
+   * Play video clips and audio snippets with sound. Only takes effect once the
+   * page has been activated by a click or key press; otherwise the browser
+   * refuses and the preview stays muted.
+   */
   sound?: boolean;
 }
 
 const MAX_SLIDES = 4;
 const MAX_FRAMES = 6;
+const MIN_CLIP_SOURCE_SECONDS = 8;
 const MAX_IMAGE_BYTES = 1_500_000;
 const PAGE_NUMBERS = [1, 3, 5, 8];
 
@@ -86,25 +92,27 @@ async function resolve(
   const files = await fetchFiles(identifier, baseUrl);
 
   if (mediatype === 'movies') {
-    // Only the 512Kb derivative is small enough to preview as a clip.
-    const clip = options.clips
-      ? files.find(f => f.name.endsWith('_512kb.mp4'))
-      : undefined;
+    // Frames are spread across the whole film, skipping the first (the cover).
+    const frames = spread(
+      files
+        .filter(f => f.format === 'Thumbnail')
+        .map(f => f.name)
+        .sort()
+        .slice(1),
+      MAX_FRAMES,
+    ).map(download);
+
+    const clip = options.clips ? smallestPlayable(files) : undefined;
     if (clip) {
       return {
         kind: 'video',
         src: download(clip.name),
-        start: startAt(clip.length),
+        start: clipStart(clip.length),
+        fallbackUrls: frames,
       };
     }
-    // Frames are spread across the whole film, skipping the first (the cover).
-    const frames = files
-      .filter(f => f.format === 'Thumbnail')
-      .map(f => f.name)
-      .sort();
-    const picked = spread(frames.slice(1), MAX_FRAMES).map(download);
-    return picked.length > 1
-      ? { kind: 'slides', fit: 'cover', urls: picked }
+    return frames.length > 1
+      ? { kind: 'slides', fit: 'cover', urls: frames }
       : { kind: 'zoom' };
   }
 
@@ -148,6 +156,44 @@ async function fetchFiles(
   if (!res.ok) return [];
   const body = await res.json();
   return Array.isArray(body.result) ? body.result : [];
+}
+
+/**
+ * The smallest derivative this browser can play (mp4 or webm, at least a few
+ * seconds long). The smallest has the lowest bitrate and the shortest header, so
+ * it starts soonest.
+ */
+function smallestPlayable(files: ItemFile[]): ItemFile | undefined {
+  const video = document.createElement('video');
+  return files
+    .filter(f => {
+      const ext = f.name.toLowerCase().split('.').pop();
+      const type =
+        ext === 'webm'
+          ? 'video/webm'
+          : ext === 'mp4' || ext === 'm4v'
+            ? 'video/mp4'
+            : '';
+      const seconds = parseLength(f.length);
+      return (
+        !!type &&
+        f.format !== 'Thumbnail' &&
+        Number(f.size) > 0 &&
+        (seconds === 0 || seconds >= MIN_CLIP_SOURCE_SECONDS) &&
+        !!video.canPlayType(type)
+      );
+    })
+    .sort((a, b) => Number(a.size) - Number(b.size))[0];
+}
+
+/** Seconds into a film to start at: 10% in, to skip leading black, capped at 60. */
+function clipStart(length?: string): number {
+  const seconds = parseLength(length);
+  if (!seconds) return 0;
+  return Math.max(
+    0,
+    Math.min(60, Math.floor(seconds / 10), seconds - PREVIEW_CLIP_SECONDS),
+  );
 }
 
 /** Picks `count` evenly spaced entries from `list`. */

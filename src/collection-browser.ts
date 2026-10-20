@@ -2028,7 +2028,9 @@ export class CollectionBrowser
       changed.has('loggedIn') ||
       changed.has('tileActions') ||
       changed.has('tileLayoutType') ||
-      changed.has('gridZoomLevel')
+      changed.has('gridZoomLevel') ||
+      changed.has('enableTilePreviews') ||
+      changed.has('tilePreviewOptions')
     ) {
       this.infiniteScroller?.reload();
     }
