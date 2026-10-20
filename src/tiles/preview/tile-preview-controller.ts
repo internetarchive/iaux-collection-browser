@@ -5,6 +5,8 @@ export const HOVER_INTENT_MS = 300;
 /** Keyboard focus waits a little longer, so tabbing through tiles stays quiet. */
 export const FOCUS_INTENT_MS = 600;
 export const LONG_PRESS_MS = 500;
+/** How long the hover info pane waits on a tile that shows previews (a bit longer than one preview cycle). */
+export const PREVIEW_PANE_DELAY_MS = 5000;
 const LONG_PRESS_MOVE_TOLERANCE_PX = 10;
 
 type Activation = 'hover' | 'focus' | 'long-press';

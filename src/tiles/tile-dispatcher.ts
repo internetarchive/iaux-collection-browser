@@ -28,7 +28,10 @@ import {
 } from './hover/hover-pane-controller';
 import { srOnlyStyle } from '../styles/sr-only';
 import { tileActionStyles } from '../styles/tile-action-styles';
-import { TilePreviewController } from './preview/tile-preview-controller';
+import {
+  PREVIEW_PANE_DELAY_MS,
+  TilePreviewController,
+} from './preview/tile-preview-controller';
 import type { TilePreviewOptions } from './preview/tile-preview-media';
 
 @customElement('tile-dispatcher')
@@ -141,6 +144,8 @@ export class TileDispatcher
       this.hoverPaneController = new HoverPaneController(this, {
         mobileBreakpoint: this.mobileBreakpoint,
         enableLongPress: false,
+        // A playing preview gets the tile to itself; the info pane follows later.
+        showDelay: () => (this.shouldPreview ? PREVIEW_PANE_DELAY_MS : 300),
       });
     }
   }
