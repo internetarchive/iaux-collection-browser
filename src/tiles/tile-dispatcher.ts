@@ -28,6 +28,8 @@ import {
 } from './hover/hover-pane-controller';
 import { srOnlyStyle } from '../styles/sr-only';
 import { tileActionStyles } from '../styles/tile-action-styles';
+import { TilePreviewController } from './preview/tile-preview-controller';
+import type { TilePreviewOptions } from './preview/tile-preview-media';
 
 @customElement('tile-dispatcher')
 export class TileDispatcher
@@ -70,6 +72,15 @@ export class TileDispatcher
 
   /** Whether this tile should include a hover pane at all (for applicable tile modes) */
   @property({ type: Boolean }) enableHoverPane = false;
+
+  /** Whether hovering, focusing or long-pressing this tile starts a live preview */
+  @property({ type: Boolean }) enableTilePreview = false;
+
+  @property({ type: Object }) tilePreviewOptions: TilePreviewOptions = {};
+
+  private previewController = new TilePreviewController(this, {
+    enabled: () => this.shouldPreview,
+  });
 
   @property({ type: String }) manageCheckTitle = msg(
     'Remove this item from the list',
@@ -224,6 +235,21 @@ export class TileDispatcher
     );
   }
 
+  /** Only plain item tiles preview: not collections, accounts, searches or gated items. */
+  private get shouldPreview(): boolean {
+    const { model } = this;
+    return (
+      this.enableTilePreview &&
+      this.tileDisplayMode === 'grid' &&
+      !this.isManageView &&
+      !!model?.identifier &&
+      !['collection', 'account', 'search'].includes(model.mediatype) &&
+      !model.captureDates &&
+      (this.suppressBlurring ||
+        (!model.contentWarning && !(model.loginRequired && !this.loggedIn)))
+    );
+  }
+
   private get isHoverEnabled(): boolean {
     return window.matchMedia('(hover: hover)').matches;
   }
@@ -272,6 +298,8 @@ export class TileDispatcher
   }
 
   updated(props: PropertyValues) {
+    if (!this.shouldPreview) this.previewController.deactivate();
+
     if (props.has('resizeObserver')) {
       const previousObserver = props.get(
         'resizeObserver',
@@ -440,6 +468,8 @@ export class TileDispatcher
               ?showTvClips=${this.showTvClips}
               ?showInfoButton=${this.shouldShowInfoButton}
               ?useLocalTime=${this.useLocalTime}
+              ?previewActive=${this.previewController.active}
+              .previewOptions=${this.tilePreviewOptions}
               @infoButtonPressed=${this.tileInfoButtonPressed}
             >
             </item-tile>`;

@@ -49,6 +49,14 @@ export class AppRoot extends LitElement {
 
   @state() private loggedIn: boolean = false;
 
+  @state() private tilePreviewClips: boolean =
+    new URLSearchParams(window.location.search).get('clips') === '1';
+
+  @state() private tilePreviewSound: boolean = false;
+
+  @state() private enableTilePreviews: boolean =
+    new URLSearchParams(window.location.search).get('previews') !== '0';
+
   @state() private searchType: SearchType = SearchType.METADATA;
 
   @state() private profileElement?: PageElementName;
@@ -363,6 +371,15 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
+                id="enable-tile-previews"
+                ?checked=${this.enableTilePreviews}
+                @click=${this.tilePreviewsChanged}
+              />
+              <label for="enable-tile-previews">Live tile previews</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
                 id="enable-management"
                 @click=${this.manageModeCheckboxChanged}
               />
@@ -583,6 +600,11 @@ export class AppRoot extends LitElement {
           .suppressFacets=${this.suppressFacets}
           .lazyLoadFacets=${this.lazyLoadFacets}
           .loggedIn=${this.loggedIn}
+          .enableTilePreviews=${this.enableTilePreviews}
+          .tilePreviewOptions=${{
+            clips: this.tilePreviewClips,
+            sound: this.tilePreviewSound,
+          }}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
           .withinProfile=${this.withinProfile}
@@ -739,6 +761,11 @@ export class AppRoot extends LitElement {
   private facetsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.suppressFacets = !target.checked;
+  }
+
+  private tilePreviewsChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.enableTilePreviews = target.checked;
   }
 
   private lazyLoadFacetsChanged(e: Event) {
