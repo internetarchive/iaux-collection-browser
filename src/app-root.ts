@@ -19,9 +19,20 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
+import type { TilePreviewOptions } from './tiles/preview/tile-preview-media';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
+  private static readonly SOUND_KEY = 'iaux-cb-tile-preview-sound';
+
+  private static readSoundPreference(): boolean {
+    try {
+      return localStorage.getItem(AppRoot.SOUND_KEY) === '1';
+    } catch {
+      return false;
+    }
+  }
+
   private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
 
@@ -45,9 +56,22 @@ export class AppRoot extends LitElement {
 
   @state() private suppressFacets: boolean = false;
 
+  @state() private enablePinchZoom: boolean = new URLSearchParams(
+    window.location.search,
+  ).has('pinchZoom');
+
   @state() private lazyLoadFacets: boolean = false;
 
   @state() private loggedIn: boolean = false;
+
+  /** Real video clips for movies, unless the page is opened with `?clips=0`. */
+  @state() private tilePreviewOptions: TilePreviewOptions = {
+    clips: new URLSearchParams(window.location.search).get('clips') !== '0',
+    sound: AppRoot.readSoundPreference(),
+  };
+
+  @state() private enableTilePreviews: boolean =
+    new URLSearchParams(window.location.search).get('previews') !== '0';
 
   @state() private searchType: SearchType = SearchType.METADATA;
 
@@ -363,6 +387,48 @@ export class AppRoot extends LitElement {
             <div class="checkbox-control">
               <input
                 type="checkbox"
+                id="enable-tile-previews"
+                ?checked=${this.enableTilePreviews}
+                @click=${this.tilePreviewsChanged}
+              />
+              <label for="enable-tile-previews">Live tile previews</label>
+            </div>
+            <div class="checkbox-control indent">
+              <input
+                type="checkbox"
+                id="tile-preview-clips"
+                ?checked=${this.tilePreviewOptions.clips}
+                ?disabled=${!this.enableTilePreviews}
+                @click=${this.tilePreviewClipsChanged}
+              />
+              <label for="tile-preview-clips"
+                >Real video (off: thumbnail frames)</label
+              >
+            </div>
+            <div class="checkbox-control indent">
+              <input
+                type="checkbox"
+                id="tile-preview-sound"
+                ?checked=${this.tilePreviewOptions.sound}
+                ?disabled=${!this.enableTilePreviews}
+                @click=${this.tilePreviewSoundChanged}
+              />
+              <label for="tile-preview-sound">Sound</label>
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-pinch-zoom"
+                ?checked=${this.enablePinchZoom}
+                @click=${this.pinchZoomChanged}
+              />
+              <label for="enable-pinch-zoom"
+                >Enable pinch zoom (prototype)</label
+              >
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
                 id="enable-management"
                 @click=${this.manageModeCheckboxChanged}
               />
@@ -581,8 +647,11 @@ export class AppRoot extends LitElement {
           .resizeObserver=${this.resizeObserver}
           .showHistogramDatePicker=${true}
           .suppressFacets=${this.suppressFacets}
+          ?enable-pinch-zoom=${this.enablePinchZoom}
           .lazyLoadFacets=${this.lazyLoadFacets}
           .loggedIn=${this.loggedIn}
+          .enableTilePreviews=${this.enableTilePreviews}
+          .tilePreviewOptions=${this.tilePreviewOptions}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}
           .withinProfile=${this.withinProfile}
@@ -739,6 +808,31 @@ export class AppRoot extends LitElement {
   private facetsChanged(e: Event) {
     const target = e.target as HTMLInputElement;
     this.suppressFacets = !target.checked;
+  }
+
+  /** Clicking the Sound checkbox is the user gesture that lets previews play audibly. */
+  private tilePreviewSoundChanged(e: Event) {
+    const sound = (e.target as HTMLInputElement).checked;
+    this.tilePreviewOptions = { ...this.tilePreviewOptions, sound };
+    try {
+      localStorage.setItem(AppRoot.SOUND_KEY, sound ? '1' : '0');
+    } catch {
+      // Storage can be unavailable; the choice just isn't remembered.
+    }
+  }
+
+  private tilePreviewClipsChanged(e: Event) {
+    const clips = (e.target as HTMLInputElement).checked;
+    this.tilePreviewOptions = { ...this.tilePreviewOptions, clips };
+  }
+
+  private tilePreviewsChanged(e: Event) {
+    const target = e.target as HTMLInputElement;
+    this.enableTilePreviews = target.checked;
+  }
+
+  private pinchZoomChanged(e: Event) {
+    this.enablePinchZoom = (e.target as HTMLInputElement).checked;
   }
 
   private lazyLoadFacetsChanged(e: Event) {

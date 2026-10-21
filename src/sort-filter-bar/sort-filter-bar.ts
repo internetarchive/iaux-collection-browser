@@ -26,6 +26,7 @@ import { sortDisabledIcon } from './img/sort-toggle-disabled';
 import { tileIcon } from './img/tile';
 import { listIcon } from './img/list';
 import { compactIcon } from './img/compact';
+import { GRID_ZOOM_COLUMNS } from '../utils/grid-zoom';
 import { srOnlyStyle } from '../styles/sr-only';
 
 import '@internetarchive/ia-dropdown';
@@ -58,6 +59,15 @@ export class SortFilterBar extends LitElement {
 
   /** The currently selected creator letter filter, or null if none is set */
   @property({ type: String }) selectedCreatorFilter: string | null = null;
+
+  /** Whether to show the grid zoom slider (a prototype). */
+  @property({ type: Boolean }) showGridZoomSlider = false;
+
+  /** The grid zoom level (an index into the zoom levels, smallest column count first). */
+  @property({ type: Number }) gridZoomLevel = 0;
+
+  /** The slider's value while the viewer is moving it, until the grid catches up. */
+  @state() private pendingSliderValue?: number;
 
   /**
    * Map defining which sortable fields should be included on the sort bar.
@@ -125,6 +135,7 @@ export class SortFilterBar extends LitElement {
             </div>
             <slot name="sort-options-right"></slot>
 
+            ${this.showGridZoomSlider ? this.gridZoomSliderTemplate : nothing}
             ${this.suppressDisplayModes
               ? nothing
               : html`<div id="display-style-selector">
@@ -141,6 +152,9 @@ export class SortFilterBar extends LitElement {
   }
 
   willUpdate(changed: PropertyValues) {
+    if (changed.has('gridZoomLevel')) {
+      this.pendingSliderValue = undefined;
+    }
     if (changed.has('selectedSort') || changed.has('defaultSortField')) {
       // If the sort is changed from its default without a direction set,
       // we adopt the default sort direction for that sort type.
@@ -350,6 +364,45 @@ export class SortFilterBar extends LitElement {
       this.selectedCreatorFilter = null;
       this.emitCreatorLetterChangedEvent();
     }
+  }
+
+  /**
+   * The grid zoom slider. Moving right makes the tiles bigger, so its value counts
+   * down from the highest level (the most columns) to level 0 (the fewest).
+   */
+  private get gridZoomSliderTemplate() {
+    const maxValue = GRID_ZOOM_COLUMNS.length - 1;
+    const columns = GRID_ZOOM_COLUMNS[this.gridZoomLevel];
+    return html`
+      <div id="grid-zoom">
+        <input
+          type="range"
+          id="grid-zoom-slider"
+          min="0"
+          max=${maxValue}
+          step="1"
+          .value=${String(
+            this.pendingSliderValue ?? maxValue - this.gridZoomLevel,
+          )}
+          aria-label=${msg('Tile size')}
+          aria-valuetext=${columns === 1
+            ? msg('1 column')
+            : msg(str`${columns} columns`)}
+          data-testid="grid-zoom-slider"
+          @input=${this.gridZoomSliderInput}
+        />
+      </div>
+    `;
+  }
+
+  private gridZoomSliderInput(e: Event): void {
+    const value = Number((e.target as HTMLInputElement).value);
+    this.pendingSliderValue = value;
+    this.dispatchEvent(
+      new CustomEvent<{ level: number }>('gridZoomLevelChanged', {
+        detail: { level: GRID_ZOOM_COLUMNS.length - 1 - value },
+      }),
+    );
   }
 
   /** Template for rendering the three display mode options */
@@ -690,6 +743,19 @@ export class SortFilterBar extends LitElement {
 
         #display-style-selector {
           flex: 0;
+        }
+
+        #grid-zoom {
+          display: flex;
+          align-items: center;
+          margin-right: 10px;
+        }
+
+        #grid-zoom-slider {
+          width: 90px;
+          margin: 0;
+          cursor: pointer;
+          accent-color: var(--ia-theme-primary-text-color, #2c2c2c);
         }
 
         #display-style-selector button {

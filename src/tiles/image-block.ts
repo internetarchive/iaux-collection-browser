@@ -6,6 +6,8 @@ import type { TileModel, TileOverlayType } from '../models';
 
 import './overlay/icon-overlay';
 import './overlay/text-overlay';
+import './preview/tile-preview';
+import type { TilePreviewOptions } from './preview/tile-preview-media';
 
 @customElement('image-block')
 export class ImageBlock extends LitElement {
@@ -23,6 +25,10 @@ export class ImageBlock extends LitElement {
 
   @property({ type: String }) viewSize: string = 'desktop';
 
+  @property({ type: Boolean }) previewActive = false;
+
+  @property({ type: Object }) previewOptions: TilePreviewOptions = {};
+
   render() {
     if (!this.model?.identifier) return nothing;
 
@@ -39,6 +45,7 @@ export class ImageBlock extends LitElement {
         >
         </item-image>
         ${this.textOverlayTemplate} ${this.iconOverlayTemplate}
+        ${this.previewTemplate}
       </div>
     `;
   }
@@ -51,7 +58,21 @@ export class ImageBlock extends LitElement {
       collection: this.model?.mediatype === 'collection', // fill the image in container
       [this.viewSize]: true,
       'search-image': this.model?.mediatype === 'search',
+      previewing: this.previewActive && !this.isListTile,
     };
+  }
+
+  private get previewTemplate() {
+    if (!this.previewActive || this.isListTile) return nothing;
+    const baseUrl = this.baseImageUrl ?? 'https://archive.org';
+    return html`<tile-preview
+      active
+      .identifier=${this.model?.identifier}
+      .mediatype=${this.model?.mediatype}
+      .baseUrl=${baseUrl}
+      .thumbnailUrl=${`${baseUrl}/services/img/${this.model?.identifier}`}
+      .options=${this.previewOptions}
+    ></tile-preview>`;
   }
 
   private get iconOverlayTemplate() {
@@ -113,6 +134,11 @@ export class ImageBlock extends LitElement {
         position: initial;
         padding: 5px;
         border-radius: 4px 4px 0 0;
+      }
+
+      /** Anchors the live preview to the image area; gated tiles never preview. */
+      .grid.previewing {
+        position: relative;
       }
 
       .collection.grid,
