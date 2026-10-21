@@ -126,6 +126,7 @@ export class TileDispatcher
       this.hoverPaneController?.getTemplate() ?? nothing;
     const containerClasses = classMap({
       hoverable: isGridMode,
+      previewable: this.shouldPreview,
       'has-tile-actions': hasTileActions,
     });
     return html`
@@ -582,6 +583,13 @@ export class TileDispatcher
           min-height: 0;
           overflow: hidden;
           border-radius: 0;
+        }
+
+        /* A long-press starts a preview, so it must not open the iOS link menu or select text */
+        #container.previewable a {
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
+          user-select: none;
         }
 
         /* Normal hover shadow lives on the inner anchor for plain tiles */

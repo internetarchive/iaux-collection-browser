@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import sinon from 'sinon';
 import {
   clearPreviewMediaCache,
+  estimateClipBytes,
   resolvePreviewMedia,
 } from '../../../src/tiles/preview/tile-preview-media';
 
@@ -98,5 +99,42 @@ describe('resolvePreviewMedia', () => {
     expect((await resolvePreviewMedia('x', 'image')).kind).to.equal('zoom');
     await resolvePreviewMedia('x', 'image');
     expect(fetchStub.callCount).to.equal(1);
+  });
+
+  it('uses frames when even the cheapest derivative is too expensive', async () => {
+    fetchStub.callsFake(() =>
+      Promise.resolve(
+        files([
+          // 4.8 Mbps for 4704s: about 27 MB of read-ahead plus the index.
+          {
+            name: 'big.mp4',
+            format: 'h.264 IA',
+            length: '4704',
+            size: '2800000000',
+          },
+          { name: 'm.thumbs/m_000001.jpg', format: 'Thumbnail', size: '10' },
+          { name: 'm.thumbs/m_000002.jpg', format: 'Thumbnail', size: '10' },
+          { name: 'm.thumbs/m_000003.jpg', format: 'Thumbnail', size: '10' },
+        ]),
+      ),
+    );
+    const media = await resolvePreviewMedia('big', 'movies', undefined, {
+      clips: true,
+    });
+    expect(media.kind).to.equal('slides');
+    clearPreviewMediaCache();
+    const raised = await resolvePreviewMedia('big', 'movies', undefined, {
+      clips: true,
+      clipBudgetBytes: 100_000_000,
+    });
+    expect(raised.kind).to.equal('video');
+  });
+
+  it('prefers the lowest bitrate over the smallest file', () => {
+    const lowBitrateLong = { name: 'a.mp4', length: '1000', size: '60000000' };
+    const highBitrateShort = { name: 'b.mp4', length: '20', size: '40000000' };
+    expect(estimateClipBytes(lowBitrateLong)).to.be.lessThan(
+      estimateClipBytes(highBitrateShort),
+    );
   });
 });

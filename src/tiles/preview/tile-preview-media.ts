@@ -25,6 +25,12 @@ export interface TilePreviewOptions {
    */
   clips?: boolean;
   /**
+   * The most a clip may be expected to download, in bytes (default 8 MB).
+   * Movies whose cheapest playable derivative is estimated to cost more get the
+   * frame thumbnails instead. See `estimateClipBytes`.
+   */
+  clipBudgetBytes?: number;
+  /**
    * Play video clips and audio snippets with sound. Only takes effect once the
    * page has been activated by a click or key press; otherwise the browser
    * refuses and the preview stays muted.
@@ -35,6 +41,11 @@ export interface TilePreviewOptions {
 const MAX_SLIDES = 4;
 const MAX_FRAMES = 6;
 const MIN_CLIP_SOURCE_SECONDS = 8;
+export const DEFAULT_CLIP_BUDGET_BYTES = 8_000_000;
+/** Seconds of media a browser buffers ahead once playback starts. */
+const BUFFER_AHEAD_SECONDS = 45;
+/** Rough size of the mp4 index (moov) per second of media. */
+const INDEX_BYTES_PER_SECOND = 1000;
 const MAX_IMAGE_BYTES = 1_500_000;
 const PAGE_NUMBERS = [1, 3, 5, 8];
 
@@ -51,7 +62,10 @@ export function resolvePreviewMedia(
   baseUrl = 'https://archive.org',
   options: TilePreviewOptions = {},
 ): Promise<TilePreviewMedia> {
-  const key = `${baseUrl}|${identifier}|${options.clips ? 'clip' : ''}`;
+  const clipKey = options.clips
+    ? `clip${options.clipBudgetBytes ?? DEFAULT_CLIP_BUDGET_BYTES}`
+    : '';
+  const key = `${baseUrl}|${identifier}|${clipKey}`;
   let pending = cache.get(key);
   if (!pending) {
     pending = resolve(identifier, mediatype, baseUrl, options).catch(() => ({
@@ -102,7 +116,12 @@ async function resolve(
       MAX_FRAMES,
     ).map(download);
 
-    const clip = options.clips ? smallestPlayable(files) : undefined;
+    const clip = options.clips
+      ? cheapestPlayable(
+          files,
+          options.clipBudgetBytes ?? DEFAULT_CLIP_BUDGET_BYTES,
+        )
+      : undefined;
     if (clip) {
       return {
         kind: 'video',
@@ -159,13 +178,33 @@ async function fetchFiles(
 }
 
 /**
- * The smallest derivative this browser can play (mp4 or webm, at least a few
- * seconds long). The smallest has the lowest bitrate and the shortest header, so
- * it starts soonest.
+ * What playing a derivative is expected to download. A browser buffers about
+ * `BUFFER_AHEAD_SECONDS` of media ahead and reads the whole mp4 index first, so
+ * the cost follows bitrate and duration, not the length of the clip we show. A
+ * file of unknown duration costs its whole size.
  */
-function smallestPlayable(files: ItemFile[]): ItemFile | undefined {
+export function estimateClipBytes(file: ItemFile): number {
+  const size = Number(file.size);
+  const seconds = parseLength(file.length);
+  if (!seconds) return size;
+  const bytesPerSecond = size / seconds;
+  return Math.min(
+    size,
+    bytesPerSecond * BUFFER_AHEAD_SECONDS + seconds * INDEX_BYTES_PER_SECOND,
+  );
+}
+
+/**
+ * The derivative this browser can play that is cheapest to preview (mp4 or
+ * webm, at least a few seconds long), or none when even that one is over
+ * `budget`.
+ */
+function cheapestPlayable(
+  files: ItemFile[],
+  budget: number,
+): ItemFile | undefined {
   const video = document.createElement('video');
-  return files
+  const cheapest = files
     .filter(f => {
       const ext = f.name.toLowerCase().split('.').pop();
       const type =
@@ -183,7 +222,10 @@ function smallestPlayable(files: ItemFile[]): ItemFile | undefined {
         !!video.canPlayType(type)
       );
     })
-    .sort((a, b) => Number(a.size) - Number(b.size))[0];
+    .sort((a, b) => estimateClipBytes(a) - estimateClipBytes(b))[0];
+  return cheapest && estimateClipBytes(cheapest) <= budget
+    ? cheapest
+    : undefined;
 }
 
 /** Seconds into a film to start at: 10% in, to skip leading black, capped at 60. */
