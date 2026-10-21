@@ -18,6 +18,7 @@ import '../text-snippet-block';
 import '../item-image';
 import '../tile-mediatype-icon';
 import './tile-stats';
+import type { TilePreviewOptions } from '../preview/tile-preview-media';
 
 @customElement('item-tile')
 export class ItemTile extends BaseTileComponent {
@@ -44,6 +45,11 @@ export class ItemTile extends BaseTileComponent {
   @property({ type: Boolean }) showTvClips = false;
 
   @property({ type: String }) layoutType: LayoutType = 'default';
+
+  /** Whether a live preview is showing over the tile's image */
+  @property({ type: Boolean }) previewActive = false;
+
+  @property({ type: Object }) previewOptions: TilePreviewOptions = {};
 
   render() {
     const itemTitle = this.model?.title;
@@ -109,6 +115,8 @@ export class ItemTile extends BaseTileComponent {
         .isCompactTile=${false}
         .isListTile=${false}
         .viewSize=${'grid'}
+        ?previewActive=${this.previewActive}
+        .previewOptions=${this.previewOptions}
       >
       </image-block>
     `;

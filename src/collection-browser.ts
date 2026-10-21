@@ -79,6 +79,7 @@ import type { PlaceholderType } from './empty-placeholder';
 import type { ManageBar } from './manage/manage-bar';
 import type { SmartFacetBar } from './collection-facets/smart-facets/smart-facet-bar';
 import type { LayoutType, TileAction } from './tiles/models';
+import type { TilePreviewOptions } from './tiles/preview/tile-preview-media';
 
 import '@internetarchive/elements/ia-combo-box/ia-combo-box';
 import './empty-placeholder';
@@ -101,6 +102,15 @@ export class CollectionBrowser
   @property({ type: String }) baseNavigationUrl?: string;
 
   @property({ type: String }) baseImageUrl: string = 'https://archive.org';
+
+  /**
+   * Prototype: show a live preview of an item when its tile is hovered,
+   * focused with the keyboard or long-pressed. Off by default.
+   */
+  @property({ type: Boolean }) enableTilePreviews = false;
+
+  /** Prototype: what tile previews may fetch and play (video clips, audio sound). */
+  @property({ type: Object }) tilePreviewOptions: TilePreviewOptions = {};
 
   @property({ type: Object }) searchService?: SearchServiceInterface;
 
@@ -1811,7 +1821,9 @@ export class CollectionBrowser
       changed.has('baseImageUrl') ||
       changed.has('loggedIn') ||
       changed.has('tileActions') ||
-      changed.has('tileLayoutType')
+      changed.has('tileLayoutType') ||
+      changed.has('enableTilePreviews') ||
+      changed.has('tilePreviewOptions')
     ) {
       this.infiniteScroller?.reload();
     }
@@ -2649,6 +2661,8 @@ export class CollectionBrowser
         .layoutType=${this.tileLayoutType}
         ?showTvClips=${isTVSearch || isTVCollection}
         ?enableHoverPane=${true}
+        ?enableTilePreview=${this.enableTilePreviews}
+        .tilePreviewOptions=${this.tilePreviewOptions}
         ?useLocalTime=${shouldUseLocalTime}
         @resultSelected=${(e: CustomEvent) => this.resultSelected(e)}
       >

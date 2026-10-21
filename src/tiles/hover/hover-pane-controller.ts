@@ -32,7 +32,8 @@ export interface HoverPaneControllerOptions {
   offsetX?: number;
   offsetY?: number;
   enableLongPress?: boolean;
-  showDelay?: number;
+  /** Milliseconds, or a function read each time the timer starts. */
+  showDelay?: number | (() => number);
   hideDelay?: number;
   longPressDelay?: number;
   mobileBreakpoint?: number;
@@ -111,7 +112,7 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    * The delay between the mouse idling within the host element and when the hover
    * pane should begin fading in (in milliseconds).
    */
-  private showDelay: number = 300;
+  private showDelay: number | (() => number) = 300;
 
   /**
    * The delay between when the mouse leaves the host element and when the hover
@@ -555,10 +556,13 @@ export class HoverPaneController implements HoverPaneControllerInterface {
    */
   private restartShowHoverPaneTimer(): void {
     clearTimeout(this.showTimer);
-    this.showTimer = window.setTimeout(() => {
-      this.host.acquireFocus();
-      this.showHoverPane();
-    }, this.showDelay);
+    this.showTimer = window.setTimeout(
+      () => {
+        this.host.acquireFocus();
+        this.showHoverPane();
+      },
+      typeof this.showDelay === 'function' ? this.showDelay() : this.showDelay,
+    );
   }
 
   /**
