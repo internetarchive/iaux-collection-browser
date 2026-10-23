@@ -1,8 +1,8 @@
-import { FilterConstraint } from '@internetarchive/search-service';
-import type {
-  FieldFilter,
-  SearchParams,
-} from '@internetarchive/search-service';
+import type { SearchParams } from '@internetarchive/search-service';
+import {
+  includesAndExcludes,
+  yearBounds,
+} from '../serverless-search/filter-map';
 import type { EtdFilters } from './etd-engine';
 
 /**
@@ -30,6 +30,7 @@ export function etdRequestFromParams(params: SearchParams): EtdRequest {
 
   for (const [field, fieldFilter] of Object.entries(params.filters ?? {})) {
     if (field === 'year' || field === 'date') {
+      // The ETD index only knows years, so a date (YYYY-MM) range is widened.
       const year = yearBounds(fieldFilter, field === 'date');
       if (year) filters.year = { ...filters.year, ...year };
     } else if (field === 'language') {
@@ -71,59 +72,4 @@ export function etdRequestIsEmpty(request: EtdRequest): boolean {
     !includeLanguages?.length &&
     !excludeLanguages?.length
   );
-}
-
-/**
- * Reads year bounds out of a year or date field filter. The ETD index only
- * knows years, so a `date` filter (YYYY-MM) is widened to whole years.
- */
-function yearBounds(
-  fieldFilter: FieldFilter,
-  isDateField: boolean,
-): { min?: number; max?: number } | undefined {
-  const bounds: { min?: number; max?: number } = {};
-  for (const [value, constraints] of Object.entries(fieldFilter)) {
-    const year = Number.parseInt(value.slice(0, 4), 10);
-    if (Number.isNaN(year)) continue;
-
-    for (const constraint of [constraints].flat()) {
-      switch (constraint) {
-        case FilterConstraint.GREATER_OR_EQUAL:
-          bounds.min = year;
-          break;
-        case FilterConstraint.GREATER_THAN:
-          bounds.min = isDateField ? year : year + 1;
-          break;
-        case FilterConstraint.LESS_OR_EQUAL:
-          bounds.max = year;
-          break;
-        case FilterConstraint.LESS_THAN:
-          bounds.max = isDateField ? year : year - 1;
-          break;
-        case FilterConstraint.INCLUDE:
-          bounds.min = year;
-          bounds.max = year;
-          break;
-        default:
-          break;
-      }
-    }
-  }
-  return bounds.min === undefined && bounds.max === undefined
-    ? undefined
-    : bounds;
-}
-
-function includesAndExcludes(fieldFilter: FieldFilter): {
-  include: string[];
-  exclude: string[];
-} {
-  const include: string[] = [];
-  const exclude: string[] = [];
-  for (const [value, constraints] of Object.entries(fieldFilter)) {
-    const all = [constraints].flat();
-    if (all.includes(FilterConstraint.INCLUDE)) include.push(value);
-    if (all.includes(FilterConstraint.EXCLUDE)) exclude.push(value);
-  }
-  return { include, exclude };
 }

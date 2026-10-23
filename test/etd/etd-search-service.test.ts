@@ -7,9 +7,8 @@ import '../../src/collection-browser';
 import { EtdSearchService } from '../../src/etd/etd-search-service';
 import { MockEtdEngine, mockEtdTheses } from '../mocks/mock-etd-engine';
 
-const identifiers = (results: { identifier?: string }[]) =>
-  results.map(r => r.identifier);
-
+// Paging, caching and error handling are covered generically in
+// serverless-search-service.test.ts. These cover what is ETD's own.
 describe('EtdSearchService', () => {
   let engine: MockEtdEngine;
   let service: EtdSearchService;
@@ -20,23 +19,7 @@ describe('EtdSearchService', () => {
   });
 
   describe('search', () => {
-    it('returns the requested page of hits with the full total', async () => {
-      const result = await service.search({
-        query: 'climate',
-        page: 2,
-        rows: 10,
-        aggregations: { omit: true },
-      });
-
-      const response = result.success!.response;
-      expect(response.totalResults).to.equal(120);
-      expect(identifiers(response.results)).to.deep.equal(
-        Array.from({ length: 10 }, (_, i) => `etd-${11 + i}`),
-      );
-      expect(response.aggregations).to.be.undefined;
-    });
-
-    it('applies date picker and language facet filters', async () => {
+    it('applies date picker and language facet filters in the engine', async () => {
       const result = await service.search({
         query: 'climate',
         rows: 50,
@@ -58,128 +41,35 @@ describe('EtdSearchService', () => {
       expect(result.success!.response.totalResults).to.equal(20);
     });
 
-    it('ranks a search once for its hits and aggregations requests', async () => {
-      const filters = { language: { eng: FilterConstraint.INCLUDE } };
-      await Promise.all([
-        service.search({
-          query: 'climate',
-          filters,
-          page: 1,
-          rows: 50,
-          aggregations: { omit: true },
-        }),
-        service.search({ query: 'climate', filters, rows: 0 }),
-        service.search({
-          query: 'climate',
-          filters,
-          page: 2,
-          rows: 50,
-          aggregations: { omit: true },
-        }),
-      ]);
-      expect(engine.queryCalls).to.have.length(1);
+    it('passes query syntax through to the engine untouched', async () => {
+      await service.search({ query: '"sea ice" year:[2000 TO 2010]', rows: 0 });
+      expect(engine.queryCalls[0].text).to.equal(
+        '"sea ice" year:[2000 TO 2010]',
+      );
     });
 
     it('answers the default facets request with language and year facets', async () => {
       const result = await service.search({ query: 'climate', rows: 0 });
 
-      const response = result.success!.response;
-      expect(response.results).to.deep.equal([]);
-      expect(Object.keys(response.aggregations!).sort()).to.deep.equal([
+      const { aggregations } = result.success!.response;
+      expect(Object.keys(aggregations!).sort()).to.deep.equal([
         'language',
         'year_histogram',
       ]);
-      expect(response.aggregations!.year_histogram.buckets).to.deep.equal([
-        40, 40, 40,
+      expect(aggregations!.year_histogram.buckets).to.deep.equal([40, 40, 40]);
+      expect(aggregations!.language.buckets).to.deep.equal([
+        { key: 'eng', doc_count: 60 },
+        { key: 'fre', doc_count: 60 },
       ]);
     });
 
-    it('answers a "more" facets request with only that facet', async () => {
-      const result = await service.search({
-        query: 'climate',
-        rows: 0,
-        aggregations: { simpleParams: ['language'] },
-        aggregationsSize: 1,
-      });
-
-      const { aggregations } = result.success!.response;
-      expect(Object.keys(aggregations!)).to.deep.equal(['language']);
-      expect(aggregations!.language.buckets).to.have.length(1);
-    });
-
-    it('returns no letter buckets for the title/creator letter bar', async () => {
-      const result = await service.search({
-        query: 'climate',
-        rows: 0,
-        aggregations: { simpleParams: ['firstTitle'] },
-        aggregationsSize: 26,
-      });
-      expect(result.success!.response.aggregations).to.be.undefined;
-    });
-
-    it('reports the full total but stops serving at the reachable cap', async () => {
-      engine.reachableCap = 75;
-      engine.totalOverride = { total: 1200000, approximate: true };
-
-      const page2 = await service.search({
-        query: 'climate',
-        page: 2,
-        rows: 50,
-      });
-      const page3 = await service.search({
-        query: 'climate',
-        page: 3,
-        rows: 50,
-      });
-
-      expect(page2.success!.response.totalResults).to.equal(1200000);
-      expect(page2.success!.response.results).to.have.length(25);
-      // An empty page is what tells collection-browser it has reached the end
-      expect(page3.success!.response.results).to.deep.equal([]);
-    });
-
-    it('returns an empty response without ranking when there is nothing to search', async () => {
+    it('returns no results without ranking when only unsupported filters are set', async () => {
       const result = await service.search({
         query: '  ',
         filters: { subject: { physics: FilterConstraint.INCLUDE } },
       });
       expect(result.success!.response.totalResults).to.equal(0);
       expect(engine.queryCalls).to.deep.equal([]);
-    });
-
-    it('cancels reads for searches that fall out of the cache', async () => {
-      service = new EtdSearchService({ engine, cachedQueries: 2 });
-      await service.search({ query: 'climate', rows: 0 });
-      await service.search({ query: 'thesis', rows: 0 });
-      await service.search({ query: 'climate', rows: 0 }); // refreshes 'climate'
-      await service.search({ query: 'thesis 1', rows: 0 }); // evicts 'thesis'
-
-      const [climate, thesis, thesis1] = engine.querySignals;
-      expect(engine.queryCalls).to.have.length(3);
-      expect(climate?.aborted).to.be.false;
-      expect(thesis?.aborted).to.be.true;
-      expect(thesis1?.aborted).to.be.false;
-    });
-
-    it('does not cache a failed search, so a retry ranks again', async () => {
-      engine.failNextQuery = new Error('dict.bin HTTP 500');
-
-      const failed = await service.search({ query: 'climate', rows: 10 });
-      expect(failed.error?.type).to.equal(
-        SearchServiceErrorType.searchEngineError,
-      );
-      expect(failed.error?.message).to.equal('dict.bin HTTP 500');
-
-      await aTimeout(0); // let the cache drop the failed entry
-      const retried = await service.search({ query: 'climate', rows: 10 });
-      expect(retried.success!.response.results).to.have.length(10);
-      expect(engine.queryCalls).to.have.length(2);
-    });
-
-    it('reports a fetch failure as a network error', async () => {
-      engine.failNextRead = new TypeError('Failed to fetch');
-      const result = await service.search({ query: 'climate', rows: 10 });
-      expect(result.error?.type).to.equal(SearchServiceErrorType.networkError);
     });
   });
 

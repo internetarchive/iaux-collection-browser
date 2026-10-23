@@ -1,52 +1,53 @@
 import type {
-  EtdCallOptions,
-  EtdQuery,
-  EtdQueryResult,
-  EtdRecord,
-} from './etd-engine';
+  SourceCallOptions,
+  SourceQuery,
+  SourceQueryResult,
+} from './search-source';
 
 /**
- * Most records requested from the engine's cursor in one call. Keeps a deep
- * page from turning into a single huge phrase-verification pass.
+ * Most records requested from a source's cursor in one call. Keeps a deep
+ * page from turning into one huge read.
  */
 const MAX_BATCH = 100;
 
 /**
- * Serves random-access pages over an EtdQuery's forward-only cursor.
+ * Serves random-access pages over a source query's forward-only cursor.
  *
  * collection-browser asks for pages by number and may skip ahead (page 7
- * before page 2). The engine can only read records in order, so the pager
+ * before page 2). A cursor can only read records in order, so the pager
  * reads forward to the end of the requested page and keeps every record it
  * has read for later pages. Reads are serialized: two page requests never
  * advance the cursor at the same time.
  */
-export class EtdPager {
-  private readonly records: EtdRecord[] = [];
+export class SourcePager<SourceRecord> {
+  private readonly records: SourceRecord[] = [];
 
   private exhausted = false;
 
   private queue: Promise<void> = Promise.resolve();
 
-  constructor(private readonly query: EtdQuery) {}
+  constructor(
+    private readonly query: Pick<SourceQuery<SourceRecord>, 'result' | 'next'>,
+  ) {}
 
-  get result(): EtdQueryResult {
+  get result(): SourceQueryResult {
     return this.query.result;
   }
 
-  /** Records read from the engine so far. */
+  /** Records read from the source so far. */
   get loadedCount(): number {
     return this.records.length;
   }
 
   /**
-   * Records `start` (inclusive) to `end` (exclusive) in rank order. Never
-   * reads past the query's reachable count, so a page beyond it is empty.
+   * Records `start` (inclusive) to `end` (exclusive) in order. Never reads
+   * past the query's reachable count, so a page beyond it is empty.
    */
   async slice(
     start: number,
     end: number,
-    options?: EtdCallOptions,
-  ): Promise<EtdRecord[]> {
+    options?: SourceCallOptions,
+  ): Promise<SourceRecord[]> {
     const target = Math.min(end, this.query.result.reachable);
     if (start >= target) return [];
 
@@ -54,7 +55,7 @@ export class EtdPager {
     return this.records.slice(start, target);
   }
 
-  private readTo(target: number, options?: EtdCallOptions): Promise<void> {
+  private readTo(target: number, options?: SourceCallOptions): Promise<void> {
     const read = this.queue.then(async () => {
       while (this.records.length < target && !this.exhausted) {
         const count = Math.min(target - this.records.length, MAX_BATCH);

@@ -28,27 +28,6 @@ describe('etdRequestFromParams', () => {
     expect(request.filters.year).to.deep.equal({ min: 1995, max: 2005 });
   });
 
-  it('keeps an open-ended year range open', () => {
-    const request = etdRequestFromParams({
-      query: 'climate',
-      filters: { year: { '2015': FilterConstraint.GREATER_OR_EQUAL } },
-    });
-    expect(request.filters.year).to.deep.equal({ min: 2015 });
-  });
-
-  it('makes exclusive year bounds inclusive', () => {
-    const request = etdRequestFromParams({
-      query: 'climate',
-      filters: {
-        year: {
-          '1995': FilterConstraint.GREATER_THAN,
-          '2005': FilterConstraint.LESS_THAN,
-        },
-      },
-    });
-    expect(request.filters.year).to.deep.equal({ min: 1996, max: 2004 });
-  });
-
   it('widens a month-precision date range to whole years', () => {
     const request = etdRequestFromParams({
       query: 'climate',
