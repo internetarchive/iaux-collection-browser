@@ -6,6 +6,7 @@ import {
   nothing,
   TemplateResult,
 } from 'lit';
+import { localized } from '@lit/localize';
 import { customElement, property } from 'lit/decorators.js';
 import {
   TILE_OVERLAY_ICONS,
@@ -14,6 +15,7 @@ import {
 } from '../../models';
 
 @customElement('text-overlay')
+@localized()
 export class TextOverlay extends LitElement {
   @property({ type: String }) type?: TileOverlayType;
 

@@ -7,12 +7,13 @@ import {
   TemplateResult,
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { favoriteFilledIcon } from '../assets/img/icons/favorite-filled';
 import { favoriteUnfilledIcon } from '../assets/img/icons/favorite-unfilled';
 import { srOnlyStyle } from '../styles/sr-only';
 
 @customElement('review-block')
+@localized()
 export class ReviewBlock extends LitElement {
   @property({ type: String }) title = '';
 

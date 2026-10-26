@@ -1,10 +1,11 @@
 import { css, html, nothing } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { BaseTileComponent } from '../base-tile-component';
 
 @customElement('tile-list-compact-header')
+@localized()
 export class TileListCompactHeader extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:

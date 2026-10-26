@@ -2,7 +2,7 @@
  * Replaces Petabox www/common/Util::number_format()
  * For positive numbers only.
  */
-import { msg, str } from '@lit/localize';
+import { getLocale } from './get-locale';
 
 export type NumberFormat =
   | 'short' // 1.2 [K | thousand]
@@ -10,86 +10,39 @@ export type NumberFormat =
 export type LabelFormat =
   | 'short' // [1.2]K
   | 'long'; // [1.2] thousand
-type Divisor = 1_000_000_000 | 1_000_000 | 1_000 | 1;
 
 /**
- * Return the magnitude of a number.
+ * Whether a number should be abbreviated to a compact form (e.g. "77K")
+ * rather than shown in full. Millions and up always abbreviate; thousands
+ * only abbreviate when the caller asked for the short NumberFormat.
  */
-function magnitude(number: number, numberFormat: NumberFormat): Divisor {
-  let divisor: Divisor = 1;
-  if (number >= 1_000_000_000) {
-    divisor = 1_000_000_000;
-  } else if (number >= 1_000_000) {
-    divisor = 1_000_000;
-  } else if (number >= 1_000 && numberFormat === 'short') {
-    divisor = 1_000;
-  }
-  return divisor;
-}
-
-/**
- * Round a number given passed magnitude.
- * Significant digits of value less than 10 get a decimal.
- */
-function round(number: number = 0, divisor: Divisor): number {
-  const result = number / divisor;
-  const roundToOne = result < 10;
-  let rounded: number = 0;
-  if (roundToOne) {
-    rounded = Math.round((result + Number.EPSILON) * 10) / 10;
-  } else {
-    rounded = Math.round(result);
-  }
-  return rounded;
-}
-
-/**
- * Return a label for a number and format.
- */
-function labelize(
-  rounded: number,
-  divisor: Divisor,
-  format: LabelFormat,
-  locale: string,
-): string {
-  switch (divisor) {
-    case 1_000_000_000:
-      if (format === 'short') {
-        return msg(str`${rounded}B`);
-      }
-      return msg(str`${rounded} billion`);
-    case 1_000_000:
-      if (format === 'short') {
-        return msg(str`${rounded}M`);
-      }
-      return msg(str`${rounded} million`);
-    case 1_000:
-      if (format === 'short') {
-        return msg(str`${rounded}K`);
-      }
-      return msg(str`${rounded} thousand`);
-
-    default:
-      return new Intl.NumberFormat(locale).format(rounded);
-  }
+function shouldAbbreviate(number: number, numberFormat: NumberFormat): boolean {
+  if (number >= 1_000_000) return true;
+  return numberFormat === 'short' && number >= 1_000;
 }
 
 /**
  * Format a "count" number into short "icon" or longer text string.
- * For positive numbers only.
+ * For positive numbers only. Uses `Intl.NumberFormat` so both the digit
+ * grouping and the abbreviation word/letter (e.g. "K" vs "mil") follow the
+ * given locale's conventions.
  */
 export function formatCount(
   count: number | undefined,
   numberFormat: NumberFormat = 'long',
   labelFormat: LabelFormat = 'short',
-  locale: string = 'en-US',
+  locale: string = getLocale(),
 ): string {
   // Return blank if undefined
   const number = count ?? -1;
   if (number < 0) {
     return '';
   }
-  const divisor = magnitude(number, numberFormat);
-  const rounded = round(number, divisor);
-  return labelize(rounded, divisor, labelFormat, locale);
+  if (shouldAbbreviate(number, numberFormat)) {
+    return new Intl.NumberFormat(locale, {
+      notation: 'compact',
+      compactDisplay: labelFormat === 'short' ? 'short' : 'long',
+    }).format(number);
+  }
+  return new Intl.NumberFormat(locale).format(number);
 }

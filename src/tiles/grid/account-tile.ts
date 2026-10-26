@@ -1,6 +1,6 @@
 import { css, html, nothing, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { BaseTileComponent } from '../base-tile-component';
 
 import { baseTileStyles } from './styles/tile-grid-shared-styles';
@@ -8,6 +8,7 @@ import '../image-block';
 import './tile-stats';
 
 @customElement('account-tile')
+@localized()
 export class AccountTile extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:
