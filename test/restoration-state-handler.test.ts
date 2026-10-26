@@ -1,6 +1,10 @@
 import { SearchType } from '@internetarchive/search-service';
 import { expect } from '@open-wc/testing';
-import { SortField, getDefaultSelectedFacets } from '../src/models';
+import {
+  SelectedFacets,
+  SortField,
+  getDefaultSelectedFacets,
+} from '../src/models';
 import { RestorationStateHandler } from '../src/restoration-state-handler';
 
 describe('Restoration state handler', () => {
@@ -173,6 +177,22 @@ describe('Restoration state handler', () => {
             .state,
         ).to.be.undefined;
       });
+    });
+
+    it('skips a facet group that has no bucket map', async () => {
+      const handler = new RestorationStateHandler({ context: 'search' });
+      const selectedFacets = {
+        creator: undefined,
+      } as unknown as SelectedFacets;
+
+      handler['setSelectedFacetState'](
+        selectedFacets,
+        'creator',
+        'x',
+        'selected',
+      );
+
+      expect(selectedFacets).to.deep.equal({ creator: undefined });
     });
   });
 
