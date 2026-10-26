@@ -1,16 +1,24 @@
 import { LitElement, html, css, CSSResultGroup } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { localized, msg, str } from '@lit/localize';
+import { getLocale } from '../utils/get-locale';
 
 @customElement('alpha-bar-tooltip')
+@localized()
 export class AlphaBarTooltip extends LitElement {
   @property({ type: Number }) numResults: number = 0;
 
   render() {
+    const formattedCount = new Intl.NumberFormat(getLocale()).format(
+      this.numResults,
+    );
     return html`
       <div id="tooltip-container" role="tooltip">
         <div id="arrow"></div>
         <div id="tooltip-text">
-          ${this.numResults} ${this.numResults === 1 ? 'result' : 'results'}
+          ${this.numResults === 1
+            ? msg(str`${formattedCount} result`)
+            : msg(str`${formattedCount} results`)}
         </div>
       </div>
     `;

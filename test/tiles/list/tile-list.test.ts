@@ -170,6 +170,40 @@ describe('List Tile', () => {
     expect(viewsRow?.textContent?.trim()).to.equal('All-time views:  50');
   });
 
+  it('should hide average rating and review count when they are zero', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list .model=${{ averageRating: 0, commentCount: 0 }}></tile-list>
+    `);
+
+    const metadataRows = [
+      ...(el.shadowRoot?.querySelectorAll('.metadata') ?? []),
+    ];
+    expect(metadataRows.some(row => row.textContent?.includes('Avg Rating'))).to
+      .be.false;
+    expect(metadataRows.some(row => row.textContent?.includes('Reviews'))).to.be
+      .false;
+  });
+
+  it('should render a locale-formatted average rating and review count', async () => {
+    const el = await fixture<TileList>(html`
+      <tile-list
+        .model=${{ averageRating: 4.5, commentCount: 12345 }}
+      ></tile-list>
+    `);
+
+    const metadataRows = [
+      ...(el.shadowRoot?.querySelectorAll('.metadata') ?? []),
+    ];
+    const ratingRow = metadataRows.find(row =>
+      row.textContent?.includes('Avg Rating'),
+    );
+    const reviewsRow = metadataRows.find(row =>
+      row.textContent?.includes('Reviews'),
+    );
+    expect(ratingRow?.textContent?.trim()).to.equal('Avg Rating:  4.5');
+    expect(reviewsRow?.textContent?.trim()).to.equal('Reviews:  12,345');
+  });
+
   it('should render published date when sorting by it', async () => {
     const model: Partial<TileModel> = {
       dateAdded: new Date(2010, 0, 2),
