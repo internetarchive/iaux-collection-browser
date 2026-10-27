@@ -19,6 +19,17 @@ export default defineConfig({
     port: 8080,
     open: true,
     cors: true,
+    proxy: {
+      // The ETD index for the ?search_service=etd demo. Its files aren't
+      // CORS-readable yet, so the dev server fetches them for the page.
+      // archive.org/download redirects to whichever server holds the item.
+      '/etd-index': {
+        target: 'https://archive.org',
+        changeOrigin: true,
+        followRedirects: true,
+        rewrite: path => path.replace(/^\/etd-index/, '/download/etd-search'),
+      },
+    },
   },
   plugins: [
     basicSsl({

@@ -15,12 +15,20 @@ import '@internetarchive/collection-browser';
 </collection-browser>
 ```
 
-## Local Demo with `web-dev-server`
+## Local Demo with Vite
 ```bash
 pnpm install
 pnpm start
 ```
 To run a local development server that serves the basic demo located in `index.html`
+
+### ETD search demo
+
+[https://local.archive.org:8080/?search_service=etd](https://local.archive.org:8080/?search_service=etd) swaps archive.org search for the
+theses & dissertations index from the `etd-search` item, searched in the browser with no backend.
+The index files aren't CORS-readable yet, so the dev server proxies them at `/etd-index`. This only
+works under `pnpm start`; the gh-pages demo has no proxy. Add `&etd_base_url=<url>` to read an index
+from somewhere else.
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run

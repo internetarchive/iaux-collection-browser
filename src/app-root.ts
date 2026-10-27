@@ -26,7 +26,9 @@ import { StaticEtdEngine } from './etd/engine/static-etd-engine';
 export class AppRoot extends LitElement {
   /**
    * `?search_service=etd` browses the ETD theses & dissertations index
-   * (searched in the browser, no backend) instead of archive.org.
+   * (searched in the browser, no backend) instead of archive.org. The index
+   * is read through the dev server's /etd-index proxy (see vite.config.ts);
+   * `etd_base_url` points it somewhere else.
    */
   private readonly isEtdSearch =
     new URL(window.location.href).searchParams.get('search_service') === 'etd';
@@ -96,7 +98,7 @@ export class AppRoot extends LitElement {
     if (this.isEtdSearch) {
       return new EtdSearchService({
         engine: new StaticEtdEngine({
-          baseUrl: params.get('etd_base_url') ?? undefined,
+          baseUrl: params.get('etd_base_url') ?? '/etd-index/',
         }),
       });
     }
