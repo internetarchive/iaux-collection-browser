@@ -8,7 +8,10 @@ import {
 } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { localized, msg, str } from '@lit/localize';
-import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
+import type {
+  IADropdown,
+  OptionInterface,
+} from '@internetarchive/elements/ia-dropdown/ia-dropdown';
 import type { SortDirection } from '@internetarchive/search-service';
 import {
   CollectionDisplayMode,
@@ -28,7 +31,7 @@ import { listIcon } from './img/list';
 import { compactIcon } from './img/compact';
 import { srOnlyStyle } from '../styles/sr-only';
 
-import '@internetarchive/ia-dropdown';
+import '@internetarchive/elements/ia-dropdown/ia-dropdown';
 import './alpha-bar';
 
 type AlphaSelector = 'creator' | 'title';
@@ -103,7 +106,7 @@ export class SortFilterBar extends LitElement {
 
   /** The single, consolidated dropdown component containing all available options */
   @query('#sort-dropdown')
-  private sortOptionsDropdown!: IaDropdown;
+  private sortOptionsDropdown!: IADropdown;
 
   render() {
     return html`
@@ -293,10 +296,10 @@ export class SortFilterBar extends LitElement {
   private getSortDropdown(options: {
     displayName: string;
     id: string;
-    dropdownOptions: optionInterface[];
+    dropdownOptions: OptionInterface[];
     selectedOption?: string;
     selected: boolean;
-    onOptionSelected?: (e: CustomEvent<{ option: optionInterface }>) => void;
+    onOptionSelected?: (e: CustomEvent<{ option: OptionInterface }>) => void;
     onDropdownClick?: (e: PointerEvent) => void;
   }): TemplateResult {
     return html`
@@ -324,7 +327,7 @@ export class SortFilterBar extends LitElement {
   }
 
   /** Generates a single dropdown option object for the given sort field */
-  private getDropdownOption(sortField: SortField): optionInterface {
+  private getDropdownOption(sortField: SortField): OptionInterface {
     return {
       id: sortField,
       label: html`
@@ -336,7 +339,7 @@ export class SortFilterBar extends LitElement {
   }
 
   /** Handler for when a new sort dropdown option is selected */
-  private sortOptionSelected(e: CustomEvent<{ option: optionInterface }>) {
+  private sortOptionSelected(e: CustomEvent<{ option: OptionInterface }>) {
     this.dropdownBackdropVisible = false;
 
     const sortField = e.detail.option.id as SortField;

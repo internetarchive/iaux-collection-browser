@@ -41,11 +41,9 @@
   "dependencies": {
     "@a11y/focus-trap": "^1.0.5",
     "@internetarchive/analytics-manager": "^0.1.4",
-    "@internetarchive/elements": "^1.1.0",
+    "@internetarchive/elements": "^1.5.0",
     "@internetarchive/feature-feedback": "^1.0.0",
     "@internetarchive/field-parsers": "^1.0.0",
-    "@internetarchive/ia-clearable-text-input": "^1.2.0",
-    "@internetarchive/ia-dropdown": "^2.0.0",
     "@internetarchive/iaux-item-metadata": "^1.0.5",
     "@internetarchive/infinite-scroller": "^2.0.0",
     "@internetarchive/modal-manager": "^2.0.6",
