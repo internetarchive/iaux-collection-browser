@@ -1,0 +1,232 @@
+import { expect } from '@open-wc/testing';
+import { StaticEtdEngine } from '../../../src/etd/engine/static-etd-engine';
+import { EtdSearchService } from '../../../src/etd/etd-search-service';
+import { FIXTURE_BASE, buildFixtureIndex } from './fixture-index';
+import type { FixtureOptions, FixtureThesis } from './fixture-index';
+
+const THESES: FixtureThesis[] = [
+  {
+    title: 'Glacier dynamics in Greenland',
+    creators: 'Okafor, Ada',
+    abstract: 'We model sea ice retreat along the coast.',
+    institution: 'University of Toronto',
+    date: '2014',
+    domain: 'tspace.library.utoronto.ca',
+    url: 'https://tspace.library.utoronto.ca/handle/1807/1',
+  },
+  {
+    title: 'Sea ice and the Arctic carbon budget',
+    creators: 'Lindqvist, Sven',
+    abstract: 'Carbon flux under seasonal <i>sea ice</i> &amp; leads.',
+    date: '2019-05',
+    domain: 'dspace.mit.edu',
+    url: 'https://dspace.mit.edu/handle/1721.1/2',
+  },
+  {
+    title: 'Medieval trade routes',
+    creators: 'Ice, Mara',
+    abstract: 'Merchants crossed the sea in winter.',
+    date: '2001',
+    domain: 'repository.example.edu',
+    // longer than the stub's 88-byte url field: only url.bin has it whole
+    url: `https://repository.example.edu/bitstream/handle/${'x'.repeat(80)}/thesis.pdf`,
+  },
+  {
+    title: 'Coastal erosion',
+    creators: 'Mbeki, Thandi',
+    date: '1998',
+    url: 'https://repo.example.org/4',
+  },
+];
+
+async function engineOver(theses = THESES, options?: FixtureOptions) {
+  const index = await buildFixtureIndex(theses, options);
+  const engine = new StaticEtdEngine({
+    baseUrl: FIXTURE_BASE,
+    fetch: index.fetch,
+  });
+  await engine.ready;
+  return { engine, index };
+}
+
+const titles = (records: { title: string }[]) => records.map(r => r.title);
+
+describe('StaticEtdEngine', () => {
+  it('ranks a title match above the same words in an abstract', async () => {
+    const { engine } = await engineOver();
+    const query = await engine.query('sea ice', {});
+
+    const records = await query.next(10);
+    expect(titles(records)[0]).to.equal('Sea ice and the Arctic carbon budget');
+    expect(titles(records)).to.include('Glacier dynamics in Greenland');
+    // "Coastal erosion" has neither word
+    expect(query.result).to.deep.equal({
+      total: 3,
+      approximate: false,
+      reachable: 3,
+    });
+  });
+
+  it('finds authors, and ranks an author match above a title word', async () => {
+    const { engine } = await engineOver();
+    const query = await engine.query('ice', {});
+    const [first] = await query.next(1);
+    expect(first.creators).to.equal('Ice, Mara');
+  });
+
+  it('searches one field with field syntax', async () => {
+    const { engine } = await engineOver();
+    const query = await engine.query('title:ice', {});
+    expect(titles(await query.next(10))).to.deep.equal([
+      'Sea ice and the Arctic carbon budget',
+    ]);
+  });
+
+  it('applies AND and NOT', async () => {
+    const { engine } = await engineOver();
+    const and = await engine.query('sea AND carbon', {});
+    expect(titles(await and.next(10))).to.deep.equal([
+      'Sea ice and the Arctic carbon budget',
+    ]);
+    const not = await engine.query('sea NOT carbon', {});
+    expect(titles(await not.next(10))).not.to.include(
+      'Sea ice and the Arctic carbon budget',
+    );
+  });
+
+  it('builds full records: whole url, plain-text abstract, stub fields', async () => {
+    const { engine } = await engineOver();
+    const [record] = await (await engine.query('title:medieval', {})).next(1);
+    expect(record).to.deep.equal({
+      docId: 3,
+      title: 'Medieval trade routes',
+      creators: 'Ice, Mara',
+      date: '2001',
+      domain: 'repository.example.edu',
+      url: THESES[2].url,
+      snippet: 'Merchants crossed the sea in winter.',
+    });
+
+    const [html] = await (await engine.query('title:arctic', {})).next(1);
+    expect(html.snippet).to.equal(
+      'Carbon flux under seasonal sea ice & leads.',
+    );
+  });
+
+  it('leaves out the snippet when a thesis has no abstract', async () => {
+    const { engine } = await engineOver();
+    const [record] = await (await engine.query('title:coastal', {})).next(1);
+    expect(record.snippet).to.be.undefined;
+  });
+
+  it('pages through the ranking with its cursor', async () => {
+    const { engine } = await engineOver();
+    const query = await engine.query('sea ice', {});
+    const first = await query.next(2);
+    const rest = await query.next(10);
+    expect(first).to.have.length(2);
+    expect(rest).to.have.length(1);
+    expect(await query.next(10)).to.deep.equal([]);
+    const all = [...first, ...rest].map(r => r.docId);
+    expect(new Set(all).size).to.equal(3);
+  });
+
+  it('does not advance the cursor when a page read fails', async () => {
+    const { engine, index } = await engineOver();
+    const query = await engine.query('sea ice', {});
+    await query.next(1);
+
+    // One record is one plain Range read, with no multi-range fallback.
+    index.failNext('stubs.bin');
+    let failed = false;
+    try {
+      await query.next(1);
+    } catch {
+      failed = true;
+    }
+    expect(failed).to.be.true;
+
+    // The retry starts at the record that failed: both remaining records.
+    const retried = await query.next(10);
+    expect(retried).to.have.length(2);
+  });
+
+  it('runs a query in three rounds of requests', async () => {
+    const { engine, index } = await engineOver();
+    const before = index.requests.length;
+    const query = await engine.query('sea ice carbon', {});
+    // dict.bin buckets in one request, all posting lists in one request
+    expect(index.requests.length - before).to.equal(2);
+
+    const beforePage = index.requests.length;
+    await query.next(10);
+    // stubs, url.dir, snip.dir, then url.bin and snippets.bin
+    expect(index.requests.length - beforePage).to.equal(5);
+  });
+
+  it('returns nothing for words not in the index', async () => {
+    const { engine } = await engineOver();
+    const query = await engine.query('zeppelin', {});
+    expect(query.result.total).to.equal(0);
+    expect(await query.next(10)).to.deep.equal([]);
+  });
+
+  it('marks results approximate when a truncated list is ANDed', async () => {
+    // keep 1 posting per term: "sea" occurs in three theses
+    const { engine } = await engineOver(THESES, { keep: 1 });
+    const query = await engine.query('sea AND ice', {});
+    expect(query.result.approximate).to.be.true;
+  });
+
+  it('refuses filters it has not been ported for yet, clearly', async () => {
+    const { engine } = await engineOver();
+    let structured: unknown;
+    try {
+      await engine.query('ice', { year: { min: 2000 } });
+    } catch (err) {
+      structured = err;
+    }
+    expect((structured as Error).message).to.match(/not ported yet/);
+
+    let inQuery: unknown;
+    try {
+      await engine.query('ice country:CA', {});
+    } catch (err) {
+      inQuery = err;
+    }
+    expect((inQuery as Error).message).to.equal(
+      'ETD engine: country: filters are not ported yet',
+    );
+  });
+
+  it('reads a single record, and nothing for an id outside the index', async () => {
+    const { engine } = await engineOver();
+    expect((await engine.record(4))?.title).to.equal('Coastal erosion');
+    expect(await engine.record(99)).to.be.undefined;
+  });
+
+  it('works without a snippets file', async () => {
+    const { engine } = await engineOver(THESES, { withSnippets: false });
+    const [record] = await (await engine.query('title:medieval', {})).next(1);
+    expect(record.title).to.equal('Medieval trade routes');
+    expect(record.snippet).to.be.undefined;
+  });
+
+  it('serves collection-browser through EtdSearchService', async () => {
+    const index = await buildFixtureIndex(THESES);
+    const service = new EtdSearchService({
+      engine: new StaticEtdEngine({
+        baseUrl: FIXTURE_BASE,
+        fetch: index.fetch,
+      }),
+    });
+
+    const result = await service.search({ query: 'sea ice', page: 1, rows: 2 });
+    const response = result.success!.response;
+    expect(response.totalResults).to.equal(3);
+    expect(response.results.map(hit => hit.identifier)).to.deep.equal([
+      'etd-2',
+      'etd-1',
+    ]);
+  });
+});

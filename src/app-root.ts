@@ -19,9 +19,18 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
+import { EtdSearchService } from './etd/etd-search-service';
+import { StaticEtdEngine } from './etd/engine/static-etd-engine';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
+  /**
+   * `?search_service=etd` browses the ETD theses & dissertations index
+   * (searched in the browser, no backend) instead of archive.org.
+   */
+  private readonly isEtdSearch =
+    new URL(window.location.href).searchParams.get('search_service') === 'etd';
+
   private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
 
@@ -84,6 +93,13 @@ export class AppRoot extends LitElement {
 
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
+    if (this.isEtdSearch) {
+      return new EtdSearchService({
+        engine: new StaticEtdEngine({
+          baseUrl: params.get('etd_base_url') ?? undefined,
+        }),
+      });
+    }
     return new SearchService({
       includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
@@ -575,7 +591,7 @@ export class AppRoot extends LitElement {
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
-          .baseNavigationUrl=${'https://archive.org'}
+          .baseNavigationUrl=${this.isEtdSearch ? '' : 'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
