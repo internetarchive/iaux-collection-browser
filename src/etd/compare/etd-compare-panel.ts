@@ -302,19 +302,26 @@ export class EtdComparePanel extends LitElement {
     return html`
       <details open>
         <summary>Top ${this.depth}, ours vs ${against}</summary>
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Ours</th>
-              <th scope="col">Live</th>
-              <th scope="col">Difference</th>
-              <th scope="col">Title</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${diff.docs.map(doc => this.rowTemplate(doc))}
-          </tbody>
-        </table>
+        <div
+          class="table-scroll"
+          role="region"
+          aria-label="Top ${this.depth}, ours vs ${against}"
+          tabindex="0"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Ours</th>
+                <th scope="col">Live</th>
+                <th scope="col">Difference</th>
+                <th scope="col">Title</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${diff.docs.map(doc => this.rowTemplate(doc))}
+            </tbody>
+          </table>
+        </div>
       </details>
     `;
   }
@@ -326,7 +333,11 @@ export class EtdComparePanel extends LitElement {
       <tr class=${kind}>
         <td>${doc.ours ?? '–'}</td>
         <td>${doc.theirs ?? '–'}</td>
-        <td>${label}</td>
+        <td>
+          ${kind === 'only-ours' || kind === 'only-live'
+            ? html`<span class="badge">${label}</span>`
+            : label}
+        </td>
         <td>${title}</td>
       </tr>
     `;
@@ -363,6 +374,12 @@ export class EtdComparePanel extends LitElement {
       color: #b00;
     }
 
+    .table-scroll {
+      max-height: 45vh;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
+
     table {
       border-collapse: collapse;
       width: 100%;
@@ -375,16 +392,51 @@ export class EtdComparePanel extends LitElement {
       border-bottom: 1px solid #eee;
     }
 
-    tr.moved {
-      background: #fff6d6;
+    td:nth-child(-n + 3) {
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #f4f4f4;
+    }
+
+    /* Moved rows are most rows, so only the one-side rows get a highlight. */
+    tr.moved td:nth-child(3) {
+      color: #6b5600;
+    }
+
+    tr.only-ours,
+    tr.only-live {
+      font-weight: 600;
     }
 
     tr.only-ours {
-      background: #e3efff;
+      background: #dcebff;
+      box-shadow: inset 4px 0 #2c6bc9;
     }
 
     tr.only-live {
-      background: #ffe3e3;
+      background: #ffe0e0;
+      box-shadow: inset 4px 0 #c03a3a;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0 0.6rem;
+      border-radius: 1rem;
+      color: white;
+      font-size: 1.2rem;
+      white-space: nowrap;
+    }
+
+    tr.only-ours .badge {
+      background: #2c6bc9;
+    }
+
+    tr.only-live .badge {
+      background: #c03a3a;
     }
 
     iframe {
