@@ -120,7 +120,31 @@ export class AppRoot extends LitElement {
     });
   }
 
-  /** The ETD demo's own search box; with etd_compare it searches both pages. */
+  /**
+   * The ETD demo's controls, grouped: its own search box and, with
+   * etd_compare, the panel comparing against the live page.
+   */
+  private get etdControlsTemplate() {
+    return html`
+      <section id="etd-controls" aria-labelledby="etd-controls-heading">
+        <h2 id="etd-controls-heading">
+          ETD theses search
+          <span class="etd-controls-note">
+            static index in the browser, no search backend
+          </span>
+        </h2>
+        ${this.etdSearchTemplate}
+        ${this.isEtdCompare
+          ? html`<etd-compare-panel
+              .engine=${this.etdEngine}
+              .query=${this.searchQuery}
+            ></etd-compare-panel>`
+          : nothing}
+      </section>
+    `;
+  }
+
+  /** The ETD search box; with etd_compare it searches both pages. */
   private get etdSearchTemplate() {
     return html`
       <form id="etd-search" role="search" @submit=${this.etdSearchPressed}>
@@ -637,13 +661,7 @@ export class AppRoot extends LitElement {
           Toggle Search Controls
         </button>
       </div>
-      ${this.isEtdSearch ? this.etdSearchTemplate : nothing}
-      ${this.isEtdCompare
-        ? html`<etd-compare-panel
-            .engine=${this.etdEngine}
-            .query=${this.searchQuery}
-          ></etd-compare-panel>`
-        : nothing}
+      ${this.isEtdSearch ? this.etdControlsTemplate : nothing}
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
@@ -1172,21 +1190,58 @@ export class AppRoot extends LitElement {
     .dev-tool-container {
       position: relative;
     }
+    #etd-controls {
+      margin: 1rem;
+      padding: 1rem 1.5rem 0.5rem;
+      background: #eef3f9;
+      border: 1px solid #b6c8dd;
+      border-left: 6px solid #2c5f8f;
+      border-radius: 4px;
+    }
+
+    #etd-controls h2 {
+      margin: 0 0 0.8rem;
+      /* Clear the fixed search-controls toggle, at left: 77.4% */
+      max-width: calc(77.4% - 3rem);
+      font-size: 2rem;
+      color: #1d3f61;
+    }
+
+    .etd-controls-note {
+      margin-left: 0.5rem;
+      font-size: 1.3rem;
+      font-weight: normal;
+      color: #4a5a6a;
+    }
+
     #etd-search {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 0.5rem;
-      margin: 1rem;
-      /* Clear the fixed search-controls toggle, at left: 77.4% */
-      max-width: calc(77.4% - 2rem);
       font-size: 1.6rem;
     }
 
     #etd-query-field {
       flex: 1 1 30rem;
+      font-size: 1.8rem;
+      padding: 0.5rem 0.8rem;
+      border: 1px solid #8aa3bd;
+      border-radius: 4px;
+    }
+
+    #etd-search button {
       font-size: 1.6rem;
-      padding: 0.4rem;
+      padding: 0.5rem 1.4rem;
+      border: none;
+      border-radius: 4px;
+      background: #2c5f8f;
+      color: white;
+      cursor: pointer;
+    }
+
+    #etd-controls etd-compare-panel {
+      background: white;
     }
 
     #dev-tools {
