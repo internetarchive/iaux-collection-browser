@@ -28,7 +28,11 @@ To run a local development server that serves the basic demo located in `index.h
 theses & dissertations index from the `etd-search` item, searched in the browser with no backend.
 The index files aren't CORS-readable yet, so the dev server proxies them at `/etd-index`. This only
 works under `pnpm start`; the gh-pages demo has no proxy. Add `&etd_base_url=<url>` to read an index
-from somewhere else.
+from somewhere else. The demo's search controls start hidden in this mode (Toggle Search Controls
+shows them); search from the box at the top instead.
+
+Add `&etd_compare=1` to run each search on the live etd-search page too (in a drawer) and show how
+the two rankings differ: totals, top-N overlap, and each result that moved or only one side has.
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run

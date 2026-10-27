@@ -21,6 +21,7 @@ import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
 import { EtdSearchService } from './etd/etd-search-service';
 import { StaticEtdEngine } from './etd/engine/static-etd-engine';
+import './etd/compare/etd-compare-panel';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -32,6 +33,16 @@ export class AppRoot extends LitElement {
    */
   private readonly isEtdSearch =
     new URL(window.location.href).searchParams.get('search_service') === 'etd';
+
+  /**
+   * With `&etd_compare=1`, each ETD search also runs on the live etd-search
+   * page, and a panel shows how the two rankings differ.
+   */
+  private readonly isEtdCompare =
+    this.isEtdSearch &&
+    new URL(window.location.href).searchParams.get('etd_compare') === '1';
+
+  private etdEngine?: StaticEtdEngine;
 
   private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
@@ -96,11 +107,10 @@ export class AppRoot extends LitElement {
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
     if (this.isEtdSearch) {
-      return new EtdSearchService({
-        engine: new StaticEtdEngine({
-          baseUrl: params.get('etd_base_url') ?? '/etd-index/',
-        }),
+      this.etdEngine = new StaticEtdEngine({
+        baseUrl: params.get('etd_base_url') ?? '/etd-index/',
       });
+      return new EtdSearchService({ engine: this.etdEngine });
     }
     return new SearchService({
       includeCredentials: false,
@@ -108,6 +118,33 @@ export class AppRoot extends LitElement {
       servicePath: params.get('search_service_path') ?? undefined,
       debuggingEnabled: !!params.get('debugging'),
     });
+  }
+
+  /** The ETD demo's own search box; with etd_compare it searches both pages. */
+  private get etdSearchTemplate() {
+    return html`
+      <form id="etd-search" role="search" @submit=${this.etdSearchPressed}>
+        <label for="etd-query-field">
+          ${this.isEtdCompare
+            ? 'Search theses, here and on the live etd-search page:'
+            : 'Search theses:'}
+        </label>
+        <input
+          type="search"
+          id="etd-query-field"
+          name="query"
+          .value=${this.searchQuery ?? ''}
+        />
+        <button type="submit">Search</button>
+      </form>
+    `;
+  }
+
+  private etdSearchPressed(e: SubmitEvent) {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const field = form.elements.namedItem('query') as HTMLInputElement;
+    this.searchQuery = field.value;
   }
 
   private searchPressed(e: Event) {
@@ -157,9 +194,19 @@ export class AppRoot extends LitElement {
   }
 
   private get getClass() {
-    const searchParams = new URLSearchParams(window.location.search);
+    return this.devToolsHidden ? 'hidden' : '';
+  }
 
-    return searchParams.get('hide-dev-tools') ? 'hidden' : '';
+  /**
+   * Whether the search controls are hidden: `hide-dev-tools` says so, and
+   * without it they start hidden for the ETD demo, which has its own box.
+   */
+  private get devToolsHidden(): boolean {
+    const param = new URLSearchParams(window.location.search).get(
+      'hide-dev-tools',
+    );
+    if (param === null) return this.isEtdSearch;
+    return !!param && param !== 'false';
   }
 
   render() {
@@ -590,6 +637,13 @@ export class AppRoot extends LitElement {
           Toggle Search Controls
         </button>
       </div>
+      ${this.isEtdSearch ? this.etdSearchTemplate : nothing}
+      ${this.isEtdCompare
+        ? html`<etd-compare-panel
+            .engine=${this.etdEngine}
+            .query=${this.searchQuery}
+          ></etd-compare-panel>`
+        : nothing}
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
@@ -713,10 +767,12 @@ export class AppRoot extends LitElement {
     const pageUrl = new URL(window.location.href);
     const { searchParams } = pageUrl;
 
-    if (searchParams.get('hide-dev-tools')) {
+    // Leave the param off when the new state is the default.
+    const hide = !this.devToolsHidden;
+    if (hide === this.isEtdSearch) {
       searchParams.delete('hide-dev-tools');
     } else {
-      searchParams.set('hide-dev-tools', 'true');
+      searchParams.set('hide-dev-tools', String(hide));
     }
 
     this.shadowRoot?.getElementById('dev-tools')?.classList.toggle('hidden');
@@ -1116,6 +1172,23 @@ export class AppRoot extends LitElement {
     .dev-tool-container {
       position: relative;
     }
+    #etd-search {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1rem;
+      /* Clear the fixed search-controls toggle, at left: 77.4% */
+      max-width: calc(77.4% - 2rem);
+      font-size: 1.6rem;
+    }
+
+    #etd-query-field {
+      flex: 1 1 30rem;
+      font-size: 1.6rem;
+      padding: 0.4rem;
+    }
+
     #dev-tools {
       position: relative;
       top: 0;
