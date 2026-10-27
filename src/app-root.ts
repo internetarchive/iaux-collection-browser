@@ -29,18 +29,11 @@ export class AppRoot extends LitElement {
    * `?search_service=etd` browses the ETD theses & dissertations index
    * (searched in the browser, no backend) instead of archive.org. The index
    * is read through the dev server's /etd-index proxy (see vite.config.ts);
-   * `etd_base_url` points it somewhere else.
+   * `etd_base_url` points it somewhere else. Each search also runs on the
+   * live etd-search page, and a panel shows how the two rankings differ.
    */
   private readonly isEtdSearch =
     new URL(window.location.href).searchParams.get('search_service') === 'etd';
-
-  /**
-   * With `&etd_compare=1`, each ETD search also runs on the live etd-search
-   * page, and a panel shows how the two rankings differ.
-   */
-  private readonly isEtdCompare =
-    this.isEtdSearch &&
-    new URL(window.location.href).searchParams.get('etd_compare') === '1';
 
   private etdEngine?: StaticEtdEngine;
 
@@ -121,8 +114,8 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * The ETD demo's controls, grouped: its own search box and, with
-   * etd_compare, the panel comparing against the live page.
+   * The ETD demo's controls, grouped: its own search box and the panel
+   * comparing against the live page.
    */
   private get etdControlsTemplate() {
     return html`
@@ -134,24 +127,20 @@ export class AppRoot extends LitElement {
           </span>
         </h2>
         ${this.etdSearchTemplate}
-        ${this.isEtdCompare
-          ? html`<etd-compare-panel
-              .engine=${this.etdEngine}
-              .query=${this.searchQuery}
-            ></etd-compare-panel>`
-          : nothing}
+        <etd-compare-panel
+          .engine=${this.etdEngine}
+          .query=${this.searchQuery}
+        ></etd-compare-panel>
       </section>
     `;
   }
 
-  /** The ETD search box; with etd_compare it searches both pages. */
+  /** The ETD search box, which searches both pages. */
   private get etdSearchTemplate() {
     return html`
       <form id="etd-search" role="search" @submit=${this.etdSearchPressed}>
         <label for="etd-query-field">
-          ${this.isEtdCompare
-            ? 'Search theses, here and on the live etd-search page:'
-            : 'Search theses:'}
+          Search theses, here and on the live etd-search page:
         </label>
         <input
           type="search"

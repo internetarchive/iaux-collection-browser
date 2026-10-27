@@ -31,8 +31,8 @@ works under `pnpm start`; the gh-pages demo has no proxy. Add `&etd_base_url=<ur
 from somewhere else. The demo's search controls start hidden in this mode (Toggle Search Controls
 shows them); search from the box at the top instead.
 
-Add `&etd_compare=1` to run each search on the live etd-search page too (in a drawer) and show how
-the two rankings differ: totals, top-N overlap, and each result that moved or only one side has.
+Each search also runs on the live etd-search page (in a drawer), and a panel shows how the two
+rankings differ: totals, top-N overlap, and each result that moved or only one side has.
 
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run
