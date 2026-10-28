@@ -9,6 +9,8 @@ import type {
 import { EtdDictionary } from './dictionary';
 import { EtdIndexFiles } from './index-files';
 import { markTerms, termsToMark } from './mark-terms';
+import { boostTokens, phraseBoost } from './phrase-boost';
+import { EtdPosfwd } from './posfwd';
 import { decodePostings } from './postings';
 import type { FieldPrefix } from './query-parser';
 import { parseQuery } from './query-parser';
@@ -36,6 +38,8 @@ interface Loaded {
   files: EtdIndexFiles;
   dictionary: EtdDictionary;
   records: EtdRecords;
+  /** Per-doc token text for the phrase boost; absent on an index without it. */
+  posfwd?: EtdPosfwd;
   prefixes: FieldPrefix[];
 }
 
@@ -66,13 +70,14 @@ export class StaticEtdEngine implements EtdEngine {
     const files = await EtdIndexFiles.open(options.baseUrl, {
       fetch: options.fetch,
     });
-    const [dictionary, records] = await Promise.all([
+    const [dictionary, records, posfwd] = await Promise.all([
       EtdDictionary.load(files),
       EtdRecords.load(files),
+      EtdPosfwd.load(files),
     ]);
     const prefixes: FieldPrefix[] = [...BASE_PREFIXES];
     if (files.meta.prefixed_fields?.o) prefixes.push('o:');
-    return { files, dictionary, records, prefixes };
+    return { files, dictionary, records, posfwd, prefixes };
   }
 
   async query(
@@ -80,7 +85,7 @@ export class StaticEtdEngine implements EtdEngine {
     filters: EtdFilters,
     options?: EtdCallOptions,
   ): Promise<EtdQuery> {
-    const { files, dictionary, records, prefixes } = await this.loading;
+    const { files, dictionary, records, posfwd, prefixes } = await this.loading;
 
     if (hasFilters(filters)) {
       throw new Error(
@@ -127,7 +132,13 @@ export class StaticEtdEngine implements EtdEngine {
     }
     boostSharedFields(scores, terms, lists, prefixes);
 
-    const ranked = rankScores(scores);
+    let ranked = rankScores(scores);
+    // Re-ranked before the first page: collection-browser can't swap results
+    // it has shown, so unlike the live page this can't land progressively.
+    const boost = boostTokens(text, clauses.length > 0);
+    if (boost && posfwd) {
+      ranked = await phraseBoost(ranked, boost, posfwd, options);
+    }
     const marked = termsToMark(terms);
     let cursor = 0;
     return {

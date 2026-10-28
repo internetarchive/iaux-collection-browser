@@ -33,10 +33,11 @@ interface Comparison {
  * Demo-only: runs each query through both the ported ETD engine and the live
  * etd-search page (in an iframe), and shows how their rankings differ.
  *
- * Ours is compared twice: against the live page's ranking before its phrase
- * boost (the part ported so far), and against the order it displays. The
- * boost re-orders an unquoted 2-6 word query's head 1-4 s after the first
- * results show, so the second comparison lands later.
+ * Ours is compared twice: against the order the live page displays, and
+ * against its ranking before its phrase boost. The live page boosts an
+ * unquoted 2-6 word query's head 1-4 s after its first results show, so the
+ * displayed-order comparison lands later. Ours applies the same boost
+ * before its first results, so it should match the displayed order.
  */
 @customElement('etd-compare-panel')
 export class EtdComparePanel extends LitElement {
@@ -244,12 +245,13 @@ export class EtdComparePanel extends LitElement {
           ${theirs.total.toLocaleString()}
           <span class="detail">(live: “${theirs.status}”)</span>
         </li>
-        <li>Before the live page's re-ranking: ${this.diffSummary(diff)}</li>
         <li>As the live page shows them: ${this.shownSummary(shown)}</li>
+        <li>Before the live page's re-ranking: ${this.diffSummary(diff)}</li>
         <li class="detail">
-          Index ${theirs.version || 'unversioned'}. The live page re-ranks an
-          unquoted 2–6 word query to put the words-side-by-side matches first;
-          that phrase boost isn't ported yet.
+          Index ${theirs.version || 'unversioned'}. Both re-rank an unquoted 2–6
+          word query to put the words-side-by-side matches first, so for those,
+          ours should match the first line and differ from the second. The live
+          page shows its plain order first and re-ranks a moment later.
         </li>
       </ul>
     `;

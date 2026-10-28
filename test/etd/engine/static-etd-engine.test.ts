@@ -172,7 +172,7 @@ describe('StaticEtdEngine', () => {
   it('runs a query in three rounds of requests', async () => {
     const { engine, index } = await engineOver();
     const before = index.requests.length;
-    const query = await engine.query('sea ice carbon', {});
+    const query = await engine.query('"sea ice" carbon', {});
     // dict.bin buckets in one request, all posting lists in one request
     expect(index.requests.length - before).to.equal(2);
 
@@ -180,6 +180,42 @@ describe('StaticEtdEngine', () => {
     await query.next(10);
     // stubs, url.dir, snip.dir, then url.bin and snippets.bin
     expect(index.requests.length - beforePage).to.equal(5);
+  });
+
+  it('adds one round, two requests, to re-rank a plain multi-word query', async () => {
+    const { engine, index } = await engineOver();
+    const before = index.requests.length;
+    await engine.query('sea ice carbon', {});
+    const urls = index.requests.slice(before).map(r => r.url.split('?')[0]);
+    expect(urls.map(url => url.replace(/^.*\//, ''))).to.deep.equal([
+      'dict.bin.test1',
+      'postings.bin.test1',
+      'posfwd.dir.test1',
+      'posfwd.bin.test1',
+    ]);
+  });
+
+  it('moves theses with the words side by side ahead of ones with both apart', async () => {
+    const { engine } = await engineOver([
+      // Both words in the title, apart: ranks first on title weight alone.
+      { title: 'Sea level and ice', url: 'https://repo.example.org/1' },
+      {
+        title: 'Carbon budgets',
+        abstract: 'Under seasonal sea ice.',
+        url: 'https://repo.example.org/2',
+      },
+    ]);
+    const plain = await (await engine.query('"sea" ice', {})).next(2);
+    expect(titles(plain)).to.deep.equal([
+      'Sea level and ice',
+      'Carbon budgets',
+    ]);
+
+    const boosted = await (await engine.query('sea ice', {})).next(2);
+    expect(titles(boosted)).to.deep.equal([
+      'Carbon budgets',
+      'Sea level and ice',
+    ]);
   });
 
   it('returns nothing for words not in the index', async () => {

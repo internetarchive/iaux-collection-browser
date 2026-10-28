@@ -139,7 +139,9 @@ export class EtdRecords {
 }
 
 /** [offset, length] from a 16-byte directory entry; undefined if empty. */
-function span(entry: Uint8Array | undefined): [number, number] | undefined {
+export function span(
+  entry: Uint8Array | undefined,
+): [number, number] | undefined {
   if (!entry || entry.length < 16) return undefined;
   const [start, end] = readOffsetPair(entry);
   return end > start && start >= 0 ? [start, end - start] : undefined;

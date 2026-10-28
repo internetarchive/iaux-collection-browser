@@ -169,6 +169,30 @@ export async function buildFixtureIndex(
   const [urlDir, urlBin] = directory(urlPayloads);
   const [snipDir, snipBin] = directory(snippetPayloads);
 
+  // posfwd.dir + posfwd.bin: each field's tokens, space-joined; creators as
+  // one segment per author, ' ; '-separated, as the real indexer writes them.
+  const posfwdPayloads = await Promise.all(
+    theses.map(async t => {
+      const text: Record<string, string> = {};
+      const title = tokenize(t.title).join(' ');
+      if (title) text.t = title;
+      const creators = (t.creators ?? '')
+        .split(';')
+        .map(name => tokenize(name).join(' '))
+        .filter(Boolean)
+        .join(' ; ');
+      if (creators) text.c = creators;
+      const abstract = tokenize(t.abstract ?? '').join(' ');
+      if (abstract) text.a = abstract;
+      const institution = tokenize(t.institution ?? '').join(' ');
+      if (institution) text.i = institution;
+      return Object.keys(text).length
+        ? deflate(JSON.stringify(text))
+        : new Uint8Array();
+    }),
+  );
+  const [posfwdDir, posfwdBin] = directory(posfwdPayloads);
+
   const meta = {
     v: version,
     n_docs: theses.length,
@@ -186,6 +210,10 @@ export async function buildFixtureIndex(
     ['url.dir', urlDir],
     ['url.bin', urlBin],
   ]);
+  if (meta.posfwd) {
+    files.set('posfwd.dir', posfwdDir);
+    files.set('posfwd.bin', posfwdBin);
+  }
   if (options.withSnippets !== false) {
     files.set('snip.dir', snipDir);
     files.set('snippets.bin', snipBin);
