@@ -43,6 +43,9 @@ export class EtdPosfwd {
   /** docId -> its text, or null for a doc with none. */
   private readonly cache = new Map<number, PosfwdText | null>();
 
+  /** docId -> the read already fetching it, shared by concurrent callers. */
+  private readonly pending = new Map<number, Promise<void>>();
+
   private constructor(
     private readonly files: EtdIndexFiles,
     /** posfwd.bin size, from posfwd.dir's sentinel entry. */
@@ -85,9 +88,10 @@ export class EtdPosfwd {
   }
 
   /**
-   * Reads the text of `docIds` into the cache, in two multi-range waves
-   * (directory entries, then members). A doc whose read fails is left
-   * unread rather than failing the rest.
+   * Reads the text of `docIds` into the cache. Docs another call is already
+   * fetching are waited on, not fetched again (the demo's compare panel and
+   * collection-browser query the same engine at once); if that call fails,
+   * or is aborted, this one fetches them itself.
    */
   async read(
     docIds: readonly number[],
@@ -99,6 +103,44 @@ export class EtdPosfwd {
     );
     if (!missing.length) return;
 
+    const shared = new Set<Promise<void>>();
+    const own: number[] = [];
+    for (const docId of missing) {
+      const inFlight = this.pending.get(docId);
+      if (inFlight) shared.add(inFlight);
+      else own.push(docId);
+    }
+
+    const mine = own.length ? this.fetch(own, options) : undefined;
+    if (mine) {
+      for (const docId of own) this.pending.set(docId, mine);
+      const forget = () => {
+        for (const docId of own) {
+          if (this.pending.get(docId) === mine) this.pending.delete(docId);
+        }
+      };
+      mine.then(forget, forget);
+    }
+
+    // Another caller's failure (or abort) isn't this call's: retry its docs.
+    await Promise.all([...shared].map(read => read.catch(() => {})));
+    const stillMissing = missing.filter(
+      d => !own.includes(d) && !this.cache.has(d),
+    );
+    await Promise.all([
+      mine,
+      stillMissing.length ? this.read(stillMissing, options) : undefined,
+    ]);
+  }
+
+  /**
+   * Fetches docs into the cache, in two multi-range waves (directory
+   * entries, then members). A doc with no text is remembered as null.
+   */
+  private async fetch(
+    missing: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<void> {
     const dirs = await this.files.ranges(
       'posfwd.dir',
       missing.map(d => [(d - 1) * 8, 16] as const),

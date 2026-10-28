@@ -85,6 +85,53 @@ describe('EtdPosfwd', () => {
     expect(index.requests.length).to.equal(before);
   });
 
+  it('shares one fetch between callers reading the same docs at once', async () => {
+    // As in the demo: collection-browser and the compare panel boost the
+    // same query on one engine at the same moment.
+    const { index, posfwd } = await open();
+    const before = index.requests.length;
+    await Promise.all([posfwd!.read([1, 2]), posfwd!.read([2, 1])]);
+    // One directory request and one member request, not two of each.
+    expect(index.requests.length - before).to.equal(2);
+    expect(posfwd!.get(1)?.t).to.equal('sea ice drift');
+  });
+
+  it('fetches a doc itself when the read it was waiting on is aborted', async () => {
+    const { posfwd } = await open();
+    const controller = new AbortController();
+    controller.abort();
+    const aborted = posfwd!.read([1], { signal: controller.signal });
+    const waiting = posfwd!.read([1]);
+
+    let error: unknown;
+    try {
+      await aborted;
+    } catch (err) {
+      error = err;
+    }
+    expect((error as Error)?.name).to.equal('AbortError');
+    // The other caller didn't abort, so its read still lands.
+    await waiting;
+    expect(posfwd!.get(1)?.t).to.equal('sea ice drift');
+  });
+
+  it('fetches a doc itself when the read it was waiting on fails', async () => {
+    const { index, posfwd } = await open();
+    index.failNext('posfwd.bin');
+    const failing = posfwd!.read([1]);
+    const waiting = posfwd!.read([1]);
+
+    let error: unknown;
+    try {
+      await failing;
+    } catch (err) {
+      error = err;
+    }
+    expect(error).to.be.an('error');
+    await waiting;
+    expect(posfwd!.get(1)?.t).to.equal('sea ice drift');
+  });
+
   it('is absent when the index has no posfwd', async () => {
     const { posfwd } = await open({ posfwd: false });
     expect(posfwd).to.be.undefined;
