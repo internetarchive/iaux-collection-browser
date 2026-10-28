@@ -1,3 +1,4 @@
+import { StringField } from '@internetarchive/iaux-item-metadata';
 import { ItemHit, SearchResponse } from '@internetarchive/search-service';
 
 /**
@@ -13,6 +14,20 @@ export class LinkedItemHit extends ItemHit {
   // iaux-item-metadata, so this package's StringField is a different type.
   get __href__(): ItemHit['title'] {
     return this.fields.__href__;
+  }
+
+  /**
+   * Snippets with `{{{marked}}}` matches, which tiles show under the title.
+   * ItemHit doesn't expose them; TextHit does, for full-text search, from
+   * the same `highlight.text` beside the hit's fields.
+   */
+  get highlight(): ItemHit['title'] {
+    const text = (this.rawMetadata as { highlight?: { text?: string[] } })
+      .highlight?.text;
+    // This package's StringField: the same shape as search-service's copy.
+    return text?.length
+      ? (new StringField(text) as unknown as ItemHit['title'])
+      : undefined;
   }
 }
 

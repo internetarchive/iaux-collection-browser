@@ -34,6 +34,12 @@ export interface EtdRecord {
 
   /** Abstract excerpt, when the record has one. */
   snippet?: string;
+
+  /**
+   * The snippet with the query's terms marked `{{{like this}}}`. Set on
+   * records read through a query, when the record has a snippet.
+   */
+  highlight?: string;
 }
 
 /**

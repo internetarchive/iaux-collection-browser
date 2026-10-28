@@ -45,6 +45,15 @@ export function etdHitJson(record: EtdRecord): Record<string, unknown> {
   const year = Number.parseInt(record.date.slice(0, 4), 10);
   if (!Number.isNaN(year)) fields.year = year;
 
+  // A marked snippet replaces the description, which would repeat it.
+  if (record.highlight) {
+    // Beside fields, not in them, as full-text search hits carry it.
+    return {
+      hit_type: 'item',
+      fields,
+      highlight: { text: [record.highlight] },
+    };
+  }
   if (record.snippet) fields.description = record.snippet;
 
   return { hit_type: 'item', fields };

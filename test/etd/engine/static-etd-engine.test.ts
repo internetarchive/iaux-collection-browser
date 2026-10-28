@@ -1,4 +1,7 @@
-import { expect } from '@open-wc/testing';
+import { aTimeout, expect, fixture, waitUntil } from '@open-wc/testing';
+import { html } from 'lit';
+import type { CollectionBrowser } from '../../../src/collection-browser';
+import '../../../src/collection-browser';
 import { StaticEtdEngine } from '../../../src/etd/engine/static-etd-engine';
 import { EtdSearchService } from '../../../src/etd/etd-search-service';
 import { FIXTURE_BASE, buildFixtureIndex } from './fixture-index';
@@ -105,6 +108,8 @@ describe('StaticEtdEngine', () => {
       domain: 'repository.example.edu',
       url: THESES[2].url,
       snippet: 'Merchants crossed the sea in winter.',
+      // Searched by title, so nothing in the abstract is marked.
+      highlight: 'Merchants crossed the sea in winter.',
     });
 
     const [html] = await (await engine.query('title:arctic', {})).next(1);
@@ -113,10 +118,23 @@ describe('StaticEtdEngine', () => {
     );
   });
 
+  it('marks the query terms in each abstract, from every field searched', async () => {
+    const { engine } = await engineOver();
+    const records = await (await engine.query('sea ice', {})).next(3);
+    expect(records.map(r => r.highlight)).to.deep.equal([
+      // 'sea' inside 'seasonal' too: the live page marks within words.
+      'Carbon flux under {{{sea}}}sonal {{{sea}}} {{{ice}}} & leads.',
+      'We model {{{sea}}} {{{ice}}} retreat along the coast.',
+      // Matched by its author, Mara Ice; only 'sea' is in the abstract.
+      'Merchants crossed the {{{sea}}} in winter.',
+    ]);
+  });
+
   it('leaves out the snippet when a thesis has no abstract', async () => {
     const { engine } = await engineOver();
     const [record] = await (await engine.query('title:coastal', {})).next(1);
     expect(record.snippet).to.be.undefined;
+    expect(record.highlight).to.be.undefined;
   });
 
   it('pages through the ranking with its cursor', async () => {
@@ -228,5 +246,43 @@ describe('StaticEtdEngine', () => {
       'etd-2',
       'etd-1',
     ]);
+  });
+
+  it('marks the query in result snippets on collection-browser tiles', async () => {
+    const index = await buildFixtureIndex(THESES);
+    const service = new EtdSearchService({
+      engine: new StaticEtdEngine({
+        baseUrl: FIXTURE_BASE,
+        fetch: index.fetch,
+      }),
+    });
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${service}
+        .baseNavigationUrl=${''}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'sea ice';
+    await el.initialSearchComplete;
+    el.displayMode = 'list-detail';
+    await el.updateComplete;
+
+    // Tiles render inside nested shadow roots; collect every <mark> in them.
+    const marks = (): string[] => {
+      const found: string[] = [];
+      const walk = (root: ParentNode) => {
+        for (const node of root.querySelectorAll('*')) {
+          if (node.tagName === 'MARK') found.push(node.textContent!);
+          if (node.shadowRoot) walk(node.shadowRoot);
+        }
+      };
+      walk(el.shadowRoot!);
+      return found;
+    };
+    await waitUntil(() => marks().length > 0, 'no marked snippet rendered');
+    await aTimeout(0);
+
+    // Top tile: 'Carbon flux under {{{sea}}}sonal {{{sea}}} {{{ice}}} & leads.'
+    expect(marks().slice(0, 3)).to.deep.equal(['sea', 'sea', 'ice']);
   });
 });

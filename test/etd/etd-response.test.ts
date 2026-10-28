@@ -57,6 +57,18 @@ describe('etdHitJson', () => {
     );
   });
 
+  it('shows a marked snippet in place of the description', () => {
+    const tile = tileFor({
+      ...record,
+      highlight: 'We measure carbon flux under seasonal {{{sea}}} {{{ice}}}.',
+    });
+    expect(tile.snippets).to.deep.equal([
+      'We measure carbon flux under seasonal {{{sea}}} {{{ice}}}.',
+    ]);
+    // Otherwise the list view would show the same abstract twice.
+    expect(tile.description).to.be.undefined;
+  });
+
   it('leaves out fields a record does not have', () => {
     const tile = tileFor({
       ...record,
@@ -67,6 +79,7 @@ describe('etdHitJson', () => {
     expect(tile.creators).to.deep.equal([]);
     expect(tile.datePublished).to.be.undefined;
     expect(tile.description).to.be.undefined;
+    expect(tile.snippets).to.deep.equal([]);
   });
 });
 

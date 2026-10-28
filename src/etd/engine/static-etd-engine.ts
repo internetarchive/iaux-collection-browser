@@ -8,6 +8,7 @@ import type {
 } from '../etd-engine';
 import { EtdDictionary } from './dictionary';
 import { EtdIndexFiles } from './index-files';
+import { markTerms, termsToMark } from './mark-terms';
 import { decodePostings } from './postings';
 import type { FieldPrefix } from './query-parser';
 import { parseQuery } from './query-parser';
@@ -127,6 +128,7 @@ export class StaticEtdEngine implements EtdEngine {
     boostSharedFields(scores, terms, lists, prefixes);
 
     const ranked = rankScores(scores);
+    const marked = termsToMark(terms);
     let cursor = 0;
     return {
       result: {
@@ -139,7 +141,11 @@ export class StaticEtdEngine implements EtdEngine {
         const page = await records.read(ids, nextOptions);
         // Only advance once the read succeeded, so a retry resumes here.
         cursor += ids.length;
-        return page;
+        return page.map(record =>
+          record.snippet
+            ? { ...record, highlight: markTerms(record.snippet, marked) }
+            : record,
+        );
       },
       async facets() {
         return emptyFacets();
