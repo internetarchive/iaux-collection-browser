@@ -49,7 +49,7 @@ Each layer only knows the one below it:
 | Layer                | Knows about                                           | Doesn't know about |
 | -------------------- | ----------------------------------------------------- | ------------------ |
 | `serverless-search/` | collection-browser's search params, paging, responses | ETD                |
-| `etd/` (adapter)     | ETD records and filters                               | index files        |
+| `etd/` (adapter)     | ETD records, filters, the facet table                 | index files        |
 | `etd/engine/`        | the index file format, ranking                        | collection-browser |
 
 So the engine could serve another UI, and `serverless-search` could serve
@@ -59,21 +59,30 @@ another in-browser index.
 
 1. collection-browser calls `search(params)` for page 1 of hits.
 2. `ServerlessSearchService` asks the source to turn the params into a
-   request (`etdRequestFromParams`: query text, year range, languages). The
-   same request reuses a cached query, so later pages don't search again.
+   request (`etdRequestFromParams`: query text, year range, and facet values,
+   turned from the names shown into codes via the facet table). The same
+   request reuses a cached query, so later pages don't search again.
 3. `StaticEtdEngine.query()`:
+
    1. parses the query (`query-parser.ts`): words, `"phrases"`,
       `AND`/`OR`/`NOT`, `field:` syntax;
    2. looks every term up in the dictionary, in one request;
    3. reads every posting list it needs, in one request;
    4. scores and ranks the matches (`scorer.ts`), keeping the top 3,000;
-   5. for an unquoted 2-6 word query, moves the theses with the words side by
+   5. drops the matches failing the year and facet filters, before ranking,
+      so the total follows the filters (`facets.ts`);
+   6. for an unquoted 2-6 word query, moves the theses with the words side by
       side to the top (`phrase-boost.ts`, reading `posfwd`).
+
+   With filters but no words, it lists every thesis passing them instead, in
+   docId order (the first 5,000 reachable), as the live page does.
+
 4. Paging reads records for each page: title, creators, date, full URL,
    abstract (`records.ts`), with the query words marked in the abstract
    (`mark-terms.ts`).
 5. `etd-response.ts` turns each record into a search hit. Tiles link off
    archive.org (`__href__`) and show the marked abstract as their snippet.
+6. collection-browser's facets request counts every facet over every match.
 
 A typical search is 2 requests to rank (plus 6 for the phrase boost) and 2
 waves per page of results.
@@ -83,27 +92,27 @@ waves per page of results.
 All in the `etd-search` item. `current.json` names the live version, and every
 other file is `<name>.<version>`, so a rebuild never mixes versions.
 
-| File                       | What it holds                                                      | Read by          |
-| -------------------------- | ------------------------------------------------------------------ | ---------------- |
-| `current.json`             | version, doc count, field weights, feature flags                   | `index-files.ts` |
-| `dict.dir`, `dict.bin`     | term → posting list location, in 65,536 hash buckets               | `dictionary.ts`  |
-| `postings.bin`             | per term: matching docs, by impact, with word positions            | `postings.ts`    |
-| `stubs.bin`                | per doc, fixed 320 bytes: title, creators, date, domain, short URL | `records.ts`     |
-| `url.dir`, `url.bin`       | per doc: the full URL, when the stub's is cut short                | `records.ts`     |
-| `snip.dir`, `snippets.bin` | per doc: the abstract, deflated JSON                               | `records.ts`     |
-| `posfwd.dir`, `posfwd.bin` | per doc: each field's complete word list, deflated JSON            | `posfwd.ts`      |
-| `facets-meta.json`         | facet row layout, year encoding, language codes                    | `facets.ts`      |
-| `facets.gz.json`           | per doc, 8 bytes: year, language, country, domain, flags; gzipped  | `facets.ts`      |
+| File                       | What it holds                                                                                | Read by          |
+| -------------------------- | -------------------------------------------------------------------------------------------- | ---------------- |
+| `current.json`             | version, doc count, field weights, feature flags                                             | `index-files.ts` |
+| `dict.dir`, `dict.bin`     | term → posting list location, in 65,536 hash buckets                                         | `dictionary.ts`  |
+| `postings.bin`             | per term: matching docs, by impact, with word positions                                      | `postings.ts`    |
+| `stubs.bin`                | per doc, fixed 320 bytes: title, creators, date, domain, short URL                           | `records.ts`     |
+| `url.dir`, `url.bin`       | per doc: the full URL, when the stub's is cut short                                          | `records.ts`     |
+| `snip.dir`, `snippets.bin` | per doc: the abstract, deflated JSON                                                         | `records.ts`     |
+| `posfwd.dir`, `posfwd.bin` | per doc: each field's complete word list, deflated JSON                                      | `posfwd.ts`      |
+| `facets-meta.json`         | facet row layout: year encoding, language and country codes, flag bits, degree levels        | `facets.ts`      |
+| `facets.gz.json`           | per doc, 8 bytes: year, flags, domain, language, country, more flags + degree level; gzipped | `facets.ts`      |
 
 `.dir` files are docId-aligned offsets into their `.bin`, so reading any doc's
 data is arithmetic plus one range read. Reads are batched into multi-range
 requests (`index-files.ts`).
 
 `facets.gz.json` is the one file read whole: 28.7 MB, on the first facets
-request or year/language filter, then kept in Cache Storage. Only the year
-and language bytes are kept in memory (~52 MB), so counts and filters cover
-every match. The live page shares the same cache entry when it runs on the
-same origin.
+request or filter, then kept in Cache Storage. Only the bytes the facets read
+are kept in memory: year, flags, language, country and the byte with more
+flags and the degree level, ~130 MB. So counts and filters cover every match.
+The live page shares the same cache entry when it runs on the same origin.
 
 Not read yet: the other facet files (`facets-totals.json`, `inst-meta.json`),
 the details pages' files, and the vector store (`ivf-meta.json` and its
@@ -121,6 +130,44 @@ cells). See "Not ported yet".
 - Then the phrase boost re-orders the top 200 for plain multi-word queries.
 
 The goal is the same ranking as the live page. The compare panel checks that.
+
+## Facets
+
+ETD's facets are one table, `src/etd/etd-facets.ts`. Each entry says how to
+read the facet from a thesis's facet row, how collection-browser shows it, how
+its values are named, and how picked values combine:
+
+| Facet        | Read from         | Values                                                                                                | Picked values   |
+| ------------ | ----------------- | ----------------------------------------------------------------------------------------------------- | --------------- |
+| Language     | language byte     | names from collection-browser's mapping, then the browser's                                           | any of them     |
+| Country      | country byte      | names from the browser (`Intl.DisplayNames`)                                                          | any of them     |
+| Degree level | degree level bits | Doctoral, Master's, Bachelor's, Other, Unknown                                                        | any of them     |
+| Source       | flag bits         | OAI, Internet Archive, Wayback Machine, Library catalog, Printed abstracts; a thesis can have several | any of them     |
+| Availability | flag bits         | Has abstract, Archived (whole thesis), Document saved, Has live link                                  | **all** of them |
+
+Year isn't in the table: it's the date picker.
+
+Each layer uses the table without knowing a facet by name:
+
+- **The engine** is handed the table's readers (`facets` in
+  `StaticEtdEngine`), counts every facet over the matches and filters by any
+  of them. It reads codes (`en`, `phd`, `oai`), not names.
+- **The adapter** builds each facet's aggregation (names, by count) and maps
+  collection-browser's picks (names) back to codes.
+- **collection-browser** gets the facets the generic way: the source declares
+  them (`facets`, `listsWithoutQuery` on `SearchSource`), and
+  `ServerlessSearchService` exposes `extraFacetGroups` (the facets
+  collection-browser doesn't have) and `allowFilterOnlySearch`. The demo
+  passes both to `<collection-browser>` for whatever search service it has.
+  An "all" facet's title says "(all that apply)".
+
+To add a facet, add an entry to the table. If it reads a part of the row the
+engine doesn't keep yet, keep that byte too (`keepBytes` in
+`engine/facets.ts`). Then check its counts against the live page's facet
+panel for a few queries.
+
+Values are listed by count, as collection-browser's sidebar sorts every facet.
+The live page lists degree level in a fixed order instead.
 
 ## Building on it
 
@@ -148,8 +195,13 @@ const index = await buildFixtureIndex([
 const engine = new StaticEtdEngine({
   baseUrl: FIXTURE_BASE,
   fetch: index.fetch,
+  cacheFacets: false, // every fixture index has the same URLs
+  facets: ETD_FACETS,
 });
 ```
+
+A fixture thesis can give its `date`, `language`, `country`, `level` and
+`flags` (by name, e.g. `['oai', 'hasAbstract']`) for the facet rows.
 
 `index.requests` lists every request made, and `index.failNext('posfwd.bin')`
 makes one fail.
@@ -180,21 +232,24 @@ so a live page rebuild can break it. It says so when that happens.
    records into hit JSON.
 2. Subclass `ServerlessSearchService` with your source, like
    `EtdSearchService`.
-3. Pass it to `<collection-browser>` as `searchService`. Set
-   `baseNavigationUrl` to `''` if your hits link off archive.org.
+3. Declare its facets (`facets`: key, titles, combine) and whether it can
+   list matches without a query (`listsWithoutQuery`).
+4. Pass it to `<collection-browser>` as `searchService`, with its
+   `extraFacetGroups` and `allowFilterOnlySearch`. Set `baseNavigationUrl` to
+   `''` if your hits link off archive.org.
 
 Paging, caching and error mapping come with `ServerlessSearchService`.
 
 ## Not ported yet
 
-| Live page feature                                                                    | What happens here instead                                      |
-| ------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
-| Facets beyond year and language (country, degree, institution, source, availability) | Not shown; collection-browser has no facet groups for them yet |
-| `inst:` through the institution list                                                 | Matched as text, so many more results                          |
-| Quoted phrases checked as adjacent                                                   | Words only have to be near each other                          |
-| `field:` filters (`year:`, `host:`, `has:`…)                                         | Error                                                          |
-| Vector rank (semantic search)                                                        | Not available                                                  |
-| Showing results before the phrase boost lands                                        | Results wait for the boost (up to 15 s)                        |
+| Live page feature                             | What happens here instead                                       |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| Institution and repository (domain) facets    | Not shown yet: one table entry each, plus the institution files |
+| `inst:` through the institution list          | Matched as text, so many more results                           |
+| Quoted phrases checked as adjacent            | Words only have to be near each other                           |
+| `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                           |
+| Vector rank (semantic search)                 | Not available                                                   |
+| Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                         |
 
 ## Things that will trip you up
 
