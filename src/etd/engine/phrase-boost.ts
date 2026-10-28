@@ -2,6 +2,7 @@ import type { EtdCallOptions } from '../etd-engine';
 import { tokenize } from './codec';
 import type { EtdPosfwd } from './posfwd';
 import { phraseInDoc } from './posfwd';
+import type { PosfwdText } from './posfwd';
 
 /**
  * The phrase boost: for an unquoted query of a few words, docs holding the
@@ -30,6 +31,38 @@ export function boostTokens(
   }
   const tokens = tokenize(query);
   return tokens.length >= 2 && tokens.length <= 6 ? tokens : undefined;
+}
+
+/** Where a doc holds the query's words side by side, as the boost judges it. */
+export type WordsPlacement =
+  | 'title'
+  | 'creators'
+  | 'abstract'
+  | 'institution'
+  | 'orcid'
+  | 'apart';
+
+const PLACEMENT_FIELDS: [prefix: string, placement: WordsPlacement][] = [
+  ['t:', 'title'],
+  ['c:', 'creators'],
+  ['a:', 'abstract'],
+  ['i:', 'institution'],
+  ['o:', 'orcid'],
+];
+
+/**
+ * The first field (title first) holding `tokens` side by side; 'apart' when
+ * none does; undefined when the doc's text is unknown (not read, or none).
+ */
+export function wordsPlacement(
+  text: PosfwdText | null | undefined,
+  tokens: readonly string[],
+): WordsPlacement | undefined {
+  if (!text) return undefined;
+  const found = PLACEMENT_FIELDS.find(([prefix]) =>
+    phraseInDoc(text, tokens, prefix),
+  );
+  return found ? found[1] : 'apart';
 }
 
 export interface PhraseBoostOptions extends EtdCallOptions {
@@ -66,9 +99,9 @@ export async function phraseBoost(
   }
 
   const group = (docId: number) => {
-    const text = posfwd.get(docId);
-    if (phraseInDoc(text, tokens, 't:')) return 2;
-    return phraseInDoc(text, tokens) ? 1 : 0;
+    const placement = wordsPlacement(posfwd.get(docId), tokens);
+    if (placement === 'title') return 2;
+    return placement && placement !== 'apart' ? 1 : 0;
   };
   const grouped = head.map((docId, rank) => ({ docId, rank, g: group(docId) }));
   if (!grouped.some(doc => doc.g)) return [...ranked];

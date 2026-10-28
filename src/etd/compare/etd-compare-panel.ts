@@ -38,7 +38,25 @@ interface Comparison {
   diff: RankDiff;
   /** Against the order the live page displays. */
   shown: ShownComparison;
+  /** What our phrase boost moved in and out of the top; absent if none ran. */
+  hidden?: HiddenByBoost;
   titles: Map<number, string>;
+}
+
+/** Docs our phrase boost moved into or out of the compared top. */
+interface HiddenByBoost {
+  words: readonly string[];
+  /** In the top before the boost, out of it after. */
+  pushedOut: HiddenRow[];
+  /** Out of the top before the boost, in it after. */
+  pulledIn: HiddenRow[];
+}
+
+interface HiddenRow {
+  docId: number;
+  before?: number;
+  after?: number;
+  placement?: ReturnType<NonNullable<EtdQuery['boost']>['placement']>;
 }
 
 /**
@@ -127,7 +145,15 @@ export class EtdComparePanel extends LitElement {
         ours.records.map(record => [record.docId, record.title]),
       );
       const diff = this.diff(ourIds, theirs.docIds);
-      await this.readTitles(diff, titles, abort.signal);
+      const hidden = this.hiddenByBoost(ours);
+      await this.readTitles(
+        [
+          ...diff.onlyTheirs.map(doc => doc.docId),
+          ...(hidden?.pushedOut.map(row => row.docId) ?? []),
+        ],
+        titles,
+        abort.signal,
+      );
       if (generation !== this.generation) return;
       const comparison: Comparison = {
         query,
@@ -135,6 +161,7 @@ export class EtdComparePanel extends LitElement {
         theirs,
         diff,
         shown: { state: 'waiting' },
+        hidden,
         titles,
       };
       this.comparison = comparison;
@@ -167,7 +194,11 @@ export class EtdComparePanel extends LitElement {
       const reranked = await theirs.reranked;
       if (!reranked) return { state: 'not-reranked' };
       const diff = this.diff(ourIds, reranked);
-      await this.readTitles(diff, titles, signal);
+      await this.readTitles(
+        diff.onlyTheirs.map(doc => doc.docId),
+        titles,
+        signal,
+      );
       return { state: 'compared', diff };
     } catch (err) {
       return {
@@ -185,15 +216,38 @@ export class EtdComparePanel extends LitElement {
   }
 
   /** Reads titles for docs only the live page ranks, which ours didn't return. */
+  /**
+   * The docs our phrase boost moved into or out of the top `depth`, with
+   * their ranks before and after and where the words sit in each.
+   */
+  private hiddenByBoost(ours: OurSearch): HiddenByBoost | undefined {
+    const { boost } = ours.query;
+    if (!boost) return undefined;
+    const after = ours.records.map(record => record.docId);
+    const before = boost.topBefore(this.depth);
+    const row = (docId: number): HiddenRow => ({
+      docId,
+      before: boost.rankBefore(docId),
+      after: ours.query.rankOf?.(docId),
+      placement: boost.placement(docId),
+    });
+    return {
+      words: boost.words,
+      pushedOut: before.filter(d => !after.includes(d)).map(row),
+      pulledIn: after.filter(d => !before.includes(d)).map(row),
+    };
+  }
+
+  /** Reads titles for docs ours didn't return a record for. */
   private async readTitles(
-    diff: RankDiff,
+    docIds: readonly number[],
     titles: Map<number, string>,
     signal: AbortSignal,
   ): Promise<void> {
     const missing = await Promise.all(
-      diff.onlyTheirs
-        .filter(doc => !titles.has(doc.docId))
-        .map(doc => this.engine!.record(doc.docId, { signal })),
+      docIds
+        .filter(docId => !titles.has(docId))
+        .map(docId => this.engine!.record(docId, { signal })),
     );
     for (const record of missing) {
       if (record) titles.set(record.docId, record.title);
@@ -220,7 +274,7 @@ export class EtdComparePanel extends LitElement {
       <section aria-labelledby="compare-heading">
         <h2 id="compare-heading">Compare with the live etd-search page</h2>
         <div role="status" aria-live="polite">${this.summaryTemplate}</div>
-        ${this.rankingTemplate}
+        ${this.rankingTemplate} ${this.hiddenTemplate}
         <details>
           <summary>Live etd-search page</summary>
           ${this.liveSourceIsIframe
@@ -371,6 +425,74 @@ export class EtdComparePanel extends LitElement {
         </details>
       `,
     );
+  }
+
+  /**
+   * What our phrase boost hid: the docs it pushed out of the top and the
+   * ones it pulled in, each with where the query's words sit in it.
+   */
+  private get hiddenTemplate() {
+    const hidden = this.comparison?.hidden;
+    if (!hidden) return nothing;
+    const moved = hidden.pushedOut.length + hidden.pulledIn.length;
+    const heading = moved
+      ? `Hidden by re-ranking: ${hidden.pushedOut.length} pushed out of the top ${this.depth}, ${hidden.pulledIn.length} pulled in`
+      : `Hidden by re-ranking: none, the top ${this.depth} holds the same results`;
+    return keyed(
+      this.comparison!.query,
+      html`
+        <details class="hidden-by-boost" .open=${moved > 0}>
+          <summary>${heading}</summary>
+          ${moved
+            ? html`<div
+                class="table-scroll"
+                role="region"
+                aria-label=${heading}
+                tabindex="0"
+              >
+                <table>
+                  <thead>
+                    <tr>
+                      <th scope="col">Before</th>
+                      <th scope="col">After</th>
+                      <th scope="col">Change</th>
+                      <th scope="col">Title</th>
+                      <th scope="col">Why</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${hidden.pushedOut.map(row =>
+                      this.hiddenRowTemplate(row, 'pushed out', hidden.words),
+                    )}
+                    ${hidden.pulledIn.map(row =>
+                      this.hiddenRowTemplate(row, 'pulled in', hidden.words),
+                    )}
+                  </tbody>
+                </table>
+              </div>`
+            : nothing}
+        </details>
+      `,
+    );
+  }
+
+  private hiddenRowTemplate(
+    row: HiddenRow,
+    change: 'pushed out' | 'pulled in',
+    words: readonly string[],
+  ) {
+    const title = this.comparison?.titles.get(row.docId) ?? `doc ${row.docId}`;
+    const rank = (n?: number) =>
+      n ? `#${n.toLocaleString()}` : `past #${RANKED.toLocaleString()}`;
+    return html`
+      <tr class=${change === 'pushed out' ? 'only-live' : 'only-ours'}>
+        <td>${rank(row.before)}</td>
+        <td>${rank(row.after)}</td>
+        <td><span class="badge">${change}</span></td>
+        <td>${title}</td>
+        <td class="why">${boostReason(row.placement, change, words)}</td>
+      </tr>
+    `;
   }
 
   private rowTemplate(doc: RankedDoc, table: TableComparison) {
@@ -613,6 +735,38 @@ export function omissionCauses(query: string, side: 'ours' | 'live'): string[] {
 
 function withCause(reason: string, causes: string[]): string {
   return [reason, ...causes].join(' · ');
+}
+
+/**
+ * Why the phrase boost moved a doc, from where the query's words sit in it.
+ * Exported for tests.
+ */
+export function boostReason(
+  placement: HiddenRow['placement'],
+  change: 'pushed out' | 'pulled in',
+  words: readonly string[],
+): string {
+  const together = `'${words.join(' ')}'`;
+  if (placement === undefined) {
+    return "its text wasn't read in time, so it counts as not side by side";
+  }
+  if (placement === 'apart') {
+    return `${listWords(words)} aren't side by side in it`;
+  }
+  if (change === 'pulled in')
+    return `${together} is side by side in its ${placement}`;
+  // Pushed out though the words are together: other-field matches rank
+  // below every title match.
+  return placement === 'title'
+    ? `${together} is in its title, but more title matches ranked above it`
+    : `${together} is side by side only in its ${placement}, and title matches go first`;
+}
+
+function listWords(words: readonly string[]): string {
+  const quoted = words.map(word => `'${word}'`);
+  return quoted.length > 1
+    ? `${quoted.slice(0, -1).join(', ')} and ${quoted[quoted.length - 1]}`
+    : quoted.join('');
 }
 
 /** The row's class and its text label; the label carries the meaning, not the color. */

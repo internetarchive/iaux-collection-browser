@@ -3,6 +3,7 @@ import {
   BOOST_HEAD,
   boostTokens,
   phraseBoost,
+  wordsPlacement,
 } from '../../../src/etd/engine/phrase-boost';
 import type { PosfwdText } from '../../../src/etd/engine/posfwd';
 
@@ -56,6 +57,29 @@ describe('boostTokens', () => {
       'and',
       'ice',
     ]);
+  });
+});
+
+describe('wordsPlacement', () => {
+  const words = ['sea', 'ice'];
+
+  it('names the field holding the words side by side, title first', () => {
+    expect(
+      wordsPlacement({ t: 'arctic sea ice', a: 'sea ice' }, words),
+    ).to.equal('title');
+    expect(wordsPlacement({ t: 'carbon', a: 'under sea ice' }, words)).to.equal(
+      'abstract',
+    );
+    expect(wordsPlacement({ c: 'ice sea mara' }, words)).to.equal('creators');
+  });
+
+  it('says apart when no field has them side by side', () => {
+    expect(wordsPlacement({ t: 'sea level and ice' }, words)).to.equal('apart');
+  });
+
+  it('knows nothing about a doc whose text it does not have', () => {
+    expect(wordsPlacement(undefined, words)).to.be.undefined;
+    expect(wordsPlacement(null, words)).to.be.undefined;
   });
 });
 

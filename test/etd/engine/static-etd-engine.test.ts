@@ -211,11 +211,20 @@ describe('StaticEtdEngine', () => {
       'Carbon budgets',
     ]);
 
-    const boosted = await (await engine.query('sea ice', {})).next(2);
+    const query = await engine.query('sea ice', {});
+    const boosted = await query.next(2);
     expect(titles(boosted)).to.deep.equal([
       'Carbon budgets',
       'Sea level and ice',
     ]);
+
+    // And it says what it did: the order before, and why each moved.
+    expect(query.boost!.words).to.deep.equal(['sea', 'ice']);
+    expect(query.boost!.topBefore(2)).to.deep.equal([1, 2]);
+    expect(query.boost!.rankBefore(2)).to.equal(2);
+    expect(query.boost!.placement(1)).to.equal('apart');
+    expect(query.boost!.placement(2)).to.equal('abstract');
+    expect((await engine.query('"sea" ice', {})).boost).to.be.undefined;
   });
 
   it('says where it ranks any doc, and whether it matched at all', async () => {

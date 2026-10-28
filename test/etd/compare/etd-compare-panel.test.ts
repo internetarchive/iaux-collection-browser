@@ -2,6 +2,7 @@ import { expect, fixture, waitUntil } from '@open-wc/testing';
 import { html } from 'lit';
 import {
   EtdComparePanel,
+  boostReason,
   omissionCauses,
 } from '../../../src/etd/compare/etd-compare-panel';
 import type {
@@ -335,6 +336,93 @@ describe('etd-compare-panel', () => {
     expect(rankingDrawer(el).open).to.be.true;
   });
 
+  describe('hidden by re-ranking', () => {
+    const live = () =>
+      new StubLivePage({
+        total: 12,
+        status: '12 matches',
+        docIds: [1, 2, 3, 4, 5],
+      });
+
+    function hiddenDrawer(el: EtdComparePanel) {
+      return el.shadowRoot!.querySelector<HTMLDetailsElement>(
+        'details.hidden-by-boost',
+      );
+    }
+
+    function hiddenRows(el: EtdComparePanel): string[][] {
+      return [...hiddenDrawer(el)!.querySelectorAll('tbody tr')].map(tr =>
+        [...tr.querySelectorAll('td')].map(td => td.textContent!.trim()),
+      );
+    }
+
+    it('lists what our boost pushed out of the top and pulled in, and why', async () => {
+      // Ours ranks theses in docId order after the boost (1-5 on top). Before
+      // it, thesis 9 was first: the boost pushed it to #9, and pulled thesis
+      // 5 up from #60.
+      const engine = new MockEtdEngine(mockEtdTheses(12));
+      const before = [9, 1, 2, 3, 4];
+      engine.boost = {
+        words: ['on', 'climate'],
+        topBefore: count => before.slice(0, count),
+        rankBefore: docId =>
+          docId === 5 ? 60 : before.indexOf(docId) + 1 || undefined,
+        placement: docId => (docId === 9 ? 'apart' : 'title'),
+      };
+      const el = await comparePanel(live(), 'on climate', 5, engine);
+      await waitUntil(() => !summary(el).includes('waiting'));
+
+      expect(hiddenDrawer(el)!.open).to.be.true;
+      expect(
+        hiddenDrawer(el)!.querySelector('summary')!.textContent!.trim(),
+      ).to.equal(
+        'Hidden by re-ranking: 1 pushed out of the top 5, 1 pulled in',
+      );
+      expect(hiddenRows(el)).to.deep.equal([
+        [
+          '#1',
+          '#9',
+          'pushed out',
+          // Not among ours' records, so its title is read by docId.
+          'Thesis 9 on climate',
+          "'on' and 'climate' aren't side by side in it",
+        ],
+        [
+          '#60',
+          '#5',
+          'pulled in',
+          'Thesis 5 on climate',
+          "'on climate' is side by side in its title",
+        ],
+      ]);
+    });
+
+    it('says so, closed, when the boost changed nothing in the top', async () => {
+      const engine = new MockEtdEngine(mockEtdTheses(12));
+      engine.boost = {
+        words: ['on', 'climate'],
+        topBefore: count => [1, 2, 3, 4, 5].slice(0, count),
+        rankBefore: docId => docId,
+        placement: () => 'title',
+      };
+      const el = await comparePanel(live(), 'on climate', 5, engine);
+      await waitUntil(() => !summary(el).includes('waiting'));
+
+      expect(hiddenDrawer(el)!.open).to.be.false;
+      expect(
+        hiddenDrawer(el)!.querySelector('summary')!.textContent!.trim(),
+      ).to.equal(
+        'Hidden by re-ranking: none, the top 5 holds the same results',
+      );
+    });
+
+    it('has no section for a query that was not re-ranked', async () => {
+      const el = await comparePanel(live(), 'climate');
+      await waitUntil(() => !summary(el).includes('waiting'));
+      expect(hiddenDrawer(el)).to.be.null;
+    });
+  });
+
   it('prompts for a query rather than comparing an empty one', async () => {
     const live = new StubLivePage({ total: 0, status: '', docIds: [] });
     const el = await comparePanel(live, '');
@@ -365,5 +453,37 @@ describe('omissionCauses', () => {
   it('names nothing for a plain query', () => {
     expect(omissionCauses('sea ice', 'live')).to.deep.equal([]);
     expect(omissionCauses('constitution law', 'ours')).to.deep.equal([]);
+  });
+});
+
+describe('boostReason', () => {
+  const words = ['sea', 'ice'];
+
+  it('explains a pushed-out doc by its words being apart', () => {
+    expect(boostReason('apart', 'pushed out', words)).to.equal(
+      "'sea' and 'ice' aren't side by side in it",
+    );
+    expect(boostReason('apart', 'pushed out', ['a', 'b', 'c'])).to.equal(
+      "'a', 'b' and 'c' aren't side by side in it",
+    );
+  });
+
+  it('explains a pulled-in doc by the field holding the words', () => {
+    expect(boostReason('abstract', 'pulled in', words)).to.equal(
+      "'sea ice' is side by side in its abstract",
+    );
+  });
+
+  it('explains a doc pushed out though its words are together', () => {
+    // Other-field matches rank below every title match.
+    expect(boostReason('abstract', 'pushed out', words)).to.equal(
+      "'sea ice' is side by side only in its abstract, and title matches go first",
+    );
+  });
+
+  it('says when the doc’s text was not read in time', () => {
+    expect(boostReason(undefined, 'pushed out', words)).to.equal(
+      "its text wasn't read in time, so it counts as not side by side",
+    );
   });
 });

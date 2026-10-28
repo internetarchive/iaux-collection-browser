@@ -132,6 +132,42 @@ export interface EtdQuery {
 
   /** Whether a record matched at all, ranked or not. Optional, as rankOf. */
   matches?(docId: number): boolean;
+
+  /**
+   * What the phrase boost did to this query's ranking; absent when the
+   * query wasn't boosted. Optional, as rankOf.
+   */
+  readonly boost?: EtdQueryBoost;
+}
+
+/**
+ * The phrase boost's effect on one query: it moves docs holding the query's
+ * words side by side to the top of the ranking.
+ */
+export interface EtdQueryBoost {
+  /** The words the boost looked for side by side. */
+  readonly words: readonly string[];
+
+  /** The top `count` docIds before the boost re-ordered them. */
+  topBefore(count: number): number[];
+
+  /** A doc's 1-based rank before the boost; undefined if it wasn't ranked. */
+  rankBefore(docId: number): number | undefined;
+
+  /**
+   * Which field holds the words side by side (title checked first), 'apart'
+   * if none does, or undefined when the doc's text wasn't read in time.
+   */
+  placement(
+    docId: number,
+  ):
+    | 'title'
+    | 'creators'
+    | 'abstract'
+    | 'institution'
+    | 'orcid'
+    | 'apart'
+    | undefined;
 }
 
 /**

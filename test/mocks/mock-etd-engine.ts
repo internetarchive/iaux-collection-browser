@@ -4,6 +4,7 @@ import type {
   EtdFacetCounts,
   EtdFilters,
   EtdQuery,
+  EtdQueryBoost,
   EtdQueryResult,
   EtdRecord,
 } from '../../src/etd/etd-engine';
@@ -69,6 +70,9 @@ export class MockEtdEngine implements EtdEngine {
   /** Simulated phrase verification: next() returns at most this many per call. */
   maxPerRead = Number.POSITIVE_INFINITY;
 
+  /** Attached to every query as its phrase boost, when set. */
+  boost?: EtdQueryBoost;
+
   constructor(private readonly theses: MockEtdThesis[]) {}
 
   async query(
@@ -122,6 +126,7 @@ export class MockEtdEngine implements EtdEngine {
         return rank >= 1 && rank <= result.reachable ? rank : undefined;
       },
       matches: docId => matches.some(t => t.docId === docId),
+      boost: this.boost,
     };
   }
 

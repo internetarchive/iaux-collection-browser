@@ -4,12 +4,13 @@ import type {
   EtdFacetCounts,
   EtdFilters,
   EtdQuery,
+  EtdQueryBoost,
   EtdRecord,
 } from '../etd-engine';
 import { EtdDictionary } from './dictionary';
 import { EtdIndexFiles } from './index-files';
 import { markTerms, termsToMark } from './mark-terms';
-import { boostTokens, phraseBoost } from './phrase-boost';
+import { boostTokens, phraseBoost, wordsPlacement } from './phrase-boost';
 import { EtdPosfwd } from './posfwd';
 import { decodePostings } from './postings';
 import type { FieldPrefix } from './query-parser';
@@ -132,12 +133,24 @@ export class StaticEtdEngine implements EtdEngine {
     }
     boostSharedFields(scores, terms, lists, prefixes);
 
-    let ranked = rankScores(scores);
+    const plain = rankScores(scores);
+    let ranked = plain;
     // Re-ranked before the first page: collection-browser can't swap results
     // it has shown, so unlike the live page this can't land progressively.
-    const boost = boostTokens(text, clauses.length > 0);
-    if (boost && posfwd) {
-      ranked = await phraseBoost(ranked, boost, posfwd, options);
+    const words = boostTokens(text, clauses.length > 0);
+    let boost: EtdQueryBoost | undefined;
+    if (words && posfwd) {
+      ranked = await phraseBoost(plain, words, posfwd, options);
+      let plainRanks: Map<number, number> | undefined;
+      boost = {
+        words,
+        topBefore: count => plain.slice(0, count),
+        rankBefore: docId => {
+          plainRanks ??= new Map(plain.map((id, i) => [id, i + 1]));
+          return plainRanks.get(docId);
+        },
+        placement: docId => wordsPlacement(posfwd.get(docId), words),
+      };
     }
     const marked = termsToMark(terms);
     let ranks: Map<number, number> | undefined;
@@ -169,6 +182,7 @@ export class StaticEtdEngine implements EtdEngine {
       matches(docId) {
         return scores.has(docId);
       },
+      boost,
     };
   }
 
