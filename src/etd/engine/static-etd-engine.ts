@@ -40,6 +40,13 @@ export interface StaticEtdEngineOptions {
 /** Past this many matches the page marks a count as approximate. */
 const APPROXIMATE_AT = 10000;
 
+/**
+ * How many of a filter-only query's matches paging can reach, as on the
+ * live page: with no words to rank by, matches come in docId order, and
+ * the total still counts them all.
+ */
+const LISTED_CAP = 5000;
+
 interface Loaded {
   files: EtdIndexFiles;
   dictionary: EtdDictionary;
@@ -58,8 +65,8 @@ interface Loaded {
  * A query is about three rounds of requests: dictionary buckets, posting
  * lists (each one multi-range request), then a page of records.
  *
- * Not yet ported (later phases): facets beyond year and language, filter-only
- * queries, exact phrase verification (quoted phrases currently match their
+ * Not yet ported (later phases): facets beyond year and language,
+ * filter-only `field:` syntax, exact phrase verification (quoted phrases currently match their
  * words anywhere in a document), and institution authority lookup.
  */
 export class StaticEtdEngine implements EtdEngine {
@@ -105,7 +112,16 @@ export class StaticEtdEngine implements EtdEngine {
     }
 
     const terms = queryTerms(tree, prefixes);
-    if (!terms.length) return emptyQuery();
+    if (!terms.length) {
+      return hasFilters(filters)
+        ? listFiltered(
+            await facets.rows(options),
+            files.meta.n_docs,
+            filters,
+            records,
+          )
+        : emptyQuery();
+    }
 
     // Round 1: dictionary entries. Round 2: every posting list in one request.
     const entries = await dictionary.lookup(terms, options);
@@ -264,6 +280,53 @@ export function countFacets(
 
 function emptyFacets(): EtdFacetCounts {
   return { year: {}, language: {}, country: {}, domain: {}, institution: {} };
+}
+
+/**
+ * A query with filters but no words ('everything in Portuguese'): every doc
+ * passing the filters, in docId order. Each pass reads the whole facet file
+ * (~26M rows), once to list and once more for facet counts.
+ */
+function listFiltered(
+  rows: EtdFacetRows,
+  nDocs: number,
+  filters: EtdFilters,
+  records: EtdRecords,
+): EtdQuery {
+  const passing = function* passing() {
+    for (let docId = 1; docId <= nDocs; docId += 1) {
+      if (passesFilters(rows, docId, filters)) yield docId;
+    }
+  };
+  const listed: number[] = [];
+  let total = 0;
+  for (const docId of passing()) {
+    total += 1;
+    if (listed.length < LISTED_CAP) listed.push(docId);
+  }
+
+  let cursor = 0;
+  return {
+    result: { total, approximate: false, reachable: listed.length },
+    async next(count, options) {
+      const ids = listed.slice(cursor, cursor + count);
+      const page = await records.read(ids, options);
+      cursor += ids.length;
+      return page;
+    },
+    async facets() {
+      return countFacets(rows, passing());
+    },
+    rankOf(docId) {
+      const rank = listed.indexOf(docId) + 1;
+      return rank || undefined;
+    },
+    matches(docId) {
+      return (
+        docId >= 1 && docId <= nDocs && passesFilters(rows, docId, filters)
+      );
+    },
+  };
 }
 
 function emptyQuery(): EtdQuery {

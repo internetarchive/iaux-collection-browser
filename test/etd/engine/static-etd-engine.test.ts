@@ -323,6 +323,37 @@ describe('StaticEtdEngine', () => {
       expect(facetReads()).to.equal(1);
     });
 
+    it('lists every thesis passing the filters when there are no words', async () => {
+      // 'everything in English': in docId order, as there's no ranking.
+      const { engine } = await engineOver();
+      const query = await engine.query('', { includeLanguages: ['en'] });
+      expect(query.result.total).to.equal(2);
+      expect(titles(await query.next(10))).to.deep.equal([
+        'Glacier dynamics in Greenland',
+        'Sea ice and the Arctic carbon budget',
+      ]);
+      expect((await query.facets()).year).to.deep.equal({ 2014: 1, 2019: 1 });
+      expect(query.matches!(2)).to.be.true;
+      expect(query.matches!(3)).to.be.false; // French
+    });
+
+    it('still finds nothing for no words and no filters', async () => {
+      const { engine } = await engineOver();
+      expect((await engine.query('', {})).result.total).to.equal(0);
+    });
+
+    it('counts every listed match, but only pages through the first 5,000', async () => {
+      const many = Array.from({ length: 5002 }, (_, i) => ({
+        title: `Thesis ${i + 1}`,
+        date: '2020',
+      }));
+      const { engine } = await engineOver(many, { posfwd: false });
+      const query = await engine.query('', { year: { min: 2020 } });
+      expect(query.result.total).to.equal(5002);
+      expect(query.result.reachable).to.equal(5000);
+      expect((await query.facets()).year).to.deep.equal({ 2020: 5002 });
+    });
+
     it('says so when filtering an index that has no facet files', async () => {
       const { engine } = await engineOver(THESES, { withFacets: false });
       let error: unknown;
