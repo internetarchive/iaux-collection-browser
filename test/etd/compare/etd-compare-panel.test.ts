@@ -1,7 +1,9 @@
 import { expect, fixture, waitUntil } from '@open-wc/testing';
 import { html } from 'lit';
-import type { EtdComparePanel } from '../../../src/etd/compare/etd-compare-panel';
-import '../../../src/etd/compare/etd-compare-panel';
+import {
+  EtdComparePanel,
+  omissionCauses,
+} from '../../../src/etd/compare/etd-compare-panel';
 import type {
   LiveEtdSearch,
   LiveEtdSource,
@@ -14,6 +16,8 @@ interface StubAnswer {
   docIds: number[];
   /** The displayed order after the phrase boost; omitted when not boosted. */
   reranked?: number[];
+  /** The page's whole plain ranking, every match; defaults to `docIds`. */
+  plain?: number[];
 }
 
 /** A live page that answers every query with the same ranking. */
@@ -40,6 +44,8 @@ class StubLivePage implements LiveEtdSource {
       throw err;
     }
     const { reranked } = this.answer;
+    const plain = this.answer.plain ?? this.answer.docIds;
+    let shown = plain;
     const released = this.holdRerank
       ? new Promise<void>(resolve => {
           this.releaseRerank = resolve;
@@ -50,18 +56,28 @@ class StubLivePage implements LiveEtdSource {
       total: this.answer.total,
       status: this.answer.status,
       docIds: this.answer.docIds.slice(0, depth),
-      reranked: released.then(() => reranked?.slice(0, depth)),
+      reranked: released.then(() => {
+        if (reranked) shown = reranked;
+        return reranked?.slice(0, depth);
+      }),
+      plainRankOf: docId => rankIn(plain, docId),
+      shownRankOf: docId => rankIn(shown, docId),
     };
   }
+}
+
+function rankIn(order: number[], docId: number): number | undefined {
+  const rank = order.indexOf(docId) + 1;
+  return rank || undefined;
 }
 
 async function comparePanel(
   live: LiveEtdSource,
   query: string,
   depth = 5,
-): Promise<EtdComparePanel> {
   // The mock engine ranks every 'climate' thesis in docId order.
-  const engine = new MockEtdEngine(mockEtdTheses(12));
+  engine = new MockEtdEngine(mockEtdTheses(12)),
+): Promise<EtdComparePanel> {
   const el = await fixture<EtdComparePanel>(html`
     <etd-compare-panel
       .engine=${engine}
@@ -135,7 +151,7 @@ describe('etd-compare-panel', () => {
         total: 12,
         status: '12 matches in 40 ms',
         docIds: [1, 2, 3, 4, 5],
-        reranked: [2, 3, 4, 5, 6],
+        reranked: [2, 3, 4, 5, 6, 1],
       },
       true,
     );
@@ -160,17 +176,20 @@ describe('etd-compare-panel', () => {
     expect(drawerHeading(el)).to.equal(
       'Top 5: ours vs as the live page shows them',
     );
+    // Where each side put the doc the other's top 5 left out.
     expect(rows(el)[0]).to.deep.equal([
       '1',
       '–',
       'only ours',
       'Thesis 1 on climate',
+      'live ranks it #6',
     ]);
     expect(rows(el)[5]).to.deep.equal([
       '–',
       '5',
       'only live',
       'Thesis 6 on climate',
+      'ours ranks it #6',
     ]);
   });
 
@@ -192,14 +211,65 @@ describe('etd-compare-panel', () => {
     );
     expect(summary(el)).to.include('4/5 shared in top 5');
     expect(summary(el)).to.include('4 moved · 1 only ours · 1 only live');
+    // Only one-sided rows get a reason; moved rows' is the Difference.
     expect(rows(el)).to.deep.equal([
-      ['1', '2', 'ours 1 higher', 'Thesis 1 on climate'],
-      ['2', '3', 'ours 1 higher', 'Thesis 2 on climate'],
-      ['3', '1', 'ours 2 lower', 'Thesis 3 on climate'],
-      ['4', '5', 'ours 1 higher', 'Thesis 4 on climate'],
-      ['5', '–', 'only ours', 'Thesis 5 on climate'],
+      ['1', '2', 'ours 1 higher', 'Thesis 1 on climate', ''],
+      ['2', '3', 'ours 1 higher', 'Thesis 2 on climate', ''],
+      ['3', '1', 'ours 2 lower', 'Thesis 3 on climate', ''],
+      ['4', '5', 'ours 1 higher', 'Thesis 4 on climate', ''],
+      ['5', '–', 'only ours', 'Thesis 5 on climate', "live doesn't match it"],
       // Not in our top 5, so its title is read from the engine by docId.
-      ['–', '4', 'only live', 'Thesis 9 on climate'],
+      ['–', '4', 'only live', 'Thesis 9 on climate', 'ours ranks it #9'],
+    ]);
+  });
+
+  it('says when the live page matches a doc but ranks it past its top 3,000', async () => {
+    const live = new StubLivePage({
+      total: 6,
+      status: '6 matches',
+      docIds: [1, 2, 3, 4, 5],
+      plain: [1, 2, 3, 4, 5, 6],
+      // Re-ranked, doc 1 falls out of the order the page displays.
+      reranked: [2, 3, 4, 5, 6],
+    });
+    const el = await comparePanel(live, 'on climate');
+    await waitUntil(() => !summary(el).includes('waiting'));
+    expect(rows(el)[0][4]).to.equal('live matches it, past its top 3,000');
+  });
+
+  it('says when ours matches a doc but ranks it past its cap', async () => {
+    const engine = new MockEtdEngine(mockEtdTheses(12));
+    engine.reachableCap = 5; // stands in for the 3,000 cap
+    const live = new StubLivePage({
+      total: 12,
+      status: '12 matches',
+      docIds: [1, 2, 3, 4, 9],
+    });
+    const el = await comparePanel(live, 'climate', 5, engine);
+    await waitUntil(() => !summary(el).includes('waiting'));
+    expect(rows(el)[5]).to.deep.equal([
+      '–',
+      '5',
+      'only live',
+      'Thesis 9 on climate',
+      'ours matches it, past its top 3,000',
+    ]);
+  });
+
+  it('says when ours does not match a doc at all', async () => {
+    const live = new StubLivePage({
+      total: 13,
+      status: '13 matches',
+      docIds: [1, 2, 3, 4, 99],
+    });
+    const el = await comparePanel(live, 'climate');
+    await waitUntil(() => !summary(el).includes('waiting'));
+    expect(rows(el)[5]).to.deep.equal([
+      '–',
+      '5',
+      'only live',
+      'doc 99',
+      "ours doesn't match it",
     ]);
   });
 
@@ -271,5 +341,29 @@ describe('etd-compare-panel', () => {
 
     expect(live.queries).to.be.empty;
     expect(summary(el)).to.include('Search for something');
+  });
+});
+
+describe('omissionCauses', () => {
+  it('names the institution list for inst: queries, on either side', () => {
+    const cause =
+      'the live page matches institutions through its institution list, not yet ported';
+    expect(omissionCauses('inst:mit robotics', 'live')).to.deep.equal([cause]);
+    expect(omissionCauses('robotics institution:mit', 'ours')).to.deep.equal([
+      cause,
+    ]);
+  });
+
+  it('names phrase checking for quoted queries, only for the live page', () => {
+    // Ours doesn't check yet, so it keeps more: only live drops a doc for it.
+    expect(omissionCauses('"sea ice" drift', 'live')).to.deep.equal([
+      'the live page only keeps it if the quoted words are side by side, not yet ported',
+    ]);
+    expect(omissionCauses('"sea ice" drift', 'ours')).to.deep.equal([]);
+  });
+
+  it('names nothing for a plain query', () => {
+    expect(omissionCauses('sea ice', 'live')).to.deep.equal([]);
+    expect(omissionCauses('constitution law', 'ours')).to.deep.equal([]);
   });
 });

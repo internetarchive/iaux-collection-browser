@@ -140,6 +140,7 @@ export class StaticEtdEngine implements EtdEngine {
       ranked = await phraseBoost(ranked, boost, posfwd, options);
     }
     const marked = termsToMark(terms);
+    let ranks: Map<number, number> | undefined;
     let cursor = 0;
     return {
       result: {
@@ -160,6 +161,13 @@ export class StaticEtdEngine implements EtdEngine {
       },
       async facets() {
         return emptyFacets();
+      },
+      rankOf(docId) {
+        ranks ??= new Map(ranked.map((id, i) => [id, i + 1]));
+        return ranks.get(docId);
+      },
+      matches(docId) {
+        return scores.has(docId);
       },
     };
   }
@@ -195,6 +203,12 @@ function emptyQuery(): EtdQuery {
     },
     async facets() {
       return emptyFacets();
+    },
+    rankOf() {
+      return undefined;
+    },
+    matches() {
+      return false;
     },
   };
 }

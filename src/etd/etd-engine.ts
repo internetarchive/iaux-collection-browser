@@ -122,6 +122,16 @@ export interface EtdQuery {
 
   /** Facet counts across the query's matching records. */
   facets(options?: EtdCallOptions): Promise<EtdFacetCounts>;
+
+  /**
+   * A record's 1-based place in the ranking, or undefined when it isn't
+   * reachable (unmatched, or past the ranking cap). Optional: for tools
+   * that explain a ranking, like the demo's compare panel.
+   */
+  rankOf?(docId: number): number | undefined;
+
+  /** Whether a record matched at all, ranked or not. Optional, as rankOf. */
+  matches?(docId: number): boolean;
 }
 
 /**

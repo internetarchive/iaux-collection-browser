@@ -218,6 +218,17 @@ describe('StaticEtdEngine', () => {
     ]);
   });
 
+  it('says where it ranks any doc, and whether it matched at all', async () => {
+    const { engine } = await engineOver();
+    const query = await engine.query('sea ice', {});
+    const order = (await query.next(10)).map(r => r.docId);
+    expect(order.map(d => query.rankOf!(d))).to.deep.equal([1, 2, 3]);
+    expect(order.every(d => query.matches!(d))).to.be.true;
+    // Coastal erosion (doc 4) mentions neither word.
+    expect(query.rankOf!(4)).to.be.undefined;
+    expect(query.matches!(4)).to.be.false;
+  });
+
   it('returns nothing for words not in the index', async () => {
     const { engine } = await engineOver();
     const query = await engine.query('zeppelin', {});

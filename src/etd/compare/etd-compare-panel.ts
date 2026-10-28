@@ -1,7 +1,7 @@
 import { LitElement, PropertyValues, css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { keyed } from 'lit/directives/keyed.js';
-import type { EtdEngine, EtdRecord } from '../etd-engine';
+import type { EtdEngine, EtdQuery, EtdRecord } from '../etd-engine';
 import { LiveEtdPage, LiveEtdSearch, LiveEtdSource } from './live-etd-page';
 import { RankDiff, RankedDoc, diffRankings } from './rank-diff';
 
@@ -10,6 +10,17 @@ interface OurSearch {
   total: number;
   approximate: boolean;
   records: EtdRecord[];
+  /** The query itself, to look up where ours ranks a doc it didn't show. */
+  query: EtdQuery;
+}
+
+/** The comparison the table lays out. */
+interface TableComparison {
+  diff: RankDiff;
+  /** What ours is compared against, for the heading. */
+  against: string;
+  /** Where that live order ranks a doc. */
+  liveRankOf: (docId: number) => number | undefined;
 }
 
 /** Where the comparison against the live page's displayed order stands. */
@@ -200,6 +211,7 @@ export class EtdComparePanel extends LitElement {
       total: results.result.total,
       approximate: results.result.approximate,
       records,
+      query: results,
     };
   }
 
@@ -289,14 +301,24 @@ export class EtdComparePanel extends LitElement {
   }
 
   /** The comparison the table lays out: the displayed order once known. */
-  private get tableDiff(): [RankDiff, string] | undefined {
+  private get tableDiff(): TableComparison | undefined {
     if (!this.comparison) return undefined;
-    const { diff, shown } = this.comparison;
+    const { diff, shown, theirs } = this.comparison;
     if (shown.state === 'compared') {
-      return [shown.diff, 'as the live page shows them'];
+      return {
+        diff: shown.diff,
+        against: 'as the live page shows them',
+        liveRankOf: docId => theirs.shownRankOf(docId),
+      };
     }
-    if (shown.state === 'not-reranked') return [diff, 'the live page'];
-    return [diff, "before the live page's re-ranking"];
+    return {
+      diff,
+      against:
+        shown.state === 'not-reranked'
+          ? 'the live page'
+          : "before the live page's re-ranking",
+      liveRankOf: docId => theirs.plainRankOf(docId),
+    };
   }
 
   /**
@@ -313,8 +335,8 @@ export class EtdComparePanel extends LitElement {
    */
   private get rankingTemplate() {
     const table = this.tableDiff;
-    if (!table || !table[0].docs.length) return nothing;
-    const [diff, against] = table;
+    if (!table || !table.diff.docs.length) return nothing;
+    const { diff, against } = table;
     const heading = `Top ${this.depth}${
       diff.identical ? ', identical' : ''
     }: ours vs ${against}`;
@@ -338,10 +360,11 @@ export class EtdComparePanel extends LitElement {
                   <th scope="col">Live</th>
                   <th scope="col">Difference</th>
                   <th scope="col">Title</th>
+                  <th scope="col">Why</th>
                 </tr>
               </thead>
               <tbody>
-                ${diff.docs.map(doc => this.rowTemplate(doc))}
+                ${diff.docs.map(doc => this.rowTemplate(doc, table))}
               </tbody>
             </table>
           </div>
@@ -350,7 +373,7 @@ export class EtdComparePanel extends LitElement {
     );
   }
 
-  private rowTemplate(doc: RankedDoc) {
+  private rowTemplate(doc: RankedDoc, table: TableComparison) {
     const [kind, label] = rowKind(doc);
     const title = this.comparison?.titles.get(doc.docId) ?? `doc ${doc.docId}`;
     return html`
@@ -363,8 +386,39 @@ export class EtdComparePanel extends LitElement {
             : label}
         </td>
         <td>${title}</td>
+        <td class="why">${this.whyOmitted(doc, table) ?? nothing}</td>
       </tr>
     `;
+  }
+
+  /**
+   * For a doc only one side's top ranks hold: where the other side has it,
+   * and a known cause when the query uses something not ported yet.
+   */
+  private whyOmitted(
+    doc: RankedDoc,
+    table: TableComparison,
+  ): string | undefined {
+    if (!this.comparison) return undefined;
+    const { ours, theirs, query } = this.comparison;
+    if (doc.theirs === undefined) {
+      const rank = table.liveRankOf(doc.docId);
+      if (rank) return `live ranks it #${rank.toLocaleString()}`;
+      if (theirs.plainRankOf(doc.docId)) {
+        return `live matches it, past its top ${RANKED.toLocaleString()}`;
+      }
+      return withCause("live doesn't match it", omissionCauses(query, 'live'));
+    }
+    if (doc.ours === undefined) {
+      const rank = ours.query.rankOf?.(doc.docId);
+      if (rank) return `ours ranks it #${rank.toLocaleString()}`;
+      if (!ours.query.matches) return undefined;
+      if (ours.query.matches(doc.docId)) {
+        return `ours matches it, past its top ${RANKED.toLocaleString()}`;
+      }
+      return withCause("ours doesn't match it", omissionCauses(query, 'ours'));
+    }
+    return undefined;
   }
 
   static styles = css`
@@ -470,6 +524,11 @@ export class EtdComparePanel extends LitElement {
       border-bottom: 1px solid #eee;
     }
 
+    td.why {
+      color: #444;
+      font-size: 1.2rem;
+    }
+
     td:nth-child(-n + 3) {
       white-space: nowrap;
     }
@@ -526,6 +585,34 @@ export class EtdComparePanel extends LitElement {
       box-sizing: border-box;
     }
   `;
+}
+
+/** How many results each side ranks; past this, a match has no rank. */
+const RANKED = 3000;
+
+/**
+ * Known reasons, from the query's syntax, that `side` would miss a doc the
+ * other side matches: features of the live page not ported yet.
+ */
+export function omissionCauses(query: string, side: 'ours' | 'live'): string[] {
+  const causes: string[] = [];
+  if (/(^|\s)(inst|institution):/i.test(query)) {
+    causes.push(
+      'the live page matches institutions through its institution list, not yet ported',
+    );
+  }
+  // Ours keeps a quoted phrase's words anywhere near each other; the live
+  // page drops a doc where they aren't side by side.
+  if (side === 'live' && query.includes('"')) {
+    causes.push(
+      'the live page only keeps it if the quoted words are side by side, not yet ported',
+    );
+  }
+  return causes;
+}
+
+function withCause(reason: string, causes: string[]): string {
+  return [reason, ...causes].join(' · ');
 }
 
 /** The row's class and its text label; the label carries the meaning, not the color. */

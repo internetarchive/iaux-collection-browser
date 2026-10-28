@@ -28,6 +28,18 @@ export interface LiveEtdSearch {
    * only unquoted 2-6 word queries are boosted.
    */
   reranked: Promise<number[] | undefined>;
+
+  /**
+   * A doc's 1-based place in the page's plain ranking, which holds every
+   * match; undefined when the page didn't match it.
+   */
+  plainRankOf(docId: number): number | undefined;
+
+  /**
+   * A doc's 1-based place in the order the page displays (its top 3000,
+   * re-ranked once `reranked` settles); undefined when it isn't there.
+   */
+  shownRankOf(docId: number): number | undefined;
 }
 
 /** Something that answers queries the way the live page does. */
@@ -96,14 +108,22 @@ export class LiveEtdPage implements LiveEtdSource {
       );
     }
     const ranked = state.lastAll as unknown[];
+    const plainRanks = lazyRanks(() => docIdsOf(ranked));
+    let shownRanks = lazyRanks(() => docIdsOf(asArray(state.lastRanked)));
+    const reranked = boost
+      ? this.rerankedOrder(boost).then(order => {
+          shownRanks = lazyRanks(() => order);
+          return order.slice(0, depth);
+        })
+      : Promise.resolve(undefined);
     return {
       version: state.version,
       total: ranked.length,
       status: statusEl?.textContent?.trim() ?? '',
       docIds: docIdsOf(ranked, depth),
-      reranked: boost
-        ? this.rerankedOrder(boost, depth)
-        : Promise.resolve(undefined),
+      reranked,
+      plainRankOf: docId => plainRanks().get(docId),
+      shownRankOf: docId => shownRanks().get(docId),
     };
   }
 
@@ -127,10 +147,8 @@ export class LiveEtdPage implements LiveEtdSource {
     this.boostWatched = true;
   }
 
-  private async rerankedOrder(
-    boost: Promise<unknown>,
-    depth: number,
-  ): Promise<number[]> {
+  /** The page's whole displayed order, once its boost has applied. */
+  private async rerankedOrder(boost: Promise<unknown>): Promise<number[]> {
     // run() applies the boosted order in its own then(), attached before ours.
     await boost;
     const { lastRanked } = this.readState();
@@ -139,7 +157,7 @@ export class LiveEtdPage implements LiveEtdSource {
         'live page has no lastRanked ranking: its script has changed',
       );
     }
-    return docIdsOf(lastRanked, depth);
+    return docIdsOf(lastRanked);
   }
 
   private window(): Window {
@@ -189,8 +207,21 @@ export class LiveEtdPage implements LiveEtdSource {
 }
 
 /** The first `depth` docIds of a page ranking: [docId, score] pairs. */
-function docIdsOf(ranked: unknown[], depth: number): number[] {
+function docIdsOf(ranked: unknown[], depth = ranked.length): number[] {
   return ranked
     .slice(0, depth)
     .map(entry => (Array.isArray(entry) ? Number(entry[0]) : NaN));
+}
+
+function asArray(value: unknown): unknown[] {
+  return Array.isArray(value) ? value : [];
+}
+
+/** docId -> 1-based rank, built on first use: rankings run to 100,000s. */
+function lazyRanks(order: () => number[]): () => Map<number, number> {
+  let ranks: Map<number, number> | undefined;
+  return () => {
+    ranks ??= new Map(order().map((docId, i) => [docId, i + 1]));
+    return ranks;
+  };
 }

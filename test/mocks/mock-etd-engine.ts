@@ -117,6 +117,11 @@ export class MockEtdEngine implements EtdEngine {
         throwIfAborted(facetOptions?.signal);
         return facetCounts(matches);
       },
+      rankOf: docId => {
+        const rank = matches.findIndex(t => t.docId === docId) + 1;
+        return rank >= 1 && rank <= result.reachable ? rank : undefined;
+      },
+      matches: docId => matches.some(t => t.docId === docId),
     };
   }
 
