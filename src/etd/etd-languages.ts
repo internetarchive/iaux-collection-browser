@@ -12,8 +12,18 @@ import { codeToLanguageMap } from '../language-code-handler/language-code-mappin
 
 let displayNames: Intl.DisplayNames | undefined;
 
+/**
+ * ETD's own names for codes the shared mapping names differently from ISO
+ * 639-1. The shared mapping is left as it is: archive.org's own language
+ * facet may rely on it.
+ * - `ng` is Ndonga; the shared mapping says English, which would count the
+ *   index's Ndonga theses as English. (Browsers don't all name it either.)
+ */
+const ETD_NAMES: Record<string, string> = { ng: 'Ndonga' };
+
 /** A code's English name, or the code itself when nothing names it. */
 export function languageName(code: string): string {
+  if (ETD_NAMES[code]) return ETD_NAMES[code];
   const mapped = codeToLanguageMap[code];
   // The mapping marks some codes 'skip' rather than naming them.
   if (mapped && mapped !== 'skip') return mapped;
