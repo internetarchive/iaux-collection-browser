@@ -1,5 +1,6 @@
 import { LitElement, PropertyValues, css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
+import { keyed } from 'lit/directives/keyed.js';
 import type { EtdEngine, EtdRecord } from '../etd-engine';
 import { LiveEtdPage, LiveEtdSearch, LiveEtdSource } from './live-etd-page';
 import { RankDiff, RankedDoc, diffRankings } from './rank-diff';
@@ -294,38 +295,59 @@ export class EtdComparePanel extends LitElement {
     if (shown.state === 'compared') {
       return [shown.diff, 'as the live page shows them'];
     }
+    if (shown.state === 'not-reranked') return [diff, 'the live page'];
     return [diff, "before the live page's re-ranking"];
   }
 
+  /**
+   * While the live page is still re-ranking: its order can still change, so
+   * a difference now isn't worth opening the table for.
+   */
+  private get awaitingRerank(): boolean {
+    return this.comparison?.shown.state === 'waiting';
+  }
+
+  /**
+   * The ranking side by side. Always there, so matching rows can be checked
+   * too, but only open when the two differ.
+   */
   private get rankingTemplate() {
     const table = this.tableDiff;
-    if (!table || table[0].identical) return nothing;
+    if (!table || !table[0].docs.length) return nothing;
     const [diff, against] = table;
-    return html`
-      <details open>
-        <summary>Top ${this.depth}, ours vs ${against}</summary>
-        <div
-          class="table-scroll"
-          role="region"
-          aria-label="Top ${this.depth}, ours vs ${against}"
-          tabindex="0"
-        >
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Ours</th>
-                <th scope="col">Live</th>
-                <th scope="col">Difference</th>
-                <th scope="col">Title</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${diff.docs.map(doc => this.rowTemplate(doc))}
-            </tbody>
-          </table>
-        </div>
-      </details>
-    `;
+    const heading = `Top ${this.depth}${
+      diff.identical ? ', identical' : ''
+    }: ours vs ${against}`;
+    // Keyed by query, so a drawer someone opened or closed resets for the
+    // next search, but not when the live page's re-ranking lands.
+    return keyed(
+      this.comparison!.query,
+      html`
+        <details .open=${!diff.identical && !this.awaitingRerank}>
+          <summary>${heading}</summary>
+          <div
+            class="table-scroll"
+            role="region"
+            aria-label=${heading}
+            tabindex="0"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Ours</th>
+                  <th scope="col">Live</th>
+                  <th scope="col">Difference</th>
+                  <th scope="col">Title</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${diff.docs.map(doc => this.rowTemplate(doc))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      `,
+    );
   }
 
   private rowTemplate(doc: RankedDoc) {

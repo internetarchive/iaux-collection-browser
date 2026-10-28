@@ -80,6 +80,15 @@ function summary(el: EtdComparePanel): string {
     .textContent!.replace(/\s+/g, ' ');
 }
 
+/** The side-by-side ranking's drawer. */
+function rankingDrawer(el: EtdComparePanel): HTMLDetailsElement {
+  return el.shadowRoot!.querySelector('.table-scroll')!.closest('details')!;
+}
+
+function drawerHeading(el: EtdComparePanel): string {
+  return rankingDrawer(el).querySelector('summary')!.textContent!.trim();
+}
+
 function rows(el: EtdComparePanel): string[][] {
   return [...el.shadowRoot!.querySelectorAll('tbody tr')].map(tr =>
     [...tr.querySelectorAll('td')].map(td => td.textContent!.trim()),
@@ -104,7 +113,18 @@ describe('etd-compare-panel', () => {
     expect(summary(el)).to.include(
       'As the live page shows them: ✅ no re-ranking for this query',
     );
-    expect(el.shadowRoot!.querySelector('table')).to.be.null;
+    // The ranking is still there to check, but closed: nothing to look at.
+    expect(rankingDrawer(el).open).to.be.false;
+    expect(drawerHeading(el)).to.equal(
+      'Top 5, identical: ours vs the live page',
+    );
+    expect(rows(el).map(row => row[2])).to.deep.equal([
+      'same',
+      'same',
+      'same',
+      'same',
+      'same',
+    ]);
   });
 
   it('shows a match before re-ranking that differs once the live page re-ranks', async () => {
@@ -125,16 +145,21 @@ describe('etd-compare-panel', () => {
       "Before the live page's re-ranking: ✅ top 5 identical",
     );
     expect(summary(el)).to.include('⏳ waiting for its re-ranking');
-    expect(el.shadowRoot!.querySelector('table')).to.be.null;
+    expect(rankingDrawer(el).open).to.be.false;
+    expect(drawerHeading(el)).to.equal(
+      "Top 5, identical: ours vs before the live page's re-ranking",
+    );
 
     live.releaseRerank!();
     await waitUntil(() => !summary(el).includes('waiting'));
     expect(summary(el)).to.include(
       'As the live page shows them: ⚠️ top 5 differ: 4/5 shared in top 5 · 4 moved · 1 only ours · 1 only live',
     );
-    expect(
-      el.shadowRoot!.querySelector('details[open] summary')!.textContent,
-    ).to.include('ours vs as the live page shows them');
+    // Opens once the re-ranked order differs.
+    expect(rankingDrawer(el).open).to.be.true;
+    expect(drawerHeading(el)).to.equal(
+      'Top 5: ours vs as the live page shows them',
+    );
     expect(rows(el)[0]).to.deep.equal([
       '1',
       '–',
@@ -160,9 +185,8 @@ describe('etd-compare-panel', () => {
     await waitUntil(() => !summary(el).includes('waiting'));
 
     expect(summary(el)).to.include('⚠️ Totals differ: ours 12, live 13');
-    expect(
-      el.shadowRoot!.querySelector('details[open] summary')!.textContent,
-    ).to.include("ours vs before the live page's re-ranking");
+    expect(rankingDrawer(el).open).to.be.true;
+    expect(drawerHeading(el)).to.equal('Top 5: ours vs the live page');
     expect(summary(el)).to.include(
       "Before the live page's re-ranking: ⚠️ top 5 differ",
     );
@@ -195,6 +219,50 @@ describe('etd-compare-panel', () => {
     el.query = 'on climate';
     await waitUntil(() => summary(el).includes('Totals'));
     expect(summary(el)).to.include('✅ Totals match');
+  });
+
+  it('keeps the table closed until the live page has re-ranked', async () => {
+    // Like sea ice since the boost was ported: ours differs from the live
+    // page's plain order, then matches once it re-ranks.
+    const live = new StubLivePage(
+      {
+        total: 12,
+        status: '12 matches',
+        docIds: [5, 4, 3, 2, 1],
+        reranked: [1, 2, 3, 4, 5],
+      },
+      true,
+    );
+    const el = await comparePanel(live, 'on climate');
+    expect(summary(el)).to.include("Before the live page's re-ranking: ⚠️");
+    expect(rankingDrawer(el).open).to.be.false;
+
+    live.releaseRerank!();
+    await waitUntil(() => !summary(el).includes('waiting'));
+    expect(rankingDrawer(el).open).to.be.false;
+    expect(drawerHeading(el)).to.equal(
+      'Top 5, identical: ours vs as the live page shows them',
+    );
+  });
+
+  it('starts each search with the drawer as its result calls for', async () => {
+    // Someone closes a differing table; the next differing search opens it.
+    const live = new StubLivePage({
+      total: 12,
+      status: '12 matches',
+      docIds: [2, 1, 3, 4, 5],
+    });
+    const el = await comparePanel(live, 'climate');
+    await waitUntil(() => !summary(el).includes('waiting'));
+    rankingDrawer(el).open = false;
+
+    const closed = rankingDrawer(el);
+    el.query = 'on climate';
+    await el.updateComplete; // the new search has started
+    await waitUntil(() => !summary(el).includes('Comparing'));
+    await waitUntil(() => !summary(el).includes('waiting'));
+    expect(rankingDrawer(el)).to.not.equal(closed);
+    expect(rankingDrawer(el).open).to.be.true;
   });
 
   it('prompts for a query rather than comparing an empty one', async () => {
