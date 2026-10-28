@@ -63,10 +63,11 @@ export class TextSnippetBlock extends LitElement {
       let index = 0;
       for (const match of matches) {
         if (match.index != null) {
-          templates.push(html`
-            ${s.slice(index, match.index)}
-            <mark>${match[1]}</mark>
-          `);
+          // On one line: whitespace in the template would render as spaces
+          // around the mark, splitting words and detaching punctuation.
+          templates.push(
+            html`${s.slice(index, match.index)}<mark>${match[1]}</mark>`,
+          );
           index = match.index + match[0].length;
         }
       }
