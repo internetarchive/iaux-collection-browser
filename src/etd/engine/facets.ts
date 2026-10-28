@@ -2,12 +2,13 @@ import type { EtdCallOptions } from '../etd-engine';
 import type { EtdIndexFiles } from './index-files';
 
 /**
- * Per-thesis facet values (year and language, so far), for counting a
- * query's matches and filtering them.
+ * Per-thesis facet values, for counting a query's matches and filtering
+ * them: year, flags (sources, availability), language, country and degree
+ * level.
  *
  * facets-meta.json describes the rows; facets.gz.json holds one row per doc,
  * gzipped (~29 MB for 25.9M docs, 8 bytes a row unpacked). It's read whole,
- * once, and only the two bytes used here are kept (~52 MB), so counts and
+ * once, and only the five bytes used here are kept (~130 MB), so counts and
  * filters cover every match, not just the top-ranked ones.
  *
  * Ported from etd-search/search.html (loadFacetSidecar, frow, yearOf; page
@@ -24,11 +25,21 @@ export interface EtdFacetMeta {
   year_enc?: number;
   /** Language codes (ISO 639-1); a row's language byte is index + 1. */
   langs: string[];
+  /** Country codes (ISO 3166 alpha-2); a row's country byte is index + 1. */
+  countries?: string[];
+  /** Flag name -> bit, in flags(): byte 1, then byte 6 above it. */
+  flag_bits?: Record<string, number>;
+  /** Where the degree level sits in byte 6, and its codes. */
+  levels?: { shift: number; mask: number; codes: Record<string, number> };
 }
 
 /** Row byte offsets, per facets-meta.json's `fields`. */
 const YEAR_BYTE = 0;
+const FLAGS_BYTE = 1;
 const LANGUAGE_BYTE = 4;
+const COUNTRY_BYTE = 5;
+/** More source flags (bits 0-1) and the degree level (bits 2-4). */
+const EXTRA_BYTE = 6;
 
 /** The Cache Storage cache holding facets.gz.json across visits. */
 const CACHE_NAME = 'etd-facet-cache';
@@ -45,23 +56,68 @@ export function yearFromByte(byte: number, encoding = 1): number {
   return byte <= 20 ? 1700 + 10 * (byte - 1) : 1900 + (byte - 21);
 }
 
-/** Every doc's year and language, read from the whole facets file. */
+/** The row bytes kept, one array per byte, indexed by docId - 1. */
+export interface EtdFacetBytes {
+  years: Uint8Array;
+  flags: Uint8Array;
+  languages: Uint8Array;
+  countries: Uint8Array;
+  extras: Uint8Array;
+}
+
+/** Every doc's facet values, read from the whole facets file. */
 export class EtdFacetRows {
+  /** Degree level number -> its code (e.g. 1 -> 'phd'). */
+  private readonly levelCodes: Map<number, string>;
+
   constructor(
     private readonly meta: EtdFacetMeta,
-    private readonly years: Uint8Array,
-    private readonly languages: Uint8Array,
-  ) {}
+    private readonly bytes: EtdFacetBytes,
+  ) {
+    this.levelCodes = new Map(
+      Object.entries(meta.levels?.codes ?? {}).map(([code, n]) => [n, code]),
+    );
+  }
 
   /** A doc's year; 0 when unknown (or the id is out of range). */
   year(docId: number): number {
-    return yearFromByte(this.years[docId - 1] ?? 0, this.meta.year_enc);
+    return yearFromByte(this.bytes.years[docId - 1] ?? 0, this.meta.year_enc);
   }
 
   /** A doc's language code; undefined when unknown. */
   language(docId: number): string | undefined {
-    const index = this.languages[docId - 1] ?? 0;
+    const index = this.bytes.languages[docId - 1] ?? 0;
     return index ? this.meta.langs[index - 1] : undefined;
+  }
+
+  /** A doc's country code; undefined when unknown. */
+  country(docId: number): string | undefined {
+    const index = this.bytes.countries[docId - 1] ?? 0;
+    return index ? this.meta.countries?.[index - 1] : undefined;
+  }
+
+  /** Whether a doc has the named flag (a name in facets-meta's flag_bits). */
+  hasFlag(docId: number, name: string): boolean {
+    const bit = this.meta.flag_bits?.[name];
+    if (!bit) return false;
+    const flags =
+      (this.bytes.flags[docId - 1] ?? 0) |
+      ((this.bytes.extras[docId - 1] ?? 0) << 8);
+    return (flags & bit) !== 0;
+  }
+
+  /** The flag names facets-meta defines. */
+  get flagNames(): string[] {
+    return Object.keys(this.meta.flag_bits ?? {});
+  }
+
+  /** A doc's degree level code (e.g. 'phd'); undefined when unknown. */
+  level(docId: number): string | undefined {
+    const { levels } = this.meta;
+    if (!levels) return undefined;
+    const n =
+      ((this.bytes.extras[docId - 1] ?? 0) >> levels.shift) & levels.mask;
+    return this.levelCodes.get(n);
   }
 }
 
@@ -107,13 +163,19 @@ export class EtdFacets {
     }
     const response = await this.cachedResponse('facets.gz.json');
     if (!response.body) throw new Error('ETD facets: empty facets.gz.json');
-    const [years, languages] = await keepBytes(
+    const [years, flags, languages, countries, extras] = await keepBytes(
       response.body.pipeThrough(new DecompressionStream('gzip')),
       meta.n,
       meta.stride,
-      [YEAR_BYTE, LANGUAGE_BYTE],
+      [YEAR_BYTE, FLAGS_BYTE, LANGUAGE_BYTE, COUNTRY_BYTE, EXTRA_BYTE],
     );
-    return new EtdFacetRows(meta, years, languages);
+    return new EtdFacetRows(meta, {
+      years,
+      flags,
+      languages,
+      countries,
+      extras,
+    });
   }
 
   /** The file from Cache Storage when there, else fetched (and cached). */
@@ -199,4 +261,17 @@ function abortable<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
       },
     );
   });
+}
+
+/**
+ * A facet the engine counts and filters by: how to read a doc's values for
+ * it from the rows, and how several required values combine. The engine is
+ * handed these, so it knows no facet by name.
+ */
+export interface EtdFacetReader {
+  key: string;
+  /** A match needs any of the included values (default) or all of them. */
+  combine?: 'any' | 'all';
+  /** Calls `add` with each of the doc's values for this facet, as codes. */
+  read(rows: EtdFacetRows, docId: number, add: (code: string) => void): void;
 }

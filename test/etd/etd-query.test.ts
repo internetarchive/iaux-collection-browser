@@ -52,8 +52,10 @@ describe('etdRequestFromParams', () => {
         },
       },
     });
-    expect(request.filters.includeLanguages).to.deep.equal(['eng', 'ger']);
-    expect(request.filters.excludeLanguages).to.deep.equal(['fre']);
+    expect(request.filters.facets?.language).to.deep.equal({
+      include: ['eng', 'ger'],
+      exclude: ['fre'],
+    });
   });
 
   it('turns language names from the facet into every code with that name', () => {
@@ -66,8 +68,30 @@ describe('etdRequestFromParams', () => {
         },
       },
     });
-    expect(request.filters.includeLanguages).to.include('pt');
-    expect(request.filters.excludeLanguages).to.include.members(['fr', 'fre']);
+    expect(request.filters.facets?.language?.include).to.include('pt');
+    expect(request.filters.facets?.language?.exclude).to.include.members([
+      'fr',
+      'fre',
+    ]);
+  });
+
+  it('maps any facet in the table by its names, e.g. degree level', () => {
+    const request = etdRequestFromParams({
+      query: 'climate',
+      filters: {
+        degree: { Doctoral: FilterConstraint.INCLUDE },
+        availability: {
+          'Has abstract': FilterConstraint.INCLUDE,
+          'Archived (whole thesis)': FilterConstraint.INCLUDE,
+        },
+        country: { Canada: FilterConstraint.EXCLUDE },
+      },
+    });
+    expect(request.filters.facets).to.deep.equal({
+      degree: { include: ['phd'], exclude: undefined },
+      availability: { include: ['abstract', 'archived'], exclude: undefined },
+      country: { include: undefined, exclude: ['CA'] },
+    });
   });
 
   it('reports filters the engine cannot apply instead of failing', () => {
@@ -80,7 +104,7 @@ describe('etdRequestFromParams', () => {
       },
     });
     expect(request.ignoredFields).to.deep.equal(['subject', 'firstTitle']);
-    expect(request.filters.includeLanguages).to.deep.equal(['eng']);
+    expect(request.filters.facets?.language?.include).to.deep.equal(['eng']);
   });
 });
 

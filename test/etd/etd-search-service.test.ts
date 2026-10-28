@@ -36,7 +36,7 @@ describe('EtdSearchService', () => {
 
       const { filters } = engine.queryCalls[0];
       expect(filters.year).to.deep.equal({ min: 2000, max: 2009 });
-      expect(filters.excludeLanguages).to.include('fr');
+      expect(filters.facets?.language?.exclude).to.include('fr');
       // 2000-2009 is 10 of every 30 theses, and only the even (en) ones: 120 / 30 * 10 / 2
       expect(result.success!.response.totalResults).to.equal(20);
     });
@@ -48,12 +48,16 @@ describe('EtdSearchService', () => {
       );
     });
 
-    it('answers the default facets request with language and year facets', async () => {
+    it('answers the default facets request with every facet in the table, and years', async () => {
       const result = await service.search({ query: 'climate', rows: 0 });
 
       const { aggregations } = result.success!.response;
       expect(Object.keys(aggregations!).sort()).to.deep.equal([
+        'availability',
+        'country',
+        'degree',
         'language',
+        'source',
         'year_histogram',
       ]);
       // Per year: 1990-2019, 4 theses each.

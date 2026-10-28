@@ -21,10 +21,10 @@ const record: EtdRecord = {
 
 const facets: EtdFacetCounts = {
   year: { '1871': 2, '1990': 4, '1992': 9 },
-  language: { en: 12, fr: 3, fre: 2, pt: 5, zz: 1 },
-  country: { CA: 3 },
-  domain: { 'dspace.mit.edu': 3 },
-  institution: { MIT: 3 },
+  facets: {
+    language: { en: 12, fr: 3, fre: 2, pt: 5, zz: 1 },
+    degree: { unknown: 5, phd: 9, masters: 2 },
+  },
 };
 
 function tileFor(r: EtdRecord): TileModel {
@@ -113,6 +113,18 @@ describe('etdAggregationsJson', () => {
         ],
       },
     });
+  });
+
+  it('names any facet’s values from the table, e.g. degree level', () => {
+    const json = etdAggregationsJson(facets, ['degree']) as {
+      degree: { buckets: { key: string; doc_count: number }[] };
+    };
+    // By count, as collection-browser's sidebar sorts every facet.
+    expect(json.degree.buckets).to.deep.equal([
+      { key: 'Doctoral', doc_count: 9 },
+      { key: 'Unknown', doc_count: 5 },
+      { key: "Master's", doc_count: 2 },
+    ]);
   });
 
   it('caps languages at the requested size', () => {

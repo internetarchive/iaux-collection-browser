@@ -4,7 +4,7 @@ import {
   yearBounds,
 } from '../serverless-search/filter-map';
 import type { EtdFilters } from './etd-engine';
-import { languageCodes } from './etd-languages';
+import { etdFacet } from './etd-facets';
 
 /**
  * What a SearchParams asks of the ETD engine.
@@ -34,13 +34,17 @@ export function etdRequestFromParams(params: SearchParams): EtdRequest {
       // The ETD index only knows years, so a date (YYYY-MM) range is widened.
       const year = yearBounds(fieldFilter, field === 'date');
       if (year) filters.year = { ...filters.year, ...year };
-    } else if (field === 'language') {
-      // The facet filters by language name; the engine by code.
+    } else if (etdFacet(field)) {
+      // collection-browser filters by the names a facet shows; the engine
+      // by the codes behind them.
+      const facet = etdFacet(field)!;
       const { include, exclude } = includesAndExcludes(fieldFilter);
-      if (include.length)
-        filters.includeLanguages = include.flatMap(languageCodes);
-      if (exclude.length)
-        filters.excludeLanguages = exclude.flatMap(languageCodes);
+      const codes = (names: string[]) =>
+        names.length ? names.flatMap(name => facet.codesFor(name)) : undefined;
+      filters.facets = {
+        ...filters.facets,
+        [field]: { include: codes(include), exclude: codes(exclude) },
+      };
     } else {
       ignoredFields.push(field);
     }
@@ -54,13 +58,18 @@ export function etdRequestFromParams(params: SearchParams): EtdRequest {
  * that collection-browser sends for the same search share one ranked query.
  */
 export function etdRequestKey(request: EtdRequest): string {
-  const { year, includeLanguages, excludeLanguages } = request.filters;
+  const { year, facets = {} } = request.filters;
   return JSON.stringify([
     request.text,
     year?.min ?? null,
     year?.max ?? null,
-    [...(includeLanguages ?? [])].sort(),
-    [...(excludeLanguages ?? [])].sort(),
+    Object.keys(facets)
+      .sort()
+      .map(key => [
+        key,
+        [...(facets[key].include ?? [])].sort(),
+        [...(facets[key].exclude ?? [])].sort(),
+      ]),
   ]);
 }
 
@@ -68,12 +77,13 @@ export function etdRequestKey(request: EtdRequest): string {
  * Whether a request has anything for the engine to search on.
  */
 export function etdRequestIsEmpty(request: EtdRequest): boolean {
-  const { year, includeLanguages, excludeLanguages } = request.filters;
+  const { year, facets = {} } = request.filters;
   return (
     !request.text &&
     year?.min === undefined &&
     year?.max === undefined &&
-    !includeLanguages?.length &&
-    !excludeLanguages?.length
+    Object.values(facets).every(
+      filter => !filter.include?.length && !filter.exclude?.length,
+    )
   );
 }

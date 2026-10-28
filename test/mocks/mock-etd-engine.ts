@@ -149,6 +149,15 @@ function matchesText(thesis: MockEtdThesis, text: string): boolean {
   return words.every(word => title.includes(word));
 }
 
+/** The mock's facets: one value each, straight off the thesis. */
+const MOCK_FACETS: Record<
+  string,
+  (thesis: MockEtdThesis) => string | undefined
+> = {
+  language: thesis => thesis.language,
+  country: thesis => thesis.country,
+};
+
 function matchesFilters(thesis: MockEtdThesis, filters: EtdFilters): boolean {
   const year = Number.parseInt(thesis.date, 10);
   if (filters.year?.min !== undefined && !(year >= filters.year.min)) {
@@ -157,33 +166,26 @@ function matchesFilters(thesis: MockEtdThesis, filters: EtdFilters): boolean {
   if (filters.year?.max !== undefined && !(year <= filters.year.max)) {
     return false;
   }
-  if (
-    filters.includeLanguages?.length &&
-    !filters.includeLanguages.includes(thesis.language ?? '')
-  ) {
-    return false;
+  for (const [key, filter] of Object.entries(filters.facets ?? {})) {
+    const value = MOCK_FACETS[key]?.(thesis) ?? '';
+    if (filter.include?.length && !filter.include.includes(value)) return false;
+    if (filter.exclude?.includes(value)) return false;
   }
-  if (filters.excludeLanguages?.includes(thesis.language ?? '')) return false;
   return true;
 }
 
 function facetCounts(theses: MockEtdThesis[]): EtdFacetCounts {
-  const counts: EtdFacetCounts = {
-    year: {},
-    language: {},
-    country: {},
-    domain: {},
-    institution: {},
-  };
+  const counts: EtdFacetCounts = { year: {}, facets: {} };
   const bump = (group: Record<string, number>, key?: string) => {
     if (key) group[key] = (group[key] ?? 0) + 1;
   };
   for (const thesis of theses) {
     const year = Number.parseInt(thesis.date, 10);
     if (!Number.isNaN(year)) bump(counts.year, String(year));
-    bump(counts.language, thesis.language);
-    bump(counts.country, thesis.country);
-    bump(counts.domain, thesis.domain);
+    for (const [key, read] of Object.entries(MOCK_FACETS)) {
+      counts.facets[key] ??= {};
+      bump(counts.facets[key], read(thesis));
+    }
   }
   return counts;
 }

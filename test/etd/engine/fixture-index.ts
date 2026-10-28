@@ -21,6 +21,12 @@ export interface FixtureThesis {
   snippet?: string;
   /** Language code (ISO 639-1) for the facet rows; unknown when unset. */
   language?: string;
+  /** Country code (ISO 3166 alpha-2) for the facet rows. */
+  country?: string;
+  /** Degree level code ('phd', 'masters', ...); unknown when unset. */
+  level?: 'phd' | 'masters' | 'bachelors' | 'other';
+  /** Facet flags by name, as facets-meta's flag_bits names them. */
+  flags?: string[];
 }
 
 export interface FixtureOptions {
@@ -354,23 +360,62 @@ function yearByte(date: string | undefined): number {
   return Math.min(255, 21 + (year - 1900));
 }
 
+/** The real index's flag bits (facets-meta.json, 2026-10-26 build). */
+const FLAG_BITS: Record<string, number> = {
+  oai: 1,
+  ia: 2,
+  wbm: 4,
+  hasInstitution: 8,
+  archived: 16,
+  complete: 32,
+  hasTitle: 64,
+  hasAbstract: 128,
+  libcat: 256,
+  printed: 512,
+};
+
+/** The real index's degree level layout: byte 6, bits 2-4. */
+const LEVELS = {
+  byte: 6,
+  shift: 2,
+  mask: 7,
+  codes: { phd: 1, masters: 2, bachelors: 3, other: 4 },
+};
+
 /** facets-meta.json and facets.gz.json, 8-byte rows as the real index has. */
 async function facetFiles(
   theses: FixtureThesis[],
 ): Promise<[Uint8Array, Uint8Array]> {
-  const langs = [
-    ...new Set(theses.map(t => t.language).filter((l): l is string => !!l)),
+  const listOf = (values: (string | undefined)[]) => [
+    ...new Set(values.filter((v): v is string => !!v)),
   ];
+  const langs = listOf(theses.map(t => t.language));
+  const countries = listOf(theses.map(t => t.country));
   const stride = 8;
   const rows = new Uint8Array(theses.length * stride);
   theses.forEach((thesis, i) => {
-    rows[i * stride] = yearByte(thesis.date);
-    rows[i * stride + 4] = thesis.language
-      ? langs.indexOf(thesis.language) + 1
-      : 0;
+    const at = i * stride;
+    const flags = (thesis.flags ?? []).reduce(
+      (all, name) => all | (FLAG_BITS[name] ?? 0),
+      0,
+    );
+    rows[at] = yearByte(thesis.date);
+    rows[at + 1] = flags & 0xff;
+    rows[at + 4] = thesis.language ? langs.indexOf(thesis.language) + 1 : 0;
+    rows[at + 5] = thesis.country ? countries.indexOf(thesis.country) + 1 : 0;
+    const level = thesis.level ? LEVELS.codes[thesis.level] : 0;
+    rows[at + 6] = (flags >> 8) | (level << LEVELS.shift);
   });
   const meta = new TextEncoder().encode(
-    JSON.stringify({ n: theses.length, stride, year_enc: 2, langs }),
+    JSON.stringify({
+      n: theses.length,
+      stride,
+      year_enc: 2,
+      langs,
+      countries,
+      flag_bits: FLAG_BITS,
+      levels: LEVELS,
+    }),
   );
   const gzipped = new Blob([rows])
     .stream()

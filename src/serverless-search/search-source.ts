@@ -1,4 +1,27 @@
-import type { SearchParams } from '@internetarchive/search-service';
+import type {
+  AggregationSortType,
+  SearchParams,
+} from '@internetarchive/search-service';
+
+/**
+ * A facet group a source can count and filter by. The key is both its
+ * aggregation key and its filter field.
+ */
+export interface SourceFacet {
+  key: string;
+  title: string;
+  /** For referring to the group's values, e.g. in the More… dialog. */
+  pluralTitle: string;
+  /** How its values are sorted by default. The source's own order if unset. */
+  sort?: AggregationSortType;
+  /** Shown after this group in the sidebar. At the end if unset. */
+  after?: string;
+  /**
+   * How picked values combine: a match has any of them (the default, as on
+   * archive.org), or all of them (e.g. requirements like "has an abstract").
+   */
+  combine?: 'any' | 'all';
+}
 
 /**
  * A search backend other than the page production service, plugged into
@@ -23,6 +46,18 @@ export interface SearchSource<Request, SourceRecord> {
    * gets all of them.
    */
   readonly aggregationKeys: readonly string[];
+
+  /**
+   * The facet groups among `aggregationKeys`, described for display.
+   * Aggregations that aren't groups (e.g. 'year_histogram') aren't listed.
+   */
+  readonly facets?: readonly SourceFacet[];
+
+  /**
+   * Whether the source can list matches for filters alone, with no query to
+   * rank by (e.g. every result from the 2000s).
+   */
+  readonly listsWithoutQuery?: boolean;
 
   /**
    * The source request for these params, or undefined when they give the

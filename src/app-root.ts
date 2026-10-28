@@ -21,6 +21,8 @@ import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
 import { EtdSearchService } from './etd/etd-search-service';
 import { StaticEtdEngine } from './etd/engine/static-etd-engine';
+import { ETD_FACETS } from './etd/etd-facets';
+import type { FacetDeclaringSearchService } from './serverless-search/serverless-search-service';
 import './etd/compare/etd-compare-panel';
 
 @customElement('app-root')
@@ -36,6 +38,17 @@ export class AppRoot extends LitElement {
     new URL(window.location.href).searchParams.get('search_service') === 'etd';
 
   private etdEngine?: StaticEtdEngine;
+
+  /**
+   * The search service's own facets and whether it can search by filters
+   * alone, for one that declares them (any serverless search does).
+   */
+  private get declaredSearch(): FacetDeclaringSearchService | undefined {
+    const service = this.searchService as Partial<FacetDeclaringSearchService>;
+    return service.extraFacetGroups
+      ? (service as FacetDeclaringSearchService)
+      : undefined;
+  }
 
   private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
@@ -102,6 +115,7 @@ export class AppRoot extends LitElement {
     if (this.isEtdSearch) {
       this.etdEngine = new StaticEtdEngine({
         baseUrl: params.get('etd_base_url') ?? '/etd-index/',
+        facets: ETD_FACETS,
       });
       return new EtdSearchService({ engine: this.etdEngine });
     }
@@ -678,7 +692,8 @@ export class AppRoot extends LitElement {
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
-          ?allowFilterOnlySearch=${this.isEtdSearch}
+          .extraFacetGroups=${this.declaredSearch?.extraFacetGroups ?? []}
+          ?allowFilterOnlySearch=${!!this.declaredSearch?.allowFilterOnlySearch}
           .baseNavigationUrl=${this.isEtdSearch ? '' : 'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}

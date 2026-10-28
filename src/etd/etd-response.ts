@@ -3,13 +3,20 @@ import {
   yearHistogram,
 } from '../serverless-search/source-response';
 import type { EtdFacetCounts, EtdRecord } from './etd-engine';
-import { languageName } from './etd-languages';
+import { ETD_FACETS } from './etd-facets';
+import type { EtdFacet } from './etd-facets';
 
 /** Identifier prefix that marks a hit as an ETD record rather than an item. */
 export const ETD_IDENTIFIER_PREFIX = 'etd-';
 
-/** Aggregation keys ETD can produce, as collection-browser names them. */
-export const ETD_AGGREGATION_KEYS = ['language', 'year_histogram'] as const;
+/**
+ * Aggregation keys ETD can produce, as collection-browser names them: each
+ * facet in the table, and the date picker's histogram.
+ */
+export const ETD_AGGREGATION_KEYS: readonly string[] = [
+  ...ETD_FACETS.map(facet => facet.key),
+  'year_histogram',
+];
 
 /**
  * The identifier an ETD record is shown under.
@@ -68,8 +75,8 @@ export function etdHitJson(record: EtdRecord): Record<string, unknown> {
 const HISTOGRAM_FROM = 1900;
 
 /**
- * Raw aggregations JSON for the requested keys: languages by name as term
- * buckets, years as the date picker's histogram.
+ * Raw aggregations JSON for the requested keys: each facet's values by name
+ * as term buckets, years as the date picker's histogram.
  */
 export function etdAggregationsJson(
   facets: EtdFacetCounts,
@@ -77,14 +84,11 @@ export function etdAggregationsJson(
   size?: number,
 ): Record<string, unknown> {
   const aggregations: Record<string, unknown> = {};
-  if (keys.includes('language')) {
-    // Codes sharing a name count together, as the facet shows one row.
-    const byName: Record<string, number> = {};
-    for (const [code, count] of Object.entries(facets.language)) {
-      const name = languageName(code);
-      byName[name] = (byName[name] ?? 0) + count;
-    }
-    aggregations.language = { buckets: termBuckets(byName, size) };
+  for (const facet of ETD_FACETS) {
+    if (!keys.includes(facet.key)) continue;
+    aggregations[facet.key] = {
+      buckets: facetBuckets(facet, facets.facets[facet.key] ?? {}, size),
+    };
   }
   if (keys.includes('year_histogram')) {
     const years = Object.fromEntries(
@@ -96,6 +100,24 @@ export function etdAggregationsJson(
     if (histogram) aggregations.year_histogram = histogram;
   }
   return aggregations;
+}
+
+/**
+ * A facet's buckets, keyed by value name: codes sharing a name count
+ * together (the facet shows one row), by count, as collection-browser's
+ * sidebar sorts them too.
+ */
+function facetBuckets(
+  facet: EtdFacet,
+  counts: Record<string, number>,
+  size?: number,
+): { key: string; doc_count: number }[] {
+  const byName: Record<string, number> = {};
+  for (const [code, count] of Object.entries(counts)) {
+    const name = facet.label(code);
+    byName[name] = (byName[name] ?? 0) + count;
+  }
+  return termBuckets(byName, size);
 }
 
 function splitCreators(creators: string): string[] {

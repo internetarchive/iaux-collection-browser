@@ -4,6 +4,7 @@ import type { CollectionBrowser } from '../../../src/collection-browser';
 import '../../../src/collection-browser';
 import { StaticEtdEngine } from '../../../src/etd/engine/static-etd-engine';
 import { EtdSearchService } from '../../../src/etd/etd-search-service';
+import { ETD_FACETS } from '../../../src/etd/etd-facets';
 import { FIXTURE_BASE, buildFixtureIndex } from './fixture-index';
 import type { FixtureOptions, FixtureThesis } from './fixture-index';
 
@@ -51,6 +52,7 @@ async function engineOver(theses = THESES, options?: FixtureOptions) {
     baseUrl: FIXTURE_BASE,
     fetch: index.fetch,
     cacheFacets: false,
+    facets: ETD_FACETS,
   });
   await engine.ready;
   return { engine, index };
@@ -279,10 +281,12 @@ describe('StaticEtdEngine', () => {
 
     it('filters by languages to include or exclude', async () => {
       expect(
-        (await seaIce({ includeLanguages: ['fr'] })).query.result.total,
+        (await seaIce({ facets: { language: { include: ['fr'] } } })).query
+          .result.total,
       ).to.equal(1);
       expect(
-        (await seaIce({ excludeLanguages: ['fr'] })).query.result.total,
+        (await seaIce({ facets: { language: { exclude: ['fr'] } } })).query
+          .result.total,
       ).to.equal(2);
     });
 
@@ -300,16 +304,22 @@ describe('StaticEtdEngine', () => {
       await query.next(1);
       expect(await query.facets()).to.deep.equal({
         year: { 2001: 1, 2014: 1, 2019: 1 },
-        language: { en: 2, fr: 1 },
-        country: {},
-        domain: {},
-        institution: {},
+        facets: {
+          language: { en: 2, fr: 1 },
+          country: {},
+          // These theses' records don't give a level or any flags.
+          degree: { unknown: 3 },
+          source: {},
+          availability: { live: 3 },
+        },
       });
     });
 
     it('counts within the filter', async () => {
-      const { query } = await seaIce({ excludeLanguages: ['fr'] });
-      expect((await query.facets()).language).to.deep.equal({ en: 2 });
+      const { query } = await seaIce({
+        facets: { language: { exclude: ['fr'] } },
+      });
+      expect((await query.facets()).facets.language).to.deep.equal({ en: 2 });
     });
 
     it('reads the facets file only when facets or filters need it', async () => {
@@ -326,7 +336,9 @@ describe('StaticEtdEngine', () => {
     it('lists every thesis passing the filters when there are no words', async () => {
       // 'everything in English': in docId order, as there's no ranking.
       const { engine } = await engineOver();
-      const query = await engine.query('', { includeLanguages: ['en'] });
+      const query = await engine.query('', {
+        facets: { language: { include: ['en'] } },
+      });
       expect(query.result.total).to.equal(2);
       expect(titles(await query.next(10))).to.deep.equal([
         'Glacier dynamics in Greenland',
@@ -352,6 +364,84 @@ describe('StaticEtdEngine', () => {
       expect(query.result.total).to.equal(5002);
       expect(query.result.reachable).to.equal(5000);
       expect((await query.facets()).year).to.deep.equal({ 2020: 5002 });
+    });
+
+    describe('country, degree level, source and availability', () => {
+      // Shaped like real records: a PhD from Canada via OAI with its whole
+      // thesis archived; a master's from Brazil in a library catalogue with
+      // only an abstract; one from an Internet Archive item that says little.
+      const theses: FixtureThesis[] = [
+        {
+          title: 'Sea ice drift',
+          country: 'CA',
+          level: 'phd',
+          flags: ['oai', 'hasAbstract', 'complete', 'archived'],
+        },
+        {
+          title: 'Sea ice melt',
+          country: 'BR',
+          level: 'masters',
+          flags: ['libcat', 'hasAbstract'],
+        },
+        { title: 'Sea ice cores', flags: ['ia', 'oai'] },
+      ];
+
+      async function seaIceIn(filters = {}) {
+        const { engine } = await engineOver(theses);
+        return engine.query('sea ice', filters);
+      }
+
+      it('counts each, a thesis under every source and requirement it meets', async () => {
+        const { facets } = await (await seaIceIn()).facets();
+        expect(facets.country).to.deep.equal({ CA: 1, BR: 1 });
+        expect(facets.degree).to.deep.equal({ phd: 1, masters: 1, unknown: 1 });
+        expect(facets.source).to.deep.equal({ oai: 2, libcat: 1, ia: 1 });
+        expect(facets.availability).to.deep.equal({
+          abstract: 2,
+          archived: 1,
+          // Archived, or an Internet Archive item.
+          saved: 2,
+          // Anything but an Internet Archive item has its own live link.
+          live: 2,
+        });
+      });
+
+      it('needs any of several picked values for most facets', async () => {
+        const query = await seaIceIn({
+          facets: { degree: { include: ['phd', 'unknown'] } },
+        });
+        expect(query.result.total).to.equal(2);
+      });
+
+      it('needs all picked availability requirements', async () => {
+        // Abstract AND archived: only the Canadian PhD has both.
+        const both = await seaIceIn({
+          facets: { availability: { include: ['abstract', 'archived'] } },
+        });
+        expect(titles(await both.next(5))).to.deep.equal(['Sea ice drift']);
+        // Abstract alone: two do.
+        const one = await seaIceIn({
+          facets: { availability: { include: ['abstract'] } },
+        });
+        expect(one.result.total).to.equal(2);
+      });
+
+      it('rules out a hidden value, even one of several a thesis has', async () => {
+        const query = await seaIceIn({
+          facets: { source: { exclude: ['ia'] } },
+        });
+        expect(query.result.total).to.equal(2);
+      });
+
+      it('refuses to filter by a facet it was not given', async () => {
+        let error: unknown;
+        try {
+          await seaIceIn({ facets: { colour: { include: ['red'] } } });
+        } catch (err) {
+          error = err;
+        }
+        expect(String(error)).to.include('no "colour" facet');
+      });
     });
 
     it('says so when filtering an index that has no facet files', async () => {
@@ -399,6 +489,7 @@ describe('StaticEtdEngine', () => {
         baseUrl: FIXTURE_BASE,
         fetch: index.fetch,
         cacheFacets: false,
+        facets: ETD_FACETS,
       }),
     });
 
@@ -418,6 +509,7 @@ describe('StaticEtdEngine', () => {
         baseUrl: FIXTURE_BASE,
         fetch: index.fetch,
         cacheFacets: false,
+        facets: ETD_FACETS,
       }),
     });
     const el = await fixture<CollectionBrowser>(

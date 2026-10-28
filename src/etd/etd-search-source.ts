@@ -18,12 +18,18 @@ import {
   etdDocIdFromIdentifier,
   etdHitJson,
 } from './etd-response';
+import { ETD_SOURCE_FACETS } from './etd-facets';
 
 /**
  * The ETD theses & dissertations index as a serverless search source.
  */
 export class EtdSearchSource implements SearchSource<EtdRequest, EtdRecord> {
   readonly aggregationKeys = ETD_AGGREGATION_KEYS;
+
+  readonly facets = ETD_SOURCE_FACETS;
+
+  /** The engine lists every match for filters with no words. */
+  readonly listsWithoutQuery = true;
 
   constructor(private readonly engine: EtdEngine) {}
 

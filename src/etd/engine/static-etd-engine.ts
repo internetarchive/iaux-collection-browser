@@ -13,7 +13,7 @@ import { markTerms, termsToMark } from './mark-terms';
 import { boostTokens, phraseBoost, wordsPlacement } from './phrase-boost';
 import { EtdPosfwd } from './posfwd';
 import { EtdFacets } from './facets';
-import type { EtdFacetRows } from './facets';
+import type { EtdFacetReader, EtdFacetRows } from './facets';
 import { decodePostings } from './postings';
 import type { FieldPrefix } from './query-parser';
 import { parseQuery } from './query-parser';
@@ -35,6 +35,12 @@ export interface StaticEtdEngineOptions {
 
   /** Keep the facets file in Cache Storage across visits (default true). */
   cacheFacets?: boolean;
+
+  /**
+   * The facets to count and filter by. The engine knows none by name: ETD's
+   * are in src/etd/etd-facets.ts. Year is always there (the date picker).
+   */
+  facets?: readonly EtdFacetReader[];
 }
 
 /** Past this many matches the page marks a count as approximate. */
@@ -53,8 +59,9 @@ interface Loaded {
   records: EtdRecords;
   /** Per-doc token text for the phrase boost; absent on an index without it. */
   posfwd?: EtdPosfwd;
-  /** Year and language per doc, for filters and facet counts. */
+  /** Facet values per doc, for filters and facet counts. */
   facets: EtdFacets;
+  readers: readonly EtdFacetReader[];
   prefixes: FieldPrefix[];
 }
 
@@ -94,7 +101,15 @@ export class StaticEtdEngine implements EtdEngine {
     if (files.meta.prefixed_fields?.o) prefixes.push('o:');
     // Loaded on first use: ~29 MB a plain search never needs.
     const facets = new EtdFacets(files, { cache: options.cacheFacets });
-    return { files, dictionary, records, posfwd, facets, prefixes };
+    return {
+      files,
+      dictionary,
+      records,
+      posfwd,
+      facets,
+      readers: options.facets ?? [],
+      prefixes,
+    };
   }
 
   async query(
@@ -102,8 +117,9 @@ export class StaticEtdEngine implements EtdEngine {
     filters: EtdFilters,
     options?: EtdCallOptions,
   ): Promise<EtdQuery> {
-    const { files, dictionary, records, posfwd, facets, prefixes } =
+    const { files, dictionary, records, posfwd, facets, readers, prefixes } =
       await this.loading;
+    const passes = filterFor(filters, readers);
 
     const { tree, filters: clauses } = parseQuery(text);
     if (clauses.length) {
@@ -113,11 +129,12 @@ export class StaticEtdEngine implements EtdEngine {
 
     const terms = queryTerms(tree, prefixes);
     if (!terms.length) {
-      return hasFilters(filters)
+      return passes
         ? listFiltered(
             await facets.rows(options),
             files.meta.n_docs,
-            filters,
+            passes,
+            readers,
             records,
           )
         : emptyQuery();
@@ -154,10 +171,10 @@ export class StaticEtdEngine implements EtdEngine {
     }
     // Filtered across every match, before ranking, so the total and paging
     // both reflect the filter.
-    if (hasFilters(filters)) {
+    if (passes) {
       const rows = await facets.rows(options);
       for (const docId of [...scores.keys()]) {
-        if (!passesFilters(rows, docId, filters)) scores.delete(docId);
+        if (!passes(rows, docId)) scores.delete(docId);
       }
     }
     boostSharedFields(scores, terms, lists, prefixes);
@@ -202,7 +219,11 @@ export class StaticEtdEngine implements EtdEngine {
         );
       },
       async facets(facetOptions) {
-        return countFacets(await facets.rows(facetOptions), scores.keys());
+        return countFacets(
+          await facets.rows(facetOptions),
+          scores.keys(),
+          readers,
+        );
       },
       rankOf(docId) {
         ranks ??= new Map(ranked.map((id, i) => [id, i + 1]));
@@ -225,33 +246,48 @@ export class StaticEtdEngine implements EtdEngine {
   }
 }
 
-function hasFilters(filters: EtdFilters): boolean {
-  return (
-    filters.year?.min !== undefined ||
-    filters.year?.max !== undefined ||
-    !!filters.includeLanguages?.length ||
-    !!filters.excludeLanguages?.length
-  );
-}
+/** A doc check for the filters; undefined when they filter nothing. */
+type DocFilter = (rows: EtdFacetRows, docId: number) => boolean;
 
-function passesFilters(
-  rows: EtdFacetRows,
-  docId: number,
+/**
+ * Compiles the filters into one check per doc, or undefined when there are
+ * none. A facet filter rules out docs with any excluded value, then needs
+ * any of the included values, or all of them for an 'all' facet.
+ */
+function filterFor(
   filters: EtdFilters,
-): boolean {
-  const { year, includeLanguages, excludeLanguages } = filters;
+  readers: readonly EtdFacetReader[],
+): DocFilter | undefined {
+  const checks: DocFilter[] = [];
+  const { year } = filters;
   if (year?.min !== undefined || year?.max !== undefined) {
-    const docYear = knownYear(rows.year(docId));
-    if (!docYear) return false; // an unknown year is in no range
-    if (year.min !== undefined && docYear < year.min) return false;
-    if (year.max !== undefined && docYear > year.max) return false;
+    checks.push((rows, docId) => {
+      const docYear = knownYear(rows.year(docId));
+      if (!docYear) return false; // an unknown year is in no range
+      if (year.min !== undefined && docYear < year.min) return false;
+      if (year.max !== undefined && docYear > year.max) return false;
+      return true;
+    });
   }
-  const language = rows.language(docId);
-  if (includeLanguages?.length) {
-    if (!language || !includeLanguages.includes(language)) return false;
+  for (const [key, filter] of Object.entries(filters.facets ?? {})) {
+    const include = filter.include ?? [];
+    const exclude = filter.exclude ?? [];
+    if (!include.length && !exclude.length) continue;
+    const reader = readers.find(candidate => candidate.key === key);
+    if (!reader) throw new Error(`ETD engine: no "${key}" facet to filter by`);
+    const needsAll = reader.combine === 'all';
+    checks.push((rows, docId) => {
+      const codes: string[] = [];
+      reader.read(rows, docId, code => codes.push(code));
+      if (exclude.some(code => codes.includes(code))) return false;
+      if (!include.length) return true;
+      return needsAll
+        ? include.every(code => codes.includes(code))
+        : include.some(code => codes.includes(code));
+    });
   }
-  if (language && excludeLanguages?.includes(language)) return false;
-  return true;
+  if (!checks.length) return undefined;
+  return (rows, docId) => checks.every(check => check(rows, docId));
 }
 
 /**
@@ -262,24 +298,34 @@ function knownYear(year: number): number {
   return year > new Date().getFullYear() + 2 ? 0 : year;
 }
 
-/** Year and language counts over every doc in `docIds`. */
+/** Year and facet value counts over every doc in `docIds`. */
 export function countFacets(
   rows: EtdFacetRows,
   docIds: Iterable<number>,
+  readers: readonly EtdFacetReader[],
 ): EtdFacetCounts {
   const counts = emptyFacets();
+  // One counter per facet, made once rather than per doc.
+  const counters = readers.map(reader => {
+    const values: Record<string, number> = {};
+    counts.facets[reader.key] = values;
+    return {
+      reader,
+      add: (code: string) => {
+        values[code] = (values[code] ?? 0) + 1;
+      },
+    };
+  });
   for (const docId of docIds) {
     const year = knownYear(rows.year(docId));
     if (year) counts.year[year] = (counts.year[year] ?? 0) + 1;
-    const language = rows.language(docId);
-    if (language)
-      counts.language[language] = (counts.language[language] ?? 0) + 1;
+    for (const { reader, add } of counters) reader.read(rows, docId, add);
   }
   return counts;
 }
 
 function emptyFacets(): EtdFacetCounts {
-  return { year: {}, language: {}, country: {}, domain: {}, institution: {} };
+  return { year: {}, facets: {} };
 }
 
 /**
@@ -290,12 +336,13 @@ function emptyFacets(): EtdFacetCounts {
 function listFiltered(
   rows: EtdFacetRows,
   nDocs: number,
-  filters: EtdFilters,
+  passes: DocFilter,
+  readers: readonly EtdFacetReader[],
   records: EtdRecords,
 ): EtdQuery {
   const passing = function* passing() {
     for (let docId = 1; docId <= nDocs; docId += 1) {
-      if (passesFilters(rows, docId, filters)) yield docId;
+      if (passes(rows, docId)) yield docId;
     }
   };
   const listed: number[] = [];
@@ -315,16 +362,14 @@ function listFiltered(
       return page;
     },
     async facets() {
-      return countFacets(rows, passing());
+      return countFacets(rows, passing(), readers);
     },
     rankOf(docId) {
       const rank = listed.indexOf(docId) + 1;
       return rank || undefined;
     },
     matches(docId) {
-      return (
-        docId >= 1 && docId <= nDocs && passesFilters(rows, docId, filters)
-      );
+      return docId >= 1 && docId <= nDocs && passes(rows, docId);
     },
   };
 }

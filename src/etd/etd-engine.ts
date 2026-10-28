@@ -52,11 +52,17 @@ export interface EtdFilters {
   /** Inclusive year bounds; either end may be open. */
   year?: { min?: number; max?: number };
 
-  /** Language codes a record must have one of. */
-  includeLanguages?: string[];
+  /**
+   * Facet values to require or rule out, keyed by facet (e.g. 'language'),
+   * as codes the facet's reader gives (e.g. 'en'). How several included
+   * values combine is the facet's own `combine`.
+   */
+  facets?: Record<string, EtdFacetFilter>;
+}
 
-  /** Language codes a record must not have. */
-  excludeLanguages?: string[];
+export interface EtdFacetFilter {
+  include?: string[];
+  exclude?: string[];
 }
 
 /**
@@ -87,17 +93,11 @@ export interface EtdFacetCounts {
    */
   year: Record<string, number>;
 
-  /** Keyed by language code (ISO 639-1, e.g. 'en'). */
-  language: Record<string, number>;
-
-  /** Keyed by ISO 3166 alpha-2 country code. */
-  country: Record<string, number>;
-
-  /** Keyed by landing-url host. */
-  domain: Record<string, number>;
-
-  /** Keyed by institution label. */
-  institution: Record<string, number>;
+  /**
+   * Per facet (e.g. 'language'), each value's count, keyed by its code
+   * (e.g. 'en'). A record can count under several values of one facet.
+   */
+  facets: Record<string, Record<string, number>>;
 }
 
 /**

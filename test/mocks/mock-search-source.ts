@@ -1,6 +1,7 @@
 import type { SearchParams } from '@internetarchive/search-service';
 import type {
   SearchSource,
+  SourceFacet,
   SourceCallOptions,
   SourceQuery,
 } from '../../src/serverless-search/search-source';
@@ -53,6 +54,12 @@ export class MockSearchSource
   readonly ready: Promise<void> = Promise.resolve();
 
   readonly aggregationKeys = ['subject', 'year_histogram'] as const;
+
+  /** The source's facets, as a test sets them. */
+  facets?: SourceFacet[];
+
+  /** Whether it can list books for filters alone, as a test sets it. */
+  listsWithoutQuery?: boolean;
 
   /** Every query() call's request, in order. */
   readonly queryCalls: MockBookRequest[] = [];

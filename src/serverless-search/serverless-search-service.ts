@@ -7,9 +7,50 @@ import type {
   SearchType,
 } from '@internetarchive/search-service';
 import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
-import type { SearchSource, SourceQuery } from './search-source';
+import type { SearchSource, SourceFacet, SourceQuery } from './search-source';
+import { facetTitles } from '../models';
+import type { ExtraFacetGroup } from '../models';
 import { SourcePager } from './source-pager';
 import { sourceSearchResponse } from './source-response';
+
+/**
+ * What a page passes on to collection-browser so it shows a search
+ * service's own facets and searches it the way it can be searched:
+ *
+ *   <collection-browser
+ *     .extraFacetGroups=${service.extraFacetGroups}
+ *     ?allowFilterOnlySearch=${service.allowFilterOnlySearch}>
+ */
+export interface FacetDeclaringSearchService {
+  /** The service's facet groups that collection-browser doesn't have. */
+  readonly extraFacetGroups: readonly ExtraFacetGroup[];
+  /** Whether it can search by filters alone, with no query. */
+  readonly allowFilterOnlySearch: boolean;
+}
+
+/** Marks a title whose picked values must all match, e.g. "Availability (all that apply)". */
+function groupTitle(facet: SourceFacet): string {
+  return facet.combine === 'all'
+    ? `${facet.title} (all that apply)`
+    : facet.title;
+}
+
+/** The source's facets that aren't collection-browser's own, as its groups. */
+function extraFacetGroupsOf(
+  facets: readonly SourceFacet[] = [],
+): ExtraFacetGroup[] {
+  return facets
+    .filter(
+      facet => !Object.prototype.hasOwnProperty.call(facetTitles, facet.key),
+    )
+    .map(facet => ({
+      key: facet.key,
+      title: groupTitle(facet),
+      pluralTitle: facet.pluralTitle,
+      sort: facet.sort,
+      after: facet.after,
+    }));
+}
 
 export interface ServerlessSearchServiceOptions {
   /**
@@ -41,8 +82,16 @@ interface CachedQuery<SourceRecord> {
  * this should set `baseNavigationUrl` to ''.
  */
 export class ServerlessSearchService<Request, SourceRecord>
-  implements SearchServiceInterface
+  implements SearchServiceInterface, FacetDeclaringSearchService
 {
+  /**
+   * Built once: the same array every time, so passing it to
+   * collection-browser on each render changes nothing.
+   */
+  readonly extraFacetGroups: readonly ExtraFacetGroup[];
+
+  readonly allowFilterOnlySearch: boolean;
+
   private readonly cacheSize: number;
 
   private readonly cache = new Map<string, CachedQuery<SourceRecord>>();
@@ -52,6 +101,8 @@ export class ServerlessSearchService<Request, SourceRecord>
     options: ServerlessSearchServiceOptions = {},
   ) {
     this.cacheSize = Math.max(1, options.cachedQueries ?? 3);
+    this.extraFacetGroups = extraFacetGroupsOf(source.facets);
+    this.allowFilterOnlySearch = !!source.listsWithoutQuery;
   }
 
   async search(

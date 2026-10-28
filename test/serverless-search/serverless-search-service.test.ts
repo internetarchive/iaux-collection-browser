@@ -184,4 +184,66 @@ describe('ServerlessSearchService', () => {
       expect(result.error?.type).to.equal(SearchServiceErrorType.itemNotFound);
     });
   });
+
+  describe('declaring its facets to collection-browser', () => {
+    // A books source: `subject` is one of collection-browser's own groups,
+    // `shelf` and `format` aren't.
+    function serviceWith(
+      facets: MockSearchSource['facets'],
+      listsWithoutQuery?: boolean,
+    ) {
+      const books = new MockSearchSource(mockBooks(3));
+      books.facets = facets;
+      books.listsWithoutQuery = listsWithoutQuery;
+      return new ServerlessSearchService(books);
+    }
+
+    it('offers the facets collection-browser lacks as extra groups', () => {
+      const declared = serviceWith([
+        { key: 'subject', title: 'Subject', pluralTitle: 'Subjects' },
+        {
+          key: 'shelf',
+          title: 'Shelf',
+          pluralTitle: 'Shelves',
+          after: 'subject',
+        },
+      ]);
+      expect(declared.extraFacetGroups).to.deep.equal([
+        {
+          key: 'shelf',
+          title: 'Shelf',
+          pluralTitle: 'Shelves',
+          sort: undefined,
+          after: 'subject',
+        },
+      ]);
+    });
+
+    it('marks a facet whose picked values must all match', () => {
+      const declared = serviceWith([
+        {
+          key: 'format',
+          title: 'Format',
+          pluralTitle: 'Formats',
+          combine: 'all',
+        },
+      ]);
+      expect(declared.extraFacetGroups[0].title).to.equal(
+        'Format (all that apply)',
+      );
+    });
+
+    it('gives the same groups every time, so a re-render changes nothing', () => {
+      const declared = serviceWith([
+        { key: 'shelf', title: 'Shelf', pluralTitle: 'Shelves' },
+      ]);
+      expect(declared.extraFacetGroups).to.equal(declared.extraFacetGroups);
+    });
+
+    it('allows filter-only search only for a source that can list without a query', () => {
+      expect(serviceWith([], true).allowFilterOnlySearch).to.be.true;
+      expect(serviceWith([]).allowFilterOnlySearch).to.be.false;
+      expect(service.extraFacetGroups).to.deep.equal([]);
+    });
+  });
 });
