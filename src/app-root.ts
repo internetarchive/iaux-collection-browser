@@ -126,12 +126,36 @@ export class AppRoot extends LitElement {
             static index in the browser, no search backend
           </span>
         </h2>
-        ${this.etdSearchTemplate}
+        ${this.etdSearchTemplate} ${this.etdBrowseTemplate}
         <etd-compare-panel
           .engine=${this.etdEngine}
           .query=${this.searchQuery}
         ></etd-compare-panel>
       </section>
+    `;
+  }
+
+  /**
+   * Searches by filters alone, with no query (collection-browser's
+   * allowFilterOnlySearch): changing the query clears filters, so without a
+   * link these only start from the URL.
+   */
+  private get etdBrowseTemplate() {
+    const browse = (label: string, filter: string) => {
+      const url = new URL(window.location.href);
+      url.search = '';
+      url.searchParams.set('search_service', 'etd');
+      url.searchParams.append('and[]', filter);
+      return html`<li><a href=${url.href}>${label}</a></li>`;
+    };
+    return html`
+      <nav id="etd-browse" aria-label="Browse theses without a search">
+        <span>Or browse:</span>
+        <ul>
+          ${browse('Theses from the 2000s', 'year:[2000 TO 2009]')}
+          ${browse('Theses in Portuguese', 'language:"Portuguese"')}
+        </ul>
+      </nav>
     `;
   }
 
@@ -654,6 +678,7 @@ export class AppRoot extends LitElement {
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
+          ?allowFilterOnlySearch=${this.isEtdSearch}
           .baseNavigationUrl=${this.isEtdSearch ? '' : 'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
@@ -1227,6 +1252,27 @@ export class AppRoot extends LitElement {
       background: #2c5f8f;
       color: white;
       cursor: pointer;
+    }
+
+    #etd-browse {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+      margin: 0.6rem 0;
+      font-size: 1.4rem;
+    }
+
+    #etd-browse ul {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    #etd-browse a {
+      color: #1d3f61;
     }
 
     #etd-controls etd-compare-panel {
