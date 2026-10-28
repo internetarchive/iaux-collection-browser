@@ -19,6 +19,8 @@ export interface FixtureThesis {
   url?: string;
   /** The deflated snippet's abstract; defaults to `abstract`. */
   snippet?: string;
+  /** Language code (ISO 639-1) for the facet rows; unknown when unset. */
+  language?: string;
 }
 
 export interface FixtureOptions {
@@ -27,6 +29,8 @@ export interface FixtureOptions {
   version?: string;
   posfwd?: boolean;
   withSnippets?: boolean;
+  /** Write facets-meta.json and facets.gz.json (default true). */
+  withFacets?: boolean;
 }
 
 export const FIXTURE_BASE = 'https://archive.org/download/etd-fixture/';
@@ -210,6 +214,11 @@ export async function buildFixtureIndex(
     ['url.dir', urlDir],
     ['url.bin', urlBin],
   ]);
+  if (options.withFacets !== false) {
+    const [facetMeta, facetRows] = await facetFiles(theses);
+    files.set('facets-meta.json', facetMeta);
+    files.set('facets.gz.json', facetRows);
+  }
   if (meta.posfwd) {
     files.set('posfwd.dir', posfwdDir);
     files.set('posfwd.bin', posfwdBin);
@@ -335,6 +344,38 @@ function concat(parts: Uint8Array[]): Uint8Array {
     at += part.length;
   }
   return out;
+}
+
+/** The year byte in year encoding 2: decades before 1900, years after. */
+function yearByte(date: string | undefined): number {
+  const year = Number.parseInt((date ?? '').slice(0, 4), 10);
+  if (Number.isNaN(year) || year < 1700) return 0;
+  if (year < 1900) return 1 + Math.floor((year - 1700) / 10);
+  return Math.min(255, 21 + (year - 1900));
+}
+
+/** facets-meta.json and facets.gz.json, 8-byte rows as the real index has. */
+async function facetFiles(
+  theses: FixtureThesis[],
+): Promise<[Uint8Array, Uint8Array]> {
+  const langs = [
+    ...new Set(theses.map(t => t.language).filter((l): l is string => !!l)),
+  ];
+  const stride = 8;
+  const rows = new Uint8Array(theses.length * stride);
+  theses.forEach((thesis, i) => {
+    rows[i * stride] = yearByte(thesis.date);
+    rows[i * stride + 4] = thesis.language
+      ? langs.indexOf(thesis.language) + 1
+      : 0;
+  });
+  const meta = new TextEncoder().encode(
+    JSON.stringify({ n: theses.length, stride, year_enc: 2, langs }),
+  );
+  const gzipped = new Blob([rows])
+    .stream()
+    .pipeThrough(new CompressionStream('gzip'));
+  return [meta, new Uint8Array(await new Response(gzipped).arrayBuffer())];
 }
 
 async function deflate(text: string): Promise<Uint8Array> {

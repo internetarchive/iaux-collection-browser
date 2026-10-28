@@ -56,6 +56,20 @@ describe('etdRequestFromParams', () => {
     expect(request.filters.excludeLanguages).to.deep.equal(['fre']);
   });
 
+  it('turns language names from the facet into every code with that name', () => {
+    const request = etdRequestFromParams({
+      query: 'climate',
+      filters: {
+        language: {
+          Portuguese: FilterConstraint.INCLUDE,
+          French: FilterConstraint.EXCLUDE,
+        },
+      },
+    });
+    expect(request.filters.includeLanguages).to.include('pt');
+    expect(request.filters.excludeLanguages).to.include.members(['fr', 'fre']);
+  });
+
   it('reports filters the engine cannot apply instead of failing', () => {
     const request = etdRequestFromParams({
       query: 'climate',

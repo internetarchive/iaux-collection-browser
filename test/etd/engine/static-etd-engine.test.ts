@@ -14,6 +14,7 @@ const THESES: FixtureThesis[] = [
     abstract: 'We model sea ice retreat along the coast.',
     institution: 'University of Toronto',
     date: '2014',
+    language: 'en',
     domain: 'tspace.library.utoronto.ca',
     url: 'https://tspace.library.utoronto.ca/handle/1807/1',
   },
@@ -22,6 +23,7 @@ const THESES: FixtureThesis[] = [
     creators: 'Lindqvist, Sven',
     abstract: 'Carbon flux under seasonal <i>sea ice</i> &amp; leads.',
     date: '2019-05',
+    language: 'en',
     domain: 'dspace.mit.edu',
     url: 'https://dspace.mit.edu/handle/1721.1/2',
   },
@@ -30,6 +32,7 @@ const THESES: FixtureThesis[] = [
     creators: 'Ice, Mara',
     abstract: 'Merchants crossed the sea in winter.',
     date: '2001',
+    language: 'fr',
     domain: 'repository.example.edu',
     // longer than the stub's 88-byte url field: only url.bin has it whole
     url: `https://repository.example.edu/bitstream/handle/${'x'.repeat(80)}/thesis.pdf`,
@@ -47,6 +50,7 @@ async function engineOver(theses = THESES, options?: FixtureOptions) {
   const engine = new StaticEtdEngine({
     baseUrl: FIXTURE_BASE,
     fetch: index.fetch,
+    cacheFacets: false,
   });
   await engine.ready;
   return { engine, index };
@@ -252,16 +256,87 @@ describe('StaticEtdEngine', () => {
     expect(query.result.approximate).to.be.true;
   });
 
-  it('refuses filters it has not been ported for yet, clearly', async () => {
-    const { engine } = await engineOver();
-    let structured: unknown;
-    try {
-      await engine.query('ice', { year: { min: 2000 } });
-    } catch (err) {
-      structured = err;
+  describe('year and language', () => {
+    // 'sea ice' matches three: 2014 en, 2019 en, and Mara Ice's 2001 fr.
+    async function seaIce(filters = {}) {
+      const { engine, index } = await engineOver();
+      const query = await engine.query('sea ice', filters);
+      return { query, index };
     }
-    expect((structured as Error).message).to.match(/not ported yet/);
 
+    it('filters every match by year before ranking, so the total follows', async () => {
+      expect(
+        (await seaIce({ year: { min: 2010 } })).query.result.total,
+      ).to.equal(2);
+      expect(
+        (await seaIce({ year: { max: 2010 } })).query.result.total,
+      ).to.equal(1);
+      const { query } = await seaIce({ year: { min: 2015, max: 2020 } });
+      expect(titles(await query.next(5))).to.deep.equal([
+        'Sea ice and the Arctic carbon budget',
+      ]);
+    });
+
+    it('filters by languages to include or exclude', async () => {
+      expect(
+        (await seaIce({ includeLanguages: ['fr'] })).query.result.total,
+      ).to.equal(1);
+      expect(
+        (await seaIce({ excludeLanguages: ['fr'] })).query.result.total,
+      ).to.equal(2);
+    });
+
+    it('leaves a thesis with no known year out of any year range', async () => {
+      const { engine } = await engineOver([
+        { title: 'Sea ice drift', date: '2005' },
+        { title: 'Sea ice melt' }, // no date
+      ]);
+      const query = await engine.query('sea ice', { year: { min: 1900 } });
+      expect(query.result.total).to.equal(1);
+    });
+
+    it('counts years and languages over every match, not just a page', async () => {
+      const { query } = await seaIce();
+      await query.next(1);
+      expect(await query.facets()).to.deep.equal({
+        year: { 2001: 1, 2014: 1, 2019: 1 },
+        language: { en: 2, fr: 1 },
+        country: {},
+        domain: {},
+        institution: {},
+      });
+    });
+
+    it('counts within the filter', async () => {
+      const { query } = await seaIce({ excludeLanguages: ['fr'] });
+      expect((await query.facets()).language).to.deep.equal({ en: 2 });
+    });
+
+    it('reads the facets file only when facets or filters need it', async () => {
+      const { query, index } = await seaIce();
+      const facetReads = () =>
+        index.requests.filter(r => r.url.includes('facets.gz.json')).length;
+      await query.next(3);
+      expect(facetReads()).to.equal(0);
+      await query.facets();
+      await query.facets();
+      expect(facetReads()).to.equal(1);
+    });
+
+    it('says so when filtering an index that has no facet files', async () => {
+      const { engine } = await engineOver(THESES, { withFacets: false });
+      let error: unknown;
+      try {
+        await engine.query('sea ice', { year: { min: 2000 } });
+      } catch (err) {
+        error = err;
+      }
+      expect(String(error)).to.include('facets-meta.json');
+    });
+  });
+
+  it('refuses field syntax it has not been ported for yet, clearly', async () => {
+    const { engine } = await engineOver();
     let inQuery: unknown;
     try {
       await engine.query('ice country:CA', {});
@@ -292,6 +367,7 @@ describe('StaticEtdEngine', () => {
       engine: new StaticEtdEngine({
         baseUrl: FIXTURE_BASE,
         fetch: index.fetch,
+        cacheFacets: false,
       }),
     });
 
@@ -310,6 +386,7 @@ describe('StaticEtdEngine', () => {
       engine: new StaticEtdEngine({
         baseUrl: FIXTURE_BASE,
         fetch: index.fetch,
+        cacheFacets: false,
       }),
     });
     const el = await fixture<CollectionBrowser>(

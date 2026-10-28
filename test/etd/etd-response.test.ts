@@ -20,8 +20,8 @@ const record: EtdRecord = {
 };
 
 const facets: EtdFacetCounts = {
-  decade: { '1990': 4, '2010': 9, '0': 3 },
-  language: { eng: 12, fre: 5, ger: 5 },
+  year: { '1871': 2, '1990': 4, '1992': 9 },
+  language: { en: 12, fr: 3, fre: 2, pt: 5, zz: 1 },
   country: { CA: 3 },
   domain: { 'dspace.mit.edu': 3 },
   institution: { MIT: 3 },
@@ -84,29 +84,42 @@ describe('etdHitJson', () => {
 });
 
 describe('etdAggregationsJson', () => {
-  it('shows decades as the date picker histogram, dropping unknown years', () => {
+  it('shows years from 1900 as the date picker histogram, a bucket a year', () => {
+    // 1871 stands for the 1870s, which the index only knows as a decade.
     const json = etdAggregationsJson(facets, ['year_histogram']);
     expect(json).to.deep.equal({
       year_histogram: {
         buckets: [4, 0, 9],
         first_bucket_key: 1990,
-        last_bucket_key: 2010,
-        interval: 10,
+        last_bucket_key: 1992,
+        interval: 1,
         number_buckets: 3,
       },
     });
   });
 
-  it('shows languages as facet buckets, capped at the requested size', () => {
-    const json = etdAggregationsJson(facets, ['language'], 2);
+  it('shows languages by name, codes sharing a name counted together', () => {
+    const json = etdAggregationsJson(facets, ['language']);
     expect(json).to.deep.equal({
       language: {
         buckets: [
-          { key: 'eng', doc_count: 12 },
-          { key: 'fre', doc_count: 5 },
+          { key: 'English', doc_count: 12 },
+          // fr (3) + fre (2): both are French.
+          { key: 'French', doc_count: 5 },
+          // Not in collection-browser's mapping: named by the browser.
+          { key: 'Portuguese', doc_count: 5 },
+          // Named by nothing: shown as the code.
+          { key: 'zz', doc_count: 1 },
         ],
       },
     });
+  });
+
+  it('caps languages at the requested size', () => {
+    const json = etdAggregationsJson(facets, ['language'], 2) as {
+      language: { buckets: unknown[] };
+    };
+    expect(json.language.buckets).to.have.length(2);
   });
 });
 

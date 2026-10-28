@@ -20,7 +20,7 @@ export interface MockEtdThesis extends EtdRecord {
 
 /**
  * Builds `count` theses with predictable fields: docIds 1..count, years
- * cycling through 1990-2019, languages alternating eng/fre.
+ * cycling through 1990-2019, languages alternating en/fr.
  */
 export function mockEtdTheses(count: number): MockEtdThesis[] {
   return Array.from({ length: count }, (_, i) => {
@@ -32,7 +32,7 @@ export function mockEtdTheses(count: number): MockEtdThesis[] {
       date: String(1990 + (i % 30)),
       domain: 'dspace.example.edu',
       url: `https://dspace.example.edu/handle/${docId}`,
-      language: i % 2 === 0 ? 'eng' : 'fre',
+      language: i % 2 === 0 ? 'en' : 'fr',
       country: 'CA',
     };
   });
@@ -169,7 +169,7 @@ function matchesFilters(thesis: MockEtdThesis, filters: EtdFilters): boolean {
 
 function facetCounts(theses: MockEtdThesis[]): EtdFacetCounts {
   const counts: EtdFacetCounts = {
-    decade: {},
+    year: {},
     language: {},
     country: {},
     domain: {},
@@ -180,7 +180,7 @@ function facetCounts(theses: MockEtdThesis[]): EtdFacetCounts {
   };
   for (const thesis of theses) {
     const year = Number.parseInt(thesis.date, 10);
-    if (!Number.isNaN(year)) bump(counts.decade, String(year - (year % 10)));
+    if (!Number.isNaN(year)) bump(counts.year, String(year));
     bump(counts.language, thesis.language);
     bump(counts.country, thesis.country);
     bump(counts.domain, thesis.domain);

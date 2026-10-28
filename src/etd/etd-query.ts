@@ -4,6 +4,7 @@ import {
   yearBounds,
 } from '../serverless-search/filter-map';
 import type { EtdFilters } from './etd-engine';
+import { languageCodes } from './etd-languages';
 
 /**
  * What a SearchParams asks of the ETD engine.
@@ -34,9 +35,12 @@ export function etdRequestFromParams(params: SearchParams): EtdRequest {
       const year = yearBounds(fieldFilter, field === 'date');
       if (year) filters.year = { ...filters.year, ...year };
     } else if (field === 'language') {
+      // The facet filters by language name; the engine by code.
       const { include, exclude } = includesAndExcludes(fieldFilter);
-      if (include.length) filters.includeLanguages = include;
-      if (exclude.length) filters.excludeLanguages = exclude;
+      if (include.length)
+        filters.includeLanguages = include.flatMap(languageCodes);
+      if (exclude.length)
+        filters.excludeLanguages = exclude.flatMap(languageCodes);
     } else {
       ignoredFields.push(field);
     }

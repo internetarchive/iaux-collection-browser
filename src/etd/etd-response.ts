@@ -3,6 +3,7 @@ import {
   yearHistogram,
 } from '../serverless-search/source-response';
 import type { EtdFacetCounts, EtdRecord } from './etd-engine';
+import { languageName } from './etd-languages';
 
 /** Identifier prefix that marks a hit as an ETD record rather than an item. */
 export const ETD_IDENTIFIER_PREFIX = 'etd-';
@@ -60,8 +61,15 @@ export function etdHitJson(record: EtdRecord): Record<string, unknown> {
 }
 
 /**
- * Raw aggregations JSON for the requested keys: language as term buckets,
- * decades as the date picker's year histogram.
+ * The histogram starts here, as the live page's does: before 1900 the index
+ * only knows decades, and the few theses there would stretch the date
+ * picker across two centuries. A year filter still reaches them.
+ */
+const HISTOGRAM_FROM = 1900;
+
+/**
+ * Raw aggregations JSON for the requested keys: languages by name as term
+ * buckets, years as the date picker's histogram.
  */
 export function etdAggregationsJson(
   facets: EtdFacetCounts,
@@ -70,10 +78,21 @@ export function etdAggregationsJson(
 ): Record<string, unknown> {
   const aggregations: Record<string, unknown> = {};
   if (keys.includes('language')) {
-    aggregations.language = { buckets: termBuckets(facets.language, size) };
+    // Codes sharing a name count together, as the facet shows one row.
+    const byName: Record<string, number> = {};
+    for (const [code, count] of Object.entries(facets.language)) {
+      const name = languageName(code);
+      byName[name] = (byName[name] ?? 0) + count;
+    }
+    aggregations.language = { buckets: termBuckets(byName, size) };
   }
   if (keys.includes('year_histogram')) {
-    const histogram = yearHistogram(facets.decade, 10);
+    const years = Object.fromEntries(
+      Object.entries(facets.year).filter(
+        ([year]) => Number(year) >= HISTOGRAM_FROM,
+      ),
+    );
+    const histogram = yearHistogram(years, 1);
     if (histogram) aggregations.year_histogram = histogram;
   }
   return aggregations;

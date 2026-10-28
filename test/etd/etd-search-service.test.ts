@@ -28,16 +28,16 @@ describe('EtdSearchService', () => {
             '2000': FilterConstraint.GREATER_OR_EQUAL,
             '2009': FilterConstraint.LESS_OR_EQUAL,
           },
-          language: { fre: FilterConstraint.EXCLUDE },
+          // The language facet filters by name, as it shows them.
+          language: { French: FilterConstraint.EXCLUDE },
         },
         aggregations: { omit: true },
       });
 
-      expect(engine.queryCalls[0].filters).to.deep.equal({
-        year: { min: 2000, max: 2009 },
-        excludeLanguages: ['fre'],
-      });
-      // 2000-2009 is 10 of every 30 theses, and only the even (eng) ones: 120 / 30 * 10 / 2
+      const { filters } = engine.queryCalls[0];
+      expect(filters.year).to.deep.equal({ min: 2000, max: 2009 });
+      expect(filters.excludeLanguages).to.include('fr');
+      // 2000-2009 is 10 of every 30 theses, and only the even (en) ones: 120 / 30 * 10 / 2
       expect(result.success!.response.totalResults).to.equal(20);
     });
 
@@ -56,10 +56,14 @@ describe('EtdSearchService', () => {
         'language',
         'year_histogram',
       ]);
-      expect(aggregations!.year_histogram.buckets).to.deep.equal([40, 40, 40]);
+      // Per year: 1990-2019, 4 theses each.
+      expect(aggregations!.year_histogram.first_bucket_key).to.equal(1990);
+      expect(aggregations!.year_histogram.buckets).to.deep.equal(
+        Array(30).fill(4),
+      );
       expect(aggregations!.language.buckets).to.deep.equal([
-        { key: 'eng', doc_count: 60 },
-        { key: 'fre', doc_count: 60 },
+        { key: 'English', doc_count: 60 },
+        { key: 'French', doc_count: 60 },
       ]);
     });
 

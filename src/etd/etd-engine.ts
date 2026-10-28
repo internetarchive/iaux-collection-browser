@@ -81,10 +81,13 @@ export interface EtdQueryResult {
  * Facet counts for a query's matching records, keyed by facet value.
  */
 export interface EtdFacetCounts {
-  /** Keyed by the decade's first year, e.g. '1990'. */
-  decade: Record<string, number>;
+  /**
+   * Keyed by year, e.g. '1994'. Before 1900 the index only knows decades,
+   * so those count under the decade's first year ('1870').
+   */
+  year: Record<string, number>;
 
-  /** Keyed by language code. */
+  /** Keyed by language code (ISO 639-1, e.g. 'en'). */
   language: Record<string, number>;
 
   /** Keyed by ISO 3166 alpha-2 country code. */

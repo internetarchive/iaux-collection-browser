@@ -104,6 +104,19 @@ export class EtdIndexFiles {
       : `${this.dataUrl}${name}?v=unversioned`;
   }
 
+  /**
+   * Fetches a whole index file as a Response, for callers that stream it
+   * (or cache it). Throws on an HTTP error.
+   */
+  async response(name: string, options?: EtdCallOptions): Promise<Response> {
+    this.stats.requests += 1;
+    const response = await this.fetchFn(this.fileUrl(name), {
+      signal: options?.signal,
+    });
+    if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+    return response;
+  }
+
   async arrayBuffer(
     name: string,
     options?: EtdCallOptions,

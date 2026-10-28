@@ -12,6 +12,8 @@ import { EtdIndexFiles } from './index-files';
 import { markTerms, termsToMark } from './mark-terms';
 import { boostTokens, phraseBoost, wordsPlacement } from './phrase-boost';
 import { EtdPosfwd } from './posfwd';
+import { EtdFacets } from './facets';
+import type { EtdFacetRows } from './facets';
 import { decodePostings } from './postings';
 import type { FieldPrefix } from './query-parser';
 import { parseQuery } from './query-parser';
@@ -30,6 +32,9 @@ export interface StaticEtdEngineOptions {
 
   /** For tests: the fetch to read index files with. */
   fetch?: typeof fetch;
+
+  /** Keep the facets file in Cache Storage across visits (default true). */
+  cacheFacets?: boolean;
 }
 
 /** Past this many matches the page marks a count as approximate. */
@@ -41,6 +46,8 @@ interface Loaded {
   records: EtdRecords;
   /** Per-doc token text for the phrase boost; absent on an index without it. */
   posfwd?: EtdPosfwd;
+  /** Year and language per doc, for filters and facet counts. */
+  facets: EtdFacets;
   prefixes: FieldPrefix[];
 }
 
@@ -51,7 +58,7 @@ interface Loaded {
  * A query is about three rounds of requests: dictionary buckets, posting
  * lists (each one multi-range request), then a page of records.
  *
- * Not yet ported (later phases): facet filters and counts, filter-only
+ * Not yet ported (later phases): facets beyond year and language, filter-only
  * queries, exact phrase verification (quoted phrases currently match their
  * words anywhere in a document), and institution authority lookup.
  */
@@ -78,7 +85,9 @@ export class StaticEtdEngine implements EtdEngine {
     ]);
     const prefixes: FieldPrefix[] = [...BASE_PREFIXES];
     if (files.meta.prefixed_fields?.o) prefixes.push('o:');
-    return { files, dictionary, records, posfwd, prefixes };
+    // Loaded on first use: ~29 MB a plain search never needs.
+    const facets = new EtdFacets(files, { cache: options.cacheFacets });
+    return { files, dictionary, records, posfwd, facets, prefixes };
   }
 
   async query(
@@ -86,13 +95,9 @@ export class StaticEtdEngine implements EtdEngine {
     filters: EtdFilters,
     options?: EtdCallOptions,
   ): Promise<EtdQuery> {
-    const { files, dictionary, records, posfwd, prefixes } = await this.loading;
+    const { files, dictionary, records, posfwd, facets, prefixes } =
+      await this.loading;
 
-    if (hasFilters(filters)) {
-      throw new Error(
-        'ETD engine: year and language filters are not ported yet',
-      );
-    }
     const { tree, filters: clauses } = parseQuery(text);
     if (clauses.length) {
       const names = clauses.map(c => `${c.field}:`).join(', ');
@@ -130,6 +135,14 @@ export class StaticEtdEngine implements EtdEngine {
     // of stubs.bin; drop any rather than fail the search.
     for (const docId of [...scores.keys()]) {
       if (!(docId >= 1 && docId <= files.meta.n_docs)) scores.delete(docId);
+    }
+    // Filtered across every match, before ranking, so the total and paging
+    // both reflect the filter.
+    if (hasFilters(filters)) {
+      const rows = await facets.rows(options);
+      for (const docId of [...scores.keys()]) {
+        if (!passesFilters(rows, docId, filters)) scores.delete(docId);
+      }
     }
     boostSharedFields(scores, terms, lists, prefixes);
 
@@ -172,8 +185,8 @@ export class StaticEtdEngine implements EtdEngine {
             : record,
         );
       },
-      async facets() {
-        return emptyFacets();
+      async facets(facetOptions) {
+        return countFacets(await facets.rows(facetOptions), scores.keys());
       },
       rankOf(docId) {
         ranks ??= new Map(ranked.map((id, i) => [id, i + 1]));
@@ -205,8 +218,52 @@ function hasFilters(filters: EtdFilters): boolean {
   );
 }
 
+function passesFilters(
+  rows: EtdFacetRows,
+  docId: number,
+  filters: EtdFilters,
+): boolean {
+  const { year, includeLanguages, excludeLanguages } = filters;
+  if (year?.min !== undefined || year?.max !== undefined) {
+    const docYear = knownYear(rows.year(docId));
+    if (!docYear) return false; // an unknown year is in no range
+    if (year.min !== undefined && docYear < year.min) return false;
+    if (year.max !== undefined && docYear > year.max) return false;
+  }
+  const language = rows.language(docId);
+  if (includeLanguages?.length) {
+    if (!language || !includeLanguages.includes(language)) return false;
+  }
+  if (language && excludeLanguages?.includes(language)) return false;
+  return true;
+}
+
+/**
+ * A year, or 0 for one too far in the future to be real (bad dates in the
+ * source records), as the live page treats them.
+ */
+function knownYear(year: number): number {
+  return year > new Date().getFullYear() + 2 ? 0 : year;
+}
+
+/** Year and language counts over every doc in `docIds`. */
+export function countFacets(
+  rows: EtdFacetRows,
+  docIds: Iterable<number>,
+): EtdFacetCounts {
+  const counts = emptyFacets();
+  for (const docId of docIds) {
+    const year = knownYear(rows.year(docId));
+    if (year) counts.year[year] = (counts.year[year] ?? 0) + 1;
+    const language = rows.language(docId);
+    if (language)
+      counts.language[language] = (counts.language[language] ?? 0) + 1;
+  }
+  return counts;
+}
+
 function emptyFacets(): EtdFacetCounts {
-  return { decade: {}, language: {}, country: {}, domain: {}, institution: {} };
+  return { year: {}, language: {}, country: {}, domain: {}, institution: {} };
 }
 
 function emptyQuery(): EtdQuery {

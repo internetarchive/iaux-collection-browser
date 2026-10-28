@@ -92,14 +92,22 @@ other file is `<name>.<version>`, so a rebuild never mixes versions.
 | `url.dir`, `url.bin`       | per doc: the full URL, when the stub's is cut short                | `records.ts`     |
 | `snip.dir`, `snippets.bin` | per doc: the abstract, deflated JSON                               | `records.ts`     |
 | `posfwd.dir`, `posfwd.bin` | per doc: each field's complete word list, deflated JSON            | `posfwd.ts`      |
+| `facets-meta.json`         | facet row layout, year encoding, language codes                    | `facets.ts`      |
+| `facets.gz.json`           | per doc, 8 bytes: year, language, country, domain, flags; gzipped  | `facets.ts`      |
 
 `.dir` files are docId-aligned offsets into their `.bin`, so reading any doc's
 data is arithmetic plus one range read. Reads are batched into multi-range
 requests (`index-files.ts`).
 
-Not read yet: the facet files (`facets-meta.json` and the files it names,
-`facets-totals.json`, `inst-meta.json`), the details pages' files, and the
-vector store (`ivf-meta.json` and its cells). See "Not ported yet".
+`facets.gz.json` is the one file read whole: 28.7 MB, on the first facets
+request or year/language filter, then kept in Cache Storage. Only the year
+and language bytes are kept in memory (~52 MB), so counts and filters cover
+every match. The live page shares the same cache entry when it runs on the
+same origin.
+
+Not read yet: the other facet files (`facets-totals.json`, `inst-meta.json`),
+the details pages' files, and the vector store (`ivf-meta.json` and its
+cells). See "Not ported yet".
 
 ## Ranking, briefly
 
@@ -179,14 +187,14 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 
 ## Not ported yet
 
-| Live page feature                                                           | What happens here instead                          |
-| --------------------------------------------------------------------------- | -------------------------------------------------- |
-| Facets (year, language, country, degree, institution, source, availability) | No facets; year and language filters show an error |
-| `inst:` through the institution list                                        | Matched as text, so many more results              |
-| Quoted phrases checked as adjacent                                          | Words only have to be near each other              |
-| `field:` filters (`year:`, `host:`, `has:`…)                                | Error                                              |
-| Vector rank (semantic search)                                               | Not available                                      |
-| Showing results before the phrase boost lands                               | Results wait for the boost (up to 15 s)            |
+| Live page feature                                                                    | What happens here instead                                      |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| Facets beyond year and language (country, degree, institution, source, availability) | Not shown; collection-browser has no facet groups for them yet |
+| `inst:` through the institution list                                                 | Matched as text, so many more results                          |
+| Quoted phrases checked as adjacent                                                   | Words only have to be near each other                          |
+| `field:` filters (`year:`, `host:`, `has:`…)                                         | Error                                                          |
+| Vector rank (semantic search)                                                        | Not available                                                  |
+| Showing results before the phrase boost lands                                        | Results wait for the boost (up to 15 s)                        |
 
 ## Things that will trip you up
 
