@@ -34,6 +34,8 @@ shows them); search from the box at the top instead.
 Each search also runs on the live etd-search page (in a drawer), and a panel shows how the two
 rankings differ: totals, top-N overlap, and each result that moved or only one side has.
 
+How it works, and how to build on it: [src/etd/README.md](src/etd/README.md).
+
 ## Testing with Web Test Runner
 To run the suite of Web Test Runner tests, run
 ```bash
