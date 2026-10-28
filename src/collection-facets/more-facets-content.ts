@@ -44,7 +44,7 @@ import type {
   TVChannelAliases,
 } from '../data-source/models';
 import '@internetarchive/elements/ia-status-indicator/ia-status-indicator';
-import '@internetarchive/ia-clearable-text-input';
+import '@internetarchive/elements/ia-clearable-text-input/ia-clearable-text-input';
 import './more-facets-scroller';
 import type { MoreFacetsScroller } from './more-facets-scroller';
 import {

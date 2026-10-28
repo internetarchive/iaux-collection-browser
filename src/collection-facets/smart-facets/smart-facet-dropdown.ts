@@ -1,6 +1,9 @@
 import { css, html, LitElement, CSSResultGroup, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
-import type { IaDropdown, optionInterface } from '@internetarchive/ia-dropdown';
+import type {
+  IADropdown,
+  OptionInterface,
+} from '@internetarchive/elements/ia-dropdown/ia-dropdown';
 import type { FacetRef, SmartFacet, SmartFacetEvent } from './models';
 import { log } from '../../utils/log';
 
@@ -12,7 +15,7 @@ export class SmartFacetDropdown extends LitElement {
 
   @property({ type: Object }) activeFacetRef?: FacetRef;
 
-  @query('ia-dropdown') dropdown?: IaDropdown;
+  @query('ia-dropdown') dropdown?: IADropdown;
 
   //
   // COMPONENT LIFECYCLE METHODS
@@ -57,7 +60,7 @@ export class SmartFacetDropdown extends LitElement {
   // OTHER METHODS
   //
 
-  private get dropdownOptions(): optionInterface[] {
+  private get dropdownOptions(): OptionInterface[] {
     return (
       this.facetInfo?.map(smartFacet => {
         const firstFacet = smartFacet.facets[0];
@@ -73,7 +76,7 @@ export class SmartFacetDropdown extends LitElement {
     );
   }
 
-  private get activeDropdownOption(): optionInterface | undefined {
+  private get activeDropdownOption(): OptionInterface | undefined {
     if (!this.activeFacetRef) return undefined;
     return this.dropdownOptions.find(
       opt => opt.id === this.activeFacetRef?.bucketKey,
@@ -90,7 +93,7 @@ export class SmartFacetDropdown extends LitElement {
   /**
    * Handler for when an option in the dropdown menu is selected
    */
-  private optionSelected(e: CustomEvent<{ option: optionInterface }>): void {
+  private optionSelected(e: CustomEvent<{ option: OptionInterface }>): void {
     this.handleSelection(e.detail.option.id);
   }
 

@@ -1,7 +1,7 @@
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
-import type { IaDropdown } from '@internetarchive/ia-dropdown';
+import type { IADropdown } from '@internetarchive/elements/ia-dropdown/ia-dropdown';
 import type { SortFilterBar } from '../../src/sort-filter-bar/sort-filter-bar';
 import { SortField, defaultSortAvailability } from '../../src/models';
 
@@ -9,13 +9,13 @@ import '../../src/sort-filter-bar/sort-filter-bar';
 
 describe('Sort dropdown behavior', () => {
   let el: SortFilterBar;
-  let sortDropdown: IaDropdown;
+  let sortDropdown: IADropdown;
 
   beforeEach(async () => {
     el = await fixture<SortFilterBar>(html`
       <sort-filter-bar></sort-filter-bar>
     `);
-    sortDropdown = el.shadowRoot?.querySelector('#sort-dropdown') as IaDropdown;
+    sortDropdown = el.shadowRoot?.querySelector('#sort-dropdown') as IADropdown;
     await el.updateComplete;
   });
 
@@ -69,7 +69,7 @@ describe('Sort dropdown behavior', () => {
 
     const dropdown = el.shadowRoot?.querySelector(
       '#sort-dropdown',
-    ) as IaDropdown;
+    ) as IADropdown;
     expect(dropdown.options.length).to.equal(5);
     expect(dropdown.options.map(o => o.id)).to.deep.equal([
       SortField.relevance,
@@ -121,7 +121,7 @@ describe('Sort dropdown behavior', () => {
 
     const dropdown = el.shadowRoot?.querySelector(
       '#sort-dropdown',
-    ) as IaDropdown;
+    ) as IADropdown;
     expect(dropdown).to.exist;
 
     const firstOption = dropdown?.shadowRoot?.querySelector(
@@ -210,7 +210,7 @@ describe('Sort dropdown behavior', () => {
 
     const dropdown = el.shadowRoot?.querySelector(
       '#sort-dropdown',
-    ) as IaDropdown;
+    ) as IADropdown;
     expect(dropdown).to.exist;
 
     dropdown.selectedOption = 'relevance';
@@ -231,7 +231,7 @@ describe('Sort dropdown behavior', () => {
 
     const dropdown = el.shadowRoot?.querySelector(
       '#sort-dropdown',
-    ) as IaDropdown;
+    ) as IADropdown;
     expect(dropdown).to.exist;
 
     dropdown.selectedOption = 'relevance';
