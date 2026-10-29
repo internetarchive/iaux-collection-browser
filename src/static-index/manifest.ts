@@ -343,8 +343,9 @@ export interface StaticItemConfig {
 
 export interface SearchConfig {
   /**
-   * Prefixed to an id to make a hit's identifier ('etd-', 'etdv-').
-   * Searches over different id spaces need different ones.
+   * Prefixed to a doc's 1-based position in its id space to make a hit's
+   * identifier ('etd-', 'etdv-'; see identifiers.ts). Searches over
+   * different id spaces need different ones.
    */
   identifierPrefix: string;
   /** The record fields a hit is made of, by record field key. */

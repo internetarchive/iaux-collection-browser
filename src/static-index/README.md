@@ -16,6 +16,7 @@ need its own engine:
 | `files.ts`        | a file set's urls, and whether a sidecar belongs to its build  |
 | `model.ts`        | the embedding library builds this client will load, by version |
 | `range-files.ts`  | `RangeFiles`: whole files and batched multi-range reads        |
+| `identifiers.ts`  | a hit's identifier: prefix plus 1-based position, and back     |
 | `records.ts`      | `StaticRecords`: what hits show, for any record layout         |
 
 **Status.** The types describe both of ETD's searches (by words and by
@@ -337,8 +338,11 @@ const config: StaticItemConfig = {
 ```
 
 One entry per search the client shows, by the manifest's key.
-`identifierPrefix` makes a hit's identifier from its id; searches over
-different id spaces need different ones, or two docs would share one.
+`identifierPrefix` makes a hit's identifier: the prefix, then the doc's
+1-based position in its id space (`id - firstId + 1`, `identifiers.ts`).
+So ETD's first text doc is `etd-1` (ids from 1) and its first vector row
+is `etdv-1` (ids from 0), never `etdv-0`. Searches over different id
+spaces need different prefixes, or two docs would share one.
 `hit` names the record fields a result is made of. `ranking` (text) and
 `settings` (vector) override the manifest's.
 

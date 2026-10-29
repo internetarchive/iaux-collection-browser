@@ -21,7 +21,10 @@ import {
 } from '../../src/etd/etd-static-index';
 import type { EtdPublishedMetas } from '../../src/etd/etd-static-index';
 import { ETD_VECTOR_FACETS } from '../../src/etd/etd-vector-facets';
+import { EtdSearchService } from '../../src/etd/etd-search-service';
+import { ETD_VECTOR_SEARCH } from '../../src/etd/etd-search-source';
 import { checkConfig } from '../../src/static-index/check-config';
+import { idFromIdentifier } from '../../src/static-index/identifiers';
 import {
   facetLabel,
   facetRowReader,
@@ -660,6 +663,41 @@ describe('ETD_ITEM_CONFIG’s meaning, against the vector engine', () => {
         searches: { [ETD_MEANING]: meaningConfig },
       }),
     ).to.throw("nprobe 32 isn't 1 to 4 cells");
+  });
+
+  it('names hits by their position in the vector id space, as the config says', async () => {
+    const store = await buildFixtureVectorStore(docs, { centroids });
+    const engine = new StaticVectorEngine({
+      baseUrl: FIXTURE_VECTOR_BASE,
+      fetch: store.fetch,
+      facets: ETD_VECTOR_FACETS,
+      embed: async () => Float32Array.from([1, 0.05, 0, 0]),
+      scan: { nprobe: 4 },
+    });
+    const service = new EtdSearchService({ engine, kind: ETD_VECTOR_SEARCH });
+    const { results } = (await service.search({ query: 'sea ice', rows: 10 }))
+      .success!.response;
+    expect(ETD_VECTOR_SEARCH.identifierPrefix).to.equal(
+      meaningConfig.identifierPrefix,
+    );
+
+    const { manifest } = await storeManifest(store.fetch);
+    const space = manifest.idSpaces[ETD_VECTOR_DOCS];
+    expect(results).to.have.length(docs.length);
+    for (const hit of results) {
+      // The docs.bin row the identifier names, by the manifest's rule...
+      const id = idFromIdentifier(
+        hit.identifier!,
+        meaningConfig.identifierPrefix,
+        space,
+      )!;
+      // ...is the doc the hit shows (fixture ids are input order).
+      expect(hit.title?.value, hit.identifier).to.equal(docs[id].title);
+    }
+    // The first row, id 0, is etdv-1.
+    expect(
+      results.find(hit => hit.title?.value === docs[0].title)?.identifier,
+    ).to.equal('etdv-1');
   });
 
   it('declares the same facets, in the same way', () => {
