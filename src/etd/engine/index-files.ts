@@ -1,4 +1,5 @@
 import type { EtdCallOptions } from '../etd-engine';
+import { HttpError } from './http-error';
 import { retryingFetch } from './retrying-fetch';
 
 /** Where the ETD index is published. */
@@ -91,7 +92,8 @@ export abstract class RangeFiles {
     const response = await this.fetchFn(this.fileUrl(name), {
       signal: options?.signal,
     });
-    if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+    if (!response.ok)
+      throw new HttpError(`${name}: HTTP ${response.status}`, response.status);
     return response;
   }
 
@@ -103,7 +105,8 @@ export abstract class RangeFiles {
     const response = await this.fetchFn(this.fileUrl(name), {
       signal: options?.signal,
     });
-    if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+    if (!response.ok)
+      throw new HttpError(`${name}: HTTP ${response.status}`, response.status);
     const buffer = await response.arrayBuffer();
     this.stats.bytes += buffer.byteLength;
     return buffer;
@@ -119,7 +122,8 @@ export abstract class RangeFiles {
       signal: options?.signal,
     });
     if (response.status === 404) return undefined;
-    if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+    if (!response.ok)
+      throw new HttpError(`${name}: HTTP ${response.status}`, response.status);
     const buffer = await response.arrayBuffer();
     this.stats.bytes += buffer.byteLength;
     return buffer;
@@ -145,7 +149,7 @@ export abstract class RangeFiles {
       signal: options?.signal,
     });
     if (!(response.status === 206 || response.status === 200)) {
-      throw new Error(`${name}: HTTP ${response.status}`);
+      throw new HttpError(`${name}: HTTP ${response.status}`, response.status);
     }
     let bytes = new Uint8Array(await response.arrayBuffer());
     if (response.status === 200 && bytes.length > length) {
@@ -254,19 +258,26 @@ export class EtdIndexFiles extends RangeFiles {
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     // current.json is the last file written on publish, so it never points at
     // a version whose files are still uploading. Always fetched fresh.
-    const response = await retryingFetch(fetchFn)(
-      `${base}current.json?t=${Date.now()}`,
-      {
-        signal: options.signal,
+    let manifestRetries = 0;
+    const response = await retryingFetch(fetchFn, {
+      onRetry: () => {
+        manifestRetries += 1;
       },
-    );
+    })(`${base}current.json?t=${Date.now()}`, {
+      signal: options.signal,
+    });
     if (!response.ok) {
-      throw new Error(`ETD index: current.json HTTP ${response.status}`);
+      throw new HttpError(
+        `ETD index: current.json HTTP ${response.status}`,
+        response.status,
+      );
     }
     const meta = (await response.json()) as EtdIndexMeta;
     checkIndexFormat(meta);
     const dataUrl = new URL('.', response.url || base).href;
-    return new EtdIndexFiles(dataUrl, meta, fetchFn);
+    const files = new EtdIndexFiles(dataUrl, meta, fetchFn);
+    files.stats.retries = manifestRetries;
+    return files;
   }
 
   /**

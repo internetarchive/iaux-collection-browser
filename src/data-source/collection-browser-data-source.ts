@@ -190,6 +190,11 @@ export class CollectionBrowserDataSource
   queryErrorMessage?: string;
 
   /**
+   * @inheritdoc
+   */
+  queryErrorType?: string;
+
+  /**
    * Internal property to store the promise for any current TV channel maps fetch.
    */
   private _tvMapsPromise?: Promise<TVChannelMaps>;
@@ -275,6 +280,7 @@ export class CollectionBrowserDataSource
     this.parentCollections = [];
     this.previousQueryKey = '';
     this.queryErrorMessage = undefined;
+    this.queryErrorType = undefined;
 
     this.offset = 0;
     this.numTileModels = 0;
@@ -1123,6 +1129,7 @@ export class CollectionBrowserDataSource
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
       const detailMsg = searchResponse?.error?.details?.message;
+      this.queryErrorType = searchResponse?.error?.type;
 
       if (!errorMsg && !detailMsg) {
         // @ts-expect-error: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
@@ -1260,6 +1267,7 @@ export class CollectionBrowserDataSource
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
       const detailMsg = searchResponse?.error?.details?.message;
+      this.queryErrorType = searchResponse?.error?.type;
 
       this.queryErrorMessage = `${errorMsg ?? ''}${
         detailMsg ? `; ${detailMsg}` : ''

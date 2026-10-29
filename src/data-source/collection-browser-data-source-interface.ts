@@ -154,6 +154,12 @@ export interface CollectionBrowserDataSourceInterface
   readonly queryErrorMessage?: string;
 
   /**
+   * The kind of that error (a `SearchServiceErrorType`), e.g. a network error
+   * rather than one the search engine had with the query.
+   */
+  readonly queryErrorType?: string;
+
+  /**
    * An array of all the tile models whose management checkboxes are checked
    */
   readonly checkedTileModels: TileModel[];

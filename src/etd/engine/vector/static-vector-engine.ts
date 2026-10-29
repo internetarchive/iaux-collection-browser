@@ -155,8 +155,8 @@ export class StaticVectorEngine implements EtdEngine {
           loadEmbedder({
             ...model,
             fetch: options.fetch,
-            onProgress: (loaded, total) =>
-              options.onModel?.({ state: 'loading', loaded, total }),
+            onProgress: progress =>
+              options.onModel?.({ state: 'loading', ...progress }),
           }),
         onModel: options.onModel,
       });

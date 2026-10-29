@@ -169,6 +169,25 @@ describe('ServerlessSearchService', () => {
       const result = await service.search({ query: 'rivers', rows: 10 });
       expect(result.error?.type).to.equal(SearchServiceErrorType.networkError);
     });
+
+    it('reports a server failing (5xx) as a network error, not the query', async () => {
+      source.failNextRead = Object.assign(new Error('cells.bin: HTTP 502'), {
+        status: 502,
+      });
+      const result = await service.search({ query: 'rivers', rows: 10 });
+      expect(result.error?.type).to.equal(SearchServiceErrorType.networkError);
+      expect(result.error?.message).to.equal('cells.bin: HTTP 502');
+    });
+
+    it("reports a missing file (4xx) as the search engine's error", async () => {
+      source.failNextRead = Object.assign(new Error('dict.bin: HTTP 404'), {
+        status: 404,
+      });
+      const result = await service.search({ query: 'rivers', rows: 10 });
+      expect(result.error?.type).to.equal(
+        SearchServiceErrorType.searchEngineError,
+      );
+    });
   });
 
   describe('itemDetails', () => {

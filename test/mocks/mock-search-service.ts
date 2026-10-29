@@ -19,6 +19,7 @@ import {
   getMockSuccessFirstTitleResult,
   getMockSuccessFirstCreatorResult,
   getMockErrorResult,
+  getMockSearchEngineErrorResult,
   getMockMalformedResult,
   getMockSuccessWithCollectionTitles,
   getMockSuccessWithChannelAliases,
@@ -72,6 +73,7 @@ const responses: Record<
   'tv-fields': getMockSuccessTvFields,
   'no-results': getMockSuccessNoResults,
   error: getMockErrorResult,
+  'engine-error': getMockSearchEngineErrorResult,
   malformed: getMockMalformedResult,
 };
 

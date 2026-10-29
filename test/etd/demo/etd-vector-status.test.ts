@@ -26,11 +26,24 @@ describe('etd-vector-status', () => {
       state: 'loading',
       loaded: 45_000_000,
       total: 135_400_000,
+      retries: 0,
     });
     const bar = el.shadowRoot!.querySelector('progress')!;
     expect(bar.value).to.equal(45_000_000);
     expect(bar.closest('label')).to.exist;
     expect(text(el)).to.contain('45.0 MB of 135.4 MB');
+  });
+
+  it('says when a model download had to be asked again', async () => {
+    const el = await status({
+      state: 'loading',
+      loaded: 45_000_000,
+      total: 135_400_000,
+      retries: 1,
+    });
+    expect(text(el)).to.contain(
+      '45.0 MB of 135.4 MB, 1 retried after an error',
+    );
   });
 
   it('shows cells arriving while a search scans', async () => {

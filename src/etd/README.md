@@ -433,9 +433,19 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 - **archive.org errors.** Every read retries a 502, 503 or 504, or a request
   with no answer, twice (after ~0.5 s, then ~1.5 s), in `retrying-fetch.ts`.
   A 4xx or a 500 isn't retried: they're answers, and test fixtures use a 500
-  for a read that fails. A connection lost mid-download isn't retried. Each
-  `RangeFiles` counts retries in `stats.retries`, and the vector status line
-  shows them.
+  for a read that fails. A connection lost mid-download isn't retried.
+  - What shows: the vector status line counts retries ("2 retried after an
+    error") for the model download and for the search, whose count includes
+    loading the store. Text search shows no count; it's only slower.
+  - When the retries run out, the error keeps its status (`HttpError`, also
+    across the worker), and `ServerlessSearchService` reports a 5xx or no
+    answer as a network error. collection-browser then says "The search
+    service didn't answer. Please try again in a moment." (`'service-error'`)
+    instead of blaming the query.
+  - A model file that still fails fails the model load, rather than
+    transformers.js trying it once more without retries. That's with
+    parallel downloads (the default); with `etd_model_parallel=1`,
+    transformers.js fetches the files itself, without retries.
 - **Stale `dist/`.** Tests run from `dist/`, so a deleted test can still run.
   `rm -rf dist` before trusting a test count.
 - **Two copies of `iaux-item-metadata`.** search-service has its own, so its

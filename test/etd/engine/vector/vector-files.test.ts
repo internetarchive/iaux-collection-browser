@@ -53,6 +53,43 @@ describe('VectorStoreFiles', () => {
     expect(error?.message).to.contain('no ivf-meta.json');
   });
 
+  it('opens through a 502 on the manifest, and counts the retry', async () => {
+    const store = await buildFixtureVectorStore(
+      [{ title: 'Sea ice', vector: [1, 0], cell: 0 }],
+      { centroids: [[1, 0]] },
+    );
+    let failed = false;
+    const flaky = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (!failed && String(input).includes('ivf-meta.json')) {
+        failed = true;
+        return new Response('', { status: 502 });
+      }
+      return store.fetch(input, init);
+    }) as typeof fetch;
+
+    const files = await VectorStoreFiles.open(FIXTURE_VECTOR_BASE, {
+      fetch: flaky,
+    });
+    expect(files.meta.n).to.equal(1);
+    expect(files.stats.retries).to.equal(1);
+  });
+
+  it('says the service failed, not that the store is missing, when it never answers', async function () {
+    // Two real retry waits, ~0.5 s then ~1.5 s, with jitter.
+    this.timeout(5000);
+    const down = (async () => {
+      throw new TypeError('Failed to fetch');
+    }) as typeof fetch;
+    let error: unknown;
+    try {
+      await VectorStoreFiles.open(FIXTURE_VECTOR_BASE, { fetch: down });
+    } catch (err) {
+      error = err;
+    }
+    // After the retries, the fetch's own error.
+    expect(error).to.be.instanceOf(TypeError);
+  });
+
   it("accepts the real store's manifest", () => {
     expect(() => checkIvfMeta(LIVE_META)).not.to.throw();
   });

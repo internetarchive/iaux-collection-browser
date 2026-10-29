@@ -38,7 +38,7 @@ export class EtdVectorStatus extends LitElement {
                   .value=${model.loaded}
                 ></progress>
                 ${mb(model.loaded)} of ${mb(model.total)}`
-            : html`<progress></progress>`}</label
+            : html`<progress></progress>`}${retriesText(model.retries)}</label
         >`;
       case 'ready':
         return '✅ Model ready';
