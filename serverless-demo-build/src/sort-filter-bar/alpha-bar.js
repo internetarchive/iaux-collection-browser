@@ -1,0 +1,245 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+import { LitElement, html, css, nothing } from 'lit';
+import { customElement, property, state, query } from 'lit/decorators.js';
+import { localized, msg, str } from '@lit/localize';
+import { getLocale } from '../utils/get-locale';
+import './alpha-bar-tooltip';
+let AlphaBar = class AlphaBar extends LitElement {
+    constructor() {
+        super(...arguments);
+        this.selectedLetter = null;
+        this.tooltipShown = false;
+        this.alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    }
+    get selectedUppercaseLetter() {
+        return this.selectedLetter?.toUpperCase();
+    }
+    render() {
+        return html `
+      <section id="container" aria-label=${this.ariaLandmarkLabel ?? nothing}>
+        <ul>
+          ${this.alphabet.map(letter => html `
+              <li
+                class=${letter === this.selectedUppercaseLetter
+            ? 'selected'
+            : nothing}
+                @mousemove=${this.handleMouseMove}
+                @mouseleave=${this.handleMouseLeave}
+              >
+                ${this.letterButtonTemplate(letter)}
+                ${this.tooltipTemplate(letter)}
+              </li>
+            `)}
+        </ul>
+      </section>
+    `;
+    }
+    letterButtonTemplate(letter) {
+        const count = this.letterCounts?.[letter] ?? 0;
+        const formattedCount = new Intl.NumberFormat(getLocale()).format(count);
+        const ariaLabel = msg(str `${letter}: ${formattedCount} results`);
+        return html `
+      <button
+        aria-label=${ariaLabel}
+        ?disabled=${!this.letterCounts?.[letter]}
+        @click=${() => {
+            this.letterClicked(letter);
+        }}
+      >
+        ${letter}
+      </button>
+    `;
+    }
+    tooltipTemplate(letter) {
+        if (this.hoveredLetter !== letter)
+            return nothing;
+        return this.tooltipShown
+            ? html `<alpha-bar-tooltip
+          data-letter=${letter}
+          .numResults=${this.letterCounts?.[this.hoveredLetter] ?? 0}
+        ></alpha-bar-tooltip>`
+            : nothing;
+    }
+    letterClicked(letter) {
+        if (letter === this.selectedUppercaseLetter) {
+            this.selectedLetter = null;
+        }
+        else {
+            this.selectedLetter = letter;
+        }
+        this.dispatchEvent(new CustomEvent('letterChanged', {
+            detail: { selectedLetter: this.selectedUppercaseLetter },
+        }));
+    }
+    async handleMouseMove(e) {
+        const target = e.target;
+        if (target && !this.tooltipShown) {
+            const targetLetter = target.textContent?.trim() ?? undefined;
+            this.tooltipShown = true;
+            this.hoveredLetter = targetLetter;
+            await this.updateComplete;
+            await new Promise(resolve => {
+                setTimeout(resolve, 0);
+            });
+            if (this.tooltip && this.tooltip.dataset.letter === targetLetter) {
+                this.positionTooltip(target);
+            }
+        }
+    }
+    handleMouseLeave() {
+        this.tooltipShown = false;
+        this.hoveredLetter = undefined;
+    }
+    positionTooltip(targetElmt) {
+        if (!this.tooltip)
+            return;
+        // Basic positioning is just to center the whole tooltip on the letter box.
+        const tooltipWidth = this.tooltip.clientWidth;
+        const letterWidth = targetElmt.clientWidth;
+        let left = letterWidth / 2 - tooltipWidth / 2;
+        // But we also need to ensure the tooltip doesn't flow outside the viewport.
+        // First, calculate the full width of the document body, including margins
+        // (but not including any scrollbar).
+        const bodyStyle = getComputedStyle(document.body);
+        const bodyMarginLeft = parseFloat(bodyStyle.getPropertyValue('margin-left'));
+        const bodyMarginRight = parseFloat(bodyStyle.getPropertyValue('margin-right'));
+        const bodyWidthWithMargin = document.body.clientWidth + bodyMarginLeft + bodyMarginRight;
+        // Calculate the positions of the tooltip's left/right edges, and determine
+        // how much they overflow the viewport by (if at all).
+        const targetRect = targetElmt.getBoundingClientRect();
+        const tooltipLeft = targetRect.left + left;
+        const tooltipRight = tooltipLeft + tooltipWidth;
+        const offset = 1; // How many pixels the tooltip must be offset from the left/right edges
+        let overflowAmt;
+        if (tooltipLeft < offset) {
+            // Tooltip overflows left edge of viewport
+            overflowAmt = tooltipLeft - offset;
+        }
+        else if (tooltipRight > bodyWidthWithMargin - offset) {
+            // Tooltip overflows right edge of viewport
+            overflowAmt = tooltipRight - bodyWidthWithMargin + offset;
+        }
+        // Apply any needed adjustment to the tooltip and its arrow to keep it in the viewport
+        if (overflowAmt) {
+            left -= overflowAmt;
+            this.tooltip.style.setProperty('--tooltipArrowOffset', `${overflowAmt}px`);
+        }
+        this.tooltip.style.left = `${left}px`;
+        this.tooltip.classList.add('fade-in');
+    }
+    static { this.styles = css `
+    h1 {
+      font-size: 1.2rem;
+    }
+
+    #container {
+      background-color: #ddd;
+      color: #333;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+
+    ul {
+      list-style: none;
+      display: flex;
+      margin: 0;
+      padding: 0.5rem 1rem;
+      justify-content: space-between;
+    }
+
+    ul li {
+      position: relative;
+      flex: 1;
+      text-align: center;
+      max-width: 2.5rem;
+      border-radius: 4px;
+    }
+
+    li:hover:not(.selected) button:not(:disabled) {
+      background-color: #c0c0c0;
+    }
+
+    button {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      aspect-ratio: 1 / 1;
+    }
+
+    button {
+      width: 100%;
+      height: 100%;
+      color: #333;
+      appearance: none;
+      background: none;
+      border: none;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      color: #aaa;
+      cursor: default;
+    }
+
+    .selected {
+      background-color: #2c2c2c;
+    }
+
+    .selected button {
+      color: white;
+    }
+
+    alpha-bar-tooltip {
+      position: absolute;
+      top: 100%;
+      left: -9999px;
+      margin-top: 3px;
+      z-index: 1;
+
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    alpha-bar-tooltip.fade-in {
+      opacity: 1;
+    }
+
+    /* Make alphabet bar a 2-row container in small screen widths */
+    @media screen and (max-width: 768px) {
+      ul {
+        display: grid;
+        grid-template-columns: repeat(13, 1fr);
+      }
+    }
+  `; }
+};
+__decorate([
+    property({ type: String })
+], AlphaBar.prototype, "selectedLetter", void 0);
+__decorate([
+    property({ type: Object })
+], AlphaBar.prototype, "letterCounts", void 0);
+__decorate([
+    property({ type: String })
+], AlphaBar.prototype, "ariaLandmarkLabel", void 0);
+__decorate([
+    state()
+], AlphaBar.prototype, "tooltipShown", void 0);
+__decorate([
+    state()
+], AlphaBar.prototype, "hoveredLetter", void 0);
+__decorate([
+    query('alpha-bar-tooltip')
+], AlphaBar.prototype, "tooltip", void 0);
+AlphaBar = __decorate([
+    customElement('alpha-bar'),
+    localized()
+], AlphaBar);
+export { AlphaBar };

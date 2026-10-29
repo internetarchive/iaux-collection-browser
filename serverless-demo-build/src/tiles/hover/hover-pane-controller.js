@@ -1,0 +1,461 @@
+import { html, nothing, } from 'lit';
+import { msg } from '@lit/localize';
+const clamp = (val, min = -Infinity, max = Infinity) => Math.max(min, Math.min(val, max));
+export class HoverPaneController {
+    constructor(
+    /** The host element to which this controller should attach listeners */
+    host, 
+    /** Options for adjusting the hover pane behavior (offsets, delays, etc.) */
+    options = {}) {
+        this.host = host;
+        /**
+         * The breakpoint (in pixels) below which the mobile interface should be used.
+         */
+        this.mobileBreakpoint = 600;
+        /**
+         * The number of horizontal pixels the hover pane should be offset from the
+         * pointer position.
+         */
+        this.offsetX = -10;
+        /**
+         * The number of vertical pixels the hover pane should be offset from the
+         * pointer position.
+         */
+        this.offsetY = 15;
+        /**
+         * The delay between the mouse idling within the host element and when the hover
+         * pane should begin fading in (in milliseconds).
+         */
+        this.showDelay = 300;
+        /**
+         * The delay between when the mouse leaves the host element and when the hover
+         * pane should begin fading out (in milliseconds).
+         */
+        this.hideDelay = 100;
+        /**
+         * The delay between when a touch event begins on the host element and when the
+         * hover pane should begin fading in (in milliseconds).
+         */
+        this.longPressDelay = 600;
+        /**
+         * Whether long press interactions should cause the hover pane to appear (when
+         * below the mobile breakpoint).
+         */
+        this.enableLongPress = false;
+        /**
+         * Used to control the current state of this provider's hover pane.
+         *  - `'hidden'` => The hover pane is not present at all.
+         *  - `'shown'` => The hover pane is either fading in or fully visible.
+         *  - `'fading-out'` => The hover pane is fading out and about to be removed.
+         */
+        this.hoverPaneState = 'hidden';
+        /**
+         * Whether the touch backdrop should currently be rendered irrespective of other touch
+         * interactions being enabled.
+         */
+        this.forceTouchBackdrop = false;
+        /** A record of the last mouse position on the host element, for positioning the hover pane */
+        this.lastPointerClientPos = { x: 0, y: 0 };
+        /**
+         * A flag to track whether the host element is being clicked by a pointer device, so that we
+         * don't trigger unnecessary keyboard focus behaviors on click. This is needed, e.g., to prevent
+         * the hover pane from appearing immediately at its `host` positioning on click, which can
+         * obstruct the host element itself (due to the ordering of events fired).
+         */
+        this.clicking = false;
+        this.handleFocus = () => {
+            if (!this.clicking && this.hoverPaneState === 'hidden') {
+                this.showHoverPane({
+                    anchor: 'host',
+                });
+            }
+            this.clicking = false;
+        };
+        this.handleBlur = () => {
+            if (this.hoverPaneState !== 'hidden') {
+                this.fadeOutHoverPane();
+            }
+        };
+        this.handlePointerDown = () => {
+            this.clicking = true;
+        };
+        this.handleKeyDown = (e) => {
+            if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') &&
+                this.hoverPaneState !== 'hidden') {
+                e.preventDefault();
+            }
+        };
+        this.handleKeyUp = (e) => {
+            if (this.hoverPaneState === 'hidden' || !this.hoverPane)
+                return;
+            if (e.key === 'ArrowDown') {
+                this.hoverPane.tabIndex = 1;
+                this.hoverPane.focus();
+            }
+            const isArrowUp = e.key === 'ArrowUp';
+            const isEscape = e.key === 'Escape' || e.key === 'Esc';
+            if (isEscape) {
+                this.fadeOutHoverPane();
+            }
+            if (isArrowUp || isEscape) {
+                this.hoverPane.tabIndex = -1;
+                this.host.acquireFocus();
+            }
+        };
+        /**
+         * Handler for the mouseenter event on the host element.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleMouseEnter = (e) => {
+            // Delegate to the mousemove handler, as they are currently processed identically
+            this.handleMouseMove(e);
+        };
+        /**
+         * Handler for the mousemove event on the host element.
+         * Aborts any pending hide/fade-out for the hover pane, and restarts the
+         * timer to show it.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleMouseMove = (e) => {
+            // The mouse is within the tile, so abort any pending removal of the hover pane
+            clearTimeout(this.hideTimer);
+            // If the hover pane is currently fading out, just make it fade back in where it is
+            if (this.hoverPaneState === 'fading-out') {
+                this.hoverPaneState = 'shown';
+                this.hoverPane?.classList.add('fade-in');
+            }
+            // Restart the timer to show the hover pane anytime the mouse moves within the tile
+            if (this.hoverPaneState === 'hidden') {
+                this.restartShowHoverPaneTimer();
+                this.lastPointerClientPos = { x: e.clientX, y: e.clientY };
+            }
+        };
+        /**
+         * Handler for the mouseleave event on the host element.
+         * Hides the hover pane if present, and aborts the timer for showing it.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleMouseLeave = () => {
+            this.host.releaseFocus();
+            // Abort any timer to show the hover pane, as the mouse has left the tile
+            clearTimeout(this.showTimer);
+            // Hide the hover pane if it's already been shown
+            if (this.hoverPaneState !== 'hidden') {
+                this.hideTimer = window.setTimeout(() => {
+                    this.fadeOutHoverPane();
+                }, this.hideDelay);
+            }
+        };
+        /**
+         * Handler for the touchstart event on the host element.
+         * Begins the timer for recognizing a long press event.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleTouchStart = (e) => {
+            clearTimeout(this.longPressTimer);
+            if (e.touches.length === 1) {
+                this.longPressTimer = window.setTimeout(() => {
+                    if (this.hoverPaneState === 'hidden') {
+                        this.showHoverPane();
+                    }
+                }, this.longPressDelay);
+                this.lastPointerClientPos = {
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY,
+                };
+            }
+        };
+        /**
+         * Handler for events that should cancel a pending long press event
+         * (touchmove, touchend, touchcancel). Aborts the timer for recognizing
+         * a long press.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleLongPressCancel = () => {
+            clearTimeout(this.longPressTimer);
+        };
+        /**
+         * Handler for the contextmenu event, which should be suppressed during
+         * mobile long-press events on the host element.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleContextMenu = (e) => {
+            e.preventDefault();
+        };
+        /**
+         * Immediately causes the hover pane to begin fading out, if it is present.
+         */
+        // NB: Arrow function so 'this' remains bound to the controller
+        this.handleBackdropInteraction = (e) => {
+            if (this.hoverPaneState !== 'hidden') {
+                this.fadeOutHoverPane();
+            }
+            e.preventDefault();
+            e.stopPropagation();
+        };
+        this.mobileBreakpoint = options.mobileBreakpoint ?? this.mobileBreakpoint;
+        this.offsetX = options.offsetX ?? this.offsetX;
+        this.offsetY = options.offsetY ?? this.offsetY;
+        this.showDelay = options.showDelay ?? this.showDelay;
+        this.hideDelay = options.hideDelay ?? this.hideDelay;
+        this.longPressDelay = options.longPressDelay ?? this.longPressDelay;
+        this.enableLongPress = options.enableLongPress ?? this.enableLongPress;
+        this.host.addController(this);
+    }
+    hostConnected() {
+        this.attachListeners();
+    }
+    hostDisconnected() {
+        this.detachListeners();
+    }
+    hostUpdated() {
+        this.hoverPane = this.host.getHoverPane();
+        this.hoverPaneProps = this.host.getHoverPaneProps();
+    }
+    /** @inheritdoc */
+    getTemplate() {
+        this.hoverPaneProps = this.host.getHoverPaneProps();
+        return this.shouldRenderHoverPane
+            ? html `
+          ${this.touchBackdropTemplate}
+          <tile-hover-pane
+            popover
+            tabindex="-1"
+            aria-describedby="tile-hover-pane-aria-description"
+            .model=${this.hoverPaneProps?.model}
+            .baseNavigationUrl=${this.hoverPaneProps?.baseNavigationUrl}
+            .baseImageUrl=${this.hoverPaneProps?.baseImageUrl}
+            .loggedIn=${this.hoverPaneProps?.loggedIn}
+            .suppressBlurring=${this.hoverPaneProps?.suppressBlurring}
+            .sortParam=${this.hoverPaneProps?.sortParam}
+            .collectionTitles=${this.hoverPaneProps?.collectionTitles}
+            .mobileBreakpoint=${this.mobileBreakpoint}
+            .currentWidth=${window.innerWidth}
+          ></tile-hover-pane>
+          <div id="tile-hover-pane-aria-description" class="sr-only">
+            ${msg('Press Up Arrow to exit item detail preview')}
+          </div>
+        `
+            : nothing;
+    }
+    /** @inheritdoc */
+    toggleHoverPane(options) {
+        if (this.hoverPaneState !== 'hidden') {
+            this.fadeOutHoverPane();
+            this.forceTouchBackdrop = false;
+        }
+        else {
+            this.lastPointerClientPos = options.coords;
+            this.forceTouchBackdrop = options.enableTouchBackdrop ?? false;
+            this.showHoverPane();
+        }
+    }
+    /**
+     * Produces a template for the invisible touch capture backdrop that
+     * is used to cancel the hover pane on touch devices. We want any
+     * touch interaction on the backdrop to remove the hover pane, and
+     * we don't want to bubble up mouse events that would otherwise
+     * affect the state of the hover pane (e.g., fading it back in).
+     */
+    get touchBackdropTemplate() {
+        return this.showTouchBackdrop
+            ? html `<div
+          id="touch-backdrop"
+          @touchstart=${this.handleBackdropInteraction}
+          @touchmove=${this.handleBackdropInteraction}
+          @touchend=${this.handleBackdropInteraction}
+          @touchcancel=${this.handleBackdropInteraction}
+          @mouseenter=${(e) => e.stopPropagation()}
+          @mousemove=${(e) => e.stopPropagation()}
+          @mouseleave=${(e) => e.stopPropagation()}
+        ></div>`
+            : nothing;
+    }
+    get showTouchBackdrop() {
+        return ((this.isTouchEnabled && this.enableLongPress) || this.forceTouchBackdrop);
+    }
+    /** Whether to use the mobile layout */
+    get isMobileView() {
+        return !!this.mobileBreakpoint && window.innerWidth < this.mobileBreakpoint;
+    }
+    get isHoverEnabled() {
+        return window.matchMedia('(hover: hover)').matches;
+    }
+    get isTouchEnabled() {
+        return ('ontouchstart' in window &&
+            window.matchMedia('(any-pointer: coarse)').matches);
+    }
+    /** Whether this controller should currently render its hover pane. */
+    get shouldRenderHoverPane() {
+        return this.hoverPaneState !== 'hidden';
+    }
+    /**
+     * Returns the desired top/left offsets (in pixels) for this tile's hover pane.
+     * The desired offsets balance positioning the hover pane under the primary pointer
+     * while preventing it from flowing outside the viewport. The returned offsets are
+     * relative to the viewport, intended to position the pane as a popover element.
+     *
+     * These offsets are only valid if the hover pane is already rendered with its
+     * correct width and height. If the hover pane is not present, the returned offsets
+     * will simply represent the current pointer position.
+     */
+    makePaneDesiredOffsets(anchor) {
+        // Try to find offsets for the hover pane that:
+        //  (a) cause it to lie entirely within the viewport, and
+        //  (b) to the extent possible, minimize the distance between the
+        //      nearest corner of the hover pane and the mouse/host element position
+        //      (with some additional offsets applied after the fact).
+        let [left, top] = [0, 0];
+        switch (anchor) {
+            case 'host':
+                const hostRect = this.host.getBoundingClientRect();
+                // slight inset from host top left corner
+                left = hostRect.left + 20;
+                top = hostRect.top + 30;
+                break;
+            case 'cursor':
+                left = this.lastPointerClientPos.x;
+                top = this.lastPointerClientPos.y;
+                break;
+        }
+        // Flip the hover pane according to which quadrant of the viewport the coordinates are in.
+        // (Similar to how Wikipedia's link hover panes work)
+        const flipHorizontal = left > window.innerWidth / 2;
+        const flipVertical = top > window.innerHeight / 2;
+        const hoverPaneRect = this.hoverPane?.getBoundingClientRect();
+        if (hoverPaneRect) {
+            // If we need to flip the hover pane, do so by subtracting its width/height from left/top
+            if (flipHorizontal) {
+                left -= hoverPaneRect.width;
+            }
+            if (flipVertical) {
+                top -= hoverPaneRect.height;
+            }
+            // Apply desired offsets from the target position
+            left += (flipHorizontal ? -1 : 1) * this.offsetX;
+            top += (flipVertical ? -1 : 1) * this.offsetY;
+            // On mobile view, shunt the hover pane to avoid overflowing the viewport
+            if (this.isMobileView) {
+                left = clamp(left, 20, window.innerWidth - hoverPaneRect.width - 20);
+                top = clamp(top, 20, window.innerHeight - hoverPaneRect.height - 20);
+            }
+        }
+        left += window.scrollX;
+        top += window.scrollY;
+        return { left, top };
+    }
+    /**
+     * Adds to the host element all the listeners necessary to make the
+     * hover pane functional.
+     */
+    attachListeners() {
+        // keyboard navigation listeners
+        this.host.addEventListener('focus', this.handleFocus);
+        this.host.addEventListener('blur', this.handleBlur);
+        this.host.addEventListener('pointerdown', this.handlePointerDown);
+        this.host.addEventListener('keyup', this.handleKeyUp);
+        this.host.addEventListener('keydown', this.handleKeyDown);
+        if (this.isHoverEnabled) {
+            this.host.addEventListener('mouseenter', this.handleMouseEnter);
+            this.host.addEventListener('mousemove', this.handleMouseMove);
+            this.host.addEventListener('mouseleave', this.handleMouseLeave);
+        }
+        if (this.isTouchEnabled && this.enableLongPress) {
+            this.host.addEventListener('touchstart', this.handleTouchStart);
+            this.host.addEventListener('touchmove', this.handleLongPressCancel);
+            this.host.addEventListener('touchend', this.handleLongPressCancel);
+            this.host.addEventListener('touchcancel', this.handleLongPressCancel);
+            this.host.addEventListener('contextmenu', this.handleContextMenu);
+        }
+    }
+    /**
+     * Removes all the hover pane listeners from the host element.
+     */
+    detachListeners() {
+        this.host.removeEventListener('mouseenter', this.handleMouseEnter);
+        this.host.removeEventListener('mousemove', this.handleMouseMove);
+        this.host.removeEventListener('mouseleave', this.handleMouseLeave);
+        this.host.removeEventListener('touchstart', this.handleTouchStart);
+        this.host.removeEventListener('touchmove', this.handleLongPressCancel);
+        this.host.removeEventListener('touchend', this.handleLongPressCancel);
+        this.host.removeEventListener('touchcancel', this.handleLongPressCancel);
+        this.host.removeEventListener('contextmenu', this.handleContextMenu);
+        // keyboard navigation listeners
+        this.host.removeEventListener('focus', this.handleFocus);
+        this.host.removeEventListener('blur', this.handleBlur);
+        this.host.removeEventListener('keyup', this.handleKeyUp);
+        this.host.removeEventListener('keydown', this.handleKeyDown);
+    }
+    /**
+     * Aborts and restarts the timer for showing the hover pane.
+     */
+    restartShowHoverPaneTimer() {
+        clearTimeout(this.showTimer);
+        this.showTimer = window.setTimeout(() => {
+            this.host.acquireFocus();
+            this.showHoverPane();
+        }, this.showDelay);
+    }
+    /**
+     * Causes this tile's hover pane to be rendered, positioned, and made visible.
+     */
+    async showHoverPane(options = {
+        anchor: 'cursor',
+    }) {
+        this.hoverPaneState = 'shown';
+        this.host.requestUpdate();
+        // Wait for the state update to render the hover pane
+        await this.host.updateComplete;
+        // Ensure the hover pane element is still in the document before showing,
+        // as it might have been removed by the previous update.
+        if (!this.hoverPane?.isConnected)
+            return;
+        if (this.hoverPane && !this.hoverPane.matches(':popover-open')) {
+            this.hoverPane.showPopover?.();
+        }
+        // Pane sizes aren't accurate until the pane's full descendant tree has
+        // rendered. The next animation frame guarantees that to be true, but
+        // frames are skipped when the page is not visible, so fall back to a
+        // short timer as a backstop in such cases.
+        await Promise.race([
+            new Promise(resolve => {
+                requestAnimationFrame(resolve);
+            }),
+            new Promise(resolve => {
+                setTimeout(resolve, 50);
+            }),
+        ]);
+        // Apply the correct positioning to the hover pane
+        this.repositionHoverPane(options.anchor);
+        // The hover pane is initially not visible (to avoid it shifting around
+        // while being positioned). Since it now has the correct positioning, we
+        // can make it visible and begin its fade-in animation.
+        this.hoverPane?.classList.add('visible', 'fade-in');
+    }
+    /**
+     * Causes this tile's hover pane to begin fading out and starts
+     * the timer for it to be removed.
+     */
+    fadeOutHoverPane() {
+        this.hoverPaneState = 'fading-out';
+        this.hoverPane?.classList.remove('fade-in');
+        clearTimeout(this.hideTimer);
+        this.hideTimer = window.setTimeout(() => {
+            this.hoverPaneState = 'hidden';
+            if (this.hoverPane) {
+                this.hoverPane.tabIndex = -1;
+            }
+            this.host.requestUpdate();
+        }, 100);
+    }
+    /**
+     * Positions the hover pane with the correct offsets.
+     */
+    repositionHoverPane(anchor) {
+        if (!this.hoverPane)
+            return;
+        const { top, left } = this.makePaneDesiredOffsets(anchor);
+        this.hoverPane.style.top = `${top}px`;
+        this.hoverPane.style.left = `${left}px`;
+    }
+}

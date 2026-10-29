@@ -1,0 +1,133 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+import { css, html, LitElement, nothing, } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { join } from 'lit/directives/join.js';
+let TextSnippetBlock = class TextSnippetBlock extends LitElement {
+    constructor() {
+        super(...arguments);
+        this.snippets = [];
+        this.viewSize = 'desktop';
+    }
+    render() {
+        if (!this.snippets?.length)
+            return html `${nothing}`;
+        return html `
+      <div class="container">
+        <div class="snippet-view ${this.viewSize}">
+          ${this.ellipsisJoinedSnippets}
+        </div>
+      </div>
+    `;
+    }
+    /**
+     * An array of HTML templates derived from the snippets, with ellipses inserted
+     * at the beginning, end, and between each pair of snippets.
+     */
+    get ellipsisJoinedSnippets() {
+        return html `
+      &hellip; ${join(this.snippetTemplates, html ` &hellip; `)} &hellip;
+    `;
+    }
+    /**
+     * Returns an array of HTML span templates containing this item's snippets with all of
+     * their `{{{triple-brace-delimited}}}` matches replaced by `<mark>HTML mark tags</mark>`.
+     *
+     * This approach safely avoids the use of `unsafeHTML` and leaves any existing HTML tags
+     * in the snippets intact (as inert text), rather than stripping them away with DOMPurify.
+     *
+     * Note on `<em>` vs. `<mark>`:
+     * The old search page snippets had search keywords demarcated with `<em>` tags.
+     * The `<mark>` tag is semantically more accurate for this use case than `<em>`,
+     * but screen-reader behavior may be different. `<em>` will likely be read in a
+     * different tone, while `<mark>` is often read no differently than ordinary text
+     * in many screen-readers (though there are ways to work around this if needed).
+     */
+    get snippetTemplates() {
+        return this.snippets?.map(s => {
+            const matches = s.matchAll(/{{{(.+?)}}}/gs);
+            const templates = [];
+            // Convert each match into an HTML template that includes:
+            //  - Everything from the end of the previous match (or the beginning of the
+            //      string) up to the current match, as raw text.
+            //  - The current match (excluding the curly braces) wrapped in a `<mark>` tag.
+            let index = 0;
+            for (const match of matches) {
+                if (match.index != null) {
+                    // On one line: whitespace in the template would render as spaces
+                    // around the mark, splitting words and detaching punctuation.
+                    templates.push(html `${s.slice(index, match.index)}<mark>${match[1]}</mark>`);
+                    index = match.index + match[0].length;
+                }
+            }
+            // Include any text from the last match to the end
+            templates.push(html `${s.slice(index)}`);
+            // Squash everything into a single span template
+            return html `<span>${templates}</span>`;
+        });
+    }
+    static get styles() {
+        return css `
+      .container {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        width: calc(100% - 10px);
+        border-left: 5px solid #194880;
+        margin-top: var(--containerTopMargin, 10px);
+        margin-left: var(--containerLeftMargin, 0px);
+        border-radius: 3px;
+        box-sizing: border-box;
+      }
+
+      .snippet-view {
+        display: -webkit-box;
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        overflow: hidden;
+        overflow-wrap: break-word;
+        -webkit-line-clamp: var(--maxLines, 3);
+        -webkit-box-orient: vertical;
+        margin-left: 5px;
+      }
+
+      .grid {
+        font-size: 1.2rem;
+        line-height: 1.5rem;
+      }
+
+      .list {
+        margin: 0;
+        padding-left: 15px;
+        font-size: 1.4rem;
+        line-height: 2rem;
+
+        /*
+         * Safari doesn't always respect the line-clamping rules,
+         * so we add this to ensure these fields still get truncated.
+         */
+        max-height: 6rem;
+      }
+
+      mark {
+        /* blue, 20% transparency */
+        background-color: #0000ff33;
+        color: inherit;
+      }
+    `;
+    }
+};
+__decorate([
+    property({ type: Array })
+], TextSnippetBlock.prototype, "snippets", void 0);
+__decorate([
+    property({ type: String })
+], TextSnippetBlock.prototype, "viewSize", void 0);
+TextSnippetBlock = __decorate([
+    customElement('text-snippet-block')
+], TextSnippetBlock);
+export { TextSnippetBlock };

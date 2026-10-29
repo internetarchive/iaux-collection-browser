@@ -1,0 +1,120 @@
+import { checkIndexFormat } from '../engine/index-files';
+/**
+ * Demo-only: which archive.org item the ETD demo searches. By default it's
+ * etd-search, through the dev server's /etd-index proxy; `etd_item=<id>`
+ * points it at another item's static index, through /item-index/<id>/.
+ */
+/** The item the demo searches when the URL doesn't name one. */
+export const DEFAULT_ETD_ITEM = 'etd-search';
+/**
+ * archive.org identifier characters. Only these reach the proxy path, so
+ * nothing like `../` can.
+ */
+const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+const ARCHIVE_HOSTS = new Set(['archive.org', 'www.archive.org']);
+/**
+ * The item identifier in what someone typed, pasted or dropped: a bare
+ * identifier, an archive.org/details/<id> url, or an archive.org/download/<id>/…
+ * url. Undefined for anything else.
+ */
+export function parseItemIdentifier(text) {
+    const trimmed = text.trim();
+    if (IDENTIFIER.test(trimmed))
+        return trimmed;
+    let url;
+    try {
+        url = new URL(trimmed);
+    }
+    catch {
+        return undefined;
+    }
+    if (!['http:', 'https:'].includes(url.protocol))
+        return undefined;
+    if (!ARCHIVE_HOSTS.has(url.hostname))
+        return undefined;
+    const [, kind, id] = url.pathname.split('/');
+    if (kind !== 'details' && kind !== 'download')
+        return undefined;
+    const identifier = decodeURIComponent(id ?? '');
+    return IDENTIFIER.test(identifier) ? identifier : undefined;
+}
+/** The proxied directory of an item's files. */
+export function itemIndexUrl(item) {
+    return item === DEFAULT_ETD_ITEM ? '/etd-index/' : `/item-index/${item}/`;
+}
+/**
+ * The index and live page to use, from the demo's url parameters:
+ * `etd_base_url` first, then `etd_item`, then etd-search.
+ */
+export function etdIndexUrls(params) {
+    const raw = params.get('etd_item');
+    const parsed = raw === null ? undefined : parseItemIdentifier(raw);
+    const rejectedItem = raw !== null && !parsed ? raw : undefined;
+    const item = parsed ?? DEFAULT_ETD_ITEM;
+    const itemUrl = itemIndexUrl(item);
+    const baseUrl = params.get('etd_base_url');
+    if (baseUrl !== null) {
+        const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+        return { baseUrl, pageUrl: `${base}search.html`, rejectedItem };
+    }
+    return {
+        baseUrl: itemUrl,
+        pageUrl: `${itemUrl}search.html`,
+        item,
+        rejectedItem,
+    };
+}
+/**
+ * Reads an item's current.json and checks it describes an index this engine
+ * reads, before the demo switches to it.
+ */
+export async function checkItemIndex(item, fetchFn = fetch.bind(globalThis)) {
+    let response;
+    try {
+        response = await fetchFn(`${itemIndexUrl(item)}current.json?t=${Date.now()}`);
+    }
+    catch (err) {
+        return { ok: false, message: `Couldn't reach ${item}: ${reason(err)}.` };
+    }
+    if (response.status === 404) {
+        return {
+            ok: false,
+            message: `${item} doesn't have a current.json, so it isn't a static search index this demo can read.`,
+        };
+    }
+    if (!response.ok) {
+        return {
+            ok: false,
+            message: `Couldn't read ${item}'s current.json (HTTP ${response.status}).`,
+        };
+    }
+    let meta;
+    try {
+        meta = (await response.json());
+    }
+    catch {
+        return {
+            ok: false,
+            message: `${item}'s current.json isn't JSON, so it isn't a static search index this demo can read.`,
+        };
+    }
+    if (typeof meta !== 'object' || meta === null) {
+        return {
+            ok: false,
+            message: `${item}'s current.json isn't an index manifest, so it isn't a static search index this demo can read.`,
+        };
+    }
+    try {
+        checkIndexFormat(meta);
+    }
+    catch (err) {
+        return {
+            ok: false,
+            message: `${item} has a current.json, but not in a format this engine reads: ${reason(err)}.`,
+        };
+    }
+    return { ok: true };
+}
+function reason(err) {
+    return (err instanceof Error ? err.message : String(err)).replace(/^ETD index: /, '');
+}

@@ -1,0 +1,16 @@
+{
+  // Builds src/ to serverless-demo-build/, which is committed so a page can
+  // load the serverless search demo from esm.archive.org with the decorators
+  // compiled as this repo needs. esm.sh compiles .ts source with standard
+  // decorators, which Lit's field decorators reject.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "serverless-demo-build",
+    "declaration": false,
+    "sourceMap": false,
+    "inlineSources": false,
+    // Inline the decorator helpers rather than import tslib, a dev dependency
+    "importHelpers": false,
+  },
+  "include": ["src", "types"],
+}
