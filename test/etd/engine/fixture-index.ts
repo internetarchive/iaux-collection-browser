@@ -1,4 +1,5 @@
 import { fnv1a, tokenize } from '../../../src/etd/engine/codec';
+import { institutionKey } from '../../../src/etd/engine/institutions';
 
 /**
  * Builds a small ETD index in memory, in the on-disk format the engine
@@ -27,6 +28,16 @@ export interface FixtureThesis {
   level?: 'phd' | 'masters' | 'bachelors' | 'other';
   /** Facet flags by name, as facets-meta's flag_bits names them. */
   flags?: string[];
+  /** Its id in the institution list (1-based into `institutions`). */
+  institutionId?: number;
+}
+
+/** An entry in the fixture's institution list. */
+export interface FixtureInstitution {
+  label: string;
+  country?: string;
+  /** Other names it's looked up by; its label always is. */
+  aliases?: string[];
 }
 
 export interface FixtureOptions {
@@ -37,6 +48,8 @@ export interface FixtureOptions {
   withSnippets?: boolean;
   /** Write facets-meta.json and facets.gz.json (default true). */
   withFacets?: boolean;
+  /** Write the institution list's files (inst-meta.json, ...) with these. */
+  institutions?: FixtureInstitution[];
 }
 
 export const FIXTURE_BASE = 'https://archive.org/download/etd-fixture/';
@@ -224,6 +237,14 @@ export async function buildFixtureIndex(
     const [facetMeta, facetRows] = await facetFiles(theses);
     files.set('facets-meta.json', facetMeta);
     files.set('facets.gz.json', facetRows);
+  }
+  if (options.institutions) {
+    for (const [name, bytes] of await institutionFiles(
+      theses,
+      options.institutions,
+    )) {
+      files.set(name, bytes);
+    }
   }
   if (meta.posfwd) {
     files.set('posfwd.dir', posfwdDir);
@@ -421,6 +442,95 @@ async function facetFiles(
     .stream()
     .pipeThrough(new CompressionStream('gzip'));
   return [meta, new Uint8Array(await new Response(gzipped).arrayBuffer())];
+}
+
+/**
+ * The institution list's files, as the real index lays them out: ids
+ * (u16, gzipped), labels (TSV lines with u32 offsets) and the alias index
+ * (lines bucketed by a normalized name's first two characters).
+ */
+async function institutionFiles(
+  theses: FixtureThesis[],
+  institutions: FixtureInstitution[],
+): Promise<[string, Uint8Array][]> {
+  const encoder = new TextEncoder();
+  const ids = new Uint16Array(theses.map(t => t.institutionId ?? 0));
+  const gzipped = new Uint8Array(
+    await new Response(
+      new Blob([ids]).stream().pipeThrough(new CompressionStream('gzip')),
+    ).arrayBuffer(),
+  );
+
+  const lines = institutions.map((inst, i) =>
+    encoder.encode(
+      `Q${i + 1}\t${inst.label}\t${inst.country ?? ''}\t${
+        theses.filter(t => t.institutionId === i + 1).length
+      }\n`,
+    ),
+  );
+  const labelsDir = new Uint32Array(lines.length + 1);
+  lines.forEach((line, i) => {
+    labelsDir[i + 1] = labelsDir[i] + line.length;
+  });
+
+  // normalized name -> ids
+  const aliases = new Map<string, Set<number>>();
+  institutions.forEach((inst, i) => {
+    for (const name of [inst.label, ...(inst.aliases ?? [])]) {
+      const key = institutionKey(name);
+      aliases.set(key, (aliases.get(key) ?? new Set()).add(i + 1));
+    }
+  });
+  const buckets: Record<string, [number, number]> = {};
+  const aliasParts: Uint8Array[] = [];
+  let aliasSize = 0;
+  const byBucket = new Map<string, string[]>();
+  for (const [key, keyIds] of [...aliases].sort(([a], [b]) =>
+    a < b ? -1 : 1,
+  )) {
+    const bucket = key.slice(0, 2);
+    byBucket.set(bucket, [
+      ...(byBucket.get(bucket) ?? []),
+      `${key}\t${[...keyIds].join(',')}\n`,
+    ]);
+  }
+  for (const [bucket, bucketLines] of byBucket) {
+    const bytes = encoder.encode(bucketLines.join(''));
+    buckets[bucket] = [aliasSize, bytes.length];
+    aliasParts.push(bytes);
+    aliasSize += bytes.length;
+  }
+
+  const meta = {
+    n: theses.length,
+    stride: 2,
+    k: institutions.length,
+    bin: 'inst.bin',
+    gz: 'inst.gz.json',
+    labels: {
+      bin: 'inst-labels.bin',
+      dir: 'inst-labels.dir',
+      cols: ['qid', 'label', 'country', 'n_docs'],
+    },
+    alias: { bin: 'inst-alias.bin', dir: 'inst-alias.json' },
+  };
+  return [
+    ['inst-meta.json', encoder.encode(JSON.stringify(meta))],
+    ['inst.bin', new Uint8Array(ids.buffer)],
+    ['inst.gz.json', gzipped],
+    ['inst-labels.bin', concat(lines)],
+    ['inst-labels.dir', new Uint8Array(labelsDir.buffer)],
+    [
+      'inst-alias.json',
+      encoder.encode(
+        JSON.stringify({
+          norm: 'nfkd-strip-marks-casefold-nonword-to-space-collapse-drop-leading-the',
+          buckets,
+        }),
+      ),
+    ],
+    ['inst-alias.bin', concat(aliasParts)],
+  ];
 }
 
 async function deflate(text: string): Promise<Uint8Array> {

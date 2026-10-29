@@ -1,10 +1,12 @@
 import type { EtdFacetMeta } from '../../src/etd/engine/facets';
+import type { EtdInstitutionMeta } from '../../src/etd/engine/institutions';
 import type { EtdCurrentJson } from '../../src/etd/etd-static-index';
 
 /**
- * ETD's published current.json and facets-meta.json, build 20261026-5e5902,
- * trimmed to what the manifest reads: build inputs, counts, the domain list and
- * facets-meta's free-text `fields` are dropped.
+ * ETD's published current.json, facets-meta.json and inst-meta.json, build
+ * 20261026-5e5902, trimmed to what the manifest reads: build inputs, counts,
+ * the domain list, facets-meta's free-text `fields` and inst-meta's match
+ * stats are dropped.
  */
 
 export const ETD_CURRENT_JSON: EtdCurrentJson = {
@@ -486,4 +488,18 @@ export const ETD_FACETS_META: EtdFacetMeta = {
     'CX',
     'SR',
   ],
+};
+
+export const ETD_INST_META: EtdInstitutionMeta = {
+  n: 25860159,
+  stride: 2,
+  k: 7648,
+  bin: 'inst.bin',
+  gz: 'inst.gz.json',
+  labels: {
+    bin: 'inst-labels.bin',
+    dir: 'inst-labels.dir',
+    cols: ['qid', 'label', 'country', 'n_docs'],
+  },
+  alias: { bin: 'inst-alias.bin', dir: 'inst-alias.json' },
 };

@@ -62,12 +62,13 @@ published as `<name>.<version>`, so a rebuild never mixes two builds' files.
 | snippet `.dir` + `.bin`   | per doc, the snippet text, deflated JSON (ETD: the abstract)  |
 | `posfwd.dir`, `posfwd.bin` | optional: each doc's word list per field, for phrases        |
 | facet rows                | optional: per doc, a fixed-size row of facet bytes            |
+| doc values                | optional: per doc, an id from a long list, with its labels    |
 
 A `.dir` is docId-aligned offsets into its `.bin`, so reading one doc's
 data is arithmetic plus one Range read.
 
-Today ETD's `current.json` and `facets-meta.json` hold about half of the
-manifest; `etdManifest()` fills in the rest. A new item would publish the
+Today ETD's `current.json`, `facets-meta.json` and `inst-meta.json` hold
+about half of the manifest; `etdManifest()` fills in the rest. A new item would publish the
 whole manifest.
 
 ## The manifest, field by field
@@ -156,6 +157,40 @@ degree level in bits 2-4. Each column reads only its own bits.
 The file is read whole, once, and cached. ETD's is 29 MB gzipped for 26M
 docs; keep rows small.
 
+### `docValues`: an id per doc from a long list
+
+A value with too many possibilities for a byte, like ETD's 7,648
+institutions, gets files of its own:
+
+```ts
+docValues: [{
+  key: 'institution',
+  file: 'inst.gz.json', gzip: true, bytes: 2, count: 7648,
+  labels: { file: 'inst-labels.bin', dir: 'inst-labels.dir',
+            columns: ['qid', 'label', 'country', 'n_docs'] },
+  lookup: { dir: 'inst-alias.json', bin: 'inst-alias.bin',
+            normalize: 'nfkd-strip-marks-casefold-nonword-to-space-collapse-drop-leading-the',
+            queryFields: ['inst', 'institution'] },
+}]
+```
+
+- `file`: one little-endian id per doc, in docId order; 0 for unknown.
+  Read whole with the facet rows (ETD's: 4 MB gzipped, 52 MB kept).
+- `labels`: one tab-separated line per id, in id order. `dir` has each
+  line's u32 offset, for reading a few by Range; ETD's whole file is
+  370 KB, so it's read whole.
+- `lookup`: the names, spellings and acronyms a query can use. `dir` is
+  JSON, `{ buckets: { <first two characters>: [offset, length] } }`, of a
+  normalized name; `bin` lines are `name<tab>id,id,…`. A `queryFields`
+  value the lookup knows filters by its ids (`inst:mit robotics` is
+  robotics theses from MIT); anything else searches the text field as
+  usual. The normalization is NFKC then NFKD, accents stripped, lowercase,
+  anything but letters, digits and `_` as a space, spaces collapsed, a
+  leading "the " dropped.
+
+A facet reads one as a column, `from: { column: 'institution' }`; its
+values are ids.
+
 ## The config
 
 ```ts
@@ -186,6 +221,7 @@ picked values combine:
 | `from`                  | A doc's values                       | ETD facet            |
 | ----------------------- | ------------------------------------ | -------------------- |
 | `{ column }`            | the column's code (or `unknownAs`)   | language, country, degree |
+| `{ column }` (a doc value) | the doc's id                      | institution          |
 | `{ flags: [...] }`      | each listed flag it has              | source               |
 | `{ derived: {...} }`    | each value whose rule passes         | availability         |
 
@@ -215,6 +251,14 @@ names: { from: 'intl', type: 'language', overrides: { ng: 'Ndonga' } }
 names: { from: 'intl', type: 'region' }
 ```
 
+A doc value's names come from its labels file. `whenShared` tells apart
+ids with the same label, where there are any ('Heidelberg University (DE)'
+and '(US)'):
+
+```ts
+names: { from: 'labels', column: 'label', whenShared: 'country' }
+```
+
 Values are listed by count. collection-browser's sidebar sorts every facet
 that way.
 
@@ -239,8 +283,8 @@ that way.
   codes the browser's Intl data may not (e.g. `sms`, Skolt Sami, in headless
   Chrome), and misspells one (`uk`, "Ukranian"). ETD's code uses that
   mapping first; the config uses Intl. The parity test lists both causes.
-- **Query syntax.** ETD's `year:`, `host:`, `has:` filters and its
-  institution list aren't described.
+- **Query syntax.** ETD's `year:`, `host:` and `has:` filters aren't
+  described. (Its `inst:` lookup is: `docValues[].lookup`.)
 
 ## To evaluate: vector search
 

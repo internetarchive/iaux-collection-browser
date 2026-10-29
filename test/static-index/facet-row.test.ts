@@ -3,6 +3,7 @@ import {
   facetLabel,
   facetRowReader,
   facetValues,
+  labelNames,
   yearFromByte,
 } from '../../src/static-index/facet-row';
 import type { FacetConfig, FacetRows } from '../../src/static-index/manifest';
@@ -67,6 +68,42 @@ describe('facetRowReader', () => {
     expect(row(115, 0, 0).value('year')).to.equal('1994');
     expect(row(18, 0, 0).value('year')).to.equal('1870');
     expect(row(0, 0, 0).value('year')).to.be.undefined;
+  });
+});
+
+describe('facetRowReader, with doc values', () => {
+  it('reads a doc’s id from its doc values, 0 as unknown', () => {
+    const readIds = facetRowReader(ROWS, {
+      publisher: Uint16Array.from([7, 0, 300]),
+    });
+    const values = (docId: number) =>
+      readIds(Uint8Array.from([0, 0, 0]), docId).value('publisher');
+    expect([1, 2, 3].map(values)).to.deep.equal(['7', undefined, '300']);
+  });
+});
+
+describe('labelNames', () => {
+  const labels = {
+    file: 'publisher-labels.tsv',
+    dir: 'publisher-labels.dir',
+    columns: ['id', 'name', 'country'],
+  };
+  const text = 'P1\tSpringer\tDE\nP2\tOrbis\tUS\nP3\tOrbis\tPL\nP4\t\t\n';
+
+  it('names each id from a column, in id order', () => {
+    expect(
+      labelNames({ from: 'labels', column: 'name' }, labels, text),
+    ).to.deep.equal(['Springer', 'Orbis', 'Orbis', 'P4']);
+  });
+
+  it('adds `whenShared` only where ids share a name', () => {
+    expect(
+      labelNames(
+        { from: 'labels', column: 'name', whenShared: 'country' },
+        labels,
+        text,
+      ),
+    ).to.deep.equal(['Springer', 'Orbis (US)', 'Orbis (PL)', 'P4']);
   });
 });
 

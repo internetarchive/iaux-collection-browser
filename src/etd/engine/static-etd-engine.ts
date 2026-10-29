@@ -13,10 +13,11 @@ import { markTerms, termsToMark } from './mark-terms';
 import { boostTokens, phraseBoost, wordsPlacement } from './phrase-boost';
 import { EtdPosfwd } from './posfwd';
 import { EtdFacets } from './facets';
+import type { EtdInstitutions } from './institutions';
 import type { EtdFacetReader, EtdFacetRows } from './facets';
 import { decodePostings } from './postings';
-import type { FieldPrefix } from './query-parser';
-import { parseQuery } from './query-parser';
+import type { FieldFilterClause, FieldPrefix } from './query-parser';
+import { institutionValues, parseQuery } from './query-parser';
 import { EtdRecords } from './records';
 import {
   BASE_PREFIXES,
@@ -72,9 +73,9 @@ interface Loaded {
  * A query is about three rounds of requests: dictionary buckets, posting
  * lists (each one multi-range request), then a page of records.
  *
- * Not yet ported (later phases): facets beyond year and language,
- * filter-only `field:` syntax, exact phrase verification (quoted phrases currently match their
- * words anywhere in a document), and institution authority lookup.
+ * Not yet ported (later phases): `field:` filters other than a known
+ * `inst:`, and exact phrase verification (quoted phrases currently match
+ * their words anywhere in a document).
  */
 export class StaticEtdEngine implements EtdEngine {
   readonly ready: Promise<void>;
@@ -119,13 +120,24 @@ export class StaticEtdEngine implements EtdEngine {
   ): Promise<EtdQuery> {
     const { files, dictionary, records, posfwd, facets, readers, prefixes } =
       await this.loading;
-    const passes = filterFor(filters, readers);
-
-    const { tree, filters: clauses } = parseQuery(text);
-    if (clauses.length) {
-      const names = clauses.map(c => `${c.field}:`).join(', ');
+    // inst: values the institution list knows filter by institution, as on
+    // the live page; it's looked up first because the parser is synchronous.
+    const institutions = await resolveInstitutions(
+      text,
+      facets.institutions,
+      options,
+    );
+    const { tree, filters: clauses } = parseQuery(text, { institutions });
+    const unported = clauses.filter(clause => clause.field !== 'inst');
+    if (unported.length) {
+      const names = unported.map(c => `${c.field}:`).join(', ');
       throw new Error(`ETD engine: ${names} filters are not ported yet`);
     }
+    const passes = filterFor(
+      filters,
+      readers,
+      clauses.map(clause => institutionCheck(clause, institutions)),
+    );
 
     const terms = queryTerms(tree, prefixes);
     if (!terms.length) {
@@ -250,15 +262,47 @@ export class StaticEtdEngine implements EtdEngine {
 type DocFilter = (rows: EtdFacetRows, docId: number) => boolean;
 
 /**
- * Compiles the filters into one check per doc, or undefined when there are
- * none. A facet filter rules out docs with any excluded value, then needs
- * any of the included values, or all of them for an 'all' facet.
+ * Each `inst:` value in the query that the institution list knows, with its
+ * institution ids. A failed lookup leaves the value to be searched as text,
+ * as on the live page.
+ */
+async function resolveInstitutions(
+  text: string,
+  institutions: EtdInstitutions,
+  options?: EtdCallOptions,
+): Promise<Map<string, Set<number>>> {
+  const resolved = new Map<string, Set<number>>();
+  for (const value of institutionValues(text)) {
+    try {
+      resolved.set(value, await institutions.idsFor(value, options));
+    } catch (err) {
+      if (options?.signal?.aborted) throw err;
+    }
+  }
+  return resolved;
+}
+
+/** An `inst` clause as a doc check: from one of its institutions, or not. */
+function institutionCheck(
+  clause: FieldFilterClause,
+  institutions: ReadonlyMap<string, ReadonlySet<number>>,
+): DocFilter {
+  const ids = institutions.get(clause.value) ?? new Set<number>();
+  return (rows, docId) => ids.has(rows.institution(docId)) !== clause.negated;
+}
+
+/**
+ * Compiles the filters, and any checks from the query, into one check per
+ * doc, or undefined when there are none. A facet filter rules out docs with
+ * any excluded value, then needs any of the included values, or all of them
+ * for an 'all' facet.
  */
 function filterFor(
   filters: EtdFilters,
   readers: readonly EtdFacetReader[],
+  queryChecks: DocFilter[] = [],
 ): DocFilter | undefined {
-  const checks: DocFilter[] = [];
+  const checks: DocFilter[] = [...queryChecks];
   const { year } = filters;
   if (year?.min !== undefined || year?.max !== undefined) {
     checks.push((rows, docId) => {

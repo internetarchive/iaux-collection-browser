@@ -1,10 +1,12 @@
 import type { EtdCallOptions } from '../etd-engine';
 import type { EtdIndexFiles } from './index-files';
+import { EtdInstitutions } from './institutions';
+import type { EtdInstitutionTable } from './institutions';
 
 /**
  * Per-thesis facet values, for counting a query's matches and filtering
- * them: year, flags (sources, availability), language, country and degree
- * level.
+ * them: year, flags (sources, availability), language, country, degree
+ * level and, from its own files, institution (see institutions.ts).
  *
  * facets-meta.json describes the rows; facets.gz.json holds one row per doc,
  * gzipped (~29 MB for 25.9M docs, 8 bytes a row unpacked). It's read whole,
@@ -46,7 +48,7 @@ const COUNTRY_BYTE = 5;
 /** More source flags (bits 0-1) and the degree level (bits 2-4). */
 const EXTRA_BYTE = 6;
 
-/** The Cache Storage cache holding facets.gz.json across visits. */
+/** The Cache Storage cache holding facets.gz.json and inst.gz.json across visits. */
 const CACHE_NAME = 'etd-facet-cache';
 
 /**
@@ -78,6 +80,8 @@ export class EtdFacetRows {
   constructor(
     private readonly meta: EtdFacetMeta,
     private readonly bytes: EtdFacetBytes,
+    /** Absent when the index has no institution list. */
+    private readonly institutions?: EtdInstitutionTable,
   ) {
     this.levelCodes = new Map(
       Object.entries(meta.levels?.codes ?? {}).map(([code, n]) => [n, code]),
@@ -124,25 +128,46 @@ export class EtdFacetRows {
       ((this.bytes.extras[docId - 1] ?? 0) >> levels.shift) & levels.mask;
     return this.levelCodes.get(n);
   }
+
+  /** Whether the index has an institution list. */
+  get hasInstitutions(): boolean {
+    return !!this.institutions;
+  }
+
+  /** A doc's institution id (see institutions.ts); 0 when unknown. */
+  institution(docId: number): number {
+    return this.institutions?.ids[docId - 1] ?? 0;
+  }
+
+  /** A doc's institution, by the name it's shown under; undefined when unknown. */
+  institutionName(docId: number): string | undefined {
+    const id = this.institution(docId);
+    return id ? this.institutions?.names[id - 1] : undefined;
+  }
 }
 
 export interface EtdFacetsOptions {
-  /** Keep facets.gz.json in Cache Storage across visits (default true). */
+  /** Keep facets.gz.json and inst.gz.json in Cache Storage across visits (default true). */
   cache?: boolean;
 }
 
 /**
  * The index's facets, loaded on first use: the meta file, then the whole
- * rows file. Concurrent callers share one load; a failed load is retried
+ * rows file and, when the index has them, the institution ids and names. Concurrent callers share one load; a failed load is retried
  * by the next caller.
  */
 export class EtdFacets {
+  /** The institution list, also for resolving `inst:` names. */
+  readonly institutions: EtdInstitutions;
+
   private loading?: Promise<EtdFacetRows>;
 
   constructor(
     private readonly files: EtdIndexFiles,
     private readonly options: EtdFacetsOptions = {},
-  ) {}
+  ) {
+    this.institutions = new EtdInstitutions(files);
+  }
 
   rows(options?: EtdCallOptions): Promise<EtdFacetRows> {
     if (!this.loading) {
@@ -166,21 +191,35 @@ export class EtdFacets {
         `ETD facets: ${meta.n} rows for ${this.files.meta.n_docs} docs`,
       );
     }
+    const [[years, flags, languages, countries, extras], institutions] =
+      await Promise.all([this.rowBytes(meta), this.institutionTable()]);
+    return new EtdFacetRows(
+      meta,
+      { years, flags, languages, countries, extras },
+      institutions,
+    );
+  }
+
+  private async rowBytes(meta: EtdFacetMeta): Promise<Uint8Array[]> {
     const response = await this.cachedResponse('facets.gz.json');
     if (!response.body) throw new Error('ETD facets: empty facets.gz.json');
-    const [years, flags, languages, countries, extras] = await keepBytes(
+    return keepBytes(
       response.body.pipeThrough(new DecompressionStream('gzip')),
       meta.n,
       meta.stride,
       [YEAR_BYTE, FLAGS_BYTE, LANGUAGE_BYTE, COUNTRY_BYTE, EXTRA_BYTE],
     );
-    return new EtdFacetRows(meta, {
-      years,
-      flags,
-      languages,
-      countries,
-      extras,
-    });
+  }
+
+  private async institutionTable(): Promise<EtdInstitutionTable | undefined> {
+    const meta = await this.institutions.meta();
+    if (!meta) return undefined;
+    const name = meta.gz ?? meta.bin;
+    return this.institutions.table(
+      meta,
+      await this.cachedResponse(name),
+      !!meta.gz,
+    );
   }
 
   /** The file from Cache Storage when there, else fetched (and cached). */
@@ -200,9 +239,12 @@ export class EtdFacets {
     if (!cache) return response;
     try {
       await cache.put(url, response.clone());
-      // Drop older index versions' copies.
+      // Drop this file's copies from older index versions.
+      const current = new Request(url).url;
       for (const request of await cache.keys()) {
-        if (request.url !== new Request(url).url) await cache.delete(request);
+        if (request.url !== current && fileOf(request.url) === name) {
+          await cache.delete(request);
+        }
       }
     } catch {
       // Caching is an optimisation; the response is still good.
@@ -244,6 +286,12 @@ export async function keepBytes(
     );
   }
   return kept;
+}
+
+/** The index file a url reads, without its version: 'facets.gz.json'. */
+function fileOf(url: string): string {
+  const file = new URL(url).pathname.split('/').pop() ?? '';
+  return file.slice(0, file.lastIndexOf('.'));
 }
 
 /** `promise`, rejecting early with AbortError if `signal` aborts. */
