@@ -58,6 +58,12 @@ export class AppRoot extends LitElement {
   /** The facets collection-browser last got from the ETD service. */
   @state() private etdFacets?: ObservedFacets;
 
+  /** Whether the ETD panel is hidden: shown unless `hide-etd-controls` says so. */
+  @state() private etdControlsHidden = ['', 'true'].includes(
+    new URLSearchParams(window.location.search).get('hide-etd-controls') ??
+      'false',
+  );
+
   private resizeObserver = new SharedResizeObserver();
 
   @state() private toggleSlots: boolean = false;
@@ -144,7 +150,11 @@ export class AppRoot extends LitElement {
    */
   private get etdControlsTemplate() {
     return html`
-      <section id="etd-controls" aria-labelledby="etd-controls-heading">
+      <section
+        id="etd-controls"
+        aria-labelledby="etd-controls-heading"
+        ?hidden=${this.etdControlsHidden}
+      >
         <h2 id="etd-controls-heading">
           ETD theses search
           <span class="etd-controls-note">
@@ -306,6 +316,19 @@ export class AppRoot extends LitElement {
               <input type="submit" value="Search" />
             </form>
           </div>
+          ${this.isEtdSearch
+            ? html`<div>
+                <button
+                  type="button"
+                  id="toggle-etd-controls-btn"
+                  aria-controls="etd-controls"
+                  aria-expanded=${String(!this.etdControlsHidden)}
+                  @click=${this.toggleEtdControls}
+                >
+                  ${this.etdControlsHidden ? 'Show' : 'Hide'} ETD controls
+                </button>
+              </div>`
+            : nothing}
 
           <div id="search-types">
             Search type:
@@ -850,6 +873,23 @@ export class AppRoot extends LitElement {
     }
   }
 
+  /** Shows or hides the ETD panel, keeping the choice in the URL. */
+  private toggleEtdControls() {
+    this.etdControlsHidden = !this.etdControlsHidden;
+    const pageUrl = new URL(window.location.href);
+    // Leave the param off when the panel is shown, the default.
+    if (this.etdControlsHidden) {
+      pageUrl.searchParams.set('hide-etd-controls', 'true');
+    } else {
+      pageUrl.searchParams.delete('hide-etd-controls');
+    }
+    window.history.replaceState?.(
+      { path: pageUrl.toString() },
+      '',
+      pageUrl.toString(),
+    );
+  }
+
   private toggleFacetGroupOutline(e: Event) {
     const target = e.target as HTMLInputElement;
     if (target.checked) {
@@ -1307,6 +1347,10 @@ export class AppRoot extends LitElement {
 
     #etd-controls etd-compare-panel {
       background: white;
+    }
+
+    #etd-controls[hidden] {
+      display: none;
     }
 
     #etd-controls etd-facet-summary {
