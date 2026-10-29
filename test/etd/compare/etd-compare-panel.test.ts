@@ -32,10 +32,31 @@ class StubLivePage implements LiveEtdSource {
   /** Holds the re-ranked order back until called, like the boost's 1-4 s. */
   releaseRerank?: () => void;
 
+  /** Queries searched by meaning (the live page's Vector rank). */
+  readonly meaningQueries: string[] = [];
+
+  /** The Vector rank answer; the text one when unset. */
+  meaning?: StubAnswer;
+
   constructor(
     private answer: StubAnswer,
     private holdRerank = false,
   ) {}
+
+  async searchByMeaning(query: string, depth: number): Promise<LiveEtdSearch> {
+    this.meaningQueries.push(query);
+    const answer = this.meaning ?? this.answer;
+    const all = answer.plain ?? answer.docIds;
+    return {
+      version: '20261026-5e5902',
+      total: all.length,
+      status: answer.status,
+      docIds: answer.docIds.slice(0, depth),
+      reranked: Promise.resolve(undefined),
+      plainRankOf: docId => rankIn(all, docId),
+      shownRankOf: docId => rankIn(answer.docIds, docId),
+    };
+  }
 
   async search(query: string, depth: number): Promise<LiveEtdSearch> {
     this.queries.push(query);
@@ -435,6 +456,78 @@ describe('etd-compare-panel', () => {
 
     expect(live.queries).to.be.empty;
     expect(summary(el)).to.include('Search for something');
+  });
+});
+
+describe('etd-compare-panel, vector rank', () => {
+  async function vectorPanel(live: StubLivePage) {
+    const el = await fixture<EtdComparePanel>(html`
+      <etd-compare-panel
+        .engine=${new MockEtdEngine(mockEtdTheses(12))}
+        .liveSource=${live}
+        .depth=${5}
+        .query=${'climate'}
+        .rank=${'vector'}
+      ></etd-compare-panel>
+    `);
+    return el;
+  }
+
+  async function pressCompare(el: EtdComparePanel) {
+    el.shadowRoot!.querySelector('button')!.click();
+    // The click marks it busy at once; wait for that, then for the result.
+    await el.updateComplete;
+    await waitUntil(() => !summary(el).includes('Comparing'));
+  }
+
+  it('waits to be asked, then compares with the live Vector rank', async () => {
+    const live = new StubLivePage({
+      total: 5,
+      status: '50 best semantic matches in 12.6s',
+      docIds: [1, 2, 3, 4, 5],
+    });
+    const el = await vectorPanel(live);
+
+    // Its own search by meaning reads as much again: not on every search.
+    expect(live.queries).to.be.empty;
+    expect(live.meaningQueries).to.be.empty;
+    expect(summary(el)).to.contain('compared when you ask');
+
+    await pressCompare(el);
+
+    expect(live.meaningQueries).to.deep.equal(['climate']);
+    expect(live.queries).to.be.empty;
+    expect(summary(el)).to.contain('top 5 identical, same order');
+  });
+
+  it('says where a doc only one side ranks went on the other', async () => {
+    const live = new StubLivePage({
+      total: 7,
+      status: '',
+      docIds: [1, 2, 3, 4, 99],
+      // Every candidate it scanned, best first: ours' 5th is its 7th.
+      plain: [1, 2, 3, 4, 99, 98, 5],
+    });
+    const el = await vectorPanel(live);
+    await pressCompare(el);
+
+    const byDoc = new Map(rows(el).map(row => [row[3], row[4]]));
+    expect(byDoc.get('Thesis 5 on climate')).to.equal('live ranks it #7');
+    expect(byDoc.get('doc 99')).to.equal("ours didn't scan it");
+  });
+
+  it('drops a comparison when the query changes, until asked again', async () => {
+    const live = new StubLivePage({
+      total: 5,
+      status: '',
+      docIds: [1, 2, 3, 4, 5],
+    });
+    const el = await vectorPanel(live);
+    await pressCompare(el);
+    el.query = 'ocean';
+    await el.updateComplete;
+    expect(summary(el)).to.contain('compared when you ask');
+    expect(live.meaningQueries).to.deep.equal(['climate']);
   });
 });
 

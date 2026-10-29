@@ -38,6 +38,8 @@ export interface EtdFacetMeta {
     mask: number;
     codes: Record<string, number>;
   };
+  /** Repository hosts; a row's domain (bytes 2-3) is index + 1. */
+  domains?: string[];
 }
 
 /** Row byte offsets, per facets-meta.json's `fields`. */
@@ -70,6 +72,8 @@ export interface EtdFacetBytes {
   languages: Uint8Array;
   countries: Uint8Array;
   extras: Uint8Array;
+  /** Bytes 2-3, the repository; only kept where a facet reads it. */
+  domains?: Uint16Array;
 }
 
 /** Every doc's facet values, read from the whole facets file. */
@@ -113,6 +117,12 @@ export class EtdFacetRows {
       (this.bytes.flags[docId - 1] ?? 0) |
       ((this.bytes.extras[docId - 1] ?? 0) << 8);
     return (flags & bit) !== 0;
+  }
+
+  /** A doc's repository host; undefined when unknown or not kept. */
+  domain(docId: number): string | undefined {
+    const index = this.bytes.domains?.[docId - 1] ?? 0;
+    return index ? this.meta.domains?.[index - 1] : undefined;
   }
 
   /** The flag names facets-meta defines. */

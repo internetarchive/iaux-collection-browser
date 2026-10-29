@@ -3,10 +3,13 @@ import type { ServerlessSearchServiceOptions } from '../serverless-search/server
 import type { EtdEngine, EtdRecord } from './etd-engine';
 import type { EtdRequest } from './etd-query';
 import { EtdSearchSource } from './etd-search-source';
+import type { EtdSearchKind } from './etd-search-source';
 
 export interface EtdSearchServiceOptions
   extends ServerlessSearchServiceOptions {
   engine: EtdEngine;
+  /** Text search (the default) or search by meaning, with its facets. */
+  kind?: EtdSearchKind;
 }
 
 /**
@@ -22,6 +25,6 @@ export class EtdSearchService extends ServerlessSearchService<
   EtdRecord
 > {
   constructor(options: EtdSearchServiceOptions) {
-    super(new EtdSearchSource(options.engine), options);
+    super(new EtdSearchSource(options.engine, options.kind), options);
   }
 }

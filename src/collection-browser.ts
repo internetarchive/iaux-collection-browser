@@ -897,6 +897,7 @@ export class CollectionBrowser
         class="column${this.isResizeToMobile ? ' preload' : ''}"
       >
         ${this.facetTopViewSlot} ${this.resultsCountTemplate}
+        ${this.facetsHeaderSlot}
         <div id="facets-header-container">${this.mobileFacetsTemplate}</div>
       </div>
     `;
@@ -913,6 +914,7 @@ export class CollectionBrowser
           <h2 id="facets-header" class="sr-only">${msg('Filters')}</h2>
           ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
         </div>
+        ${this.facetsHeaderSlot}
         <div id="facets-container" aria-labelledby="facets-header">
           ${this.facetsTemplate}
           <div id="facets-scroll-sentinel"></div>
@@ -929,6 +931,17 @@ export class CollectionBrowser
   private get facetTopViewSlot(): TemplateResult {
     return html`<div id="facet-top-view">
       <slot name="facet-top-slot"></slot>
+    </div>`;
+  }
+
+  /**
+   * Slot below the results count and above the facets (the date picker comes
+   * first), for controls that change what the results are, e.g. how they're
+   * ranked.
+   */
+  private get facetsHeaderSlot(): TemplateResult {
+    return html`<div id="facets-header-slot">
+      <slot name="facets-header-slot"></slot>
     </div>`;
   }
 

@@ -291,6 +291,48 @@ describe('Collection Browser', () => {
     expect(infiniteScroller, 'infinite scroller').to.exist;
   });
 
+  it('shows facets-header-slot content between the results count and the facets', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${new MockSearchService()}>
+        <fieldset slot="facets-header-slot">Rank results by</fieldset>
+      </collection-browser>`,
+    );
+    el.baseQuery = 'sea ice';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const column = el.shadowRoot!.querySelector('#left-column')!;
+    const slot = column.querySelector<HTMLSlotElement>(
+      'slot[name="facets-header-slot"]',
+    )!;
+    expect(slot.assignedElements()[0].textContent).to.equal('Rank results by');
+    const count = column.querySelector('#results-total')!;
+    const facets = column.querySelector('#facets-container')!;
+    const follows = (a: Node, b: Node) =>
+      !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(follows(count, slot)).to.be.true;
+    expect(follows(slot, facets)).to.be.true;
+  });
+
+  it('searches again with a new search service, keeping the query', async () => {
+    // The ETD demo swaps text rank for search by meaning this way.
+    const textRank = new MockSearchService();
+    const vectorRank = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${textRank}>
+      </collection-browser>`,
+    );
+    el.baseQuery = 'sea ice';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.searchService = vectorRank;
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(vectorRank.searchParams?.query).to.equal('sea ice');
+  });
+
   it('queries the search service when given a base query', async () => {
     const searchService = new MockSearchService();
 

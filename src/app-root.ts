@@ -22,6 +22,12 @@ import { TileDispatcher } from './tiles/tile-dispatcher';
 import { EtdSearchService } from './etd/etd-search-service';
 import { StaticEtdEngine } from './etd/engine/static-etd-engine';
 import { ETD_FACETS } from './etd/etd-facets';
+import { ETD_VECTOR_FACETS } from './etd/etd-vector-facets';
+import { ETD_VECTOR_SEARCH } from './etd/etd-search-source';
+import { StaticVectorEngine } from './etd/engine/vector/static-vector-engine';
+import type { VectorSearchStatus } from './etd/engine/vector/static-vector-engine';
+import type { ModelState } from './etd/engine/vector/vector-searcher';
+import './etd/demo/etd-vector-status';
 import type { FacetDeclaringSearchService } from './serverless-search/serverless-search-service';
 import './etd/compare/etd-compare-panel';
 import { observeFacets, type ObservedFacets } from './etd/demo/observe-facets';
@@ -58,6 +64,36 @@ export class AppRoot extends LitElement {
   private etdEngine?: StaticEtdEngine;
 
   /**
+   * How ETD results are ranked: by the words (text rank), or by meaning
+   * (vector rank), as the live page's two tabs. Kept in the url as
+   * `etd_rank=vec`.
+   */
+  @state() private etdRank: 'text' | 'vector' =
+    new URL(window.location.href).searchParams.get('etd_rank') === 'vec'
+      ? 'vector'
+      : 'text';
+
+  /** Built on first use: a text-only visit never loads the model. */
+  private etdVectorEngine?: StaticVectorEngine;
+
+  /** The services for each ranking, built once each. */
+  private etdServices: {
+    text?: SearchServiceInterface;
+    vector?: SearchServiceInterface;
+  } = {};
+
+  /**
+   * Whether to compare with the live page. `etd_compare=0` leaves it out,
+   * for timing: its iframe boots the live page, which reads files too.
+   */
+  private readonly etdCompare =
+    new URL(window.location.href).searchParams.get('etd_compare') !== '0';
+
+  @state() private etdModel: ModelState = { state: 'idle' };
+
+  @state() private etdVectorSearch?: VectorSearchStatus;
+
+  /**
    * The search service's own facets and whether it can search by filters
    * alone, for one that declares them (any serverless search does).
    */
@@ -68,7 +104,7 @@ export class AppRoot extends LitElement {
       : undefined;
   }
 
-  private searchService: SearchServiceInterface =
+  @state() private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
 
   /** The facets collection-browser last got from the ETD service. */
@@ -139,24 +175,145 @@ export class AppRoot extends LitElement {
 
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
-    if (this.isEtdSearch) {
-      this.etdEngine = new StaticEtdEngine({
-        baseUrl: this.etdIndex.baseUrl,
-        facets: ETD_FACETS,
-      });
-      return observeFacets(
-        new EtdSearchService({ engine: this.etdEngine }),
-        facets => {
-          this.etdFacets = facets;
-        },
-      );
-    }
+    if (this.isEtdSearch) return this.etdService(this.etdRank);
     return new SearchService({
       includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
       servicePath: params.get('search_service_path') ?? undefined,
       debuggingEnabled: !!params.get('debugging'),
     });
+  }
+
+  /** The ETD search service for a ranking, built on first use. */
+  private etdService(rank: 'text' | 'vector'): SearchServiceInterface {
+    const built = this.etdServices[rank];
+    if (built) return built;
+    const service =
+      rank === 'vector'
+        ? new EtdSearchService({
+            engine: this.vectorEngine(),
+            kind: ETD_VECTOR_SEARCH,
+          })
+        : new EtdSearchService({
+            engine: (this.etdEngine ??= new StaticEtdEngine({
+              baseUrl: this.etdIndex.baseUrl,
+              facets: ETD_FACETS,
+            })),
+          });
+    const observed = observeFacets(service, facets => {
+      // A slow facets request from the other ranking can land after a switch.
+      if (this.searchService === observed) this.etdFacets = facets;
+    });
+    this.etdServices[rank] = observed;
+    return observed;
+  }
+
+  /**
+   * The vector engine, built on first use. Its search runs in a worker
+   * (`etd_vec_worker=0` runs it in the page instead); `etd_vec_parallel` and
+   * `etd_model_parallel` set how many reads are in flight, for measuring.
+   */
+  private vectorEngine(): StaticVectorEngine {
+    if (this.etdVectorEngine) return this.etdVectorEngine;
+    const params = new URL(window.location.href).searchParams;
+    const number = (name: string) => {
+      const value = Number(params.get(name));
+      return value > 0 ? value : undefined;
+    };
+    this.etdVectorEngine = new StaticVectorEngine({
+      baseUrl: this.etdIndex.baseUrl,
+      facets: ETD_VECTOR_FACETS,
+      worker:
+        params.get('etd_vec_worker') === '0'
+          ? undefined
+          : () =>
+              new Worker(
+                new URL(
+                  './etd/engine/vector/vector-worker.ts',
+                  import.meta.url,
+                ),
+                { type: 'module' },
+              ),
+      modelParallel: number('etd_model_parallel'),
+      scan: { parallel: number('etd_vec_parallel') },
+      onModel: model => {
+        this.etdModel = model;
+      },
+      onSearch: search => {
+        this.etdVectorSearch = search;
+      },
+    });
+    return this.etdVectorEngine;
+  }
+
+  /** Switches the ranking, keeping the query, and says so in the url. */
+  private etdRankChanged(e: Event) {
+    const rank = (e.target as HTMLInputElement).value as 'text' | 'vector';
+    if (rank === this.etdRank) return;
+    const url = new URL(window.location.href);
+    if (rank === 'vector') url.searchParams.set('etd_rank', 'vec');
+    else url.searchParams.delete('etd_rank');
+    window.history.replaceState(window.history.state, '', url.href);
+    this.etdRank = rank;
+    this.etdFacets = undefined;
+    this.searchService = this.etdService(rank);
+  }
+
+  /**
+   * A sign someone may search by meaning: start loading the model (135 MB
+   * the first time) and centroids, so the search doesn't wait for them.
+   */
+  private etdPreloadVector() {
+    this.vectorEngine()
+      .preload()
+      .catch(() => {});
+  }
+
+  /**
+   * The switch between ranking by words and by meaning, in collection-browser's
+   * facets column, between the results count and the date picker.
+   */
+  private get etdRankTemplate() {
+    return html`
+      <fieldset
+        id="etd-rank"
+        slot="facets-header-slot"
+        @change=${this.etdRankChanged}
+      >
+        <legend>Rank results by</legend>
+        <label>
+          <input
+            type="radio"
+            name="etd-rank"
+            value="text"
+            .checked=${this.etdRank === 'text'}
+          />
+          Words <span class="etd-rank-note">(text rank)</span>
+        </label>
+        <label
+          @pointerenter=${this.etdPreloadVector}
+          @focusin=${this.etdPreloadVector}
+        >
+          <input
+            type="radio"
+            name="etd-rank"
+            value="vector"
+            .checked=${this.etdRank === 'vector'}
+          />
+          Meaning <span class="etd-rank-note">(vector rank)</span>
+        </label>
+      </fieldset>
+    `;
+  }
+
+  /** How a search by meaning is going, in the ETD panel. */
+  private get etdVectorStatusTemplate() {
+    return this.etdRank === 'vector'
+      ? html`<etd-vector-status
+          .model=${this.etdModel}
+          .search=${this.etdVectorSearch}
+        ></etd-vector-status>`
+      : nothing;
   }
 
   /**
@@ -178,16 +335,22 @@ export class AppRoot extends LitElement {
           </span>
         </h2>
         ${this.etdItemTemplate} ${this.etdSearchTemplate}
-        ${this.etdBrowseTemplate}
+        ${this.etdVectorStatusTemplate}
+        ${this.etdRank === 'text' ? this.etdBrowseTemplate : nothing}
         <etd-facet-summary
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
           .facets=${this.etdFacets}
         ></etd-facet-summary>
-        <etd-compare-panel
-          .engine=${this.etdEngine}
-          .query=${this.searchQuery}
-          .pageUrl=${this.etdIndex.pageUrl}
-        ></etd-compare-panel>
+        ${this.etdCompare
+          ? html`<etd-compare-panel
+              .engine=${this.etdRank === 'vector'
+                ? this.etdVectorEngine
+                : this.etdEngine}
+              .rank=${this.etdRank}
+              .query=${this.searchQuery}
+              .pageUrl=${this.etdIndex.pageUrl}
+            ></etd-compare-panel>`
+          : nothing}
       </section>
     `;
   }
@@ -881,6 +1044,7 @@ export class AppRoot extends LitElement {
           ${this.toggleSlots
             ? html`<div slot="facet-top-slot">Facet Slot</div>`
             : nothing}
+          ${this.isEtdSearch ? this.etdRankTemplate : nothing}
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
@@ -1500,6 +1664,34 @@ export class AppRoot extends LitElement {
 
     #etd-browse a {
       color: #1d3f61;
+    }
+
+    #etd-rank {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin: 1rem 0 0;
+      padding: 0;
+      border: none;
+      font-size: 1.4rem;
+    }
+
+    #etd-rank legend {
+      padding: 0;
+      margin-bottom: 0.4rem;
+      font-weight: bold;
+    }
+
+    #etd-rank label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+
+    .etd-rank-note {
+      font-size: 1.2rem;
+      color: #4a5a6a;
     }
 
     #etd-controls etd-compare-panel {

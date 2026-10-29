@@ -55,54 +55,20 @@ export interface EtdFetchStats {
 const DEFAULT_RANGES_PER_REQUEST = 48;
 
 /**
- * Reads the ETD index's files: the manifest, whole small files, and byte
- * ranges of the large ones.
- *
- * The index item's download url redirects to a storage server. Every range
- * read through the redirect would pay an extra round trip (and a second CORS
- * preflight), so `open` follows it once, for the manifest, and reads
- * everything else from where it landed.
+ * Reads a static index's files: whole small files, and byte ranges of the
+ * large ones. Subclasses say how a file name becomes a url.
  */
-export class EtdIndexFiles {
+export abstract class RangeFiles {
   readonly stats: EtdFetchStats = { requests: 0, bytes: 0 };
 
-  private constructor(
+  protected constructor(
     /** The storage-server directory the files are read from. */
     readonly dataUrl: string,
-    readonly meta: EtdIndexMeta,
-    private readonly fetchFn: typeof fetch,
+    protected readonly fetchFn: typeof fetch,
   ) {}
 
-  static async open(
-    baseUrl: string = DEFAULT_ETD_BASE_URL,
-    options: EtdCallOptions & { fetch?: typeof fetch } = {},
-  ): Promise<EtdIndexFiles> {
-    const fetchFn = options.fetch ?? fetch.bind(globalThis);
-    const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    // current.json is the last file written on publish, so it never points at
-    // a version whose files are still uploading. Always fetched fresh.
-    const response = await fetchFn(`${base}current.json?t=${Date.now()}`, {
-      signal: options.signal,
-    });
-    if (!response.ok) {
-      throw new Error(`ETD index: current.json HTTP ${response.status}`);
-    }
-    const meta = (await response.json()) as EtdIndexMeta;
-    checkIndexFormat(meta);
-    const dataUrl = new URL('.', response.url || base).href;
-    return new EtdIndexFiles(dataUrl, meta, fetchFn);
-  }
-
-  /**
-   * The url of an index file. Versioned files are immutable, so the version
-   * doubles as a stable cache key.
-   */
-  fileUrl(name: string): string {
-    const { v } = this.meta;
-    return v
-      ? `${this.dataUrl}${name}.${v}?v=${v}`
-      : `${this.dataUrl}${name}?v=unversioned`;
-  }
+  /** The url of a file, with a query string (range reads append to it). */
+  abstract fileUrl(name: string): string;
 
   /**
    * Fetches a whole index file as a Response, for callers that stream it
@@ -247,6 +213,56 @@ export class EtdIndexFiles {
           : this.range(name, offset, length, options);
       }),
     );
+  }
+}
+
+/**
+ * Reads the ETD index's files: the manifest, whole small files, and byte
+ * ranges of the large ones.
+ *
+ * The index item's download url redirects to a storage server. Every range
+ * read through the redirect would pay an extra round trip (and a second CORS
+ * preflight), so `open` follows it once, for the manifest, and reads
+ * everything else from where it landed.
+ */
+export class EtdIndexFiles extends RangeFiles {
+  private constructor(
+    dataUrl: string,
+    readonly meta: EtdIndexMeta,
+    fetchFn: typeof fetch,
+  ) {
+    super(dataUrl, fetchFn);
+  }
+
+  static async open(
+    baseUrl: string = DEFAULT_ETD_BASE_URL,
+    options: EtdCallOptions & { fetch?: typeof fetch } = {},
+  ): Promise<EtdIndexFiles> {
+    const fetchFn = options.fetch ?? fetch.bind(globalThis);
+    const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    // current.json is the last file written on publish, so it never points at
+    // a version whose files are still uploading. Always fetched fresh.
+    const response = await fetchFn(`${base}current.json?t=${Date.now()}`, {
+      signal: options.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`ETD index: current.json HTTP ${response.status}`);
+    }
+    const meta = (await response.json()) as EtdIndexMeta;
+    checkIndexFormat(meta);
+    const dataUrl = new URL('.', response.url || base).href;
+    return new EtdIndexFiles(dataUrl, meta, fetchFn);
+  }
+
+  /**
+   * The url of an index file. Versioned files are immutable, so the version
+   * doubles as a stable cache key.
+   */
+  fileUrl(name: string): string {
+    const { v } = this.meta;
+    return v
+      ? `${this.dataUrl}${name}.${v}?v=${v}`
+      : `${this.dataUrl}${name}?v=unversioned`;
   }
 }
 

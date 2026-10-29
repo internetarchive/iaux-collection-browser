@@ -1,0 +1,292 @@
+import type { Embed, EmbedderOptions } from './embedder';
+import { loadEmbedder } from './embedder';
+import type { ScanOptions, ScanResult, VectorIndex } from './scan';
+import { loadVectorIndex, scanVectors } from './scan';
+import { VectorStoreFiles } from './vector-files';
+
+/**
+ * Embeds a query and scans the vector store: the heavy part of a search by
+ * meaning (a 135 MB model, then ~80 MB of cells). It runs in a Web Worker
+ * when there is one (WorkerVectorSearcher, vector-worker.ts), so the page
+ * stays responsive, and in the page otherwise (InlineVectorSearcher).
+ */
+export interface VectorSearcher {
+  /** Loads the model and the store's centroids, ahead of a search. */
+  preload(): Promise<void>;
+
+  search(text: string, options?: ScanOptions): Promise<VectorScan>;
+}
+
+/** A scan, and how long the query took to embed. */
+export interface VectorScan extends ScanResult {
+  /** Milliseconds embedding the query (after the model was loaded). */
+  embedMs: number;
+  /** Milliseconds waiting for the model and centroids first; 0 once loaded. */
+  loadMs: number;
+}
+
+/** Where the model is, for a searcher's status line. */
+export type ModelState =
+  | { state: 'idle' }
+  | { state: 'loading'; loaded: number; total: number }
+  | { state: 'ready' }
+  | { state: 'failed'; message: string };
+
+export interface InlineVectorSearcherOptions {
+  /** The store's files, opened. */
+  files: () => Promise<VectorStoreFiles>;
+  /** The embedding function; e.g. loadEmbedder, or a fake in tests. */
+  embed: () => Promise<Embed>;
+  onModel?: (state: ModelState) => void;
+}
+
+/** Runs searches where it's called: in a worker, or the page. */
+export class InlineVectorSearcher implements VectorSearcher {
+  private index?: Promise<VectorIndex>;
+
+  private embed?: Promise<Embed>;
+
+  constructor(private readonly options: InlineVectorSearcherOptions) {}
+
+  preload(): Promise<void> {
+    return Promise.all([this.loadIndex(), this.loadEmbed()]).then(() => {});
+  }
+
+  async search(text: string, options: ScanOptions = {}): Promise<VectorScan> {
+    const loading = performance.now();
+    // The model and the centroids load at the same time; the live page
+    // waits for one, then the other.
+    const [index, embed] = await Promise.all([
+      this.loadIndex(),
+      this.loadEmbed(),
+    ]);
+    const embedding = performance.now();
+    const query = await embed(text);
+    if (query.length !== index.files.meta.dim) {
+      throw new Error(
+        `ETD vector store: the model gives ${query.length} numbers, the store wants ${index.files.meta.dim}`,
+      );
+    }
+    const embedded = performance.now();
+    options.signal?.throwIfAborted();
+    const scan = await scanVectors(index, query, options);
+    return {
+      ...scan,
+      embedMs: embedded - embedding,
+      loadMs: embedding - loading,
+    };
+  }
+
+  private loadIndex(): Promise<VectorIndex> {
+    this.index ??= this.options.files().then(files => loadVectorIndex(files));
+    // A failure can be retried by the next search.
+    this.index.catch(() => {
+      this.index = undefined;
+    });
+    return this.index;
+  }
+
+  private loadEmbed(): Promise<Embed> {
+    if (!this.embed) {
+      this.options.onModel?.({ state: 'loading', loaded: 0, total: 0 });
+      this.embed = this.options.embed().then(
+        embed => {
+          this.options.onModel?.({ state: 'ready' });
+          return embed;
+        },
+        (err: unknown) => {
+          this.embed = undefined;
+          this.options.onModel?.({
+            state: 'failed',
+            message: err instanceof Error ? err.message : String(err),
+          });
+          throw err;
+        },
+      );
+    }
+    return this.embed;
+  }
+}
+
+/** What the page tells the worker. */
+export type ToWorker =
+  | {
+      type: 'init';
+      baseUrl: string;
+      model: Omit<EmbedderOptions, 'onProgress' | 'fetch'>;
+    }
+  | { type: 'preload' }
+  | {
+      type: 'search';
+      id: number;
+      text: string;
+      options: Omit<ScanOptions, 'signal' | 'onProgress'>;
+    }
+  | { type: 'cancel'; id: number };
+
+/** What the worker tells the page. */
+export type FromWorker =
+  | { type: 'model'; model: ModelState }
+  | {
+      type: 'progress';
+      id: number;
+      progress: Parameters<NonNullable<ScanOptions['onProgress']>>[0];
+    }
+  | { type: 'result'; id: number; scan: VectorScan }
+  | { type: 'error'; id: number; message: string; aborted: boolean };
+
+/** The worker's side: an inline searcher, driven by messages. */
+export function serveVectorSearcher(scope: {
+  postMessage(message: FromWorker, transfer?: Transferable[]): void;
+  addEventListener(
+    type: 'message',
+    listener: (event: MessageEvent<ToWorker>) => void,
+  ): void;
+}): void {
+  let searcher: InlineVectorSearcher | undefined;
+  const running = new Map<number, AbortController>();
+  const post = (message: FromWorker, transfer?: Transferable[]) =>
+    scope.postMessage(message, transfer);
+
+  scope.addEventListener('message', async ({ data }) => {
+    if (data.type === 'init') {
+      const { baseUrl, model } = data;
+      let files: Promise<VectorStoreFiles> | undefined;
+      searcher = new InlineVectorSearcher({
+        files: () => {
+          files ??= VectorStoreFiles.open(baseUrl);
+          files.catch(() => {
+            files = undefined;
+          });
+          return files;
+        },
+        embed: () =>
+          loadEmbedder({
+            ...model,
+            onProgress: (loaded, total) =>
+              post({
+                type: 'model',
+                model: { state: 'loading', loaded, total },
+              }),
+          }),
+        onModel: state => post({ type: 'model', model: state }),
+      });
+    } else if (data.type === 'preload') {
+      searcher?.preload().catch(() => {});
+    } else if (data.type === 'cancel') {
+      running.get(data.id)?.abort();
+    } else if (data.type === 'search') {
+      const { id } = data;
+      const controller = new AbortController();
+      running.set(id, controller);
+      try {
+        if (!searcher) throw new Error('vector worker: not initialised');
+        const scan = await searcher.search(data.text, {
+          ...data.options,
+          signal: controller.signal,
+          onProgress: progress => post({ type: 'progress', id, progress }),
+        });
+        const transfer: Transferable[] = [
+          scan.dids.buffer,
+          scan.rows.buffer,
+          scan.scores.buffer,
+          scan.order.buffer,
+        ];
+        if (scan.facets) {
+          transfer.push(
+            scan.facets.years.buffer,
+            scan.facets.flags.buffer,
+            scan.facets.domains.buffer,
+          );
+        }
+        post({ type: 'result', id, scan }, transfer);
+      } catch (err) {
+        post({
+          type: 'error',
+          id,
+          message: err instanceof Error ? err.message : String(err),
+          aborted: controller.signal.aborted,
+        });
+      } finally {
+        running.delete(id);
+      }
+    }
+  });
+}
+
+/** The page's side of a worker running serveVectorSearcher. */
+export class WorkerVectorSearcher implements VectorSearcher {
+  private nextId = 1;
+
+  private readonly pending = new Map<
+    number,
+    {
+      resolve: (scan: VectorScan) => void;
+      reject: (err: Error) => void;
+      onProgress?: ScanOptions['onProgress'];
+    }
+  >();
+
+  /** Resolves once the worker says its model is ready. */
+  private readonly modelReady: Promise<void>;
+
+  private markModelReady!: () => void;
+
+  constructor(
+    private readonly worker: Worker,
+    init: Extract<ToWorker, { type: 'init' }>,
+    onModel?: (state: ModelState) => void,
+  ) {
+    this.modelReady = new Promise(resolve => {
+      this.markModelReady = resolve;
+    });
+    worker.addEventListener('message', (event: MessageEvent<FromWorker>) => {
+      const message = event.data;
+      if (message.type === 'model') {
+        onModel?.(message.model);
+        if (message.model.state === 'ready') this.markModelReady();
+        return;
+      }
+      const job = this.pending.get(message.id);
+      if (!job) return;
+      if (message.type === 'progress') {
+        job.onProgress?.(message.progress);
+      } else if (message.type === 'result') {
+        this.pending.delete(message.id);
+        job.resolve(message.scan);
+      } else {
+        this.pending.delete(message.id);
+        job.reject(
+          message.aborted
+            ? new DOMException(message.message, 'AbortError')
+            : new Error(message.message),
+        );
+      }
+    });
+    worker.postMessage(init);
+  }
+
+  preload(): Promise<void> {
+    this.worker.postMessage({ type: 'preload' } satisfies ToWorker);
+    return this.modelReady;
+  }
+
+  search(text: string, options: ScanOptions = {}): Promise<VectorScan> {
+    const { signal, onProgress, ...scanOptions } = options;
+    signal?.throwIfAborted();
+    const id = this.nextId;
+    this.nextId += 1;
+    return new Promise<VectorScan>((resolve, reject) => {
+      this.pending.set(id, { resolve, reject, onProgress });
+      signal?.addEventListener('abort', () =>
+        this.worker.postMessage({ type: 'cancel', id } satisfies ToWorker),
+      );
+      this.worker.postMessage({
+        type: 'search',
+        id,
+        text,
+        options: scanOptions,
+      } satisfies ToWorker);
+    });
+  }
+}

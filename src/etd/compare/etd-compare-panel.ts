@@ -5,6 +5,7 @@ import type { EtdEngine, EtdQuery, EtdRecord } from '../etd-engine';
 import { LiveEtdPage, LiveEtdSearch, LiveEtdSource } from './live-etd-page';
 import { RankDiff, RankedDoc, diffRankings } from './rank-diff';
 import { drawerStyles } from '../demo/drawer-styles';
+import type { VectorQuery } from '../engine/vector/static-vector-engine';
 
 /** Our engine's answer to one query, cut to the compared depth. */
 interface OurSearch {
@@ -32,6 +33,8 @@ type ShownComparison =
   | { state: 'failed'; error: string };
 
 interface Comparison {
+  /** Text rank, or vector rank (search by meaning). */
+  rank: 'text' | 'vector';
   query: string;
   ours: OurSearch;
   theirs: LiveEtdSearch;
@@ -75,6 +78,13 @@ export class EtdComparePanel extends LitElement {
   @property({ attribute: false }) engine?: EtdEngine;
 
   @property() query?: string;
+
+  /**
+   * Which ranking `engine` is: text (compared on every search) or vector
+   * (compared on request, since the live page's own search by meaning reads
+   * ~80 MB more and would skew this page's timings).
+   */
+  @property() rank: 'text' | 'vector' = 'text';
 
   /** The live page. Must be same-origin with the demo. */
   @property() pageUrl = '/etd-index/search.html';
@@ -137,12 +147,23 @@ export class EtdComparePanel extends LitElement {
 
   protected willUpdate(changed: PropertyValues<this>): void {
     if (
-      (changed.has('query') ||
+      !(
+        changed.has('query') ||
         changed.has('engine') ||
-        changed.has('liveSource')) &&
-      this.engine &&
-      this.liveSource
+        changed.has('liveSource') ||
+        changed.has('rank')
+      )
     ) {
+      return;
+    }
+    if (this.rank === 'vector') {
+      // Waits for the button; drop any comparison from another query.
+      this.abort?.abort();
+      this.generation += 1;
+      this.comparison = undefined;
+      this.error = undefined;
+      this.busy = false;
+    } else if (this.engine && this.liveSource) {
       this.compare();
     }
   }
@@ -153,6 +174,10 @@ export class EtdComparePanel extends LitElement {
   }
 
   private async compare(): Promise<void> {
+    if (this.rank === 'vector') {
+      await this.compareVector();
+      return;
+    }
     this.abort?.abort();
     const query = this.query?.trim() ?? '';
     const generation = (this.generation += 1);
@@ -188,6 +213,7 @@ export class EtdComparePanel extends LitElement {
       );
       if (generation !== this.generation) return;
       const comparison: Comparison = {
+        rank: 'text',
         query,
         ours,
         theirs,
@@ -207,6 +233,57 @@ export class EtdComparePanel extends LitElement {
       );
       if (generation !== this.generation) return;
       this.comparison = { ...comparison, shown };
+    } catch (err) {
+      if (generation !== this.generation) return;
+      this.comparison = undefined;
+      this.error = err instanceof Error ? err.message : String(err);
+    } finally {
+      if (generation === this.generation) this.busy = false;
+    }
+  }
+
+  /** Our vector rank's top against the live page's Vector rank. */
+  private async compareVector(): Promise<void> {
+    this.abort?.abort();
+    const query = this.query?.trim() ?? '';
+    const generation = (this.generation += 1);
+    const live = this.liveSource;
+    if (!query || !this.engine || !live) return;
+    if (!live.searchByMeaning) {
+      this.error = "the live page can't search by meaning";
+      return;
+    }
+    const abort = new AbortController();
+    this.abort = abort;
+    this.busy = true;
+    this.error = undefined;
+    try {
+      // One after the other: both read ~80 MB, and side by side each would
+      // be timed on half the bandwidth.
+      const ours = await this.searchOurs(this.engine, query, abort.signal);
+      const theirs = await live.searchByMeaning(query, this.depth);
+      const titles = new Map(
+        ours.records.map(record => [record.docId, record.title]),
+      );
+      const diff = this.diff(
+        ours.records.map(record => record.docId),
+        theirs.docIds,
+      );
+      await this.readTitles(
+        diff.onlyTheirs.map(doc => doc.docId),
+        titles,
+        abort.signal,
+      );
+      if (generation !== this.generation) return;
+      this.comparison = {
+        rank: 'vector',
+        query,
+        ours,
+        theirs,
+        diff,
+        shown: { state: 'not-reranked' },
+        titles,
+      };
     } catch (err) {
       if (generation !== this.generation) return;
       this.comparison = undefined;
@@ -305,6 +382,7 @@ export class EtdComparePanel extends LitElement {
     return html`
       <section aria-labelledby="compare-heading">
         <h2 id="compare-heading">Compare with the live etd-search page</h2>
+        ${this.vectorButtonTemplate}
         <div role="status" aria-live="polite">${this.summaryTemplate}</div>
         ${this.rankingTemplate} ${this.hiddenTemplate}
         ${this.livePage === 'missing'
@@ -320,6 +398,18 @@ export class EtdComparePanel extends LitElement {
             </details>`}
       </section>
     `;
+  }
+
+  /** Vector rank compares on request: the button that asks. */
+  private get vectorButtonTemplate() {
+    if (this.rank !== 'vector' || this.livePage === 'missing') return nothing;
+    return html`<button
+      type="button"
+      ?disabled=${this.busy || !this.query?.trim()}
+      @click=${() => this.compareVector()}
+    >
+      Compare vector rank with the live page
+    </button>`;
   }
 
   /** Whether the live page is the iframe here, rather than a test double. */
@@ -338,8 +428,14 @@ export class EtdComparePanel extends LitElement {
     }
     if (this.busy) return html`<p>Comparing…</p>`;
     if (!this.comparison) {
-      return html`<p>Search for something to compare the two rankings.</p>`;
+      return this.rank === 'vector'
+        ? html`<p>
+            Vector rank is compared when you ask: the live page's own search by
+            meaning reads as much again.
+          </p>`
+        : html`<p>Search for something to compare the two rankings.</p>`;
     }
+    if (this.comparison.rank === 'vector') return this.vectorSummary;
 
     const { ours, theirs, diff, shown } = this.comparison;
     const totalsMatch = ours.total === theirs.total;
@@ -357,6 +453,27 @@ export class EtdComparePanel extends LitElement {
         <li>
           ${totalsMatch ? '✅ Totals match' : '⚠️ Totals differ'}: ours
           ${ours.approximate ? '~' : ''}${ours.total.toLocaleString()}, live
+          ${theirs.total.toLocaleString()}
+          <span class="detail">(live: “${theirs.status}”)</span>
+        </li>
+      </ul>
+    `;
+  }
+
+  private get vectorSummary() {
+    const { ours, theirs, diff } = this.comparison!;
+    const scanned = (ours.query as VectorQuery).scan?.candidates;
+    return html`
+      <ul class="summary">
+        <li class="detail">
+          Vector rank (search by meaning): the live page's top
+          ${theirs.docIds.length} against ours. Both scan the same cells and
+          re-score the best 400 exactly, so they should match.
+        </li>
+        <li>${this.diffSummary(diff)}</li>
+        <li>
+          ${scanned === theirs.total ? '✅' : '⚠️'} Candidates scanned: ours
+          ${scanned?.toLocaleString() ?? '?'}, live
           ${theirs.total.toLocaleString()}
           <span class="detail">(live: “${theirs.status}”)</span>
         </li>
@@ -563,6 +680,22 @@ export class EtdComparePanel extends LitElement {
   ): string | undefined {
     if (!this.comparison) return undefined;
     const { ours, theirs, query } = this.comparison;
+    if (this.comparison.rank === 'vector') {
+      if (doc.theirs === undefined) {
+        const rank = theirs.plainRankOf(doc.docId);
+        return rank
+          ? `live ranks it #${rank.toLocaleString()}`
+          : "live didn't scan it";
+      }
+      if (doc.ours === undefined) {
+        const rank = ours.query.rankOf?.(doc.docId);
+        if (rank) return `ours ranks it #${rank.toLocaleString()}`;
+        return ours.query.matches?.(doc.docId)
+          ? 'ours scanned it, past its top 400'
+          : "ours didn't scan it";
+      }
+      return undefined;
+    }
     if (doc.theirs === undefined) {
       const rank = table.liveRankOf(doc.docId);
       if (rank) return `live ranks it #${rank.toLocaleString()}`;

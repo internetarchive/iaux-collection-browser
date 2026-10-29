@@ -300,7 +300,7 @@ export async function buildFixtureIndex(
   };
 }
 
-function rangeResponse(file: Uint8Array, header: string): Response {
+export function rangeResponse(file: Uint8Array, header: string): Response {
   const spans = header
     .replace(/^bytes=/, '')
     .split(',')
@@ -352,7 +352,7 @@ function putField(
   stubs.set(bytes, at + start);
 }
 
-function directory(payloads: Uint8Array[]): [Uint8Array, Uint8Array] {
+export function directory(payloads: Uint8Array[]): [Uint8Array, Uint8Array] {
   const offsets = new BigUint64Array(payloads.length + 1);
   let size = 0;
   payloads.forEach((payload, i) => {
@@ -363,7 +363,7 @@ function directory(payloads: Uint8Array[]): [Uint8Array, Uint8Array] {
   return [new Uint8Array(offsets.buffer), concat(payloads)];
 }
 
-function concat(parts: Uint8Array[]): Uint8Array {
+export function concat(parts: Uint8Array[]): Uint8Array {
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
   let at = 0;
   for (const part of parts) {
@@ -533,7 +533,7 @@ async function institutionFiles(
   ];
 }
 
-async function deflate(text: string): Promise<Uint8Array> {
+export async function deflate(text: string): Promise<Uint8Array> {
   const stream = new Blob([text])
     .stream()
     .pipeThrough(new CompressionStream('deflate'));
