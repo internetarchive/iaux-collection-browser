@@ -67,6 +67,29 @@ describe('etd-vector-status', () => {
     );
   });
 
+  it('says when the first results came, while the rest arrive', async () => {
+    const el = await status(
+      { state: 'ready' },
+      {
+        text: 'sea ice',
+        phase: 'scanning',
+        elapsed: 8200,
+        first: { cellsDone: 4, cells: 32, elapsed: 3210 },
+        progress: {
+          cellsDone: 12,
+          cells: 32,
+          bytes: 30_100_000,
+          requests: 20,
+          retries: 0,
+        },
+      },
+    );
+    expect(text(el)).to.contain(
+      'First results from 4 of 32 cells after 3.2 s; refining as the rest arrive.',
+    );
+    expect(text(el)).to.contain('12 of 32 cells');
+  });
+
   it('sums up a finished search: the total, then where the time went', async () => {
     const el = await status(
       { state: 'ready' },

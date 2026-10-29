@@ -61,18 +61,25 @@ export class EtdVectorStatus extends LitElement {
         </p>`;
       case 'scanning': {
         const progress = search.progress!;
-        return html`<p>
-          <label
-            >Searching ${query} by meaning:
-            <progress
-              max=${progress.cells}
-              .value=${progress.cellsDone}
-            ></progress>
-            ${progress.cellsDone} of ${progress.cells} cells,
-            ${mb(progress.bytes)},
-            ${seconds(search.elapsed)}${retriesText(progress.retries)}</label
-          >
-        </p>`;
+        const { first } = search;
+        return html`${first
+            ? html`<p role="status">
+                First results from ${first.cellsDone} of ${first.cells} cells
+                after ${seconds(first.elapsed)}; refining as the rest arrive.
+              </p>`
+            : nothing}
+          <p>
+            <label
+              >Searching ${query} by meaning:
+              <progress
+                max=${progress.cells}
+                .value=${progress.cellsDone}
+              ></progress>
+              ${progress.cellsDone} of ${progress.cells} cells,
+              ${mb(progress.bytes)},
+              ${seconds(search.elapsed)}${retriesText(progress.retries)}</label
+            >
+          </p>`;
       }
       case 'done':
         return html`<p role="status">${summaryText(query, search.scan!)}</p>`;
@@ -107,7 +114,8 @@ export class EtdVectorStatus extends LitElement {
 export function summaryText(query: string, scan: VectorScanSummary): string {
   const t = scan.timings;
   return (
-    `Searched ${query} by meaning in ${seconds(t.total)}: ` +
+    `Searched ${query} by meaning in ${seconds(t.total)}` +
+    `${t.first === undefined ? '' : ` (first results after ${seconds(t.first)})`}: ` +
     `${scan.candidates.toLocaleString()} candidates in ${scan.cells} cells, ` +
     `${mb(scan.bytes)} in ${scan.requests} requests` +
     `${retriesText(scan.retries)}. ` +

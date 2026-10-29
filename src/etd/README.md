@@ -167,8 +167,18 @@ records, identifiers (`etdv-<n>`) and facets are separate from text rank's.
    (`cell-facets.bin`).
 6. Results are the best 400 that pass the filters. Facets count every
    scanned row that passes them (about 400,000 for a typical query).
-7. Each page of results reads `docs.bin` and the abstracts (`vsnip`), as
-   multi-range requests (`vector-records.ts`).
+
+**First results before the scan ends.** After 4 cells, or 3 s into the scan
+if that comes first, the engine answers with the best 400 of the rows read so
+far, by their 4-bit scores. That first answer's `refined` is the final one
+(all 32 cells, re-scored, with facets). `ServerlessSearchService` swaps it in
+and tells collection-browser (`onResultsChanged`), which fetches the pages it
+has loaded and the facets again, in place: the first tiles stay until the
+final ones arrive. Facets wait for the final answer. A search with filters
+waits for the whole scan, since the filters need every row's facets. The
+first answer can look quite different from the final one: the best theses
+are often in later cells. `&etd_vec_progressive=0` turns this off. 7. Each page of results reads `docs.bin` and the abstracts (`vsnip`), as
+multi-range requests (`vector-records.ts`).
 
 Steps 1-5 run in a Web Worker (`vector-worker.ts`), so the page stays
 responsive while 80 MB arrive. The ETD panel shows how it's going. The demo
@@ -222,7 +232,8 @@ this page's timings. It drives the live page's `setMode('vec')` and
 `&etd_compare=0` leaves the compare panel (and the live page's iframe) out.
 `&etd_vec_parallel=<n>` and `&etd_model_parallel=<n>` set how many cell and
 model reads are in flight (`1` reads the model as one stream, as the live
-page does). The status line under the switch gives the time per step, bytes
+page does). `&etd_vec_progressive=0` waits for the whole scan
+before showing results. The status line under the switch gives the time per step, bytes
 and requests.
 
 archive.org lets the browser keep range reads for 6 hours, so a second run
@@ -411,6 +422,10 @@ description to this folder's code.
    `''` if your hits link off archive.org.
 
 Paging, caching and error mapping come with `ServerlessSearchService`.
+A source can answer early and better later: a query's `refined` resolves
+with the better answer, the service serves it from then on, and
+collection-browser re-fetches what it shows (`onResultsChanged`,
+`refreshResults()`).
 
 ## Not ported yet
 
@@ -420,7 +435,7 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 | A facet ticked when its `inst:` is in the box | `inst:mit` filters, but leaves MIT unticked in the facet     |
 | Quoted phrases checked as adjacent            | Words only have to be near each other                        |
 | `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                        |
-| Vector rank: results as each cell arrives     | Results wait for the whole scan (progress shows meanwhile)   |
+| Vector rank: results after every cell         | First results after 4 cells or 3 s, then the final ones once |
 | Vector rank: re-ranking text results          | Not available (needs a text docId → vector id map)           |
 | Vector rank: the per-cell code cache          | Not kept: the browser's own cache keeps reads for 6 hours    |
 | Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                      |

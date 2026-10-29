@@ -184,6 +184,12 @@ export interface CollectionBrowserDataSourceInterface
   reset(): void;
 
   /**
+   * Fetches the current search's results again, in place: the pages loaded
+   * so far and the facets. For a search service whose results got better.
+   */
+  refreshResults(): Promise<void>;
+
+  /**
    * Resets the data source's result pages, keeping other state intact.
    */
   resetPages(): void;
@@ -245,7 +251,11 @@ export interface CollectionBrowserDataSourceInterface
    * @param pageNum Which page number to fetch results for
    * @param numInitialPages How many pages should be batched together on an initial fetch
    */
-  fetchPage(pageNum: number, numInitialPages?: number): Promise<void>;
+  fetchPage(
+    pageNum: number,
+    numInitialPages?: number,
+    options?: { replace?: boolean },
+  ): Promise<void>;
 
   /**
    * Requests that the data source update its prefix bucket result counts for the given

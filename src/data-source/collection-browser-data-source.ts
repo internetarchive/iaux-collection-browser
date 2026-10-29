@@ -298,6 +298,21 @@ export class CollectionBrowserDataSource
   /**
    * @inheritdoc
    */
+  async refreshResults(): Promise<void> {
+    if (!this.canPerformSearch) return;
+    // Every page loaded so far, in one request; the tiles shown stay until
+    // their replacements arrive, so nothing flashes.
+    const lastPage = Math.max(1, ...Object.keys(this.pages).map(Number));
+    this.endOfDataReached = false;
+    await Promise.all([
+      this.fetchPage(1, lastPage, { replace: true }),
+      this.canFetchFacets ? this.fetchFacets() : null,
+    ]);
+  }
+
+  /**
+   * @inheritdoc
+   */
   resetPages(): void {
     if (Object.keys(this.pages).length < this.host.maxPagesToManage) {
       this.pages = {};
@@ -1185,7 +1200,11 @@ export class CollectionBrowserDataSource
    *  specifies how many pages to batch together in one request. Ignored
    *  if `pageNumber != 1`, defaulting to a single page.
    */
-  async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
+  async fetchPage(
+    pageNumber: number,
+    numInitialPages = 1,
+    options: { replace?: boolean } = {},
+  ): Promise<void> {
     const trimmedQuery = this.host.baseQuery?.trim();
     // reset loading status
     if (!this.canPerformSearch) {
@@ -1193,8 +1212,8 @@ export class CollectionBrowserDataSource
       return;
     }
 
-    // if we already have data, don't fetch again
-    if (this.hasPage(pageNumber)) return;
+    // if we already have data, don't fetch again (unless replacing it)
+    if (!options.replace && this.hasPage(pageNumber)) return;
 
     if (this.endOfDataReached) return;
 
@@ -1359,6 +1378,15 @@ export class CollectionBrowserDataSource
           results.slice(pageStartIndex, pageStartIndex + this.pageSize),
           !isUnpagedElement || i === numPages - 1,
         );
+      }
+    }
+
+    // Replacing pages with fewer results: drop the pages past them.
+    if (options.replace) {
+      const lastPage =
+        pageNumber + Math.ceil((results?.length ?? 0) / this.pageSize) - 1;
+      for (const page of Object.keys(this.pages).map(Number)) {
+        if (page > lastPage) delete this.pages[page];
       }
     }
 

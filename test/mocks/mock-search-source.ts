@@ -79,6 +79,12 @@ export class MockSearchSource
   /** Caps how many matches paging can reach. */
   reachableCap = Number.POSITIVE_INFINITY;
 
+  /**
+   * When set, the next query is a first answer: once this resolves, its
+   * `refined` is a query over the books it gives. Used once.
+   */
+  refineNext?: Promise<MockBook[] | undefined>;
+
   /** Overrides the reported total, e.g. to simulate an estimated count. */
   totalOverride?: number;
 
@@ -123,6 +129,16 @@ export class MockSearchSource
         (request.year?.min === undefined || book.year >= request.year.min) &&
         (request.year?.max === undefined || book.year <= request.year.max),
     );
+    const refine = this.refineNext;
+    this.refineNext = undefined;
+    return {
+      ...this.queryOver(matches),
+      refined: refine?.then(books => books && this.queryOver(books)),
+    };
+  }
+
+  /** A query whose matches are these books, in this order. */
+  private queryOver(matches: MockBook[]): SourceQuery<MockBook> {
     const result = {
       total: this.totalOverride ?? matches.length,
       reachable: Math.min(matches.length, this.reachableCap),

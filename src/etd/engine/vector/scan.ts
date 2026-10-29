@@ -135,7 +135,32 @@ export interface ScanOptions extends EtdCallOptions {
   chunkBytes?: number;
   /** Called as cells arrive. */
   onProgress?: (progress: ScanProgress) => void;
+  /**
+   * Called once, before the last cell, with the best rows so far by their
+   * 4-bit scores: a first answer to show while the rest arrives.
+   */
+  onEarly?: (early: EarlyScan) => void;
+  /** Call onEarly after this many cells (default 4)... */
+  earlyCells?: number;
+  /** ...or this many ms into the scan (default 3000), whichever is first. */
+  earlyMs?: number;
 }
+
+/** The best rows of the cells read so far, best first. */
+export interface EarlyScan {
+  /** Vector ids (docs.bin rows, 0-based). */
+  dids: Uint32Array;
+  /** Their 4-bit (approximate) scores. */
+  scores: Float64Array;
+  /** Rows scored so far, of which these are the best. */
+  candidates: number;
+  progress: ScanProgress;
+}
+
+/** The first answer and when to give it: after 4 cells or 3 s. */
+export const DEFAULT_EARLY_CELLS = 4;
+
+export const DEFAULT_EARLY_MS = 3000;
 
 export interface ScanProgress {
   cellsDone: number;
@@ -261,6 +286,8 @@ export async function scanVectors(
   const dids = new Uint32Array(total);
   const rows = new Uint32Array(total);
   const scores = new Float64Array(total);
+  /** Which candidates have been scored, for a first answer mid-scan. */
+  const scored = new Uint8Array(total);
 
   const scanBytes = codes ? codes.rowbytes : rowbytes;
   const rowsPerChunk = Math.max(1, Math.floor(chunkBytes / scanBytes));
@@ -300,11 +327,13 @@ export async function scanVectors(
           s += table[(j << 8) | bytes[o + 4 + j]];
         }
         scores[at] = s;
+        scored[at] = 1;
       } else {
         decodeHalfs(bytes, o + 4, dim, exactRow);
         let s = 0;
         for (let j = 0; j < dim; j += 1) s += exactRow[j] * query[j];
         scores[at] = s;
+        scored[at] = 1;
       }
     }
   };
@@ -318,6 +347,26 @@ export async function scanVectors(
     requests: files.stats.requests - before.requests,
     retries: files.stats.retries - before.retries,
   });
+  // The first answer: once, after enough cells or time, never after the last.
+  let earlySent = !options.onEarly;
+  const earlyCells = options.earlyCells ?? DEFAULT_EARLY_CELLS;
+  const earlyMs = options.earlyMs ?? DEFAULT_EARLY_MS;
+  const sendEarly = () => {
+    if (earlySent || !cellsDone || cellsDone >= cells.length) return;
+    if (cellsDone < earlyCells && performance.now() - started < earlyMs) {
+      return;
+    }
+    earlySent = true;
+    options.onEarly!(
+      earlyScan(
+        dids,
+        scores,
+        scored,
+        options.rerank ?? DEFAULT_RERANK,
+        progress(),
+      ),
+    );
+  };
   const fileName = codes ? 'cell-codes.bin' : 'cells.bin';
   await Promise.all(
     Array.from({ length: Math.min(parallel, chunks.length) }, async () => {
@@ -337,6 +386,7 @@ export async function scanVectors(
           cellsDone += 1;
           options.onProgress?.(progress());
         }
+        sendEarly();
       }
     }),
   );
@@ -367,6 +417,26 @@ export async function scanVectors(
       scan: scanned - started,
       rerank: performance.now() - scanned,
     },
+  };
+}
+
+/** The best `count` scored candidates so far, best first. */
+function earlyScan(
+  dids: Uint32Array,
+  scores: Float64Array,
+  scored: Uint8Array,
+  count: number,
+  progress: ScanProgress,
+): EarlyScan {
+  const done: number[] = [];
+  for (let i = 0; i < scored.length; i += 1) if (scored[i]) done.push(i);
+  done.sort((a, b) => scores[b] - scores[a] || a - b);
+  const best = done.slice(0, count);
+  return {
+    dids: Uint32Array.from(best, i => dids[i]),
+    scores: Float64Array.from(best, i => scores[i]),
+    candidates: done.length,
+    progress,
   };
 }
 

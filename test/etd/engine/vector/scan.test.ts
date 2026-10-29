@@ -4,7 +4,10 @@ import {
   probeCells,
   scanVectors,
 } from '../../../../src/etd/engine/vector/scan';
-import type { ScanProgress } from '../../../../src/etd/engine/vector/scan';
+import type {
+  EarlyScan,
+  ScanProgress,
+} from '../../../../src/etd/engine/vector/scan';
 import { VectorStoreFiles } from '../../../../src/etd/engine/vector/vector-files';
 import {
   FIXTURE_VECTOR_BASE,
@@ -137,6 +140,39 @@ describe('vector scan', () => {
     expect(progress.map(p => p.cellsDone)).to.deep.equal([1, 2, 3]);
     expect(progress.every(p => p.cells === 3)).to.be.true;
     expect(progress[2].bytes).to.be.greaterThan(progress[0].bytes);
+  });
+
+  it('gives one first answer, from the cells read so far', async () => {
+    const { index } = await open();
+    const answers: EarlyScan[] = [];
+    await scanVectors(index, ICE, {
+      nprobe: 3,
+      parallel: 1,
+      earlyCells: 1,
+      onEarly: early => answers.push(early),
+    });
+
+    expect(answers).to.have.length(1);
+    const [first] = answers;
+    // Only the best cell had arrived: its three rows, best first.
+    expect(first.progress).to.include({ cellsDone: 1, cells: 3 });
+    expect(first.candidates).to.equal(3);
+    expect(Array.from(first.dids, did => DOCS[did].title)).to.deep.equal([
+      'Sea ice drift',
+      'Arctic leads',
+      'Ice and shipping',
+    ]);
+  });
+
+  it('gives no first answer when the scan is done before it would', async () => {
+    const { index } = await open();
+    const answers: EarlyScan[] = [];
+    // Two cells, and the first answer waits for four.
+    await scanVectors(index, ICE, {
+      nprobe: 2,
+      onEarly: early => answers.push(early),
+    });
+    expect(answers).to.be.empty;
   });
 
   it('places each facet row beside its candidate', async () => {

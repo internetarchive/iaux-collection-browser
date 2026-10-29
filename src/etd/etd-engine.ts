@@ -117,6 +117,13 @@ export interface EtdQuery {
   readonly result: EtdQueryResult;
 
   /**
+   * When this is a first answer from part of the work (search by meaning,
+   * from the first cells): the final answer, or undefined if none follows.
+   * A first answer's facets wait for the final one.
+   */
+  readonly refined?: Promise<EtdQuery | undefined>;
+
+  /**
    * Reads up to the next `count` records in rank order. Returns fewer when
    * the query has fewer left, and an empty array once it is exhausted.
    * A call that rejects (including on abort) must not advance the cursor.

@@ -28,6 +28,17 @@ export interface FacetDeclaringSearchService {
   readonly allowFilterOnlySearch: boolean;
 }
 
+/**
+ * A search service whose results for a search can get better after they're
+ * first served (e.g. a search by meaning answering from its first cells,
+ * then from all of them). collection-browser listens, and fetches the
+ * results it shows again, in place.
+ */
+export interface RefiningSearchService {
+  /** Calls `listener` when the latest search's results changed. */
+  onResultsChanged(listener: () => void): () => void;
+}
+
 /** Marks a title whose picked values must all match, e.g. "Availability (all that apply)". */
 function groupTitle(facet: SourceFacet): string {
   return facet.combine === 'all'
@@ -82,7 +93,10 @@ interface CachedQuery<SourceRecord> {
  * this should set `baseNavigationUrl` to ''.
  */
 export class ServerlessSearchService<Request, SourceRecord>
-  implements SearchServiceInterface, FacetDeclaringSearchService
+  implements
+    SearchServiceInterface,
+    FacetDeclaringSearchService,
+    RefiningSearchService
 {
   /**
    * Built once: the same array every time, so passing it to
@@ -95,6 +109,8 @@ export class ServerlessSearchService<Request, SourceRecord>
   private readonly cacheSize: number;
 
   private readonly cache = new Map<string, CachedQuery<SourceRecord>>();
+
+  private readonly resultsListeners = new Set<() => void>();
 
   constructor(
     private readonly source: SearchSource<Request, SourceRecord>,
@@ -149,6 +165,11 @@ export class ServerlessSearchService<Request, SourceRecord>
     } catch (err) {
       return { error: toSearchServiceError(err) };
     }
+  }
+
+  onResultsChanged(listener: () => void): () => void {
+    this.resultsListeners.add(listener);
+    return () => this.resultsListeners.delete(listener);
   }
 
   async itemDetails(
@@ -218,10 +239,40 @@ export class ServerlessSearchService<Request, SourceRecord>
     query.catch(() => {
       if (this.cache.get(key) === entry) this.cache.delete(key);
     });
+    query.then(
+      first => this.serveRefinements(key, entry, first),
+      () => {},
+    );
 
     this.cache.set(key, entry);
     this.evictOldest();
     return entry;
+  }
+
+  /**
+   * Serves each better answer to a request in place of the last, with a
+   * fresh pager, and tells listeners when it's the latest search's. One for
+   * a search that has since been dropped from the cache is ignored.
+   */
+  private serveRefinements(
+    key: string,
+    entry: CachedQuery<SourceRecord>,
+    query: SourceQuery<SourceRecord>,
+  ): void {
+    query.refined?.then(
+      next => {
+        if (!next || this.cache.get(key) !== entry) return;
+        entry.query = Promise.resolve(next);
+        entry.pager = Promise.resolve(new SourcePager(next));
+        this.serveRefinements(key, entry, next);
+        // A Map keeps insertion order, and each use re-inserts: last is latest.
+        if ([...this.cache.keys()].pop() === key) {
+          for (const listener of this.resultsListeners) listener();
+        }
+      },
+      // The first answer stays: refining improves results, it doesn't gate them.
+      () => {},
+    );
   }
 
   private evictOldest(): void {
