@@ -8618,6 +8618,12 @@ fill=""></path>
             static index in the browser, no search backend
           </span>
         </h2>
+        <p id="etd-docs">
+          <a href="etd/static-index-search.html" target="_blank" rel="noopener">
+            How it works: the Static Index Search proposal
+            <span class="sr-only">(opens in a new tab)</span>
+          </a>
+        </p>
         ${this.etdItemTemplate} ${this.etdSearchTemplate}
         ${this.etdVectorStatusTemplate}
         ${this.etdRank===`text`?this.etdBrowseTemplate:k}
@@ -9221,6 +9227,43 @@ fill=""></path>
       font-size: 1.3rem;
       font-weight: normal;
       color: #4a5a6a;
+    }
+
+    #etd-docs {
+      margin: 0 0 1rem;
+    }
+
+    #etd-docs a {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border: 1px solid #2c5f8f;
+      border-radius: 4px;
+      background: white;
+      color: #1d3f61;
+      font-size: 1.4rem;
+      text-decoration: none;
+    }
+
+    #etd-docs a:hover {
+      background: #e8edf2;
+    }
+
+    #etd-docs a:focus-visible {
+      outline: 2px solid #3a4fd6;
+      outline-offset: 2px;
+    }
+
+    /* Read by screen readers, not shown */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     #etd-item {
