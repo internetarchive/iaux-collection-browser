@@ -172,17 +172,6 @@ export const ETD_FACETS: readonly EtdFacet[] = [
   },
 ];
 
-/** The table's facets as a serverless search source describes them. */
-export const ETD_SOURCE_FACETS: readonly SourceFacet[] = ETD_FACETS.map(
-  ({ key, title, pluralTitle, after, combine }) => ({
-    key,
-    title,
-    pluralTitle,
-    after,
-    combine,
-  }),
-);
-
 /** A facet in the table by key. */
 export function etdFacet(key: string): EtdFacet | undefined {
   return ETD_FACETS.find(facet => facet.key === key);

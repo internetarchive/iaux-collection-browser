@@ -13,23 +13,39 @@ export const ETD_IDENTIFIER_PREFIX = 'etd-';
  * Aggregation keys ETD can produce, as collection-browser names them: each
  * facet in the table, and the date picker's histogram.
  */
-export const ETD_AGGREGATION_KEYS: readonly string[] = [
-  ...ETD_FACETS.map(facet => facet.key),
-  'year_histogram',
-];
+export const ETD_AGGREGATION_KEYS: readonly string[] =
+  etdAggregationKeys(ETD_FACETS);
+
+/**
+ * Identifier prefix for a vector store record: its docIds are numbered apart
+ * from the text index's, so the two never share an identifier.
+ */
+export const ETD_VECTOR_IDENTIFIER_PREFIX = 'etdv-';
+
+/** The aggregation keys for a facet table, and the date picker's histogram. */
+export function etdAggregationKeys(facets: readonly EtdFacet[]): string[] {
+  return [...facets.map(facet => facet.key), 'year_histogram'];
+}
 
 /**
  * The identifier an ETD record is shown under.
  */
-export function etdIdentifier(docId: number): string {
-  return `${ETD_IDENTIFIER_PREFIX}${docId}`;
+export function etdIdentifier(
+  docId: number,
+  prefix = ETD_IDENTIFIER_PREFIX,
+): string {
+  return `${prefix}${docId}`;
 }
 
 /**
  * The document id behind an ETD identifier, or undefined if it is not one.
  */
-export function etdDocIdFromIdentifier(identifier: string): number | undefined {
-  const match = identifier.match(/^etd-([1-9]\d*)$/);
+export function etdDocIdFromIdentifier(
+  identifier: string,
+  prefix = ETD_IDENTIFIER_PREFIX,
+): number | undefined {
+  if (!identifier.startsWith(prefix)) return undefined;
+  const match = identifier.slice(prefix.length).match(/^([1-9]\d*)$/);
   return match ? Number(match[1]) : undefined;
 }
 
@@ -37,9 +53,12 @@ export function etdDocIdFromIdentifier(identifier: string): number | undefined {
  * Raw hit JSON for one record. ETD records live off archive.org, so the hit
  * links to the thesis's own landing page (or its archived copy).
  */
-export function etdHitJson(record: EtdRecord): Record<string, unknown> {
+export function etdHitJson(
+  record: EtdRecord,
+  prefix = ETD_IDENTIFIER_PREFIX,
+): Record<string, unknown> {
   const fields: Record<string, unknown> = {
-    identifier: etdIdentifier(record.docId),
+    identifier: etdIdentifier(record.docId, prefix),
     mediatype: 'texts',
     title: record.title,
     __href__: record.archivedUrl ?? record.url,
@@ -82,9 +101,10 @@ export function etdAggregationsJson(
   facets: EtdFacetCounts,
   keys: readonly string[],
   size?: number,
+  table: readonly EtdFacet[] = ETD_FACETS,
 ): Record<string, unknown> {
   const aggregations: Record<string, unknown> = {};
-  for (const facet of ETD_FACETS) {
+  for (const facet of table) {
     if (!keys.includes(facet.key)) continue;
     aggregations[facet.key] = {
       buckets: facetBuckets(facet, facets.facets[facet.key] ?? {}, size),

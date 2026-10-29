@@ -48,6 +48,13 @@ export interface LiveEtdSource {
   readonly ready: Promise<string>;
 
   search(query: string, depth: number): Promise<LiveEtdSearch>;
+
+  /**
+   * The page's Vector rank (search by meaning) for a query. Its docIds are
+   * the vector store's ids + 1, as StaticVectorEngine numbers them, and it
+   * isn't re-ranked. Optional: a page without vector rank has none.
+   */
+  searchByMeaning?(query: string, depth: number): Promise<LiveEtdSearch>;
 }
 
 /** The page globals this reads. Declared with `let`, so not on `window`. */
@@ -88,6 +95,8 @@ export class LiveEtdPage implements LiveEtdSource {
       box.placeholder = query;
     }
 
+    // Back to text rank, if a search by meaning left the page in vector mode.
+    this.pageFunctions().setMode?.('text');
     const run = (win as unknown as { run?: (q: string) => Promise<void> }).run;
     if (typeof run !== 'function') {
       throw new Error('live page has no run(): its script has changed');
@@ -125,6 +134,73 @@ export class LiveEtdPage implements LiveEtdSource {
       plainRankOf: docId => plainRanks().get(docId),
       shownRankOf: docId => shownRanks().get(docId),
     };
+  }
+
+  async searchByMeaning(query: string, depth: number): Promise<LiveEtdSearch> {
+    await this.ready;
+    const doc = this.window().document;
+    const box = doc.querySelector<HTMLInputElement>('#q');
+    if (box) box.value = query;
+    const { setMode, vecRun } = this.pageFunctions();
+    if (typeof setMode !== 'function' || typeof vecRun !== 'function') {
+      throw new Error(
+        'live page has no setMode()/vecRun(): its script has changed',
+      );
+    }
+    // As its Vector rank button does, short of rewriting the page's url.
+    setMode('vec');
+    await vecRun(query);
+    const failure = doc.querySelector('#stat .err');
+    if (failure) throw new Error(`live page: ${failure.textContent}`);
+
+    const { lastVec, lastVecCand } = this.readVectorState();
+    if (!Array.isArray(lastVec) || !Array.isArray(lastVecCand)) {
+      throw new Error(
+        'live page has no lastVec/lastVecCand: its script has changed',
+      );
+    }
+    // Its candidates are [did, score, ...]; ours number a did as did + 1.
+    const shown = (lastVec as { did?: unknown }[]).map(
+      entry => Number(entry?.did) + 1,
+    );
+    const all = (lastVecCand as unknown[]).map(entry =>
+      Array.isArray(entry) ? Number(entry[0]) + 1 : NaN,
+    );
+    const allRanks = lazyRanks(() => all);
+    const shownRanks = lazyRanks(() => shown);
+    return {
+      version: this.readState().version,
+      total: all.length,
+      status: doc.querySelector('#stat')?.textContent?.trim() ?? '',
+      docIds: shown.slice(0, depth),
+      reranked: Promise.resolve(undefined),
+      plainRankOf: docId => allRanks().get(docId),
+      shownRankOf: docId => shownRanks().get(docId),
+    };
+  }
+
+  /** The page's top-level functions this drives, from its own realm. */
+  private pageFunctions(): {
+    setMode?: (mode: 'text' | 'vec') => void;
+    vecRun?: (query: string) => Promise<void>;
+  } {
+    const win = this.window() as unknown as { Function: FunctionConstructor };
+    return new win.Function(
+      `return {
+        setMode: typeof setMode === 'function' ? setMode : undefined,
+        vecRun: typeof vecRun === 'function' ? vecRun : undefined,
+      };`,
+    )();
+  }
+
+  private readVectorState(): { lastVec: unknown; lastVecCand: unknown } {
+    const win = this.window() as unknown as { Function: FunctionConstructor };
+    return new win.Function(
+      `return {
+        lastVec: typeof lastVec !== 'undefined' ? lastVec : undefined,
+        lastVecCand: typeof lastVecCand !== 'undefined' ? lastVecCand : undefined,
+      };`,
+    )();
   }
 
   /**

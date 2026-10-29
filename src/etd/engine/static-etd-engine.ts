@@ -259,7 +259,7 @@ export class StaticEtdEngine implements EtdEngine {
 }
 
 /** A doc check for the filters; undefined when they filter nothing. */
-type DocFilter = (rows: EtdFacetRows, docId: number) => boolean;
+export type DocFilter = (rows: EtdFacetRows, docId: number) => boolean;
 
 /**
  * Each `inst:` value in the query that the institution list knows, with its
@@ -297,7 +297,7 @@ function institutionCheck(
  * any excluded value, then needs any of the included values, or all of them
  * for an 'all' facet.
  */
-function filterFor(
+export function filterFor(
   filters: EtdFilters,
   readers: readonly EtdFacetReader[],
   queryChecks: DocFilter[] = [],

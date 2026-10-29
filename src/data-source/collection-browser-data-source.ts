@@ -35,6 +35,24 @@ import { sha1 } from '../utils/sha1';
 import { mergeSelectedFacets } from '../utils/facet-utils';
 import { dateFilterField } from '../utils/date-filter-field';
 
+/**
+ * A number per search service object, so swapping the host's service (e.g.
+ * between two ways of ranking) changes the query keys and refetches.
+ */
+const searchServiceIds = new WeakMap<object, number>();
+let lastSearchServiceId = 0;
+
+function searchServiceId(service: object | undefined): number {
+  if (!service) return 0;
+  let id = searchServiceIds.get(service);
+  if (id === undefined) {
+    lastSearchServiceId += 1;
+    id = lastSearchServiceId;
+    searchServiceIds.set(service, id);
+  }
+  return id;
+}
+
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
 {
@@ -750,7 +768,7 @@ export class CollectionBrowserDataSource
     const pageTarget = this.host.withinCollection ?? profileKey;
     const sortField = this.host.selectedSort ?? 'none';
     const sortDirection = this.host.sortDirection ?? 'none';
-    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}-sf:${sortField}-sd:${sortDirection}`;
+    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}-sf:${sortField}-sd:${sortDirection}${this.searchServiceKeyPart}`;
   }
 
   /**
@@ -760,8 +778,20 @@ export class CollectionBrowserDataSource
   get facetFetchQueryKey(): string {
     const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
-    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}`;
+    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}${this.searchServiceKeyPart}`;
   }
+
+  /**
+   * Which search service the keys are for. Empty for the first one the
+   * data source sees, so keys are unchanged unless the service is swapped.
+   */
+  private get searchServiceKeyPart(): string {
+    const id = searchServiceId(this.host.searchService);
+    if (id) this.firstSearchServiceId ??= id;
+    return id === this.firstSearchServiceId || !id ? '' : `-ss:${id}`;
+  }
+
+  private firstSearchServiceId?: number;
 
   /**
    * Constructs a search service FilterMap object from the combination of

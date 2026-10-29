@@ -4,7 +4,8 @@ import {
   yearBounds,
 } from '../serverless-search/filter-map';
 import type { EtdFilters } from './etd-engine';
-import { etdFacet } from './etd-facets';
+import { ETD_FACETS } from './etd-facets';
+import type { EtdFacet } from './etd-facets';
 
 /**
  * What a SearchParams asks of the ETD engine.
@@ -23,21 +24,25 @@ export interface EtdRequest {
 }
 
 /**
- * Translates collection-browser's SearchParams into an ETD engine request.
+ * Translates collection-browser's SearchParams into an ETD engine request,
+ * for an engine with these facets.
  */
-export function etdRequestFromParams(params: SearchParams): EtdRequest {
+export function etdRequestFromParams(
+  params: SearchParams,
+  facets: readonly EtdFacet[] = ETD_FACETS,
+): EtdRequest {
   const filters: EtdFilters = {};
   const ignoredFields: string[] = [];
 
   for (const [field, fieldFilter] of Object.entries(params.filters ?? {})) {
+    const facet = facets.find(candidate => candidate.key === field);
     if (field === 'year' || field === 'date') {
       // The ETD index only knows years, so a date (YYYY-MM) range is widened.
       const year = yearBounds(fieldFilter, field === 'date');
       if (year) filters.year = { ...filters.year, ...year };
-    } else if (etdFacet(field)) {
+    } else if (facet) {
       // collection-browser filters by the names a facet shows; the engine
       // by the codes behind them.
-      const facet = etdFacet(field)!;
       const { include, exclude } = includesAndExcludes(fieldFilter);
       const codes = (names: string[]) =>
         names.length ? names.flatMap(name => facet.codesFor(name)) : undefined;

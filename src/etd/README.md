@@ -26,6 +26,10 @@ Open https://local.archive.org:8080/?search_service=etd&query=sea%20ice
   and only switches once the item's `current.json` is in a format the engine
   reads.
 - `&etd_base_url=<url>` reads an index from somewhere else.
+- "Rank results by", under the results count in the facets column, switches
+  between **Words** (text rank) and **Meaning** (vector rank, search by
+  meaning; see below). Meaning is kept in the url as `&etd_rank=vec`. It's
+  put there through collection-browser's `facets-header-slot`.
 
 This only works under `pnpm start`: the index files aren't CORS-readable yet,
 so the dev server proxies them at `/etd-index` (see `vite.config.ts`).
@@ -59,6 +63,11 @@ Each layer only knows the one below it:
 
 So the engine could serve another UI, and `serverless-search` could serve
 another in-browser index.
+
+Search by meaning has its own engine, `StaticVectorEngine`
+(`src/etd/engine/vector/`), behind the same `EtdEngine` interface. The
+adapter takes it with `kind: ETD_VECTOR_SEARCH` (its facets, its identifiers),
+so the layers above it are the same.
 
 ## How one search runs
 
@@ -119,9 +128,135 @@ are kept in memory: year, flags, language, country and the byte with more
 flags and the degree level, ~130 MB. So counts and filters cover every match.
 The live page shares the same cache entry when it runs on the same origin.
 
-Not read yet: the other facet files (`facets-totals.json`, `inst-meta.json`),
-the details pages' files, and the vector store (`ivf-meta.json` and its
-cells). See "Not ported yet".
+Not read yet: `facets-totals.json` and the details pages' files. The vector
+store's files are in "Search by meaning" below.
+
+## Search by meaning (vector rank)
+
+The live page's "Vector rank": the query is turned into 384 numbers in the
+browser, with the same model the abstracts were embedded with, and matched
+against the abstracts' vectors. It finds theses that mean the same thing in
+other words, or other languages. It's a separate search, not a re-sort of the
+text results.
+
+The vector store is in the same item, but built on its own (2026-10-12, 18.2M
+docs, against the text index's 25.9M). Its docs have their own ids, so its
+records, identifiers (`etdv-<n>`) and facets are separate from text rank's.
+
+### How a search by meaning runs
+
+1. The model loads once (`engine/vector/embedder.ts`): transformers.js 3.0.2
+   from jsDelivr (pinned, the live page's build), and `multilingual-e5-small`
+   (q8, 118 MB, plus a 17 MB tokenizer) from the item itself. It's kept in
+   Cache Storage under the live page's cache name and keys, so on one origin
+   the two share a download. A file not in the cache is read as 6 Range
+   requests at once.
+2. The store's centroids (12.6 MB) and cell directory load once, at the same
+   time as the model (`scan.ts`, `loadVectorIndex`).
+3. The query, prefixed `query: `, becomes a vector (mean pooling, normalised).
+4. It's scored against all 16,384 centroids, and the best 32 cells are read
+   from `cell-codes.bin` (4-bit codes, 196 bytes a row), 6 requests at a
+   time, with a cell over 2 MB split into several. Every row is scored with a
+   lookup table, as each read arrives.
+5. The best 400 are re-scored exactly from `cells.bin` (one multi-range
+   request), and the facet rows of every scanned row are read alongside
+   (`cell-facets.bin`).
+6. Results are the best 400 that pass the filters. Facets count every
+   scanned row that passes them (about 400,000 for a typical query).
+7. Each page of results reads `docs.bin` and the abstracts (`vsnip`), as
+   multi-range requests (`vector-records.ts`).
+
+Steps 1-5 run in a Web Worker (`vector-worker.ts`), so the page stays
+responsive while 80 MB arrive. The ETD panel shows how it's going. The demo
+starts it; without one (or with
+`&etd_vec_worker=0`) they run in the page. The model starts loading when
+someone points at or tabs to "Meaning", not on every visit.
+
+The ranking is the live page's: the same 32 cells, the same codes and the
+same 400 exact re-scores, so the top 50 should be identical. On 2026-10-29
+it was for all 5 queries checked ("sea ice", "machine translation for
+low-resource languages", "Klimawandel und Landwirtschaft", "deep learning
+protein folding", "urban heat island mitigation"), with the same number of
+scanned candidates.
+
+### Its files
+
+| File                                       | What it holds                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------------- |
+| `ivf-meta.json`                            | doc count, cells, vector size, row layouts, build stamp, which files exist |
+| `centroids.f16`                            | one vector per cell, 16-bit floats                                         |
+| `cell.dir`                                 | cumulative row counts: cell k is rows `dir[k]` to `dir[k+1]`               |
+| `cells.bin`                                | per row, in cell order: doc id (u32) and its vector (384 halfs), 772 bytes |
+| `cell-codes.bin`, `cell-codes-meta.json`   | the same rows, each dimension's difference from its centroid in 4 bits     |
+| `cell-facets.bin`, `cell-facets-meta.json` | per row: year, flags, repository; 8 bytes; repository names in the meta    |
+| `docs.bin`                                 | per doc id: title, host, date, landing url, language; 308 bytes            |
+| `vsnip.dir`, `vsnip.bin`                   | per doc id: the abstract, deflated JSON, as `snippets.bin`                 |
+| `Xenova/multilingual-e5-small/…`           | the model                                                                  |
+
+These aren't versioned like the text index's: the names are fixed, and
+`?v=<build stamp>` keys the browser cache to the build. A metas file whose
+`n` (or for the codes, build stamp and size) doesn't match `ivf-meta.json` is
+ignored, as on the live page, and the search goes on without it.
+
+### Facets
+
+The store's facet rows only have the year, the flags and the repository
+host, so vector rank has Year, Repository, Source and Availability
+(`etd-vector-facets.ts`). Source and Availability are the text table's
+entries. Repository is new: the landing page's host. The live page calls it
+"Institution", but it isn't the institution list.
+
+### The compare panel
+
+Under Meaning, the panel compares on request (a button), not on every search:
+the live page's own search by meaning reads ~80 MB more, which would also skew
+this page's timings. It drives the live page's `setMode('vec')` and
+`vecRun()`, and reads `lastVec` and `lastVecCand`.
+
+### Measuring
+
+`&etd_compare=0` leaves the compare panel (and the live page's iframe) out.
+`&etd_vec_parallel=<n>` and `&etd_model_parallel=<n>` set how many cell and
+model reads are in flight (`1` reads the model as one stream, as the live
+page does). The status line under the switch gives the time per step, bytes
+and requests.
+
+archive.org lets the browser keep range reads for 6 hours, so a second run
+on the same origin isn't cold. Each `<name>.localhost` is a separate site,
+with its own cache: `http://cold1.localhost:<port>/…` is a cold start.
+
+Measured 2026-10-29 in the built-in browser, through a plain-http copy of the
+dev proxy pointed at the storage server (archive.org's `/download` redirect
+was returning 502s that day), one run each, each cold run on a fresh site.
+Network speed varied a lot that day (one 16 MB range: 2-12 s), so take these
+as one sample, not a benchmark.
+
+| Run                                                      | Live page      | Ours           | Ours, live page's settings¹ |
+| -------------------------------------------------------- | -------------- | -------------- | --------------------------- |
+| Cold "sea ice" (model, centroids, cells all uncached)    | 53.6 s         | 27.2 s         | 49.1 s                      |
+| – of which the model and centroids                       | ~42 s²         | 17.6 s         | 35.1 s                      |
+| – of which the 32 cells                                  | ~11 s          | 7.9 s          | 12.8 s                      |
+| Warm "machine translation for low-resource languages"    | 18.4 s         | 14.6 s         | 19.3 s                      |
+| – of which the 32 cells                                  |                | 6.5 s          | 14.4 s                      |
+| Bytes read, cold / warm (not counting the 135 MB model)³ | 80.0 / 86.8 MB | 83.4 / 92.5 MB | same as ours                |
+
+1. `&etd_model_parallel=1&etd_vec_parallel=4`: the model as one stream, 4
+   cell reads at a time. That this is about as slow as the live page is the
+   check that the speed-up comes from reading in parallel, not from the setup.
+2. Its model starts only once the store has loaded (8.7 s in), then
+   streams 118 MB in 34 s.
+3. Ours reads the facet rows (3-4 MB) during the search; the live page reads
+   them after showing results. Both read the same cells.
+
+The embedding itself is 40-170 ms. A warm search still spends 3-6 s on the
+model: reading 135 MB back from Cache Storage and starting ONNX.
+
+For scale, the hub session measured the live page straight from archive.org
+(no proxy) the same day at 128 s cold and 43 s warm. Through the proxy the
+browser's reads each get their own upstream connection, which helps both
+pages. In production the storage server speaks HTTP/2, so the browser may put
+parallel reads on one connection, and the gain from reading in parallel may
+be smaller there. That can't be measured through the dev proxy.
 
 ## Ranking, briefly
 
@@ -281,7 +416,9 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 | A facet ticked when its `inst:` is in the box | `inst:mit` filters, but leaves MIT unticked in the facet     |
 | Quoted phrases checked as adjacent            | Words only have to be near each other                        |
 | `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                        |
-| Vector rank (semantic search)                 | Not available                                                |
+| Vector rank: results as each cell arrives     | Results wait for the whole scan (progress shows meanwhile)   |
+| Vector rank: re-ranking text results          | Not available (needs a text docId → vector id map)           |
+| Vector rank: the per-cell code cache          | Not kept: the browser's own cache keeps reads for 6 hours    |
 | Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                      |
 
 ## Things that will trip you up
