@@ -126,11 +126,25 @@ export const ETD_FACETS: readonly EtdFacet[] = [
     ...DEGREES,
   },
   {
+    // Named by the index's institution list, so the value is the name:
+    // there's no fixed table to map codes through.
+    key: 'institution',
+    title: 'Institution',
+    pluralTitle: 'Institutions',
+    after: 'country',
+    read: (rows, docId, add) => {
+      const name = rows.institutionName(docId);
+      if (name) add(name);
+    },
+    label: name => name,
+    codesFor: name => [name],
+  },
+  {
     // A thesis can come from several sources.
     key: 'source',
     title: 'Source',
     pluralTitle: 'Sources',
-    after: 'country',
+    after: 'institution',
     read: (rows, docId, add) => {
       for (const flag of SOURCE_FLAGS) if (rows.hasFlag(docId, flag)) add(flag);
     },

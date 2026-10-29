@@ -1,10 +1,12 @@
 import type {
+  DocValues,
   FacetColumn,
   StaticIndexManifest,
   StaticSearchConfig,
 } from '../static-index/manifest';
 import type { EtdFacetMeta } from './engine/facets';
 import type { EtdIndexMeta } from './engine/index-files';
+import type { EtdInstitutionMeta } from './engine/institutions';
 import type { FieldPrefix } from './engine/query-parser';
 import { FIELD_WEIGHT, PROXIMITY, SAME_FIELD_BOOST } from './engine/scorer';
 import {
@@ -85,10 +87,11 @@ const LANGUAGE_BYTE = 4;
 const COUNTRY_BYTE = 5;
 const LEVEL_BYTE = 6;
 
-/** The manifest ETD's current.json and facets-meta.json amount to. */
+/** The manifest ETD's current.json, facets-meta.json and inst-meta.json amount to. */
 export function etdManifest(
   current: EtdCurrentJson,
   facetsMeta?: EtdFacetMeta,
+  instMeta?: EtdInstitutionMeta,
 ): StaticIndexManifest {
   const extra = new Set(Object.keys(current.prefixed_fields ?? {}));
   const fields = TEXT_FIELDS.filter(field => {
@@ -135,6 +138,33 @@ export function etdManifest(
       stride: facetsMeta.stride,
       gzip: true,
       columns: facetColumns(facetsMeta),
+    },
+    docValues: instMeta && [institutionValues(instMeta)],
+  };
+}
+
+/** inst-labels.bin's columns, when inst-meta.json doesn't list them. */
+const INSTITUTION_LABEL_COLUMNS = ['qid', 'label', 'country', 'n_docs'];
+
+/** The institution list (see engine/institutions.ts) as doc values. */
+function institutionValues(meta: EtdInstitutionMeta): DocValues {
+  return {
+    key: 'institution',
+    file: meta.gz ?? meta.bin,
+    gzip: !!meta.gz,
+    bytes: meta.stride === 4 ? 4 : 2,
+    count: meta.k,
+    labels: {
+      file: meta.labels.bin,
+      dir: meta.labels.dir,
+      columns: meta.labels.cols ?? INSTITUTION_LABEL_COLUMNS,
+    },
+    lookup: {
+      dir: meta.alias.dir,
+      bin: meta.alias.bin,
+      normalize:
+        'nfkd-strip-marks-casefold-nonword-to-space-collapse-drop-leading-the',
+      queryFields: ['inst', 'institution'],
     },
   };
 }
@@ -208,10 +238,18 @@ export const ETD_SEARCH_CONFIG: StaticSearchConfig = {
       names: { from: 'table', labels: DEGREE_NAMES },
     },
     {
+      key: 'institution',
+      title: 'Institution',
+      pluralTitle: 'Institutions',
+      after: 'country',
+      from: { column: 'institution' },
+      names: { from: 'labels', column: 'label', whenShared: 'country' },
+    },
+    {
       key: 'source',
       title: 'Source',
       pluralTitle: 'Sources',
-      after: 'country',
+      after: 'institution',
       from: { flags: SOURCE_FLAGS },
       names: { from: 'table', labels: SOURCE_NAMES },
     },

@@ -1,6 +1,7 @@
 import { expect } from '@open-wc/testing';
 import { EtdFacets, type EtdFacetMeta } from '../../src/etd/engine/facets';
 import { EtdIndexFiles } from '../../src/etd/engine/index-files';
+import type { EtdInstitutionMeta } from '../../src/etd/engine/institutions';
 import { ETD_FACETS } from '../../src/etd/etd-facets';
 import { languageName } from '../../src/etd/etd-languages';
 import { ETD_SEARCH_CONFIG, etdManifest } from '../../src/etd/etd-static-index';
@@ -9,10 +10,12 @@ import {
   facetLabel,
   facetRowReader,
   facetValues,
+  labelNames,
 } from '../../src/static-index/facet-row';
 import {
   ETD_CURRENT_JSON,
   ETD_FACETS_META,
+  ETD_INST_META,
 } from '../static-index/etd-snapshots';
 import {
   FIXTURE_BASE,
@@ -21,7 +24,11 @@ import {
 } from './engine/fixture-index';
 
 describe('etdManifest, from ETD’s published files', () => {
-  const manifest = etdManifest(ETD_CURRENT_JSON, ETD_FACETS_META);
+  const manifest = etdManifest(
+    ETD_CURRENT_JSON,
+    ETD_FACETS_META,
+    ETD_INST_META,
+  );
 
   it('passes checkConfig with the ETD config', () => {
     expect(() => checkConfig(manifest, ETD_SEARCH_CONFIG)).not.to.throw();
@@ -103,21 +110,75 @@ describe('etdManifest, from ETD’s published files', () => {
     const flags = columns[1];
     expect(flags.kind === 'flags' && flags.bits.printed).to.equal(512);
   });
+
+  it('describes the institution list as doc values, looked up by inst:', () => {
+    expect(manifest.docValues).to.deep.equal([
+      {
+        key: 'institution',
+        file: 'inst.gz.json',
+        gzip: true,
+        bytes: 2,
+        count: 7648,
+        labels: {
+          file: 'inst-labels.bin',
+          dir: 'inst-labels.dir',
+          columns: ['qid', 'label', 'country', 'n_docs'],
+        },
+        lookup: {
+          dir: 'inst-alias.json',
+          bin: 'inst-alias.bin',
+          normalize:
+            'nfkd-strip-marks-casefold-nonword-to-space-collapse-drop-leading-the',
+          queryFields: ['inst', 'institution'],
+        },
+      },
+    ]);
+  });
+
+  it('has no doc values for a build without the institution list', () => {
+    expect(etdManifest(ETD_CURRENT_JSON, ETD_FACETS_META).docValues).to.be
+      .undefined;
+  });
 });
 
 describe('ETD_SEARCH_CONFIG, against today’s facet code', () => {
   // One thesis per case the facets distinguish.
   const theses: FixtureThesis[] = [
-    { title: 'a', language: 'pt', country: 'BR', level: 'phd', flags: ['oai'] },
-    { title: 'b', language: 'ng', level: 'masters', flags: ['ia', 'complete'] },
-    { title: 'c', country: 'SU', flags: ['wbm', 'hasAbstract', 'libcat'] },
+    {
+      title: 'a',
+      language: 'pt',
+      country: 'BR',
+      level: 'phd',
+      flags: ['oai'],
+      institutionId: 1,
+    },
+    {
+      title: 'b',
+      language: 'ng',
+      level: 'masters',
+      flags: ['ia', 'complete'],
+      institutionId: 2,
+    },
+    {
+      title: 'c',
+      country: 'SU',
+      flags: ['wbm', 'hasAbstract', 'libcat'],
+      institutionId: 3,
+    },
     { title: 'd', level: 'bachelors', flags: ['archived', 'printed'] },
     { title: 'e', language: 'en', level: 'other', flags: ['hasTitle'] },
-    { title: 'f' },
+    { title: 'f', institutionId: 4 },
+  ];
+  // Two share a label, as Heidelberg University (DE and US) do.
+  const institutions = [
+    { label: 'University of São Paulo', country: 'BR' },
+    { label: 'Heidelberg University', country: 'DE' },
+    { label: 'Heidelberg University', country: 'US' },
+    { label: 'Moscow State University', country: 'RU' },
   ];
 
   async function rows() {
-    const index = await buildFixtureIndex(theses);
+    const index = await buildFixtureIndex(theses, { institutions });
     const files = await EtdIndexFiles.open(FIXTURE_BASE, {
       fetch: index.fetch,
     });
@@ -126,19 +187,31 @@ describe('ETD_SEARCH_CONFIG, against today’s facet code', () => {
     const meta = JSON.parse(
       new TextDecoder().decode(await files.arrayBuffer('facets-meta.json')),
     ) as EtdFacetMeta;
-    const manifest = etdManifest(files.meta, meta);
+    const instMeta = JSON.parse(
+      new TextDecoder().decode(await files.arrayBuffer('inst-meta.json')),
+    ) as EtdInstitutionMeta;
+    const manifest = etdManifest(files.meta, meta, instMeta);
     checkConfig(manifest, ETD_SEARCH_CONFIG);
-    const response = await files.response('facets.gz.json');
-    const bytes = new Uint8Array(
-      await new Response(
-        response.body!.pipeThrough(new DecompressionStream('gzip')),
-      ).arrayBuffer(),
+    const unpack = async (name: string) =>
+      new Uint8Array(
+        await new Response(
+          (await files.response(name)).body!.pipeThrough(
+            new DecompressionStream('gzip'),
+          ),
+        ).arrayBuffer(),
+      );
+    const bytes = await unpack('facets.gz.json');
+    // Read only as the manifest describes them.
+    const [institution] = manifest.docValues!;
+    const ids = new Uint16Array((await unpack(institution.file)).buffer);
+    const labels = new TextDecoder().decode(
+      await files.arrayBuffer(institution.labels.file),
     );
     const { stride } = manifest.facets!;
-    const read = facetRowReader(manifest.facets!);
+    const read = facetRowReader(manifest.facets!, { institution: ids });
     const genericRow = (docId: number) =>
-      read(bytes.subarray((docId - 1) * stride, docId * stride));
-    return { etdRows, genericRow };
+      read(bytes.subarray((docId - 1) * stride, docId * stride), docId);
+    return { etdRows, genericRow, institution, labels };
   }
 
   it('declares the same facets, in the same way', () => {
@@ -155,15 +228,21 @@ describe('ETD_SEARCH_CONFIG, against today’s facet code', () => {
   });
 
   it('gives every thesis the same values for every facet', async () => {
-    const { etdRows, genericRow } = await rows();
+    const { etdRows, genericRow, institution, labels } = await rows();
     for (const facet of ETD_FACETS) {
       const config = ETD_SEARCH_CONFIG.facets.find(f => f.key === facet.key)!;
+      // A labels facet's values are ids; today's code reads their names.
+      const names =
+        config.names?.from === 'labels'
+          ? labelNames(config.names, institution.labels, labels)
+          : undefined;
       theses.forEach((thesis, i) => {
         const docId = i + 1;
         const expected: string[] = [];
         facet.read(etdRows, docId, code => expected.push(code));
+        const values = facetValues(config, genericRow(docId));
         expect(
-          facetValues(config, genericRow(docId)),
+          names ? values.map(id => names[Number(id) - 1]) : values,
           `${facet.key} of thesis ${thesis.title}`,
         ).to.deep.equal(expected);
       });

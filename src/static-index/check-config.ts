@@ -37,7 +37,13 @@ function manifestProblems(manifest: StaticIndexManifest): string[] {
     ['field key', fields.map(field => field.key)],
     ['field prefix', fields.map(field => field.prefix)],
     ['alias', fields.flatMap(field => field.aliases ?? [])],
-    ['facet column', manifest.facets?.columns.map(column => column.key) ?? []],
+    [
+      'facet column or doc value',
+      [
+        ...(manifest.facets?.columns.map(column => column.key) ?? []),
+        ...(manifest.docValues ?? []).map(values => values.key),
+      ],
+    ],
   ] as const) {
     for (const name of duplicates(names)) {
       problems.push(`${what} "${name}" is used more than once`);
@@ -46,6 +52,17 @@ function manifestProblems(manifest: StaticIndexManifest): string[] {
 
   const keys = new Set(fields.map(field => field.key));
   problems.push(...rankingProblems(manifest.text.ranking, keys, 'manifest'));
+
+  const aliases = new Set(fields.flatMap(field => field.aliases ?? []));
+  for (const values of manifest.docValues ?? []) {
+    for (const word of values.lookup?.queryFields ?? []) {
+      if (!aliases.has(word)) {
+        problems.push(
+          `doc value ${values.key}: query field "${word}" searches no text field`,
+        );
+      }
+    }
+  }
   return problems;
 }
 
@@ -75,6 +92,9 @@ function configProblems(
   const columns = new Map<string, FacetColumn>(
     (manifest.facets?.columns ?? []).map(column => [column.key, column]),
   );
+  const docValues = new Map(
+    (manifest.docValues ?? []).map(values => [values.key, values]),
+  );
   const flags = new Set(
     [...columns.values()].flatMap(column =>
       column.kind === 'flags' ? Object.keys(column.bits) : [],
@@ -88,7 +108,22 @@ function configProblems(
   for (const facet of config.facets) {
     const { from } = facet;
     const at = `facet ${facet.key}`;
-    if ('column' in from) {
+    const values = 'column' in from ? docValues.get(from.column) : undefined;
+    if (facet.names?.from === 'labels') {
+      const { column, whenShared } = facet.names;
+      if (!values) {
+        problems.push(`${at}: labels names need a doc value column`);
+      } else {
+        for (const name of [column, whenShared]) {
+          if (name !== undefined && !values.labels.columns.includes(name)) {
+            problems.push(`${at}: no labels column "${name}"`);
+          }
+        }
+      }
+    }
+    if (values) {
+      // A doc value: nothing more to check.
+    } else if ('column' in from) {
       const column = columns.get(from.column);
       if (!column) {
         problems.push(`${at}: no facet column "${from.column}"`);
@@ -109,7 +144,8 @@ function configProblems(
     if (
       facet.after !== undefined &&
       !facetKeys.includes(facet.after) &&
-      !columns.has(facet.after)
+      !columns.has(facet.after) &&
+      !docValues.has(facet.after)
     ) {
       problems.push(`${at}: after "${facet.after}", which isn't a facet`);
     }

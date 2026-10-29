@@ -35,6 +35,15 @@ export interface ParsedQuery {
   filters: FieldFilterClause[];
 }
 
+export interface ParseOptions {
+  /**
+   * `inst:`/`institution:` values the index's institution list knows, with
+   * their ids (see institutionValues). Each becomes an `inst` filter on
+   * those institutions; any other value is searched as text.
+   */
+  institutions?: ReadonlyMap<string, ReadonlySet<number>>;
+}
+
 type Token =
   | '('
   | ')'
@@ -125,8 +134,28 @@ const INSTITUTION_ALIASES: Record<string, string[]> = {
 
 const ORCID_RE = /^\d{4}-\d{4}-\d{4}-\d{3}[\dXx]$/;
 
-export function parseQuery(query: string): ParsedQuery {
-  return new Parser(tokenizeQuery(query)).parse();
+export function parseQuery(
+  query: string,
+  options: ParseOptions = {},
+): ParsedQuery {
+  return new Parser(tokenizeQuery(query), options).parse();
+}
+
+/**
+ * The `inst:`/`institution:` values in a query, unquoted, to look up in the
+ * institution list before parsing. As the live page finds them, so a value
+ * the tokenizer reads differently (`inst:mit)`) is looked up as written and
+ * stays text.
+ */
+export function institutionValues(query: string): string[] {
+  const values = new Set<string>();
+  for (const match of query.matchAll(
+    /(?:^|\s)(?:inst|institution):(?:"([^"]+)"|(\S+))/g,
+  )) {
+    const value = match[1] ?? match[2];
+    if (value && value !== '*') values.add(value);
+  }
+  return [...values];
 }
 
 export function tokenizeQuery(query: string): Token[] {
@@ -188,7 +217,10 @@ class Parser {
 
   private readonly filters: FieldFilterClause[] = [];
 
-  constructor(private readonly tokens: Token[]) {}
+  constructor(
+    private readonly tokens: Token[],
+    private readonly options: ParseOptions,
+  ) {}
 
   parse(): ParsedQuery {
     return { tree: this.expression(), filters: this.filters };
@@ -299,6 +331,10 @@ class Parser {
         field: 'has',
         value: HAS_FIELD[field],
       });
+      return null;
+    }
+    if (prefix === 'i:' && this.options.institutions?.get(bare)?.size) {
+      this.filters.push({ negated: false, field: 'inst', value: bare });
       return null;
     }
     if (prefix === 'i:') {

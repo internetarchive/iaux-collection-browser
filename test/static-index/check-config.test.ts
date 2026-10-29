@@ -151,6 +151,81 @@ describe('checkConfig', () => {
     expect(problems(manifest(), c)).to.equal('');
   });
 
+  describe('doc values', () => {
+    /** The papers' publishers: too many for a byte, so in files of their own. */
+    function withPublishers() {
+      const m = manifest();
+      m.docValues = [
+        {
+          key: 'publisher',
+          file: 'publisher.gz',
+          gzip: true,
+          bytes: 2,
+          count: 900,
+          labels: {
+            file: 'publisher-labels.tsv',
+            dir: 'publisher-labels.dir',
+            columns: ['id', 'name', 'country'],
+          },
+          lookup: {
+            dir: 'publisher-alias.json',
+            bin: 'publisher-alias.bin',
+            normalize:
+              'nfkd-strip-marks-casefold-nonword-to-space-collapse-drop-leading-the',
+            queryFields: ['by'],
+          },
+        },
+      ];
+      const c = config();
+      c.facets.push({
+        key: 'publisher',
+        title: 'Publisher',
+        pluralTitle: 'Publishers',
+        after: 'access',
+        from: { column: 'publisher' },
+        names: { from: 'labels', column: 'name', whenShared: 'country' },
+      });
+      return { m, c };
+    }
+
+    it('passes a facet over a doc value, named by its labels', () => {
+      const { m, c } = withPublishers();
+      expect(problems(m, c)).to.equal('');
+    });
+
+    it('catches a labels column the labels file doesn’t have', () => {
+      const { m, c } = withPublishers();
+      c.facets[2].names = { from: 'labels', column: 'title' };
+      expect(problems(m, c)).to.include(
+        'facet publisher: no labels column "title"',
+      );
+    });
+
+    it('catches labels names on a facet that isn’t a doc value', () => {
+      const { m, c } = withPublishers();
+      c.facets[0].names = { from: 'labels', column: 'name' };
+      expect(problems(m, c)).to.include(
+        'facet language: labels names need a doc value column',
+      );
+    });
+
+    it('catches a lookup for a query word that searches no field', () => {
+      const { m, c } = withPublishers();
+      m.docValues![0].lookup!.queryFields = ['publisher'];
+      expect(problems(m, c)).to.include(
+        'doc value publisher: query field "publisher" searches no text field',
+      );
+    });
+
+    it('catches a doc value named like a facet column', () => {
+      const { m, c } = withPublishers();
+      m.docValues![0].key = 'lang';
+      expect(problems(m, c)).to.include(
+        'facet column or doc value "lang" is used more than once',
+      );
+    });
+  });
+
   it('catches facets configured for an index with no facet rows', () => {
     const m = manifest();
     delete m.facets;

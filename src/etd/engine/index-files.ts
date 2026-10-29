@@ -131,6 +131,22 @@ export class EtdIndexFiles {
     return buffer;
   }
 
+  /** A whole file that an index may not have; undefined on HTTP 404. */
+  async optionalArrayBuffer(
+    name: string,
+    options?: EtdCallOptions,
+  ): Promise<ArrayBuffer | undefined> {
+    this.stats.requests += 1;
+    const response = await this.fetchFn(this.fileUrl(name), {
+      signal: options?.signal,
+    });
+    if (response.status === 404) return undefined;
+    if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+    const buffer = await response.arrayBuffer();
+    this.stats.bytes += buffer.byteLength;
+    return buffer;
+  }
+
   /**
    * Reads `length` bytes at `offset`. A shorter answer is returned as is
    * (callers check lengths); a longer one (a server ignoring Range) is cut.

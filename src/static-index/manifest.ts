@@ -30,6 +30,8 @@ export interface StaticIndexManifest {
    */
   positions?: boolean;
   facets?: FacetRows;
+  /** Values too many to fit a facet row's byte, each in files of its own. */
+  docValues?: DocValues[];
 }
 
 /** The searchable text: dictionary and postings, one prefix per field. */
@@ -131,6 +133,50 @@ export type FacetColumn =
       codes: Record<string, number>;
     };
 
+/**
+ * One value per doc from a long list (e.g. ETD's 7,648 institutions), in
+ * files of its own: an id per doc, the ids' labels, and optionally the
+ * names a query can use for them.
+ */
+export interface DocValues {
+  /** Named by a facet's `from: { column }`, like a facet column. */
+  key: string;
+  /** Each doc's id, little-endian, docId order; 0 means unknown. */
+  file: string;
+  /** Whether the file is gzipped. */
+  gzip: boolean;
+  /** Bytes per id. */
+  bytes: 2 | 4;
+  /** How many ids there are; they run 1..count. */
+  count: number;
+  /**
+   * One line per id, in id order, of tab-separated `columns`. `dir` holds
+   * each line's offset (u32), for reading a few lines by Range.
+   */
+  labels: { file: string; dir: string; columns: string[] };
+  /**
+   * Names, spellings and acronyms -> ids. `dir` is JSON: each bucket's
+   * [offset, length] in `bin`, keyed by a normalized name's first two
+   * characters. `bin` lines are `name\tid,id,...`.
+   */
+  lookup?: {
+    dir: string;
+    bin: string;
+    /**
+     * How names are normalized before lookup. The one kind so far:
+     * NFKC then NFKD, marks stripped, lowercased, anything but letters,
+     * digits, '_' and spaces as a space, spaces collapsed, a leading
+     * "the " dropped.
+     */
+    normalize: 'nfkd-strip-marks-casefold-nonword-to-space-collapse-drop-leading-the';
+    /**
+     * The query fields that look a value up here first: a known name
+     * filters by its ids; anything else searches the text field as usual.
+     */
+    queryFields: string[];
+  };
+}
+
 /** Held by the client: how to search and show an index. */
 export interface StaticSearchConfig {
   /** Where the index is published: current.json and the versioned files. */
@@ -158,7 +204,10 @@ export interface FacetConfig {
 }
 
 export type FacetSource =
-  /** A code or packed column's value; `unknownAs` names docs without one. */
+  /**
+   * A code or packed column's value, or a doc value's id; `unknownAs`
+   * names docs without one.
+   */
   | { column: string; unknownAs?: string }
   /** Each named flag a doc has is one of its values. */
   | { flags: string[] }
@@ -181,4 +230,10 @@ export type FacetNames =
       from: 'intl';
       type: 'language' | 'region';
       overrides?: Record<string, string>;
-    };
+    }
+  /**
+   * A doc value's labels file: its `column` (the first column where that's
+   * empty), with `whenShared` added in parentheses ('Heidelberg University (DE)') where ids share a label.
+   * Ids sharing both still share a name, and so count as one value.
+   */
+  | { from: 'labels'; column: string; whenShared?: string };

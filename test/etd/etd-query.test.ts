@@ -94,6 +94,23 @@ describe('etdRequestFromParams', () => {
     });
   });
 
+  it('maps institution names through as they are: the engine filters by name', () => {
+    const request = etdRequestFromParams({
+      query: 'robotics',
+      filters: {
+        institution: {
+          'Heidelberg University (DE)': FilterConstraint.INCLUDE,
+        },
+      },
+    });
+    expect(request.filters.facets).to.deep.equal({
+      institution: {
+        include: ['Heidelberg University (DE)'],
+        exclude: undefined,
+      },
+    });
+  });
+
   it('reports filters the engine cannot apply instead of failing', () => {
     const request = etdRequestFromParams({
       query: 'climate',

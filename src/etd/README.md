@@ -141,11 +141,31 @@ its values are named, and how picked values combine:
 | ------------ | ----------------- | ----------------------------------------------------------------------------------------------------- | --------------- |
 | Language     | language byte     | names from collection-browser's mapping, then the browser's                                           | any of them     |
 | Country      | country byte      | names from the browser (`Intl.DisplayNames`)                                                          | any of them     |
+| Institution  | institution files | names from the index's institution list; the country added where two share a name                     | any of them     |
 | Degree level | degree level bits | Doctoral, Master's, Bachelor's, Other, Unknown                                                        | any of them     |
 | Source       | flag bits         | OAI, Internet Archive, Wayback Machine, Library catalog, Printed abstracts; a thesis can have several | any of them     |
 | Availability | flag bits         | Has abstract, Archived (whole thesis), Document saved, Has live link                                  | **all** of them |
 
 Year isn't in the table: it's the date picker.
+
+The institution isn't in the facet row. The index has a list of 7,648
+institutions in files of its own (`engine/institutions.ts`):
+
+- `inst.gz.json`: each thesis's institution id, read whole with the facet
+  rows (4 MB gzipped, 52 MB kept).
+- `inst-labels.bin`: each id's name and country, read whole (370 KB). Its
+  values are these names, not codes, since there's no fixed table to map
+  codes through. A name two institutions share gets the country added,
+  e.g. "Heidelberg University (DE)" and "(US)".
+- `inst-alias.json` and `inst-alias.bin`: the names, spellings and acronyms
+  each institution goes by, for `inst:`. One Range read per name.
+
+`inst:` and `institution:` look the name up there first, as the live page
+does. A name the list knows filters by its institutions, ANDed with the
+words: `inst:mit robotics` is robotics theses from MIT, and `NOT inst:mit`
+leaves MIT out. Any other name is searched as text in the institution
+field, with the expansions in `query-parser.ts`. An index without
+`inst-meta.json` has no Institution facet, and `inst:` is all text.
 
 Each layer uses the table without knowing a facet by name:
 
@@ -167,7 +187,9 @@ engine doesn't keep yet, keep that byte too (`keepBytes` in
 panel for a few queries.
 
 Values are listed by count, as collection-browser's sidebar sorts every facet.
-The live page lists degree level in a fixed order instead.
+The live page lists degree level in a fixed order instead. Values with the
+same count are listed by name here, and by id (most theses overall first)
+on the live page.
 
 ## Building on it
 
@@ -248,14 +270,14 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 
 ## Not ported yet
 
-| Live page feature                             | What happens here instead                                       |
-| --------------------------------------------- | --------------------------------------------------------------- |
-| Institution and repository (domain) facets    | Not shown yet: one table entry each, plus the institution files |
-| `inst:` through the institution list          | Matched as text, so many more results                           |
-| Quoted phrases checked as adjacent            | Words only have to be near each other                           |
-| `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                           |
-| Vector rank (semantic search)                 | Not available                                                   |
-| Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                         |
+| Live page feature                             | What happens here instead                                    |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| Repository (domain) facet                     | Not shown yet: one table entry, reading bytes 2-3 of the row |
+| A facet ticked when its `inst:` is in the box | `inst:mit` filters, but leaves MIT unticked in the facet     |
+| Quoted phrases checked as adjacent            | Words only have to be near each other                        |
+| `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                        |
+| Vector rank (semantic search)                 | Not available                                                |
+| Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                      |
 
 ## Things that will trip you up
 

@@ -56,6 +56,7 @@ describe('EtdSearchService', () => {
         'availability',
         'country',
         'degree',
+        'institution',
         'language',
         'source',
         'year_histogram',

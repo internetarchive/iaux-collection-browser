@@ -6,7 +6,11 @@ import { StaticEtdEngine } from '../../../src/etd/engine/static-etd-engine';
 import { EtdSearchService } from '../../../src/etd/etd-search-service';
 import { ETD_FACETS } from '../../../src/etd/etd-facets';
 import { FIXTURE_BASE, buildFixtureIndex } from './fixture-index';
-import type { FixtureOptions, FixtureThesis } from './fixture-index';
+import type {
+  FixtureInstitution,
+  FixtureOptions,
+  FixtureThesis,
+} from './fixture-index';
 
 const THESES: FixtureThesis[] = [
   {
@@ -307,6 +311,8 @@ describe('StaticEtdEngine', () => {
         facets: {
           language: { en: 2, fr: 1 },
           country: {},
+          // No institution list in this index.
+          institution: {},
           // These theses' records don't give a level or any flags.
           degree: { unknown: 3 },
           source: {},
@@ -453,6 +459,132 @@ describe('StaticEtdEngine', () => {
         error = err;
       }
       expect(String(error)).to.include('facets-meta.json');
+    });
+  });
+
+  describe('institutions', () => {
+    // As in the real index, a thesis's institution text and its place in
+    // the institution list are separate: the list matched most records'
+    // text to an institution, and some not at all.
+    const institutions: FixtureInstitution[] = [
+      {
+        label: 'Massachusetts Institute of Technology',
+        country: 'US',
+        aliases: ['MIT'],
+      },
+      { label: 'Heidelberg University', country: 'DE' },
+      { label: 'Heidelberg University', country: 'US' },
+    ];
+    const theses: FixtureThesis[] = [
+      {
+        title: 'Robotics for grasping',
+        institution: 'Massachusetts Institute of Technology',
+        institutionId: 1,
+      },
+      {
+        title: 'Swarm robotics',
+        institution: 'Universität Heidelberg',
+        institutionId: 2,
+      },
+      {
+        title: 'Robotics in agriculture',
+        institution: 'Heidelberg University, Tiffin, Ohio',
+        institutionId: 3,
+      },
+      { title: 'Garden history', institution: 'MIT', institutionId: 1 },
+      // Says MIT in its text, but the list didn't match it.
+      { title: 'Robotics, unmatched', institution: 'MIT Media Lab' },
+      { title: 'Robotics at a Hochschule', institution: 'Hochschule Mitte' },
+    ];
+
+    async function engine(withList = true) {
+      return (
+        await engineOver(theses, {
+          institutions: withList ? institutions : undefined,
+        })
+      ).engine;
+    }
+
+    it('filters a known inst: by the list, ANDed with the words', async () => {
+      // The live page: inst:mit robotics is robotics theses from MIT.
+      const query = await (await engine()).query('inst:mit robotics', {});
+      expect(query.result.total).to.equal(1);
+      expect(titles(await query.next(5))).to.deep.equal([
+        'Robotics for grasping',
+      ]);
+    });
+
+    it('lists an institution’s theses for inst: alone, in docId order', async () => {
+      const query = await (
+        await engine()
+      ).query('institution:"Massachusetts Institute of Technology"', {});
+      expect(titles(await query.next(5))).to.deep.equal([
+        'Robotics for grasping',
+        'Garden history',
+      ]);
+    });
+
+    it('finds every institution a name stands for', async () => {
+      const query = await (
+        await engine()
+      ).query('inst:"heidelberg university" robotics', {});
+      expect(query.result.total).to.equal(2);
+    });
+
+    it('leaves an institution out after NOT', async () => {
+      const query = await (await engine()).query('robotics NOT inst:mit', {});
+      expect(titles(await query.next(10)).sort()).to.deep.equal([
+        'Robotics at a Hochschule',
+        'Robotics in agriculture',
+        'Robotics, unmatched',
+        'Swarm robotics',
+      ]);
+    });
+
+    it('searches a name the list doesn’t know as text', async () => {
+      const query = await (await engine()).query('inst:hochschule', {});
+      expect(titles(await query.next(5))).to.deep.equal([
+        'Robotics at a Hochschule',
+      ]);
+    });
+
+    it('searches inst: as text on an index without the list', async () => {
+      // inst:mit robotics ORs: MIT in the text, or robotics anywhere.
+      const query = await (await engine(false)).query('inst:mit robotics', {});
+      expect(query.result.total).to.equal(6);
+    });
+
+    it('counts institutions by name, the ones sharing a label told apart', async () => {
+      const query = await (await engine()).query('robotics', {});
+      expect((await query.facets()).facets.institution).to.deep.equal({
+        'Massachusetts Institute of Technology': 1,
+        'Heidelberg University (DE)': 1,
+        'Heidelberg University (US)': 1,
+      });
+    });
+
+    it('filters by the facet’s names', async () => {
+      const query = await (
+        await engine()
+      ).query('robotics', {
+        facets: { institution: { include: ['Heidelberg University (US)'] } },
+      });
+      expect(titles(await query.next(5))).to.deep.equal([
+        'Robotics in agriculture',
+      ]);
+      const hidden = await (
+        await engine()
+      ).query('robotics', {
+        facets: {
+          institution: { exclude: ['Massachusetts Institute of Technology'] },
+        },
+      });
+      expect(hidden.result.total).to.equal(4);
+    });
+
+    it('has no institution counts on an index without the list', async () => {
+      const query = await (await engine(false)).query('robotics', {});
+      expect((await query.facets()).facets.institution).to.deep.equal({});
     });
   });
 

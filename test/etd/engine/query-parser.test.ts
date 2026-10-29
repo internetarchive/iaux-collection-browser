@@ -1,5 +1,8 @@
 import { expect } from '@open-wc/testing';
-import { parseQuery } from '../../../src/etd/engine/query-parser';
+import {
+  institutionValues,
+  parseQuery,
+} from '../../../src/etd/engine/query-parser';
 
 const term = (text: string, prefix?: string) =>
   prefix ? { op: 'term', text, prefix } : { op: 'term', text };
@@ -111,6 +114,47 @@ describe('parseQuery', () => {
     });
   });
 
+  describe('with the institution list', () => {
+    // As the engine resolves them: 'mit' is known (MIT's id), 'nowhere' isn't.
+    const institutions = new Map([
+      ['mit', new Set([27])],
+      ['university of zagreb', new Set([3])],
+      ['nowhere', new Set<number>()],
+    ]);
+
+    it('lifts a known inst: value out as a filter, leaving the words', () => {
+      const parsed = parseQuery('inst:mit robotics', { institutions });
+      expect(parsed.tree).to.deep.equal(term('robotics'));
+      expect(parsed.filters).to.deep.equal([
+        { negated: false, field: 'inst', value: 'mit' },
+      ]);
+    });
+
+    it('takes a quoted name, under either field word', () => {
+      const parsed = parseQuery('institution:"university of zagreb"', {
+        institutions,
+      });
+      expect(parsed.tree).to.be.null;
+      expect(parsed.filters).to.deep.equal([
+        { negated: false, field: 'inst', value: 'university of zagreb' },
+      ]);
+    });
+
+    it('negates it after NOT', () => {
+      expect(
+        parseQuery('robotics NOT inst:mit', { institutions }).filters,
+      ).to.deep.equal([{ negated: true, field: 'inst', value: 'mit' }]);
+    });
+
+    it('searches an unknown value as text, expansions and all', () => {
+      expect(parseQuery('inst:nowhere', { institutions }).tree).to.deep.equal(
+        term('nowhere', 'i:'),
+      );
+      // Without the list, inst:mit is the text search it always was.
+      expect(parseQuery('inst:mit').filters).to.deep.equal([]);
+    });
+  });
+
   it('keeps an ORCID iD whole, as a phrase', () => {
     expect(parseQuery('orcid:0000-0002-3449-7508').tree).to.deep.equal({
       op: 'phrase',
@@ -122,5 +166,19 @@ describe('parseQuery', () => {
   it('has no tree for an empty or filter-only query', () => {
     expect(parseQuery('   ').tree).to.be.null;
     expect(parseQuery('year:2020').tree).to.be.null;
+  });
+});
+
+describe('institutionValues', () => {
+  it('finds each inst: and institution: value, unquoted, once', () => {
+    expect(
+      institutionValues(
+        'robotics inst:mit OR institution:"University of Zagreb" inst:mit',
+      ),
+    ).to.deep.equal(['mit', 'University of Zagreb']);
+  });
+
+  it('skips inst:* (has an institution) and words merely ending in inst:', () => {
+    expect(institutionValues('inst:* firstinst:mit')).to.deep.equal([]);
   });
 });
