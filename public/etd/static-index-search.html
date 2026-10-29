@@ -175,6 +175,7 @@ pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; disp
     <li><a href="#publish">What an item publishes</a></li>
     <li><a href="#costs">What each feature costs</a></li>
     <li><a href="#vectors">Search by meaning</a></li>
+    <li><a href="#options">Index and ranking options</a></li>
     <li><a href="#proof">Proof: the ETD port</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#decisions">Decisions and risks</a></li>
@@ -318,8 +319,79 @@ flowchart LR
 </div>
 </section>
 
+<section id="options">
+<h2>6. Index and ranking options</h2>
+<div class="prose">
+  <p>An <strong>index</strong> is a precomputed layout that makes one kind of question cheap; a <strong>ranking</strong> decides the order of what it finds. With no backend, "cheap" means few round trips and few bytes: every lookup should land on one known slice of a file. This is the menu, and how well each option fits.</p>
+</div>
+
+<h3>Indexes: how results are found</h3>
+<div class="frame"><table>
+  <thead><tr><th>Index</th><th>Answers</th><th>Fit with no backend</th><th>ETD</th></tr></thead>
+  <tbody>
+    <tr><td>Inverted index</td><td>Which records contain these words</td><td><span class="pill ok">Great</span> one request for the dictionary, one for the postings</td><td>Yes</td></tr>
+    <tr><td>… with positions</td><td>Phrases, words near each other</td><td><span class="pill ok">Great</span> positions travel with the postings</td><td>Yes</td></tr>
+    <tr><td>… impact-ordered, truncated</td><td>The best matches for very common words, fast</td><td><span class="pill ok">Great</span> read the strongest part of a list first</td><td>Yes</td></tr>
+    <tr><td>Record store (forward index)</td><td>What to show for each result; phrase checks</td><td><span class="pill ok">Great</span> fixed-size records: one range read per page</td><td>Yes</td></tr>
+    <tr><td>Columns per record</td><td>Facets, filters, sorting</td><td><span class="pill ok">Good</span> when small enough to read once</td><td>Yes (facets, institutions)</td></tr>
+    <tr><td>Bitmaps per value</td><td>Fast combinations of filters</td><td><span class="pill ok">Good</span> a compact set per value, read on demand</td><td>No</td></tr>
+    <tr><td>Prefix trees (tries, FSTs)</td><td>Autocomplete, prefix and fuzzy matching</td><td><span class="pill warn">Fair</span> large dictionaries need splitting</td><td>No</td></tr>
+    <tr><td>N-gram index</td><td>Substrings, typo tolerance</td><td><span class="pill warn">Fair</span> the index grows several times larger</td><td>No</td></tr>
+    <tr><td>Sorted pages (B-trees)</td><td>Number ranges: years, sizes</td><td><span class="pill ok">Good</span> range reads over sorted pages</td><td>No (years are a facet column)</td></tr>
+    <tr><td>Bloom filters</td><td>"Might this record contain X?"</td><td><span class="pill warn">Fair</span> tiny, but needs a follow-up check</td><td>No</td></tr>
+    <tr><td>Precomputed answers</td><td>Popular queries and browse pages</td><td><span class="pill ok">Great</span> one small file per query</td><td>No</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Vector indexes: how meaning is searched</h3>
+<div class="frame"><table>
+  <thead><tr><th>Vector index</th><th>How it searches</th><th>Fit with no backend</th><th>ETD</th></tr></thead>
+  <tbody>
+    <tr><td>Flat</td><td>Compare the query with every vector</td><td><span class="pill warn">Small sets only</span> under ~100,000 vectors</td><td>No</td></tr>
+    <tr><td>Clusters (IVF)</td><td>Pick the nearest clusters, scan only those</td><td><span class="pill ok">Best fit</span> each cluster is one contiguous range</td><td>Yes</td></tr>
+    <tr><td>Clusters + compressed codes</td><td>Scan small codes, re-score the best exactly</td><td><span class="pill ok">Best fit</span> 2–4× fewer bytes</td><td>4-bit today; 1–2 bit proposed</td></tr>
+    <tr><td>Graph (HNSW)</td><td>Hop from neighbour to neighbour</td><td><span class="pill bad">Poor</span> every hop is a round trip, dozens per search</td><td>No</td></tr>
+    <tr><td>Disk-oriented graph (DiskANN)</td><td>A graph built to need few hops</td><td><span class="pill warn">Untested</span> still several round trips</td><td>No</td></tr>
+  </tbody>
+</table></div>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  A["How many vectors?"] -->|"under ~100k"| F["Flat: compare with all"]
+  A -->|"millions"| B{"Searched over HTTP<br/>with no backend?"}
+  B -->|yes| C["Clusters (IVF)<br/>+ compressed codes"]
+  B -->|"no, a server holds it"| G["Graph (HNSW)"]
+  C --> D["Re-score the best<br/>with exact vectors"]
+</pre></div>
+
+<h3>Rankings: how results are ordered</h3>
+<div class="frame"><table>
+  <thead><tr><th>Ranking</th><th>Idea</th><th>Cost in the browser</th><th>ETD</th></tr></thead>
+  <tbody>
+    <tr><td>BM25 with field weights</td><td>Word-frequency scoring, weighted per field</td><td><span class="pill ok">Free</span> scores precomputed into the postings</td><td>Yes</td></tr>
+    <tr><td>Proximity boost</td><td>Words close together score higher</td><td><span class="pill ok">Small</span> word positions for the top results</td><td>Yes</td></tr>
+    <tr><td>Quality priors</td><td>Query-independent signals: views, recency, full text available</td><td><span class="pill ok">Nearly free</span> one byte per record in the facet file</td><td>No</td></tr>
+    <tr><td>Expansion at build time (learned sparse)</td><td>Related words added to each record when the index is built</td><td><span class="pill ok">Free</span> still a word index; no model in the browser</td><td>No</td></tr>
+    <tr><td>Meaning vectors</td><td>Compare the query's meaning with each record's</td><td><span class="pill warn">Heavy</span> a model download plus cluster reads</td><td>Yes (search by meaning)</td></tr>
+    <tr><td>Hybrid fusion</td><td>Merge word and meaning rankings by position</td><td><span class="pill ok">Tiny</span> arithmetic on two result lists</td><td>No (two separate modes)</td></tr>
+    <tr><td>Learning to rank</td><td>A small trained model combines many signals</td><td><span class="pill ok">Small</span> runs over the top few hundred</td><td>No</td></tr>
+    <tr><td>Diversity</td><td>Spread out near-duplicate results</td><td><span class="pill ok">Small</span> on the top results only</td><td>No</td></tr>
+    <tr><td>Cross-encoder re-ranking</td><td>A model reads query and record together</td><td><span class="pill bad">Too heavy</span> beyond a handful of results</td><td>No</td></tr>
+  </tbody>
+</table></div>
+
+<div class="note">
+  <p><strong>Worth doing next, cheapest first:</strong></p>
+  <ul>
+    <li><strong>Quality priors:</strong> one byte per record in a file we already read; a ranking win for almost nothing.</li>
+    <li><strong>Hybrid fusion:</strong> one merged list instead of a Words / Meaning switch, once both rankings exist.</li>
+    <li><strong>Expansion at build time:</strong> search by meaning with no model download at all, because the browser stays a plain word search. The index owner builds it.</li>
+  </ul>
+  <p>Graph vector indexes (HNSW), the default in most vector databases, are a trap for this design: each hop is a network round trip.</p>
+</div>
+</section>
+
 <section id="proof">
-<h2>6. Proof: the ETD port</h2>
+<h2>7. Proof: the ETD port</h2>
 <div class="prose">
   <p>The <a href="https://archive.org/details/etd-search">etd-search</a> item holds 25.9 million theses and dissertations, and its own page already searches it in the browser. We split that page into the engine, adapter and config described here, inside collection-browser, and check every search against the live page.</p>
 </div>
@@ -339,7 +411,7 @@ flowchart LR
 </section>
 
 <section id="roadmap">
-<h2>7. Roadmap</h2>
+<h2>8. Roadmap</h2>
 <div class="frame chart"><pre class="mermaid">
 flowchart TD
   subgraph done["Done"]
@@ -371,7 +443,7 @@ flowchart TD
 </section>
 
 <section id="decisions">
-<h2>8. Decisions and risks</h2>
+<h2>9. Decisions and risks</h2>
 <h3>Decisions needed</h3>
 <ol class="decisions">
   <li><strong>Adopt the file contract as the standard</strong> for in-browser item search, and name an owner for it and its version numbers.
