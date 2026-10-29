@@ -1,3 +1,5 @@
+import { fileSetUrl } from '../../static-index/files';
+import type { FileSet } from '../../static-index/manifest';
 import type { EtdCallOptions } from '../etd-engine';
 import { HttpError } from './http-error';
 import { retryingFetch } from './retrying-fetch';
@@ -281,14 +283,18 @@ export class EtdIndexFiles extends RangeFiles {
   }
 
   /**
-   * The url of an index file. Versioned files are immutable, so the version
-   * doubles as a stable cache key.
+   * How the index's files are named: `<name>.<v>`, or for an index with no
+   * version, fixed names under one 'unversioned' cache key.
    */
-  fileUrl(name: string): string {
+  get fileSet(): FileSet {
     const { v } = this.meta;
     return v
-      ? `${this.dataUrl}${name}.${v}?v=${v}`
-      : `${this.dataUrl}${name}?v=unversioned`;
+      ? { naming: 'versioned', version: v }
+      : { naming: 'stamped', built: 'unversioned' };
+  }
+
+  fileUrl(name: string): string {
+    return fileSetUrl(this.dataUrl, this.fileSet, name);
   }
 }
 

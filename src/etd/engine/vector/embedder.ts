@@ -15,13 +15,30 @@
  *   requests at once, which archive.org serves much faster than one stream.
  */
 
+import { modelLibraryUrl } from '../../../static-index/model';
 import { HttpError } from '../http-error';
 import { retryingFetch } from '../retrying-fetch';
 
-export const TRANSFORMERS_URL =
-  'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2/dist/transformers.min.js';
+/** The live page's build of transformers.js, which embedded the store. */
+export const MODEL_LIBRARY = {
+  name: '@huggingface/transformers',
+  version: '3.0.2',
+};
+
+export const TRANSFORMERS_URL = modelLibraryUrl(MODEL_LIBRARY)!;
 
 export const MODEL_ID = 'Xenova/multilingual-e5-small';
+
+/**
+ * How queries are embedded, as the store's build embedded abstracts: e5
+ * wants a "query: " prefix, mean pooling, and normalised vectors.
+ */
+export const QUERY_EMBEDDING = {
+  dtype: 'q8',
+  queryPrefix: 'query: ',
+  pooling: 'mean',
+  normalize: true,
+} as const;
 
 const MODEL_CACHE = 'etd-model-cache';
 
@@ -241,7 +258,7 @@ export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
     'feature-extraction',
     options.modelId ?? MODEL_ID,
     {
-      dtype: 'q8',
+      dtype: QUERY_EMBEDDING.dtype,
       // Its own downloads only: with parallel reads, the cache does them.
       progress_callback: event => {
         const e = event as { status?: string; loaded?: number; total?: number };
@@ -255,11 +272,10 @@ export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
       },
     },
   );
-  // e5 embeds queries with a "query: " prefix, as the store's build did.
   return async text => {
-    const output = await extractor(`query: ${text}`, {
-      pooling: 'mean',
-      normalize: true,
+    const output = await extractor(`${QUERY_EMBEDDING.queryPrefix}${text}`, {
+      pooling: QUERY_EMBEDDING.pooling,
+      normalize: QUERY_EMBEDDING.normalize,
     });
     return new Float32Array(output.data);
   };

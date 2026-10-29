@@ -1,5 +1,10 @@
 import type { EtdFacetMeta } from '../../src/etd/engine/facets';
 import type { EtdInstitutionMeta } from '../../src/etd/engine/institutions';
+import type {
+  CellCodesMeta,
+  CellFacetsMeta,
+} from '../../src/etd/engine/vector/scan';
+import type { IvfMeta } from '../../src/etd/engine/vector/vector-files';
 import type { EtdCurrentJson } from '../../src/etd/etd-static-index';
 
 /**
@@ -502,4 +507,63 @@ export const ETD_INST_META: EtdInstitutionMeta = {
     cols: ['qid', 'label', 'country', 'n_docs'],
   },
   alias: { bin: 'inst-alias.bin', dir: 'inst-alias.json' },
+};
+
+/**
+ * The vector store's metas, built 2026-10-12 11:31, read 2026-10-29.
+ * ivf-meta.json is whole. cell-codes-meta.json keeps every field but its
+ * 384 per-dimension steps (only their count is checked) and its free-text
+ * notes. cell-facets-meta.json keeps its first 10 of 6,364 repository
+ * hosts, and drops its free-text `order` and `fields` ("year(u8,+1900,
+ * 0=unk) flags(u8) domain(u16le) spare(u32le)"). Neither facets meta has a
+ * year_enc: the vector rows are encoding 1, the text rows encoding 2.
+ */
+export const ETD_IVF_META: IvfMeta = {
+  n: 18176413,
+  ncell: 16384,
+  dim: 384,
+  model: 'intfloat/multilingual-e5-small',
+  rowbytes: 772,
+  docbytes: 308,
+  fields: { title: 160, host: 30, date: 10, landing: 100, lang: 8 },
+  vsnip: true,
+  codes: true,
+  code_bits: 4,
+  built: '2026-10-12 11:31',
+};
+
+export const ETD_CODES_META: CellCodesMeta = {
+  n: 18176413,
+  dim: 384,
+  bits: 4,
+  rowbytes: 196,
+  scale: Array.from({ length: 384 }, () => 0.0085),
+  built: '2026-10-12 11:31',
+};
+
+export const ETD_CELL_FACETS_META: CellFacetsMeta = {
+  n: 18176413,
+  stride: 8,
+  flag_bits: {
+    oai: 1,
+    ia: 2,
+    wbm: 4,
+    hasInstitution: 8,
+    archived: 16,
+    complete: 32,
+    hasTitle: 64,
+    hasAbstract: 128,
+  },
+  domains: [
+    'acikbilim.yok.gov.tr',
+    'nusl.cz',
+    'invenio.ntkcz.cz',
+    'theseus.fi',
+    'ethos.bl.uk',
+    'rcaap.pt',
+    'zir.nsk.hr',
+    'teses.usp.br',
+    'oai.lareferencia.info',
+    'tel.archives-ouvertes.fr',
+  ],
 };

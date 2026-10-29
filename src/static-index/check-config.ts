@@ -1,49 +1,83 @@
 import type {
+  DocValues,
   FacetColumn,
+  FacetConfig,
+  FacetRows,
   FlagRule,
-  StaticIndexManifest,
-  StaticSearchConfig,
+  IdSpace,
+  Ranking,
+  SearchConfig,
+  StaticItemConfig,
+  StaticItemManifest,
+  TextSearch,
+  VectorSearch,
 } from './manifest';
+import { modelLibraryUrl } from './model';
 
 /**
  * Checks that every name the config uses exists in the manifest, and that
  * the manifest is a format this code reads. Throws one error listing every
  * problem, so a rebuild that renames a flag or drops a column fails loudly
  * instead of quietly showing empty facets.
+ *
+ * Problems inside one id space or search start with its key ("theses:",
+ * "meaning:").
  */
 export function checkConfig(
-  manifest: StaticIndexManifest,
-  config: StaticSearchConfig,
+  manifest: StaticItemManifest,
+  config: StaticItemConfig,
 ): void {
-  const problems = [
-    ...manifestProblems(manifest),
-    ...configProblems(manifest, config),
-  ];
+  // A manifest in another format can't be read for the config's names.
+  const problems =
+    manifest.format === 'ia-static-index' && manifest.formatVersion === 2
+      ? [...manifestProblems(manifest), ...configProblems(manifest, config)]
+      : [`unknown format ${manifest.format} v${manifest.formatVersion}`];
   if (problems.length) {
     throw new Error(`Static index config:\n- ${problems.join('\n- ')}`);
   }
 }
 
-function manifestProblems(manifest: StaticIndexManifest): string[] {
+function manifestProblems(manifest: StaticItemManifest): string[] {
   const problems: string[] = [];
-  if (manifest.format !== 'ia-static-index' || manifest.formatVersion !== 1) {
-    problems.push(
-      `unknown format ${manifest.format} v${manifest.formatVersion}`,
-    );
+  for (const [key, space] of Object.entries(manifest.idSpaces)) {
+    problems.push(...idSpaceProblems(space).map(p => `${key}: ${p}`));
   }
+  for (const [key, search] of Object.entries(manifest.searches)) {
+    const space = manifest.idSpaces[search.ids];
+    const found = space
+      ? search.kind === 'text'
+        ? textProblems(search, space)
+        : vectorProblems(search)
+      : [`no id space "${search.ids}"`];
+    problems.push(...found.map(p => `${key}: ${p}`));
+  }
+  return problems;
+}
 
-  const fields = manifest.text.fields;
+function idSpaceProblems(space: IdSpace): string[] {
+  const problems: string[] = [];
+  const roles = space.records.fields.flatMap(field =>
+    field.role ? [field.role] : [],
+  );
+  for (const role of duplicates(roles)) {
+    problems.push(`record role "${role}" is used more than once`);
+  }
+  for (const name of duplicates([
+    ...(space.facets?.columns.map(column => column.key) ?? []),
+    ...(space.docValues ?? []).map(values => values.key),
+  ])) {
+    problems.push(`facet column or doc value "${name}" is used more than once`);
+  }
+  return problems;
+}
+
+function textProblems(search: TextSearch, space: IdSpace): string[] {
+  const problems: string[] = [];
+  const { fields } = search.text;
   for (const [what, names] of [
     ['field key', fields.map(field => field.key)],
     ['field prefix', fields.map(field => field.prefix)],
     ['alias', fields.flatMap(field => field.aliases ?? [])],
-    [
-      'facet column or doc value',
-      [
-        ...(manifest.facets?.columns.map(column => column.key) ?? []),
-        ...(manifest.docValues ?? []).map(values => values.key),
-      ],
-    ],
   ] as const) {
     for (const name of duplicates(names)) {
       problems.push(`${what} "${name}" is used more than once`);
@@ -51,10 +85,10 @@ function manifestProblems(manifest: StaticIndexManifest): string[] {
   }
 
   const keys = new Set(fields.map(field => field.key));
-  problems.push(...rankingProblems(manifest.text.ranking, keys, 'manifest'));
+  problems.push(...rankingProblems(search.text.ranking, keys, 'manifest'));
 
   const aliases = new Set(fields.flatMap(field => field.aliases ?? []));
-  for (const values of manifest.docValues ?? []) {
+  for (const values of space.docValues ?? []) {
     for (const word of values.lookup?.queryFields ?? []) {
       if (!aliases.has(word)) {
         problems.push(
@@ -66,15 +100,113 @@ function manifestProblems(manifest: StaticIndexManifest): string[] {
   return problems;
 }
 
-function configProblems(
-  manifest: StaticIndexManifest,
-  config: StaticSearchConfig,
+function vectorProblems(search: VectorSearch): string[] {
+  const problems: string[] = [];
+  const { dim, cells, codes, settings, model } = search;
+  if (cells.rowBytes !== 4 + dim * 2) {
+    problems.push(
+      `cells: ${cells.rowBytes}-byte rows aren't an id and ${dim} halfs`,
+    );
+  }
+  if (codes && codes.rowBytes !== 4 + (dim * codes.bits) / 8) {
+    problems.push(
+      `codes: ${codes.rowBytes}-byte rows aren't an id and ${dim} ${codes.bits}-bit codes`,
+    );
+  }
+  if (codes && codes.file === search.facets?.file) {
+    problems.push(`codes and facets are both "${codes.file}"`);
+  }
+  if (search.facets) {
+    for (const name of duplicates(search.facets.columns.map(c => c.key))) {
+      problems.push(`facet column "${name}" is used more than once`);
+    }
+  }
+  problems.push(...settingsProblems(settings, cells.count, 'manifest'));
+  if (!modelLibraryUrl(model.library)) {
+    const { name, version } = model.library;
+    problems.push(`model: no pinned build of ${name} ${version}`);
+  }
+  if (!model.path.endsWith('/')) {
+    problems.push(`model: path "${model.path}" doesn't end in "/"`);
+  }
+  return problems;
+}
+
+function settingsProblems(
+  settings: Partial<VectorSearch['settings']> | undefined,
+  cellCount: number,
+  where: string,
 ): string[] {
   const problems: string[] = [];
-  const fieldKeys = new Set(manifest.text.fields.map(field => field.key));
-  problems.push(...rankingProblems(config.ranking, fieldKeys, 'config'));
+  const { nprobe, rerank } = settings ?? {};
+  if (
+    nprobe !== undefined &&
+    !(Number.isInteger(nprobe) && nprobe >= 1 && nprobe <= cellCount)
+  ) {
+    problems.push(
+      `${where} settings: nprobe ${nprobe} isn't 1 to ${cellCount} cells`,
+    );
+  }
+  if (rerank !== undefined && !(Number.isInteger(rerank) && rerank >= 1)) {
+    problems.push(`${where} settings: rerank ${rerank} isn't a count`);
+  }
+  return problems;
+}
 
-  const { records } = manifest;
+function configProblems(
+  manifest: StaticItemManifest,
+  config: StaticItemConfig,
+): string[] {
+  const problems: string[] = [];
+  for (const [key, searchConfig] of Object.entries(config.searches)) {
+    const search = manifest.searches[key];
+    const space = search && manifest.idSpaces[search.ids];
+    if (!search) {
+      problems.push(`${key}: the manifest has no search "${key}"`);
+    } else if (space) {
+      problems.push(
+        ...searchConfigProblems(searchConfig, search, space).map(
+          p => `${key}: ${p}`,
+        ),
+      );
+    }
+  }
+
+  // Ids from different id spaces under one prefix would name two docs alike.
+  const prefixes = new Map<string, string>();
+  for (const [key, { identifierPrefix }] of Object.entries(config.searches)) {
+    const ids = manifest.searches[key]?.ids;
+    const other = prefixes.get(identifierPrefix);
+    if (other !== undefined && ids !== undefined && other !== ids) {
+      problems.push(
+        `identifier prefix "${identifierPrefix}" names ids in both ${other} and ${ids}`,
+      );
+    }
+    if (ids !== undefined) prefixes.set(identifierPrefix, ids);
+  }
+  return problems;
+}
+
+function searchConfigProblems(
+  config: SearchConfig,
+  search: TextSearch | VectorSearch,
+  space: IdSpace,
+): string[] {
+  const problems: string[] = [];
+  if (search.kind === 'text') {
+    const keys = new Set(search.text.fields.map(field => field.key));
+    problems.push(...rankingProblems(config.ranking, keys, 'config'));
+    if (config.settings) {
+      problems.push('settings are for vector searches');
+    }
+  } else {
+    problems.push(
+      ...settingsProblems(config.settings, search.cells.count, 'config'),
+    );
+    if (config.ranking) problems.push('ranking is for text searches');
+  }
+
+  const { records } = space;
   const recordFields = new Set([
     ...records.fields.map(field => field.key),
     ...(records.overflow ?? []).map(overflow => overflow.field),
@@ -85,27 +217,43 @@ function configProblems(
     }
   }
 
-  if (config.facets.length && !manifest.facets) {
-    problems.push('facets configured, but the manifest has no facet rows');
-    return problems;
+  if (search.kind === 'text') {
+    problems.push(
+      ...facetProblems(config.facets, space.facets, space.docValues ?? []),
+    );
+  } else if (search.facets) {
+    // A vector search's facets come by row, from its own facet rows. They're
+    // a sidecar: without them results show with no facets, so that isn't a
+    // problem with the config.
+    problems.push(...facetProblems(config.facets, search.facets, []));
+  }
+  return problems;
+}
+
+function facetProblems(
+  facets: readonly FacetConfig[],
+  rows: FacetRows | undefined,
+  docValueList: readonly DocValues[],
+): string[] {
+  const problems: string[] = [];
+  if (facets.length && !rows) {
+    return ['facets configured, but the manifest has no facet rows'];
   }
   const columns = new Map<string, FacetColumn>(
-    (manifest.facets?.columns ?? []).map(column => [column.key, column]),
+    (rows?.columns ?? []).map(column => [column.key, column]),
   );
-  const docValues = new Map(
-    (manifest.docValues ?? []).map(values => [values.key, values]),
-  );
+  const docValues = new Map(docValueList.map(values => [values.key, values]));
   const flags = new Set(
     [...columns.values()].flatMap(column =>
       column.kind === 'flags' ? Object.keys(column.bits) : [],
     ),
   );
-  const facetKeys = config.facets.map(facet => facet.key);
+  const facetKeys = facets.map(facet => facet.key);
   for (const key of duplicates(facetKeys)) {
     problems.push(`facet "${key}" is configured more than once`);
   }
 
-  for (const facet of config.facets) {
+  for (const facet of facets) {
     const { from } = facet;
     const at = `facet ${facet.key}`;
     const values = 'column' in from ? docValues.get(from.column) : undefined;
@@ -154,7 +302,7 @@ function configProblems(
 }
 
 function rankingProblems(
-  ranking: Partial<StaticIndexManifest['text']['ranking']> | undefined,
+  ranking: Partial<Ranking> | undefined,
   fieldKeys: ReadonlySet<string>,
   where: string,
 ): string[] {
