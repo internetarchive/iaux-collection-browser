@@ -2,7 +2,9 @@ import { expect } from '@open-wc/testing';
 import {
   fetchInParallel,
   modelCacheKey,
+  modelFileCache,
 } from '../../../../src/etd/engine/vector/embedder';
+import { HttpError } from '../../../../src/etd/engine/http-error';
 import { rangeResponse } from '../fixture-index';
 
 describe('modelCacheKey', () => {
@@ -89,5 +91,44 @@ describe('fetchInParallel', () => {
       error = err as Error;
     }
     expect(error?.message).to.contain('HTTP 503');
+  });
+});
+
+describe('modelFileCache', () => {
+  /** A model file nobody has cached: a fresh url each time. */
+  const freshUrl = () =>
+    `https://example.org/Xenova/e5/${Math.random().toString(36).slice(2)}.json`;
+
+  function answering(status: number) {
+    const fetchFn = (async () =>
+      new Response(status < 300 ? '{}' : 'error page', {
+        status,
+      })) as typeof fetch;
+    return modelFileCache({ parallel: 4, fetchFn, onBytes: () => {} });
+  }
+
+  it('fails the model load when the server keeps failing', async () => {
+    let error: unknown;
+    try {
+      await answering(502).match(freshUrl());
+    } catch (err) {
+      error = err;
+    }
+    // Rather than handing the file back to transformers.js to try once more.
+    expect(error).to.be.instanceOf(HttpError);
+    expect((error as HttpError).status).to.equal(502);
+  });
+
+  it('leaves a missing file to transformers.js, which knows the optional ones', async () => {
+    expect(await answering(404).match(freshUrl())).to.be.undefined;
+  });
+
+  it('keeps a file it fetched, so the next load reads it from the cache', async () => {
+    const url = freshUrl();
+    const first = await answering(200).match(url);
+    expect(await first!.text()).to.equal('{}');
+    // The server is down now; the cached copy still answers.
+    const second = await answering(502).match(url);
+    expect(await second!.text()).to.equal('{}');
   });
 });

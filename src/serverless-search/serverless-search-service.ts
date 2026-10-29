@@ -237,9 +237,13 @@ function toSearchServiceError(err: unknown): SearchServiceError {
   if (err instanceof SearchServiceError) return err;
 
   const message = err instanceof Error ? err.message : String(err);
+  // A server answering 5xx (after any retries) failed the same way as one
+  // not answering: try again later. A 4xx or anything else is the search's.
+  const status = (err as { status?: unknown } | null)?.status;
   const isNetwork =
     err instanceof TypeError ||
-    (err instanceof DOMException && err.name === 'AbortError');
+    (err instanceof DOMException && err.name === 'AbortError') ||
+    (typeof status === 'number' && status >= 500);
   return new SearchServiceError(
     isNetwork
       ? SearchServiceErrorType.networkError

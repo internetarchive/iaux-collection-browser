@@ -38,7 +38,7 @@ export class EtdVectorStatus extends LitElement {
                   .value=${model.loaded}
                 ></progress>
                 ${mb(model.loaded)} of ${mb(model.total)}`
-            : html`<progress></progress>`}</label
+            : html`<progress></progress>`}${retriesText(model.retries)}</label
         >`;
       case 'ready':
         return '✅ Model ready';
@@ -69,7 +69,8 @@ export class EtdVectorStatus extends LitElement {
               .value=${progress.cellsDone}
             ></progress>
             ${progress.cellsDone} of ${progress.cells} cells,
-            ${mb(progress.bytes)}, ${seconds(search.elapsed)}</label
+            ${mb(progress.bytes)},
+            ${seconds(search.elapsed)}${retriesText(progress.retries)}</label
           >
         </p>`;
       }
@@ -108,11 +109,17 @@ export function summaryText(query: string, scan: VectorScanSummary): string {
   return (
     `Searched ${query} by meaning in ${seconds(t.total)}: ` +
     `${scan.candidates.toLocaleString()} candidates in ${scan.cells} cells, ` +
-    `${mb(scan.bytes)} in ${scan.requests} requests. ` +
+    `${mb(scan.bytes)} in ${scan.requests} requests` +
+    `${retriesText(scan.retries)}. ` +
     `Waiting for the model and centroids ${seconds(t.load)}, ` +
     `embedding ${Math.round(t.embed)} ms, cells ${seconds(t.scan)}, ` +
     `exact re-score of ${scan.exact} and facets ${seconds(t.rerank)}.`
   );
+}
+
+/** ", 2 retried after an error" when archive.org needed asking again. */
+function retriesText(retries: number): string {
+  return retries ? `, ${retries} retried after an error` : '';
 }
 
 function mb(bytes: number): string {

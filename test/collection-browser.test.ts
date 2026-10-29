@@ -810,6 +810,45 @@ describe('Collection Browser', () => {
     expect(errorDetails.textContent).to.contain('foo');
   });
 
+  it("says the service didn't answer, not that the query is wrong, on a network error", async () => {
+    // A 502 from the ETD index reaches here as a network error too.
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${new MockSearchService()}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const placeholder = el.shadowRoot!.querySelector(
+      'empty-placeholder',
+    ) as EmptyPlaceholder;
+    expect(placeholder.placeholderType).to.equal('service-error');
+    const text = placeholder.shadowRoot!.textContent!;
+    expect(text).to.contain("The search service didn't answer");
+    expect(text).not.to.contain('related to your');
+  });
+
+  it('still points at the query when the search engine failed on it', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${new MockSearchService()}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'engine-error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const placeholder = el.shadowRoot!.querySelector(
+      'empty-placeholder',
+    ) as EmptyPlaceholder;
+    expect(placeholder.placeholderType).to.equal('query-error');
+    expect(
+      placeholder.shadowRoot!.querySelector('.error-details')!.textContent,
+    ).to.contain('parse error');
+  });
+
   it('shows error message when error response received for a collection', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(

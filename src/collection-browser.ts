@@ -24,6 +24,7 @@ import {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
+import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
@@ -844,8 +845,16 @@ export class CollectionBrowser
     }
 
     if (this.dataSource.queryErrorMessage) {
-      this.placeholderType =
-        !hasQuery && isCollection ? 'collection-error' : 'query-error';
+      if (!hasQuery && isCollection) {
+        this.placeholderType = 'collection-error';
+      } else if (
+        this.dataSource.queryErrorType === SearchServiceErrorType.networkError
+      ) {
+        // The service didn't answer: nothing to do with the query.
+        this.placeholderType = 'service-error';
+      } else {
+        this.placeholderType = 'query-error';
+      }
     }
   }
 

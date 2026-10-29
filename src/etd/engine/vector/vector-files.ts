@@ -1,5 +1,7 @@
 import type { EtdCallOptions } from '../../etd-engine';
 import { DEFAULT_ETD_BASE_URL, RangeFiles } from '../index-files';
+import { HttpError } from '../http-error';
+import { retryingFetch } from '../retrying-fetch';
 
 /**
  * ivf-meta.json: the vector store's manifest. The store sits in the same item
@@ -56,21 +58,31 @@ export class VectorStoreFiles extends RangeFiles {
     const fetchFn = options.fetch ?? fetch.bind(globalThis);
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     // Unversioned, so always fetched fresh: a republished store shows at once.
-    let response: Response | undefined;
-    try {
-      response = await fetchFn(`${base}ivf-meta.json?t=${Date.now()}`, {
-        signal: options.signal,
-      });
-    } catch (err) {
-      if (options.signal?.aborted) throw err;
-    }
-    if (!response?.ok) {
+    let manifestRetries = 0;
+    // No answer at all (even after retries) throws: the service is down,
+    // which isn't the same as the item having no vector store.
+    const response = await retryingFetch(fetchFn, {
+      onRetry: () => {
+        manifestRetries += 1;
+      },
+    })(`${base}ivf-meta.json?t=${Date.now()}`, {
+      signal: options.signal,
+    });
+    if (response.status === 404) {
       throw new Error('ETD vector store: no ivf-meta.json on this item');
+    }
+    if (!response.ok) {
+      throw new HttpError(
+        `ETD vector store: ivf-meta.json HTTP ${response.status}`,
+        response.status,
+      );
     }
     const meta = (await response.json()) as IvfMeta;
     checkIvfMeta(meta);
     const dataUrl = new URL('.', response.url || base).href;
-    return new VectorStoreFiles(dataUrl, meta, fetchFn);
+    const files = new VectorStoreFiles(dataUrl, meta, fetchFn);
+    files.stats.retries = manifestRetries;
+    return files;
   }
 
   fileUrl(name: string): string {
