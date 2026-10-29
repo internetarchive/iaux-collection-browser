@@ -67,6 +67,43 @@ describe('WorkerVectorSearcher', () => {
     expect(error.message).to.equal('cell-codes.bin: HTTP 502');
   });
 
+  it("passes the worker's first answer on, before the result", async () => {
+    const worker = new FakeWorker();
+    const firsts: unknown[] = [];
+    const pending = searcher(worker).search('sea ice', {
+      onEarly: early => firsts.push(early),
+    });
+    const sent = worker.received.find(m => m.type === 'search') as Extract<
+      ToWorker,
+      { type: 'search' }
+    >;
+    // The worker only sends one if asked.
+    expect(sent.early).to.be.true;
+    const early = {
+      dids: Uint32Array.from([7, 3]),
+      scores: Float64Array.from([0.9, 0.8]),
+      candidates: 40,
+      progress: { cellsDone: 4, cells: 32, bytes: 1, requests: 4, retries: 0 },
+    };
+    worker.dispatchEvent(
+      new MessageEvent('message', {
+        data: { type: 'early', id: sent.id, early },
+      }),
+    );
+    expect(firsts).to.deep.equal([early]);
+    worker.dispatchEvent(
+      new MessageEvent('message', {
+        data: {
+          type: 'error',
+          id: sent.id,
+          message: 'aborted',
+          aborted: true,
+        },
+      }),
+    );
+    await rejection(pending);
+  });
+
   it('tells the worker to stop when a search is aborted', async () => {
     const worker = new FakeWorker();
     const abort = new AbortController();

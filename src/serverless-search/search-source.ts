@@ -96,6 +96,14 @@ export interface SourceQuery<SourceRecord> {
   readonly result: SourceQueryResult;
 
   /**
+   * When this is a first answer (e.g. from part of a long scan): resolves
+   * with the better answer to the same request, which may itself be refined
+   * again, or undefined if there won't be one. ServerlessSearchService then
+   * serves the better answer and says the results changed.
+   */
+  readonly refined?: Promise<SourceQuery<SourceRecord> | undefined>;
+
+  /**
    * Reads up to the next `count` records in order. Returns fewer when the
    * query has fewer left, and an empty array once it is exhausted. A call
    * that rejects (including on abort) must not advance the cursor.

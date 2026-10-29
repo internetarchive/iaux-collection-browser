@@ -236,6 +236,8 @@ export class AppRoot extends LitElement {
               ),
       modelParallel: number('etd_model_parallel'),
       scan: { parallel: number('etd_vec_parallel') },
+      // `etd_vec_progressive=0` waits for the whole scan, to compare timings.
+      progressive: params.get('etd_vec_progressive') !== '0',
       onModel: model => {
         this.etdModel = model;
       },

@@ -25,6 +25,7 @@ import {
   SortParam,
 } from '@internetarchive/search-service';
 import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
+import type { RefiningSearchService } from './serverless-search/serverless-search-service';
 import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
@@ -573,6 +574,34 @@ export class CollectionBrowser
     } catch {
       // Either we can't generate the hash or we're restricted from accessing sessionStorage
       return '';
+    }
+  }
+
+  /**
+   * Fetches the results shown again, in place: the pages loaded so far and
+   * the facets, without resetting to placeholder tiles. Called on its own
+   * when the search service says its results got better.
+   */
+  refreshResults(): Promise<void> {
+    return this.dataSource.refreshResults();
+  }
+
+  /** Stops listening to the last search service's results changing. */
+  private stopRefinedResults?: () => void;
+
+  /**
+   * Listens to a search service that refines its results after serving
+   * them (`onResultsChanged`, e.g. a search by meaning), to show the better
+   * ones as they come.
+   */
+  private listenForRefinedResults(): void {
+    this.stopRefinedResults?.();
+    this.stopRefinedResults = undefined;
+    const service = this.searchService as Partial<RefiningSearchService>;
+    if (typeof service?.onResultsChanged === 'function') {
+      this.stopRefinedResults = service.onResultsChanged(() => {
+        this.refreshResults();
+      });
     }
   }
 
@@ -1895,6 +1924,8 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
+    if (changed.has('searchService')) this.listenForRefinedResults();
+
     if (changed.has('placeholderType') && this.placeholderType === null) {
       if (!this.leftColIntersectionObserver) {
         this.setupLeftColumnScrollListeners();
@@ -2049,6 +2080,8 @@ export class CollectionBrowser
   }
 
   disconnectedCallback(): void {
+    this.stopRefinedResults?.();
+    this.stopRefinedResults = undefined;
     if (this.resizeObserver) {
       this.disconnectResizeObserver(this.resizeObserver);
     }

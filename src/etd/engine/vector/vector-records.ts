@@ -22,6 +22,9 @@ export interface VectorDoc {
   snippet?: string;
 }
 
+/** How many docs to keep for re-reading: a few searches' worth of pages. */
+const RECENT_DOCS = 2000;
+
 export class VectorRecords {
   private constructor(
     private readonly files: VectorStoreFiles,
@@ -63,9 +66,28 @@ export class VectorRecords {
     dids: readonly number[],
     options?: EtdCallOptions,
   ): Promise<VectorDoc[]> {
-    const { n, docbytes, fields } = this.files.meta;
+    const { n } = this.files.meta;
     const ids = dids.filter(d => Number.isInteger(d) && d >= 0 && d < n);
-    if (!ids.length) return [];
+    const missing = [...new Set(ids.filter(d => !this.recent.has(d)))];
+    if (missing.length) {
+      const docs = await this.readUncached(missing, options);
+      // Kept briefly: a first answer's docs are mostly the final one's too.
+      if (this.recent.size + docs.length > RECENT_DOCS) this.recent.clear();
+      for (const doc of docs) this.recent.set(doc.did, doc);
+    }
+    return ids
+      .map(did => this.recent.get(did))
+      .filter((doc): doc is VectorDoc => doc !== undefined);
+  }
+
+  /** Docs read lately, by vector id. */
+  private readonly recent = new Map<number, VectorDoc>();
+
+  private async readUncached(
+    ids: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<VectorDoc[]> {
+    const { docbytes, fields } = this.files.meta;
     // Wave 1: rows and abstract directory entries. Wave 2: the abstracts.
     const [rows, dirs] = await Promise.all([
       this.files.ranges(

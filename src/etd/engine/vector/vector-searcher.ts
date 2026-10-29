@@ -1,6 +1,6 @@
 import type { Embed, EmbedderOptions, ModelProgress } from './embedder';
 import { loadEmbedder } from './embedder';
-import type { ScanOptions, ScanResult, VectorIndex } from './scan';
+import type { EarlyScan, ScanOptions, ScanResult, VectorIndex } from './scan';
 import { loadVectorIndex, scanVectors } from './scan';
 import { VectorStoreFiles } from './vector-files';
 import { HttpError } from '../http-error';
@@ -135,7 +135,9 @@ export type ToWorker =
       type: 'search';
       id: number;
       text: string;
-      options: Omit<ScanOptions, 'signal' | 'onProgress'>;
+      options: Omit<ScanOptions, 'signal' | 'onProgress' | 'onEarly'>;
+      /** Whether to send a first answer before the scan ends. */
+      early?: boolean;
     }
   | { type: 'cancel'; id: number };
 
@@ -147,6 +149,7 @@ export type FromWorker =
       id: number;
       progress: Parameters<NonNullable<ScanOptions['onProgress']>>[0];
     }
+  | { type: 'early'; id: number; early: EarlyScan }
   | { type: 'result'; id: number; scan: VectorScan }
   | {
       type: 'error';
@@ -205,6 +208,13 @@ export function serveVectorSearcher(scope: {
           ...data.options,
           signal: controller.signal,
           onProgress: progress => post({ type: 'progress', id, progress }),
+          onEarly: data.early
+            ? early =>
+                post({ type: 'early', id, early }, [
+                  early.dids.buffer,
+                  early.scores.buffer,
+                ])
+            : undefined,
         });
         const transfer: Transferable[] = [
           scan.dids.buffer,
@@ -247,6 +257,7 @@ export class WorkerVectorSearcher implements VectorSearcher {
       resolve: (scan: VectorScan) => void;
       reject: (err: Error) => void;
       onProgress?: ScanOptions['onProgress'];
+      onEarly?: ScanOptions['onEarly'];
     }
   >();
 
@@ -274,6 +285,8 @@ export class WorkerVectorSearcher implements VectorSearcher {
       if (!job) return;
       if (message.type === 'progress') {
         job.onProgress?.(message.progress);
+      } else if (message.type === 'early') {
+        job.onEarly?.(message.early);
       } else if (message.type === 'result') {
         this.pending.delete(message.id);
         job.resolve(message.scan);
@@ -291,12 +304,12 @@ export class WorkerVectorSearcher implements VectorSearcher {
   }
 
   search(text: string, options: ScanOptions = {}): Promise<VectorScan> {
-    const { signal, onProgress, ...scanOptions } = options;
+    const { signal, onProgress, onEarly, ...scanOptions } = options;
     signal?.throwIfAborted();
     const id = this.nextId;
     this.nextId += 1;
     return new Promise<VectorScan>((resolve, reject) => {
-      this.pending.set(id, { resolve, reject, onProgress });
+      this.pending.set(id, { resolve, reject, onProgress, onEarly });
       signal?.addEventListener('abort', () =>
         this.worker.postMessage({ type: 'cancel', id } satisfies ToWorker),
       );
@@ -305,6 +318,7 @@ export class WorkerVectorSearcher implements VectorSearcher {
         id,
         text,
         options: scanOptions,
+        early: !!onEarly,
       } satisfies ToWorker);
     });
   }
