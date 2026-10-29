@@ -26,6 +26,12 @@ import type { FacetDeclaringSearchService } from './serverless-search/serverless
 import './etd/compare/etd-compare-panel';
 import { observeFacets, type ObservedFacets } from './etd/demo/observe-facets';
 import './etd/demo/etd-facet-summary';
+import {
+  DEFAULT_ETD_ITEM,
+  checkItemIndex,
+  etdIndexUrls,
+  parseItemIdentifier,
+} from './etd/demo/item-index';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -33,11 +39,21 @@ export class AppRoot extends LitElement {
    * `?search_service=etd` browses the ETD theses & dissertations index
    * (searched in the browser, no backend) instead of archive.org. The index
    * is read through the dev server's /etd-index proxy (see vite.config.ts);
-   * `etd_base_url` points it somewhere else. Each search also runs on the
-   * live etd-search page, and a panel shows how the two rankings differ.
+   * `etd_item` searches another archive.org item's static index instead,
+   * through /item-index/<id>/, and `etd_base_url` points it anywhere. Each
+   * search also runs on the live etd-search page, and a panel shows how the
+   * two rankings differ.
    */
   private readonly isEtdSearch =
     new URL(window.location.href).searchParams.get('search_service') === 'etd';
+
+  /** Where the ETD demo reads its index and live page from. */
+  private readonly etdIndex = etdIndexUrls(
+    new URL(window.location.href).searchParams,
+  );
+
+  /** What the item form last said: checking, or why it didn't switch. */
+  @state() private etdItemStatus?: { busy: boolean; message: string };
 
   private etdEngine?: StaticEtdEngine;
 
@@ -125,7 +141,7 @@ export class AppRoot extends LitElement {
     const params = new URL(window.location.href).searchParams;
     if (this.isEtdSearch) {
       this.etdEngine = new StaticEtdEngine({
-        baseUrl: params.get('etd_base_url') ?? '/etd-index/',
+        baseUrl: this.etdIndex.baseUrl,
         facets: ETD_FACETS,
       });
       return observeFacets(
@@ -161,7 +177,8 @@ export class AppRoot extends LitElement {
             static index in the browser, no search backend
           </span>
         </h2>
-        ${this.etdSearchTemplate} ${this.etdBrowseTemplate}
+        ${this.etdItemTemplate} ${this.etdSearchTemplate}
+        ${this.etdBrowseTemplate}
         <etd-facet-summary
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
           .facets=${this.etdFacets}
@@ -169,6 +186,7 @@ export class AppRoot extends LitElement {
         <etd-compare-panel
           .engine=${this.etdEngine}
           .query=${this.searchQuery}
+          .pageUrl=${this.etdIndex.pageUrl}
         ></etd-compare-panel>
       </section>
     `;
@@ -184,6 +202,10 @@ export class AppRoot extends LitElement {
       const url = new URL(window.location.href);
       url.search = '';
       url.searchParams.set('search_service', 'etd');
+      for (const name of ['etd_item', 'etd_base_url']) {
+        const value = new URL(window.location.href).searchParams.get(name);
+        if (value !== null) url.searchParams.set(name, value);
+      }
       url.searchParams.append('and[]', filter);
       return html`<li><a href=${url.href}>${label}</a></li>`;
     };
@@ -196,6 +218,106 @@ export class AppRoot extends LitElement {
         </ul>
       </nav>
     `;
+  }
+
+  /**
+   * Picks the archive.org item whose static index the demo searches. Takes
+   * an identifier or an archive.org details/download url, typed, pasted or
+   * dropped, and switches only once the item's current.json checks out.
+   */
+  private get etdItemTemplate() {
+    const { item, rejectedItem } = this.etdIndex;
+    const status =
+      this.etdItemStatus?.message ??
+      (rejectedItem !== undefined
+        ? `etd_item “${rejectedItem}” isn't an archive.org identifier, so this is searching ${DEFAULT_ETD_ITEM}.`
+        : '');
+    return html`
+      <form
+        id="etd-item"
+        @submit=${this.etdItemPressed}
+        @dragover=${this.etdItemDragOver}
+        @drop=${this.etdItemDropped}
+      >
+        <label for="etd-item-field">Item to search:</label>
+        <input
+          type="text"
+          id="etd-item-field"
+          name="item"
+          .value=${item ?? ''}
+          placeholder="etd-search, or an archive.org/details/… link"
+          autocomplete="off"
+          spellcheck="false"
+          aria-describedby="etd-item-status"
+          aria-invalid=${this.etdItemStatus && !this.etdItemStatus.busy
+            ? 'true'
+            : 'false'}
+        />
+        <button type="submit" ?disabled=${this.etdItemStatus?.busy}>
+          Search this item
+        </button>
+        <p
+          id="etd-item-status"
+          role="status"
+          class=${this.etdItemStatus?.busy ? '' : 'error'}
+        >
+          ${status}
+        </p>
+      </form>
+    `;
+  }
+
+  private etdItemDragOver(e: DragEvent) {
+    // Lets the whole form take a drop, not just the field.
+    e.preventDefault();
+  }
+
+  /** A dropped link or text replaces the field and is checked at once. */
+  private etdItemDropped(e: DragEvent) {
+    const text =
+      e.dataTransfer?.getData('text/uri-list').split(/\r?\n/)[0] ||
+      e.dataTransfer?.getData('text/plain');
+    if (!text) return;
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const field = form.elements.namedItem('item') as HTMLInputElement;
+    field.value = text.trim();
+    form.requestSubmit();
+  }
+
+  private async etdItemPressed(e: SubmitEvent) {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const field = form.elements.namedItem('item') as HTMLInputElement;
+    const item = parseItemIdentifier(field.value);
+    if (!item) {
+      this.etdItemStatus = {
+        busy: false,
+        message:
+          "That isn't an archive.org item. Try an identifier like etd-search, or a link to archive.org/details/… or archive.org/download/….",
+      };
+      return;
+    }
+    if (item === this.etdIndex.item) {
+      this.etdItemStatus = undefined;
+      return;
+    }
+
+    this.etdItemStatus = { busy: true, message: `Checking ${item}…` };
+    const check = await checkItemIndex(item);
+    if (!check.ok) {
+      this.etdItemStatus = { busy: false, message: check.message };
+      return;
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete('etd_base_url');
+    if (item === DEFAULT_ETD_ITEM) {
+      url.searchParams.delete('etd_item');
+    } else {
+      url.searchParams.set('etd_item', item);
+    }
+    // The engine is built once, from the url, so a reload switches it.
+    window.location.assign(url.href);
   }
 
   /** The ETD search box, which searches both pages. */
@@ -1296,6 +1418,41 @@ export class AppRoot extends LitElement {
       font-size: 1.3rem;
       font-weight: normal;
       color: #4a5a6a;
+    }
+
+    #etd-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+      font-size: 1.4rem;
+    }
+
+    #etd-item-field {
+      flex: 0 1 30rem;
+      font-size: 1.4rem;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid #8aa3bd;
+      border-radius: 4px;
+    }
+
+    #etd-item button {
+      font-size: 1.4rem;
+      padding: 0.3rem 1rem;
+    }
+
+    #etd-item-status {
+      flex-basis: 100%;
+      margin: 0;
+    }
+
+    #etd-item-status:empty {
+      display: none;
+    }
+
+    #etd-item-status.error {
+      color: #a3261a;
     }
 
     #etd-search {

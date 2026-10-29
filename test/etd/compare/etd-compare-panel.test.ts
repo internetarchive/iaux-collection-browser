@@ -493,3 +493,48 @@ describe('boostReason', () => {
     );
   });
 });
+
+describe('etd-compare-panel without a live page', () => {
+  /** A panel driving its own iframe, with the page check stubbed. */
+  async function iframePanel(status: number) {
+    const checked: { url: string; method?: string }[] = [];
+    const fetchFn = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      checked.push({ url: String(input), method: init?.method });
+      return new Response(null, { status });
+    }) as typeof fetch;
+    const el = await fixture<EtdComparePanel>(html`
+      <etd-compare-panel
+        .engine=${new MockEtdEngine(mockEtdTheses(12))}
+        .pageUrl=${'/item-index/other-index/search.html'}
+        .fetchFn=${fetchFn}
+        .query=${'climate'}
+      ></etd-compare-panel>
+    `);
+    await waitUntil(() => checked.length > 0);
+    await el.updateComplete;
+    return { el, checked };
+  }
+
+  it('says the item has no search.html instead of comparing', async () => {
+    const { el, checked } = await iframePanel(404);
+
+    expect(checked).to.deep.equal([
+      { url: '/item-index/other-index/search.html', method: 'HEAD' },
+    ]);
+    expect(summary(el)).to.include(
+      "This item has no search.html, so there's no live page to compare with.",
+    );
+    expect(el.shadowRoot!.querySelector('iframe')).to.be.null;
+    expect(el.shadowRoot!.querySelector('details')).to.be.null;
+  });
+
+  it("loads the item's own search.html when it has one", async () => {
+    const { el } = await iframePanel(200);
+
+    const iframe = el.shadowRoot!.querySelector('iframe')!;
+    expect(iframe.getAttribute('src')).to.equal(
+      '/item-index/other-index/search.html',
+    );
+    expect(summary(el)).not.to.include('no search.html');
+  });
+});

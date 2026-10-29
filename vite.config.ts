@@ -29,6 +29,15 @@ export default defineConfig({
         followRedirects: true,
         rewrite: path => path.replace(/^\/etd-index/, '/download/etd-search'),
       },
+      // Any other item's static index, for the demo's `etd_item=<id>`.
+      // Only an identifier and no `..` segment match, so a path can't climb
+      // out of /download/<id>/.
+      '^/item-index/[A-Za-z0-9][A-Za-z0-9._-]*/(?!(.*/)?\\.\\.(/|$))': {
+        target: 'https://archive.org',
+        changeOrigin: true,
+        followRedirects: true,
+        rewrite: path => path.replace(/^\/item-index\//, '/download/'),
+      },
     },
   },
   plugins: [
