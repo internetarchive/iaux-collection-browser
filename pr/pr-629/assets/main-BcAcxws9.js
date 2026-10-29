@@ -8216,21 +8216,22 @@ fill=""></path>
               ></iframe>`:O}
         </details>
       </section>
-    `}get liveSourceIsIframe(){return!this.liveSource||this.liveSource instanceof eg}get summaryTemplate(){if(this.error)return E`<p class="error">⚠️ Couldn't compare: ${this.error}</p>`;if(this.busy)return E`<p>Comparing…</p>`;if(!this.comparison)return E`<p>Search for something to compare the two rankings.</p>`;let{ours:e,theirs:t,diff:n,shown:r}=this.comparison;return E`
+    `}get liveSourceIsIframe(){return!this.liveSource||this.liveSource instanceof eg}get summaryTemplate(){if(this.error)return E`<p class="error">⚠️ Couldn't compare: ${this.error}</p>`;if(this.busy)return E`<p>Comparing…</p>`;if(!this.comparison)return E`<p>Search for something to compare the two rankings.</p>`;let{ours:e,theirs:t,diff:n,shown:r}=this.comparison,i=e.total===t.total;return E`
       <ul class="summary">
-        <li>
-          ${e.total===t.total?`✅ Totals match`:`⚠️ Totals differ`}: ours
-          ${e.approximate?`~`:``}${e.total.toLocaleString()}, live
-          ${t.total.toLocaleString()}
-          <span class="detail">(live: “${t.status}”)</span>
-        </li>
-        <li>As the live page shows them: ${this.shownSummary(r)}</li>
-        <li>Before the live page's re-ranking: ${this.diffSummary(n)}</li>
         <li class="detail">
           Index ${t.version||`unversioned`}. Both re-rank an unquoted 2–6
           word query to put the words-side-by-side matches first, so for those,
-          ours should match the first line and differ from the second. The live
-          page shows its plain order first and re-ranks a moment later.
+          ours should differ from the live page's order before its re-ranking
+          and match it after. The live page shows its plain order first and
+          re-ranks a moment later.
+        </li>
+        <li>Before the live page's re-ranking: ${this.diffSummary(n)}</li>
+        <li>As the live page shows them: ${this.shownSummary(r)}</li>
+        <li>
+          ${i?`✅ Totals match`:`⚠️ Totals differ`}: ours
+          ${e.approximate?`~`:``}${e.total.toLocaleString()}, live
+          ${t.total.toLocaleString()}
+          <span class="detail">(live: “${t.status}”)</span>
         </li>
       </ul>
     `}diffSummary(e){return e.identical?`✅ top ${e.docs.length} identical, same order`:E`⚠️ top ${this.depth} differ:
