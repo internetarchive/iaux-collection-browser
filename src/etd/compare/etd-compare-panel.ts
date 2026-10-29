@@ -307,19 +307,20 @@ export class EtdComparePanel extends LitElement {
     const totalsMatch = ours.total === theirs.total;
     return html`
       <ul class="summary">
+        <li class="detail">
+          Index ${theirs.version || 'unversioned'}. Both re-rank an unquoted 2–6
+          word query to put the words-side-by-side matches first, so for those,
+          ours should differ from the live page's order before its re-ranking
+          and match it after. The live page shows its plain order first and
+          re-ranks a moment later.
+        </li>
+        <li>Before the live page's re-ranking: ${this.diffSummary(diff)}</li>
+        <li>As the live page shows them: ${this.shownSummary(shown)}</li>
         <li>
           ${totalsMatch ? '✅ Totals match' : '⚠️ Totals differ'}: ours
           ${ours.approximate ? '~' : ''}${ours.total.toLocaleString()}, live
           ${theirs.total.toLocaleString()}
           <span class="detail">(live: “${theirs.status}”)</span>
-        </li>
-        <li>As the live page shows them: ${this.shownSummary(shown)}</li>
-        <li>Before the live page's re-ranking: ${this.diffSummary(diff)}</li>
-        <li class="detail">
-          Index ${theirs.version || 'unversioned'}. Both re-rank an unquoted 2–6
-          word query to put the words-side-by-side matches first, so for those,
-          ours should match the first line and differ from the second. The live
-          page shows its plain order first and re-ranks a moment later.
         </li>
       </ul>
     `;

@@ -130,6 +130,12 @@ describe('etd-compare-panel', () => {
     expect(summary(el)).to.include(
       'As the live page shows them: ✅ no re-ranking for this query',
     );
+    // The index first; the verdicts, ending with the totals, last.
+    const lines = [
+      ...el.shadowRoot!.querySelectorAll('[role="status"] .summary > li'),
+    ].map(li => li.textContent!.trim().split(/[\s:.]/)[0]);
+    expect(lines).to.deep.equal(['Index', 'Before', 'As', '✅']);
+    expect(summary(el).trim()).to.match(/Totals match: ours 12, live 12 .*\)$/);
     // The ranking is still there to check, but closed: nothing to look at.
     expect(rankingDrawer(el).open).to.be.false;
     expect(drawerHeading(el)).to.equal(
