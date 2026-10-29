@@ -606,16 +606,16 @@ export class CollectionBrowserDataSource
 
   /**
    * Returns the search type to actually use for fetches.
-   * When within a collection with an empty query and FTS selected,
-   * falls back to metadata search since FTS requires a non-empty query
-   * and we'd still like to show the unfiltered collection in that case.
+   * When within a collection, or searching by filters alone, with an empty
+   * query and FTS selected, falls back to metadata search since FTS requires
+   * a non-empty query and we'd still like to show results in that case.
    */
   private get effectiveSearchType(): SearchType {
     const trimmedQuery = this.host.baseQuery?.trim();
 
     const shouldUseMetadataSearch =
       !trimmedQuery &&
-      this.host.withinCollection &&
+      (this.host.withinCollection || this.isFilterOnlySearch) &&
       this.host.searchType === SearchType.FULLTEXT;
     if (shouldUseMetadataSearch) return SearchType.METADATA;
 
@@ -653,7 +653,40 @@ export class CollectionBrowserDataSource
       hasNonEmptyQuery ||
       hasIdentifiers ||
       (isCollectionSearch && isValidForCollectionSearch) ||
-      (isProfileSearch && isValidForProfileSearch)
+      (isProfileSearch && isValidForProfileSearch) ||
+      // ...unless the host allows searching by filters alone, and has some.
+      (this.isFilterOnlySearch && isValidForCollectionSearch)
+    );
+  }
+
+  /**
+   * Whether this is a search by filters alone: no query, but filters the
+   * patron can see, on a host that allows it (`allowFilterOnlySearch`).
+   */
+  private get isFilterOnlySearch(): boolean {
+    return (
+      !this.host.baseQuery?.trim() &&
+      !!this.host.allowFilterOnlySearch &&
+      this.hasVisibleFilters
+    );
+  }
+
+  /**
+   * Whether any filter the patron can see is set: a selected or hidden facet
+   * value, a date range, or a first-letter filter. `internalFilters` don't
+   * count: a host applies those out of sight.
+   */
+  private get hasVisibleFilters(): boolean {
+    const { selectedFacets, minSelectedDate, maxSelectedDate } = this.host;
+    const hasFacet = Object.values(selectedFacets ?? {}).some(values =>
+      Object.values(values ?? {}).some(bucket => bucket.state !== 'none'),
+    );
+    return (
+      hasFacet ||
+      !!minSelectedDate ||
+      !!maxSelectedDate ||
+      !!this.host.selectedTitleFilter ||
+      !!this.host.selectedCreatorFilter
     );
   }
 

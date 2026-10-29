@@ -666,6 +666,29 @@ export type FacetOption =
   | 'person'
   | 'sponsor';
 
+/**
+ * A facet group's key: one of collection-browser's own groups, or a group
+ * the host page declares in `extraFacetGroups`.
+ */
+export type FacetGroupKey = FacetOption | (string & {});
+
+/**
+ * A facet group beyond collection-browser's own, for a search service that
+ * returns aggregations under other keys (e.g. a thesis index's `country`).
+ * The key is both the aggregation key and the filter field.
+ */
+export interface ExtraFacetGroup {
+  key: string;
+  /** Already translated: the page declaring the group owns its strings. */
+  title: string;
+  /** For referring to the group's values, e.g. in the More… dialog. */
+  pluralTitle: string;
+  /** How the group's values are sorted by default. Count if unset. */
+  sort?: AggregationSortType;
+  /** Shown after this group in the sidebar. At the end if unset or absent. */
+  after?: FacetGroupKey;
+}
+
 export type SelectedFacetState = 'selected' | 'hidden';
 
 export type FacetState = SelectedFacetState | 'none';
@@ -682,7 +705,7 @@ export interface FacetBucket {
 
 export interface FacetGroup {
   title: string;
-  key: FacetOption;
+  key: FacetGroupKey;
   buckets: FacetBucket[];
 }
 
@@ -693,7 +716,7 @@ export type FacetEventDetails = {
   /**
    * The type of facet that was interacted with (e.g., 'mediatype', 'language', ...).
    */
-  facetType: FacetOption;
+  facetType: FacetGroupKey;
   /**
    * The bucket corresponding to the facet that was interacted with, including the
    * updated state of the facet after the interaction.
@@ -709,21 +732,56 @@ export type FacetValue = string;
 
 export type SelectedFacets = Partial<
   Record<FacetOption, Record<FacetValue, FacetBucket>>
->;
+> & {
+  /** Extra facet groups' selections; see `ExtraFacetGroup`. */
+  [extraGroup: string]: Record<FacetValue, FacetBucket>;
+};
 
-export const getDefaultSelectedFacets = (): Required<SelectedFacets> => ({
-  subject: {},
-  lending: {},
-  mediatype: {},
-  language: {},
-  creator: {},
-  collection: {},
-  year: {},
-  clip_type: {},
-  program: {},
-  person: {},
-  sponsor: {},
-});
+/**
+ * Keys an extra facet group may not use: they would reach an object's
+ * prototype chain where facet groups are stored by key, or take over the
+ * date picker's aggregations.
+ */
+export const RESERVED_FACET_GROUP_KEYS: ReadonlySet<string> = new Set([
+  '__proto__',
+  'constructor',
+  'prototype',
+  'year_histogram',
+  'date_histogram',
+]);
+
+/**
+ * An empty selection for every facet group: collection-browser's own, plus
+ * any extra groups given (reserved keys are skipped). Only these groups can
+ * be restored from the URL.
+ */
+export const getDefaultSelectedFacets = (
+  extraGroups: readonly ExtraFacetGroup[] = [],
+): Required<Record<FacetOption, Record<FacetValue, FacetBucket>>> &
+  SelectedFacets => {
+  const selected: Required<
+    Record<FacetOption, Record<FacetValue, FacetBucket>>
+  > &
+    SelectedFacets = {
+    subject: {},
+    lending: {},
+    mediatype: {},
+    language: {},
+    creator: {},
+    collection: {},
+    year: {},
+    clip_type: {},
+    program: {},
+    person: {},
+    sponsor: {},
+  };
+  for (const group of extraGroups) {
+    if (group.key && !RESERVED_FACET_GROUP_KEYS.has(group.key)) {
+      selected[group.key] ??= {};
+    }
+  }
+  return selected;
+};
 
 /**
  * For TV search results, what types of TV clips to restrict the results to.

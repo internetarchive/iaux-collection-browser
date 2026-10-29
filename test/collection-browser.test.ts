@@ -2725,4 +2725,155 @@ describe('Collection Browser', () => {
     expect(mockAnalyticsHandler.callLabel).to.include('date:');
     expect(mockAnalyticsHandler.callLabel).not.to.include('year:');
   });
+
+  describe('extra facet groups', () => {
+    const country = {
+      key: 'country',
+      title: 'Country',
+      pluralTitle: 'Countries',
+      after: 'language',
+    };
+
+    it('shows an extra group, searches with it, and keeps it in the URL', async () => {
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          .extraFacetGroups=${[country]}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'extra-facets';
+      await el.updateComplete;
+      await nextTick();
+
+      const facets = el.shadowRoot?.querySelector(
+        'collection-facets',
+      ) as CollectionFacets;
+      await facets.updateComplete;
+      // Visible titles, without each header's screen-reader-only suffix.
+      const headers = Array.from(
+        facets.shadowRoot?.querySelectorAll('.facet-group-header h3') ?? [],
+      ).map(h3 => {
+        const copy = h3.cloneNode(true) as HTMLElement;
+        copy.querySelectorAll('.sr-only').forEach(sr => sr.remove());
+        return copy.textContent!.trim();
+      });
+      // Country follows Language, as it asked to.
+      expect(headers.slice(headers.indexOf('Language'))).to.deep.equal([
+        'Language',
+        'Country',
+      ]);
+
+      el.selectedFacets = {
+        ...getDefaultSelectedFacets([country]),
+        country: { Canada: { key: 'Canada', count: 30, state: 'selected' } },
+      };
+      await el.updateComplete;
+      await nextTick();
+
+      expect(searchService.searchParams?.filters?.country).to.deep.equal({
+        Canada: 'inc',
+      });
+      expect(
+        new URL(window.location.href).searchParams.getAll('and[]'),
+      ).to.include('country:"Canada"');
+    });
+
+    it('keeps the same facet order between renders', async () => {
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${new MockSearchService()}
+          .extraFacetGroups=${[country]}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'extra-facets';
+      await el.updateComplete;
+      await waitUntil(
+        () => el.shadowRoot?.querySelector('collection-facets'),
+        'facets never rendered',
+      );
+      const facets = el.shadowRoot?.querySelector(
+        'collection-facets',
+      ) as CollectionFacets;
+      const order = facets.facetDisplayOrder;
+      expect(order).to.include('country');
+
+      el.requestUpdate();
+      await el.updateComplete;
+      // Not just equal: the same array, so the facets don't re-render.
+      expect(facets.facetDisplayOrder).to.equal(order);
+    });
+
+    it('restores an extra group’s facet from the URL', async () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('query', 'extra-facets');
+      url.searchParams.append('and[]', 'country:"Canada"');
+      window.history.replaceState({}, '', url);
+
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          .extraFacetGroups=${[country]}
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await nextTick();
+
+      expect(el.selectedFacets?.country?.Canada?.state).to.equal('selected');
+      expect(searchService.searchParams?.filters?.country).to.deep.equal({
+        Canada: 'inc',
+      });
+    });
+  });
+
+  describe('searching by filters alone', () => {
+    function urlWithOnlyAFilter() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('query');
+      url.searchParams.append('and[]', 'language:"English"');
+      window.history.replaceState({}, '', url);
+    }
+
+    it('searches with a URL filter and no query when allowed, showing results', async () => {
+      urlWithOnlyAFilter();
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          allowFilterOnlySearch
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await waitUntil(() => searchService.searchParams, 'never searched');
+
+      expect(searchService.searchParams?.query ?? '').to.equal('');
+      expect(searchService.searchParams?.filters?.language).to.deep.equal({
+        English: 'inc',
+      });
+      await el.updateComplete;
+      const placeholder = el.shadowRoot?.querySelector(
+        'empty-placeholder',
+      ) as EmptyPlaceholder | null;
+      expect(placeholder?.placeholderType).to.not.equal('empty-query');
+    });
+
+    it('shows the empty-query placeholder and does not search when not allowed', async () => {
+      urlWithOnlyAFilter();
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await nextTick();
+
+      expect(searchService.searchParams).to.be.undefined;
+      const placeholder = el.shadowRoot?.querySelector(
+        'empty-placeholder',
+      ) as EmptyPlaceholder | null;
+      expect(placeholder?.placeholderType).to.equal('empty-query');
+    });
+  });
 });
