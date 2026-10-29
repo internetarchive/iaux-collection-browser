@@ -4,6 +4,7 @@ import { keyed } from 'lit/directives/keyed.js';
 import type { EtdEngine, EtdQuery, EtdRecord } from '../etd-engine';
 import { LiveEtdPage, LiveEtdSearch, LiveEtdSource } from './live-etd-page';
 import { RankDiff, RankedDoc, diffRankings } from './rank-diff';
+import { drawerStyles } from '../demo/drawer-styles';
 
 /** Our engine's answer to one query, cut to the compared depth. */
 interface OurSearch {
@@ -543,170 +544,120 @@ export class EtdComparePanel extends LitElement {
     return undefined;
   }
 
-  static styles = css`
-    :host {
-      display: block;
-      margin: 1rem 0;
-      padding: 0.5rem 1rem;
-      border: 1px solid #ccc;
-      font-size: 1.4rem;
-    }
-
-    h2 {
-      font-size: 1.6rem;
-      margin: 0.5rem 0;
-    }
-
-    .summary {
-      margin: 0;
-      padding-left: 1.5rem;
-    }
-
-    .detail {
-      color: #555;
-    }
-
-    .overlap + .overlap::before {
-      content: ', ';
-    }
-
-    .error {
-      color: #b00;
-    }
-
-    details {
-      margin: 0.6rem 0;
-    }
-
-    /* Drawers: a full-width bar, so the whole row toggles, not just the text. */
-    details > summary {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      padding: 0.6rem 0.8rem;
-      background: #f1f4f8;
-      border: 1px solid #c9d4e0;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-      list-style: none;
-      user-select: none;
-    }
-
-    details > summary::-webkit-details-marker {
-      display: none;
-    }
-
-    details > summary::before {
-      content: '▸';
-      display: inline-block;
-      transition: transform 0.15s;
-    }
-
-    details[open] > summary::before {
-      transform: rotate(90deg);
-    }
-
-    details[open] > summary {
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-
-    details > summary:hover {
-      background: #e3eaf3;
-    }
-
-    details > summary:focus-visible {
-      outline: 2px solid #2c5f8f;
-      outline-offset: 2px;
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      details > summary::before {
-        transition: none;
+  static styles = [
+    drawerStyles,
+    css`
+      :host {
+        display: block;
+        margin: 1rem 0;
+        padding: 0.5rem 1rem;
+        border: 1px solid #ccc;
+        font-size: 1.4rem;
       }
-    }
 
-    .table-scroll {
-      max-height: 45vh;
-      overflow-y: auto;
-      border: 1px solid #c9d4e0;
-      border-top: none;
-    }
+      h2 {
+        font-size: 1.6rem;
+        margin: 0.5rem 0;
+      }
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
+      .summary {
+        margin: 0;
+        padding-left: 1.5rem;
+      }
 
-    th,
-    td {
-      padding: 0.2rem 0.6rem;
-      text-align: left;
-      border-bottom: 1px solid #eee;
-    }
+      .detail {
+        color: #555;
+      }
 
-    td.why {
-      color: #444;
-      font-size: 1.2rem;
-    }
+      .overlap + .overlap::before {
+        content: ', ';
+      }
 
-    td:nth-child(-n + 3) {
-      white-space: nowrap;
-    }
+      .error {
+        color: #b00;
+      }
 
-    th {
-      position: sticky;
-      top: 0;
-      background: #f4f4f4;
-    }
+      .table-scroll {
+        max-height: 45vh;
+        overflow-y: auto;
+        border: 1px solid #c9d4e0;
+        border-top: none;
+      }
 
-    /* Moved rows are most rows, so only the one-side rows get a highlight. */
-    tr.moved td:nth-child(3) {
-      color: #6b5600;
-    }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
 
-    tr.only-ours,
-    tr.only-live {
-      font-weight: 600;
-    }
+      th,
+      td {
+        padding: 0.2rem 0.6rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
 
-    tr.only-ours {
-      background: #dcebff;
-      box-shadow: inset 4px 0 #2c6bc9;
-    }
+      td.why {
+        color: #444;
+        font-size: 1.2rem;
+      }
 
-    tr.only-live {
-      background: #ffe0e0;
-      box-shadow: inset 4px 0 #c03a3a;
-    }
+      td:nth-child(-n + 3) {
+        white-space: nowrap;
+      }
 
-    .badge {
-      display: inline-block;
-      padding: 0 0.6rem;
-      border-radius: 1rem;
-      color: white;
-      font-size: 1.2rem;
-      white-space: nowrap;
-    }
+      th {
+        position: sticky;
+        top: 0;
+        background: #f4f4f4;
+      }
 
-    tr.only-ours .badge {
-      background: #2c6bc9;
-    }
+      /* Moved rows are most rows, so only the one-side rows get a highlight. */
+      tr.moved td:nth-child(3) {
+        color: #6b5600;
+      }
 
-    tr.only-live .badge {
-      background: #c03a3a;
-    }
+      tr.only-ours,
+      tr.only-live {
+        font-weight: 600;
+      }
 
-    iframe {
-      display: block;
-      width: 100%;
-      height: 70vh;
-      border: 1px solid #c9d4e0;
-      border-top: none;
-      box-sizing: border-box;
-    }
-  `;
+      tr.only-ours {
+        background: #dcebff;
+        box-shadow: inset 4px 0 #2c6bc9;
+      }
+
+      tr.only-live {
+        background: #ffe0e0;
+        box-shadow: inset 4px 0 #c03a3a;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 0 0.6rem;
+        border-radius: 1rem;
+        color: white;
+        font-size: 1.2rem;
+        white-space: nowrap;
+      }
+
+      tr.only-ours .badge {
+        background: #2c6bc9;
+      }
+
+      tr.only-live .badge {
+        background: #c03a3a;
+      }
+
+      iframe {
+        display: block;
+        width: 100%;
+        height: 70vh;
+        border: 1px solid #c9d4e0;
+        border-top: none;
+        box-sizing: border-box;
+      }
+    `,
+  ];
 }
 
 /** How many results each side ranks; past this, a match has no rank. */

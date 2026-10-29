@@ -56,6 +56,14 @@ function rows(el: EtdFacetSummary): string[] {
   );
 }
 
+/** The drawer bar's text, whitespace collapsed. */
+function bar(el: EtdFacetSummary): string {
+  return el
+    .shadowRoot!.querySelector('summary')!
+    .textContent!.replace(/\s+/g, ' ')
+    .trim();
+}
+
 describe('etd-facet-summary', () => {
   it('names each of the service’s facets with its top three values and counts', async () => {
     const el = await summary(LOADED);
@@ -100,11 +108,56 @@ describe('etd-facet-summary', () => {
 
   it('shows nothing for a service with no facets of its own', async () => {
     const el = await summary(LOADED, []);
-    expect(el.shadowRoot!.querySelector('section')).to.be.null;
+    expect(el.shadowRoot!.querySelector('details')).to.be.null;
   });
 
-  it('is accessible', async () => {
+  it('is a drawer, closed until its bar is clicked', async () => {
     const el = await summary(LOADED);
+    const details = el.shadowRoot!.querySelector('details')!;
+    const bar = details.querySelector('summary')!;
+    expect(bar.textContent!.trim()).to.match(/^Facets used in these results:/);
+    expect(details.open).to.be.false;
+    bar.click();
+    expect(details.open).to.be.true;
+  });
+
+  it('names on its bar the facets these results use, leaving out empty ones', async () => {
+    const el = await summary(LOADED);
+    expect(bar(el)).to.equal(
+      'Facets used in these results: Language, Availability (all that apply)',
+    );
+  });
+
+  it('says on its bar when facets are loading, failed, or none are used', async () => {
+    expect(bar(await summary({ state: 'loading' }))).to.equal(
+      'Facets used in these results: loading…',
+    );
+    expect(bar(await summary({ state: 'failed' }))).to.equal(
+      "Facets used in these results: didn't load",
+    );
+    const empty: ObservedFacets = {
+      state: 'loaded',
+      aggregations: { language: terms(), country: terms(['Brazil', 0]) },
+    };
+    expect(bar(await summary(empty))).to.equal(
+      'Facets used in these results: none',
+    );
+  });
+
+  it('stays open across searches once opened', async () => {
+    const el = await summary(LOADED);
+    el.shadowRoot!.querySelector('summary')!.click();
+    el.facets = { state: 'loading' };
+    await el.updateComplete;
+    el.facets = LOADED;
+    await el.updateComplete;
+    expect(el.shadowRoot!.querySelector('details')!.open).to.be.true;
+  });
+
+  it('is accessible, closed and open', async () => {
+    const el = await summary(LOADED);
+    await expect(el).to.be.accessible();
+    el.shadowRoot!.querySelector('summary')!.click();
     await expect(el).to.be.accessible();
   });
 });
