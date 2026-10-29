@@ -89,7 +89,12 @@ td:first-child { font-weight: 700; }
 table.plain td:first-child { font-weight: 400; }
 pre { margin: 0; padding: 1rem 1.1rem; font-family: var(--mono); font-size: 0.84rem; line-height: 1.55; color: var(--ink); }
 pre.mermaid { font-family: var(--font); text-align: center; background: var(--raised); }
-pre.mermaid svg { width: 100%; max-width: 560px !important; max-height: 420px; height: auto; margin: 0 auto; display: block; }
+/* A chart's frame hugs the chart instead of spanning the column. */
+.frame.chart { width: fit-content; max-width: 100%; margin-inline: auto; }
+pre.mermaid[role="button"] { cursor: zoom-in; }
+pre.mermaid[role="button"]:focus-visible { outline: 2px solid var(--link); outline-offset: -4px; }
+.chart-hint { display: block; font-size: 0.75rem; color: var(--ink-2); padding: 0 1rem 0.6rem; text-align: center; }
+pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; display: block; }
 
 .pill { display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; padding: 0.1rem 0.5rem; border-radius: 999px; border: 1px solid; white-space: nowrap; vertical-align: 0.1em; }
 .pill.ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-bd); }
@@ -183,7 +188,7 @@ pre.mermaid svg { width: 100%; max-width: 560px !important; max-height: 420px; h
   <p>A search index is just files. If they're laid out so that answering a query needs only a few small slices, a browser can fetch those slices from archive.org with HTTP Range requests and do the rest itself.</p>
   <p><strong>No backend is a hard rule.</strong> When a feature is too heavy, we change what the item publishes or do more work in the browser; we never add a service.</p>
 </div>
-<div class="frame"><pre class="mermaid">
+<div class="frame chart"><pre class="mermaid">
 flowchart LR
   B["Index builder<br/>(item owner)"] -->|publishes files| I[("archive.org item<br/>manifest + index files")]
   I -->|HTTP Range reads| E["Shared engine<br/>(in the browser)"]
@@ -205,7 +210,7 @@ flowchart LR
 
 <section id="search">
 <h2>2. What happens in one search</h2>
-<div class="frame"><pre class="mermaid">
+<div class="frame chart"><pre class="mermaid">
 flowchart TD
   Q["Patron types a query"] --> P["Parse: words, phrases,<br/>AND / OR / NOT, field:"]
   P --> D["Look up all terms<br/>1 request"]
@@ -243,7 +248,7 @@ flowchart TD
 </table></div>
 
 <h3>Choosing facets for a new item</h3>
-<div class="frame"><pre class="mermaid">
+<div class="frame chart"><pre class="mermaid">
 flowchart TD
   A["Does the item need facets?"] -->|no| N["Core only"]
   A -->|yes| B{"Must counts and filters<br/>be exact on big result sets?"}
@@ -288,7 +293,7 @@ flowchart TD
   </tbody>
 </table></div>
 <p class="cap">One run each, on a slow network day. With the live page's read settings our port took 49.1 s cold, so the gain comes from the parallel reads. The bytes per search are unchanged; cutting those needs the owner.</p>
-<div class="frame"><pre class="mermaid">
+<div class="frame chart"><pre class="mermaid">
 flowchart LR
   Q["Query"] --> M["Model in browser<br/>turns it into numbers<br/>(31 ms)"]
   M --> C["Pick the 32 nearest<br/>of 16,384 clusters"]
@@ -335,7 +340,7 @@ flowchart LR
 
 <section id="roadmap">
 <h2>7. Roadmap</h2>
-<div class="frame"><pre class="mermaid">
+<div class="frame chart"><pre class="mermaid">
 flowchart TD
   subgraph done["Done"]
     A1["ETD word search,<br/>facets, lookups"]
@@ -396,7 +401,7 @@ flowchart TD
 <h2>Appendix for engineers</h2>
 
 <h3>Adopting it</h3>
-<div class="frame"><pre class="mermaid">
+<div class="frame chart"><pre class="mermaid">
 flowchart TD
   subgraph builder["Index builder"]
     S1["Pick modules"] --> S2["Build files,<br/>versioned names"]
@@ -484,9 +489,65 @@ flowchart TD
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
-  // The flow charts are mermaid blocks; draw them in the reader's theme.
+  // The flow charts are mermaid blocks; draw them in the reader's theme,
+  // then let each one open full size in a new window.
   const dark = matchMedia('(prefers-color-scheme: dark)').matches;
-  mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'default', securityLevel: 'strict' });
+  mermaid.initialize({ startOnLoad: false, theme: dark ? 'dark' : 'default', securityLevel: 'strict' });
+
+  /** The nearest heading above a chart's frame. */
+  function chartTitle(pre) {
+    for (let el = pre.closest('.frame'); el; el = el.previousElementSibling) {
+      if (/^H[23]$/.test(el.tagName)) return el.textContent.trim();
+    }
+    return pre.closest('section')?.querySelector('h2')?.textContent.trim() || 'Chart';
+  }
+
+  /** Opens a drawn chart on its own page, at its natural size. */
+  function openChart(pre) {
+    const svg = pre.querySelector('svg');
+    if (!svg) return;
+    const copy = svg.cloneNode(true);
+    const [, , w, h] = (copy.getAttribute('viewBox') || '0 0 800 600').split(/\s+/).map(Number);
+    copy.removeAttribute('style');
+    copy.setAttribute('width', w);
+    copy.setAttribute('height', h);
+    const bg = getComputedStyle(document.body).backgroundColor;
+    const title = pre.dataset.title || 'Chart';
+    const html = '<!doctype html><meta charset="utf-8"><title>' + title + ' · Static Index Search</title>' +
+      '<body style="margin:0;padding:24px;background:' + bg + ';display:grid;place-items:center;min-height:100vh;box-sizing:border-box">' +
+      copy.outerHTML + '</body>';
+    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  }
+
+  mermaid.run({ querySelector: 'pre.mermaid' }).then(() => {
+    for (const pre of document.querySelectorAll('pre.mermaid')) {
+      // A fixed size from the drawing itself, scaled to fit about 560 x 560
+      // but never below 60% (smaller text is unreadable), so the frame can
+      // hug it. The full size is a click away.
+      const svg = pre.querySelector('svg');
+      const [, , w, h] = (svg?.getAttribute('viewBox') || '0 0 560 560').split(/\s+/).map(Number);
+      const scale = Math.max(0.6, Math.min(1, 560 / w, 560 / h));
+      if (svg) {
+        svg.setAttribute('width', Math.round(w * scale));
+        svg.removeAttribute('height');
+      }
+      pre.dataset.title = chartTitle(pre);
+      pre.setAttribute('role', 'button');
+      pre.setAttribute('tabindex', '0');
+      pre.setAttribute('aria-label', pre.dataset.title + ': open the chart full size in a new window');
+      pre.addEventListener('click', () => openChart(pre));
+      pre.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openChart(pre); }
+      });
+      const hint = document.createElement('span');
+      hint.className = 'chart-hint';
+      hint.setAttribute('aria-hidden', 'true');
+      hint.textContent = 'Click to open full size';
+      pre.after(hint);
+    }
+  });
 </script>
 </body>
 </html>
