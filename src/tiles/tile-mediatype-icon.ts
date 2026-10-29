@@ -1,5 +1,6 @@
 import { css, CSSResultGroup, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { localized } from '@lit/localize';
 
 import {
   mediatypeConfig,
@@ -13,6 +14,7 @@ const TV_COLLECTIONS = new Set(['tvnews', 'tvarchive', 'television']);
 const RADIO_COLLECTIONS = new Set(['radio', 'radioprogram']);
 
 @customElement('tile-mediatype-icon')
+@localized()
 export class TileMediatypeIcon extends LitElement {
   @property({ type: Object }) model?: TileModel;
 

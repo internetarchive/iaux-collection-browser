@@ -7,12 +7,13 @@
     "type": "git",
     "url": "git+https://github.com/internetarchive/iaux-collection-browser.git"
   },
-  "version": "4.9.0",
+  "version": "4.10.2",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "files": [
     "dist",
-    "!dist/test"
+    "!dist/test",
+    "locales"
   ],
   "packageManager": "pnpm@11.27.1",
   "engines": {
@@ -26,6 +27,8 @@
     "lint": "eslint . && prettier \"**/*.ts\" --check",
     "format": "eslint . --fix && prettier \"**/*.ts\" --write",
     "circular": "madge --circular --extensions ts .",
+    "strings:extract": "lit-localize extract",
+    "strings:build": "node scripts/build-locales.mts && prettier --write \"src/locales/*.ts\"",
     "test": "tsc && pnpm run lint && pnpm run circular && wtr --coverage",
     "test:fast": "tsc && wtr --coverage",
     "test:watch": "tsc && concurrently -k -r \"tsc --watch --preserveWatchOutput\" \"wtr --watch\"",
@@ -38,11 +41,9 @@
   "dependencies": {
     "@a11y/focus-trap": "^1.0.5",
     "@internetarchive/analytics-manager": "^0.1.4",
-    "@internetarchive/elements": "^1.1.0",
+    "@internetarchive/elements": "^1.5.0",
     "@internetarchive/feature-feedback": "^1.0.0",
     "@internetarchive/field-parsers": "^1.0.0",
-    "@internetarchive/ia-clearable-text-input": "^1.2.0",
-    "@internetarchive/ia-dropdown": "^2.0.0",
     "@internetarchive/iaux-item-metadata": "^1.0.5",
     "@internetarchive/infinite-scroller": "^2.0.0",
     "@internetarchive/modal-manager": "^2.0.6",
@@ -58,6 +59,7 @@
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^9.22.0",
     "@internetarchive/result-type": "^0.0.1",
+    "@lit/localize-tools": "^0.8.2",
     "@open-wc/eslint-config": "^13.0.0",
     "@open-wc/testing": "^4.0.0",
     "@rollup/plugin-image": "^3.0.3",

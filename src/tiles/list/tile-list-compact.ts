@@ -1,4 +1,5 @@
 import { css, html, nothing } from 'lit';
+import { localized } from '@lit/localize';
 import { customElement } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import DOMPurify from 'dompurify';
@@ -14,6 +15,7 @@ import '../image-block';
 import '../tile-mediatype-icon';
 
 @customElement('tile-list-compact')
+@localized()
 export class TileListCompact extends BaseTileComponent {
   /*
    * Reactive properties inherited from BaseTileComponent:

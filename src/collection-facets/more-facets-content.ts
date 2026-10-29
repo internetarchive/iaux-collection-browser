@@ -23,7 +23,7 @@ import {
 } from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import {
   SelectedFacets,
   FacetGroup,
@@ -44,7 +44,7 @@ import type {
   TVChannelAliases,
 } from '../data-source/models';
 import '@internetarchive/elements/ia-status-indicator/ia-status-indicator';
-import '@internetarchive/ia-clearable-text-input';
+import '@internetarchive/elements/ia-clearable-text-input/ia-clearable-text-input';
 import './more-facets-scroller';
 import type { MoreFacetsScroller } from './more-facets-scroller';
 import {
@@ -69,6 +69,7 @@ import { log } from '../utils/log';
 import { MORE_FACETS__MAX_AGGREGATIONS } from './models';
 
 @customElement('more-facets-content')
+@localized()
 export class MoreFacetsContent extends LitElement {
   @property({ type: String }) facetKey?: FacetOption;
 
@@ -617,14 +618,14 @@ export class MoreFacetsContent extends LitElement {
     return html`
       <div class="footer">
         <button class="btn btn-cancel" type="button" @click=${this.cancelClick}>
-          Cancel
+          ${msg('Cancel')}
         </button>
         <button
           class="btn btn-submit"
           type="button"
           @click=${this.applySearchFacetsClicked}
         >
-          Apply filters
+          ${msg('Apply filters')}
         </button>
       </div>
     `;
@@ -656,7 +657,7 @@ export class MoreFacetsContent extends LitElement {
             ? html`<toggle-switch
                 class="sort-toggle"
                 leftValue=${AggregationSortType.COUNT}
-                leftLabel="Count"
+                leftLabel=${msg('Count')}
                 rightValue=${valueFacetSort[this.facetKey]}
                 .rightLabel=${title}
                 side=${defaultSwitchSide}

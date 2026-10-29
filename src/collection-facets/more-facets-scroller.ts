@@ -13,7 +13,7 @@ import { ifDefined } from 'lit/directives/if-defined.js';
 import { guard } from 'lit/directives/guard.js';
 import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import type { FacetBucket, FacetEventDetails, FacetOption } from '../models';
 import type { CollectionTitles } from '../data-source/models';
 import arrowLeftIcon from '../assets/img/icons/arrow-left';
@@ -48,6 +48,7 @@ const SCROLLBAR_SIZE = 12;
  *   the 0-based page index
  */
 @customElement('more-facets-scroller')
+@localized()
 export class MoreFacetsScroller extends LitElement {
   /** The name of the facet group the buckets belong to (e.g., "subject") */
   @property({ type: String }) facetType?: FacetOption;

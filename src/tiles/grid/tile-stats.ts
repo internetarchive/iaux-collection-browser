@@ -1,7 +1,7 @@
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
-import { msg, str } from '@lit/localize';
+import { localized, msg, str } from '@lit/localize';
 import { favoriteFilledIcon as favIcon } from '../../assets/img/icons/favorite-filled';
 import { reviewsIcon } from '../../assets/img/icons/reviews';
 import { uploadIcon } from '../../assets/img/icons/upload';
@@ -13,6 +13,7 @@ import { formatCount } from '../../utils/format-count';
 import { TileModel } from '../../models';
 
 @customElement('tile-stats')
+@localized()
 export class TileStats extends LitElement {
   /** The tile model these stats represent */
   @property({ type: Object }) model?: TileModel;
@@ -45,7 +46,9 @@ export class TileStats extends LitElement {
     return html`
       <div class="item-stats">
         <p class="sr-only">
-          ${this.mediatype === 'account' ? 'Account Stats' : 'Item Stats'}
+          ${this.mediatype === 'account'
+            ? msg('Account Stats')
+            : msg('Item Stats')}
         </p>
         <ul id="stats-row">
           ${this.mediatypeIconColumnTemplate}

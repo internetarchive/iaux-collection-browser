@@ -1,10 +1,11 @@
 import { LitElement, html, css, nothing, TemplateResult, CSSResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { msg } from '@lit/localize';
+import { localized, msg } from '@lit/localize';
 import { map } from 'lit/directives/map.js';
 import type { ManageableItem } from '../models';
 
 @customElement('remove-items-modal-content')
+@localized()
 export class RemoveItemsModalContent extends LitElement {
   @property({ type: Object }) items: ManageableItem[] = [];
 
