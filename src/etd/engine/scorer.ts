@@ -20,7 +20,7 @@ export const RANK_CAP = 3000;
 export const BASE_PREFIXES: readonly FieldPrefix[] = ['t:', 'c:', 'a:', 'i:'];
 
 /** Query-time field weights, multiplied onto the index-time impacts. */
-const FIELD_WEIGHT: Record<FieldPrefix, number> = {
+export const FIELD_WEIGHT: Record<FieldPrefix, number> = {
   't:': 1.0,
   'c:': 2.2,
   'a:': 1.0,
@@ -29,7 +29,7 @@ const FIELD_WEIGHT: Record<FieldPrefix, number> = {
 };
 
 /** Boost when every query word lands in one field of a document. */
-const SAME_FIELD_BOOST: Record<FieldPrefix, number> = {
+export const SAME_FIELD_BOOST: Record<FieldPrefix, number> = {
   't:': 1.6,
   'c:': 2.6,
   'a:': 1.25,
@@ -38,7 +38,7 @@ const SAME_FIELD_BOOST: Record<FieldPrefix, number> = {
 };
 
 /** Proximity strength: m adjacent words multiply by 1 + PROXIMITY * (m - 1). */
-const PROXIMITY = 0.35;
+export const PROXIMITY = 0.35;
 
 /** Postings per prefixed term ('t:climate'). */
 export type PostingLists = ReadonlyMap<string, EtdPosting[]>;

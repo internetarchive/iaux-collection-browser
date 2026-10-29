@@ -19,7 +19,7 @@ let displayNames: Intl.DisplayNames | undefined;
  * - `ng` is Ndonga; the shared mapping says English, which would count the
  *   index's Ndonga theses as English. (Browsers don't all name it either.)
  */
-const ETD_NAMES: Record<string, string> = { ng: 'Ndonga' };
+export const ETD_NAMES: Record<string, string> = { ng: 'Ndonga' };
 
 /** A code's English name, or the code itself when nothing names it. */
 export function languageName(code: string): string {

@@ -225,6 +225,12 @@ so a live page rebuild can break it. It says so when that happens.
 
 ### Add another in-browser search
 
+To describe another item's index generically (a manifest it publishes, a
+config the client holds), see
+[`src/static-index/README.md`](../static-index/README.md).
+`etd-static-index.ts` describes ETD that way, and its tests hold the
+description to this folder's code.
+
 `serverless-search/` is generic. To plug in another index:
 
 1. Implement `SearchSource<Request, Record>` (`search-source.ts`): turn

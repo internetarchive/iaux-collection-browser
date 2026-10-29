@@ -30,7 +30,12 @@ export interface EtdFacetMeta {
   /** Flag name -> bit, in flags(): byte 1, then byte 6 above it. */
   flag_bits?: Record<string, number>;
   /** Where the degree level sits in byte 6, and its codes. */
-  levels?: { shift: number; mask: number; codes: Record<string, number> };
+  levels?: {
+    byte?: number;
+    shift: number;
+    mask: number;
+    codes: Record<string, number>;
+  };
 }
 
 /** Row byte offsets, per facets-meta.json's `fields`. */

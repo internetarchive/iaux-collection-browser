@@ -63,30 +63,33 @@ function countryCodes(name: string): string[] {
   return countryCodesByName.get(name) ?? [name];
 }
 
-const DEGREES = named({
+export const DEGREE_NAMES: Record<string, string> = {
   phd: 'Doctoral',
   masters: "Master's",
   bachelors: "Bachelor's",
   other: 'Other',
   unknown: 'Unknown',
-});
+};
+const DEGREES = named(DEGREE_NAMES);
 
 /** Source flags, under the live page's brand-name labels. */
-const SOURCE_FLAGS = ['oai', 'ia', 'wbm', 'libcat', 'printed'];
-const SOURCES = named({
+export const SOURCE_FLAGS = ['oai', 'ia', 'wbm', 'libcat', 'printed'];
+export const SOURCE_NAMES: Record<string, string> = {
   oai: 'OAI',
   ia: 'Internet Archive',
   wbm: 'Wayback Machine',
   libcat: 'Library catalog',
   printed: 'Printed abstracts',
-});
+};
+const SOURCES = named(SOURCE_NAMES);
 
-const AVAILABILITY = named({
+export const AVAILABILITY_NAMES: Record<string, string> = {
   abstract: 'Has abstract',
   archived: 'Archived (whole thesis)',
   saved: 'Document saved',
   live: 'Has live link',
-});
+};
+const AVAILABILITY = named(AVAILABILITY_NAMES);
 
 export const ETD_FACETS: readonly EtdFacet[] = [
   {
