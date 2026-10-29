@@ -20,6 +20,11 @@ Open https://local.archive.org:8080/?search_service=etd&query=sea%20ice
 - Results come from the ETD index, and link to each thesis's own page.
 - The panel at the top runs the same search on the live page (in a drawer)
   and shows where the two rankings differ, and why.
+- The "Item to search" form, or `&etd_item=<identifier>`, searches another
+  archive.org item's static index through `/item-index/<identifier>/`. It
+  takes an identifier or a details/download link, typed, pasted or dropped,
+  and only switches once the item's `current.json` is in a format the engine
+  reads.
 - `&etd_base_url=<url>` reads an index from somewhere else.
 
 This only works under `pnpm start`: the index files aren't CORS-readable yet,

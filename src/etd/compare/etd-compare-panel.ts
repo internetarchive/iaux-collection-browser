@@ -85,6 +85,16 @@ export class EtdComparePanel extends LitElement {
   /** Replaces the iframe-driven live page, for tests. */
   @property({ attribute: false }) liveSource?: LiveEtdSource;
 
+  /** Checks the live page exists before loading it; replaceable for tests. */
+  @property({ attribute: false }) fetchFn: typeof fetch = (...args) =>
+    fetch(...args);
+
+  /**
+   * Whether the item has a live page: an item other than etd-search may
+   * publish an index without one, and then there's nothing to compare with.
+   */
+  @state() private livePage: 'checking' | 'present' | 'missing' = 'checking';
+
   @state() private comparison?: Comparison;
 
   @state() private error?: string;
@@ -99,8 +109,29 @@ export class EtdComparePanel extends LitElement {
   private abort?: AbortController;
 
   protected firstUpdated(): void {
+    if (this.liveSource) {
+      this.livePage = 'present';
+      return;
+    }
+    this.checkLivePage();
+  }
+
+  protected updated(): void {
     if (!this.liveSource && this.iframe) {
       this.liveSource = new LiveEtdPage(this.iframe);
+    }
+  }
+
+  /**
+   * Only a 404 counts as missing: anything else still loads the page, which
+   * then says what went wrong itself.
+   */
+  private async checkLivePage(): Promise<void> {
+    try {
+      const response = await this.fetchFn(this.pageUrl, { method: 'HEAD' });
+      this.livePage = response.status === 404 ? 'missing' : 'present';
+    } catch {
+      this.livePage = 'present';
     }
   }
 
@@ -276,15 +307,17 @@ export class EtdComparePanel extends LitElement {
         <h2 id="compare-heading">Compare with the live etd-search page</h2>
         <div role="status" aria-live="polite">${this.summaryTemplate}</div>
         ${this.rankingTemplate} ${this.hiddenTemplate}
-        <details>
-          <summary>Live etd-search page</summary>
-          ${this.liveSourceIsIframe
-            ? html`<iframe
-                src=${this.pageUrl}
-                title="Live etd-search page"
-              ></iframe>`
-            : nothing}
-        </details>
+        ${this.livePage === 'missing'
+          ? nothing
+          : html`<details>
+              <summary>Live etd-search page</summary>
+              ${this.liveSourceIsIframe && this.livePage === 'present'
+                ? html`<iframe
+                    src=${this.pageUrl}
+                    title="Live etd-search page"
+                  ></iframe>`
+                : nothing}
+            </details>`}
       </section>
     `;
   }
@@ -295,6 +328,11 @@ export class EtdComparePanel extends LitElement {
   }
 
   private get summaryTemplate() {
+    if (this.livePage === 'missing') {
+      return html`<p>
+        This item has no search.html, so there's no live page to compare with.
+      </p>`;
+    }
     if (this.error) {
       return html`<p class="error">⚠️ Couldn't compare: ${this.error}</p>`;
     }
