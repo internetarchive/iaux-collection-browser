@@ -15,13 +15,16 @@ need its own engine:
 | `facet-row.ts`    | reading a doc's facet values and names from the two            |
 | `files.ts`        | a file set's urls, and whether a sidecar belongs to its build  |
 | `model.ts`        | the embedding library builds this client will load, by version |
+| `range-files.ts`  | `RangeFiles`: whole files and batched multi-range reads        |
+| `records.ts`      | `StaticRecords`: what hits show, for any record layout         |
 
 **Status.** The types describe both of ETD's searches (by words and by
 meaning), and tests hold that description to today's ETD code
 (`src/etd/etd-static-index.ts`). Both ETD engines name their files and
-check their sidecars through `files.ts`. Neither reads a manifest yet:
-they still have ETD's layouts built in. Making them read one is the next
-step.
+check their sidecars through `files.ts`, and read records through
+`StaticRecords`, with layouts (`src/etd/engine/layouts.ts`) that the
+manifest builder publishes too. Facets are still read ETD's way; making
+them generic is the next step.
 
 ## Two halves
 
@@ -80,8 +83,11 @@ A search by words publishes:
 | facet rows                 | optional: per doc, a fixed-size row of facet bytes           |
 | doc values                 | optional: per doc, an id from a long list, with its labels   |
 
-A `.dir` is docId-aligned offsets into its `.bin`, so reading one doc's
-data is arithmetic plus one Range read.
+A `.dir` is id-aligned: count + 1 little-endian u64 offsets into its
+`.bin`, the last being the `.bin`'s size. Reading one doc's data is
+arithmetic plus one Range read, and a page of records is two waves of
+multi-range requests. A snippet member is deflated JSON with its text in
+`a` (ETD's also carry `l`, the language, and `e`, an English translation).
 
 A search by meaning publishes the files in
 [Search by meaning](#search-by-meaning) below.
@@ -420,8 +426,11 @@ that way.
 
 - **Default config.** Record `role`s are there so an item with no client
   code can be searched, but nothing builds a config from them yet.
-- **Reading a manifest.** Neither engine reads `static-index.json`, and the
-  demo's `etd_item=<id>` only reads ETD's `current.json`.
+- **Reading a manifest.** Neither engine reads `static-index.json`: they
+  build their layouts from ETD's metas. The demo's `etd_item=<id>` only
+  reads ETD's `current.json`.
+- **Facets.** Both engines read facet rows through ETD-specific code
+  (`EtdFacetRows`), not `facet-row.ts`.
 - **Language names.** collection-browser's own language mapping names a few
   codes the browser's Intl data may not (e.g. `sms`, Skolt Sami, in headless
   Chrome), and misspells one (`uk`, "Ukranian"). ETD's code uses that

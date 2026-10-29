@@ -4,9 +4,7 @@ import type {
   FacetColumn,
   FacetConfig,
   FileSet,
-  HitRole,
   IdSpace,
-  RecordField,
   StaticItemConfig,
   StaticItemManifest,
   TextIndex,
@@ -15,6 +13,7 @@ import type {
 import type { EtdFacetMeta } from './engine/facets';
 import type { EtdIndexMeta } from './engine/index-files';
 import type { EtdInstitutionMeta } from './engine/institutions';
+import { etdTextRecords, etdVectorRecords } from './engine/layouts';
 import type { FieldPrefix } from './engine/query-parser';
 import { FIELD_WEIGHT, PROXIMITY, SAME_FIELD_BOOST } from './engine/scorer';
 import {
@@ -91,15 +90,6 @@ const TEXT_FIELDS: {
 /** Always in an ETD build; others only when current.json lists them. */
 const BASE_PREFIXES = new Set(['t', 'c', 'a', 'i']);
 
-/** stubs.bin's 320-byte layout (not in current.json; see records.ts). */
-const RECORD_FIELDS: RecordField[] = [
-  { key: 'title', start: 0, end: 150, role: 'title' },
-  { key: 'creators', start: 150, end: 198, role: 'creators' },
-  { key: 'date', start: 198, end: 208, role: 'date' },
-  { key: 'domain', start: 208, end: 232 },
-  { key: 'url', start: 232, end: 320, role: 'url' },
-];
-
 /**
  * facets.gz.json's byte positions. facets-meta.json gives them only as
  * text ("year(u8,enc2,0=unk) flags(u8) domain(u16le) lang(u8,0=unk)+..."),
@@ -151,13 +141,7 @@ export function etdItemManifest(metas: EtdPublishedMetas): StaticItemManifest {
         count: current.n_docs,
         firstId: 1,
         files,
-        records: {
-          file: 'stubs.bin',
-          bytes: current.stub_bytes,
-          fields: RECORD_FIELDS,
-          overflow: [{ field: 'url', dir: 'url.dir', bin: 'url.bin' }],
-          snippet: { field: 'abstract', dir: 'snip.dir', bin: 'snippets.bin' },
-        },
+        records: etdTextRecords(current),
         facets: metas.facetsMeta && {
           file: 'facets.gz.json',
           stride: metas.facetsMeta.stride,
@@ -215,35 +199,13 @@ function textIndex(current: EtdCurrentJson): TextIndex {
   };
 }
 
-/** docs.bin's fields, in ivf-meta's order, with what each is to a hit. */
-const VECTOR_RECORD_ROLES: Partial<Record<string, HitRole>> = {
-  title: 'title',
-  date: 'date',
-  landing: 'url',
-};
-
 /** The vector store's docs: their own ids, 0-based docs.bin rows. */
 function vectorDocs(ivf: IvfMeta): IdSpace {
-  let start = 0;
-  const fields = Object.entries(ivf.fields).map(([key, width]) => {
-    const field: RecordField = { key, start, end: start + width };
-    const role = VECTOR_RECORD_ROLES[key];
-    if (role) field.role = role;
-    start += width;
-    return field;
-  });
   return {
     count: ivf.n,
     firstId: 0,
     files: vectorFiles(ivf),
-    records: {
-      file: 'docs.bin',
-      bytes: ivf.docbytes,
-      fields,
-      snippet: ivf.vsnip
-        ? { field: 'abstract', dir: 'vsnip.dir', bin: 'vsnip.bin' }
-        : undefined,
-    },
+    records: etdVectorRecords(ivf),
   };
 }
 

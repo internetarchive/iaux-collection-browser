@@ -2,8 +2,8 @@ import { expect } from '@open-wc/testing';
 import {
   EtdIndexFiles,
   checkIndexFormat,
-  parseByteRanges,
 } from '../../../src/etd/engine/index-files';
+import { parseByteRanges } from '../../../src/static-index/range-files';
 import type { EtdIndexMeta } from '../../../src/etd/engine/index-files';
 import { FIXTURE_BASE, FIXTURE_DATA, buildFixtureIndex } from './fixture-index';
 

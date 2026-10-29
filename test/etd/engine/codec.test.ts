@@ -1,10 +1,5 @@
 import { expect } from '@open-wc/testing';
-import {
-  fnv1a,
-  readOffsetPair,
-  readVarint,
-  tokenize,
-} from '../../../src/etd/engine/codec';
+import { fnv1a, readVarint, tokenize } from '../../../src/etd/engine/codec';
 import { writeVarint } from './fixture-index';
 
 describe('tokenize', () => {
@@ -69,14 +64,5 @@ describe('readVarint', () => {
     expect(() => readVarint(Uint8Array.from([0x80, 0x80]), 0)).to.throw(
       RangeError,
     );
-  });
-});
-
-describe('readOffsetPair', () => {
-  it('reads two little-endian u64 offsets', () => {
-    const pair = new BigUint64Array([5_000_000_000n, 5_000_000_120n]);
-    expect(readOffsetPair(new Uint8Array(pair.buffer))).to.deep.equal([
-      5_000_000_000, 5_000_000_120,
-    ]);
   });
 });
