@@ -2,9 +2,10 @@ import { html, LitElement, TemplateResult, CSSResultGroup, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { localized } from '@lit/localize';
 import type {
-  FacetOption,
+  ExtraFacetGroup,
   FacetBucket,
   FacetEventDetails,
+  FacetGroupKey,
   FacetState,
 } from '../models';
 import type { CollectionTitles } from '../data-source/models';
@@ -23,7 +24,11 @@ export class FacetRow extends LitElement {
   //
 
   /** The name of the facet group to which this facet belongs (e.g., "mediatype") */
-  @property({ type: String }) facetType?: FacetOption;
+  @property({ type: String }) facetType?: FacetGroupKey;
+
+  /** The host's extra facet groups, for labelling a row in one of them */
+  @property({ type: Array, attribute: false })
+  extraFacetGroups?: readonly ExtraFacetGroup[];
 
   /** The facet bucket containing details about the state, count, and key for this row */
   @property({ type: Object }) bucket?: FacetBucket;
@@ -61,6 +66,7 @@ export class FacetRow extends LitElement {
 
     return facetRowTemplate({
       facetType,
+      extraFacetGroups: this.extraFacetGroups,
       bucket,
       collectionTitles: this.collectionTitles,
       omitHideButton: this.omitHideButton,

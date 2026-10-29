@@ -8,7 +8,12 @@ import {
 } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
-import type { FacetGroup, FacetBucket, FacetEventDetails } from '../models';
+import type {
+  ExtraFacetGroup,
+  FacetGroup,
+  FacetBucket,
+  FacetEventDetails,
+} from '../models';
 import type { CollectionTitles } from '../data-source/models';
 import './facet-row';
 
@@ -18,6 +23,10 @@ export class FacetsTemplate extends LitElement {
 
   @property({ type: Object })
   collectionTitles?: CollectionTitles;
+
+  /** The host's extra facet groups, for labelling their rows */
+  @property({ type: Array, attribute: false })
+  extraFacetGroups?: readonly ExtraFacetGroup[];
 
   private facetClicked(e: CustomEvent<FacetEventDetails>) {
     this.dispatchFacetClickEvent(e.detail);
@@ -48,6 +57,7 @@ export class FacetsTemplate extends LitElement {
           bucket =>
             html`<facet-row
               .facetType=${facetGroup.key}
+              .extraFacetGroups=${this.extraFacetGroups}
               .bucket=${bucket}
               .collectionTitles=${this.collectionTitles}
               ?omitHideButton=${isLoneBucket}

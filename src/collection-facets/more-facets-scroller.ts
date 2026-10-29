@@ -14,7 +14,12 @@ import { guard } from 'lit/directives/guard.js';
 import { ref } from 'lit/directives/ref.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { localized, msg } from '@lit/localize';
-import type { FacetBucket, FacetEventDetails, FacetOption } from '../models';
+import type {
+  ExtraFacetGroup,
+  FacetBucket,
+  FacetEventDetails,
+  FacetGroupKey,
+} from '../models';
 import type { CollectionTitles } from '../data-source/models';
 import arrowLeftIcon from '../assets/img/icons/arrow-left';
 import arrowRightIcon from '../assets/img/icons/arrow-right';
@@ -51,7 +56,11 @@ const SCROLLBAR_SIZE = 12;
 @localized()
 export class MoreFacetsScroller extends LitElement {
   /** The name of the facet group the buckets belong to (e.g., "subject") */
-  @property({ type: String }) facetType?: FacetOption;
+  @property({ type: String }) facetType?: FacetGroupKey;
+
+  /** The host's extra facet groups, for labelling a row in one of them */
+  @property({ type: Array, attribute: false })
+  extraFacetGroups?: readonly ExtraFacetGroup[];
 
   /** Every bucket to show, in display order */
   @property({ type: Array }) buckets: FacetBucket[] = [];
@@ -193,6 +202,7 @@ export class MoreFacetsScroller extends LitElement {
           ${rows.map(bucket =>
             facetRowTemplate({
               facetType,
+              extraFacetGroups: this.extraFacetGroups,
               bucket,
               collectionTitles: this.collectionTitles,
               omitHideButton: this.omitHideButtons,
