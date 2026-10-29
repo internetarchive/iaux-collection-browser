@@ -45,6 +45,8 @@ export interface CollectionBrowserSearchInterface
   readonly maxPagesToManage: number;
   readonly currentVisiblePageNumbers: number[];
   readonly clearResultsOnEmptyQuery?: boolean;
+  /** Whether a search page may search with filters but no query. */
+  readonly allowFilterOnlySearch?: boolean;
   readonly dataSource?: CollectionBrowserDataSourceInterface;
 
   getSessionId(): Promise<string>;

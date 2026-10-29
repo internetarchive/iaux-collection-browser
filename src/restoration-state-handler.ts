@@ -12,6 +12,7 @@ import {
   sortOptionFromAPIString,
   SORT_OPTIONS,
   tvClipURLParamsToFilters,
+  type ExtraFacetGroup,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 import { dateFilterField } from './utils/date-filter-field';
@@ -41,6 +42,12 @@ export interface RestorationStatePersistOptions {
 }
 
 export interface RestorationStateHandlerInterface {
+  /**
+   * Facet groups beyond collection-browser's own whose URL facets should be
+   * restored. Set by collection-browser from its `extraFacetGroups`.
+   */
+  extraFacetGroups?: readonly ExtraFacetGroup[];
+
   persistState(
     state: RestorationState,
     options?: RestorationStatePersistOptions,
@@ -52,6 +59,9 @@ export class RestorationStateHandler
   implements RestorationStateHandlerInterface
 {
   private context: CollectionBrowserContext;
+
+  /** @inheritdoc */
+  extraFacetGroups: readonly ExtraFacetGroup[] = [];
 
   private cookieDomain = '.archive.org';
 
@@ -291,8 +301,10 @@ export class RestorationStateHandler
     const legacySearchQuery =
       url.searchParams.get('q') ?? url.searchParams.get('search');
 
+    // Only the known groups (and these extras) are seeded, so a URL can't
+    // add a group of its own: setSelectedFacetState ignores unseeded ones.
     const restorationState: RestorationState = {
-      selectedFacets: getDefaultSelectedFacets(),
+      selectedFacets: getDefaultSelectedFacets(this.extraFacetGroups),
     };
 
     if (searchQuery) {

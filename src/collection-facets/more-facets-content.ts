@@ -29,15 +29,16 @@ import {
   FacetGroup,
   FacetBucket,
   FacetOption,
-  facetTitles,
-  facetPluralTitles,
   suppressedCollections,
-  valueFacetSort,
-  defaultFacetSort,
   getDefaultSelectedFacets,
   FacetEventDetails,
   tvMoreFacetSort,
 } from '../models';
+import type { ExtraFacetGroup, FacetGroupKey } from '../models';
+import {
+  facetGroupInfo,
+  type FacetGroupInfo,
+} from '../utils/extra-facet-groups';
 import type {
   CollectionTitles,
   PageSpecifierParams,
@@ -71,7 +72,11 @@ import { MORE_FACETS__MAX_AGGREGATIONS } from './models';
 @customElement('more-facets-content')
 @localized()
 export class MoreFacetsContent extends LitElement {
-  @property({ type: String }) facetKey?: FacetOption;
+  @property({ type: String }) facetKey?: FacetGroupKey;
+
+  /** Facet groups beyond collection-browser's own, for titles and sorts. */
+  @property({ type: Array, attribute: false })
+  extraFacetGroups: ExtraFacetGroup[] = [];
 
   @property({ type: String }) query?: string;
 
@@ -203,9 +208,11 @@ export class MoreFacetsContent extends LitElement {
       this.facetsLoading = true;
       this.loadFailed = false;
       this.sortedBy =
-        this.searchType === SearchType.TV
+        this.searchType === SearchType.TV &&
+        this.facetKey &&
+        Object.prototype.hasOwnProperty.call(tvMoreFacetSort, this.facetKey)
           ? tvMoreFacetSort[this.facetKey as FacetOption]
-          : defaultFacetSort[this.facetKey as FacetOption];
+          : (this.groupInfo?.sort ?? AggregationSortType.COUNT);
 
       this.updateSpecificFacets();
     }
@@ -446,7 +453,7 @@ export class MoreFacetsContent extends LitElement {
     const currentAggregation = this.aggregations[this.facetKey];
     if (!currentAggregation) return undefined;
 
-    const facetGroupTitle = facetTitles[this.facetKey];
+    const facetGroupTitle = this.groupInfo?.title ?? this.facetKey;
 
     // Order the facets according to the current sort option
     let sortedBuckets = currentAggregation.getSortedBuckets(
@@ -527,11 +534,12 @@ export class MoreFacetsContent extends LitElement {
 
   private get moreFacetsTemplate(): TemplateResult {
     const valuesLabel = this.facetKey
-      ? msg(str`${facetTitles[this.facetKey]} values`)
+      ? msg(str`${this.groupInfo?.title ?? this.facetKey} values`)
       : undefined;
     return html`
       <more-facets-scroller
         .facetType=${this.facetKey}
+        .extraFacetGroups=${this.extraFacetGroups}
         .buckets=${this.filteredBuckets}
         .collectionTitles=${this.collectionTitles}
         ?omitHideButtons=${this.facetGroup?.buckets.length === 1}
@@ -551,7 +559,7 @@ export class MoreFacetsContent extends LitElement {
    * A chiclet for each selected or hidden value, each with a button to clear it
    */
   private get chicletsTemplate(): TemplateResult {
-    const valuesName = this.facetKey ? facetPluralTitles[this.facetKey] : '';
+    const valuesName = this.groupInfo?.pluralTitle ?? '';
     return html`
       <ul class="chiclets" aria-label=${msg(str`Selected ${valuesName}`)}>
         ${repeat(
@@ -638,15 +646,21 @@ export class MoreFacetsContent extends LitElement {
     );
   }
 
+  /** Title and sorts for this dialog's facet group. */
+  private get groupInfo(): FacetGroupInfo | undefined {
+    return this.facetKey
+      ? facetGroupInfo(this.facetKey, this.extraFacetGroups)
+      : undefined;
+  }
+
   private get modalHeaderTemplate(): TemplateResult {
-    const facetSort =
-      this.sortedBy ?? defaultFacetSort[this.facetKey as FacetOption];
+    const facetSort = this.sortedBy ?? this.groupInfo?.sort;
     const defaultSwitchSide =
       facetSort === AggregationSortType.COUNT ? 'left' : 'right';
-    const valuesName = this.facetKey ? facetPluralTitles[this.facetKey] : '';
+    const valuesName = this.groupInfo?.pluralTitle ?? '';
     // From the facet key rather than the facet group, which is missing
     // until the values load (or if they fail to)
-    const title = this.facetKey ? facetTitles[this.facetKey] : '';
+    const title = this.groupInfo?.title ?? '';
 
     return html`<span class="sr-only">${msg('More facets for:')}</span>
       <span class="title">${title}</span>
@@ -658,7 +672,8 @@ export class MoreFacetsContent extends LitElement {
                 class="sort-toggle"
                 leftValue=${AggregationSortType.COUNT}
                 leftLabel=${msg('Count')}
-                rightValue=${valueFacetSort[this.facetKey]}
+                rightValue=${this.groupInfo?.valueSort ??
+                AggregationSortType.ALPHABETICAL}
                 .rightLabel=${title}
                 side=${defaultSwitchSide}
                 @change=${(e: CustomEvent<string>) => {
@@ -751,7 +766,9 @@ export class MoreFacetsContent extends LitElement {
     this.dispatchEvent(event);
 
     // Reset the unapplied changes back to default, now that they have been applied
-    this.unappliedFacetChanges = getDefaultSelectedFacets();
+    this.unappliedFacetChanges = getDefaultSelectedFacets(
+      this.extraFacetGroups,
+    );
 
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({
@@ -763,7 +780,9 @@ export class MoreFacetsContent extends LitElement {
 
   private cancelClick() {
     // Reset the unapplied changes back to default
-    this.unappliedFacetChanges = getDefaultSelectedFacets();
+    this.unappliedFacetChanges = getDefaultSelectedFacets(
+      this.extraFacetGroups,
+    );
 
     this.modalManager?.closeModal();
     this.analyticsHandler?.sendEvent({

@@ -53,6 +53,11 @@ import {
   tvSortAvailability,
   FacetBucket,
 } from './models';
+import type { ExtraFacetGroup, FacetGroupKey } from './models';
+import {
+  validExtraFacetGroups,
+  withExtraFacetOrder,
+} from './utils/extra-facet-groups';
 import {
   RestorationStateHandlerInterface,
   RestorationStateHandler,
@@ -263,6 +268,15 @@ export class CollectionBrowser
 
   @property({ type: Boolean }) clearResultsOnEmptyQuery = false;
 
+  /**
+   * Whether a search page may search with filters (selected or hidden facets,
+   * a date range, a first-letter filter) but no query: e.g. every result from
+   * the 2000s. Off by default, for search services that need a query to rank
+   * by; set it for one that can list matches without one. `internalFilters`
+   * alone don't count, so a page with hidden filters doesn't search on load.
+   */
+  @property({ type: Boolean }) allowFilterOnlySearch = false;
+
   @property({ type: String }) collectionPagePath: string = '/details/';
 
   /** describes where this component is being used */
@@ -270,6 +284,29 @@ export class CollectionBrowser
     analyticsCategories.default;
 
   @property({ type: String }) pageContext: CollectionBrowserContext = 'search';
+
+  /**
+   * Facet groups beyond collection-browser's own, for a search service whose
+   * aggregations use other keys (e.g. `country`). Each key is both the
+   * aggregation key and the filter field, and can be restored from the URL
+   * (`and[]=country:"CA"`). Keys that are reserved, built in or repeated are
+   * logged and ignored.
+   */
+  @property({ type: Array, attribute: false })
+  extraFacetGroups: ExtraFacetGroup[] = [];
+
+  /** `extraFacetGroups` with any unusable groups left out. */
+  private activeExtraFacetGroups: ExtraFacetGroup[] = [];
+
+  /**
+   * The last sidebar order built with extra groups, reused while its inputs
+   * are the same so the facets aren't re-rendered on every update.
+   */
+  private extraFacetOrder?: {
+    base: readonly FacetGroupKey[];
+    extras: readonly ExtraFacetGroup[];
+    order: readonly FacetGroupKey[];
+  };
 
   @property({ type: Object })
   restorationStateHandler: RestorationStateHandlerInterface =
@@ -589,7 +626,9 @@ export class CollectionBrowser
     // Don't bother clearing facets if none are checked, so that we don't
     // trigger unnecessary update cycles.
     if (facets && this.hasCheckedFacets) {
-      this.selectedFacets = getDefaultSelectedFacets();
+      this.selectedFacets = getDefaultSelectedFacets(
+        this.activeExtraFacetGroups,
+      );
     }
 
     if (dateRange) {
@@ -662,7 +701,35 @@ export class CollectionBrowser
     );
   }
 
+  /** `base` with the extra facet groups placed in it, reused when unchanged. */
+  private facetDisplayOrderWith(
+    base: readonly FacetGroupKey[],
+  ): readonly FacetGroupKey[] {
+    const extras = this.activeExtraFacetGroups;
+    const cached = this.extraFacetOrder;
+    if (cached?.base !== base || cached.extras !== extras) {
+      this.extraFacetOrder = {
+        base,
+        extras,
+        order: withExtraFacetOrder(base, extras),
+      };
+    }
+    return this.extraFacetOrder!.order;
+  }
+
   willUpdate(changed: PropertyValues): void {
+    if (
+      changed.has('extraFacetGroups') ||
+      changed.has('restorationStateHandler')
+    ) {
+      this.activeExtraFacetGroups = validExtraFacetGroups(
+        this.extraFacetGroups,
+      );
+      // So facets in the URL for these groups are restored, not ignored.
+      this.restorationStateHandler.extraFacetGroups =
+        this.activeExtraFacetGroups;
+    }
+
     this.setPlaceholderType();
 
     if (changed.has('searchType') && this.searchType === SearchType.TV) {
@@ -761,7 +828,13 @@ export class CollectionBrowser
 
     if (!isInitialized) {
       this.placeholderType = 'empty-query';
-    } else if (isSearchResults && !hasQuery && !hasIdentifiers) {
+    } else if (
+      isSearchResults &&
+      !hasQuery &&
+      !hasIdentifiers &&
+      // A search by filters alone (allowFilterOnlySearch) shows its results.
+      !this.dataSource.canPerformSearch
+    ) {
       this.placeholderType = 'empty-query';
     } else if (noResults) {
       // Within a collection, no query + no results means the collection simply has no viewable items.
@@ -1559,9 +1632,9 @@ export class CollectionBrowser
     const shouldUseTvInterface =
       this.isTVCollection ||
       (!this.withinCollection && this.searchType === SearchType.TV);
-    const facetDisplayOrder = shouldUseTvInterface
-      ? tvFacetDisplayOrder
-      : defaultFacetDisplayOrder;
+    const facetDisplayOrder = this.facetDisplayOrderWith(
+      shouldUseTvInterface ? tvFacetDisplayOrder : defaultFacetDisplayOrder,
+    );
 
     const facets = html`
       <collection-facets
@@ -1592,6 +1665,7 @@ export class CollectionBrowser
         .modalManager=${this.modalManager}
         .analyticsHandler=${this.analyticsHandler}
         .facetDisplayOrder=${facetDisplayOrder}
+        .extraFacetGroups=${this.activeExtraFacetGroups}
         .isTvSearch=${shouldUseTvInterface}
         ?collapsableFacets=${this.mobileView}
         ?facetsLoading=${this.facetsLoading}
@@ -1739,7 +1813,8 @@ export class CollectionBrowser
     this.profileElement = queryState.profileElement;
     this.searchType = queryState.searchType;
     this.selectedFacets =
-      queryState.selectedFacets ?? getDefaultSelectedFacets();
+      queryState.selectedFacets ??
+      getDefaultSelectedFacets(this.activeExtraFacetGroups);
     this.internalFilters = queryState.internalFilters;
     this.minSelectedDate = queryState.minSelectedDate;
     this.maxSelectedDate = queryState.maxSelectedDate;
@@ -2369,7 +2444,9 @@ export class CollectionBrowser
       searchType: this.suppressURLSinParam ? undefined : this.searchType,
       selectedSort: isDefaultSort ? SortField.default : this.selectedSort,
       sortDirection: this.sortDirection ?? undefined,
-      selectedFacets: this.selectedFacets ?? getDefaultSelectedFacets(),
+      selectedFacets:
+        this.selectedFacets ??
+        getDefaultSelectedFacets(this.activeExtraFacetGroups),
       baseQuery: this.suppressURLQuery ? undefined : this.baseQuery,
       currentPage: this.currentPage,
       titleQuery: this.titleQuery,

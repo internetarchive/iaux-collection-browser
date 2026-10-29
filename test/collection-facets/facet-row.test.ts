@@ -418,4 +418,60 @@ describe('Facet row', () => {
       negative: false,
     });
   });
+
+  describe('in an extra facet group', () => {
+    const country = {
+      key: 'country',
+      title: 'Country',
+      pluralTitle: 'Countries',
+    };
+
+    async function rowFor(state: FacetState, groups = [country]) {
+      const bucket = { key: 'Canada', state, count: 3 };
+      return fixture<FacetRow>(
+        html`<facet-row
+          .facetType=${'country'}
+          .extraFacetGroups=${groups}
+          .bucket=${bucket}
+        ></facet-row>`,
+      );
+    }
+
+    /** The row's labels: only-show title, hide/unhide text, accessible name */
+    function labels(el: FacetRow) {
+      const root = el.shadowRoot!;
+      const onlyShow = root.querySelector('label[aria-label]')!;
+      return {
+        onlyShow: onlyShow.getAttribute('title'),
+        hide: root.querySelector('.hide-facet-icon')?.textContent?.trim(),
+        name: onlyShow.getAttribute('aria-label'),
+      };
+    }
+
+    it('names the group by its declared title, not "undefined"', async () => {
+      expect(labels(await rowFor('none'))).to.deep.equal({
+        onlyShow: 'Only show Country: Canada',
+        hide: 'Hide Country: Canada',
+        name: 'Country: Canada, 3 results',
+      });
+    });
+
+    it('offers to show all of the group, by its plural title, once selected', async () => {
+      expect(labels(await rowFor('selected')).onlyShow).to.equal(
+        'Show all Countries',
+      );
+    });
+
+    it('offers to unhide a hidden value, by its group title', async () => {
+      expect(labels(await rowFor('hidden')).hide).to.equal(
+        'Unhide Country: Canada',
+      );
+    });
+
+    it('falls back to the group key for a group nobody declared', async () => {
+      expect(labels(await rowFor('none', [])).hide).to.equal(
+        'Hide country: Canada',
+      );
+    });
+  });
 });
