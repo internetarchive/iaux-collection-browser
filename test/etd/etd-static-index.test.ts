@@ -52,7 +52,8 @@ describe('etdManifest, from ETD’s published files', () => {
   });
 
   it('leaves orcid out of a build that doesn’t list it', () => {
-    const { prefixed_fields: _, ...older } = ETD_CURRENT_JSON;
+    const older = { ...ETD_CURRENT_JSON };
+    delete older.prefixed_fields;
     const keys = etdManifest(older).text.fields.map(f => f.key);
     expect(keys).to.deep.equal([
       'title',

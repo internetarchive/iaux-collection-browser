@@ -24,6 +24,8 @@ import { StaticEtdEngine } from './etd/engine/static-etd-engine';
 import { ETD_FACETS } from './etd/etd-facets';
 import type { FacetDeclaringSearchService } from './serverless-search/serverless-search-service';
 import './etd/compare/etd-compare-panel';
+import { observeFacets, type ObservedFacets } from './etd/demo/observe-facets';
+import './etd/demo/etd-facet-summary';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -52,6 +54,9 @@ export class AppRoot extends LitElement {
 
   private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
+
+  /** The facets collection-browser last got from the ETD service. */
+  @state() private etdFacets?: ObservedFacets;
 
   private resizeObserver = new SharedResizeObserver();
 
@@ -117,7 +122,12 @@ export class AppRoot extends LitElement {
         baseUrl: params.get('etd_base_url') ?? '/etd-index/',
         facets: ETD_FACETS,
       });
-      return new EtdSearchService({ engine: this.etdEngine });
+      return observeFacets(
+        new EtdSearchService({ engine: this.etdEngine }),
+        facets => {
+          this.etdFacets = facets;
+        },
+      );
     }
     return new SearchService({
       includeCredentials: false,
@@ -128,8 +138,9 @@ export class AppRoot extends LitElement {
   }
 
   /**
-   * The ETD demo's controls, grouped: its own search box and the panel
-   * comparing against the live page.
+   * The ETD demo's controls, grouped: its own search box, a summary of the
+   * service's own facets in the results, and the panel comparing against
+   * the live page.
    */
   private get etdControlsTemplate() {
     return html`
@@ -141,6 +152,10 @@ export class AppRoot extends LitElement {
           </span>
         </h2>
         ${this.etdSearchTemplate} ${this.etdBrowseTemplate}
+        <etd-facet-summary
+          .groups=${this.declaredSearch?.extraFacetGroups ?? []}
+          .facets=${this.etdFacets}
+        ></etd-facet-summary>
         <etd-compare-panel
           .engine=${this.etdEngine}
           .query=${this.searchQuery}
@@ -1292,6 +1307,10 @@ export class AppRoot extends LitElement {
 
     #etd-controls etd-compare-panel {
       background: white;
+    }
+
+    #etd-controls etd-facet-summary {
+      margin: 0.75rem 0;
     }
 
     #dev-tools {
