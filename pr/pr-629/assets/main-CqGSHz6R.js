@@ -8205,20 +8205,22 @@ fill=""></path>
       transition: none;
     }
   }
-`,mg=class extends k{constructor(...e){super(...e),this.pageUrl=`/etd-index/search.html`,this.depth=50,this.busy=!1,this.generation=0}firstUpdated(){!this.liveSource&&this.iframe&&(this.liveSource=new cg(this.iframe))}willUpdate(e){(e.has(`query`)||e.has(`engine`)||e.has(`liveSource`))&&this.engine&&this.liveSource&&this.compare()}disconnectedCallback(){super.disconnectedCallback(),this.abort?.abort()}async compare(){this.abort?.abort();let e=this.query?.trim()??``,t=this.generation+=1;if(!e||!this.engine||!this.liveSource){this.comparison=void 0,this.error=void 0,this.busy=!1;return}let n=new AbortController;this.abort=n,this.busy=!0,this.error=void 0;try{let[r,i]=await Promise.all([this.searchOurs(this.engine,e,n.signal),this.liveSource.search(e,this.depth)]),a=r.records.map(e=>e.docId),o=new Map(r.records.map(e=>[e.docId,e.title])),s=this.diff(a,i.docIds),c=this.hiddenByBoost(r);if(await this.readTitles([...s.onlyTheirs.map(e=>e.docId),...c?.pushedOut.map(e=>e.docId)??[]],o,n.signal),t!==this.generation)return;let l={query:e,ours:r,theirs:i,diff:s,shown:{state:`waiting`},hidden:c,titles:o};this.comparison=l,this.busy=!1;let u=await this.compareShown(a,i,o,n.signal);if(t!==this.generation)return;this.comparison={...l,shown:u}}catch(e){if(t!==this.generation)return;this.comparison=void 0,this.error=e instanceof Error?e.message:String(e)}finally{t===this.generation&&(this.busy=!1)}}async compareShown(e,t,n,r){try{let i=await t.reranked;if(!i)return{state:`not-reranked`};let a=this.diff(e,i);return await this.readTitles(a.onlyTheirs.map(e=>e.docId),n,r),{state:`compared`,diff:a}}catch(e){return{state:`failed`,error:e instanceof Error?e.message:String(e)}}}diff(e,t){return fg(e,t,[...[10,20,50].filter(e=>e<this.depth),this.depth])}hiddenByBoost(e){let{boost:t}=e.query;if(!t)return;let n=e.records.map(e=>e.docId),r=t.topBefore(this.depth),i=n=>({docId:n,before:t.rankBefore(n),after:e.query.rankOf?.(n),placement:t.placement(n)});return{words:t.words,pushedOut:r.filter(e=>!n.includes(e)).map(i),pulledIn:n.filter(e=>!r.includes(e)).map(i)}}async readTitles(e,t,n){let r=await Promise.all(e.filter(e=>!t.has(e)).map(e=>this.engine.record(e,{signal:n})));for(let e of r)e&&t.set(e.docId,e.title)}async searchOurs(e,t,n){let r=await e.query(t,{},{signal:n}),i=await r.next(this.depth,{signal:n});return{total:r.result.total,approximate:r.result.approximate,records:i,query:r}}render(){return E`
+`,mg=class extends k{constructor(...e){super(...e),this.pageUrl=`/etd-index/search.html`,this.depth=50,this.fetchFn=(...e)=>fetch(...e),this.livePage=`checking`,this.busy=!1,this.generation=0}firstUpdated(){if(this.liveSource){this.livePage=`present`;return}this.checkLivePage()}updated(){!this.liveSource&&this.iframe&&(this.liveSource=new cg(this.iframe))}async checkLivePage(){try{let e=await this.fetchFn(this.pageUrl,{method:`HEAD`});this.livePage=e.status===404?`missing`:`present`}catch{this.livePage=`present`}}willUpdate(e){(e.has(`query`)||e.has(`engine`)||e.has(`liveSource`))&&this.engine&&this.liveSource&&this.compare()}disconnectedCallback(){super.disconnectedCallback(),this.abort?.abort()}async compare(){this.abort?.abort();let e=this.query?.trim()??``,t=this.generation+=1;if(!e||!this.engine||!this.liveSource){this.comparison=void 0,this.error=void 0,this.busy=!1;return}let n=new AbortController;this.abort=n,this.busy=!0,this.error=void 0;try{let[r,i]=await Promise.all([this.searchOurs(this.engine,e,n.signal),this.liveSource.search(e,this.depth)]),a=r.records.map(e=>e.docId),o=new Map(r.records.map(e=>[e.docId,e.title])),s=this.diff(a,i.docIds),c=this.hiddenByBoost(r);if(await this.readTitles([...s.onlyTheirs.map(e=>e.docId),...c?.pushedOut.map(e=>e.docId)??[]],o,n.signal),t!==this.generation)return;let l={query:e,ours:r,theirs:i,diff:s,shown:{state:`waiting`},hidden:c,titles:o};this.comparison=l,this.busy=!1;let u=await this.compareShown(a,i,o,n.signal);if(t!==this.generation)return;this.comparison={...l,shown:u}}catch(e){if(t!==this.generation)return;this.comparison=void 0,this.error=e instanceof Error?e.message:String(e)}finally{t===this.generation&&(this.busy=!1)}}async compareShown(e,t,n,r){try{let i=await t.reranked;if(!i)return{state:`not-reranked`};let a=this.diff(e,i);return await this.readTitles(a.onlyTheirs.map(e=>e.docId),n,r),{state:`compared`,diff:a}}catch(e){return{state:`failed`,error:e instanceof Error?e.message:String(e)}}}diff(e,t){return fg(e,t,[...[10,20,50].filter(e=>e<this.depth),this.depth])}hiddenByBoost(e){let{boost:t}=e.query;if(!t)return;let n=e.records.map(e=>e.docId),r=t.topBefore(this.depth),i=n=>({docId:n,before:t.rankBefore(n),after:e.query.rankOf?.(n),placement:t.placement(n)});return{words:t.words,pushedOut:r.filter(e=>!n.includes(e)).map(i),pulledIn:n.filter(e=>!r.includes(e)).map(i)}}async readTitles(e,t,n){let r=await Promise.all(e.filter(e=>!t.has(e)).map(e=>this.engine.record(e,{signal:n})));for(let e of r)e&&t.set(e.docId,e.title)}async searchOurs(e,t,n){let r=await e.query(t,{},{signal:n}),i=await r.next(this.depth,{signal:n});return{total:r.result.total,approximate:r.result.approximate,records:i,query:r}}render(){return E`
       <section aria-labelledby="compare-heading">
         <h2 id="compare-heading">Compare with the live etd-search page</h2>
         <div role="status" aria-live="polite">${this.summaryTemplate}</div>
         ${this.rankingTemplate} ${this.hiddenTemplate}
-        <details>
-          <summary>Live etd-search page</summary>
-          ${this.liveSourceIsIframe?E`<iframe
-                src=${this.pageUrl}
-                title="Live etd-search page"
-              ></iframe>`:O}
-        </details>
+        ${this.livePage===`missing`?O:E`<details>
+              <summary>Live etd-search page</summary>
+              ${this.liveSourceIsIframe&&this.livePage===`present`?E`<iframe
+                    src=${this.pageUrl}
+                    title="Live etd-search page"
+                  ></iframe>`:O}
+            </details>`}
       </section>
-    `}get liveSourceIsIframe(){return!this.liveSource||this.liveSource instanceof cg}get summaryTemplate(){if(this.error)return E`<p class="error">⚠️ Couldn't compare: ${this.error}</p>`;if(this.busy)return E`<p>Comparing…</p>`;if(!this.comparison)return E`<p>Search for something to compare the two rankings.</p>`;let{ours:e,theirs:t,diff:n,shown:r}=this.comparison,i=e.total===t.total;return E`
+    `}get liveSourceIsIframe(){return!this.liveSource||this.liveSource instanceof cg}get summaryTemplate(){if(this.livePage===`missing`)return E`<p>
+        This item has no search.html, so there's no live page to compare with.
+      </p>`;if(this.error)return E`<p class="error">⚠️ Couldn't compare: ${this.error}</p>`;if(this.busy)return E`<p>Comparing…</p>`;if(!this.comparison)return E`<p>Search for something to compare the two rankings.</p>`;let{ours:e,theirs:t,diff:n,shown:r}=this.comparison,i=e.total===t.total;return E`
       <ul class="summary">
         <li class="detail">
           Index ${t.version||`unversioned`}. Both re-rank an unquoted 2–6
@@ -8422,7 +8424,7 @@ fill=""></path>
         border-top: none;
         box-sizing: border-box;
       }
-    `]}};R([j({attribute:!1})],mg.prototype,`engine`,void 0),R([j()],mg.prototype,`query`,void 0),R([j()],mg.prototype,`pageUrl`,void 0),R([j({type:Number})],mg.prototype,`depth`,void 0),R([j({attribute:!1})],mg.prototype,`liveSource`,void 0),R([M()],mg.prototype,`comparison`,void 0),R([M()],mg.prototype,`error`,void 0),R([M()],mg.prototype,`busy`,void 0),R([N(`iframe`)],mg.prototype,`iframe`,void 0),mg=R([A(`etd-compare-panel`)],mg);var hg=3e3;function gg(e,t){let n=[];return/(^|\s)(inst|institution):/i.test(e)&&n.push(`the live page matches institutions through its institution list, not yet ported`),t===`live`&&e.includes(`"`)&&n.push(`the live page only keeps it if the quoted words are side by side, not yet ported`),n}function _g(e,t){return[e,...t].join(` · `)}function vg(e,t,n){let r=`'${n.join(` `)}'`;return e===void 0?`its text wasn't read in time, so it counts as not side by side`:e===`apart`?`${yg(n)} aren't side by side in it`:t===`pulled in`?`${r} is side by side in its ${e}`:e===`title`?`${r} is in its title, but more title matches ranked above it`:`${r} is side by side only in its ${e}, and title matches go first`}function yg(e){let t=e.map(e=>`'${e}'`);return t.length>1?`${t.slice(0,-1).join(`, `)} and ${t[t.length-1]}`:t.join(``)}function bg(e){if(e.theirs===void 0)return[`only-ours`,`only ours`];if(e.ours===void 0)return[`only-live`,`only live`];if(e.ours===e.theirs)return[`same`,`same`];let t=e.theirs-e.ours;return[`moved`,t>0?`ours ${t} higher`:`ours ${-t} lower`]}function xg(e,t){let n=0;return{get extraFacetGroups(){return e.extraFacetGroups},get allowFilterOnlySearch(){return e.allowFilterOnlySearch},itemDetails:t=>e.itemDetails(t),async search(r,i){if(r.rows!==0)return e.search(r,i);n+=1;let a=n;t({state:`loading`});let o;try{o=await e.search(r,i)}catch(e){throw a===n&&t({state:`failed`}),e}if(a===n){let e=o.success?.response.aggregations;t(e?{state:`loaded`,aggregations:e}:{state:`failed`})}return o}}}var Sg=3;function Cg(e=[]){return e.filter(e=>e.doc_count>0)}var wg=class extends k{constructor(...e){super(...e),this.groups=[]}render(){return this.groups.length?E`
+    `]}};R([j({attribute:!1})],mg.prototype,`engine`,void 0),R([j()],mg.prototype,`query`,void 0),R([j()],mg.prototype,`pageUrl`,void 0),R([j({type:Number})],mg.prototype,`depth`,void 0),R([j({attribute:!1})],mg.prototype,`liveSource`,void 0),R([j({attribute:!1})],mg.prototype,`fetchFn`,void 0),R([M()],mg.prototype,`livePage`,void 0),R([M()],mg.prototype,`comparison`,void 0),R([M()],mg.prototype,`error`,void 0),R([M()],mg.prototype,`busy`,void 0),R([N(`iframe`)],mg.prototype,`iframe`,void 0),mg=R([A(`etd-compare-panel`)],mg);var hg=3e3;function gg(e,t){let n=[];return/(^|\s)(inst|institution):/i.test(e)&&n.push(`the live page matches institutions through its institution list, not yet ported`),t===`live`&&e.includes(`"`)&&n.push(`the live page only keeps it if the quoted words are side by side, not yet ported`),n}function _g(e,t){return[e,...t].join(` · `)}function vg(e,t,n){let r=`'${n.join(` `)}'`;return e===void 0?`its text wasn't read in time, so it counts as not side by side`:e===`apart`?`${yg(n)} aren't side by side in it`:t===`pulled in`?`${r} is side by side in its ${e}`:e===`title`?`${r} is in its title, but more title matches ranked above it`:`${r} is side by side only in its ${e}, and title matches go first`}function yg(e){let t=e.map(e=>`'${e}'`);return t.length>1?`${t.slice(0,-1).join(`, `)} and ${t[t.length-1]}`:t.join(``)}function bg(e){if(e.theirs===void 0)return[`only-ours`,`only ours`];if(e.ours===void 0)return[`only-live`,`only live`];if(e.ours===e.theirs)return[`same`,`same`];let t=e.theirs-e.ours;return[`moved`,t>0?`ours ${t} higher`:`ours ${-t} lower`]}function xg(e,t){let n=0;return{get extraFacetGroups(){return e.extraFacetGroups},get allowFilterOnlySearch(){return e.allowFilterOnlySearch},itemDetails:t=>e.itemDetails(t),async search(r,i){if(r.rows!==0)return e.search(r,i);n+=1;let a=n;t({state:`loading`});let o;try{o=await e.search(r,i)}catch(e){throw a===n&&t({state:`failed`}),e}if(a===n){let e=o.success?.response.aggregations;t(e?{state:`loaded`,aggregations:e}:{state:`failed`})}return o}}}var Sg=3;function Cg(e=[]){return e.filter(e=>e.doc_count>0)}var wg=class extends k{constructor(...e){super(...e),this.groups=[]}render(){return this.groups.length?E`
       <details>
         <summary>Facets used in these results: ${this.usedText}</summary>
         <div class="body" aria-live="polite">${this.bodyTemplate}</div>
@@ -8493,7 +8495,7 @@ fill=""></path>
       .note {
         margin: 0;
       }
-    `]}};R([j({attribute:!1})],wg.prototype,`groups`,void 0),R([j({attribute:!1})],wg.prototype,`facets`,void 0),wg=R([A(`etd-facet-summary`)],wg);var $=class extends k{constructor(...t){super(...t),this.isEtdSearch=new URL(window.location.href).searchParams.get(`search_service`)===`etd`,this.searchService=this.initSearchServiceFromUrlParams(),this.etdControlsHidden=[``,`true`].includes(new URLSearchParams(window.location.search).get(`hide-etd-controls`)??`false`),this.resizeObserver=new Sn,this.toggleSlots=!1,this.cellWidth=18,this.cellHeight=29,this.rowGap=1.7,this.colGap=1.7,this.suppressFacets=!1,this.lazyLoadFacets=!1,this.loggedIn=!1,this.searchType=w.METADATA,this.analyticsManager=new e,this.analyticsHandler={sendPing:this.sendAnalytics.bind(this),sendEvent:this.sendAnalytics.bind(this),sendEventNoSampling:this.sendAnalytics.bind(this)}}get declaredSearch(){let e=this.searchService;return e.extraFacetGroups?e:void 0}sendAnalytics(e){console.log(`Analytics Received ----`,e),this.latestAction=e,this.analyticsManager?.sendEvent(e)}initSearchServiceFromUrlParams(){let e=new URL(window.location.href).searchParams;return this.isEtdSearch?(this.etdEngine=new Zh({baseUrl:e.get(`etd_base_url`)??`/etd-index/`,facets:om}),xg(new Sm({engine:this.etdEngine}),e=>{this.etdFacets=e})):new nt({includeCredentials:!1,baseUrl:e.get(`search_base_url`)??void 0,servicePath:e.get(`search_service_path`)??void 0,debuggingEnabled:!!e.get(`debugging`)})}get etdControlsTemplate(){return E`
+    `]}};R([j({attribute:!1})],wg.prototype,`groups`,void 0),R([j({attribute:!1})],wg.prototype,`facets`,void 0),wg=R([A(`etd-facet-summary`)],wg);var Tg=/^[A-Za-z0-9][A-Za-z0-9._-]*$/,Eg=new Set([`archive.org`,`www.archive.org`]);function Dg(e){let t=e.trim();if(Tg.test(t))return t;let n;try{n=new URL(t)}catch{return}if(![`http:`,`https:`].includes(n.protocol)||!Eg.has(n.hostname))return;let[,r,i]=n.pathname.split(`/`);if(r!==`details`&&r!==`download`)return;let a=decodeURIComponent(i??``);return Tg.test(a)?a:void 0}function Og(e){return e===`etd-search`?`/etd-index/`:`/item-index/${e}/`}function kg(e){let t=e.get(`etd_item`),n=t===null?void 0:Dg(t),r=t!==null&&!n?t:void 0,i=n??`etd-search`,a=Og(i),o=e.get(`etd_base_url`);return o===null?{baseUrl:a,pageUrl:`${a}search.html`,item:i,rejectedItem:r}:{baseUrl:o,pageUrl:`${o.endsWith(`/`)?o:`${o}/`}search.html`,rejectedItem:r}}async function Ag(e,t=fetch.bind(globalThis)){let n;try{n=await t(`${Og(e)}current.json?t=${Date.now()}`)}catch(t){return{ok:!1,message:`Couldn't reach ${e}: ${jg(t)}.`}}if(n.status===404)return{ok:!1,message:`${e} doesn't have a current.json, so it isn't a static search index this demo can read.`};if(!n.ok)return{ok:!1,message:`Couldn't read ${e}'s current.json (HTTP ${n.status}).`};let r;try{r=await n.json()}catch{return{ok:!1,message:`${e}'s current.json isn't JSON, so it isn't a static search index this demo can read.`}}if(typeof r!=`object`||!r)return{ok:!1,message:`${e}'s current.json isn't an index manifest, so it isn't a static search index this demo can read.`};try{Pm(r)}catch(t){return{ok:!1,message:`${e} has a current.json, but not in a format this engine reads: ${jg(t)}.`}}return{ok:!0}}function jg(e){return(e instanceof Error?e.message:String(e)).replace(/^ETD index: /,``)}var $=class extends k{constructor(...t){super(...t),this.isEtdSearch=new URL(window.location.href).searchParams.get(`search_service`)===`etd`,this.etdIndex=kg(new URL(window.location.href).searchParams),this.searchService=this.initSearchServiceFromUrlParams(),this.etdControlsHidden=[``,`true`].includes(new URLSearchParams(window.location.search).get(`hide-etd-controls`)??`false`),this.resizeObserver=new Sn,this.toggleSlots=!1,this.cellWidth=18,this.cellHeight=29,this.rowGap=1.7,this.colGap=1.7,this.suppressFacets=!1,this.lazyLoadFacets=!1,this.loggedIn=!1,this.searchType=w.METADATA,this.analyticsManager=new e,this.analyticsHandler={sendPing:this.sendAnalytics.bind(this),sendEvent:this.sendAnalytics.bind(this),sendEventNoSampling:this.sendAnalytics.bind(this)}}get declaredSearch(){let e=this.searchService;return e.extraFacetGroups?e:void 0}sendAnalytics(e){console.log(`Analytics Received ----`,e),this.latestAction=e,this.analyticsManager?.sendEvent(e)}initSearchServiceFromUrlParams(){let e=new URL(window.location.href).searchParams;return this.isEtdSearch?(this.etdEngine=new Zh({baseUrl:this.etdIndex.baseUrl,facets:om}),xg(new Sm({engine:this.etdEngine}),e=>{this.etdFacets=e})):new nt({includeCredentials:!1,baseUrl:e.get(`search_base_url`)??void 0,servicePath:e.get(`search_service_path`)??void 0,debuggingEnabled:!!e.get(`debugging`)})}get etdControlsTemplate(){return E`
       <section
         id="etd-controls"
         aria-labelledby="etd-controls-heading"
@@ -8505,7 +8507,8 @@ fill=""></path>
             static index in the browser, no search backend
           </span>
         </h2>
-        ${this.etdSearchTemplate} ${this.etdBrowseTemplate}
+        ${this.etdItemTemplate} ${this.etdSearchTemplate}
+        ${this.etdBrowseTemplate}
         <etd-facet-summary
           .groups=${this.declaredSearch?.extraFacetGroups??[]}
           .facets=${this.etdFacets}
@@ -8513,9 +8516,10 @@ fill=""></path>
         <etd-compare-panel
           .engine=${this.etdEngine}
           .query=${this.searchQuery}
+          .pageUrl=${this.etdIndex.pageUrl}
         ></etd-compare-panel>
       </section>
-    `}get etdBrowseTemplate(){let e=(e,t)=>{let n=new URL(window.location.href);return n.search=``,n.searchParams.set(`search_service`,`etd`),n.searchParams.append(`and[]`,t),E`<li><a href=${n.href}>${e}</a></li>`};return E`
+    `}get etdBrowseTemplate(){let e=(e,t)=>{let n=new URL(window.location.href);n.search=``,n.searchParams.set(`search_service`,`etd`);for(let e of[`etd_item`,`etd_base_url`]){let t=new URL(window.location.href).searchParams.get(e);t!==null&&n.searchParams.set(e,t)}return n.searchParams.append(`and[]`,t),E`<li><a href=${n.href}>${e}</a></li>`};return E`
       <nav id="etd-browse" aria-label="Browse theses without a search">
         <span>Or browse:</span>
         <ul>
@@ -8523,7 +8527,37 @@ fill=""></path>
           ${e(`Theses in Portuguese`,`language:"Portuguese"`)}
         </ul>
       </nav>
-    `}get etdSearchTemplate(){return E`
+    `}get etdItemTemplate(){let{item:e,rejectedItem:t}=this.etdIndex,n=this.etdItemStatus?.message??(t===void 0?``:`etd_item “${t}” isn't an archive.org identifier, so this is searching etd-search.`);return E`
+      <form
+        id="etd-item"
+        @submit=${this.etdItemPressed}
+        @dragover=${this.etdItemDragOver}
+        @drop=${this.etdItemDropped}
+      >
+        <label for="etd-item-field">Item to search:</label>
+        <input
+          type="text"
+          id="etd-item-field"
+          name="item"
+          .value=${e??``}
+          placeholder="etd-search, or an archive.org/details/… link"
+          autocomplete="off"
+          spellcheck="false"
+          aria-describedby="etd-item-status"
+          aria-invalid=${this.etdItemStatus&&!this.etdItemStatus.busy?`true`:`false`}
+        />
+        <button type="submit" ?disabled=${this.etdItemStatus?.busy}>
+          Search this item
+        </button>
+        <p
+          id="etd-item-status"
+          role="status"
+          class=${this.etdItemStatus?.busy?``:`error`}
+        >
+          ${n}
+        </p>
+      </form>
+    `}etdItemDragOver(e){e.preventDefault()}etdItemDropped(e){let t=e.dataTransfer?.getData(`text/uri-list`).split(/\r?\n/)[0]||e.dataTransfer?.getData(`text/plain`);if(!t)return;e.preventDefault();let n=e.currentTarget,r=n.elements.namedItem(`item`);r.value=t.trim(),n.requestSubmit()}async etdItemPressed(e){e.preventDefault();let t=Dg(e.target.elements.namedItem(`item`).value);if(!t){this.etdItemStatus={busy:!1,message:`That isn't an archive.org item. Try an identifier like etd-search, or a link to archive.org/details/… or archive.org/download/….`};return}if(t===this.etdIndex.item){this.etdItemStatus=void 0;return}this.etdItemStatus={busy:!0,message:`Checking ${t}…`};let n=await Ag(t);if(!n.ok){this.etdItemStatus={busy:!1,message:n.message};return}let r=new URL(window.location.href);r.searchParams.delete(`etd_base_url`),t===`etd-search`?r.searchParams.delete(`etd_item`):r.searchParams.set(`etd_item`,t),window.location.assign(r.href)}get etdSearchTemplate(){return E`
       <form id="etd-search" role="search" @submit=${this.etdSearchPressed}>
         <label for="etd-query-field">
           Search theses, here and on the live etd-search page:
@@ -9075,6 +9109,41 @@ fill=""></path>
       color: #4a5a6a;
     }
 
+    #etd-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+      font-size: 1.4rem;
+    }
+
+    #etd-item-field {
+      flex: 0 1 30rem;
+      font-size: 1.4rem;
+      padding: 0.3rem 0.6rem;
+      border: 1px solid #8aa3bd;
+      border-radius: 4px;
+    }
+
+    #etd-item button {
+      font-size: 1.4rem;
+      padding: 0.3rem 1rem;
+    }
+
+    #etd-item-status {
+      flex-basis: 100%;
+      margin: 0;
+    }
+
+    #etd-item-status:empty {
+      display: none;
+    }
+
+    #etd-item-status.error {
+      color: #a3261a;
+    }
+
     #etd-search {
       display: flex;
       flex-wrap: wrap;
@@ -9314,4 +9383,4 @@ fill=""></path>
       font-weight: 200;
       text-align: center;
     }
-  `}};R([M()],$.prototype,`etdFacets`,void 0),R([M()],$.prototype,`etdControlsHidden`,void 0),R([M()],$.prototype,`toggleSlots`,void 0),R([M()],$.prototype,`currentPage`,void 0),R([M()],$.prototype,`searchQuery`,void 0),R([M()],$.prototype,`withinCollection`,void 0),R([M()],$.prototype,`cellWidth`,void 0),R([M()],$.prototype,`cellHeight`,void 0),R([M()],$.prototype,`rowGap`,void 0),R([M()],$.prototype,`colGap`,void 0),R([M()],$.prototype,`suppressFacets`,void 0),R([M()],$.prototype,`lazyLoadFacets`,void 0),R([M()],$.prototype,`loggedIn`,void 0),R([M()],$.prototype,`searchType`,void 0),R([M()],$.prototype,`profileElement`,void 0),R([M()],$.prototype,`withinProfile`,void 0),R([j({type:Object,reflect:!1})],$.prototype,`latestAction`,void 0),R([N(`#base-query-field`)],$.prototype,`baseQueryField`,void 0),R([N(`#base-collection-field`)],$.prototype,`baseCollectionField`,void 0),R([N(`#page-number-input`)],$.prototype,`pageNumberInput`,void 0),R([N(`collection-browser`)],$.prototype,`collectionBrowser`,void 0),R([N(`modal-manager`)],$.prototype,`modalManager`,void 0),$=R([A(`app-root`)],$);
+  `}};R([M()],$.prototype,`etdItemStatus`,void 0),R([M()],$.prototype,`etdFacets`,void 0),R([M()],$.prototype,`etdControlsHidden`,void 0),R([M()],$.prototype,`toggleSlots`,void 0),R([M()],$.prototype,`currentPage`,void 0),R([M()],$.prototype,`searchQuery`,void 0),R([M()],$.prototype,`withinCollection`,void 0),R([M()],$.prototype,`cellWidth`,void 0),R([M()],$.prototype,`cellHeight`,void 0),R([M()],$.prototype,`rowGap`,void 0),R([M()],$.prototype,`colGap`,void 0),R([M()],$.prototype,`suppressFacets`,void 0),R([M()],$.prototype,`lazyLoadFacets`,void 0),R([M()],$.prototype,`loggedIn`,void 0),R([M()],$.prototype,`searchType`,void 0),R([M()],$.prototype,`profileElement`,void 0),R([M()],$.prototype,`withinProfile`,void 0),R([j({type:Object,reflect:!1})],$.prototype,`latestAction`,void 0),R([N(`#base-query-field`)],$.prototype,`baseQueryField`,void 0),R([N(`#base-collection-field`)],$.prototype,`baseCollectionField`,void 0),R([N(`#page-number-input`)],$.prototype,`pageNumberInput`,void 0),R([N(`collection-browser`)],$.prototype,`collectionBrowser`,void 0),R([N(`modal-manager`)],$.prototype,`modalManager`,void 0),$=R([A(`app-root`)],$);
