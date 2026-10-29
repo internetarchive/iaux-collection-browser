@@ -32,7 +32,11 @@ Open https://local.archive.org:8080/?search_service=etd&query=sea%20ice
   put there through collection-browser's `facets-header-slot`.
 
 This only works under `pnpm start`: the index files aren't CORS-readable yet,
-so the dev server proxies them at `/etd-index` (see `vite.config.ts`).
+so the dev server proxies them at `/etd-index` (see `vite.config.ts`). At
+startup it looks up the item's storage server in archive.org's metadata API
+and reads from it directly, so requests skip archive.org/download's redirect.
+It says which in the terminal (`etd-index: reading from …`); if the lookup
+fails it goes through /download, as before.
 
 ## The layers
 
@@ -426,6 +430,12 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 - **CORS.** archive.org only allows cross-origin reads of some file types
   (`.json`, `.txt`), so the versioned index files need the dev proxy. Fixing
   that needs the item's owner or archive.org.
+- **archive.org errors.** Every read retries a 502, 503 or 504, or a request
+  with no answer, twice (after ~0.5 s, then ~1.5 s), in `retrying-fetch.ts`.
+  A 4xx or a 500 isn't retried: they're answers, and test fixtures use a 500
+  for a read that fails. A connection lost mid-download isn't retried. Each
+  `RangeFiles` counts retries in `stats.retries`, and the vector status line
+  shows them.
 - **Stale `dist/`.** Tests run from `dist/`, so a deleted test can still run.
   `rm -rf dist` before trusting a test count.
 - **Two copies of `iaux-item-metadata`.** search-service has its own, so its

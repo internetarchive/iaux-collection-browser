@@ -1,4 +1,5 @@
 import type { EtdCallOptions } from '../etd-engine';
+import { retryingFetch } from './retrying-fetch';
 
 /** Where the ETD index is published. */
 export const DEFAULT_ETD_BASE_URL = 'https://archive.org/download/etd-search/';
@@ -49,6 +50,8 @@ export function checkIndexFormat(meta: EtdIndexMeta): void {
 export interface EtdFetchStats {
   requests: number;
   bytes: number;
+  /** Requests asked again after a 5xx or no answer (see retrying-fetch.ts). */
+  retries: number;
 }
 
 /** Ranges per multi-range request unless the caller asks for more. */
@@ -59,13 +62,22 @@ const DEFAULT_RANGES_PER_REQUEST = 48;
  * large ones. Subclasses say how a file name becomes a url.
  */
 export abstract class RangeFiles {
-  readonly stats: EtdFetchStats = { requests: 0, bytes: 0 };
+  readonly stats: EtdFetchStats = { requests: 0, bytes: 0, retries: 0 };
+
+  /** Every read goes through this: it retries archive.org's 5xx answers. */
+  protected readonly fetchFn: typeof fetch;
 
   protected constructor(
     /** The storage-server directory the files are read from. */
     readonly dataUrl: string,
-    protected readonly fetchFn: typeof fetch,
-  ) {}
+    fetchFn: typeof fetch,
+  ) {
+    this.fetchFn = retryingFetch(fetchFn, {
+      onRetry: () => {
+        this.stats.retries += 1;
+      },
+    });
+  }
 
   /** The url of a file, with a query string (range reads append to it). */
   abstract fileUrl(name: string): string;
@@ -242,9 +254,12 @@ export class EtdIndexFiles extends RangeFiles {
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     // current.json is the last file written on publish, so it never points at
     // a version whose files are still uploading. Always fetched fresh.
-    const response = await fetchFn(`${base}current.json?t=${Date.now()}`, {
-      signal: options.signal,
-    });
+    const response = await retryingFetch(fetchFn)(
+      `${base}current.json?t=${Date.now()}`,
+      {
+        signal: options.signal,
+      },
+    );
     if (!response.ok) {
       throw new Error(`ETD index: current.json HTTP ${response.status}`);
     }

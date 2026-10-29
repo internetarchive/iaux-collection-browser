@@ -67,8 +67,11 @@ export interface FixtureIndex {
   fetch: typeof fetch;
   /** Every url fetched, in order. */
   requests: { url: string; range?: string }[];
-  /** Make the next request whose url contains this substring fail with HTTP 500. */
-  failNext(urlPart: string): void;
+  /**
+   * Make the next request whose url contains this substring fail, with HTTP
+   * 500 unless given another status (502 is retried; 500 isn't).
+   */
+  failNext(urlPart: string, status?: number): void;
 }
 
 export async function buildFixtureIndex(
@@ -256,7 +259,7 @@ export async function buildFixtureIndex(
   }
 
   const requests: FixtureIndex['requests'] = [];
-  const failures: string[] = [];
+  const failures: { urlPart: string; status: number }[] = [];
 
   const fakeFetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
@@ -266,10 +269,10 @@ export async function buildFixtureIndex(
     if (init?.signal?.aborted) {
       throw new DOMException('The operation was aborted.', 'AbortError');
     }
-    const failAt = failures.findIndex(part => url.includes(part));
+    const failAt = failures.findIndex(f => url.includes(f.urlPart));
     if (failAt >= 0) {
-      failures.splice(failAt, 1);
-      return new Response('', { status: 500 });
+      const [{ status }] = failures.splice(failAt, 1);
+      return new Response('', { status });
     }
 
     if (url.startsWith(`${FIXTURE_BASE}current.json`)) {
@@ -294,8 +297,8 @@ export async function buildFixtureIndex(
   return {
     fetch: fakeFetch,
     requests,
-    failNext(urlPart: string) {
-      failures.push(urlPart);
+    failNext(urlPart: string, status = 500) {
+      failures.push({ urlPart, status });
     },
   };
 }

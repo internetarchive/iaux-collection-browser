@@ -15,6 +15,8 @@
  *   requests at once, which archive.org serves much faster than one stream.
  */
 
+import { retryingFetch } from '../retrying-fetch';
+
 export const TRANSFORMERS_URL =
   'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2/dist/transformers.min.js';
 
@@ -159,7 +161,7 @@ export async function fetchInParallel(
  * function. A failure rejects, and a later call can try again.
  */
 export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
-  const fetchFn = options.fetch ?? fetch.bind(globalThis);
+  const fetchFn = retryingFetch(options.fetch ?? fetch.bind(globalThis));
   const parallel = options.parallel ?? 6;
   const lib = (await import(
     /* @vite-ignore */ options.transformersUrl ?? TRANSFORMERS_URL

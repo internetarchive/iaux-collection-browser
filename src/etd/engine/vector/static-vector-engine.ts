@@ -74,6 +74,8 @@ export interface VectorScanSummary {
   cells: number;
   bytes: number;
   requests: number;
+  /** Requests asked again after a 5xx or no answer. */
+  retries: number;
   /** Milliseconds per step; `total` is the whole search. */
   timings: {
     load: number;
@@ -290,6 +292,7 @@ export class StaticVectorEngine implements EtdEngine {
       cells: scan.cells.length,
       bytes: scan.bytes,
       requests: scan.requests,
+      retries: scan.retries,
       timings: {
         load: scan.loadMs,
         embed: scan.embedMs,

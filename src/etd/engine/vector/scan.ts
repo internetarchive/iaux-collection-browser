@@ -140,9 +140,10 @@ export interface ScanOptions extends EtdCallOptions {
 export interface ScanProgress {
   cellsDone: number;
   cells: number;
-  /** Bytes and requests so far, for this scan. */
+  /** Bytes, requests and retried requests so far, for this scan. */
   bytes: number;
   requests: number;
+  retries: number;
 }
 
 /**
@@ -168,6 +169,8 @@ export interface ScanResult {
   cells: number[];
   bytes: number;
   requests: number;
+  /** Requests asked again after a 5xx or no answer. */
+  retries: number;
   /** Milliseconds: reading and scoring cells, then re-scoring and facets. */
   timings: { scan: number; rerank: number };
 }
@@ -313,6 +316,7 @@ export async function scanVectors(
     cells: cells.length,
     bytes: files.stats.bytes - before.bytes,
     requests: files.stats.requests - before.requests,
+    retries: files.stats.retries - before.retries,
   });
   const fileName = codes ? 'cell-codes.bin' : 'cells.bin';
   await Promise.all(
@@ -358,6 +362,7 @@ export async function scanVectors(
     cells,
     bytes: files.stats.bytes - before.bytes,
     requests: files.stats.requests - before.requests,
+    retries: files.stats.retries - before.retries,
     timings: {
       scan: scanned - started,
       rerank: performance.now() - scanned,

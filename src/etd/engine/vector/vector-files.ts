@@ -1,5 +1,6 @@
 import type { EtdCallOptions } from '../../etd-engine';
 import { DEFAULT_ETD_BASE_URL, RangeFiles } from '../index-files';
+import { retryingFetch } from '../retrying-fetch';
 
 /**
  * ivf-meta.json: the vector store's manifest. The store sits in the same item
@@ -58,14 +59,22 @@ export class VectorStoreFiles extends RangeFiles {
     // Unversioned, so always fetched fresh: a republished store shows at once.
     let response: Response | undefined;
     try {
-      response = await fetchFn(`${base}ivf-meta.json?t=${Date.now()}`, {
-        signal: options.signal,
-      });
+      response = await retryingFetch(fetchFn)(
+        `${base}ivf-meta.json?t=${Date.now()}`,
+        {
+          signal: options.signal,
+        },
+      );
     } catch (err) {
       if (options.signal?.aborted) throw err;
     }
-    if (!response?.ok) {
+    if (!response || response.status === 404) {
       throw new Error('ETD vector store: no ivf-meta.json on this item');
+    }
+    if (!response.ok) {
+      throw new Error(
+        `ETD vector store: ivf-meta.json HTTP ${response.status}`,
+      );
     }
     const meta = (await response.json()) as IvfMeta;
     checkIvfMeta(meta);

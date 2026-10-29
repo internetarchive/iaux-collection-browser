@@ -40,7 +40,13 @@ describe('etd-vector-status', () => {
         text: 'sea ice',
         phase: 'scanning',
         elapsed: 4200,
-        progress: { cellsDone: 12, cells: 32, bytes: 30_100_000, requests: 20 },
+        progress: {
+          cellsDone: 12,
+          cells: 32,
+          bytes: 30_100_000,
+          requests: 20,
+          retries: 0,
+        },
       },
     );
     expect(text(el)).to.contain(
@@ -61,6 +67,7 @@ describe('etd-vector-status', () => {
           cells: 32,
           bytes: 83_433_542,
           requests: 61,
+          retries: 0,
           timings: {
             load: 2161,
             embed: 42.7,
@@ -75,6 +82,25 @@ describe('etd-vector-status', () => {
       'Searched “sea ice” by meaning in 14.9 s: 407,212 candidates in 32 cells, 83.4 MB in 61 requests.',
     );
     expect(text(el)).to.contain('embedding 43 ms, cells 10.8 s');
+  });
+
+  it('says when archive.org had to be asked again', async () => {
+    const el = await status(
+      { state: 'ready' },
+      {
+        text: 'sea ice',
+        phase: 'scanning',
+        elapsed: 4200,
+        progress: {
+          cellsDone: 12,
+          cells: 32,
+          bytes: 30_100_000,
+          requests: 22,
+          retries: 2,
+        },
+      },
+    );
+    expect(text(el)).to.contain('4.2 s, 2 retried after an error');
   });
 
   it('says why a search failed', async () => {
