@@ -9,6 +9,7 @@ import type {
 import { EtdFacetRows } from '../facets';
 import type { EtdFacetReader } from '../facets';
 import { DEFAULT_ETD_BASE_URL } from '../index-files';
+import { sampleOf } from '../sample';
 import { countFacets, filterFor } from '../static-etd-engine';
 import type { DocFilter } from '../static-etd-engine';
 import type { Embed } from './embedder';
@@ -260,6 +261,14 @@ export class StaticVectorEngine implements EtdEngine {
           if (didAt(rank) + 1 === docId) return true;
         return false;
       },
+      async sample(count, sampleOptions) {
+        const { picked, of } = sampleOf(ranked, count);
+        const docs = await records.rows(picked.map(didAt), sampleOptions);
+        return {
+          records: docs.map((doc, i) => vectorRecord(doc, rows, picked[i])),
+          of,
+        };
+      },
       topDids(count) {
         return Array.from(scan.order.subarray(0, count), c => scan.dids[c]);
       },
@@ -379,7 +388,8 @@ interface LatestScan {
 
 /**
  * A first answer from the cells read so far: their best rows by the 4-bit
- * scores, without facets. `refined` is the final query; facets wait for it.
+ * scores, without facets. `refined` is the final query; facets and samples
+ * wait for it.
  * Its records have no archived-copy links yet: those need the facet rows.
  */
 function firstQuery(
@@ -400,6 +410,9 @@ function firstQuery(
     },
     async facets(options) {
       return (await refined).facets(options);
+    },
+    async sample(count, options) {
+      return (await refined).sample!(count, options);
     },
     rankOf(docId) {
       const rank = dids.indexOf(docId - 1) + 1;
@@ -500,6 +513,9 @@ function emptyQuery(): VectorQuery {
     },
     matches() {
       return false;
+    },
+    async sample() {
+      return { records: [], of: 0 };
     },
     topDids() {
       return [];

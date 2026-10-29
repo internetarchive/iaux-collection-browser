@@ -12,6 +12,10 @@ import type { EtdIndexFiles } from './index-files';
  *
  * Ported from etd-search/search.html (page build p110).
  */
+/** Stubs per request and requests at once, for `stubs`: see rangesInParallel. */
+const STUBS_PER_REQUEST = 64;
+const STUB_REQUESTS_IN_FLIGHT = 6;
+
 export class EtdRecords {
   private constructor(
     private readonly files: EtdIndexFiles,
@@ -44,6 +48,28 @@ export class EtdRecords {
       // Snippets are optional: records still show without abstracts.
     }
     return new EtdRecords(files, snippetsSize);
+  }
+
+  /**
+   * Reads records for docIds from their stubs alone, in the given order:
+   * one wave, no snippet, and the url as the stub has it (cut short for
+   * ~2.5%). For describing many matches, not showing them. Ids out of range
+   * are skipped.
+   */
+  async stubs(
+    docIds: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<EtdRecord[]> {
+    const { n_docs: nDocs, stub_bytes: stubBytes } = this.files.meta;
+    const ids = docIds.filter(d => Number.isInteger(d) && d >= 1 && d <= nDocs);
+    const stubs = await this.files.rangesInParallel(
+      'stubs.bin',
+      ids.map(d => [(d - 1) * stubBytes, stubBytes] as const),
+      STUBS_PER_REQUEST,
+      STUB_REQUESTS_IN_FLIGHT,
+      options,
+    );
+    return ids.map((docId, i) => ({ docId, ...decodeStub(stubs[i]) }));
   }
 
   /**

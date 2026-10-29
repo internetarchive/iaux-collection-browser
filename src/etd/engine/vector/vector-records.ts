@@ -25,6 +25,10 @@ export interface VectorDoc {
 /** How many docs to keep for re-reading: a few searches' worth of pages. */
 const RECENT_DOCS = 2000;
 
+/** Rows per request and requests at once, for `rows`: see rangesInParallel. */
+const ROWS_PER_REQUEST = 64;
+const ROW_REQUESTS_IN_FLIGHT = 6;
+
 export class VectorRecords {
   private constructor(
     private readonly files: VectorStoreFiles,
@@ -59,6 +63,26 @@ export class VectorRecords {
       }
     }
     return new VectorRecords(files, snippetsSize);
+  }
+
+  /**
+   * Docs for vector ids from their docs.bin rows alone, in the given order:
+   * one wave, no abstract. For describing many matches, not showing them.
+   */
+  async rows(
+    dids: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<VectorDoc[]> {
+    const { n, docbytes, fields } = this.files.meta;
+    const ids = dids.filter(d => Number.isInteger(d) && d >= 0 && d < n);
+    const rows = await this.files.rangesInParallel(
+      'docs.bin',
+      ids.map(d => [d * docbytes, docbytes] as const),
+      ROWS_PER_REQUEST,
+      ROW_REQUESTS_IN_FLIGHT,
+      options,
+    );
+    return ids.map((did, i) => ({ did, ...decodeRow(rows[i], fields) }));
   }
 
   /** Docs for vector ids, in the given order; ids out of range are skipped. */

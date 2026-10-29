@@ -61,6 +61,32 @@ describe('EtdIndexFiles', () => {
     expect(index.requests.length - before).to.equal(3);
   });
 
+  it('reads scattered ranges a few requests at once, in the order asked', async () => {
+    const index = await buildFixtureIndex(THESES);
+    const files = await EtdIndexFiles.open(FIXTURE_BASE, {
+      fetch: index.fetch,
+    });
+    const before = index.requests.length;
+
+    // Every third thesis, from the last back: 14 ranges, 4 a request.
+    const ids = THESES.map((_, i) => i)
+      .filter(i => i % 3 === 0)
+      .reverse();
+    const stubs = await files.rangesInParallel(
+      'stubs.bin',
+      ids.map(i => [i * 320, 320] as const),
+      4,
+      2,
+    );
+
+    expect(index.requests.length - before).to.equal(4);
+    const title = (stub: Uint8Array) =>
+      new TextDecoder().decode(stub.subarray(0, 20)).replace(/\0+$/, '');
+    expect(stubs.map(title)).to.deep.equal(
+      ids.map(i => `Thesis number ${i + 1}`),
+    );
+  });
+
   it('falls back to single reads when the multi-range request fails', async () => {
     const index = await buildFixtureIndex(THESES);
     const files = await EtdIndexFiles.open(FIXTURE_BASE, {

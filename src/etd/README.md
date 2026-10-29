@@ -30,6 +30,15 @@ Open https://local.archive.org:8080/?search_service=etd&query=sea%20ice
   between **Words** (text rank) and **Meaning** (vector rank, search by
   meaning; see below). Meaning is kept in the url as `&etd_rank=vec`. It's
   put there through collection-browser's `facets-header-slot`.
+- "Facets found in the results", a drawer in the panel, finds facets from
+  the matches' own records, with no facet file (`found-facets.ts`). Opened,
+  it reads up to 3,000 matches picked at random (all of them when there are
+  fewer) and shows the fields whose values repeat, as estimates for every
+  match, or exact counts when it read them all. It says why the others
+  aren't groups. Read-only: the sidebar's facets still filter.
+  - "sea ice", cold: 3,000 of 77,112 in 8.8 s. Repository and decade are
+    groups; creators aren't (3,596 values in 3,000 results).
+  - "tardigrade": all 120 in 1.3 s.
 
 This only works under `pnpm start`: the index files aren't CORS-readable yet,
 so the dev server proxies them at `/etd-index` (see `vite.config.ts`). At

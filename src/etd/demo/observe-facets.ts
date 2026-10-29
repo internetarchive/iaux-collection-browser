@@ -25,6 +25,10 @@ export type ObservedFacets =
  * when it lands. A request a newer one has replaced isn't reported, as
  * collection-browser drops it too.
  *
+ * `onRequest`, when given, gets each facets request's params as it starts:
+ * the query and filters of the search collection-browser is showing, even
+ * one it found in its cache.
+ *
  * A service declaring its own facet groups keeps declaring them, and one
  * that refines its results still says so.
  */
@@ -35,6 +39,7 @@ type ObservableService = SearchServiceInterface &
 export function observeFacets(
   service: ObservableService,
   listener: (facets: ObservedFacets) => void,
+  onRequest?: (params: SearchParams) => void,
 ): ObservableService {
   let latest = 0;
   return {
@@ -59,6 +64,7 @@ export function observeFacets(
       latest += 1;
       const request = latest;
       listener({ state: 'loading' });
+      onRequest?.(params);
       let result: Result<SearchResponse, SearchServiceError>;
       try {
         result = await service.search(params, searchType);

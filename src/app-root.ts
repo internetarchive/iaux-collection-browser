@@ -32,6 +32,9 @@ import type { FacetDeclaringSearchService } from './serverless-search/serverless
 import './etd/compare/etd-compare-panel';
 import { observeFacets, type ObservedFacets } from './etd/demo/observe-facets';
 import './etd/demo/etd-facet-summary';
+import './etd/demo/etd-found-facets';
+import { etdRequestFromParams } from './etd/etd-query';
+import type { EtdRequest } from './etd/etd-query';
 import {
   DEFAULT_ETD_ITEM,
   checkItemIndex,
@@ -109,6 +112,9 @@ export class AppRoot extends LitElement {
 
   /** The facets collection-browser last got from the ETD service. */
   @state() private etdFacets?: ObservedFacets;
+
+  /** The search collection-browser is showing: its words and filters. */
+  @state() private etdRequest?: EtdRequest;
 
   /** Whether the ETD panel is hidden: shown unless `hide-etd-controls` says so. */
   @state() private etdControlsHidden = ['', 'true'].includes(
@@ -200,10 +206,20 @@ export class AppRoot extends LitElement {
               facets: ETD_FACETS,
             })),
           });
-    const observed = observeFacets(service, facets => {
-      // A slow facets request from the other ranking can land after a switch.
-      if (this.searchService === observed) this.etdFacets = facets;
-    });
+    const observed = observeFacets(
+      service,
+      facets => {
+        // A slow facets request from the other ranking can land after a switch.
+        if (this.searchService === observed) this.etdFacets = facets;
+      },
+      params => {
+        if (this.searchService !== observed) return;
+        this.etdRequest = etdRequestFromParams(
+          params,
+          rank === 'vector' ? ETD_VECTOR_FACETS : ETD_FACETS,
+        );
+      },
+    );
     this.etdServices[rank] = observed;
     return observed;
   }
@@ -258,6 +274,7 @@ export class AppRoot extends LitElement {
     window.history.replaceState(window.history.state, '', url.href);
     this.etdRank = rank;
     this.etdFacets = undefined;
+    this.etdRequest = undefined;
     this.searchService = this.etdService(rank);
   }
 
@@ -320,8 +337,8 @@ export class AppRoot extends LitElement {
 
   /**
    * The ETD demo's controls, grouped: its own search box, a summary of the
-   * service's own facets in the results, and the panel comparing against
-   * the live page.
+   * service's own facets in the results, the facets found in the results'
+   * own records, and the panel comparing against the live page.
    */
   private get etdControlsTemplate() {
     return html`
@@ -349,6 +366,12 @@ export class AppRoot extends LitElement {
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
           .facets=${this.etdFacets}
         ></etd-facet-summary>
+        <etd-found-facets
+          .engine=${this.etdRank === 'vector'
+            ? this.etdVectorEngine
+            : this.etdEngine}
+          .request=${this.etdRequest}
+        ></etd-found-facets>
         ${this.etdCompare
           ? html`<etd-compare-panel
               .engine=${this.etdRank === 'vector'
