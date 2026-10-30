@@ -307,6 +307,17 @@ describe('StaticVectorEngine', () => {
       expect(await first.facets()).to.deep.equal(await final.facets());
     });
 
+    it("samples a first answer's matches from the final one", async () => {
+      const { engine } = await engineFor(progressive);
+      const first = await engine.query('sea ice', {});
+      const sampled = await first.sample!(10);
+      // Every cell's matches, not just the first cell's three.
+      expect(first.result.reachable).to.equal(3);
+      expect(sampled.of).to.equal((await first.refined)!.result.reachable);
+      expect(sampled.of).to.be.greaterThan(3);
+      expect(sampled.records).to.have.length(sampled.of);
+    });
+
     it('waits for the whole scan when there are filters', async () => {
       const { engine } = await engineFor(progressive);
       const query = await engine.query('sea ice', { year: { min: 2010 } });
@@ -323,6 +334,30 @@ describe('StaticVectorEngine', () => {
       expect(query.refined).to.be.undefined;
       expect(query.scan?.candidates).to.equal(6);
     });
+  });
+
+  it('samples the matches paging reaches, from docs.bin rows alone', async () => {
+    const { engine, fixture } = await engineFor({
+      scan: { nprobe: 2, rerank: 3 },
+    });
+    const query = await engine.query('sea ice', {});
+    const before = fixture.requests.length;
+
+    const all = await query.sample!(10);
+    expect(all.of).to.equal(3);
+    expect(all.records.map(r => r.domain).sort()).to.deep.equal([
+      'archive.org',
+      'oda.uit.no',
+      'repositorio.ufsc.br',
+    ]);
+    expect(all.records.every(r => r.snippet === undefined)).to.be.true;
+    expect(fixture.requests.slice(before).map(r => r.url)).to.satisfy(
+      (urls: string[]) => urls.every(url => url.includes('docs.bin')),
+    );
+
+    const some = await query.sample!(1);
+    expect(some.of).to.equal(3);
+    expect(some.records).to.have.length(1);
   });
 
   it('reads one record by docId', async () => {

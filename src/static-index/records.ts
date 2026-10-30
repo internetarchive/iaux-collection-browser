@@ -28,6 +28,10 @@ const DIRS_PER_REQUEST = 512;
 const OVERFLOWS_PER_REQUEST = 256;
 const SNIPPETS_PER_REQUEST = 64;
 
+/** Records per request and requests at once, for `fields`: see rangesInParallel. */
+const FIELDS_PER_REQUEST = 64;
+const FIELD_REQUESTS_IN_FLIGHT = 6;
+
 export class StaticRecords {
   private constructor(
     private readonly files: RangeFiles,
@@ -68,6 +72,33 @@ export class StaticRecords {
       }
     }
     return new StaticRecords(files, space, snippetsSize);
+  }
+
+  /**
+   * Records for ids from their fixed-size records alone, in the given
+   * order: one wave, no overflow or snippet, so a field cut to its width
+   * stays cut. For describing many records, not showing them. Ids out of
+   * range are skipped.
+   */
+  async fields(
+    ids: readonly number[],
+    options?: CallOptions,
+  ): Promise<StaticRecord[]> {
+    const { count, firstId, records: layout } = this.space;
+    const wanted = ids.filter(
+      id => Number.isInteger(id) && id >= firstId && id < firstId + count,
+    );
+    const rows = await this.files.rangesInParallel(
+      layout.file,
+      wanted.map(id => [(id - firstId) * layout.bytes, layout.bytes] as const),
+      FIELDS_PER_REQUEST,
+      FIELD_REQUESTS_IN_FLIGHT,
+      options,
+    );
+    return wanted.map((id, i) => ({
+      id,
+      fields: decodeRecord(rows[i], layout),
+    }));
   }
 
   /** Records for ids, in the given order; ids out of range are skipped. */

@@ -191,6 +191,48 @@ export abstract class RangeFiles {
       }),
     );
   }
+
+  /**
+   * `ranges`, for many scattered ranges: `rangesPerRequest` a request, with
+   * up to `parallel` requests in flight rather than one after another.
+   * Scattered ranges cost the storage server a disk seek each, so a request
+   * of many waits on all of them: 3,000 records read 256 a request, one
+   * after another, took 25-34 s cold; 64 a request, 6 at once, 7-9 s.
+   */
+  async rangesInParallel(
+    name: string,
+    parts: readonly (readonly [number, number])[],
+    rangesPerRequest: number,
+    parallel: number,
+    options?: CallOptions,
+  ): Promise<Uint8Array[]> {
+    const out: Uint8Array[] = new Array(parts.length);
+    const starts: number[] = [];
+    for (let i = 0; i < parts.length; i += rangesPerRequest) starts.push(i);
+    let next = 0;
+    await Promise.all(
+      Array.from(
+        { length: Math.min(Math.max(1, parallel), starts.length) },
+        async () => {
+          while (next < starts.length) {
+            const start = starts[next];
+            next += 1;
+            const chunk = parts.slice(start, start + rangesPerRequest);
+            const read = await this.ranges(
+              name,
+              chunk,
+              rangesPerRequest,
+              options,
+            );
+            read.forEach((bytes, i) => {
+              out[start + i] = bytes;
+            });
+          }
+        },
+      ),
+    );
+    return out;
+  }
 }
 
 function multipartBoundary(contentType: string): string | undefined {

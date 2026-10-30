@@ -6,6 +6,7 @@ import type {
   EtdQuery,
   EtdQueryBoost,
   EtdRecord,
+  EtdSample,
 } from '../etd-engine';
 import { EtdDictionary } from './dictionary';
 import type { EtdFileCheck } from './file-checks';
@@ -20,6 +21,7 @@ import { decodePostings } from './postings';
 import type { FieldFilterClause, FieldPrefix } from './query-parser';
 import { institutionValues, parseQuery } from './query-parser';
 import { EtdRecords } from './records';
+import { sampleOf } from './sample';
 import {
   BASE_PREFIXES,
   boostSharedFields,
@@ -245,6 +247,9 @@ export class StaticEtdEngine implements EtdEngine {
       matches(docId) {
         return scores.has(docId);
       },
+      sample(count, sampleOptions) {
+        return sampleRecords(scores.keys(), count, records, sampleOptions);
+      },
       boost,
     };
   }
@@ -422,6 +427,9 @@ function listFiltered(
     matches(docId) {
       return docId >= 1 && docId <= nDocs && passes(rows, docId);
     },
+    sample(count, options) {
+      return sampleRecords(passing(), count, records, options);
+    },
   };
 }
 
@@ -440,5 +448,19 @@ function emptyQuery(): EtdQuery {
     matches() {
       return false;
     },
+    async sample() {
+      return { records: [], of: 0 };
+    },
   };
+}
+
+/** Up to `count` of `docIds` at random, read light (stubs only). */
+async function sampleRecords(
+  docIds: Iterable<number>,
+  count: number,
+  records: EtdRecords,
+  options?: EtdCallOptions,
+): Promise<EtdSample> {
+  const { picked, of } = sampleOf(docIds, count);
+  return { records: await records.stubs(picked, options), of };
 }

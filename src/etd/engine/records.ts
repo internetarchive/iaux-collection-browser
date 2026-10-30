@@ -1,4 +1,5 @@
 import { StaticRecords } from '../../static-index/records';
+import type { StaticRecord } from '../../static-index/records';
 import type { EtdCallOptions, EtdRecord } from '../etd-engine';
 import type { EtdIndexFiles } from './index-files';
 import { etdTextRecords } from './layouts';
@@ -30,6 +31,21 @@ export class EtdRecords {
   }
 
   /**
+   * Reads records for docIds from their stubs alone, in the given order:
+   * one wave, no snippet, and the url as the stub has it (cut short for
+   * ~2.5%). For describing many matches, not showing them. Ids out of range
+   * are skipped.
+   */
+  async stubs(
+    docIds: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<EtdRecord[]> {
+    return (await this.records.fields(docIds, options)).map(record =>
+      etdRecord(record),
+    );
+  }
+
+  /**
    * Reads records for docIds, in the given order. Ids out of range are
    * skipped.
    */
@@ -37,19 +53,22 @@ export class EtdRecords {
     docIds: readonly number[],
     options?: EtdCallOptions,
   ): Promise<EtdRecord[]> {
-    return (await this.records.read(docIds, options)).map(
-      ({ id, fields, snippet }) => {
-        const record: EtdRecord = {
-          docId: id,
-          title: fields.title,
-          creators: fields.creators,
-          date: fields.date,
-          domain: fields.domain,
-          url: fields.url,
-        };
-        if (snippet) record.snippet = snippet;
-        return record;
-      },
+    return (await this.records.read(docIds, options)).map(record =>
+      etdRecord(record),
     );
   }
+}
+
+/** An ETD record from what the generic reader read. */
+function etdRecord({ id, fields, snippet }: StaticRecord): EtdRecord {
+  const record: EtdRecord = {
+    docId: id,
+    title: fields.title,
+    creators: fields.creators,
+    date: fields.date,
+    domain: fields.domain,
+    url: fields.url,
+  };
+  if (snippet) record.snippet = snippet;
+  return record;
 }

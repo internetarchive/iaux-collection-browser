@@ -188,6 +188,30 @@ describe('StaticRecords', () => {
     ]);
   });
 
+  it('reads fields alone from the records file, cut where the record cuts them', async () => {
+    const { reader, requests } = await buildPapers(PAPERS);
+    const before = requests.length;
+    const records = await reader.fields([2, 3, 1, -1]);
+    expect(records).to.deep.equal([
+      {
+        id: 2,
+        fields: { title: 'Baroque opera', year: '2001', doi: '10.1000/opera' },
+      },
+      // No overflow read: the doi stays at the record's 20 bytes.
+      {
+        id: 1,
+        fields: {
+          title: 'Hanseatic trade',
+          year: '1998',
+          doi: '10.1000/hanseatic-tr',
+        },
+      },
+    ]);
+    expect(requests.slice(before).map(r => r.file)).to.deep.equal([
+      'papers.bin',
+    ]);
+  });
+
   it('drops a character cut in half by a field’s width', async () => {
     // 'ø' is two bytes; the title field ends after its first.
     const title = `${'a'.repeat(39)}ø`;

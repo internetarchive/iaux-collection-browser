@@ -72,6 +72,29 @@ describe('observeFacets', () => {
     });
   });
 
+  it('tells which search each facets request is for, as it starts', async () => {
+    // The demo's found-facets drawer follows the search shown this way, even
+    // one the service answers from its cache.
+    const { service, calls } = controlledService();
+    const searches: SearchParams[] = [];
+    const observed = observeFacets(
+      service,
+      () => {},
+      params => searches.push(params),
+    );
+
+    observed.search({ query: 'sea ice', rows: 50 });
+    expect(searches).to.be.empty; // a hits request
+    const facets = {
+      query: 'sea ice',
+      rows: 0,
+      filters: { language: { English: 'inc' } },
+    } as unknown as SearchParams;
+    observed.search(facets);
+    expect(searches).to.deep.equal([facets]);
+    calls.forEach(call => call.resolve(response()));
+  });
+
   it('ignores hits requests', async () => {
     const { service, calls } = controlledService();
     const seen: ObservedFacets[] = [];

@@ -1,4 +1,5 @@
 import { StaticRecords } from '../../../static-index/records';
+import type { StaticRecord } from '../../../static-index/records';
 import type { EtdCallOptions } from '../../etd-engine';
 import { etdVectorRecords } from '../layouts';
 import type { VectorStoreFiles } from './vector-files';
@@ -50,6 +51,19 @@ export class VectorRecords {
     );
   }
 
+  /**
+   * Docs for vector ids from their docs.bin rows alone, in the given order:
+   * one wave, no abstract. For describing many matches, not showing them.
+   */
+  async rows(
+    dids: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<VectorDoc[]> {
+    return (await this.records.fields(dids, options)).map(record =>
+      vectorDoc(record),
+    );
+  }
+
   /** Docs for vector ids, in the given order; ids out of range are skipped. */
   async read(
     dids: readonly number[],
@@ -76,19 +90,22 @@ export class VectorRecords {
     ids: readonly number[],
     options?: EtdCallOptions,
   ): Promise<VectorDoc[]> {
-    return (await this.records.read(ids, options)).map(
-      ({ id, fields, snippet }) => {
-        const doc: VectorDoc = {
-          did: id,
-          title: fields.title,
-          host: fields.host,
-          date: fields.date,
-          landing: fields.landing,
-          lang: fields.lang,
-        };
-        if (snippet) doc.snippet = snippet;
-        return doc;
-      },
+    return (await this.records.read(ids, options)).map(record =>
+      vectorDoc(record),
     );
   }
+}
+
+/** A vector store doc from what the generic reader read. */
+function vectorDoc({ id, fields, snippet }: StaticRecord): VectorDoc {
+  const doc: VectorDoc = {
+    did: id,
+    title: fields.title,
+    host: fields.host,
+    date: fields.date,
+    landing: fields.landing,
+    lang: fields.lang,
+  };
+  if (snippet) doc.snippet = snippet;
+  return doc;
 }
