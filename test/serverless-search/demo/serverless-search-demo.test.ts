@@ -1,7 +1,10 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import '../../../src/serverless-search/demo/serverless-search-demo';
-import type { ServerlessSearchDemo } from '../../../src/serverless-search/demo/serverless-search-demo';
+import {
+  ETD_PRESET_QUERIES,
+  type ServerlessSearchDemo,
+} from '../../../src/serverless-search/demo/serverless-search-demo';
 
 const startUrl = window.location.href;
 
@@ -85,6 +88,33 @@ describe('serverless-search-demo', () => {
 
     expect(panel.querySelector('etd-compare-panel')).to.be.null;
     expect(panel.querySelector('form#etd-item')).to.exist;
+  });
+
+  it('runs a preset search, as if typed into the search box', async () => {
+    const { el, root, panel } = await demoAt('?etd_compare=0');
+    const group = panel.querySelector('#etd-presets[role="group"]');
+    const label = panel.querySelector('#etd-presets-label');
+    expect(group?.getAttribute('aria-labelledby')).to.equal(
+      'etd-presets-label',
+    );
+    expect(label?.textContent?.trim()).to.equal('Try a search:');
+
+    const buttons = [
+      ...(group?.querySelectorAll('button') ?? []),
+    ] as HTMLButtonElement[];
+    expect(buttons.map(b => b.textContent?.trim())).to.deep.equal(
+      ETD_PRESET_QUERIES,
+    );
+    // Buttons, not submits, so they never post the search form
+    buttons.forEach(b => expect(b.type).to.equal('button'));
+
+    const phrase = buttons[1];
+    phrase.click();
+    await el.updateComplete;
+
+    expect(el.collectionBrowser?.baseQuery).to.equal('"sea ice" AND antarctic');
+    const field = root.querySelector('#etd-query-field') as HTMLInputElement;
+    expect(field.value).to.equal('"sea ice" AND antarctic');
   });
 
   it("starts a host's worker when the url opens on vector rank", async () => {

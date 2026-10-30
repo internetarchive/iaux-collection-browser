@@ -32,6 +32,18 @@ import {
 } from '../../etd/demo/item-index';
 
 /**
+ * Searches to start from, each run as if typed into the search box. The
+ * quoted one shows the live page's query syntax: a phrase, then AND.
+ */
+export const ETD_PRESET_QUERIES = [
+  'sea ice',
+  '"sea ice" AND antarctic',
+  'climate change adaptation',
+  'machine learning',
+  'educação',
+];
+
+/**
  * The serverless search demo: collection-browser searching the ETD theses
  * & dissertations index in the browser, with no search backend, under a
  * panel of demo controls that can be shown or hidden.
@@ -364,7 +376,7 @@ export class ServerlessSearchDemo extends LitElement {
             </p>`
           : nothing}
         ${this.etdItemTemplate} ${this.etdSearchTemplate}
-        ${this.etdVectorStatusTemplate}
+        ${this.etdPresetsTemplate} ${this.etdVectorStatusTemplate}
         ${this.etdRank === 'text' ? this.etdBrowseTemplate : nothing}
         <etd-facet-summary
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
@@ -527,6 +539,25 @@ export class ServerlessSearchDemo extends LitElement {
         />
         <button type="submit">Search</button>
       </form>
+    `;
+  }
+
+  private get etdPresetsTemplate() {
+    return html`
+      <div id="etd-presets" role="group" aria-labelledby="etd-presets-label">
+        <span id="etd-presets-label">Try a search:</span>
+        ${ETD_PRESET_QUERIES.map(
+          query =>
+            html`<button
+              type="button"
+              @click=${() => {
+                this.searchQuery = query;
+              }}
+            >
+              ${query}
+            </button>`,
+        )}
+      </div>
     `;
   }
 
@@ -705,6 +736,27 @@ export class ServerlessSearchDemo extends LitElement {
       cursor: pointer;
     }
 
+    #etd-presets {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 0.6rem;
+      margin: 0.6rem 0;
+      font-size: 1.4rem;
+    }
+    #etd-presets button {
+      font-size: 1.4rem;
+      padding: 0.3rem 1rem;
+      border: 1px solid #2c5f8f;
+      border-radius: 4px;
+      background: white;
+      color: #1d3f61;
+      cursor: pointer;
+    }
+    #etd-presets button:hover,
+    #etd-presets button:focus-visible {
+      background: #e8f0f8;
+    }
     #etd-browse {
       display: flex;
       flex-wrap: wrap;
