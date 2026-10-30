@@ -304,6 +304,15 @@ describe('serverless-search-demo', () => {
     expect(unlinked.panel.querySelector('#etd-docs')).to.be.null;
   });
 
+  it('links the overview page by default', async () => {
+    const { panel } = await demoAt('');
+    const link = panel.querySelector('#etd-docs a');
+    expect(link?.getAttribute('href')).to.equal(
+      'etd/static-index-overview.html',
+    );
+    expect(link?.textContent).to.contain('Static Index Search overview');
+  });
+
   it('searches collection-browser from its own search box', async () => {
     const { el, panel } = await demoAt('?etd_compare=0');
     const form = panel.querySelector('#etd-search') as HTMLFormElement;

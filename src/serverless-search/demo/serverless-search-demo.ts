@@ -96,7 +96,7 @@ export class ServerlessSearchDemo extends LitElement {
   @property({ attribute: false }) workerFactory?: () => Worker;
 
   /** Where "How it works" links; no link when empty. */
-  @property({ type: String }) docsUrl = 'etd/static-index-search.html';
+  @property({ type: String }) docsUrl = 'etd/static-index-overview.html';
 
   @property({ attribute: false }) analyticsHandler?: AnalyticsManagerInterface;
 
@@ -480,7 +480,7 @@ export class ServerlessSearchDemo extends LitElement {
         ${this.docsUrl
           ? html`<p id="etd-docs">
               <a href=${this.docsUrl} target="_blank" rel="noopener">
-                How it works: the Static Index Search proposal
+                How it works: the Static Index Search overview
                 <span class="sr-only">(opens in a new tab)</span>
               </a>
             </p>`

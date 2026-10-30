@@ -22,7 +22,45 @@ pnpm start
 ```
 To run a local development server that serves the basic demo located in `index.html`
 
-### ETD search demo
+## Serverless search demo: run it locally
+
+Searches archive.org items in the browser, with no search server: `etd-search` (25.9 million theses) and `dl-search` (Democracy's Library, about 1.2 million government publications). What it is and why: [docs/static-index](docs/static-index/README.md).
+
+You need git, Node 22 or later, and pnpm 11 (`corepack enable` installs it).
+
+1. Get the branch:
+   ```bash
+   git clone https://github.com/internetarchive/iaux-collection-browser.git
+   cd iaux-collection-browser
+   git checkout etd-search-adapter
+   ```
+2. Point `local.archive.org` at your own computer, once. The dev server runs on that name. Add this line to `/etc/hosts` (on macOS or Linux: `sudo nano /etc/hosts`):
+   ```
+   127.0.0.1 local.archive.org
+   ```
+3. Install and start:
+   ```bash
+   pnpm install
+   pnpm start
+   ```
+4. Open the demo. The dev server uses a self-signed certificate, so the browser warns the first time: choose to continue to the site.
+   - etd-search, "sea ice": [https://local.archive.org:8080/?search_service=etd&query=sea%20ice](https://local.archive.org:8080/?search_service=etd&query=sea%20ice)
+   - Democracy's Library, "census": [https://local.archive.org:8080/?search_service=etd&etd_item=dl-search&query=census](https://local.archive.org:8080/?search_service=etd&etd_item=dl-search&query=census)
+
+   If port 8080 is taken, Vite prints the port it used instead.
+
+**Without the certificate warning:** run the same demo over plain HTTP instead, at `http://localhost:8080/?search_service=etd`:
+```bash
+pnpm exec vite --config tools/static-index/vite.http.config.ts
+```
+
+**Search by meaning** (the "Meaning" option, etd-search only) downloads a 135 MB language model the first time, then caches it.
+
+**Why a dev server:** etd-search's index files don't end in an extension archive.org lets other websites read (CORS), so the dev server fetches them at `/etd-index/` and `/item-index/<id>/`. dl-search's files end in `.json`, so a page anywhere can read them directly: the PR preview searches it with `&etd_base_url=https://archive.org/download/dl-search/`.
+
+**Build your own index:** [tools/static-index](tools/static-index/README.md).
+
+### More about the ETD search demo
 
 [https://local.archive.org:8080/?search_service=etd](https://local.archive.org:8080/?search_service=etd) swaps archive.org search for the
 theses & dissertations index from the `etd-search` item, searched in the browser with no backend.
