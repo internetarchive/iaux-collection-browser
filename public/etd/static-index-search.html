@@ -153,8 +153,9 @@ pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; disp
     <h2>What we need</h2>
     <ul>
       <li>Agreement on the contract and who owns it.</li>
-      <li>Help from the ETD index owner on 4 changes (CORS, an id map, published layouts, leaner vectors).</li>
-      <li>A decision on where the engine lives.</li>
+      <li>Help from the ETD index owner on 4 changes (CORS, versioned vector files, published layouts, leaner vectors).</li>
+      <li>A decision on where the engine lives, and a derive step so items don't need hand-built indexes.</li>
+      <li>A second item, picked by the checklist in <a href="#candidates">section 8</a>.</li>
     </ul>
     <p><a href="#decisions">See the decisions →</a></p>
   </section>
@@ -177,6 +178,7 @@ pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; disp
     <li><a href="#vectors">Search by meaning</a></li>
     <li><a href="#options">Index and ranking options</a></li>
     <li><a href="#proof">Proof: the ETD port</a></li>
+    <li><a href="#candidates">Choosing the next item</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#decisions">Decisions and risks</a></li>
     <li><a href="#appendix">Appendix for engineers</a></li>
@@ -294,6 +296,9 @@ flowchart TD
   </tbody>
 </table></div>
 <p class="cap">One run each, on a slow network day. With the live page's read settings our port took 49.1 s cold, so the gain comes from the parallel reads. The bytes per search are unchanged; cutting those needs the owner.</p>
+<div class="prose">
+  <p><strong>Early results.</strong> The port now shows a first page of results before the scan ends, then refines it in place. Timed from page load: first results in <strong>10.8–13.7 s cold</strong> (19.0 s without) and <strong>6.5 s warm</strong> (13.4 s without). The live page also draws results as clusters arrive, so the gain over it is on a cold start.</p>
+</div>
 <div class="frame chart"><pre class="mermaid">
 flowchart LR
   Q["Query"] --> M["Model in browser<br/>turns it into numbers<br/>(31 ms)"]
@@ -315,7 +320,7 @@ flowchart LR
   </tbody>
 </table></div>
 <div class="note">
-  <p><strong>Cheapest option:</strong> re-rank ordinary word-search results by meaning, at under 1 MB per search (estimate). It can't find theses with no shared words, but it makes everyday searches smarter. It needs one extra file from the owner: a map from text records to vectors.</p>
+  <p><strong>Cheapest option:</strong> re-rank ordinary word-search results by meaning, at under 1 MB per search (estimate). It can't find theses with no shared words, but it makes everyday searches smarter. It needs a map from text records to vectors. The owner has since published one (<code>txt2vrow.bin</code>), but it was built for the previous text build: record ids move between builds, so it points at the wrong records today. It has to be rebuilt with every text build, or the vector files versioned with it.</p>
 </div>
 </section>
 
@@ -405,53 +410,136 @@ flowchart TD
     <tr><td>Search by meaning</td><td><span class="pill ok">Match</span> top 50 identical for 5 queries; about 2× faster cold than the live page</td></tr>
     <tr><td>Browse without a query</td><td><span class="pill ok">Works</span> "Theses in Portuguese": 1,208,375</td></tr>
     <tr><td>Point at another item</td><td><span class="pill ok">Works</span> and rejects items that aren't an index</td></tr>
-    <tr><td>Use outside the item's own page</td><td><span class="pill bad">Blocked</span> the index files aren't CORS-readable</td></tr>
+    <tr><td>Files that drift apart</td><td><span class="pill ok">Caught</span> each file's size is checked against the item's own file list; it found the vector-to-text map left from the previous build</td></tr>
+    <tr><td>Use outside the item's own page</td><td><span class="pill bad">Blocked</span> only <code>.json</code> files are CORS-readable</td></tr>
   </tbody>
 </table></div>
 </section>
 
+<section id="candidates">
+<h2>8. Choosing the next item</h2>
+<div class="prose">
+  <p>Not every item is worth an index. A good candidate is <strong>many records of one kind</strong>, each with a stable id and a link, mostly public, with at least one real text field and a few well-filled fields to filter by. Ten minutes with archive.org's own search API answers most of it.</p>
+</div>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  A("Many records of one kind,<br/>each with an id and a link?") -->|no| X1["Not a candidate"]
+  A -->|yes| B("Mostly public?<br/>Changes daily at most?")
+  B -->|no| X2["Needs a server:<br/>not a candidate"]
+  B -->|yes| C("A real text field?<br/>(abstract, description,<br/>~50+ words)")
+  C -->|no| F1["Browse and filter page,<br/>not a search"]
+  C -->|yes| D("2–4 fields to filter by,<br/>70%+ filled, consistent?")
+  D -->|no| W["Word search;<br/>clean values first,<br/>then add facets"]
+  D -->|yes| G["Good candidate"]
+</pre></div>
+
+<div class="frame"><table>
+  <thead><tr><th>Look for</th><th>Why it matters</th><th>Rough bar</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Many records of one kind</strong></td><td>The index assumes one record shape</td><td>~10,000 to tens of millions. Fewer: one JSON file searched in memory is simpler.</td></tr>
+    <tr><td><strong>A stable id and link</strong></td><td>Every result must open something</td><td>Every record</td></tr>
+    <tr><td><strong>Public</strong></td><td>Index files can be read by anyone</td><td>Restricted or lending-only text stays out</td></tr>
+    <tr><td><strong>Changes slowly</strong></td><td>Results are as fresh as the last build</td><td>Rebuild daily or weekly at most</td></tr>
+    <tr><td><strong>Real text</strong></td><td>Word search and meaning search need words, not just titles</td><td>An abstract or description of ~50+ words. Catalogue notes ("49 leaves; 28 cm") don't count.</td></tr>
+    <tr><td><strong>Filled facet fields</strong></td><td>Sparse filters mislead</td><td>70% or more of records</td></tr>
+    <tr><td><strong>Consistent facet values</strong></td><td>One byte per record holds up to 255 values; more need a value lookup</td><td>Years, languages, types: fine. Free-text names: clean first.</td></tr>
+    <tr><td><strong>A need search doesn't meet</strong></td><td>Otherwise, why build it</td><td>Records outside archive.org, a scoped collection, many languages</td></tr>
+    <tr><td><strong>Bulk data</strong></td><td>A build reads everything at once</td><td>A TSV or JSONL dump, or item metadata through the scrape API</td></tr>
+  </tbody>
+</table></div>
+
+<div class="prose">
+  <h3>Warning signs</h3>
+  <ul>
+    <li><strong>Mixed collections:</strong> several kinds of things under one name make facets meaningless.</li>
+    <li><strong>Free-text facets:</strong> thousands of spellings of the same institution or department.</li>
+    <li><strong>One value, many codes:</strong> <code>eng</code>, <code>english</code> and <code>English</code>. Fixable at build time, but it's work.</li>
+    <li><strong>Text only in OCR:</strong> possible, but builds are much bigger. Start with metadata.</li>
+    <li><strong>Only the owner can rebuild:</strong> the index goes stale, or its files drift apart.</li>
+    <li><strong>Needs</strong> results that depend on who's looking, live counts, or joins across items.</li>
+  </ul>
+
+  <h3>The ten-minute check</h3>
+  <ol>
+    <li><strong>Size:</strong> <code>advancedsearch.php?q=collection:X&amp;rows=0&amp;output=json</code>, read <code>numFound</code>.</li>
+    <li><strong>Fill rate per field:</strong> the same query with <code>AND field:*</code>.</li>
+    <li><strong>What's in it:</strong> count <code>mediatype</code> values and identifier prefixes in a sample.</li>
+    <li><strong>Distinct values per facet:</strong> a few thousand records through the scrape API.</li>
+    <li><strong>Real text:</strong> read 10 random descriptions; count <code>format:"DjVuTXT"</code> for OCR.</li>
+    <li><strong>Restricted:</strong> <code>AND access-restricted-item:true</code>.</li>
+    <li><strong>Change rate:</strong> the spread of <code>addeddate</code>.</li>
+  </ol>
+</div>
+
+<h3>Worked example: theses-and-dissertations</h3>
+<div class="prose">
+  <p>The collection behind ETD's subject, surveyed in full on 29 October 2026: <strong>415,527 items</strong>, of which 397,699 are texts.</p>
+</div>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Check</th><th>Found</th><th>Verdict</th></tr></thead>
+  <tbody>
+    <tr><td>One kind of record</td><td>274,394 scanned European dissertations, 41,574 DTIC reports, 20,516 microfilm scans, 17,803 raw ETD catalogs</td><td><span class="pill warn">Mixed</span> pick a subset</td></tr>
+    <tr><td>Id and link</td><td>Every record is an archive.org item</td><td><span class="pill ok">Yes</span></td></tr>
+    <tr><td>Public</td><td>2,662 restricted</td><td><span class="pill ok">Mostly</span></td></tr>
+    <tr><td>Title, year, creator, language</td><td>98–100% filled</td><td><span class="pill ok">Good</span></td></tr>
+    <tr><td>Language values</td><td>499 distinct: <code>German</code> / <code>ger</code>, <code>eng</code> / <code>english</code> / <code>English</code></td><td><span class="pill warn">Fold first</span></td></tr>
+    <tr><td>Institution, department</td><td>65–68% filled; 10,757 and 17,145 distinct values</td><td><span class="pill warn">Clean first</span></td></tr>
+    <tr><td>Real text</td><td>Abstracts on 181 items; descriptions are mostly catalogue notes; OCR on 397,470 (45.6M pages)</td><td><span class="pill warn">OCR only</span></td></tr>
+  </tbody>
+</table></div>
+<div class="note">
+  <p><strong>Recommendation:</strong> start with the 274,394 scanned European dissertations, metadata only, built by a derive step from archive.org's own metadata, with values folded at build time. Add OCR text from the first pages next, then search by meaning on it. At this size a flat vector index is enough; no clusters needed.</p>
+  <p>It tests what ETD can't: an index built by a shared derive step, records that are archive.org items, and messy fields. For a deliberately different third item, the Great 78 collection (187,039 recordings, little text, many facets) would test filter-heavy search.</p>
+</div>
+</section>
+
 <section id="roadmap">
-<h2>8. Roadmap</h2>
+<h2>9. Roadmap</h2>
 <div class="frame chart"><pre class="mermaid">
 flowchart TD
   subgraph done["Done"]
-    A1["ETD word search,<br/>facets, lookups"]
-    A2["Search by meaning,<br/>phase 1"]
-    A3["Live-page comparison"]
+    A1["ETD word search,<br/>facets, institutions"]
+    A2["Search by meaning,<br/>with early results"]
+    A3["Live-page comparison,<br/>retries, other items"]
   end
   subgraph now["In review"]
     B1["collection-browser options<br/>WEBDEV-9763"]
-    B2["Search by meaning PR"]
+    B2["One manifest per item<br/>(v2)"]
+    B3["File checks against<br/>the item's file list"]
   end
   subgraph next["Next"]
-    C1["Engine reads the manifest<br/>(fully generic)"]
-    C2["Exact quoted phrases"]
-    C3["Facet shape"]
+    C1["Derive step builds<br/>an item's files"]
+    C2["Second item:<br/>theses-and-dissertations"]
+    C3["Exact quoted phrases,<br/>facet shape"]
   end
   subgraph owner["Needs ETD index owner"]
     D1["CORS-readable files"]
-    D2["Leaner vectors,<br/>text-to-vector map"]
+    D2["Versioned, leaner<br/>vector files"]
   end
   subgraph later["Then"]
     E1["Ship on archive.org"]
-    E2["Second item adopts it"]
+    E2["More items adopt it"]
   end
   done --> now --> next --> later
   owner --> later
 </pre></div>
-<p class="cap">Shipping on archive.org pages depends on the CORS change; everything before it runs in the development demo. The generic engine step is what lets a second item adopt this without new code.</p>
+<p class="cap">Shipping on archive.org pages depends on the CORS change; everything before it runs in the development demo. The derive step and the v2 manifest are what let a second item adopt this without new code.</p>
 </section>
 
 <section id="decisions">
-<h2>9. Decisions and risks</h2>
+<h2>10. Decisions and risks</h2>
 <h3>Decisions needed</h3>
 <ol class="decisions">
   <li><strong>Adopt the file contract as the standard</strong> for in-browser item search, and name an owner for it and its version numbers.
     <span class="rec">Recommendation: yes. The ETD index owner is the natural first reviewer.</span></li>
   <li><strong>Where the engine lives:</strong> inside collection-browser (today) or its own package.
     <span class="rec">Recommendation: its own package once it reads the manifest, so pages other than collection-browser can use it.</span></li>
-  <li><strong>Ask the ETD index owner</strong> for CORS-readable file names, published layouts, a text-to-vector map, and leaner vector codes.
-    <span class="rec">Recommendation: one request, CORS first, since it blocks shipping. A draft is ready.</span></li>
+  <li><strong>Ask the ETD index owner</strong> for CORS-readable file names, published layouts, versioned vector files (so the text-to-vector map moves with each text build), and leaner vector codes.
+    <span class="rec">Recommendation: one request, CORS first, since it blocks shipping.</span></li>
+  <li><strong>A derive step</strong> that builds an item's index files from its data, so new items don't depend on a hand-built index.
+    <span class="rec">Recommendation: yes; it writes the v2 manifest and versions every file, vectors included.</span></li>
+  <li><strong>The second item.</strong>
+    <span class="rec">Recommendation: theses-and-dissertations' 274,394 scanned dissertations, metadata first (<a href="#candidates">section 8</a>).</span></li>
   <li><strong>Search by meaning in the product:</strong> cheap re-ranking of word results first, full meaning search later.
     <span class="rec">Recommendation: yes to both, in that order; full search only after the owner publishes smaller codes.</span></li>
   <li><strong>Estimated facet counts:</strong> may a facet show estimates on large result sets (clearly labelled)?
@@ -463,6 +551,8 @@ flowchart TD
   <tbody>
     <tr><td>CORS stays blocked</td><td>Can't ship outside the item's own page</td><td>File naming with a readable extension; confirm with archive.org early</td></tr>
     <tr><td>Index rebuild changes a layout</td><td>Wrong data shown silently</td><td>Manifest plus config checker that fails loudly; never reuse keys</td></tr>
+    <tr><td>Files republished at different times</td><td>One build's rows read with another's ids</td><td>Check each file's size against the item's file list (built); version every file</td></tr>
+    <tr><td>Messy item metadata</td><td>Facets with many spellings of one value</td><td>Fold values in the derive step; run the ten-minute check before committing to an item</td></tr>
     <tr><td>Large one-time downloads</td><td>Slow first use on poor connections</td><td>Background loading, version-keyed caching, optional modules</td></tr>
     <tr><td>One maintainer per index</td><td>Format drifts between items</td><td>Shared contract, checker, and a worked example</td></tr>
   </tbody>
@@ -489,7 +579,8 @@ flowchart TD
 <div class="prose">
   <h3>Publishing rules</h3>
   <ul>
-    <li><strong>Version every file and publish the manifest last</strong>, so a client never mixes builds or sees files still uploading.</li>
+    <li><strong>Version every file and publish the manifest last</strong>, so a client never mixes builds or sees files still uploading. That includes optional layers like vectors: ETD's vector files have fixed names, so they drifted from the text index.</li>
+    <li><strong>A layer built on another names it:</strong> a map from text records to vectors says which text version it was built for.</li>
     <li><strong>Keep a CORS-readable extension last.</strong> archive.org sends the cross-origin header by file type; ETD's names end in the version (<code>dict.dir.20261026-5e5902</code>), so only <code>current.json</code> is readable from other sites today.</li>
     <li><strong>Fixed sizes and record-aligned directories</strong>, so reading one record's data is arithmetic plus one range read.</li>
     <li><strong>Never reuse a key</strong>; renamed fields get new names so the checker catches them.</li>
@@ -505,7 +596,7 @@ flowchart TD
 </div>
 
 <h3>Manifest sketch</h3>
-<p class="cap">Draft types are in <code>src/static-index/manifest.ts</code>, with the ETD description and parity tests beside them.</p>
+<p class="cap">Draft types are in <code>src/static-index/manifest.ts</code>, with the ETD description and parity tests beside them. PR #637 proposes v2: one manifest for the whole item, published as <code>static-index.json</code> with a pointer to the previous version.</p>
 <div class="frame"><pre>{
   "format": "ia-static-index",
   "formatVersion": 1,
@@ -550,9 +641,11 @@ flowchart TD
   <tbody>
     <tr><td>ETD port: engine, adapter, demo, comparison</td><td><code>iaux-collection-browser</code>, branch <code>etd-search-adapter</code> (draft PR #629)</td></tr>
     <tr><td><code>extraFacetGroups</code>, <code>allowFilterOnlySearch</code></td><td>WEBDEV-9763, PR #630</td></tr>
-    <tr><td>Search by meaning (vector engine, worker, Words / Meaning switch)</td><td><code>src/etd/engine/vector/</code>, draft PR #633, stacked on #629</td></tr>
-    <tr><td>collection-browser: a slot above the facets; refetch when the search service changes</td><td>in the vector PR; may need its own review like #630</td></tr>
-    <tr><td>Manifest and config types, checker</td><td><code>src/static-index/</code></td></tr>
+    <tr><td>Search by meaning (vector engine, worker, Words / Meaning switch, early results)</td><td><code>src/etd/engine/vector/</code>, merged into the branch (#633, #635)</td></tr>
+    <tr><td>Institution facet, other items, retries</td><td>merged into the branch (#631, #632, #634)</td></tr>
+    <tr><td>collection-browser: a slot above the facets; refetch when the search service changes</td><td>in the branch; may need its own review like #630</td></tr>
+    <tr><td>Manifest and config types, checker</td><td><code>src/static-index/</code>; v2 manifest in PR #637</td></tr>
+    <tr><td>File checks against the item's file list</td><td><code>src/static-index/file-list.ts</code>, <code>size-rules.ts</code>; draft PR #638</td></tr>
     <tr><td>ETD engine docs</td><td><code>src/etd/README.md</code></td></tr>
   </tbody>
 </table></div>

@@ -1,11 +1,14 @@
+import { fileSetUrl } from '../../../static-index/files';
+import type { FileSet } from '../../../static-index/manifest';
 import type { EtdCallOptions } from '../../etd-engine';
 import { loadItemFileList } from '../../../static-index/file-list';
 import type { ItemFileList } from '../../../static-index/file-list';
 import { checkSizes, describeMismatch } from '../../../static-index/size-rules';
 import { etdItemId, MEANING_SEARCH, vectorSizeRules } from '../file-checks';
 import type { EtdFileCheck } from '../file-checks';
-import { DEFAULT_ETD_BASE_URL, RangeFiles } from '../index-files';
+import { RangeFiles } from '../../../static-index/range-files';
 import { HttpError } from '../http-error';
+import { DEFAULT_ETD_BASE_URL } from '../index-files';
 import { retryingFetch } from '../retrying-fetch';
 
 /**
@@ -132,11 +135,16 @@ export class VectorStoreFiles extends RangeFiles {
     return files;
   }
 
+  /** Fixed names, keyed to the build stamp ('0' for a store without one). */
+  get fileSet(): FileSet {
+    return { naming: 'stamped', built: this.meta.built ?? '0' };
+  }
+
   fileUrl(name: string): string {
-    const key =
-      this.fileList?.cacheKey(name) ??
-      encodeURIComponent(this.meta.built ?? '0');
-    return `${this.dataUrl}${name}?v=${key}`;
+    const key = this.fileList?.cacheKey(name);
+    return key
+      ? `${this.dataUrl}${name}?v=${key}`
+      : fileSetUrl(this.dataUrl, this.fileSet, name);
   }
 
   /** A small JSON file the store may not have; undefined when it's absent. */

@@ -478,6 +478,8 @@ function vectorRecord(
   rank?: number,
 ): EtdRecord {
   const record: EtdRecord = {
+    // The doc's 1-based position, which its identifier is made from
+    // (static-index/identifiers.ts); record() takes it back.
     docId: doc.did + 1,
     title: doc.title,
     creators: '',
