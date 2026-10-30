@@ -2,6 +2,11 @@ import { fileSetUrl } from '../../static-index/files';
 import type { FileSet } from '../../static-index/manifest';
 import { RangeFiles } from '../../static-index/range-files';
 import type { EtdCallOptions } from '../etd-engine';
+import { loadItemFileList } from '../../static-index/file-list';
+import type { ItemFileList } from '../../static-index/file-list';
+import { checkSizes } from '../../static-index/size-rules';
+import { etdItemId, textSizeRules } from './file-checks';
+import type { EtdFileCheck } from './file-checks';
 import { HttpError } from './http-error';
 import { retryingFetch } from './retrying-fetch';
 
@@ -60,12 +65,21 @@ export function checkIndexFormat(meta: EtdIndexMeta): void {
  * everything else from where it landed.
  */
 export class EtdIndexFiles extends RangeFiles {
+  /** What the item's file list said about this index's files. */
+  readonly fileCheck: EtdFileCheck;
+
   private constructor(
     dataUrl: string,
     readonly meta: EtdIndexMeta,
     fetchFn: typeof fetch,
+    private readonly fileList: ItemFileList | undefined,
+    itemId: string | undefined,
   ) {
     super(dataUrl, fetchFn);
+    this.fileCheck = {
+      itemId,
+      sizes: fileList && checkSizes(textSizeRules(meta), fileList),
+    };
   }
 
   static async open(
@@ -74,6 +88,11 @@ export class EtdIndexFiles extends RangeFiles {
   ): Promise<EtdIndexFiles> {
     const fetchFn = options.fetch ?? fetch.bind(globalThis);
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    // Read alongside current.json, so it adds no wait; never throws.
+    const itemId = etdItemId(base);
+    const fileList = itemId
+      ? loadItemFileList(itemId, { fetch: fetchFn, signal: options.signal })
+      : Promise.resolve(undefined);
     // current.json is the last file written on publish, so it never points at
     // a version whose files are still uploading. Always fetched fresh.
     let manifestRetries = 0;
@@ -93,7 +112,13 @@ export class EtdIndexFiles extends RangeFiles {
     const meta = (await response.json()) as EtdIndexMeta;
     checkIndexFormat(meta);
     const dataUrl = new URL('.', response.url || base).href;
-    const files = new EtdIndexFiles(dataUrl, meta, fetchFn);
+    const files = new EtdIndexFiles(
+      dataUrl,
+      meta,
+      fetchFn,
+      await fileList,
+      itemId,
+    );
     files.stats.retries = manifestRetries;
     return files;
   }
@@ -109,7 +134,18 @@ export class EtdIndexFiles extends RangeFiles {
       : { naming: 'stamped', built: 'unversioned' };
   }
 
+  /**
+   * The url of an index file. An unversioned file is keyed by its own size
+   * and change time from the item's file list, so a replaced file is never
+   * read from the browser cache's copy of the old one.
+   */
   fileUrl(name: string): string {
-    return fileSetUrl(this.dataUrl, this.fileSet, name);
+    const key =
+      this.fileSet.naming === 'stamped'
+        ? this.fileList?.cacheKey(name)
+        : undefined;
+    return key
+      ? `${this.dataUrl}${name}?v=${key}`
+      : fileSetUrl(this.dataUrl, this.fileSet, name);
   }
 }

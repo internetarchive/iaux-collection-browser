@@ -45,6 +45,18 @@ export interface FixtureVectorOptions {
   facetsMeta?: Record<string, unknown>;
   /** Code step per dimension (default 0.02). */
   scale?: number;
+  /**
+   * Serve archive.org's file list for the item (otherwise it 404s): every
+   * file at its real size, changed at `mtime`, but for `sizes`' overrides;
+   * `extra` lists files the store doesn't hold, by size.
+   */
+  fileList?: {
+    mtime?: number;
+    sizes?: Record<string, number>;
+    extra?: Record<string, number>;
+  };
+  /** Serve a current.json with this many text docs (otherwise it 404s). */
+  textDocs?: number;
 }
 
 export const FIXTURE_VECTOR_BASE = 'https://archive.org/download/vec-fixture/';
@@ -52,6 +64,9 @@ export const FIXTURE_VECTOR_DATA =
   'https://ia800000.us.archive.org/1/items/vec-fixture/';
 
 export const FIXTURE_BUILT = '2026-10-12 11:31';
+
+export const FIXTURE_FILE_LIST_URL =
+  'https://archive.org/metadata/vec-fixture/files';
 
 /** cell-facets-meta.json's flag bits, as in the real store. */
 export const VECTOR_FLAG_BITS: Record<string, number> = {
@@ -225,6 +240,30 @@ export async function buildFixtureVectorStore(
     requests.push({ url, range });
     if (init?.signal?.aborted) {
       throw new DOMException('The operation was aborted.', 'AbortError');
+    }
+    if (url === FIXTURE_FILE_LIST_URL && options.fileList) {
+      const { mtime = 1791831785, sizes = {}, extra = {} } = options.fileList;
+      const result = [
+        ...[...files].map(([name, bytes]) => ({
+          name,
+          size: String(sizes[name] ?? bytes.length),
+          mtime: String(mtime),
+        })),
+        ...Object.entries(extra).map(([name, size]) => ({
+          name,
+          size: String(size),
+          mtime: String(mtime),
+        })),
+      ];
+      return new Response(JSON.stringify({ result }), { status: 200 });
+    }
+    if (
+      url.startsWith(`${FIXTURE_VECTOR_BASE}current.json`) &&
+      options.textDocs
+    ) {
+      return new Response(JSON.stringify({ n_docs: options.textDocs }), {
+        status: 200,
+      });
     }
     if (url.startsWith(`${FIXTURE_VECTOR_BASE}ivf-meta.json`)) {
       // archive.org/download redirects to a storage server
