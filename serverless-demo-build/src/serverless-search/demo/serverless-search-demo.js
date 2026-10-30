@@ -53,7 +53,6 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
          */
         this.etdCompare = new URL(window.location.href).searchParams.get('etd_compare') !== '0';
         this.etdModel = { state: 'idle' };
-        this.searchService = this.etdService(this.etdRank);
         /** Whether the ETD panel is hidden: shown unless `hide-etd-controls` says so. */
         this.etdControlsHidden = ['', 'true'].includes(new URLSearchParams(window.location.search).get('hide-etd-controls') ??
             'false');
@@ -65,9 +64,13 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
      */
     get declaredSearch() {
         const service = this.searchService;
-        return service.extraFacetGroups
+        return service?.extraFacetGroups
             ? service
             : undefined;
+    }
+    connectedCallback() {
+        super.connectedCallback();
+        this.searchService ??= this.etdService(this.etdRank);
     }
     /** The collection-browser inside, for a host's dev tools. */
     get collectionBrowser() {
@@ -118,8 +121,6 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         this.etdVectorEngine = new StaticVectorEngine({
             baseUrl: this.etdIndex.baseUrl,
             facets: ETD_VECTOR_FACETS,
-            // Read when the worker starts, not now: `etd_rank=vec` builds this
-            // engine before a host has set workerFactory.
             worker: params.get('etd_vec_worker') === '0'
                 ? undefined
                 : () => this.workerFactory?.() ??

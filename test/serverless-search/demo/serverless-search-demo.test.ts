@@ -87,6 +87,29 @@ describe('serverless-search-demo', () => {
     expect(panel.querySelector('form#etd-item')).to.exist;
   });
 
+  it("starts a host's worker when the url opens on vector rank", async () => {
+    // A host on another origin passes workerFactory, since the worker module
+    // next to this file isn't same-origin there. It's set after the element
+    // is constructed, so the vector engine has to wait for it.
+    window.history.replaceState(null, '', '?etd_rank=vec&etd_compare=0');
+    const workers: Worker[] = [];
+    const workerFactory = () => {
+      const blob = new Blob([''], { type: 'text/javascript' });
+      const worker = new Worker(URL.createObjectURL(blob), { type: 'module' });
+      workers.push(worker);
+      return worker;
+    };
+
+    await fixture<ServerlessSearchDemo>(
+      html`<serverless-search-demo
+        .workerFactory=${workerFactory}
+      ></serverless-search-demo>`,
+    );
+
+    expect(workers).to.have.length(1);
+    workers.forEach(worker => worker.terminate());
+  });
+
   it('links the docs it is given, and none when given none', async () => {
     const linked = await demoAt('', 'https://example.org/how.html');
     const link = linked.panel.querySelector('#etd-docs a');

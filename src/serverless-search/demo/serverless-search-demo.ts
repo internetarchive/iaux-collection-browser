@@ -101,15 +101,25 @@ export class ServerlessSearchDemo extends LitElement {
    * alone, for one that declares them (any serverless search does).
    */
   private get declaredSearch(): FacetDeclaringSearchService | undefined {
-    const service = this.searchService as Partial<FacetDeclaringSearchService>;
-    return service.extraFacetGroups
+    const service = this.searchService as
+      | Partial<FacetDeclaringSearchService>
+      | undefined;
+    return service?.extraFacetGroups
       ? (service as FacetDeclaringSearchService)
       : undefined;
   }
 
-  @state() private searchService: SearchServiceInterface = this.etdService(
-    this.etdRank,
-  );
+  /**
+   * Built on connect, not construction: the vector service starts its worker
+   * as it's built, and a host's workerFactory is only set after the element
+   * is constructed.
+   */
+  @state() private searchService?: SearchServiceInterface;
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.searchService ??= this.etdService(this.etdRank);
+  }
 
   /** The facets collection-browser last got from the ETD service. */
   @state() private etdFacets?: ObservedFacets;
@@ -178,8 +188,6 @@ export class ServerlessSearchDemo extends LitElement {
     this.etdVectorEngine = new StaticVectorEngine({
       baseUrl: this.etdIndex.baseUrl,
       facets: ETD_VECTOR_FACETS,
-      // Read when the worker starts, not now: `etd_rank=vec` builds this
-      // engine before a host has set workerFactory.
       worker:
         params.get('etd_vec_worker') === '0'
           ? undefined
