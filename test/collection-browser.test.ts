@@ -291,6 +291,124 @@ describe('Collection Browser', () => {
     expect(infiniteScroller, 'infinite scroller').to.exist;
   });
 
+  it('shows facets-header-slot content between the results count and the facets', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${new MockSearchService()}>
+        <fieldset slot="facets-header-slot">Rank results by</fieldset>
+      </collection-browser>`,
+    );
+    el.baseQuery = 'sea ice';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const column = el.shadowRoot!.querySelector('#left-column')!;
+    const slot = column.querySelector<HTMLSlotElement>(
+      'slot[name="facets-header-slot"]',
+    )!;
+    expect(slot.assignedElements()[0].textContent).to.equal('Rank results by');
+    const count = column.querySelector('#results-total')!;
+    const facets = column.querySelector('#facets-container')!;
+    const follows = (a: Node, b: Node) =>
+      !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(follows(count, slot)).to.be.true;
+    expect(follows(slot, facets)).to.be.true;
+  });
+
+  describe('a search service that refines its results', () => {
+    /** Answers 'foo, bar' at first, then just 'foo' once refined. */
+    class RefiningSearchService extends MockSearchService {
+      private refined = false;
+
+      private readonly listeners = new Set<() => void>();
+
+      onResultsChanged(listener: () => void): () => void {
+        this.listeners.add(listener);
+        return () => this.listeners.delete(listener);
+      }
+
+      refine(): void {
+        this.refined = true;
+        for (const listener of this.listeners) listener();
+      }
+
+      async search(...args: Parameters<MockSearchService['search']>) {
+        const [params, type] = args;
+        return super.search(
+          this.refined && params.query
+            ? { ...params, query: 'single-result' }
+            : params,
+          type,
+        );
+      }
+    }
+
+    const tileIds = (el: CollectionBrowser) =>
+      el.dataSource.getPage(1).map(tile => tile.identifier);
+
+    it('shows the better results in place, without clearing the tiles first', async () => {
+      const service = new RefiningSearchService({
+        asyncResponse: true,
+        asyncResponseDelay: 50,
+      });
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${service}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'sea ice';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      expect(tileIds(el)).to.deep.equal(['foo', 'bar']);
+
+      service.refine();
+      // While the better results are on their way, the first ones stay.
+      await aTimeout(10);
+      expect(tileIds(el)).to.deep.equal(['foo', 'bar']);
+
+      await waitUntil(() => tileIds(el).length === 1);
+      expect(tileIds(el)).to.deep.equal(['foo']);
+      expect(el.dataSource.totalResults).to.equal(1);
+    });
+
+    it('stops listening to a service it no longer uses', async () => {
+      const service = new RefiningSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${service}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'sea ice';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+
+      el.searchService = new MockSearchService();
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      const refresh = sinon.spy(el, 'refreshResults');
+      service.refine();
+      expect(refresh.called).to.be.false;
+    });
+  });
+
+  it('searches again with a new search service, keeping the query', async () => {
+    // The ETD demo swaps text rank for search by meaning this way.
+    const textRank = new MockSearchService();
+    const vectorRank = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${textRank}>
+      </collection-browser>`,
+    );
+    el.baseQuery = 'sea ice';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    el.searchService = vectorRank;
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    expect(vectorRank.searchParams?.query).to.equal('sea ice');
+  });
+
   it('queries the search service when given a base query', async () => {
     const searchService = new MockSearchService();
 
@@ -766,6 +884,45 @@ describe('Collection Browser', () => {
 
     expect(errorDetails).to.exist;
     expect(errorDetails.textContent).to.contain('foo');
+  });
+
+  it("says the service didn't answer, not that the query is wrong, on a network error", async () => {
+    // A 502 from the ETD index reaches here as a network error too.
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${new MockSearchService()}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const placeholder = el.shadowRoot!.querySelector(
+      'empty-placeholder',
+    ) as EmptyPlaceholder;
+    expect(placeholder.placeholderType).to.equal('service-error');
+    const text = placeholder.shadowRoot!.textContent!;
+    expect(text).to.contain("The search service didn't answer");
+    expect(text).not.to.contain('related to your');
+  });
+
+  it('still points at the query when the search engine failed on it', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${new MockSearchService()}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'engine-error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const placeholder = el.shadowRoot!.querySelector(
+      'empty-placeholder',
+    ) as EmptyPlaceholder;
+    expect(placeholder.placeholderType).to.equal('query-error');
+    expect(
+      placeholder.shadowRoot!.querySelector('.error-details')!.textContent,
+    ).to.contain('parse error');
   });
 
   it('shows error message when error response received for a collection', async () => {
@@ -2724,5 +2881,156 @@ describe('Collection Browser', () => {
     );
     expect(mockAnalyticsHandler.callLabel).to.include('date:');
     expect(mockAnalyticsHandler.callLabel).not.to.include('year:');
+  });
+
+  describe('extra facet groups', () => {
+    const country = {
+      key: 'country',
+      title: 'Country',
+      pluralTitle: 'Countries',
+      after: 'language',
+    };
+
+    it('shows an extra group, searches with it, and keeps it in the URL', async () => {
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          .extraFacetGroups=${[country]}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'extra-facets';
+      await el.updateComplete;
+      await nextTick();
+
+      const facets = el.shadowRoot?.querySelector(
+        'collection-facets',
+      ) as CollectionFacets;
+      await facets.updateComplete;
+      // Visible titles, without each header's screen-reader-only suffix.
+      const headers = Array.from(
+        facets.shadowRoot?.querySelectorAll('.facet-group-header h3') ?? [],
+      ).map(h3 => {
+        const copy = h3.cloneNode(true) as HTMLElement;
+        copy.querySelectorAll('.sr-only').forEach(sr => sr.remove());
+        return copy.textContent!.trim();
+      });
+      // Country follows Language, as it asked to.
+      expect(headers.slice(headers.indexOf('Language'))).to.deep.equal([
+        'Language',
+        'Country',
+      ]);
+
+      el.selectedFacets = {
+        ...getDefaultSelectedFacets([country]),
+        country: { Canada: { key: 'Canada', count: 30, state: 'selected' } },
+      };
+      await el.updateComplete;
+      await nextTick();
+
+      expect(searchService.searchParams?.filters?.country).to.deep.equal({
+        Canada: 'inc',
+      });
+      expect(
+        new URL(window.location.href).searchParams.getAll('and[]'),
+      ).to.include('country:"Canada"');
+    });
+
+    it('keeps the same facet order between renders', async () => {
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${new MockSearchService()}
+          .extraFacetGroups=${[country]}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'extra-facets';
+      await el.updateComplete;
+      await waitUntil(
+        () => el.shadowRoot?.querySelector('collection-facets'),
+        'facets never rendered',
+      );
+      const facets = el.shadowRoot?.querySelector(
+        'collection-facets',
+      ) as CollectionFacets;
+      const order = facets.facetDisplayOrder;
+      expect(order).to.include('country');
+
+      el.requestUpdate();
+      await el.updateComplete;
+      // Not just equal: the same array, so the facets don't re-render.
+      expect(facets.facetDisplayOrder).to.equal(order);
+    });
+
+    it('restores an extra group’s facet from the URL', async () => {
+      const url = new URL(window.location.href);
+      url.searchParams.set('query', 'extra-facets');
+      url.searchParams.append('and[]', 'country:"Canada"');
+      window.history.replaceState({}, '', url);
+
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          .extraFacetGroups=${[country]}
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await nextTick();
+
+      expect(el.selectedFacets?.country?.Canada?.state).to.equal('selected');
+      expect(searchService.searchParams?.filters?.country).to.deep.equal({
+        Canada: 'inc',
+      });
+    });
+  });
+
+  describe('searching by filters alone', () => {
+    function urlWithOnlyAFilter() {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('query');
+      url.searchParams.append('and[]', 'language:"English"');
+      window.history.replaceState({}, '', url);
+    }
+
+    it('searches with a URL filter and no query when allowed, showing results', async () => {
+      urlWithOnlyAFilter();
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          allowFilterOnlySearch
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await waitUntil(() => searchService.searchParams, 'never searched');
+
+      expect(searchService.searchParams?.query ?? '').to.equal('');
+      expect(searchService.searchParams?.filters?.language).to.deep.equal({
+        English: 'inc',
+      });
+      await el.updateComplete;
+      const placeholder = el.shadowRoot?.querySelector(
+        'empty-placeholder',
+      ) as EmptyPlaceholder | null;
+      expect(placeholder?.placeholderType).to.not.equal('empty-query');
+    });
+
+    it('shows the empty-query placeholder and does not search when not allowed', async () => {
+      urlWithOnlyAFilter();
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await nextTick();
+
+      expect(searchService.searchParams).to.be.undefined;
+      const placeholder = el.shadowRoot?.querySelector(
+        'empty-placeholder',
+      ) as EmptyPlaceholder | null;
+      expect(placeholder?.placeholderType).to.equal('empty-query');
+    });
   });
 });

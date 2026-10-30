@@ -19,10 +19,34 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
+import type { FacetDeclaringSearchService } from './serverless-search/serverless-search-service';
+import './serverless-search/demo/serverless-search-demo';
+import type { ServerlessSearchDemo } from './serverless-search/demo/serverless-search-demo';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
-  private searchService: SearchServiceInterface =
+  /**
+   * `?search_service=etd` shows the serverless search demo instead: the ETD
+   * theses & dissertations index, searched in the browser with no backend,
+   * in its own collection-browser under its own controls (see
+   * serverless-search-demo.ts). The index is read through the dev server's
+   * /etd-index and /item-index/<id>/ proxies (see vite.config.ts).
+   */
+  private readonly isEtdSearch =
+    new URL(window.location.href).searchParams.get('search_service') === 'etd';
+
+  /**
+   * The search service's own facets and whether it can search by filters
+   * alone, for one that declares them (any serverless search does).
+   */
+  private get declaredSearch(): FacetDeclaringSearchService | undefined {
+    const service = this.searchService as Partial<FacetDeclaringSearchService>;
+    return service.extraFacetGroups
+      ? (service as FacetDeclaringSearchService)
+      : undefined;
+  }
+
+  @state() private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
 
   private resizeObserver = new SharedResizeObserver();
@@ -64,7 +88,15 @@ export class AppRoot extends LitElement {
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
-  @query('collection-browser') private collectionBrowser!: CollectionBrowser;
+  @query('collection-browser') private ownCollectionBrowser!: CollectionBrowser;
+
+  @query('serverless-search-demo')
+  private serverlessDemo?: ServerlessSearchDemo;
+
+  /** The collection-browser the dev tools drive: the demo's, in the ETD demo. */
+  private get collectionBrowser(): CollectionBrowser {
+    return this.serverlessDemo?.collectionBrowser ?? this.ownCollectionBrowser;
+  }
 
   @query('modal-manager') private modalManager!: ModalManagerInterface;
 
@@ -139,9 +171,19 @@ export class AppRoot extends LitElement {
   }
 
   private get getClass() {
-    const searchParams = new URLSearchParams(window.location.search);
+    return this.devToolsHidden ? 'hidden' : '';
+  }
 
-    return searchParams.get('hide-dev-tools') ? 'hidden' : '';
+  /**
+   * Whether the search controls are hidden: `hide-dev-tools` says so, and
+   * without it they start hidden for the ETD demo, which has its own box.
+   */
+  private get devToolsHidden(): boolean {
+    const param = new URLSearchParams(window.location.search).get(
+      'hide-dev-tools',
+    );
+    if (param === null) return this.isEtdSearch;
+    return !!param && param !== 'false';
   }
 
   render() {
@@ -572,9 +614,22 @@ export class AppRoot extends LitElement {
           Toggle Search Controls
         </button>
       </div>
+      ${this.isEtdSearch
+        ? html`<serverless-search-demo
+            .analyticsHandler=${this.analyticsHandler}
+          ></serverless-search-demo>`
+        : this.collectionBrowserTemplate}
+      <modal-manager></modal-manager>
+    `;
+  }
+
+  private get collectionBrowserTemplate() {
+    return html`
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
+          .extraFacetGroups=${this.declaredSearch?.extraFacetGroups ?? []}
+          ?allowFilterOnlySearch=${!!this.declaredSearch?.allowFilterOnlySearch}
           .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
@@ -604,7 +659,6 @@ export class AppRoot extends LitElement {
             : nothing}
         </collection-browser>
       </div>
-      <modal-manager></modal-manager>
     `;
   }
 
@@ -695,10 +749,12 @@ export class AppRoot extends LitElement {
     const pageUrl = new URL(window.location.href);
     const { searchParams } = pageUrl;
 
-    if (searchParams.get('hide-dev-tools')) {
+    // Leave the param off when the new state is the default.
+    const hide = !this.devToolsHidden;
+    if (hide === this.isEtdSearch) {
       searchParams.delete('hide-dev-tools');
     } else {
-      searchParams.set('hide-dev-tools', 'true');
+      searchParams.set('hide-dev-tools', String(hide));
     }
 
     this.shadowRoot?.getElementById('dev-tools')?.classList.toggle('hidden');

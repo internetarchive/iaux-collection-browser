@@ -23,6 +23,7 @@
   "scripts": {
     "start": "vite",
     "prepare:ghpages": "rimraf ghpages && pnpm run prepare && vite build",
+    "build:serverless-demo": "rimraf serverless-demo-build && tsc -p tsconfig.serverless-demo.json",
     "prepare": "rimraf dist && tsc && husky install",
     "lint": "eslint . && prettier \"**/*.ts\" --check",
     "format": "eslint . --fix && prettier \"**/*.ts\" --write",

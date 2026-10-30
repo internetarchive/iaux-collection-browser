@@ -19,6 +19,7 @@ export type PlaceholderType =
   | 'no-results'
   | 'query-error'
   | 'collection-error'
+  | 'service-error'
   | null;
 @customElement('empty-placeholder')
 @localized()
@@ -67,6 +68,12 @@ export class EmptyPlaceholder extends LitElement {
     );
   }
 
+  private static get MESSAGE_SERVICE_ERROR() {
+    return msg(
+      "The search service didn't answer. Please try again in a moment.",
+    );
+  }
+
   private static get QUERY_ERROR_DETAILS_MESSAGE() {
     return msg('Error details:');
   }
@@ -96,6 +103,7 @@ export class EmptyPlaceholder extends LitElement {
           ['no-results', () => this.noResultsTemplate],
           ['query-error', () => this.queryErrorTemplate],
           ['collection-error', () => this.collectionErrorTemplate],
+          ['service-error', () => this.serviceErrorTemplate],
         ])}
       </div>
     `;
@@ -130,6 +138,20 @@ export class EmptyPlaceholder extends LitElement {
           : EmptyPlaceholder.MESSAGE_NO_SEARCH_RESULTS}
       </h2>
       <div>${nullResultIcon}</div>
+    `;
+  }
+
+  /** The search service failed or didn't answer: not the query's fault. */
+  private get serviceErrorTemplate(): TemplateResult {
+    // Added data-testid for Playwright testing
+    return html`
+      <h2 class="title" data-testid="error-service-text-msg">
+        ${EmptyPlaceholder.MESSAGE_SERVICE_ERROR}
+      </h2>
+      <div>${nullResultIcon}</div>
+      <p class="error-details">
+        ${EmptyPlaceholder.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
+      </p>
     `;
   }
 

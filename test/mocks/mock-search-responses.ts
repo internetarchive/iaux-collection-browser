@@ -1414,7 +1414,61 @@ export const getMockErrorResult: () => Result<
   }),
 });
 
+/** The search engine failing on the query itself, e.g. bad syntax. */
+export const getMockSearchEngineErrorResult: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  error: new SearchServiceError(
+    SearchServiceErrorType.searchEngineError,
+    'parse error',
+  ),
+});
+
 export const getMockMalformedResult: () => Result<
   SearchResponse,
   SearchServiceError
 > = () => ({});
+
+/**
+ * A search service's aggregation under a key collection-browser doesn't
+ * know (`country`), for extra facet groups.
+ */
+export const getMockSuccessWithExtraFacets: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  success: {
+    request: {
+      kind: 'hits',
+      clientParameters: { user_query: 'extra-facets', sort: [] },
+      backendRequests: {
+        primary: {
+          kind: 'hits',
+          finalized_parameters: { user_query: 'extra-facets', sort: [] },
+        },
+      },
+    },
+    rawResponse: {},
+    sessionContext: {},
+    response: {
+      totalResults: 1,
+      returnedCount: 1,
+      results: [new ItemHit({ fields: { identifier: 'foo' } })],
+      aggregations: {
+        country: new Aggregation({
+          buckets: [
+            // By count, as search services return them.
+            { key: 'Canada', doc_count: 30 },
+            { key: 'Brazil', doc_count: 20 },
+            { key: 'Austria', doc_count: 10 },
+          ],
+        }),
+        language: new Aggregation({
+          buckets: [{ key: 'English', doc_count: 40 }],
+        }),
+      },
+    },
+    responseHeader: { succeeded: true, query_time: 0 },
+  },
+});

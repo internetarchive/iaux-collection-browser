@@ -1,0 +1,8 @@
+{
+  "name": "static-index-vectors",
+  "private": true,
+  "description": "Builds a static index's vector store (search by meaning). See ../README.md.",
+  "dependencies": {
+    "@huggingface/transformers": "^3.0.2"
+  }
+}

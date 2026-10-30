@@ -35,6 +35,24 @@ import { sha1 } from '../utils/sha1';
 import { mergeSelectedFacets } from '../utils/facet-utils';
 import { dateFilterField } from '../utils/date-filter-field';
 
+/**
+ * A number per search service object, so swapping the host's service (e.g.
+ * between two ways of ranking) changes the query keys and refetches.
+ */
+const searchServiceIds = new WeakMap<object, number>();
+let lastSearchServiceId = 0;
+
+function searchServiceId(service: object | undefined): number {
+  if (!service) return 0;
+  let id = searchServiceIds.get(service);
+  if (id === undefined) {
+    lastSearchServiceId += 1;
+    id = lastSearchServiceId;
+    searchServiceIds.set(service, id);
+  }
+  return id;
+}
+
 export class CollectionBrowserDataSource
   implements CollectionBrowserDataSourceInterface
 {
@@ -172,6 +190,11 @@ export class CollectionBrowserDataSource
   queryErrorMessage?: string;
 
   /**
+   * @inheritdoc
+   */
+  queryErrorType?: string;
+
+  /**
    * Internal property to store the promise for any current TV channel maps fetch.
    */
   private _tvMapsPromise?: Promise<TVChannelMaps>;
@@ -257,6 +280,7 @@ export class CollectionBrowserDataSource
     this.parentCollections = [];
     this.previousQueryKey = '';
     this.queryErrorMessage = undefined;
+    this.queryErrorType = undefined;
 
     this.offset = 0;
     this.numTileModels = 0;
@@ -269,6 +293,21 @@ export class CollectionBrowserDataSource
 
     this.setTotalResultCount(0);
     this.requestHostUpdate();
+  }
+
+  /**
+   * @inheritdoc
+   */
+  async refreshResults(): Promise<void> {
+    if (!this.canPerformSearch) return;
+    // Every page loaded so far, in one request; the tiles shown stay until
+    // their replacements arrive, so nothing flashes.
+    const lastPage = Math.max(1, ...Object.keys(this.pages).map(Number));
+    this.endOfDataReached = false;
+    await Promise.all([
+      this.fetchPage(1, lastPage, { replace: true }),
+      this.canFetchFacets ? this.fetchFacets() : null,
+    ]);
   }
 
   /**
@@ -606,16 +645,16 @@ export class CollectionBrowserDataSource
 
   /**
    * Returns the search type to actually use for fetches.
-   * When within a collection with an empty query and FTS selected,
-   * falls back to metadata search since FTS requires a non-empty query
-   * and we'd still like to show the unfiltered collection in that case.
+   * When within a collection, or searching by filters alone, with an empty
+   * query and FTS selected, falls back to metadata search since FTS requires
+   * a non-empty query and we'd still like to show results in that case.
    */
   private get effectiveSearchType(): SearchType {
     const trimmedQuery = this.host.baseQuery?.trim();
 
     const shouldUseMetadataSearch =
       !trimmedQuery &&
-      this.host.withinCollection &&
+      (this.host.withinCollection || this.isFilterOnlySearch) &&
       this.host.searchType === SearchType.FULLTEXT;
     if (shouldUseMetadataSearch) return SearchType.METADATA;
 
@@ -653,7 +692,40 @@ export class CollectionBrowserDataSource
       hasNonEmptyQuery ||
       hasIdentifiers ||
       (isCollectionSearch && isValidForCollectionSearch) ||
-      (isProfileSearch && isValidForProfileSearch)
+      (isProfileSearch && isValidForProfileSearch) ||
+      // ...unless the host allows searching by filters alone, and has some.
+      (this.isFilterOnlySearch && isValidForCollectionSearch)
+    );
+  }
+
+  /**
+   * Whether this is a search by filters alone: no query, but filters the
+   * patron can see, on a host that allows it (`allowFilterOnlySearch`).
+   */
+  private get isFilterOnlySearch(): boolean {
+    return (
+      !this.host.baseQuery?.trim() &&
+      !!this.host.allowFilterOnlySearch &&
+      this.hasVisibleFilters
+    );
+  }
+
+  /**
+   * Whether any filter the patron can see is set: a selected or hidden facet
+   * value, a date range, or a first-letter filter. `internalFilters` don't
+   * count: a host applies those out of sight.
+   */
+  private get hasVisibleFilters(): boolean {
+    const { selectedFacets, minSelectedDate, maxSelectedDate } = this.host;
+    const hasFacet = Object.values(selectedFacets ?? {}).some(values =>
+      Object.values(values ?? {}).some(bucket => bucket.state !== 'none'),
+    );
+    return (
+      hasFacet ||
+      !!minSelectedDate ||
+      !!maxSelectedDate ||
+      !!this.host.selectedTitleFilter ||
+      !!this.host.selectedCreatorFilter
     );
   }
 
@@ -717,7 +789,7 @@ export class CollectionBrowserDataSource
     const pageTarget = this.host.withinCollection ?? profileKey;
     const sortField = this.host.selectedSort ?? 'none';
     const sortDirection = this.host.sortDirection ?? 'none';
-    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}-sf:${sortField}-sd:${sortDirection}`;
+    return `fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}-sf:${sortField}-sd:${sortDirection}${this.searchServiceKeyPart}`;
   }
 
   /**
@@ -727,8 +799,20 @@ export class CollectionBrowserDataSource
   get facetFetchQueryKey(): string {
     const profileKey = `pf;${this.host.withinProfile}--pe;${this.host.profileElement}`;
     const pageTarget = this.host.withinCollection ?? profileKey;
-    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}`;
+    return `facets-fq:${this.fullQuery}-pt:${pageTarget}-st:${this.effectiveSearchType}${this.searchServiceKeyPart}`;
   }
+
+  /**
+   * Which search service the keys are for. Empty for the first one the
+   * data source sees, so keys are unchanged unless the service is swapped.
+   */
+  private get searchServiceKeyPart(): string {
+    const id = searchServiceId(this.host.searchService);
+    if (id) this.firstSearchServiceId ??= id;
+    return id === this.firstSearchServiceId || !id ? '' : `-ss:${id}`;
+  }
+
+  private firstSearchServiceId?: number;
 
   /**
    * Constructs a search service FilterMap object from the combination of
@@ -1060,6 +1144,7 @@ export class CollectionBrowserDataSource
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
       const detailMsg = searchResponse?.error?.details?.message;
+      this.queryErrorType = searchResponse?.error?.type;
 
       if (!errorMsg && !detailMsg) {
         // @ts-expect-error: Property 'Sentry' does not exist on type 'Window & typeof globalThis'
@@ -1115,7 +1200,11 @@ export class CollectionBrowserDataSource
    *  specifies how many pages to batch together in one request. Ignored
    *  if `pageNumber != 1`, defaulting to a single page.
    */
-  async fetchPage(pageNumber: number, numInitialPages = 1): Promise<void> {
+  async fetchPage(
+    pageNumber: number,
+    numInitialPages = 1,
+    options: { replace?: boolean } = {},
+  ): Promise<void> {
     const trimmedQuery = this.host.baseQuery?.trim();
     // reset loading status
     if (!this.canPerformSearch) {
@@ -1123,8 +1212,8 @@ export class CollectionBrowserDataSource
       return;
     }
 
-    // if we already have data, don't fetch again
-    if (this.hasPage(pageNumber)) return;
+    // if we already have data, don't fetch again (unless replacing it)
+    if (!options.replace && this.hasPage(pageNumber)) return;
 
     if (this.endOfDataReached) return;
 
@@ -1197,6 +1286,7 @@ export class CollectionBrowserDataSource
     if (!success) {
       const errorMsg = searchResponse?.error?.message;
       const detailMsg = searchResponse?.error?.details?.message;
+      this.queryErrorType = searchResponse?.error?.type;
 
       this.queryErrorMessage = `${errorMsg ?? ''}${
         detailMsg ? `; ${detailMsg}` : ''
@@ -1288,6 +1378,15 @@ export class CollectionBrowserDataSource
           results.slice(pageStartIndex, pageStartIndex + this.pageSize),
           !isUnpagedElement || i === numPages - 1,
         );
+      }
+    }
+
+    // Replacing pages with fewer results: drop the pages past them.
+    if (options.replace) {
+      const lastPage =
+        pageNumber + Math.ceil((results?.length ?? 0) / this.pageSize) - 1;
+      for (const page of Object.keys(this.pages).map(Number)) {
+        if (page > lastPage) delete this.pages[page];
       }
     }
 

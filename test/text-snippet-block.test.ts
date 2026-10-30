@@ -53,6 +53,24 @@ describe('TextSnippetBlock component', () => {
     expect(container?.querySelectorAll('mark').length).to.equal(3);
   });
 
+  it('should not add spaces around marked text', async () => {
+    const snippets = [
+      'a {{{sea}}}-ice record, in {{{sea}}}s and ice{{{berg}}}s; {{{ice}}}.',
+    ];
+
+    const el = await fixture<TextSnippetBlock>(
+      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`,
+    );
+
+    const snippet = el.shadowRoot?.querySelector('.snippet-view > span');
+
+    // Exactly the snippet's own text, so marks inside a word or before
+    // punctuation don't split it apart.
+    expect(snippet?.textContent).to.equal(
+      'a sea-ice record, in seas and icebergs; ice.',
+    );
+  });
+
   it('should render correctly in grid mode', async () => {
     const el = await fixture<TextSnippetBlock>(
       html`<text-snippet-block

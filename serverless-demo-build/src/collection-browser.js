@@ -1,0 +1,2956 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var CollectionBrowser_1;
+import { html, css, LitElement, nothing, } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+import { localized, msg } from '@lit/localize';
+import { SearchType, } from '@internetarchive/search-service';
+import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
+import '@internetarchive/infinite-scroller';
+import { SortField, getDefaultSelectedFacets, sortOptionFromAPIString, SORT_OPTIONS, defaultProfileElementSorts, defaultFacetDisplayOrder, tvFacetDisplayOrder, defaultSortAvailability, favoritesSortAvailability, tvSortAvailability, } from './models';
+import { validExtraFacetGroups, withExtraFacetOrder, } from './utils/extra-facet-groups';
+import { RestorationStateHandler, } from './restoration-state-handler';
+import { CollectionBrowserDataSource } from './data-source/collection-browser-data-source';
+import { FACETLESS_PAGE_ELEMENTS } from './data-source/models';
+import { analyticsActions, analyticsCategories, } from './utils/analytics-events';
+import { updateSelectedFacetBucket } from './utils/facet-utils';
+import chevronIcon from './assets/img/icons/chevron';
+import { srOnlyStyle } from './styles/sr-only';
+import { sha1 } from './utils/sha1';
+import { getLocale } from './utils/get-locale';
+import '@internetarchive/elements/ia-combo-box/ia-combo-box';
+import './empty-placeholder';
+import './tiles/tile-dispatcher';
+import './tiles/collection-browser-loading-tile';
+import './sort-filter-bar/sort-filter-bar';
+import './manage/manage-bar';
+import './collection-facets';
+import './circular-activity-indicator';
+import './collection-facets/smart-facets/smart-facet-bar';
+let CollectionBrowser = class CollectionBrowser extends LitElement {
+    static { CollectionBrowser_1 = this; }
+    constructor() {
+        super();
+        this.baseImageUrl = 'https://archive.org';
+        /**
+         * Which backend should be targeted by searches (e.g., metadata or FTS)
+         */
+        this.searchType = SearchType.DEFAULT;
+        this.selectedSort = SortField.default;
+        this.selectedTitleFilter = null;
+        this.selectedCreatorFilter = null;
+        this.sortDirection = null;
+        this.defaultSortField = SortField.relevance;
+        this.defaultSortDirection = null;
+        this.pageSize = 50;
+        /**
+         * Whether to show smart facets (bubbles) along the top of the component
+         */
+        this.showSmartFacetBar = false;
+        /**
+         * Whether to show the date picker (above the facets)
+         */
+        this.showHistogramDatePicker = false;
+        /**
+         * Whether placeholder views should be suppressed. If true, searches that produce an
+         * error or empty result set will simply show a blank results view instead of a placeholder.
+         */
+        this.suppressPlaceholders = false;
+        /**
+         * Whether the result count text should be suppressed.
+         * If true, no "X Results" message will be shown.
+         */
+        this.suppressResultCount = false;
+        /**
+         * Whether the scrolling result view should be suppressed entirely.
+         * If true, no infinite scroller (and thus no result tiles) will be rendered.
+         */
+        this.suppressResultTiles = false;
+        /**
+         * Whether to suppress persistence of the query to the URL.
+         * If true, the `query` param will not be added to the URL or updated on query changes.
+         */
+        this.suppressURLQuery = false;
+        /**
+         * Whether to suppress persistence of the `sin` search type param to the URL.
+         * If true, the `sin` param will not be added to the URL or updated on query changes.
+         */
+        this.suppressURLSinParam = false;
+        /**
+         * Whether to suppress display of the sort bar.
+         * If true, the entire sort bar (incl. display modes) will be omitted from rendering.
+         */
+        this.suppressSortBar = false;
+        /**
+         * Whether to suppress showing the display mode options in the sort bar.
+         * If true, those options will be omitted (though the rest of the sort bar may still render).
+         */
+        this.suppressDisplayModes = false;
+        /**
+         * Whether to suppress the display of the `mediatype` facet group, e.g., because this instance
+         * of collection browser is being shown in a filtered single-mediatype context.
+         */
+        this.suppressMediatypeFacets = false;
+        /**
+         * What strategy to use for when/whether to load facet data for a search.
+         *
+         * Defaults to `eager`, always loading facets immediately alongside search results.
+         *
+         * To eliminate facets that are never seen, this can be reduced to `lazy-mobile`, which
+         * will delay loading facets in the mobile view until the "Filters" accordion is opened.
+         * Facets are still loaded eagerly when viewing the desktop layout.
+         *
+         * To further reduce facet requests for patrons who do not need to use them, this can be
+         * again reduced to `opt-in`, which will also require desktop users to explicitly request
+         * that they be loaded (in addition to the lazy mobile behavior described above).
+         *
+         * To entirely suppress facets from being loaded, this may be set to `off`.
+         */
+        this.facetLoadStrategy = 'eager';
+        this.facetPaneVisible = false;
+        this.clearResultsOnEmptyQuery = false;
+        /**
+         * Whether a search page may search with filters (selected or hidden facets,
+         * a date range, a first-letter filter) but no query: e.g. every result from
+         * the 2000s. Off by default, for search services that need a query to rank
+         * by; set it for one that can list matches without one. `internalFilters`
+         * alone don't count, so a page with hidden filters doesn't search on load.
+         */
+        this.allowFilterOnlySearch = false;
+        this.collectionPagePath = '/details/';
+        /** describes where this component is being used */
+        this.searchContext = analyticsCategories.default;
+        this.pageContext = 'search';
+        /**
+         * Facet groups beyond collection-browser's own, for a search service whose
+         * aggregations use other keys (e.g. `country`). Each key is both the
+         * aggregation key and the filter field, and can be restored from the URL
+         * (`and[]=country:"CA"`). Keys that are reserved, built in or repeated are
+         * logged and ignored.
+         */
+        this.extraFacetGroups = [];
+        /** `extraFacetGroups` with any unusable groups left out. */
+        this.activeExtraFacetGroups = [];
+        this.restorationStateHandler = new RestorationStateHandler({
+            context: this.pageContext,
+        });
+        this.mobileBreakpoint = 600;
+        this.loggedIn = false;
+        this.modalManager = undefined;
+        /**
+         * Whether we are representing a TV collection, needing slightly different tile handling.
+         */
+        this.isTVCollection = false;
+        /**
+         * If item management UI active
+         */
+        this.isManageView = false;
+        /** Action buttons to display on each tile */
+        this.tileActions = [];
+        /**
+         * The simplified layout to apply to grid-mode tiles, if any. See
+         * `LayoutType` for available options. Has no effect on list display modes.
+         */
+        this.tileLayoutType = 'default';
+        /** Whether to replace the default sort options with a slot for customization (default: false) */
+        this.enableSortOptionsSlot = false;
+        /** Whether to expose a slot for a smart results carousel above the full results */
+        this.showSmartResults = false;
+        /**
+         * The maximum number of pages we will load when a privileged user clicks
+         * the "Manage" button on the search page. Limited to 15 pages.
+         */
+        this.maxPagesToManage = 15;
+        /**
+         * The results per page so we can paginate.
+         *
+         * This allows us to start in the middle of the search results and
+         * fetch data before or after the current page. If we don't have a key
+         * for the previous/next page, we'll fetch the next/previous page to populate it
+         */
+        this.dataSource = new CollectionBrowserDataSource(this, this.pageSize);
+        /**
+         * The page that the consumer wants to load.
+         */
+        this.initialPageNumber = 1;
+        /**
+         * This the the number of pages that we want to show.
+         *
+         * The data isn't necessarily loaded for all of the pages, but this lets us
+         * know how many cells we should render.
+         */
+        this.pagesToRender = this.initialPageNumber;
+        /**
+         * Whether the initial page fetch for a new query is currently in progress.
+         */
+        this.searchResultsLoading = false;
+        this.facetsLoading = false;
+        this.mobileView = false;
+        /**
+         * Any temporarily overridden `on`/`off` state for the user's tile blurring preference if they
+         * have chosen to override it, or `no-override` if they have not.
+         */
+        this.tileBlurOverrideState = 'no-override';
+        this.collapsibleFacetsVisible = false;
+        this.placeholderType = null;
+        this.selectedTVNetwork = undefined;
+        this.selectedTVShow = undefined;
+        this.tvMapsPopulated = false;
+        this.tvMapsLoading = false;
+        this.tvMapsErrored = false;
+        /** Whether layout size analytics have been sent already. */
+        this.layoutSizeAnalyticsSent = false;
+        /**
+         * When we're animated scrolling to the page, we don't want to fetch
+         * all of the pages as it scrolls so this lets us know if we're scrolling
+         */
+        this.isScrollingToCell = false;
+        /**
+         * When page width resizes from desktop to mobile, set true to
+         * disable expand/collapse transition when loading.
+         */
+        this.isResizeToMobile = false;
+        /**
+         * Flag indicating that a new data source is currently being installed.
+         * During the install, any URL persistence operation should replace the current entry
+         * instead of creating a new one.
+         */
+        this.dataSourceInstallInProgress = false;
+        this.placeholderCellTemplate = html `<collection-browser-loading-tile></collection-browser-loading-tile>`;
+        this.deferredFetchTimer = 0;
+        /**
+         * Updates the height of the left column according to its position on the page.
+         * Arrow function ensures proper `this` binding.
+         */
+        this.updateLeftColumnHeight = () => {
+            if (this.mobileView) {
+                this.leftColumn?.style?.removeProperty('height');
+            }
+            else {
+                const clientTop = this.leftColumn?.getBoundingClientRect().top;
+                const columnHeight = window.innerHeight - (clientTop ?? 0);
+                const cssHeightValue = clientTop === 0
+                    ? null
+                    : // Subtract off the column's top padding so that it doesn't overflow
+                        `calc(${columnHeight}px - var(--leftColumnPaddingTop, 2rem))`;
+                this.leftColumn?.style?.setProperty('height', cssHeightValue);
+            }
+        };
+        /**
+         * Toggles whether the fade-out is visible at the bottom of the facets.
+         * It should only be visible if the facets are not scrolled to the bottom.
+         * Arrow function ensures proper `this` binding.
+         */
+        this.updateFacetFadeOut = (entries) => {
+            const fadeElmt = this.shadowRoot?.getElementById('facets-bottom-fade');
+            fadeElmt?.classList.toggle('hidden', entries?.[0]?.isIntersecting);
+        };
+        // we only want to scroll on the very first query change
+        // so this keeps track of whether we've already set the initial query
+        this.initialQueryChangeHappened = false;
+        this.historyPopOccurred = false;
+        this.addController(this.dataSource);
+    }
+    tileModelAtCellIndex(index) {
+        const model = this.dataSource.getTileModelAt(index);
+        /**
+         * If we encounter a model we don't have yet and we're not in the middle of an
+         * automated scroll, schedule a fetch for the missing page and return undefined.
+         * The datasource will be updated once the page is loaded and the cell will be rendered.
+         *
+         * We disable it during the automated scroll since we don't want to fetch pages for intervening cells the
+         * user may never see.
+         */
+        if (!model && !this.isScrollingToCell && this.dataSource.queryInitialized) {
+            const pageNumber = Math.floor(index / this.pageSize) + 1;
+            this.scheduleDeferredPageFetch(pageNumber);
+        }
+        return model;
+    }
+    /**
+     * Debounce delay for page fetches initiated by new cells becoming visible.
+     * Tuned so quick scrolling through unloaded regions doesn't send rapid-fire
+     * search requests for every page we pass through, but to still feel responsive
+     * when the scroll ends.
+     */
+    static { this.DEFERRED_FETCH_DELAY_MS = 150; }
+    /**
+     * Schedules a fetch for the given page, debounced to ensure we don't
+     * rapid-fire fetches while scrolling through pages quickly.
+     *
+     * If there's no pending fetch timer yet, it will fire a fetch immediately.
+     * Otherwise, it will reset any existing timer. In either case, a deferred
+     * fetch for the visible pages is scheduled after a brief delay to account
+     * for whatever pages we land on after scrolling.
+     */
+    scheduleDeferredPageFetch(pageNumber) {
+        if (!this.deferredFetchTimer) {
+            this.dataSource.fetchPage(pageNumber);
+        }
+        else {
+            window.clearTimeout(this.deferredFetchTimer);
+        }
+        this.deferredFetchTimer = window.setTimeout(() => {
+            this.deferredFetchTimer = 0;
+            this.fetchVisiblePages();
+        }, CollectionBrowser_1.DEFERRED_FETCH_DELAY_MS);
+    }
+    /**
+     * Fetch each currently-visible page whose first cell still has no
+     * loaded model.
+     */
+    fetchVisiblePages() {
+        const visibleIndices = this.infiniteScroller?.getVisibleCellIndices() ?? [];
+        const visiblePages = new Set(visibleIndices.map(i => Math.floor(i / this.pageSize) + 1));
+        for (const page of visiblePages) {
+            const firstCellOfPage = (page - 1) * this.pageSize;
+            if (!this.dataSource.getTileModelAt(firstCellOfPage)) {
+                this.dataSource.fetchPage(page);
+            }
+        }
+    }
+    // this is the total number of tiles we expect if
+    // the data returned is a full page worth
+    // this is useful for putting in placeholders for the expected number of tiles
+    get estimatedTileCount() {
+        return this.pagesToRender * this.pageSize;
+    }
+    /**
+     * Returns a promise resolving to a unique string that persists for the current browser session.
+     * Used in generating unique IDs for search requests, so that multiple requests coming from the
+     * same browser session can be identified.
+     */
+    async getSessionId() {
+        try {
+            const storedSessionId = sessionStorage?.getItem('cb-session');
+            if (storedSessionId) {
+                return storedSessionId;
+            }
+            // If we enter this method a second time while a first session ID is already being generated,
+            // ensure we produce the same ID from both calls instead of generating another one.
+            if (this.sessionIdGenPromise) {
+                return this.sessionIdGenPromise;
+            }
+            this.sessionIdGenPromise = sha1(Math.random().toString());
+            const newSessionId = await this.sessionIdGenPromise;
+            sessionStorage?.setItem('cb-session', newSessionId);
+            return newSessionId;
+        }
+        catch {
+            // Either we can't generate the hash or we're restricted from accessing sessionStorage
+            return '';
+        }
+    }
+    /**
+     * Fetches the results shown again, in place: the pages loaded so far and
+     * the facets, without resetting to placeholder tiles. Called on its own
+     * when the search service says its results got better.
+     */
+    refreshResults() {
+        return this.dataSource.refreshResults();
+    }
+    /**
+     * Listens to a search service that refines its results after serving
+     * them (`onResultsChanged`, e.g. a search by meaning), to show the better
+     * ones as they come.
+     */
+    listenForRefinedResults() {
+        this.stopRefinedResults?.();
+        this.stopRefinedResults = undefined;
+        const service = this.searchService;
+        if (typeof service?.onResultsChanged === 'function') {
+            this.stopRefinedResults = service.onResultsChanged(() => {
+                this.refreshResults();
+            });
+        }
+    }
+    /**
+     * Go to the given page of results
+     *
+     * @param pageNumber
+     */
+    goToPage(pageNumber) {
+        this.initialPageNumber = pageNumber;
+        this.pagesToRender = pageNumber;
+        return this.scrollToPage(pageNumber);
+    }
+    /**
+     * Sets the state for whether the initial set of search results is loading in.
+     */
+    setSearchResultsLoading(loading) {
+        this.searchResultsLoading = loading;
+    }
+    /**
+     * Sets the state for whether facet data is loading in
+     */
+    setFacetsLoading(loading) {
+        this.facetsLoading = loading;
+    }
+    /**
+     * Sets the total number of results to be displayed for the current search
+     */
+    setTotalResultCount(totalResults) {
+        this.totalResults = totalResults;
+    }
+    /**
+     * Clears all selected/negated facets, date ranges, and letter filters.
+     *
+     * By default, the current sort field/direction are not cleared,
+     * but this can be overridden by setting the `sort` option to `true`.
+     *
+     * Similarly, it is possible to finely control what is cleared by
+     * setting any of the `facets`, `dateRange`, or `letterFilters` flags
+     * in the options object.
+     */
+    clearFilters({ facets = true, dateRange = true, letterFilters = true, sort = false, } = {}) {
+        // Don't bother clearing facets if none are checked, so that we don't
+        // trigger unnecessary update cycles.
+        if (facets && this.hasCheckedFacets) {
+            this.selectedFacets = getDefaultSelectedFacets(this.activeExtraFacetGroups);
+        }
+        if (dateRange) {
+            this.minSelectedDate = undefined;
+            this.maxSelectedDate = undefined;
+        }
+        if (letterFilters) {
+            this.selectedTitleFilter = null;
+            this.selectedCreatorFilter = null;
+        }
+        if (sort) {
+            this.sortDirection = null;
+            this.selectedSort = SortField.default;
+        }
+        this.clearTVDropdowns();
+        if (this.smartFacetBar) {
+            this.smartFacetBar.deselectAll();
+        }
+    }
+    /**
+     * Resets any selected TV network/show dropdowns to their default state
+     */
+    clearTVDropdowns() {
+        this.selectedTVNetwork = undefined;
+        this.selectedTVShow = undefined;
+        if (this.tvNetworksDropdown) {
+            this.tvNetworksDropdown.clearSelectedOption();
+        }
+        if (this.tvShowsDropdown) {
+            this.tvShowsDropdown.clearSelectedOption();
+        }
+    }
+    /**
+     * Returns true if the current value of `this.selectedFacets` contains
+     * any facet buckets than have been selected or negated, or false otherwise.
+     */
+    get hasCheckedFacets() {
+        if (!this.selectedFacets)
+            return false;
+        for (const facetGroup of Object.values(this.selectedFacets)) {
+            for (const bucket of Object.values(facetGroup)) {
+                if (bucket.state !== 'none')
+                    return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * Returns true if there are any currently selected/negated facet buckets,
+     * any selected date range, or any selected letter filters. False otherwise.
+     *
+     * Ignores sorting options.
+     */
+    get hasActiveFilters() {
+        return !!(this.hasCheckedFacets ||
+            this.minSelectedDate ||
+            this.maxSelectedDate ||
+            this.selectedTitleFilter ||
+            this.selectedCreatorFilter);
+    }
+    /** `base` with the extra facet groups placed in it, reused when unchanged. */
+    facetDisplayOrderWith(base) {
+        const extras = this.activeExtraFacetGroups;
+        const cached = this.extraFacetOrder;
+        if (cached?.base !== base || cached.extras !== extras) {
+            this.extraFacetOrder = {
+                base,
+                extras,
+                order: withExtraFacetOrder(base, extras),
+            };
+        }
+        return this.extraFacetOrder.order;
+    }
+    willUpdate(changed) {
+        if (changed.has('extraFacetGroups') ||
+            changed.has('restorationStateHandler')) {
+            this.activeExtraFacetGroups = validExtraFacetGroups(this.extraFacetGroups);
+            // So facets in the URL for these groups are restored, not ignored.
+            this.restorationStateHandler.extraFacetGroups =
+                this.activeExtraFacetGroups;
+        }
+        this.setPlaceholderType();
+        if (changed.has('searchType') && this.searchType === SearchType.TV) {
+            this.applyDefaultTVSearchSort();
+        }
+        // If we need to clear filters due to a query change or other reset, we do so *before* any
+        // updates happen, to prevent unnecessary update cycles and ensure there's a clean slate
+        // for any search requests that fire.
+        if (changed.has('baseQuery') ||
+            changed.has('identifiers') ||
+            changed.has('searchType') ||
+            changed.has('withinCollection')) {
+            // Unless this query/search type update is from the initial page load or the
+            // result of hitting the back button,
+            // we need to clear any existing filters since they may no longer be valid for
+            // the new set of search results.
+            if (!this.historyPopOccurred && this.initialQueryChangeHappened) {
+                // Ordinarily, we leave the sort param unchanged between searches.
+                // However, if we are changing the target collection itself, we want the sort cleared too,
+                // since different collections may have different sorting options available.
+                const shouldClearSort = changed.has('withinCollection') &&
+                    !changed.has('selectedSort') &&
+                    !changed.has('sortDirection');
+                // Otherwise, only clear filters that haven't been simultaneously applied in this update
+                this.clearFilters({
+                    sort: shouldClearSort,
+                    facets: !changed.has('selectedFacets'),
+                    dateRange: !(changed.has('minSelectedDate') || changed.has('maxSelectedDate')),
+                    letterFilters: !(changed.has('selectedTitleFilter') ||
+                        changed.has('selectedCreatorFilter')),
+                });
+            }
+        }
+    }
+    render() {
+        return html `
+      ${this.showSmartFacetBar && this.placeholderType === null
+            ? html `<smart-facet-bar
+            .query=${this.baseQuery}
+            .aggregations=${this.dataSource.aggregations}
+            .selectedFacets=${this.selectedFacets}
+            .collectionTitles=${this.dataSource.collectionTitles}
+            .filterToggleShown=${!this.mobileView}
+            .filterToggleActive=${this.facetPaneVisible}
+            .label=${this.smartFacetBarLabel}
+            @facetsChanged=${this.facetsChanged}
+            @filtersToggled=${() => {
+                this.facetPaneVisible = !this.facetPaneVisible;
+                this.emitFacetPaneVisibilityChanged();
+            }}
+          ></smart-facet-bar>`
+            : nothing}
+
+      <div
+        id="content-container"
+        class=${this.mobileView ? 'mobile' : 'desktop'}
+      >
+        ${this.placeholderType
+            ? this.emptyPlaceholderTemplate
+            : this.collectionBrowserTemplate}
+      </div>
+    `;
+    }
+    /**
+     * Determines what type of placeholder content should be shown instead of result tiles, if applicable.
+     * The placeholders indicate states where we have no results to show, which could be the result of:
+     *  - No query is set (on the search page)
+     *  - No results were returned for the most recent search
+     *  - The collection being searched within has no viewable items
+     *  - An error occurred on the most recent search attempt
+     */
+    setPlaceholderType() {
+        const isInitialized = this.dataSource.queryInitialized;
+        const hasQuery = !!this.baseQuery?.trim();
+        const hasIdentifiers = !!this.identifiers?.length;
+        const isCollection = !!this.withinCollection;
+        const isProfile = !!this.withinProfile;
+        const isSearchResults = !isCollection && !isProfile;
+        const noResults = !this.searchResultsLoading &&
+            (this.dataSource.size === 0 || !this.searchService);
+        this.placeholderType = null;
+        if (this.suppressPlaceholders)
+            return;
+        if (!isInitialized) {
+            this.placeholderType = 'empty-query';
+        }
+        else if (isSearchResults &&
+            !hasQuery &&
+            !hasIdentifiers &&
+            // A search by filters alone (allowFilterOnlySearch) shows its results.
+            !this.dataSource.canPerformSearch) {
+            this.placeholderType = 'empty-query';
+        }
+        else if (noResults) {
+            // Within a collection, no query + no results means the collection simply has no viewable items.
+            // Otherwise, we must have a user query that produced 0 results.
+            this.placeholderType =
+                !hasQuery && isCollection ? 'empty-collection' : 'no-results';
+        }
+        if (this.dataSource.queryErrorMessage) {
+            if (!hasQuery && isCollection) {
+                this.placeholderType = 'collection-error';
+            }
+            else if (this.dataSource.queryErrorType === SearchServiceErrorType.networkError) {
+                // The service didn't answer: nothing to do with the query.
+                this.placeholderType = 'service-error';
+            }
+            else {
+                this.placeholderType = 'query-error';
+            }
+        }
+    }
+    /**
+     * Template for the placeholder content to show when no results are available.
+     */
+    get emptyPlaceholderTemplate() {
+        return html `
+      <empty-placeholder
+        .placeholderType=${this.placeholderType}
+        ?isMobileView=${this.mobileView}
+        ?isCollection=${!!this.withinCollection}
+        .detailMessage=${this.dataSource.queryErrorMessage ?? ''}
+        .baseNavigationUrl=${this.baseNavigationUrl}
+      ></empty-placeholder>
+    `;
+    }
+    /**
+     * Top-level template for rendering the left (facets) and right (results) columns.
+     */
+    get collectionBrowserTemplate() {
+        return html `
+      <div id="left-column-scroll-sentinel"></div>
+      ${this.leftColumnTemplate} ${this.rightColumnTemplate}
+    `;
+    }
+    /**
+     * Template for either the mobile or desktop version of the left column, depending
+     * on current component state.
+     */
+    get leftColumnTemplate() {
+        if (this.mobileView) {
+            return this.mobileLeftColumnTemplate;
+        }
+        return this.desktopLeftColumnTemplate;
+    }
+    /**
+     * Template for the mobile version of the "left column" (which in this case, appears
+     * *above* the search results rather than beside them), for rendering the
+     * accordion-style facets.
+     */
+    get mobileLeftColumnTemplate() {
+        return html `
+      <div
+        id="left-column"
+        class="column${this.isResizeToMobile ? ' preload' : ''}"
+      >
+        ${this.facetTopViewSlot} ${this.resultsCountTemplate}
+        ${this.facetsHeaderSlot}
+        <div id="facets-header-container">${this.mobileFacetsTemplate}</div>
+      </div>
+    `;
+    }
+    /**
+     * Template for the desktop version of the left column, displaying the facets sidebar.
+     */
+    get desktopLeftColumnTemplate() {
+        return html `
+      <div id="left-column" class="column" ?hidden=${!this.facetPaneVisible}>
+        ${this.facetTopViewSlot}
+        <div id="facets-header-container">
+          <h2 id="facets-header" class="sr-only">${msg('Filters')}</h2>
+          ${this.resultsCountTemplate} ${this.clearFiltersBtnTemplate(false)}
+        </div>
+        ${this.facetsHeaderSlot}
+        <div id="facets-container" aria-labelledby="facets-header">
+          ${this.facetsTemplate}
+          <div id="facets-scroll-sentinel"></div>
+        </div>
+        <div id="facets-bottom-fade"></div>
+      </div>
+    `;
+    }
+    /**
+     * Slot which is placed at top of the facets area for user-profile page
+     * - mainly used to render userlists
+     */
+    get facetTopViewSlot() {
+        return html `<div id="facet-top-view">
+      <slot name="facet-top-slot"></slot>
+    </div>`;
+    }
+    /**
+     * Slot below the results count and above the facets (the date picker comes
+     * first), for controls that change what the results are, e.g. how they're
+     * ranked.
+     */
+    get facetsHeaderSlot() {
+        return html `<div id="facets-header-slot">
+      <slot name="facets-header-slot"></slot>
+    </div>`;
+    }
+    /**
+     * Template for the "X Results" count at the top of the search results.
+     * Changes to the "Searching..." label if the search results are still loading.
+     */
+    get resultsCountTemplate() {
+        if (this.suppressResultCount)
+            return nothing;
+        const shouldShowSearching = this.searchResultsLoading || this.totalResults === undefined;
+        const classes = classMap({ filtered: this.hasActiveFilters });
+        const resultsCount = this.totalResults === undefined
+            ? undefined
+            : new Intl.NumberFormat(getLocale()).format(this.totalResults);
+        const resultsLabel = this.totalResults === 1 ? msg('Result') : msg('Results');
+        // Added data-testid for Playwright testing
+        return html `
+      <div id="results-total" class=${classes} data-testid="results-total">
+        <span id="big-results-count">
+          ${shouldShowSearching ? msg('Searching…') : resultsCount}
+        </span>
+        <span id="big-results-label">
+          ${shouldShowSearching ? nothing : resultsLabel}
+        </span>
+      </div>
+    `;
+    }
+    /**
+     * Template for the right column of the collection browser, where the result
+     * tiles and sort/filter bar are shown.
+     */
+    get rightColumnTemplate() {
+        const rightColumnClasses = classMap({
+            column: true,
+            'full-width': !this.facetPaneVisible,
+            'smart-results-spacing': !!this.showSmartResults,
+        });
+        return html `
+      <div id="right-column" class=${rightColumnClasses}>
+        ${this.showSmartResults
+            ? html `<slot name="smart-results"></slot>`
+            : nothing}
+        <section id="results">
+          <h2 class="results-section-heading">
+            <slot name="results-heading"></slot>
+          </h2>
+          <div id="cb-top-view">
+            <slot name="cb-top-slot"></slot>
+          </div>
+          ${this.isManageView
+            ? this.manageBarTemplate
+            : this.sortFilterBarTemplate}
+          <slot name="cb-results"></slot>
+          <div id="results-body">
+            <slot name="results-aside"></slot>
+            <div id="results-main">
+              ${this.displayMode === `list-compact` && this.totalResults
+            ? this.listHeaderTemplate
+            : nothing}
+              ${this.suppressResultTiles
+            ? nothing
+            : this.infiniteScrollerTemplate}
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+    }
+    /**
+     * Template for the infinite scroller widget that contains the result tiles.
+     */
+    get infiniteScrollerTemplate() {
+        return html `<infinite-scroller
+      class=${this.infiniteScrollerClasses}
+      itemCount=${this.placeholderType ? 0 : nothing}
+      ariaLandmarkLabel=${msg('Search results')}
+      .estimatedCellHeight=${this.estimatedTileHeight}
+      .minBufferMarginCells=${this.pageSize}
+      .cellProvider=${this}
+      .placeholderCellTemplate=${this.placeholderCellTemplate}
+      @scrollThresholdReached=${this.scrollThresholdReached}
+      @visibleCellsChanged=${this.visibleCellsChanged}
+      >${this.displayMode === 'grid'
+            ? html `<slot name="result-last-tile" slot="result-last-tile"></slot>`
+            : nothing}
+    </infinite-scroller>`;
+    }
+    /**
+     * Produces a `classMap` indicating which classes the infinite scroller should have
+     * given the current display mode & placeholder case.
+     */
+    get infiniteScrollerClasses() {
+        return classMap({
+            [this.displayMode ?? '']: !!this.displayMode,
+            hidden: !!this.placeholderType,
+        });
+    }
+    /**
+     * Best-effort hint of how tall a single rendered tile is, by display mode.
+     * The scroller uses this to better estimate the size its initial scroll
+     * spacer and buffer position before real cell heights are measured.
+     * Should roughly match the placeholder heights since the initial render
+     * of a new page generally shows placeholders only anyway.
+     */
+    get estimatedTileHeight() {
+        switch (this.displayMode) {
+            case 'list-detail':
+                return 80;
+            case 'list-compact':
+                return 45;
+            case 'grid':
+            default:
+                return 225;
+        }
+    }
+    /**
+     * Template for the sort & filtering bar that appears atop the search results.
+     */
+    get sortFilterBarTemplate() {
+        if (this.suppressSortBar)
+            return nothing;
+        // Determine the set of sortable fields that should be shown in the sort bar
+        let sortFieldAvailability = defaultSortAvailability;
+        // We adjust the available sort options for a couple of special cases...
+        if (this.withinCollection?.startsWith('fav-') ||
+            this.profileElement === 'favorites') {
+            // When viewing a fav- collection or the favorites profile tab,
+            // we include the Date Favorited option as the default
+            sortFieldAvailability = favoritesSortAvailability;
+        }
+        else if (!this.withinCollection && this.searchType === SearchType.TV) {
+            // When viewing TV search results, we exclude several of the usual date sort options.
+            sortFieldAvailability = tvSortAvailability;
+        }
+        // We only show relevance sort if a search query is currently defined
+        sortFieldAvailability.relevance = this.isRelevanceSortAvailable;
+        return html `
+      <sort-filter-bar
+        .defaultSortField=${this.defaultSortField}
+        .defaultSortDirection=${this.defaultSortDirection}
+        .selectedSort=${this.selectedSort}
+        .sortDirection=${this.sortDirection}
+        .sortFieldAvailability=${sortFieldAvailability}
+        .displayMode=${this.displayMode}
+        .selectedTitleFilter=${this.selectedTitleFilter}
+        .selectedCreatorFilter=${this.selectedCreatorFilter}
+        .prefixFilterCountMap=${this.dataSource.prefixFilterCountMap}
+        .enableSortOptionsSlot=${this.enableSortOptionsSlot}
+        .suppressDisplayModes=${this.suppressDisplayModes}
+        @sortChanged=${this.userChangedSort}
+        @displayModeChanged=${this.displayModeChanged}
+        @titleLetterChanged=${this.titleLetterSelected}
+        @creatorLetterChanged=${this.creatorLetterSelected}
+      >
+        ${this.tileBlurCheckboxTemplate}
+        <slot name="sort-options-left" slot="sort-options-left"></slot>
+        <slot name="sort-options" slot="sort-options"></slot>
+        <slot name="sort-options-right" slot="sort-options-right"></slot>
+        <slot name="sort-bar-end" slot="sort-bar-end"></slot>
+      </sort-filter-bar>
+    `;
+    }
+    /**
+     * Template for the Blurring toggle for admins to enable/disable blurring of
+     * sensitive content in result tiles.
+     */
+    get tileBlurCheckboxTemplate() {
+        // Only show the checkbox for @archive.org users
+        if (!this.dataSource.sessionContext?.is_archive_user)
+            return nothing;
+        return html `
+      <label
+        id="tile-blur-label"
+        for="tile-blur-check"
+        slot="sort-options-right"
+      >
+        ${msg('Blurring')}
+        <input
+          id="tile-blur-check"
+          type="checkbox"
+          ?checked=${!this.shouldSuppressTileBlurring}
+          @change=${this.tileBlurCheckboxChanged}
+        />
+      </label>
+    `;
+    }
+    /**
+     * Template for the manage bar UI that appears atop the search results when we are
+     * showing the management view. This generally replaces the sort bar when present.
+     */
+    get manageBarTemplate() {
+        return html `
+      <manage-bar
+        .label=${this.manageViewLabel}
+        .modalManager=${this.modalManager}
+        .selectedItems=${this.dataSource.checkedTileModels}
+        .profileElement=${this.profileElement}
+        showSelectAll
+        showUnselectAll
+        ?showItemManageButton=${this.pageContext === 'search'}
+        ?removeAllowed=${this.dataSource.checkedTileModels.length !== 0}
+        @removeItems=${this.handleRemoveItems}
+        @manageItems=${this.handleManageItems}
+        @selectAll=${() => this.dataSource.checkAllTiles()}
+        @unselectAll=${() => this.dataSource.uncheckAllTiles()}
+        @cancel=${() => {
+            this.isManageView = false;
+            this.dataSource.uncheckAllTiles();
+            if (this.searchResultsLoading)
+                this.dataSource.resetPages();
+        }}
+      ></manage-bar>
+    `;
+    }
+    /**
+     * Handler for when the user requests to remove all checked items via the manage bar.
+     * Emits an `itemRemovalRequested` event with all checked tile models.
+     */
+    handleRemoveItems() {
+        this.dispatchEvent(new CustomEvent('itemRemovalRequested', {
+            detail: {
+                items: this.dataSource.checkedTileModels.map(model => {
+                    // For favorited searches, we attach a search: prefix to differentiate it from an item
+                    const searchPrefix = model?.mediatype === 'search' ? 'search:' : '';
+                    const identifier = model?.identifier ?? '';
+                    return `${searchPrefix}${identifier}`;
+                }),
+            },
+        }));
+    }
+    /**
+     * Handler when user request to bulk edit from /search/ page
+     */
+    handleManageItems() {
+        this.dispatchEvent(new CustomEvent('itemManagerRequested', {
+            detail: {
+                items: this.dataSource.checkedTileModels.map(model => model?.identifier ? model.identifier : ''),
+            },
+        }));
+    }
+    refreshSmartFacets() {
+        this.smartFacetBar?.refresh();
+    }
+    /**
+     * Handler to show processing modal while removing item
+     */
+    showRemoveItemsProcessingModal() {
+        this.manageBar?.showRemoveItemsProcessingModal();
+    }
+    /**
+     * Handler to show error modal when item removal failed
+     */
+    showRemoveItemsErrorModal() {
+        this.manageBar?.showRemoveItemsErrorModal();
+    }
+    /**
+     * Removes all tile models that are currently checked & adjusts the paging
+     * of the data source to account for any new gaps in the data.
+     */
+    removeCheckedTiles() {
+        this.dataSource.removeCheckedTiles();
+    }
+    /**
+     * Handler for when the tile blurring checkbox state is toggled
+     */
+    tileBlurCheckboxChanged(e) {
+        const { checked } = e.target;
+        this.tileBlurOverrideState = checked ? 'on' : 'off';
+        this.infiniteScroller?.refreshAllVisibleCells();
+    }
+    /**
+     * Whether result tiles should have the default blurring of sensitive content suppressed.
+     * First considers any override specified by the user, falling back to the setting in
+     * user preferences if not overridden.
+     */
+    get shouldSuppressTileBlurring() {
+        if (this.tileBlurOverrideState !== 'no-override') {
+            // User wants to override their preference.
+            // Return true if they want blurring turned off, or false otherwise.
+            return this.tileBlurOverrideState === 'off';
+        }
+        // Not overriding, so use the preference from session context
+        const { sessionContext } = this.dataSource;
+        const userPrefs = sessionContext?.pps_relevant_user_preferences;
+        const blurringPref = userPrefs?.display__blur_moderated_content;
+        // Only suppress blurring if the preference is disabled.
+        // If enabled or missing, tile blurring remains on.
+        return blurringPref === 'off';
+    }
+    /**
+     * Handler for when the user changes the selected sort option or direction.
+     */
+    userChangedSort(e) {
+        const { selectedSort, sortDirection } = e.detail;
+        this.selectedSort = selectedSort;
+        this.sortDirection = sortDirection;
+        if ((this.currentPage ?? 1) > 1) {
+            this.goToPage(1);
+        }
+        this.setCurrentPage(1);
+    }
+    /**
+     * Fires an analytics event for sorting changes.
+     * @param prevSortDirection Which sort direction was previously set.
+     */
+    sendSortByAnalytics(prevSortDirection) {
+        const directionCleared = prevSortDirection && !this.sortDirection;
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action: analyticsActions.sortBy,
+            label: `${this.selectedSort}${this.sortDirection || directionCleared ? `-${this.sortDirection}` : ''}`,
+        });
+    }
+    /**
+     * Handler for when the selected sort option is updated, whether by the user
+     * themselves or programmatically.
+     */
+    selectedSortChanged() {
+        // Lazy-load the alphabet counts for title/creator sort bar as needed
+        this.dataSource.updatePrefixFiltersForCurrentSort();
+    }
+    /**
+     * An object representing the current sort field & direction.
+     */
+    get sortParam() {
+        const sortOption = SORT_OPTIONS[this.selectedSort];
+        if (!sortOption?.handledBySearchService) {
+            return null;
+        }
+        // If the sort option specified in the URL is unrecognized, we just use it as-is
+        const urlSortParam = new URL(window.location.href).searchParams.get('sort');
+        const sortField = sortOption.searchServiceKey ?? urlSortParam?.replace(/^-/, '');
+        // If the sort direction is still null at this point, then we assume ascending
+        // (i.e., it was unrecognized and had no directional flag)
+        if (!this.sortDirection)
+            this.sortDirection = 'asc';
+        if (!sortField)
+            return null;
+        return { field: sortField, direction: this.sortDirection };
+    }
+    /**
+     * An object representing the default sort field & direction, if none are explicitly set.
+     */
+    get defaultSortParam() {
+        const direction = this.defaultSortDirection ?? 'asc';
+        const field = SORT_OPTIONS[this.defaultSortField].searchServiceKey;
+        if (!field)
+            return null;
+        return { field, direction };
+    }
+    /**
+     * Handler for when the display mode option is changed (grid/list/compact-list views).
+     */
+    displayModeChanged(e) {
+        this.displayMode = e.detail.displayMode;
+        if (this.displayMode) {
+            this.analyticsHandler?.sendEvent({
+                category: this.searchContext,
+                action: analyticsActions.displayMode,
+                label: this.displayMode,
+            });
+        }
+    }
+    /**
+     * Returns a query clause identifying the currently selected title filter,
+     * e.g., `firstTitle:X`.
+     */
+    get titleQuery() {
+        return this.selectedTitleFilter
+            ? `firstTitle:${this.selectedTitleFilter}`
+            : undefined;
+    }
+    /**
+     * Returns a query clause identifying the currently selected creator filter,
+     * e.g., `firstCreator:X`.
+     */
+    get creatorQuery() {
+        return this.selectedCreatorFilter
+            ? `firstCreator:${this.selectedCreatorFilter}`
+            : undefined;
+    }
+    /**
+     * Send Analytics when sorting by title's first letter
+     * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
+     */
+    sendFilterByTitleAnalytics(prevSelectedLetter) {
+        if (!prevSelectedLetter && !this.selectedTitleFilter) {
+            return;
+        }
+        const cleared = prevSelectedLetter && !this.selectedTitleFilter;
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action: analyticsActions.filterByTitle,
+            label: cleared
+                ? `clear-${prevSelectedLetter}`
+                : `${prevSelectedLetter || 'start'}-${this.selectedTitleFilter}`,
+        });
+    }
+    /**
+     * Send Analytics when filtering by creator's first letter
+     * labels: 'start-<ToLetter>' | 'clear-<FromLetter>' | '<FromLetter>-<ToLetter>'
+     */
+    sendFilterByCreatorAnalytics(prevSelectedLetter) {
+        if (!prevSelectedLetter && !this.selectedCreatorFilter) {
+            return;
+        }
+        const cleared = prevSelectedLetter && !this.selectedCreatorFilter;
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action: analyticsActions.filterByCreator,
+            label: cleared
+                ? `clear-${prevSelectedLetter}`
+                : `${prevSelectedLetter || 'start'}-${this.selectedCreatorFilter}`,
+        });
+    }
+    /**
+     * Handler for changes to which letter is selected in the title alphabet bar.
+     */
+    titleLetterSelected(e) {
+        this.selectedCreatorFilter = null;
+        this.selectedTitleFilter = e.detail.selectedLetter;
+    }
+    /**
+     * Handler for changes to which letter is selected in the creator alphabet bar.
+     */
+    creatorLetterSelected(e) {
+        this.selectedTitleFilter = null;
+        this.selectedCreatorFilter = e.detail.selectedLetter;
+    }
+    /**
+     * The full template for how the facets should be structured in mobile view,
+     * including the collapsible container (with header) and the facets themselves.
+     */
+    get mobileFacetsTemplate() {
+        if (FACETLESS_PAGE_ELEMENTS.includes(this.profileElement))
+            return nothing;
+        const toggleFacetsVisible = (e) => {
+            const target = e.target;
+            this.isResizeToMobile = false;
+            this.collapsibleFacetsVisible = target.open;
+            this.analyticsHandler?.sendEvent({
+                category: this.searchContext,
+                action: analyticsActions.mobileFacetsToggled,
+                label: target.open ? 'open' : 'closed',
+            });
+        };
+        return html `
+      <details id="mobile-filter-collapse" @toggle=${toggleFacetsVisible}>
+        <summary>
+          <span class="collapser-icon">${chevronIcon}</span>
+          <h2>${msg('Filters')}</h2>
+          ${this.clearFiltersBtnTemplate(true)}
+        </summary>
+        ${this.facetsTemplate}
+      </details>
+    `;
+    }
+    /**
+     * Handler for when either of the TV dropdown filters are toggled, loading their
+     * contents if necessary.
+     */
+    async tvDropdownToggled(e) {
+        if (!e.detail)
+            return; // Only run when toggled open
+        if (this.tvMapsPopulated)
+            return;
+        this.tvMapsLoading = true;
+        this.tvMapsErrored = false;
+        try {
+            await this.dataSource.populateTVChannelMaps();
+            this.tvMapsPopulated = true;
+        }
+        catch (err) {
+            this.tvMapsErrored = true;
+        }
+        this.tvMapsLoading = false;
+    }
+    async networksDropdownChanged() {
+        const previousNetwork = this.selectedTVNetwork;
+        const newNetwork = this.tvNetworksDropdown.selectedOption?.text;
+        this.selectedTVNetwork = newNetwork ?? undefined;
+        const entries = this.dataSource.tvChannelMaps.channelToNetwork.entries();
+        for (const [channel, network] of entries) {
+            if (network === previousNetwork) {
+                // Remove any previously-applied network filter
+                const removedBucket = {
+                    key: channel.toLowerCase(),
+                    count: 0,
+                    state: 'none',
+                };
+                this.selectedFacets = updateSelectedFacetBucket(this.selectedFacets, 'creator', removedBucket, true);
+            }
+            else if (network === this.selectedTVNetwork) {
+                const newBucket = {
+                    key: channel.toLowerCase(),
+                    count: 0,
+                    state: 'selected',
+                };
+                this.selectedFacets = updateSelectedFacetBucket(this.selectedFacets, 'creator', newBucket);
+            }
+        }
+    }
+    async showsDropdownChanged() {
+        const previousShow = this.selectedTVShow;
+        const newShow = this.tvShowsDropdown.selectedOption?.text;
+        this.selectedTVShow = newShow ?? undefined;
+        // Remove any previously-applied shows filter
+        if (previousShow !== undefined) {
+            const removedBucket = {
+                key: previousShow,
+                count: 0,
+                state: 'none',
+            };
+            this.selectedFacets = updateSelectedFacetBucket(this.selectedFacets, 'program', removedBucket, true);
+        }
+        if (this.selectedTVShow) {
+            const newBucket = {
+                key: this.selectedTVShow,
+                count: 0,
+                state: 'selected',
+            };
+            this.selectedFacets = updateSelectedFacetBucket(this.selectedFacets, 'program', newBucket);
+        }
+    }
+    get tvDropdownFiltersTemplate() {
+        if (this.searchType !== SearchType.TV)
+            return nothing;
+        const { channelToNetwork, programToChannels } = this.dataSource.tvChannelMaps;
+        const networks = channelToNetwork
+            ? [...new Set(channelToNetwork.values())]
+            : [];
+        let showEntries = programToChannels ? [...programToChannels.entries()] : [];
+        if (channelToNetwork && this.selectedTVNetwork) {
+            showEntries = showEntries.filter(([, channels]) => Object.keys(channels).some(c => channelToNetwork.get(c) === this.selectedTVNetwork));
+        }
+        const filterByNetworkLabel = msg('Filter by Network');
+        const filterByShowLabel = msg('Filter by Show');
+        const shows = showEntries.map(([show]) => show);
+        const loadingIndicator = html `
+      <span slot="empty-options">
+        <img src="https://archive.org/images/loading.gif" />
+      </span>
+    `;
+        const errorMessage = html `
+      <span slot="empty-options">
+        ${msg('Unable to fetch options, try again later')}
+      </span>
+    `;
+        return html `
+      <div id="tv-filters" slot="facets-top">
+        <ia-combo-box
+          id="tv-networks"
+          class="tv-filter-dropdown"
+          placeholder=${filterByNetworkLabel}
+          clearable
+          wrap-arrow-keys
+          sort
+          .options=${networks.map((n, i) => ({ id: `network-${i}`, text: n }))}
+          @toggle=${this.tvDropdownToggled}
+          @change=${this.networksDropdownChanged}
+        >
+          <span slot="label" class="sr-only">${filterByNetworkLabel}</span>
+          ${this.tvMapsLoading ? loadingIndicator : nothing}
+          ${this.tvMapsErrored ? errorMessage : nothing}
+        </ia-combo-box>
+        <ia-combo-box
+          id="tv-shows"
+          class="tv-filter-dropdown"
+          placeholder=${filterByShowLabel}
+          max-autocomplete-entries="500"
+          clearable
+          wrap-arrow-keys
+          sort
+          .options=${shows.map((s, i) => ({ id: `show-${i}`, text: s }))}
+          @toggle=${this.tvDropdownToggled}
+          @change=${this.showsDropdownChanged}
+        >
+          <span slot="label" class="sr-only">${filterByShowLabel}</span>
+          ${this.tvMapsLoading ? loadingIndicator : nothing}
+          ${this.tvMapsErrored ? errorMessage : nothing}
+        </ia-combo-box>
+      </div>
+    `;
+    }
+    /**
+     * The template for the facets component alone, without any surrounding wrappers.
+     */
+    get facetsTemplate() {
+        if (FACETLESS_PAGE_ELEMENTS.includes(this.profileElement))
+            return nothing;
+        if (this.facetLoadStrategy === 'off') {
+            return html `
+        <p class="facets-message">
+          ${msg('Facets are temporarily unavailable.')}
+        </p>
+      `;
+        }
+        // We switch to TV facet ordering & date picker if we are in a TV collection or showing TV search results
+        const shouldUseTvInterface = this.isTVCollection ||
+            (!this.withinCollection && this.searchType === SearchType.TV);
+        const facetDisplayOrder = this.facetDisplayOrderWith(shouldUseTvInterface ? tvFacetDisplayOrder : defaultFacetDisplayOrder);
+        const facets = html `
+      <collection-facets
+        .collectionPagePath=${this.collectionPagePath}
+        .parentCollections=${this.dataSource.parentCollections}
+        .pageSpecifierParams=${this.dataSource.pageSpecifierParams}
+        .searchService=${this.searchService}
+        .featureFeedbackService=${this.featureFeedbackService}
+        .recaptchaManager=${this.recaptchaManager}
+        .resizeObserver=${this.resizeObserver}
+        .searchType=${this.searchType}
+        .aggregations=${this.dataSource.aggregations}
+        .histogramAggregation=${this.dataSource.histogramAggregation}
+        .minSelectedDate=${this.minSelectedDate}
+        .maxSelectedDate=${this.maxSelectedDate}
+        .selectedFacets=${this.selectedFacets}
+        .baseNavigationUrl=${this.baseNavigationUrl}
+        .collectionTitles=${this.dataSource.collectionTitles}
+        .tvChannelAliases=${this.dataSource.tvChannelAliases}
+        .showHistogramDatePicker=${this.showHistogramDatePicker}
+        .allowExpandingDatePicker=${!this.mobileView}
+        .allowDatePickerMonths=${shouldUseTvInterface}
+        .contentWidth=${this.contentWidth}
+        .query=${this.baseQuery}
+        .identifiers=${this.identifiers}
+        .filterMap=${this.dataSource.filterMap}
+        .isManageView=${this.isManageView}
+        .modalManager=${this.modalManager}
+        .analyticsHandler=${this.analyticsHandler}
+        .facetDisplayOrder=${facetDisplayOrder}
+        .extraFacetGroups=${this.activeExtraFacetGroups}
+        .isTvSearch=${shouldUseTvInterface}
+        ?collapsableFacets=${this.mobileView}
+        ?facetsLoading=${this.facetsLoading}
+        ?histogramAggregationLoading=${this.facetsLoading}
+        ?suppressMediatypeFacets=${this.suppressMediatypeFacets}
+        @facetClick=${this.facetClickHandler}
+        @facetsChanged=${this.facetsChanged}
+        @histogramDateRangeUpdated=${this.histogramDateRangeUpdated}
+      >
+        ${this.tvDropdownFiltersTemplate}
+      </collection-facets>
+    `;
+        // If we are using one of the opt-in facet load strategies, we may need to wrap the
+        // desktop view facets in a <details> widget so that patrons can opt into loading them.
+        // In the `opt-in-or-login` case, we only do this if they are not logged in.
+        const showDesktopOptInWidget = this.facetLoadStrategy === 'opt-in' ||
+            (this.facetLoadStrategy === 'opt-in-or-login' && !this.loggedIn);
+        if (showDesktopOptInWidget && !this.mobileView) {
+            return html `
+        <details
+          class="desktop-facets-dropdown"
+          @toggle=${(e) => {
+                const target = e.target;
+                this.collapsibleFacetsVisible = target.open;
+            }}
+        >
+          <summary>
+            <span class="collapser-icon">${chevronIcon}</span>
+            <h2>${msg('Filters')}</h2>
+          </summary>
+          ${facets}
+        </details>
+      `;
+        }
+        // Otherwise, just render the facets component bare
+        return facets;
+    }
+    /**
+     * The HTML template for the "Clear all filters" button, or `nothing` if no
+     * filters are currently active.
+     *
+     * @param mobile Whether to style/shorten the button for mobile view
+     */
+    clearFiltersBtnTemplate(mobile) {
+        if (!this.hasActiveFilters)
+            return nothing;
+        const buttonClasses = classMap({
+            'clear-filters-btn': true,
+            mobile,
+        });
+        const buttonText = mobile ? msg('Clear all') : msg('Clear all filters');
+        return html `
+      <div class="clear-filters-btn-row">
+        ${mobile
+            ? html `<span class="clear-filters-btn-separator">&nbsp;</span>`
+            : nothing}
+        <button class=${buttonClasses} @click=${this.clearFilters}>
+          ${buttonText}
+        </button>
+      </div>
+    `;
+    }
+    /**
+     * Template for the table header content that appears atop the compact list view.
+     */
+    get listHeaderTemplate() {
+        return html `
+      <div id="list-header">
+        <tile-dispatcher
+          .tileDisplayMode=${'list-header'}
+          .resizeObserver=${this.resizeObserver}
+          .sortParam=${this.sortParam}
+          .defaultSortParam=${this.defaultSortParam}
+          .mobileBreakpoint=${this.mobileBreakpoint}
+          .loggedIn=${this.loggedIn}
+          .suppressBlurring=${this.shouldSuppressTileBlurring}
+          .tileActions=${this.tileActions}
+        >
+        </tile-dispatcher>
+      </div>
+    `;
+    }
+    /**
+     * Handler for when the date picker's date range is changed.
+     */
+    histogramDateRangeUpdated(e) {
+        const { minDate, maxDate } = e.detail;
+        [this.minSelectedDate, this.maxSelectedDate] = [minDate, maxDate];
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action: analyticsActions.histogramChanged,
+            label: this.dataSource.dateRangeQueryClause,
+        });
+    }
+    /**
+     * Emits an event indicating a change in whether the manage mode is shown.
+     */
+    emitManageModeChangedEvent() {
+        this.dispatchEvent(new CustomEvent('manageModeChanged', {
+            detail: this.isManageView,
+        }));
+    }
+    /**
+     * Installs a new data source component and associated query state parameters into
+     * this component, causing it to efficiently update its views to represent the
+     * newly-provided data. In this way, one can reuse a single instance of
+     * <collection-browser> to handle multiple different sets of search results on
+     * a single page, each set of results being loaded & updated by its own data
+     * source.
+     *
+     * @param dataSource The data source component containing (or prepared to fetch)
+     * the tile data to be displayed.
+     * @param queryState The new query-related state that this component should
+     * represent, such as the search query, sort option, and any filters applied.
+     */
+    async installDataSourceAndQueryState(dataSource, queryState) {
+        if (this.dataSource)
+            this.removeController(this.dataSource);
+        this.dataSource = dataSource;
+        this.addController(this.dataSource);
+        this.baseQuery = queryState.baseQuery;
+        this.profileElement = queryState.profileElement;
+        this.searchType = queryState.searchType;
+        this.selectedFacets =
+            queryState.selectedFacets ??
+                getDefaultSelectedFacets(this.activeExtraFacetGroups);
+        this.internalFilters = queryState.internalFilters;
+        this.minSelectedDate = queryState.minSelectedDate;
+        this.maxSelectedDate = queryState.maxSelectedDate;
+        this.selectedSort = queryState.selectedSort ?? SortField.default;
+        this.sortDirection = queryState.sortDirection;
+        this.selectedTitleFilter = queryState.selectedTitleFilter;
+        this.selectedCreatorFilter = queryState.selectedCreatorFilter;
+        this.pagesToRender = this.initialPageNumber;
+        // We set this flag during the update to prevent the URL state persistence
+        // from creating an unwanted extra history entry.
+        this.dataSourceInstallInProgress = true;
+        this.requestUpdate();
+        await this.updateComplete;
+        this.dataSourceInstallInProgress = false;
+        if (!this.searchResultsLoading) {
+            this.setTotalResultCount(this.dataSource.totalResults);
+            this.setTileCount(this.dataSource.size);
+        }
+        this.refreshVisibleResults();
+    }
+    firstUpdated() {
+        this.restoreState();
+        this.setInitialSize();
+    }
+    /**
+     * Determines the initial size of the content container and whether or not
+     * the mobile layout should be used.
+     */
+    setInitialSize() {
+        this.contentWidth = this.contentContainer.getBoundingClientRect().width;
+        this.mobileView =
+            this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
+        this.sendLayoutSizeAnalytics();
+    }
+    /**
+     * Fires an analytics event indicating which type of layout was rendered:
+     * mobile or desktop.
+     */
+    sendLayoutSizeAnalytics() {
+        if (this.analyticsHandler) {
+            this.layoutSizeAnalyticsSent = true;
+            this.analyticsHandler.sendEvent({
+                category: this.searchContext,
+                action: this.mobileView
+                    ? analyticsActions.loadMobileView
+                    : analyticsActions.loadDesktopView,
+            });
+        }
+    }
+    updated(changed) {
+        if (changed.has('searchService'))
+            this.listenForRefinedResults();
+        if (changed.has('placeholderType') && this.placeholderType === null) {
+            if (!this.leftColIntersectionObserver) {
+                this.setupLeftColumnScrollListeners();
+            }
+            if (!this.facetsIntersectionObserver) {
+                this.setupFacetsScrollListeners();
+            }
+            this.updateLeftColumnHeight();
+        }
+        if (changed.has('analyticsHandler') && !this.layoutSizeAnalyticsSent) {
+            this.sendLayoutSizeAnalytics();
+        }
+        if (changed.has('displayMode') ||
+            changed.has('baseNavigationUrl') ||
+            changed.has('baseImageUrl') ||
+            changed.has('loggedIn') ||
+            changed.has('tileActions') ||
+            changed.has('tileLayoutType')) {
+            this.infiniteScroller?.reload();
+        }
+        if (changed.has('profileElement')) {
+            this.applyDefaultProfileSort();
+        }
+        if (changed.has('withinCollection') && this.withinCollection) {
+            // Set a sensible default collection sort while we load results, which we will later
+            // adjust based on any sort-by metadata once the response arrives.
+            if (!this.baseQuery) {
+                this.defaultSortField = this.withinCollection.startsWith('fav-')
+                    ? SortField.datefavorited
+                    : SortField.weeklyview;
+                this.defaultSortDirection = 'desc';
+            }
+        }
+        if (changed.has('baseQuery')) {
+            this.emitBaseQueryChanged();
+        }
+        if (changed.has('searchType')) {
+            this.emitSearchTypeChanged();
+        }
+        if (changed.has('currentPage') || changed.has('displayMode')) {
+            this.persistState();
+        }
+        if (changed.has('baseQuery') ||
+            changed.has('identifiers') ||
+            changed.has('minSelectedDate') ||
+            changed.has('maxSelectedDate') ||
+            changed.has('selectedFacets') ||
+            changed.has('searchService') ||
+            changed.has('withinCollection') ||
+            changed.has('withinProfile') ||
+            changed.has('profileElement')) {
+            this.dataSource.refreshLetterCounts();
+        }
+        if (changed.has('selectedSort') || changed.has('sortDirection')) {
+            const prevSortDirection = changed.get('sortDirection');
+            this.sendSortByAnalytics(prevSortDirection);
+            this.selectedSortChanged();
+        }
+        if (changed.has('selectedTitleFilter')) {
+            this.sendFilterByTitleAnalytics(changed.get('selectedTitleFilter'));
+        }
+        if (changed.has('selectedCreatorFilter')) {
+            this.sendFilterByCreatorAnalytics(changed.get('selectedCreatorFilter'));
+        }
+        this.updateFacetReadiness();
+        if (changed.has('baseQuery') ||
+            changed.has('identifiers') ||
+            changed.has('searchType') ||
+            changed.has('selectedTitleFilter') ||
+            changed.has('selectedCreatorFilter') ||
+            changed.has('minSelectedDate') ||
+            changed.has('maxSelectedDate') ||
+            changed.has('selectedSort') ||
+            changed.has('sortDirection') ||
+            changed.has('selectedFacets') ||
+            changed.has('searchService') ||
+            changed.has('withinCollection') ||
+            changed.has('withinProfile') ||
+            changed.has('profileElement')) {
+            this.handleQueryChange();
+        }
+        if (changed.has('searchResultsLoading')) {
+            this.emitSearchResultsLoadingChanged();
+        }
+        if (changed.has('facetsLoading') &&
+            this.facetsLoading &&
+            this.collectionFacets) {
+            this.collectionFacets.moreLinksVisible =
+                this.searchType !== SearchType.FULLTEXT;
+        }
+        if (changed.has('pagesToRender')) {
+            if (!this.dataSource.endOfDataReached && this.infiniteScroller) {
+                this.infiniteScroller.itemCount = this.estimatedTileCount;
+            }
+        }
+        if (changed.has('isManageView')) {
+            if (this.isManageView) {
+                this.displayMode = 'grid';
+                this.fetchManageableSearchResults();
+            }
+            else if (this.pageContext === 'search')
+                this.infiniteScroller?.reload();
+            this.infiniteScroller?.refreshAllVisibleCells();
+            // Only emit change event if changing b/w true & false, not on initial value set.
+            if (changed.get('isManageView') !== undefined) {
+                this.emitManageModeChangedEvent();
+            }
+        }
+        if (changed.has('resizeObserver')) {
+            const oldObserver = changed.get('resizeObserver');
+            if (oldObserver)
+                this.disconnectResizeObserver(oldObserver);
+            this.setupResizeObserver();
+        }
+        this.ensureAvailableTilesDisplayed();
+    }
+    connectedCallback() {
+        super.connectedCallback?.();
+        this.setupStateRestorationObserver();
+        this.setupResizeObserver();
+    }
+    disconnectedCallback() {
+        this.stopRefinedResults?.();
+        this.stopRefinedResults = undefined;
+        if (this.resizeObserver) {
+            this.disconnectResizeObserver(this.resizeObserver);
+        }
+        if (this.boundNavigationHandler) {
+            window.removeEventListener('popstate', this.boundNavigationHandler);
+        }
+        if (this.deferredFetchTimer) {
+            window.clearTimeout(this.deferredFetchTimer);
+            this.deferredFetchTimer = 0;
+        }
+        this.leftColIntersectionObserver?.disconnect();
+        this.facetsIntersectionObserver?.disconnect();
+        window.removeEventListener('resize', this.updateLeftColumnHeight);
+    }
+    handleResize(entry) {
+        const previousView = this.mobileView;
+        if (entry.target === this.contentContainer) {
+            this.contentWidth = entry.contentRect.width;
+            this.mobileView =
+                this.contentWidth > 0 && this.contentWidth < this.mobileBreakpoint;
+            // If changing from desktop to mobile disable transition
+            if (this.mobileView && !previousView) {
+                this.isResizeToMobile = true;
+            }
+        }
+        // Ensure the facet sidebar remains sized correctly
+        this.updateLeftColumnHeight();
+    }
+    /**
+     * Ensures that if we have new results from the data source that are not yet
+     * displayed in the infinite scroller, that they are immediately reflected
+     * in the tile count.
+     */
+    ensureAvailableTilesDisplayed() {
+        if (this.infiniteScroller &&
+            this.infiniteScroller.itemCount < this.dataSource.size) {
+            this.setTileCount(this.dataSource.endOfDataReached
+                ? this.dataSource.size
+                : this.estimatedTileCount);
+        }
+    }
+    /**
+     * Updates the data source with the current state of facet readiness for loading,
+     * so that they will begin to load in at the appropriate time according to the
+     * current facet loading strategy.
+     */
+    updateFacetReadiness() {
+        // There are two ways to opt into facet production:
+        //  (1) have the facets dropdown open, or
+        //  (2) if using the `opt-in-or-login` strategy, be logged into an account
+        const optedIn = this.collapsibleFacetsVisible ||
+            (this.facetLoadStrategy === 'opt-in-or-login' && this.loggedIn);
+        // In desktop view, we are always ready to load facets *unless* we are using one of the
+        // `opt-in` strategies and have not opted in (whether by login or UI interaction).
+        const usingOptInStrategy = ['opt-in', 'opt-in-or-login'].includes(this.facetLoadStrategy);
+        const desktopFacetsReady = !this.mobileView && (!usingOptInStrategy || optedIn);
+        // In the mobile view, facets are considered ready provided we have opted in (whether by
+        // login or UI interaction).
+        const mobileFacetsReady = this.mobileView && optedIn;
+        this.dataSource.handleFacetReadinessChange(desktopFacetsReady || mobileFacetsReady);
+    }
+    /**
+     * Sets up listeners for events that may require updating the left column height.
+     */
+    setupLeftColumnScrollListeners() {
+        // We observe intersections between the left column's scroll sentinel and
+        // the viewport, so that we can ensure the left column is always sized to
+        // match the _available_ viewport height. This should generally be more
+        // performant than listening to scroll events on the page or column.
+        const leftColumnSentinel = this.shadowRoot?.querySelector('#left-column-scroll-sentinel');
+        if (leftColumnSentinel) {
+            this.leftColIntersectionObserver = new IntersectionObserver(this.updateLeftColumnHeight, {
+                threshold: [...Array(201).keys()].map(n => n / 200), // Threshold every 0.5%
+            });
+            this.leftColIntersectionObserver.observe(leftColumnSentinel);
+        }
+        // We also listen for window resize events, as they are not always captured
+        // by the resize observer and can affect the desired height of the left column.
+        window.addEventListener('resize', this.updateLeftColumnHeight);
+    }
+    /**
+     * Sets up listeners to control whether the facet sidebar shows its bottom fade-out.
+     * Note this uses a separate IntersectionObserver from the left column, because we
+     * don't need granular intersection thresholds for this.
+     */
+    setupFacetsScrollListeners() {
+        const facetsSentinel = this.shadowRoot?.querySelector('#facets-scroll-sentinel');
+        if (facetsSentinel) {
+            this.facetsIntersectionObserver = new IntersectionObserver(this.updateFacetFadeOut);
+            this.facetsIntersectionObserver.observe(facetsSentinel);
+        }
+    }
+    /**
+     * Emits a `baseQueryChanged` event indicating an update to the search query.
+     */
+    emitBaseQueryChanged() {
+        this.dispatchEvent(new CustomEvent('baseQueryChanged', {
+            detail: {
+                baseQuery: this.baseQuery,
+            },
+        }));
+    }
+    /**
+     * Emits a `searchTypeChanged` event indicating an update to the search type
+     * (e.g., metadata vs. full-text).
+     */
+    emitSearchTypeChanged() {
+        this.dispatchEvent(new CustomEvent('searchTypeChanged', {
+            detail: this.searchType,
+        }));
+    }
+    /**
+     * Emits a `facetPaneVisibilityChanged` event indicating that the facet pane has
+     * been toggled open or closed.
+     */
+    emitFacetPaneVisibilityChanged() {
+        this.dispatchEvent(new CustomEvent('facetPaneVisibilityChanged', {
+            detail: this.facetPaneVisible,
+        }));
+    }
+    /**
+     * Emits a `searchError` event indicating that the most recent search has encountered
+     * an error from the backend.
+     */
+    emitSearchError() {
+        this.dispatchEvent(new CustomEvent('searchError', {
+            detail: this.dataSource.queryErrorMessage,
+        }));
+    }
+    /**
+     * Emits a `queryStateChanged` event indicating that one or more of this component's
+     * properties have changed in a way that could affect the set of search results.
+     */
+    emitQueryStateChanged() {
+        this.dispatchEvent(new CustomEvent('queryStateChanged', {
+            detail: {
+                baseQuery: this.baseQuery,
+                withinCollection: this.withinCollection,
+                withinProfile: this.withinProfile,
+                profileElement: this.profileElement,
+                searchType: this.searchType,
+                selectedFacets: this.selectedFacets,
+                internalFilters: this.internalFilters,
+                minSelectedDate: this.minSelectedDate,
+                maxSelectedDate: this.maxSelectedDate,
+                selectedSort: this.selectedSort,
+                sortDirection: this.sortDirection,
+                selectedTitleFilter: this.selectedTitleFilter,
+                selectedCreatorFilter: this.selectedCreatorFilter,
+            },
+        }));
+    }
+    /**
+     * Emits an `emptyResults` event indicating that we have received an empty result set
+     * for the most recent query.
+     */
+    emitEmptyResults() {
+        this.dispatchEvent(new Event('emptyResults'));
+    }
+    disconnectResizeObserver(resizeObserver) {
+        resizeObserver.removeObserver({
+            target: this.contentContainer,
+            handler: this,
+        });
+    }
+    setupResizeObserver() {
+        if (!this.resizeObserver || !this.contentContainer)
+            return;
+        this.resizeObserver.addObserver({
+            target: this.contentContainer,
+            handler: this,
+        });
+    }
+    /**
+     * When the visible cells change from the infinite scroller, we want to emit
+     * which page is currently visible so the consumer can update its UI or the URL
+     *
+     * @param e
+     * @returns
+     */
+    visibleCellsChanged(e) {
+        this.updateVisiblePage(e.detail.visibleCellIndices);
+    }
+    /**
+     * Recomputes the current page from the given set of visible cell indices
+     * and emits `visiblePageChanged` if the page actually changed.
+     */
+    updateVisiblePage(visibleCellIndices) {
+        if (this.isScrollingToCell)
+            return;
+        if (visibleCellIndices.length === 0)
+            return;
+        // The indices aren't necessarily sorted, so sort them here to ensure our
+        // calculations below find the right cell/page.
+        const sorted = [...visibleCellIndices].sort((a, b) => a - b);
+        // For page determination, do not count more than a single page of visible cells,
+        // since otherwise patrons using very tall screens will be treated as one page
+        // further than they actually are.
+        const lastIndexWithinCurrentPage = Math.min(this.pageSize, sorted.length) - 1;
+        const lastVisibleCellIndex = sorted[lastIndexWithinCurrentPage];
+        const lastVisibleCellPage = Math.floor(lastVisibleCellIndex / this.pageSize) + 1;
+        this.setCurrentPage(lastVisibleCellPage);
+    }
+    /**
+     * Sets the current page number and emits a `visiblePageChanged`
+     * event if the new page differs from the previous one.
+     */
+    setCurrentPage(pageNumber) {
+        if (this.currentPage === pageNumber)
+            return;
+        this.currentPage = pageNumber;
+        this.dispatchEvent(new CustomEvent('visiblePageChanged', {
+            detail: { pageNumber },
+        }));
+    }
+    /**
+     * A Promise which, after each query change, resolves once the fetches for the initial
+     * search have completed. Waits for *both* the hits and aggregations fetches to finish.
+     *
+     * Ensure you await this component's `updateComplete` promise before awaiting this
+     * one, to ensure you do not await an obsolete promise from the previous update.
+     */
+    get initialSearchComplete() {
+        return this.dataSource.initialSearchComplete;
+    }
+    /**
+     * Handler for whenever the component's properties change in a way that may require
+     * fetching new results.
+     */
+    async handleQueryChange() {
+        // only reset if the query has actually changed
+        if (!this.searchService ||
+            this.dataSource.pageFetchQueryKey === this.previousQueryKey) {
+            return;
+        }
+        // If the new state prevents us from updating the search results, don't reset
+        if (this.baseQuery && !this.dataSource.canPerformSearch) {
+            return;
+        }
+        this.previousQueryKey = this.dataSource.pageFetchQueryKey;
+        this.totalResults = undefined;
+        this.pagesToRender =
+            this.initialPageNumber === 1
+                ? 2 // First two pages are batched into one request when starting from page 1
+                : this.initialPageNumber;
+        // Reset the infinite scroller's item count, so that it
+        // shows tile placeholders until the new query's results load in
+        if (this.infiniteScroller) {
+            this.infiniteScroller.itemCount = this.estimatedTileCount;
+            this.infiniteScroller.reload();
+        }
+        if (this.withinCollection && this.baseQuery?.trim()) {
+            this.defaultSortField = SortField.relevance;
+            this.defaultSortDirection = null;
+        }
+        if (!this.initialQueryChangeHappened && this.initialPageNumber > 1) {
+            this.scrollToPage(this.initialPageNumber);
+        }
+        this.initialQueryChangeHappened = true;
+        // if the query changed as part of a window.history pop event, we don't want to
+        // persist the state because it overwrites the forward history
+        if (!this.historyPopOccurred) {
+            this.persistState();
+        }
+        this.historyPopOccurred = false;
+    }
+    setupStateRestorationObserver() {
+        if (!this.boundNavigationHandler) {
+            this.boundNavigationHandler = this.historyNavigationHandler.bind(this);
+        }
+        // when the user navigates back, we want to update the UI to match the URL
+        window.addEventListener('popstate', this.boundNavigationHandler);
+    }
+    historyNavigationHandler() {
+        this.historyPopOccurred = true;
+        this.restoreState();
+    }
+    restoreState() {
+        const restorationState = this.restorationStateHandler.getRestorationState();
+        this.displayMode = restorationState.displayMode;
+        if (!this.suppressURLSinParam && restorationState.searchType != null)
+            this.searchType = restorationState.searchType;
+        this.selectedSort = restorationState.selectedSort ?? SortField.default;
+        this.sortDirection = restorationState.sortDirection ?? null;
+        this.selectedTitleFilter = restorationState.selectedTitleFilter ?? null;
+        this.selectedCreatorFilter = restorationState.selectedCreatorFilter ?? null;
+        this.selectedFacets = restorationState.selectedFacets;
+        if (!this.suppressURLQuery)
+            this.baseQuery = restorationState.baseQuery;
+        this.setCurrentPage(restorationState.currentPage ?? 1);
+        this.minSelectedDate = restorationState.minSelectedDate;
+        this.maxSelectedDate = restorationState.maxSelectedDate;
+        if (this.currentPage && this.currentPage > 1) {
+            this.goToPage(this.currentPage);
+        }
+    }
+    persistState() {
+        const isDefaultSort = this.selectedSort === this.defaultSortField;
+        const restorationState = {
+            displayMode: this.displayMode,
+            searchType: this.suppressURLSinParam ? undefined : this.searchType,
+            selectedSort: isDefaultSort ? SortField.default : this.selectedSort,
+            sortDirection: this.sortDirection ?? undefined,
+            selectedFacets: this.selectedFacets ??
+                getDefaultSelectedFacets(this.activeExtraFacetGroups),
+            baseQuery: this.suppressURLQuery ? undefined : this.baseQuery,
+            currentPage: this.currentPage,
+            titleQuery: this.titleQuery,
+            creatorQuery: this.creatorQuery,
+            minSelectedDate: this.minSelectedDate,
+            maxSelectedDate: this.maxSelectedDate,
+            selectedTitleFilter: this.selectedTitleFilter ?? undefined,
+            selectedCreatorFilter: this.selectedCreatorFilter ?? undefined,
+        };
+        const persistOptions = {
+            forceReplace: this.dataSourceInstallInProgress,
+            persistMetadataSearchType: this.isTVCollection,
+        };
+        this.restorationStateHandler.persistState(restorationState, persistOptions);
+    }
+    /**
+     * Emits a `searchResultsLoadingChanged` event indicating that our loading state has
+     * changed (either we have started loading new results, or we have finished loading them).
+     */
+    emitSearchResultsLoadingChanged() {
+        this.dispatchEvent(new CustomEvent('searchResultsLoadingChanged', {
+            detail: {
+                loading: this.searchResultsLoading,
+            },
+        }));
+    }
+    /**
+     * Handler for when the set of selected facets changes.
+     */
+    facetsChanged(e) {
+        this.selectedFacets = e.detail;
+    }
+    /**
+     * Handler for when any facet is selected/unselected/hidden/unhidden.
+     * Fires analytics indicating the type of facet event that took place.
+     */
+    facetClickHandler({ detail: { facetType, bucket, negative }, }) {
+        let action;
+        if (negative) {
+            action =
+                bucket.state !== 'none'
+                    ? analyticsActions.facetNegativeSelected
+                    : analyticsActions.facetNegativeDeselected;
+        }
+        else {
+            action =
+                bucket.state !== 'none'
+                    ? analyticsActions.facetSelected
+                    : analyticsActions.facetDeselected;
+        }
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action,
+            label: facetType,
+        });
+    }
+    async scrollToPage(pageNumber) {
+        const cellIndexToScrollTo = this.pageSize * (pageNumber - 1);
+        // Wait for the infinite scroller be rendered before proceeding
+        let waitAttempts = 0;
+        while (!this.infiniteScroller && waitAttempts < 20) {
+            await this.updateComplete;
+            waitAttempts++;
+        }
+        if (!this.infiniteScroller)
+            return;
+        // The scroller have its default `itemCount=0`, so propagate our estimated
+        // tile count before jumping to the desired page.
+        if (this.infiniteScroller.itemCount < this.estimatedTileCount) {
+            this.infiniteScroller.itemCount = this.estimatedTileCount;
+            await this.updateComplete;
+        }
+        // Without this setTimeout(0), Safari just pauses until the `fetchPage`
+        // is complete then scrolls to the cell.
+        await new Promise(resolve => {
+            setTimeout(resolve, 0);
+        });
+        this.isScrollingToCell = true;
+        const scrolled = await this.infiniteScroller.scrollToCell(cellIndexToScrollTo, true);
+        this.isScrollingToCell = false;
+        this.infiniteScroller.refreshAllVisibleCells();
+        // After we finish scrolling, recompute the visible page from the new state
+        // so that it doesn't fall out of sync.
+        if (scrolled) {
+            this.updateVisiblePage(this.infiniteScroller.getVisibleCellIndices());
+        }
+    }
+    /**
+     * Whether sorting by relevance makes sense for the current state.
+     * Currently equivalent to having a non-empty query.
+     */
+    get isRelevanceSortAvailable() {
+        return !!this.baseQuery?.trim();
+    }
+    /**
+     * Sets the total number of tiles displayed in the infinite scroller.
+     */
+    setTileCount(count) {
+        if (this.infiniteScroller) {
+            this.infiniteScroller.itemCount = count;
+        }
+    }
+    /**
+     * Applies the default sort options for the TV search results page
+     */
+    applyDefaultTVSearchSort() {
+        this.defaultSortField = SortField.datearchived;
+        this.defaultSortDirection = 'desc';
+    }
+    /**
+     * Applies any default sort option for the current collection, by checking
+     * for one in the collection's metadata. If none is found, defaults to sorting
+     * descending by:
+     *  - Date Favorited for fav-* collections
+     *  - Weekly views for all other collections
+     */
+    applyDefaultCollectionSort(collectionInfo) {
+        if (this.baseQuery) {
+            // If there's a query set, then we default to relevance sorting regardless of
+            // the collection metadata-specified sort.
+            this.defaultSortField = SortField.relevance;
+            this.defaultSortDirection = null;
+            return;
+        }
+        // Favorite collections sort on Date Favorited by default.
+        // Other collections fall back to sorting on weekly views.
+        const baseDefaultSort = collectionInfo?.public_metadata?.identifier?.startsWith('fav-')
+            ? '-favoritedate'
+            : '-week';
+        // The collection metadata may override the default sorting with something else
+        const metadataSort = collectionInfo?.public_metadata?.['sort-by'];
+        // Prefer the metadata-specified sort if one exists
+        const defaultSortToApply = metadataSort ?? baseDefaultSort;
+        // Account for both -field and field:dir formats
+        let [field, dir] = defaultSortToApply.split(':');
+        if (field.startsWith('-')) {
+            field = field.slice(1);
+            dir = 'desc';
+        }
+        else if (!['asc', 'desc'].includes(dir)) {
+            dir = 'asc';
+        }
+        const sortOption = sortOptionFromAPIString(field);
+        const sortField = sortOption.field;
+        if (sortField && sortField !== SortField.default) {
+            this.defaultSortField = sortField;
+            this.defaultSortDirection = dir;
+        }
+    }
+    /**
+     * Applies the default sort option for the current profile element
+     */
+    applyDefaultProfileSort() {
+        if (this.profileElement) {
+            const defaultSortField = defaultProfileElementSorts[this.profileElement];
+            this.defaultSortField = defaultSortField ?? SortField.weeklyview;
+        }
+        else {
+            this.defaultSortField = SortField.weeklyview;
+        }
+        this.defaultSortDirection = 'desc';
+    }
+    /**
+     * This is useful for determining whether we need to reload the scroller.
+     *
+     * When the fetch completes, we need to reload the scroller if the cells for that
+     * page are visible, but if the page is not currenlty visible, we don't need to reload
+     */
+    get currentVisiblePageNumbers() {
+        const visibleCells = this.infiniteScroller?.getVisibleCellIndices() ?? [];
+        const visiblePages = new Set();
+        visibleCells.forEach(cellIndex => {
+            const visiblePage = Math.floor(cellIndex / this.pageSize) + 1;
+            visiblePages.add(visiblePage);
+        });
+        return Array.from(visiblePages);
+    }
+    /**
+     * Whether we are currently displaying results for a radio collection
+     */
+    get isRadioCollection() {
+        const { withinCollection } = this;
+        const topCollections = ['radio'];
+        const isTopCollection = topCollections.includes(withinCollection);
+        const isSubCollection = topCollections.some(topCollxn => this.dataSource.parentCollections?.includes(topCollxn));
+        return isTopCollection || isSubCollection;
+    }
+    /**
+     * Refreshes all visible result cells in the infinite scroller.
+     */
+    refreshVisibleResults() {
+        this.infiniteScroller?.refreshAllVisibleCells();
+    }
+    /**
+     * Callback when a result is selected
+     */
+    resultSelected(event) {
+        if (this.isManageView) {
+            // Checked/unchecked state change -- rerender to ensure it propagates
+            // this.mapDataSource(model => ({ ...model }));
+            const cellIndex = this.dataSource.indexOf(event.detail);
+            if (cellIndex >= 0)
+                this.infiniteScroller?.refreshCell(cellIndex);
+            this.requestUpdate();
+        }
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action: analyticsActions.resultSelected,
+            label: event.detail.mediatype,
+        });
+        this.analyticsHandler?.sendEvent({
+            category: this.searchContext,
+            action: analyticsActions.resultSelected,
+            label: `page-${this.currentPage}`,
+        });
+    }
+    cellForIndex(index) {
+        const model = this.tileModelAtCellIndex(index);
+        if (!model)
+            return undefined;
+        // Tiles show dates in UTC by default.
+        // But for certain types of time-based media, we want them to use local time instead.
+        // Those local-time cases are:
+        //  - TV or Radio search results
+        //  - TV or Radio collection results
+        const isTVSearch = this.searchType === SearchType.TV;
+        const isRadioSearch = this.searchType === SearchType.RADIO;
+        const { isTVCollection, isRadioCollection } = this;
+        const shouldUseLocalTime = isTVSearch || isRadioSearch || isTVCollection || isRadioCollection;
+        return html `
+      <tile-dispatcher
+        .collectionPagePath=${this.collectionPagePath}
+        .baseNavigationUrl=${this.baseNavigationUrl}
+        .baseImageUrl=${this.baseImageUrl}
+        .model=${model}
+        .tileDisplayMode=${this.displayMode}
+        .resizeObserver=${this.resizeObserver}
+        .collectionTitles=${this.dataSource.collectionTitles}
+        .sortParam=${this.sortParam}
+        .defaultSortParam=${this.defaultSortParam}
+        .creatorFilter=${this.selectedCreatorFilter}
+        .mobileBreakpoint=${this.mobileBreakpoint}
+        .loggedIn=${this.loggedIn}
+        .suppressBlurring=${this.shouldSuppressTileBlurring}
+        .isManageView=${this.isManageView}
+        .tileActions=${this.tileActions}
+        .layoutType=${this.tileLayoutType}
+        ?showTvClips=${isTVSearch || isTVCollection}
+        ?enableHoverPane=${true}
+        ?useLocalTime=${shouldUseLocalTime}
+        @resultSelected=${(e) => this.resultSelected(e)}
+      >
+      </tile-dispatcher>
+    `;
+    }
+    /**
+     * When the user scrolls near to the bottom of the page, fetch the next page
+     * increase the number of pages to render and start fetching data for the new page
+     */
+    scrollThresholdReached() {
+        if (!this.dataSource.endOfDataReached && this.dataSource.queryInitialized) {
+            this.pagesToRender += 1;
+            this.dataSource.fetchPage(this.pagesToRender);
+        }
+    }
+    /**
+     * Fetches search results for privileged users when in manage view.
+     *
+     * This method:
+     * 1. Checks if we're in search context and either haven't loaded results yet, or have already finished loading with > 100 total results
+     * 2. Resets the datasource pagination state
+     * 3. Fetches first page with limit based on maxPagesToManage threshold
+     * 4. Reloads the infinite scroller to display new results
+     */
+    fetchManageableSearchResults() {
+        const hasNotLoadedInitialResults = !this.dataSource.totalResults;
+        const hasLoadedWithMoreResultsAvailable = !this.searchResultsLoading && this.dataSource.totalResults > 100;
+        if (this.pageContext === 'search' &&
+            (hasNotLoadedInitialResults || hasLoadedWithMoreResultsAvailable)) {
+            this.dataSource.resetPages();
+            this.dataSource.fetchPage(1, this.maxPagesToManage);
+            this.infiniteScroller?.reload();
+        }
+    }
+    static get styles() {
+        return [
+            srOnlyStyle,
+            css `
+        :host {
+          display: block;
+          --leftColumnWidth: 18rem;
+          --leftColumnPaddingTop: 2rem;
+          --leftColumnPaddingRight: 2.5rem;
+        }
+
+        #facet-top-view {
+          display: flex;
+        }
+
+        /**
+        * When page width resizes from desktop to mobile, use this class to
+        * disable expand/collapse transition when loading.
+        */
+        .preload * {
+          transition: none !important;
+          -webkit-transition: none !important;
+          -moz-transition: none !important;
+          -ms-transition: none !important;
+          -o-transition: none !important;
+        }
+
+        #content-container {
+          display: flex;
+        }
+
+        empty-placeholder {
+          margin-top: var(--placeholderMarginTop, 0);
+        }
+
+        .collapser-icon {
+          display: inline-block;
+        }
+
+        .collapser-icon svg {
+          display: inline-block;
+          width: 12px;
+          height: 12px;
+          transition: transform 0.2s ease-out;
+        }
+
+        #mobile-filter-collapse {
+          width: 100%;
+        }
+
+        #mobile-filter-collapse > summary {
+          cursor: pointer;
+          list-style: none;
+        }
+
+        #mobile-filter-collapse[open] > summary {
+          margin-bottom: 10px;
+        }
+
+        #mobile-filter-collapse h2 {
+          display: inline-block;
+          margin: 0;
+          font-size: 2rem;
+        }
+
+        #mobile-filter-collapse[open] svg {
+          transform: rotate(90deg);
+        }
+
+        #content-container.mobile {
+          display: block;
+        }
+
+        #right-column {
+          flex: 1;
+          position: relative;
+          min-height: 90vh;
+          border-right: 1px solid rgb(232, 232, 232);
+          margin-top: var(--rightColumnMarginTop, 0);
+          padding-top: var(--rightColumnPaddingTop, 2rem);
+          background: #fff;
+        }
+
+        #left-column:not([hidden]) + #right-column {
+          border-left: 1px solid rgb(232, 232, 232);
+        }
+
+        #right-column.smart-results-spacing {
+          padding-top: 0.5rem;
+          border-right: none;
+          background: transparent;
+          min-width: 0;
+        }
+
+        #results {
+          background: #fff;
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
+        #right-column.smart-results-spacing #results {
+          border-radius: 10px 10px 0px 0px;
+          padding-top: 0.5rem;
+          margin-top: 1rem;
+        }
+
+        .mobile #right-column {
+          border-left: none;
+        }
+
+        .mobile #results {
+          padding: 5px 5px 0;
+        }
+
+        /*
+         * The results sit in a row with the optional results-aside slot, which
+         * lays out beside them as a flex item and takes its own width and spacing.
+         * The aside comes first in the DOM so keyboard and screen reader users
+         * reach it before the infinitely scrolling tiles, but it shows on the right.
+         */
+        #results-body {
+          display: flex;
+          align-items: flex-start;
+        }
+
+        #results-main {
+          order: -1;
+          flex: 1;
+          min-width: 0;
+        }
+
+        #left-column {
+          width: var(--leftColumnWidth, 18rem);
+          /* Prevents Safari from shrinking col at first draw */
+          min-width: var(--leftColumnWidth, 18rem);
+          padding-top: var(--leftColumnPaddingTop, 2rem);
+          /* Reduced padding by 0.2rem to add the invisible border in the rule below */
+          padding-right: calc(var(--leftColumnPaddingRight, 2.5rem) - 0.2rem);
+          border-right: 0.2rem solid transparent; /* Pads to the right of the scrollbar a bit */
+          z-index: 1;
+        }
+
+        .desktop #left-column {
+          top: 0;
+          position: sticky;
+          height: calc(100vh - 2rem);
+          max-height: calc(100vh - 2rem);
+          overflow-x: hidden;
+          overflow-y: scroll;
+
+          /*
+          * Firefox doesn't support any of the -webkit-scrollbar stuff below, but
+          * does at least give us a tiny bit of control over width & color.
+          */
+          scrollbar-width: thin;
+          scrollbar-color: transparent transparent;
+        }
+        .desktop #left-column:hover {
+          scrollbar-color: auto;
+        }
+        .desktop #left-column::-webkit-scrollbar {
+          appearance: none;
+          width: 6px;
+        }
+        .desktop #left-column::-webkit-scrollbar-button {
+          height: 3px;
+          background: transparent;
+        }
+        .desktop #left-column::-webkit-scrollbar-corner {
+          background: transparent;
+        }
+        .desktop #left-column::-webkit-scrollbar-thumb {
+          border-radius: 4px;
+        }
+        .desktop #left-column:hover::-webkit-scrollbar-thumb {
+          background: rgba(0, 0, 0, 0.15);
+        }
+        .desktop #left-column:hover::-webkit-scrollbar-thumb:hover {
+          background: rgba(0, 0, 0, 0.2);
+        }
+        .desktop #left-column:hover::-webkit-scrollbar-thumb:active {
+          background: rgba(0, 0, 0, 0.3);
+        }
+
+        #facets-bottom-fade {
+          background: linear-gradient(
+            to bottom,
+            #fbfbfd00 0%,
+            #fbfbfdc0 50%,
+            #fbfbfd 80%,
+            #fbfbfd 100%
+          );
+          position: fixed;
+          bottom: 0;
+          height: 50px;
+          /* Wide enough to cover the content, but leave the scrollbar uncovered */
+          width: calc(
+            var(--leftColumnWidth) + var(--leftColumnPaddingRight) - 10px
+          );
+          z-index: 2;
+          pointer-events: none;
+          transition: height 0.1s ease;
+        }
+        #facets-bottom-fade.hidden {
+          height: 0;
+        }
+
+        .facets-message {
+          font-size: 1.4rem;
+        }
+
+        .desktop-facets-dropdown > summary {
+          cursor: pointer;
+          list-style: none;
+        }
+
+        .desktop-facets-dropdown h2 {
+          display: inline-block;
+          margin: 0;
+          font-size: 1.6rem;
+        }
+
+        .desktop-facets-dropdown[open] > summary {
+          margin-bottom: 10px;
+        }
+
+        .desktop-facets-dropdown[open] svg {
+          transform: rotate(90deg);
+        }
+
+        .desktop #left-column-scroll-sentinel {
+          width: 1px;
+          height: 100vh;
+          background: transparent;
+        }
+
+        .desktop #facets-scroll-sentinel {
+          width: 1px;
+          height: 1px;
+          background: transparent;
+        }
+
+        #facets-header-container {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          clear: both;
+        }
+
+        .desktop #facets-header-container {
+          flex-wrap: wrap;
+        }
+
+        .mobile #left-column {
+          width: 100%;
+          min-width: 0;
+          padding: 5px 0;
+          border: 0;
+        }
+
+        .clear-filters-btn-row {
+          display: inline-block;
+        }
+
+        .desktop .clear-filters-btn-row {
+          width: 100%;
+        }
+
+        .clear-filters-btn {
+          display: inline-block;
+          appearance: none;
+          margin: 0;
+          padding: 0;
+          border: 0;
+          background: none;
+          color: var(--ia-theme-link-color);
+          font-size: 1.4rem;
+          font-family: inherit;
+          cursor: pointer;
+        }
+
+        .clear-filters-btn:hover {
+          text-decoration: underline;
+        }
+
+        .clear-filters-btn-separator {
+          display: inline-block;
+          margin-left: 5px;
+          border-left: 1px solid #2c2c2c;
+          font-size: 1.4rem;
+          line-height: 1.3rem;
+        }
+
+        #tv-filters {
+          margin-bottom: 15px;
+        }
+
+        #tv-shows {
+          --comboBoxListWidth: 300px;
+        }
+
+        .tv-filter-dropdown {
+          display: block;
+          font-size: 14px;
+          margin-left: 1px;
+          margin-bottom: 5px;
+        }
+
+        .tv-filter-dropdown::part(combo-box) {
+          outline-offset: 1px;
+        }
+
+        .tv-filter-dropdown::part(option) {
+          line-height: 1.1;
+          padding: 7px;
+        }
+
+        .tv-filter-dropdown::part(clear-button) {
+          flex: 0 0 26px;
+          --combo-box-clear-icon-size: 14px;
+        }
+
+        .tv-filter-dropdown::part(icon) {
+          width: 1.4rem;
+          height: 1.4rem;
+        }
+
+        #facets-container {
+          position: relative;
+          max-height: 0;
+          transition: max-height 0.2s ease-in-out;
+          z-index: 1;
+          margin-top: var(--facetsContainerMarginTop, 3rem);
+          padding-bottom: 2rem;
+        }
+
+        .desktop #facets-container {
+          width: 18rem;
+        }
+
+        .mobile #facets-container {
+          overflow: hidden;
+          padding-bottom: 0;
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+
+        #facets-container.expanded {
+          max-height: 2000px;
+        }
+
+        .results-section-heading {
+          margin: 0.5rem 0.3rem;
+          font-size: 2rem;
+          line-height: 25px;
+        }
+
+        #results-total {
+          display: flex;
+          align-items: baseline;
+        }
+
+        #results-total:not(.filtered) {
+          padding-bottom: 2rem;
+        }
+
+        .mobile #results-total {
+          position: absolute;
+          right: 10px;
+        }
+
+        #big-results-count {
+          font-size: 2.4rem;
+          font-weight: 500;
+          margin-right: 5px;
+        }
+
+        .mobile #big-results-count {
+          font-size: 2rem;
+        }
+
+        #big-results-label {
+          font-size: 1.4rem;
+          font-weight: 200;
+        }
+
+        #list-header {
+          max-height: 4.2rem;
+        }
+
+        .loading-cover {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          justify-content: center;
+          z-index: 1;
+          padding-top: 50px;
+        }
+
+        #tile-blur-label {
+          display: flex;
+          align-items: center;
+          column-gap: 5px;
+        }
+
+        #tile-blur-check {
+          margin: 0 5px 0 0;
+          width: 15px;
+        }
+
+        circular-activity-indicator {
+          width: 30px;
+          height: 30px;
+        }
+
+        sort-filter-bar {
+          display: block;
+          margin-bottom: 4rem;
+        }
+
+        infinite-scroller {
+          display: block;
+          --infiniteScrollerRowGap: var(--collectionBrowserRowGap, 1.7rem);
+          --infiniteScrollerColGap: var(--collectionBrowserColGap, 1.7rem);
+        }
+
+        infinite-scroller.list-compact {
+          --infiniteScrollerCellMinWidth: var(
+            --collectionBrowserCellMinWidth,
+            100%
+          );
+          --infiniteScrollerCellMinHeight: 45px; /* override infinite scroller component */
+          --infiniteScrollerCellMaxHeight: 56px;
+          --infiniteScrollerRowGap: 10px;
+        }
+
+        infinite-scroller.list-detail {
+          --infiniteScrollerCellMinWidth: var(
+            --collectionBrowserCellMinWidth,
+            100%
+          );
+          --infiniteScrollerCellMinHeight: var(
+            --collectionBrowserCellMinHeight,
+            5rem
+          );
+          /*
+            30px in spec, compensating for a -4px margin
+            to align title with top of item image
+            src/tiles/list/tile-list.ts
+          */
+          --infiniteScrollerRowGap: 34px;
+        }
+
+        .mobile infinite-scroller.list-detail {
+          --infiniteScrollerRowGap: 24px;
+        }
+
+        infinite-scroller.grid {
+          --infiniteScrollerCellMinWidth: var(
+            --collectionBrowserCellMinWidth,
+            17rem
+          );
+          --infiniteScrollerCellMaxWidth: var(
+            --collectionBrowserCellMaxWidth,
+            1fr
+          );
+        }
+
+        /* Allow tiles to shrink a bit further at smaller viewport widths */
+        @media screen and (max-width: 880px) {
+          infinite-scroller.grid {
+            --infiniteScrollerCellMinWidth: var(
+              --collectionBrowserCellMinWidth,
+              15rem
+            );
+          }
+        }
+        /* At very small widths, maintain a 2-tile layout as far as it can reasonably go */
+        @media screen and (max-width: 360px) {
+          infinite-scroller.grid {
+            --infiniteScrollerCellMinWidth: var(
+              --collectionBrowserCellMinWidth,
+              12rem
+            );
+          }
+        }
+
+        infinite-scroller.hidden {
+          display: none;
+        }
+      `,
+        ];
+    }
+};
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "baseNavigationUrl", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "baseImageUrl", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "searchService", void 0);
+__decorate([
+    property({ type: Number })
+], CollectionBrowser.prototype, "searchType", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "withinCollection", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "withinProfile", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "profileElement", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "baseQuery", void 0);
+__decorate([
+    property({ type: Array })
+], CollectionBrowser.prototype, "identifiers", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "displayMode", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "selectedSort", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "selectedTitleFilter", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "selectedCreatorFilter", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "sortDirection", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "defaultSortField", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "defaultSortDirection", void 0);
+__decorate([
+    property({ type: Number })
+], CollectionBrowser.prototype, "pageSize", void 0);
+__decorate([
+    property({ type: Number })
+], CollectionBrowser.prototype, "currentPage", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "minSelectedDate", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "maxSelectedDate", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "selectedFacets", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "internalFilters", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "showSmartFacetBar", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "smartFacetBarLabel", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "showHistogramDatePicker", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressPlaceholders", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressResultCount", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressResultTiles", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressURLQuery", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressURLSinParam", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressSortBar", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressDisplayModes", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "suppressMediatypeFacets", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "facetLoadStrategy", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CollectionBrowser.prototype, "facetPaneVisible", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "clearResultsOnEmptyQuery", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "allowFilterOnlySearch", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "collectionPagePath", void 0);
+__decorate([
+    property({ type: String, reflect: true })
+], CollectionBrowser.prototype, "searchContext", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "pageContext", void 0);
+__decorate([
+    property({ type: Array, attribute: false })
+], CollectionBrowser.prototype, "extraFacetGroups", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "restorationStateHandler", void 0);
+__decorate([
+    property({ type: Number })
+], CollectionBrowser.prototype, "mobileBreakpoint", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "loggedIn", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "resizeObserver", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "modalManager", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "featureFeedbackService", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "recaptchaManager", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "isTVCollection", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "isManageView", void 0);
+__decorate([
+    property({ type: Array })
+], CollectionBrowser.prototype, "tileActions", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "tileLayoutType", void 0);
+__decorate([
+    property({ type: String })
+], CollectionBrowser.prototype, "manageViewLabel", void 0);
+__decorate([
+    property({ type: Boolean })
+], CollectionBrowser.prototype, "enableSortOptionsSlot", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CollectionBrowser.prototype, "showSmartResults", void 0);
+__decorate([
+    property({ type: Number })
+], CollectionBrowser.prototype, "maxPagesToManage", void 0);
+__decorate([
+    property({ type: Object })
+], CollectionBrowser.prototype, "dataSource", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "pagesToRender", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "searchResultsLoading", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "facetsLoading", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "totalResults", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "mobileView", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "tileBlurOverrideState", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "collapsibleFacetsVisible", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "contentWidth", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "placeholderType", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "selectedTVNetwork", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "selectedTVShow", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "tvMapsPopulated", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "tvMapsLoading", void 0);
+__decorate([
+    state()
+], CollectionBrowser.prototype, "tvMapsErrored", void 0);
+__decorate([
+    query('#content-container')
+], CollectionBrowser.prototype, "contentContainer", void 0);
+__decorate([
+    query('#left-column')
+], CollectionBrowser.prototype, "leftColumn", void 0);
+__decorate([
+    query('collection-facets')
+], CollectionBrowser.prototype, "collectionFacets", void 0);
+__decorate([
+    query('manage-bar')
+], CollectionBrowser.prototype, "manageBar", void 0);
+__decorate([
+    query('smart-facet-bar')
+], CollectionBrowser.prototype, "smartFacetBar", void 0);
+__decorate([
+    query('#tv-networks')
+], CollectionBrowser.prototype, "tvNetworksDropdown", void 0);
+__decorate([
+    query('#tv-shows')
+], CollectionBrowser.prototype, "tvShowsDropdown", void 0);
+__decorate([
+    property({ type: Object, attribute: false })
+], CollectionBrowser.prototype, "analyticsHandler", void 0);
+__decorate([
+    query('infinite-scroller')
+], CollectionBrowser.prototype, "infiniteScroller", void 0);
+CollectionBrowser = CollectionBrowser_1 = __decorate([
+    customElement('collection-browser'),
+    localized()
+], CollectionBrowser);
+export { CollectionBrowser };
