@@ -5,6 +5,7 @@ import sinon from 'sinon';
 import {
   DL_PRESET_QUERIES,
   ETD_PRESET_QUERIES,
+  type SearchChangedDetail,
   type ServerlessSearchDemo,
 } from '../../../src/serverless-search/demo/serverless-search-demo';
 
@@ -389,6 +390,148 @@ describe('serverless-search-demo', () => {
 
     const unlinked = await demoAt('', '');
     expect(unlinked.panel.querySelector('#etd-docs')).to.be.null;
+  });
+
+  describe('for a host with its own search bar', () => {
+    it('leaves out the search box and the words/meaning switch, keeping the rest', async () => {
+      window.history.replaceState(null, '', '?etd_compare=0');
+      const el = await fixture<ServerlessSearchDemo>(
+        html`<serverless-search-demo hide-search-box></serverless-search-demo>`,
+      );
+      const root = el.shadowRoot as ShadowRoot;
+      expect(root.querySelector('#etd-search')).to.be.null;
+      expect(root.querySelector('#etd-rank')).to.be.null;
+      expect(root.querySelector('#etd-item')).to.exist;
+      expect(root.querySelector('#etd-presets')).to.exist;
+    });
+
+    it("shows a host's search bar on top of the results", async () => {
+      window.history.replaceState(null, '', '?etd_compare=0');
+      const el = await fixture<ServerlessSearchDemo>(
+        html`<serverless-search-demo hide-search-box>
+          <form slot="search-bar" id="host-bar"></form>
+        </serverless-search-demo>`,
+      );
+      const root = el.shadowRoot as ShadowRoot;
+      const slot = root.querySelector(
+        'slot[name="search-bar"]',
+      ) as HTMLSlotElement;
+      expect(slot.assignedElements().map(e => e.id)).to.deep.equal([
+        'host-bar',
+      ]);
+      // Between the panel and the results
+      const container = root.querySelector('#collection-browser-container');
+      expect(slot.parentElement).to.equal(container);
+      expect(slot.nextElementSibling?.localName).to.equal('collection-browser');
+    });
+
+    it('searches when told to, and says so', async () => {
+      const { el } = await demoAt('?etd_compare=0');
+      const heard: SearchChangedDetail[] = [];
+      el.addEventListener('searchChanged', e =>
+        heard.push((e as CustomEvent<SearchChangedDetail>).detail),
+      );
+
+      el.search('sea ice');
+      await el.updateComplete;
+
+      expect(el.query).to.equal('sea ice');
+      expect(el.collectionBrowser?.baseQuery).to.equal('sea ice');
+      expect(heard.at(-1)).to.include({ query: 'sea ice', rank: 'text' });
+    });
+
+    it('tells the host when a preset changes the search', async () => {
+      const { el, panel } = await demoAt('?etd_compare=0');
+      const heard: SearchChangedDetail[] = [];
+      el.addEventListener('searchChanged', e =>
+        heard.push((e as CustomEvent<SearchChangedDetail>).detail),
+      );
+
+      (panel.querySelector('#etd-presets button') as HTMLButtonElement).click();
+      await el.updateComplete;
+
+      expect(heard.at(-1)?.query).to.equal(ETD_PRESET_QUERIES[0]);
+    });
+
+    it('ranks by meaning when told to, keeping the query and the url in step', async () => {
+      const workers: Worker[] = [];
+      const workerFactory = () => {
+        const blob = new Blob([''], { type: 'text/javascript' });
+        const worker = new Worker(URL.createObjectURL(blob), {
+          type: 'module',
+        });
+        workers.push(worker);
+        return worker;
+      };
+      const realFetch = window.fetch.bind(window);
+      const fetchStub = sinon
+        .stub(window, 'fetch')
+        .callsFake((input, init) =>
+          String(input).includes('ivf-meta.json')
+            ? Promise.resolve(new Response('{}'))
+            : realFetch(input, init),
+        );
+      try {
+        window.history.replaceState(null, '', '?etd_compare=0&query=sea+ice');
+        const el = await fixture<ServerlessSearchDemo>(
+          html`<serverless-search-demo
+            hide-search-box
+            .workerFactory=${workerFactory}
+          ></serverless-search-demo>`,
+        );
+        await waitUntil(() => el.hasVectorIndex === true, 'never checked');
+        const heard: SearchChangedDetail[] = [];
+        el.addEventListener('searchChanged', e =>
+          heard.push((e as CustomEvent<SearchChangedDetail>).detail),
+        );
+
+        el.rankBy('vector');
+        await el.updateComplete;
+
+        expect(el.rank).to.equal('vector');
+        expect(
+          new URL(window.location.href).searchParams.get('etd_rank'),
+        ).to.equal('vec');
+        expect(heard.at(-1)).to.include({
+          rank: 'vector',
+          hasVectorIndex: true,
+        });
+      } finally {
+        fetchStub.restore();
+        workers.forEach(worker => worker.terminate());
+      }
+    });
+
+    describe('for an item with no vector index', () => {
+      let fetchStub: sinon.SinonStub;
+
+      beforeEach(() => {
+        const realFetch = window.fetch.bind(window);
+        fetchStub = sinon
+          .stub(window, 'fetch')
+          .callsFake((input, init) =>
+            String(input).includes('ivf-meta.json')
+              ? Promise.resolve(new Response('', { status: 404 }))
+              : realFetch(input, init),
+          );
+      });
+
+      afterEach(() => {
+        fetchStub.restore();
+      });
+
+      it('stays ranked by words when told to rank by meaning', async () => {
+        const { el } = await demoAt('?etd_compare=0');
+        await waitUntil(() => el.hasVectorIndex === false, 'never checked');
+
+        el.rankBy('vector');
+        await el.updateComplete;
+
+        expect(el.rank).to.equal('text');
+        expect(new URL(window.location.href).searchParams.has('etd_rank')).to.be
+          .false;
+      });
+    });
   });
 
   it('searches collection-browser from its own search box', async () => {

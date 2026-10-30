@@ -80,21 +80,18 @@ export const KNOWN_ITEMS = [
     { item: DEFAULT_ETD_ITEM, holds: 'theses and dissertations' },
     { item: 'dl-search', holds: "Democracy's Library" },
 ];
-/**
- * The serverless search demo: collection-browser searching the ETD theses
- * & dissertations index in the browser, with no search backend, under a
- * panel of demo controls that can be shown or hidden.
- *
- * One element so a page can load it whole, e.g. from esm.archive.org, and
- * get this collection-browser with it. The index is read through
- * /etd-index/ (or /item-index/<id>/ for `etd_item`), so the page serving
- * it needs those paths until the index files are CORS-readable.
- */
 let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
     constructor() {
         super(...arguments);
         /** Where "How it works" links; no link when empty. */
         this.docsUrl = 'etd/static-index-search.html';
+        /**
+         * Leaves out the panel's search box and the words/meaning switch, for a
+         * host that draws its own search bar (in the `search-bar` slot, on top of
+         * the results): it searches with `search()` and `rankBy()`, and follows
+         * `searchChanged`.
+         */
+        this.hideSearchBox = false;
         /** Where the ETD demo reads its index and live page from. */
         this.etdIndex = etdIndexUrls(new URL(window.location.href).searchParams);
         /**
@@ -119,6 +116,22 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         this.resizeObserver = new SharedResizeObserver();
         /** Opens on the detailed list rather than tiles. */
         this.restorationStateHandler = new DemoRestorationStateHandler('list-detail');
+    }
+    /** The words searched, once collection-browser has them. */
+    get query() {
+        return this.searchQuery;
+    }
+    /** How results are ranked: by the words, or by meaning. */
+    get rank() {
+        return this.etdRank;
+    }
+    /** Whether this item can rank by meaning; undefined until checked. */
+    get hasVectorIndex() {
+        return this.vectorIndexFound;
+    }
+    /** Searches for `query`, as if typed into the panel's search box. */
+    search(query) {
+        this.searchQuery = query;
     }
     /**
      * The search service's own facets and whether it can search by filters
@@ -158,6 +171,17 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
     updated(changed) {
         if (changed.has('searchQuery') && this.cb) {
             this.cb.baseQuery = this.searchQuery;
+        }
+        const searchChanged = ['searchQuery', 'etdRank', 'vectorIndexFound'].some(name => changed.has(name));
+        if (searchChanged) {
+            // Sent from this element itself, so the page holding it hears it.
+            this.dispatchEvent(new CustomEvent('searchChanged', {
+                detail: {
+                    query: this.searchQuery,
+                    rank: this.etdRank,
+                    hasVectorIndex: this.vectorIndexFound,
+                },
+            }));
         }
     }
     /** The ETD search service for a ranking, built on first use. */
@@ -239,10 +263,17 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
             .catch(() => { });
         return this.etdVectorEngine;
     }
-    /** Switches the ranking, keeping the query, and says so in the url. */
     etdRankChanged(e) {
-        const rank = e.target.value;
+        this.rankBy(e.target.value);
+    }
+    /**
+     * Switches the ranking, keeping the query, and says so in the url. An item
+     * with no vector index stays ranked by words.
+     */
+    rankBy(rank) {
         if (rank === this.etdRank)
+            return;
+        if (rank === 'vector' && this.vectorIndexFound === false)
             return;
         const url = new URL(window.location.href);
         if (rank === 'vector')
@@ -280,6 +311,8 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
       </button>
       ${this.etdControlsTemplate}
       <div id="collection-browser-container">
+        <!-- A host's own search bar, on top of the results -->
+        <slot name="search-bar"></slot>
         <collection-browser
           facetPaneVisible
           .extraFacetGroups=${this.declaredSearch?.extraFacetGroups ?? []}
@@ -295,7 +328,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
           .pageContext=${'search'}
           @baseQueryChanged=${this.baseQueryChanged}
         >
-          ${this.etdRankTemplate}
+          ${this.hideSearchBox ? nothing : this.etdRankTemplate}
         </collection-browser>
       </div>
       <modal-manager></modal-manager>
@@ -397,7 +430,8 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
               </a>
             </p>`
             : nothing}
-        ${this.etdItemTemplate} ${this.etdSearchTemplate}
+        ${this.etdItemTemplate}
+        ${this.hideSearchBox ? nothing : this.etdSearchTemplate}
         ${this.etdPresetsTemplate} ${this.etdVectorStatusTemplate}
         ${this.etdRank === 'text' ? this.etdBrowseTemplate : nothing}
         <etd-facet-summary
@@ -929,6 +963,9 @@ __decorate([
 __decorate([
     property({ attribute: false })
 ], ServerlessSearchDemo.prototype, "analyticsHandler", void 0);
+__decorate([
+    property({ type: Boolean, attribute: 'hide-search-box' })
+], ServerlessSearchDemo.prototype, "hideSearchBox", void 0);
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "etdItemStatus", void 0);
