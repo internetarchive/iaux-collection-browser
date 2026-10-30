@@ -101,6 +101,11 @@ pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; disp
 .pill.warn { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-bd); }
 .pill.bad { color: var(--bad); background: var(--bad-bg); border-color: var(--bad-bd); }
 .pill.info { color: var(--info); background: var(--info-bg); border-color: var(--info-bd); }
+.pill.muted { color: var(--ink-2); background: var(--sunken); border-color: var(--rule); }
+table.work td:nth-child(2) { font-weight: 700; min-width: 11rem; }
+table.work td:nth-child(2) .pill { margin-top: 0.35rem; }
+table.work td:first-child { font-weight: 400; color: var(--ink-2); }
+table.work td:nth-child(3) { min-width: 20rem; }
 
 .note { margin-top: 1.25rem; padding: 0.85rem 1rem; border: 1px solid var(--info-bd); background: var(--info-bg); border-radius: 6px; max-width: 70ch; }
 .note p:first-child { margin-top: 0; }
@@ -155,7 +160,7 @@ pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; disp
       <li>Agreement on the contract and who owns it.</li>
       <li>Help from the ETD index owner on 4 changes (CORS, versioned vector files, published layouts, leaner vectors).</li>
       <li>A decision on where the engine lives, and a derive step so items don't need hand-built indexes.</li>
-      <li>A second item, picked by the checklist in <a href="#candidates">section 8</a>.</li>
+      <li>A second item, picked by the checklist in <a href="#candidates">section 9</a>.</li>
     </ul>
     <p><a href="#decisions">See the decisions →</a></p>
   </section>
@@ -178,6 +183,7 @@ pre.mermaid svg { max-width: 100% !important; height: auto; margin: 0 auto; disp
     <li><a href="#vectors">Search by meaning</a></li>
     <li><a href="#options">Index and ranking options</a></li>
     <li><a href="#proof">Proof: the ETD port</a></li>
+    <li><a href="#changes">What it took</a></li>
     <li><a href="#candidates">Choosing the next item</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#decisions">Decisions and risks</a></li>
@@ -416,8 +422,78 @@ flowchart TD
 </table></div>
 </section>
 
+<section id="changes">
+<h2>8. What it took: collection-browser and ETD</h2>
+<div class="prose">
+  <p>Every change on the ETD branch since it left collection-browser's <code>main</code>, grouped by how much it touches collection-browser. <strong>Needed</strong>: collection-browser can't show etd-search without it. <strong>Better</strong>: matches the live page or makes it sturdier. <strong>Demo</strong>: proof and explanation only.</p>
+</div>
+<div class="facts" role="list">
+  <div role="listitem"><b>+612 −87</b><span>inside collection-browser (18 files)</span></div>
+  <div role="listitem"><b>~9,200</b><span>new lines beside it, in new folders</span></div>
+  <div role="listitem"><b>~4,000</b><span>demo and docs, never shipped</span></div>
+  <div role="listitem"><b>+10,781</b><span>tests (1,128 passing)</span></div>
+</div>
+
+<h3>Inside collection-browser</h3>
+<p class="cap">The only changes to existing behaviour. Most of this is WEBDEV-9763 (#630).</p>
+<div class="frame"><table class="work">
+  <thead><tr><th class="num">#</th><th>Change</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td class="num">1</td><td>Accept a plugged-in search service<br><span class="pill info">Needed</span></td><td>ETD answers in the browser, not from archive.org's search API</td></tr>
+    <tr><td class="num">2</td><td>Extra facet groups (<code>extraFacetGroups</code>)<br><span class="pill info">Needed</span></td><td>ETD filters by fields archive.org search doesn't have: country, degree, institution</td></tr>
+    <tr><td class="num">3</td><td>Restore extra facets from the URL<br><span class="pill info">Needed</span></td><td>Shared links and Back keep the filters; only declared groups are restored</td></tr>
+    <tr><td class="num">4</td><td>Refetch when the search service changes<br><span class="pill info">Needed</span></td><td>Switching Words ↔ Meaning has to reload results</td></tr>
+    <tr><td class="num">5</td><td>Search by filters alone (<code>allowFilterOnlySearch</code>)<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> with filters picked and no search words, collection-browser wouldn't search; it showed the empty page. The live page lets you browse by filter.<br><br><strong>Now:</strong> "Theses in Portuguese" works with no words (1,208,375 results).</td></tr>
+    <tr><td class="num">6</td><td>Refresh results in place<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> collection-browser only shows results once the whole response arrives, so search by meaning showed nothing for 13–19 s.<br><br><strong>Now:</strong> first results in 6.5 s warm (10.8–13.7 s cold), refined in place without flashing.</td></tr>
+    <tr><td class="num">7</td><td>A slot above the facets<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> no place in collection-browser's layout for a control choosing how results are ranked.<br><br><strong>Now:</strong> the Words / Meaning switch sits above the facets.</td></tr>
+    <tr><td class="num">8</td><td>A "service didn't answer" message<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> when archive.org failed (a 502, or no answer), the page said "no results", as if the query were wrong.<br><br><strong>Now:</strong> it says the service didn't answer.</td></tr>
+    <tr><td class="num">9</td><td>Snippet highlight fix<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> highlighted words got spaces added around them, splitting words and pulling punctuation away.<br><br><strong>Now:</strong> highlights sit inside the text.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Added beside it</h3>
+<p class="cap">Plugged in through one interface; deleting the folders removes it.</p>
+<div class="frame"><table class="work">
+  <thead><tr><th class="num">#</th><th>Change</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td class="num">10</td><td>Serverless search layer (<code>src/serverless-search/</code>, +693)<br><span class="pill info">Needed</span></td><td>Makes any in-browser search look like archive.org's search service: params in, responses out, paging, filter mapping</td></tr>
+    <tr><td class="num">11</td><td>ETD adapter (<code>src/etd/*.ts</code>, +1,354)<br><span class="pill info">Needed</span></td><td>ETD's queries, results-to-tiles mapping, facet list and language names</td></tr>
+    <tr><td class="num">12</td><td>ETD word engine (<code>src/etd/engine/</code>, +2,921)<br><span class="pill info">Needed</span></td><td>The live page's search, ported: range reads, dictionary, postings, scoring, records, facet counts</td></tr>
+    <tr><td class="num">13</td><td>Word-order re-ranking and highlighting<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> ranking each word separately gave a different top 50 from the live page for multi-word queries, and snippets didn't show which words matched.<br><br><strong>Now:</strong> same top 50 on every re-ranked query tested; query words highlighted.</td></tr>
+    <tr><td class="num">14</td><td>Institution facet and <code>inst:</code><br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> over 10,000 institutions, too many for a one-byte facet column; <code>inst:mit robotics</code> matched the words anywhere and returned 13,099.<br><br><strong>Now:</strong> a facet backed by its own value list; <code>inst:mit robotics</code> returns 346, as on the live page.</td></tr>
+    <tr><td class="num">15</td><td>Retries and file checks<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> on 29 October one archive.org 502 failed a whole search. Separately, the item's vector-to-text map was left from the previous build, and a replaced file could be mixed with the cached old copy.<br><br><strong>Now:</strong> 502/503/504s are retried twice; file sizes are checked against the item's file list, and the cache is keyed per file.</td></tr>
+    <tr><td class="num">16</td><td>Search by meaning (<code>engine/vector/</code>, +2,098)<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> collection-browser could only match words, but the live page also finds theses with no words in common, across languages. It took 128 s for the first search there, 43 s after.<br><br><strong>Now:</strong> same top 50 as the live page for 5 queries, about twice as fast on the first search (27.2 s vs 53.6 s).</td></tr>
+    <tr><td class="num">17</td><td>Static-index types (<code>src/static-index/</code>, +2,222)<br><span class="pill ok">Better</span></td><td><strong>Problem:</strong> the engine was written for ETD's exact file layout, so a second item meant a new engine.<br><br><strong>Now:</strong> types describe any item, with ETD as the first; a checker catches a config that no longer matches its index.</td></tr>
+    <tr><td class="num">18</td><td>Dev proxy (<code>vite.config.ts</code>, +75)<br><span class="pill info">Needed</span></td><td>Only <code>.json</code> files are readable from other sites (CORS); goes away if archive.org allows the rest</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Demo and docs only</h3>
+<div class="frame"><table class="work">
+  <thead><tr><th class="num">#</th><th>Change</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td class="num">19</td><td>ETD panel in the demo<br><span class="pill muted">Demo</span></td><td>Search box, Words / Meaning switch, Browse links, point at another item</td></tr>
+    <tr><td class="num">20</td><td>Comparison with the live page<br><span class="pill muted">Demo</span></td><td>Proves totals, top 50 and facet counts match</td></tr>
+    <tr><td class="num">21</td><td>Drawers<br><span class="pill muted">Demo</span></td><td>Facets used in these results; index files checked</td></tr>
+    <tr><td class="num">22</td><td>Docs and proposal page<br><span class="pill muted">Demo</span></td><td>READMEs, and this proposal</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Tests</h3>
+<div class="frame"><table class="work">
+  <thead><tr><th class="num">#</th><th>Change</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td class="num">23</td><td>Tests and mocks<br><span class="pill info">Needed</span></td><td>Mocks for the ETD engine and search source, fixture indexes built in memory, live-page snapshots. 1,128 passing</td></tr>
+  </tbody>
+</table></div>
+
+<div class="note">
+  <p><strong>Smallest set that shows etd-search:</strong> 1–4, 10–12, 18 and 23. Everything tagged Better brings it level with the live page; everything tagged Demo can stay off a shipped version.</p>
+</div>
+</section>
+
 <section id="candidates">
-<h2>8. Choosing the next item</h2>
+<h2>9. Choosing the next item</h2>
 <div class="prose">
   <p>Not every item is worth an index. A good candidate is <strong>many records of one kind</strong>, each with a stable id and a link, mostly public, with at least one real text field and a few well-filled fields to filter by. Ten minutes with archive.org's own search API answers most of it.</p>
 </div>
@@ -494,7 +570,7 @@ flowchart TD
 </section>
 
 <section id="roadmap">
-<h2>9. Roadmap</h2>
+<h2>10. Roadmap</h2>
 <div class="frame chart"><pre class="mermaid">
 flowchart TD
   subgraph done["Done"]
@@ -527,7 +603,7 @@ flowchart TD
 </section>
 
 <section id="decisions">
-<h2>10. Decisions and risks</h2>
+<h2>11. Decisions and risks</h2>
 <h3>Decisions needed</h3>
 <ol class="decisions">
   <li><strong>Adopt the file contract as the standard</strong> for in-browser item search, and name an owner for it and its version numbers.
@@ -539,7 +615,7 @@ flowchart TD
   <li><strong>A derive step</strong> that builds an item's index files from its data, so new items don't depend on a hand-built index.
     <span class="rec">Recommendation: yes; it writes the v2 manifest and versions every file, vectors included.</span></li>
   <li><strong>The second item.</strong>
-    <span class="rec">Recommendation: theses-and-dissertations' 274,394 scanned dissertations, metadata first (<a href="#candidates">section 8</a>).</span></li>
+    <span class="rec">Recommendation: theses-and-dissertations' 274,394 scanned dissertations, metadata first (<a href="#candidates">section 9</a>).</span></li>
   <li><strong>Search by meaning in the product:</strong> cheap re-ranking of word results first, full meaning search later.
     <span class="rec">Recommendation: yes to both, in that order; full search only after the owner publishes smaller codes.</span></li>
   <li><strong>Estimated facet counts:</strong> may a facet show estimates on large result sets (clearly labelled)?
