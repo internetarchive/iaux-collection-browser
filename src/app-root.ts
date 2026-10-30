@@ -19,89 +19,21 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
-import { EtdSearchService } from './etd/etd-search-service';
-import { StaticEtdEngine } from './etd/engine/static-etd-engine';
-import { ETD_FACETS } from './etd/etd-facets';
-import { ETD_VECTOR_FACETS } from './etd/etd-vector-facets';
-import { ETD_VECTOR_SEARCH } from './etd/etd-search-source';
-import { StaticVectorEngine } from './etd/engine/vector/static-vector-engine';
-import type { EtdFileCheck } from './etd/engine/file-checks';
-import type { VectorSearchStatus } from './etd/engine/vector/static-vector-engine';
-import type { ModelState } from './etd/engine/vector/vector-searcher';
-import './etd/demo/etd-vector-status';
 import type { FacetDeclaringSearchService } from './serverless-search/serverless-search-service';
-import './etd/compare/etd-compare-panel';
-import { observeFacets, type ObservedFacets } from './etd/demo/observe-facets';
-import './etd/demo/etd-facet-summary';
-import './etd/demo/etd-found-facets';
-import { etdRequestFromParams } from './etd/etd-query';
-import type { EtdRequest } from './etd/etd-query';
-import './etd/demo/etd-file-check';
-import {
-  DEFAULT_ETD_ITEM,
-  checkItemIndex,
-  etdIndexUrls,
-  parseItemIdentifier,
-} from './etd/demo/item-index';
+import './serverless-search/demo/serverless-search-demo';
+import type { ServerlessSearchDemo } from './serverless-search/demo/serverless-search-demo';
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
   /**
-   * `?search_service=etd` browses the ETD theses & dissertations index
-   * (searched in the browser, no backend) instead of archive.org. The index
-   * is read through the dev server's /etd-index proxy (see vite.config.ts);
-   * `etd_item` searches another archive.org item's static index instead,
-   * through /item-index/<id>/, and `etd_base_url` points it anywhere. Each
-   * search also runs on the live etd-search page, and a panel shows how the
-   * two rankings differ.
+   * `?search_service=etd` shows the serverless search demo instead: the ETD
+   * theses & dissertations index, searched in the browser with no backend,
+   * in its own collection-browser under its own controls (see
+   * serverless-search-demo.ts). The index is read through the dev server's
+   * /etd-index and /item-index/<id>/ proxies (see vite.config.ts).
    */
   private readonly isEtdSearch =
     new URL(window.location.href).searchParams.get('search_service') === 'etd';
-
-  /** Where the ETD demo reads its index and live page from. */
-  private readonly etdIndex = etdIndexUrls(
-    new URL(window.location.href).searchParams,
-  );
-
-  /** What the item form last said: checking, or why it didn't switch. */
-  @state() private etdItemStatus?: { busy: boolean; message: string };
-
-  private etdEngine?: StaticEtdEngine;
-
-  /**
-   * How ETD results are ranked: by the words (text rank), or by meaning
-   * (vector rank), as the live page's two tabs. Kept in the url as
-   * `etd_rank=vec`.
-   */
-  @state() private etdRank: 'text' | 'vector' =
-    new URL(window.location.href).searchParams.get('etd_rank') === 'vec'
-      ? 'vector'
-      : 'text';
-
-  /** Built on first use: a text-only visit never loads the model. */
-  private etdVectorEngine?: StaticVectorEngine;
-
-  /** Each index's files checked against the item's file list, once loaded. */
-  @state() private etdTextFileCheck?: EtdFileCheck;
-
-  @state() private etdVectorFileCheck?: EtdFileCheck;
-
-  /** The services for each ranking, built once each. */
-  private etdServices: {
-    text?: SearchServiceInterface;
-    vector?: SearchServiceInterface;
-  } = {};
-
-  /**
-   * Whether to compare with the live page. `etd_compare=0` leaves it out,
-   * for timing: its iframe boots the live page, which reads files too.
-   */
-  private readonly etdCompare =
-    new URL(window.location.href).searchParams.get('etd_compare') !== '0';
-
-  @state() private etdModel: ModelState = { state: 'idle' };
-
-  @state() private etdVectorSearch?: VectorSearchStatus;
 
   /**
    * The search service's own facets and whether it can search by filters
@@ -116,18 +48,6 @@ export class AppRoot extends LitElement {
 
   @state() private searchService: SearchServiceInterface =
     this.initSearchServiceFromUrlParams();
-
-  /** The facets collection-browser last got from the ETD service. */
-  @state() private etdFacets?: ObservedFacets;
-
-  /** The search collection-browser is showing: its words and filters. */
-  @state() private etdRequest?: EtdRequest;
-
-  /** Whether the ETD panel is hidden: shown unless `hide-etd-controls` says so. */
-  @state() private etdControlsHidden = ['', 'true'].includes(
-    new URLSearchParams(window.location.search).get('hide-etd-controls') ??
-      'false',
-  );
 
   private resizeObserver = new SharedResizeObserver();
 
@@ -168,7 +88,15 @@ export class AppRoot extends LitElement {
 
   @query('#page-number-input') private pageNumberInput!: HTMLInputElement;
 
-  @query('collection-browser') private collectionBrowser!: CollectionBrowser;
+  @query('collection-browser') private ownCollectionBrowser!: CollectionBrowser;
+
+  @query('serverless-search-demo')
+  private serverlessDemo?: ServerlessSearchDemo;
+
+  /** The collection-browser the dev tools drive: the demo's, in the ETD demo. */
+  private get collectionBrowser(): CollectionBrowser {
+    return this.serverlessDemo?.collectionBrowser ?? this.ownCollectionBrowser;
+  }
 
   @query('modal-manager') private modalManager!: ModalManagerInterface;
 
@@ -188,383 +116,12 @@ export class AppRoot extends LitElement {
 
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
-    if (this.isEtdSearch) return this.etdService(this.etdRank);
     return new SearchService({
       includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
       servicePath: params.get('search_service_path') ?? undefined,
       debuggingEnabled: !!params.get('debugging'),
     });
-  }
-
-  /** The ETD search service for a ranking, built on first use. */
-  private etdService(rank: 'text' | 'vector'): SearchServiceInterface {
-    const built = this.etdServices[rank];
-    if (built) return built;
-    const service =
-      rank === 'vector'
-        ? new EtdSearchService({
-            engine: this.vectorEngine(),
-            kind: ETD_VECTOR_SEARCH,
-          })
-        : new EtdSearchService({ engine: this.textEngine() });
-    const observed = observeFacets(
-      service,
-      facets => {
-        // A slow facets request from the other ranking can land after a switch.
-        if (this.searchService === observed) this.etdFacets = facets;
-      },
-      params => {
-        if (this.searchService !== observed) return;
-        this.etdRequest = etdRequestFromParams(
-          params,
-          rank === 'vector' ? ETD_VECTOR_FACETS : ETD_FACETS,
-        );
-      },
-    );
-    this.etdServices[rank] = observed;
-    return observed;
-  }
-
-  /** The text engine, built on first use. */
-  private textEngine(): StaticEtdEngine {
-    if (this.etdEngine) return this.etdEngine;
-    this.etdEngine = new StaticEtdEngine({
-      baseUrl: this.etdIndex.baseUrl,
-      facets: ETD_FACETS,
-    });
-    this.etdEngine
-      .fileCheck()
-      .then(check => {
-        this.etdTextFileCheck = check;
-      })
-      .catch(() => {});
-    return this.etdEngine;
-  }
-
-  /**
-   * The vector engine, built on first use. Its search runs in a worker
-   * (`etd_vec_worker=0` runs it in the page instead); `etd_vec_parallel` and
-   * `etd_model_parallel` set how many reads are in flight, for measuring.
-   */
-  private vectorEngine(): StaticVectorEngine {
-    if (this.etdVectorEngine) return this.etdVectorEngine;
-    const params = new URL(window.location.href).searchParams;
-    const number = (name: string) => {
-      const value = Number(params.get(name));
-      return value > 0 ? value : undefined;
-    };
-    this.etdVectorEngine = new StaticVectorEngine({
-      baseUrl: this.etdIndex.baseUrl,
-      facets: ETD_VECTOR_FACETS,
-      worker:
-        params.get('etd_vec_worker') === '0'
-          ? undefined
-          : () =>
-              new Worker(
-                new URL(
-                  './etd/engine/vector/vector-worker.ts',
-                  import.meta.url,
-                ),
-                { type: 'module' },
-              ),
-      modelParallel: number('etd_model_parallel'),
-      scan: { parallel: number('etd_vec_parallel') },
-      // `etd_vec_progressive=0` waits for the whole scan, to compare timings.
-      progressive: params.get('etd_vec_progressive') !== '0',
-      onModel: model => {
-        this.etdModel = model;
-      },
-      onSearch: search => {
-        this.etdVectorSearch = search;
-      },
-    });
-    this.etdVectorEngine
-      .fileCheck()
-      .then(check => {
-        this.etdVectorFileCheck = check;
-      })
-      .catch(() => {});
-    return this.etdVectorEngine;
-  }
-
-  /** Switches the ranking, keeping the query, and says so in the url. */
-  private etdRankChanged(e: Event) {
-    const rank = (e.target as HTMLInputElement).value as 'text' | 'vector';
-    if (rank === this.etdRank) return;
-    const url = new URL(window.location.href);
-    if (rank === 'vector') url.searchParams.set('etd_rank', 'vec');
-    else url.searchParams.delete('etd_rank');
-    window.history.replaceState(window.history.state, '', url.href);
-    this.etdRank = rank;
-    this.etdFacets = undefined;
-    this.etdRequest = undefined;
-    this.searchService = this.etdService(rank);
-  }
-
-  /**
-   * A sign someone may search by meaning: start loading the model (135 MB
-   * the first time) and centroids, so the search doesn't wait for them.
-   */
-  private etdPreloadVector() {
-    this.vectorEngine()
-      .preload()
-      .catch(() => {});
-  }
-
-  /**
-   * The switch between ranking by words and by meaning, in collection-browser's
-   * facets column, between the results count and the date picker.
-   */
-  private get etdRankTemplate() {
-    return html`
-      <fieldset
-        id="etd-rank"
-        slot="facets-header-slot"
-        @change=${this.etdRankChanged}
-      >
-        <legend>Rank results by</legend>
-        <label>
-          <input
-            type="radio"
-            name="etd-rank"
-            value="text"
-            .checked=${this.etdRank === 'text'}
-          />
-          Words <span class="etd-rank-note">(text rank)</span>
-        </label>
-        <label
-          @pointerenter=${this.etdPreloadVector}
-          @focusin=${this.etdPreloadVector}
-        >
-          <input
-            type="radio"
-            name="etd-rank"
-            value="vector"
-            .checked=${this.etdRank === 'vector'}
-          />
-          Meaning <span class="etd-rank-note">(vector rank)</span>
-        </label>
-      </fieldset>
-    `;
-  }
-
-  /** How a search by meaning is going, in the ETD panel. */
-  private get etdVectorStatusTemplate() {
-    return this.etdRank === 'vector'
-      ? html`<etd-vector-status
-          .model=${this.etdModel}
-          .search=${this.etdVectorSearch}
-        ></etd-vector-status>`
-      : nothing;
-  }
-
-  /**
-   * The ETD demo's controls, grouped: its own search box, a summary of the
-   * service's own facets in the results, the facets found in the results'
-   * own records, and the panel comparing against the live page.
-   */
-  private get etdControlsTemplate() {
-    return html`
-      <section
-        id="etd-controls"
-        aria-labelledby="etd-controls-heading"
-        ?hidden=${this.etdControlsHidden}
-      >
-        <h2 id="etd-controls-heading">
-          ETD theses search
-          <span class="etd-controls-note">
-            static index in the browser, no search backend
-          </span>
-        </h2>
-        <p id="etd-docs">
-          <a href="etd/static-index-search.html" target="_blank" rel="noopener">
-            How it works: the Static Index Search proposal
-            <span class="sr-only">(opens in a new tab)</span>
-          </a>
-        </p>
-        ${this.etdItemTemplate} ${this.etdSearchTemplate}
-        ${this.etdVectorStatusTemplate}
-        ${this.etdRank === 'text' ? this.etdBrowseTemplate : nothing}
-        <etd-facet-summary
-          .groups=${this.declaredSearch?.extraFacetGroups ?? []}
-          .facets=${this.etdFacets}
-        ></etd-facet-summary>
-        <etd-found-facets
-          .engine=${this.etdRank === 'vector'
-            ? this.etdVectorEngine
-            : this.etdEngine}
-          .request=${this.etdRequest}
-        ></etd-found-facets>
-        <etd-file-check
-          .text=${this.etdTextFileCheck}
-          .vector=${this.etdVectorFileCheck}
-        ></etd-file-check>
-        ${this.etdCompare
-          ? html`<etd-compare-panel
-              .engine=${this.etdRank === 'vector'
-                ? this.etdVectorEngine
-                : this.etdEngine}
-              .rank=${this.etdRank}
-              .query=${this.searchQuery}
-              .pageUrl=${this.etdIndex.pageUrl}
-            ></etd-compare-panel>`
-          : nothing}
-      </section>
-    `;
-  }
-
-  /**
-   * Searches by filters alone, with no query (collection-browser's
-   * allowFilterOnlySearch): changing the query clears filters, so without a
-   * link these only start from the URL.
-   */
-  private get etdBrowseTemplate() {
-    const browse = (label: string, filter: string) => {
-      const url = new URL(window.location.href);
-      url.search = '';
-      url.searchParams.set('search_service', 'etd');
-      for (const name of ['etd_item', 'etd_base_url']) {
-        const value = new URL(window.location.href).searchParams.get(name);
-        if (value !== null) url.searchParams.set(name, value);
-      }
-      url.searchParams.append('and[]', filter);
-      return html`<li><a href=${url.href}>${label}</a></li>`;
-    };
-    return html`
-      <nav id="etd-browse" aria-label="Browse theses without a search">
-        <span>Or browse:</span>
-        <ul>
-          ${browse('Theses from the 2000s', 'year:[2000 TO 2009]')}
-          ${browse('Theses in Portuguese', 'language:"Portuguese"')}
-        </ul>
-      </nav>
-    `;
-  }
-
-  /**
-   * Picks the archive.org item whose static index the demo searches. Takes
-   * an identifier or an archive.org details/download url, typed, pasted or
-   * dropped, and switches only once the item's current.json checks out.
-   */
-  private get etdItemTemplate() {
-    const { item, rejectedItem } = this.etdIndex;
-    const status =
-      this.etdItemStatus?.message ??
-      (rejectedItem !== undefined
-        ? `etd_item “${rejectedItem}” isn't an archive.org identifier, so this is searching ${DEFAULT_ETD_ITEM}.`
-        : '');
-    return html`
-      <form
-        id="etd-item"
-        @submit=${this.etdItemPressed}
-        @dragover=${this.etdItemDragOver}
-        @drop=${this.etdItemDropped}
-      >
-        <label for="etd-item-field">Item to search:</label>
-        <input
-          type="text"
-          id="etd-item-field"
-          name="item"
-          .value=${item ?? ''}
-          placeholder="etd-search, or an archive.org/details/… link"
-          autocomplete="off"
-          spellcheck="false"
-          aria-describedby="etd-item-status"
-          aria-invalid=${this.etdItemStatus && !this.etdItemStatus.busy
-            ? 'true'
-            : 'false'}
-        />
-        <button type="submit" ?disabled=${this.etdItemStatus?.busy}>
-          Search this item
-        </button>
-        <p
-          id="etd-item-status"
-          role="status"
-          class=${this.etdItemStatus?.busy ? '' : 'error'}
-        >
-          ${status}
-        </p>
-      </form>
-    `;
-  }
-
-  private etdItemDragOver(e: DragEvent) {
-    // Lets the whole form take a drop, not just the field.
-    e.preventDefault();
-  }
-
-  /** A dropped link or text replaces the field and is checked at once. */
-  private etdItemDropped(e: DragEvent) {
-    const text =
-      e.dataTransfer?.getData('text/uri-list').split(/\r?\n/)[0] ||
-      e.dataTransfer?.getData('text/plain');
-    if (!text) return;
-    e.preventDefault();
-    const form = e.currentTarget as HTMLFormElement;
-    const field = form.elements.namedItem('item') as HTMLInputElement;
-    field.value = text.trim();
-    form.requestSubmit();
-  }
-
-  private async etdItemPressed(e: SubmitEvent) {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const field = form.elements.namedItem('item') as HTMLInputElement;
-    const item = parseItemIdentifier(field.value);
-    if (!item) {
-      this.etdItemStatus = {
-        busy: false,
-        message:
-          "That isn't an archive.org item. Try an identifier like etd-search, or a link to archive.org/details/… or archive.org/download/….",
-      };
-      return;
-    }
-    if (item === this.etdIndex.item) {
-      this.etdItemStatus = undefined;
-      return;
-    }
-
-    this.etdItemStatus = { busy: true, message: `Checking ${item}…` };
-    const check = await checkItemIndex(item);
-    if (!check.ok) {
-      this.etdItemStatus = { busy: false, message: check.message };
-      return;
-    }
-    const url = new URL(window.location.href);
-    url.searchParams.delete('etd_base_url');
-    if (item === DEFAULT_ETD_ITEM) {
-      url.searchParams.delete('etd_item');
-    } else {
-      url.searchParams.set('etd_item', item);
-    }
-    // The engine is built once, from the url, so a reload switches it.
-    window.location.assign(url.href);
-  }
-
-  /** The ETD search box, which searches both pages. */
-  private get etdSearchTemplate() {
-    return html`
-      <form id="etd-search" role="search" @submit=${this.etdSearchPressed}>
-        <label for="etd-query-field">
-          Search theses, here and on the live etd-search page:
-        </label>
-        <input
-          type="search"
-          id="etd-query-field"
-          name="query"
-          .value=${this.searchQuery ?? ''}
-        />
-        <button type="submit">Search</button>
-      </form>
-    `;
-  }
-
-  private etdSearchPressed(e: SubmitEvent) {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const field = form.elements.namedItem('query') as HTMLInputElement;
-    this.searchQuery = field.value;
   }
 
   private searchPressed(e: Event) {
@@ -660,19 +217,6 @@ export class AppRoot extends LitElement {
               <input type="submit" value="Search" />
             </form>
           </div>
-          ${this.isEtdSearch
-            ? html`<div>
-                <button
-                  type="button"
-                  id="toggle-etd-controls-btn"
-                  aria-controls="etd-controls"
-                  aria-expanded=${String(!this.etdControlsHidden)}
-                  @click=${this.toggleEtdControls}
-                >
-                  ${this.etdControlsHidden ? 'Show' : 'Hide'} ETD controls
-                </button>
-              </div>`
-            : nothing}
 
           <div id="search-types">
             Search type:
@@ -1070,13 +614,23 @@ export class AppRoot extends LitElement {
           Toggle Search Controls
         </button>
       </div>
-      ${this.isEtdSearch ? this.etdControlsTemplate : nothing}
+      ${this.isEtdSearch
+        ? html`<serverless-search-demo
+            .analyticsHandler=${this.analyticsHandler}
+          ></serverless-search-demo>`
+        : this.collectionBrowserTemplate}
+      <modal-manager></modal-manager>
+    `;
+  }
+
+  private get collectionBrowserTemplate() {
+    return html`
       <div id="collection-browser-container">
         <collection-browser
           facetPaneVisible
           .extraFacetGroups=${this.declaredSearch?.extraFacetGroups ?? []}
           ?allowFilterOnlySearch=${!!this.declaredSearch?.allowFilterOnlySearch}
-          .baseNavigationUrl=${this.isEtdSearch ? '' : 'https://archive.org'}
+          .baseNavigationUrl=${'https://archive.org'}
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
@@ -1103,10 +657,8 @@ export class AppRoot extends LitElement {
           ${this.toggleSlots
             ? html`<div slot="facet-top-slot">Facet Slot</div>`
             : nothing}
-          ${this.isEtdSearch ? this.etdRankTemplate : nothing}
         </collection-browser>
       </div>
-      <modal-manager></modal-manager>
     `;
   }
 
@@ -1216,23 +768,6 @@ export class AppRoot extends LitElement {
         pageUrl.toString(),
       );
     }
-  }
-
-  /** Shows or hides the ETD panel, keeping the choice in the URL. */
-  private toggleEtdControls() {
-    this.etdControlsHidden = !this.etdControlsHidden;
-    const pageUrl = new URL(window.location.href);
-    // Leave the param off when the panel is shown, the default.
-    if (this.etdControlsHidden) {
-      pageUrl.searchParams.set('hide-etd-controls', 'true');
-    } else {
-      pageUrl.searchParams.delete('hide-etd-controls');
-    }
-    window.history.replaceState?.(
-      { path: pageUrl.toString() },
-      '',
-      pageUrl.toString(),
-    );
   }
 
   private toggleFacetGroupOutline(e: Event) {
@@ -1619,190 +1154,6 @@ export class AppRoot extends LitElement {
     .dev-tool-container {
       position: relative;
     }
-    #etd-controls {
-      margin: 1rem;
-      padding: 1rem 1.5rem 0.5rem;
-      background: #eef3f9;
-      border: 1px solid #b6c8dd;
-      border-left: 6px solid #2c5f8f;
-      border-radius: 4px;
-    }
-
-    #etd-controls h2 {
-      margin: 0 0 0.8rem;
-      /* Clear the fixed search-controls toggle, at left: 77.4% */
-      max-width: calc(77.4% - 3rem);
-      font-size: 2rem;
-      color: #1d3f61;
-    }
-
-    .etd-controls-note {
-      margin-left: 0.5rem;
-      font-size: 1.3rem;
-      font-weight: normal;
-      color: #4a5a6a;
-    }
-
-    #etd-docs {
-      margin: 0 0 1rem;
-    }
-
-    #etd-docs a {
-      display: inline-block;
-      padding: 0.4rem 1rem;
-      border: 1px solid #2c5f8f;
-      border-radius: 4px;
-      background: white;
-      color: #1d3f61;
-      font-size: 1.4rem;
-      text-decoration: none;
-    }
-
-    #etd-docs a:hover {
-      background: #e8edf2;
-    }
-
-    #etd-docs a:focus-visible {
-      outline: 2px solid #3a4fd6;
-      outline-offset: 2px;
-    }
-
-    /* Read by screen readers, not shown */
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    #etd-item {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.8rem;
-      font-size: 1.4rem;
-    }
-
-    #etd-item-field {
-      flex: 0 1 30rem;
-      font-size: 1.4rem;
-      padding: 0.3rem 0.6rem;
-      border: 1px solid #8aa3bd;
-      border-radius: 4px;
-    }
-
-    #etd-item button {
-      font-size: 1.4rem;
-      padding: 0.3rem 1rem;
-    }
-
-    #etd-item-status {
-      flex-basis: 100%;
-      margin: 0;
-    }
-
-    #etd-item-status:empty {
-      display: none;
-    }
-
-    #etd-item-status.error {
-      color: #a3261a;
-    }
-
-    #etd-search {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 1.6rem;
-    }
-
-    #etd-query-field {
-      flex: 1 1 30rem;
-      font-size: 1.8rem;
-      padding: 0.5rem 0.8rem;
-      border: 1px solid #8aa3bd;
-      border-radius: 4px;
-    }
-
-    #etd-search button {
-      font-size: 1.6rem;
-      padding: 0.5rem 1.4rem;
-      border: none;
-      border-radius: 4px;
-      background: #2c5f8f;
-      color: white;
-      cursor: pointer;
-    }
-
-    #etd-browse {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem 1rem;
-      margin: 0.6rem 0;
-      font-size: 1.4rem;
-    }
-
-    #etd-browse ul {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem 1rem;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    #etd-browse a {
-      color: #1d3f61;
-    }
-
-    #etd-rank {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      margin: 1rem 0 0;
-      padding: 0;
-      border: none;
-      font-size: 1.4rem;
-    }
-
-    #etd-rank legend {
-      padding: 0;
-      margin-bottom: 0.4rem;
-      font-weight: bold;
-    }
-
-    #etd-rank label {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-    }
-
-    .etd-rank-note {
-      font-size: 1.2rem;
-      color: #4a5a6a;
-    }
-
-    #etd-controls etd-compare-panel {
-      background: white;
-    }
-
-    #etd-controls[hidden] {
-      display: none;
-    }
-
-    #etd-controls etd-facet-summary,
-    #etd-controls etd-file-check {
-      margin: 0.75rem 0;
-    }
-
     #dev-tools {
       position: relative;
       top: 0;

@@ -1,0 +1,256 @@
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+import { localized, msg } from '@lit/localize';
+import { LitElement, html, css } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
+import { when } from 'lit/directives/when.js';
+import { ModalConfig, } from '@internetarchive/modal-manager';
+import iaButtonStyle from '../styles/ia-button';
+import './remove-items-modal-content';
+let ManageBar = class ManageBar extends LitElement {
+    constructor() {
+        super(...arguments);
+        /**
+         * Array of items that have been selected for management
+         */
+        this.selectedItems = [];
+        /**
+         * Whether to show the "Select All" button (default false)
+         */
+        this.showSelectAll = false;
+        /**
+         * Whether to show the "Unselect All" button (default false)
+         */
+        this.showUnselectAll = false;
+        /**
+         * Whether to show "Item Manager the items" button (default false)
+         */
+        this.showItemManageButton = false;
+        /**
+         * Whether to active delete button for selectable items
+         */
+        this.removeAllowed = false;
+    }
+    render() {
+        return html `
+      <div class="manage-container">
+        <span class="manage-label"
+          >${this.label ?? msg('Select items to remove')}</span
+        >
+        <div class="manage-buttons">
+          <button class="ia-button dark" @click=${this.cancelClicked}>
+            ${msg('Cancel')}
+          </button>
+          <button
+            class="ia-button danger"
+            ?disabled=${!this.removeAllowed}
+            @click=${this.showRemoveItemsModal}
+          >
+            ${msg('Remove selected items')} (${this.selectedItems.length})...
+          </button>
+          ${when(this.showItemManageButton, () => html ` <button
+                class="ia-button warning"
+                ?disabled=${!this.removeAllowed}
+                @click=${this.manageItemsClicked}
+              >
+                ${msg('Item Manager the items')} (${this.selectedItems.length})
+              </button>`)}
+          <div class="selection-buttons">
+            ${when(this.showSelectAll, () => html ` <button
+                  class="ia-button link select-all-btn"
+                  @click=${this.selectAllClicked}
+                >
+                  ${msg('Select all')}
+                </button>`)}
+            ${when(this.showUnselectAll, () => html ` <button
+                  class="ia-button link unselect-all-btn"
+                  @click=${this.unselectAllClicked}
+                >
+                  ${msg('Unselect all')}
+                </button>`)}
+          </div>
+        </div>
+      </div>
+    `;
+    }
+    /**
+     * Message to show in the manage view modal, depending on context.
+     */
+    get manageViewModalMsg() {
+        const pluralize = this.selectedItems.length > 1;
+        switch (this.profileElement) {
+            case 'uploads':
+                return pluralize
+                    ? msg('Note: It may take a few minutes for these items to stop appearing in your uploads list.')
+                    : msg('Note: It may take a few minutes for this item to stop appearing in your uploads list.');
+            case 'web_archives':
+                return pluralize
+                    ? msg('Note: It may take a few minutes for these items to stop appearing in your web archives list.')
+                    : msg('Note: It may take a few minutes for this item to stop appearing in your web archives list.');
+            case 'favorites':
+                return pluralize
+                    ? msg('Note: It may take a few minutes for these items to stop appearing in your favorites list.')
+                    : msg('Note: It may take a few minutes for this item to stop appearing in your favorites list.');
+            default:
+                return '';
+        }
+    }
+    cancelClicked() {
+        this.dispatchEvent(new CustomEvent('cancel'));
+    }
+    removeItemsClicked() {
+        this.dispatchEvent(new CustomEvent('removeItems'));
+    }
+    manageItemsClicked() {
+        this.dispatchEvent(new CustomEvent('manageItems'));
+    }
+    selectAllClicked() {
+        this.dispatchEvent(new CustomEvent('selectAll'));
+    }
+    unselectAllClicked() {
+        this.dispatchEvent(new CustomEvent('unselectAll'));
+    }
+    /**
+     * Shows a modal dialog confirming the list of items to be removed
+     * @param items Which items to list in the modal
+     */
+    showRemoveItemsModal() {
+        const customModalContent = html `
+      <remove-items-modal-content
+        .items=${this.selectedItems}
+        .message=${this.manageViewModalMsg}
+        @confirm=${() => this.removeItemsClicked()}
+      ></remove-items-modal-content>
+    `;
+        const config = new ModalConfig({
+            showProcessingIndicator: false,
+            processingImageMode: 'processing',
+            bodyColor: '#fff',
+            headerColor: '#194880',
+            showHeaderLogo: false,
+            closeOnBackdropClick: true,
+            title: html `${msg('Are you sure you want to remove these items?')}`,
+        });
+        this.modalManager?.classList.add('remove-items');
+        this.modalManager?.showModal({
+            config,
+            customModalContent,
+            userClosedModalCallback: () => {
+                this.modalManager?.classList.remove('remove-items');
+            },
+        });
+    }
+    /**
+     * Shows a modal dialog indicating that item removal is being processed
+     */
+    showRemoveItemsProcessingModal() {
+        const config = new ModalConfig({
+            showProcessingIndicator: true,
+            processingImageMode: 'processing',
+            bodyColor: '#fff',
+            headerColor: '#194880',
+            showHeaderLogo: false,
+            closeOnBackdropClick: true,
+            title: html `${msg('Removing selected items...')}`,
+        });
+        this.modalManager?.classList.add('remove-items');
+        this.modalManager?.showModal({
+            config,
+            userClosedModalCallback: () => {
+                this.modalManager?.classList.remove('remove-items');
+            },
+        });
+    }
+    /**
+     * Shows a modal dialog indicating that an error occurred while removing items
+     */
+    showRemoveItemsErrorModal() {
+        const config = new ModalConfig({
+            showProcessingIndicator: false,
+            processingImageMode: 'processing',
+            bodyColor: '#fff',
+            headerColor: '#691916',
+            showHeaderLogo: false,
+            closeOnBackdropClick: true,
+            title: html `${msg('Error: unable to remove items')}`,
+            message: html `${msg('An error occurred while removing items. Please try again in a few minutes.')}`,
+        });
+        this.modalManager?.classList.add('remove-items');
+        this.modalManager?.showModal({
+            config,
+            userClosedModalCallback: () => {
+                this.modalManager?.classList.remove('remove-items');
+            },
+        });
+    }
+    static get styles() {
+        return css `
+      ${iaButtonStyle}
+      .manage-container {
+        display: flex;
+        align-items: center;
+        column-gap: 5px;
+        padding: 20px 0 20px;
+        flex-wrap: wrap;
+      }
+
+      .manage-label {
+        display: inline-block;
+        font-weight: bold;
+        font-size: 1.8rem;
+        padding-right: 10px;
+      }
+
+      .manage-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: 5px;
+      }
+
+      .selection-buttons {
+        display: inherit;
+      }
+
+      .ia-button,
+      button {
+        padding: 6px 12px;
+        font-size: 1.4rem;
+        margin: 3px 0;
+      }
+    `;
+    }
+};
+__decorate([
+    property({ type: String })
+], ManageBar.prototype, "label", void 0);
+__decorate([
+    property({ type: Object })
+], ManageBar.prototype, "modalManager", void 0);
+__decorate([
+    property({ type: Array })
+], ManageBar.prototype, "selectedItems", void 0);
+__decorate([
+    property({ type: String })
+], ManageBar.prototype, "profileElement", void 0);
+__decorate([
+    property({ type: Boolean })
+], ManageBar.prototype, "showSelectAll", void 0);
+__decorate([
+    property({ type: Boolean })
+], ManageBar.prototype, "showUnselectAll", void 0);
+__decorate([
+    property({ type: Boolean })
+], ManageBar.prototype, "showItemManageButton", void 0);
+__decorate([
+    property({ type: Boolean })
+], ManageBar.prototype, "removeAllowed", void 0);
+ManageBar = __decorate([
+    customElement('manage-bar'),
+    localized()
+], ManageBar);
+export { ManageBar };
