@@ -143,17 +143,31 @@ table.lessons td { min-width: 12rem; }
 .shelf { margin: 0.4rem 0 0; padding-left: 1.2rem; max-width: 68ch; display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 0.2rem 1.6rem; }
 .shelf li + li { margin-top: 0; }
 @media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s ease; } .card:hover { transform: rotate(-0.6deg) translateY(-2px); } }
+
+/* The docs bar: the same strip of links on every Static Index Search document. */
+.docbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; padding: 0.55rem 0.8rem; margin-bottom: 1.6rem; background: var(--raised); border: 1px solid var(--rule); border-radius: 6px; font-size: 0.85rem; }
+.docbar__label { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.7rem; color: var(--ink-2); }
+.docbar ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.docbar li + li { margin-top: 0; }
+.docbar a, .docbar [aria-current] { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; text-decoration: none; }
+.docbar a { color: var(--link); }
+.docbar a:hover { text-decoration: underline; }
+.docbar a:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+.docbar [aria-current] { color: var(--ink); font-weight: 700; border: 1px solid var(--rule); }
 </style>
 </head>
 <body>
 
 <div class="wrap">
+<nav class="docbar" aria-label="Static Index Search documents">
+  <span class="docbar__label">Static Index Search docs</span>
+  <ul><li><a href="https://claude.ai/artifact/J5dJ2kwECbEEMruz7dn6xY">Overview</a></li><li><span aria-current="page">Full proposal</span></li><li><a href="https://claude.ai/artifact/3AGj7wc1JShpWYcWSXp5ah">Collection Fit Check</a></li><li><a href="https://claude.ai/artifact/YXrQwfadeMGfhoUukqPgxf">Deriver design</a></li><li><a href="https://claude.ai/artifact/Q6k7VE1R5xZmp9vZg17RxF">Deriver deck</a></li></ul>
+</nav>
 <header class="prose">
   <p class="meta"><a href="../?search_service=etd">← Back to the ETD search demo</a></p>
   <p class="overline">Internet Archive · Proposal for technical and product managers · draft</p>
   <h1>Static Index Search</h1>
   <p class="lede">We propose a standard way to make any archive.org item searchable in the browser, with no search servers. An item publishes a few index files; a shared engine reads small slices of them; archive.org's existing search UI shows the results. The ETD theses search proves it at 26 million records.</p>
-  <p class="meta short-link">Short on time? <a href="https://claude.ai/artifact/J5dJ2kwECbEEMruz7dn6xY">Read the one-page overview</a>.</p>
   <p class="meta">Updated 30 October 2026 · Isa, with the ETD port in <code>iaux-collection-browser</code> · numbers measured on the live <code>etd-search</code> item</p>
 </header>
 
@@ -731,6 +745,8 @@ flowchart TD
     <li><strong>Change rate:</strong> the spread of <code>addeddate</code>.</li>
   </ol>
 </div>
+
+<p class="cap">The same checks as a screen: <a href="https://claude.ai/artifact/3AGj7wc1JShpWYcWSXp5ah">Collection Fit Check</a> (a design frame).</p>
 
 <h3>Worked example: theses-and-dissertations</h3>
 <div class="prose">
