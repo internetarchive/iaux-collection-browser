@@ -129,6 +129,74 @@ describe('serverless-search-demo', () => {
     expect(field.value).to.equal('"sea ice" AND antarctic');
   });
 
+  it('marks the preset the url searches, and follows a new search', async () => {
+    const { el, root, panel } = await demoAt('?etd_compare=0&query=sea+ice');
+    const pressed = () =>
+      [
+        ...panel.querySelectorAll('#etd-presets button[aria-pressed="true"]'),
+      ].map(b => b.textContent?.trim());
+    await waitUntil(() => pressed().length > 0, 'no preset marked');
+    expect(pressed()).to.deep.equal(['sea ice']);
+    panel
+      .querySelectorAll('#etd-presets button[aria-pressed="false"]')
+      .forEach(b => expect(b.textContent?.trim()).to.not.equal('sea ice'));
+
+    (
+      panel.querySelectorAll('#etd-presets button')[3] as HTMLButtonElement
+    ).click();
+    await el.updateComplete;
+    expect(pressed()).to.deep.equal(['machine learning']);
+
+    const form = root.querySelector('#etd-search') as HTMLFormElement;
+    (form.querySelector('#etd-query-field') as HTMLInputElement).value =
+      'not a preset';
+    form.requestSubmit();
+    await el.updateComplete;
+    expect(pressed()).to.deep.equal([]);
+  });
+
+  it('marks the browse link the url opens on', async () => {
+    const current = (panel: HTMLElement) =>
+      [...panel.querySelectorAll('#etd-browse a[aria-current="true"]')].map(a =>
+        a.textContent?.trim(),
+      );
+
+    const decade = await demoAt(
+      `?etd_compare=0&and[]=${encodeURIComponent('year:[2000 TO 2009]')}`,
+    );
+    await waitUntil(
+      () => current(decade.panel).length > 0,
+      'no browse link marked',
+    );
+    expect(current(decade.panel)).to.deep.equal(['From the 2000s']);
+
+    const portuguese = await demoAt(
+      `?etd_compare=0&and[]=${encodeURIComponent('language:"Portuguese"')}`,
+    );
+    await waitUntil(
+      () => current(portuguese.panel).length > 0,
+      'no browse link marked',
+    );
+    expect(current(portuguese.panel)).to.deep.equal(['In Portuguese']);
+  });
+
+  it('marks no browse link when there is also a query', async () => {
+    const { el, panel } = await demoAt(
+      `?etd_compare=0&query=sea+ice&and[]=${encodeURIComponent('year:[2000 TO 2009]')}`,
+    );
+    // Wait for the search itself, so the check isn't before it arrives.
+    await waitUntil(
+      () =>
+        (el as unknown as { searchParams?: { query?: string } }).searchParams
+          ?.query === 'sea ice',
+      'search not sent',
+    );
+    await el.updateComplete;
+    expect(
+      panel.querySelectorAll('#etd-browse a[aria-current]'),
+    ).to.have.length(0);
+  });
+
   it('shows no presets for another item, since they are about etd-search', async () => {
     const { panel } = await demoAt('?etd_item=some-other-item&etd_compare=0');
 

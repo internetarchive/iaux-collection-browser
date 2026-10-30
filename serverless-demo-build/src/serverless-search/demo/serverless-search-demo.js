@@ -4,6 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+import { FilterConstraint, } from '@internetarchive/search-service';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
 import { html, css, LitElement, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
@@ -23,7 +24,29 @@ import '../../etd/demo/etd-found-facets';
 import { etdRequestFromParams } from '../../etd/etd-query';
 import '../../etd/demo/etd-file-check';
 import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
+import { sameFilters } from './same-filters';
 import { DEFAULT_ETD_ITEM, checkItemIndex, etdIndexUrls, hasVectorIndex, parseItemIdentifier, } from '../../etd/demo/item-index';
+/**
+ * Searches by filters alone, linked as `and[]` params. `filters` is the same
+ * filter as collection-browser searches with it, to tell which one is showing.
+ */
+const ETD_BROWSE = [
+    {
+        label: 'From the 2000s',
+        param: 'year:[2000 TO 2009]',
+        filters: {
+            year: {
+                '2000': FilterConstraint.GREATER_OR_EQUAL,
+                '2009': FilterConstraint.LESS_OR_EQUAL,
+            },
+        },
+    },
+    {
+        label: 'In Portuguese',
+        param: 'language:"Portuguese"',
+        filters: { language: { Portuguese: FilterConstraint.INCLUDE } },
+    },
+];
 /**
  * Searches to start from in etd-search, each run as if typed into the
  * search box. The quoted one shows the live page's query syntax: a phrase,
@@ -155,6 +178,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         }, params => {
             if (this.searchService !== observed)
                 return;
+            this.searchParams = params;
             this.etdRequest = etdRequestFromParams(params, rank === 'vector' ? ETD_VECTOR_FACETS : ETD_FACETS);
         });
         this.etdServices[rank] = observed;
@@ -229,6 +253,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         this.etdRank = rank;
         this.etdFacets = undefined;
         this.etdRequest = undefined;
+        this.searchParams = undefined;
         this.searchService = this.etdService(rank);
     }
     /**
@@ -409,7 +434,11 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
      * link these only start from the URL.
      */
     get etdBrowseTemplate() {
-        const browse = (label, filter) => {
+        const query = (this.searchParams?.query ?? '').trim();
+        const browse = ({ label, param, filters }) => {
+            const showing = !!this.searchParams &&
+                query === '' &&
+                sameFilters(this.searchParams.filters, filters);
             const url = new URL(window.location.href);
             url.search = '';
             url.searchParams.set('search_service', 'etd');
@@ -418,15 +447,18 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
                 if (value !== null)
                     url.searchParams.set(name, value);
             }
-            url.searchParams.append('and[]', filter);
-            return html `<li><a href=${url.href}>${label}</a></li>`;
+            url.searchParams.append('and[]', param);
+            return html `<li>
+        <a href=${url.href} aria-current=${showing ? 'true' : nothing}
+          >${label}</a
+        >
+      </li>`;
         };
         return html `
       <nav id="etd-browse" aria-label="Browse without a search">
         <span>Or browse:</span>
         <ul>
-          ${browse('From the 2000s', 'year:[2000 TO 2009]')}
-          ${browse('In Portuguese', 'language:"Portuguese"')}
+          ${ETD_BROWSE.map(browse)}
         </ul>
       </nav>
     `;
@@ -569,6 +601,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         <span id="etd-presets-label">Try a search:</span>
         ${queries.map(query => html `<button
               type="button"
+              aria-pressed=${query === this.searchQuery ? 'true' : 'false'}
               @click=${() => {
             this.searchQuery = query;
         }}
@@ -799,9 +832,16 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
       color: #1d3f61;
       cursor: pointer;
     }
-    #etd-presets button:hover,
+    #etd-presets button[aria-pressed='true'] {
+      background: #2c5f8f;
+      color: white;
+    }
+    #etd-presets button:hover:not([aria-pressed='true']),
     #etd-presets button:focus-visible {
       background: #e8f0f8;
+    }
+    #etd-presets button[aria-pressed='true']:focus-visible {
+      background: #1d3f61;
     }
     #etd-browse {
       display: flex;
@@ -822,6 +862,11 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
 
     #etd-browse a {
       color: #1d3f61;
+    }
+
+    #etd-browse a[aria-current='true'] {
+      font-weight: bold;
+      text-decoration: none;
     }
 
     #etd-rank {
@@ -914,6 +959,9 @@ __decorate([
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "etdRequest", void 0);
+__decorate([
+    state()
+], ServerlessSearchDemo.prototype, "searchParams", void 0);
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "etdControlsHidden", void 0);
