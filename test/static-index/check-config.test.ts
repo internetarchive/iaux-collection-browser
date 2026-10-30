@@ -460,6 +460,45 @@ describe('checkConfig', () => {
     });
   });
 
+  describe('file sets', () => {
+    it('passes a .json suffix, and a previous build to fall back to', () => {
+      const m = manifest();
+      m.idSpaces.papers.files = {
+        naming: 'versioned',
+        version: 'v2',
+        suffix: '.json',
+      };
+      words(m).files = m.idSpaces.papers.files;
+      m.previous = 'v0';
+      expect(problems(m, config())).to.equal('');
+    });
+
+    it('catches a suffix that would change what the url names', () => {
+      const m = manifest();
+      words(m).files = { naming: 'versioned', version: 'v1', suffix: '/x' };
+      m.idSpaces.papers.files = {
+        naming: 'versioned',
+        version: 'v1',
+        suffix: 'json',
+      };
+      const found = problems(m, config());
+      expect(found).to.include(
+        'words: file suffix "/x" isn\'t an extension like ".json"',
+      );
+      expect(found).to.include(
+        'papers: file suffix "json" isn\'t an extension like ".json"',
+      );
+    });
+
+    it('catches a previous build that is this build, which leaves nothing to fall back to', () => {
+      const m = manifest();
+      m.previous = 'v1';
+      expect(problems(m, config())).to.include(
+        'previous "v1" is this build\'s own version',
+      );
+    });
+  });
+
   it('refuses a format it doesn’t know, including the text-only v1', () => {
     const m = {
       ...manifest(),

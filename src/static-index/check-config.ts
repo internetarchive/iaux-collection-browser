@@ -3,6 +3,7 @@ import type {
   FacetColumn,
   FacetConfig,
   FacetRows,
+  FileSet,
   FlagRule,
   IdSpace,
   Ranking,
@@ -40,18 +41,40 @@ export function checkConfig(
 function manifestProblems(manifest: StaticItemManifest): string[] {
   const problems: string[] = [];
   for (const [key, space] of Object.entries(manifest.idSpaces)) {
-    problems.push(...idSpaceProblems(space).map(p => `${key}: ${p}`));
+    const found = [...fileSetProblems(space.files), ...idSpaceProblems(space)];
+    problems.push(...found.map(p => `${key}: ${p}`));
   }
   for (const [key, search] of Object.entries(manifest.searches)) {
     const space = manifest.idSpaces[search.ids];
-    const found = space
-      ? search.kind === 'text'
-        ? textProblems(search, space)
-        : vectorProblems(search)
-      : [`no id space "${search.ids}"`];
+    const found = [
+      ...fileSetProblems(search.files),
+      ...(space
+        ? search.kind === 'text'
+          ? textProblems(search, space)
+          : vectorProblems(search)
+        : [`no id space "${search.ids}"`]),
+    ];
     problems.push(...found.map(p => `${key}: ${p}`));
   }
+  const versions = [
+    ...Object.values(manifest.idSpaces).map(space => space.files),
+    ...Object.values(manifest.searches).map(search => search.files),
+  ].flatMap(files => (files.naming === 'versioned' ? [files.version] : []));
+  if (manifest.previous !== undefined && versions.includes(manifest.previous)) {
+    problems.push(
+      `previous "${manifest.previous}" is this build's own version, so it can't be fallen back to`,
+    );
+  }
   return problems;
+}
+
+function fileSetProblems(files: FileSet): string[] {
+  // A '/', '?' or '#' would change what the url names, not just its end.
+  return files.naming === 'versioned' &&
+    files.suffix !== undefined &&
+    !/^\.[A-Za-z0-9.]+$/.test(files.suffix)
+    ? [`file suffix "${files.suffix}" isn't an extension like ".json"`]
+    : [];
 }
 
 function idSpaceProblems(space: IdSpace): string[] {

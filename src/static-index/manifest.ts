@@ -16,8 +16,9 @@
 /**
  * Published by the item as static-index.json, next to its index files:
  * every set of docs it has (id spaces) and every way to search them.
- * The file has a fixed name, is read fresh, and is written last, so it
- * never names files still uploading.
+ * The file has a fixed name and is read fresh. A publish step writes it
+ * once the build's files have landed, from the build's own copy,
+ * static-index.<version>.json.
  */
 export interface StaticItemManifest {
   format: 'ia-static-index';
@@ -31,22 +32,32 @@ export interface StaticItemManifest {
   idSpaces: Record<string, IdSpace>;
   /** Each way to search, by key: words or meaning, over one id space. */
   searches: Record<string, StaticSearch>;
+  /**
+   * The build before this one, whose manifest is
+   * static-index.<previous>.json. Its files are kept until the next
+   * publish, so a reader can fall back to it whole when this build's
+   * files aren't on every server yet (a 404). Only that build's manifest
+   * describes its files: counts and sizes differ between builds.
+   */
+  previous?: string;
 }
 
 /**
  * How a group of files is named, so a rebuild never mixes two builds'
  * files.
  *
- * - `versioned`: every file is `<name>.<version>` and never changes, so it
- *   caches forever and a rebuild can't be read half old, half new. Use
- *   this for a new index.
+ * - `versioned`: every file is `<name>.<version><suffix>` and never
+ *   changes, so it caches forever and a rebuild can't be read half old,
+ *   half new. Use this for a new index. archive.org's servers only allow
+ *   cross-origin reads of some extensions, `.json` among them, so a file
+ *   a browser reads from another origin needs `suffix: '.json'`.
  * - `stamped`: fixed names, read as `<name>?v=<built>`, overwritten by a
  *   rebuild. A reader that loaded the old manifest can then read new
  *   bytes, which is why sidecars carry stamps to check. ETD's vector store
  *   is published this way.
  */
 export type FileSet =
-  | { naming: 'versioned'; version: string }
+  | { naming: 'versioned'; version: string; suffix?: string }
   | { naming: 'stamped'; built: string };
 
 /** A set of docs with their own ids. */

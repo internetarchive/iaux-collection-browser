@@ -12,6 +12,18 @@ describe('fileSetUrl', () => {
     );
   });
 
+  it('ends a versioned file’s name in its suffix, before the query string', () => {
+    // archive.org only serves some extensions cross-origin, .json among them.
+    const files = {
+      naming: 'versioned',
+      version: '20261026-5e5902',
+      suffix: '.json',
+    } as const;
+    expect(fileSetUrl(DATA, files, 'dict.bin')).to.equal(
+      `${DATA}dict.bin.20261026-5e5902.json?v=20261026-5e5902`,
+    );
+  });
+
   it('reads a stamped build’s fixed name, keyed to its stamp', () => {
     const files = { naming: 'stamped', built: '2026-10-12 11:31' } as const;
     expect(fileSetUrl(DATA, files, 'cells.bin')).to.equal(

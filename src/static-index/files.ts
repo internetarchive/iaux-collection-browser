@@ -12,7 +12,7 @@ export function fileSetUrl(
   name: string,
 ): string {
   return files.naming === 'versioned'
-    ? `${dataUrl}${name}.${files.version}?v=${files.version}`
+    ? `${dataUrl}${name}.${files.version}${files.suffix ?? ''}?v=${files.version}`
     : `${dataUrl}${name}?v=${encodeURIComponent(files.built)}`;
 }
 

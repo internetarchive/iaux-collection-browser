@@ -62,14 +62,24 @@ Static index config:
 
 All in the item, next to each other:
 
-- `static-index.json`, the manifest: a fixed name, read fresh, and written
-  **last**, so it never names files still uploading.
+- `static-index.<version>.json`, each build's own manifest.
+- `static-index.json`, the one a reader opens: a fixed name, read fresh.
+  A publish step copies the new build's manifest here once its files have
+  landed, adding `previous`: the build before it, kept until the next
+  publish. A server that doesn't have the new files yet answers 404, and
+  the reader falls back to the previous build whole, through
+  `static-index.<previous>.json`, never file by file.
 - Each search's files, and each id space's, as a **file set**:
 
-| `naming`    | Files are read as  | When                                                                                                                                  |
-| ----------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `versioned` | `<name>.<version>` | **Use this.** A file never changes, so it caches forever, and a rebuild can't be read half old, half new.                             |
-| `stamped`   | `<name>?v=<built>` | Fixed names a rebuild overwrites. A reader holding the old manifest can read new bytes. Only to describe ETD's vector store as it is. |
+| `naming`    | Files are read as          | When                                                                                                                                  |
+| ----------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `versioned` | `<name>.<version><suffix>` | **Use this.** A file never changes, so it caches forever, and a rebuild can't be read half old, half new.                             |
+| `stamped`   | `<name>?v=<built>`         | Fixed names a rebuild overwrites. A reader holding the old manifest can read new bytes. Only to describe ETD's vector store as it is. |
+
+archive.org's servers only allow cross-origin reads of some extensions
+(`.json` among them, not `.bin`), so a versioned file set read from
+another origin sets `suffix: '.json'`: `dict.bin.<version>.json`. Range and
+multi-range reads of a `.json` file come back as they would for any other.
 
 A search by words publishes:
 
@@ -410,9 +420,12 @@ that way.
 
 ## Checklist for an index builder
 
-- [ ] Publish every file as `<name>.<version>` (a `versioned` file set),
-      and `static-index.json` **last**, so it never names a version still
-      uploading.
+- [ ] Publish every file as `<name>.<version>.json` (a `versioned` file
+      set with `suffix: '.json'`), and the build's manifest as
+      `static-index.<version>.json`.
+- [ ] Once the files have landed, copy that manifest to
+      `static-index.json` with `previous` set, and only then delete the
+      build before `previous`.
 - [ ] Fill in the whole manifest in `static-index.json`.
 - [ ] Give each set of docs with its own ids its own id space, and mark
       its records' `role`s.
@@ -422,8 +435,6 @@ that way.
 - [ ] Keep facet rows small, and 0 for unknown.
 - [ ] Never reuse a flag name or column key for something else; rename
       instead, so `checkConfig` catches clients that use the old one.
-- [ ] Serve the files CORS-readable. (ETD's aren't yet; its demo proxies
-      them.)
 - [ ] Check the config against the manifest: `checkConfig(manifest, config)`.
 
 ## Known gaps
@@ -431,7 +442,8 @@ that way.
 - **Default config.** Record `role`s are there so an item with no client
   code can be searched, but nothing builds a config from them yet.
 - **Reading a manifest.** Neither engine reads `static-index.json`: they
-  build their layouts from ETD's metas. The demo's `etd_item=<id>` only
+  build their layouts from ETD's metas. Nothing falls back to `previous`
+  yet either. The demo's `etd_item=<id>` only
   reads ETD's `current.json`.
 - **Facets.** Both engines read facet rows through ETD-specific code
   (`EtdFacetRows`), not `facet-row.ts`.
