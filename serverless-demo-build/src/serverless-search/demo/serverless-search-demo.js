@@ -386,6 +386,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
           .request=${this.etdRequest}
         ></etd-found-facets>
         <etd-file-check
+          itemId=${this.etdIndex.item ?? nothing}
           .text=${this.etdTextFileCheck}
           .vector=${this.etdVectorFileCheck}
         ></etd-file-check>

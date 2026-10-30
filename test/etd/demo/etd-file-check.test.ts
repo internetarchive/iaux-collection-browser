@@ -1,4 +1,4 @@
-import { expect, fixture, html } from '@open-wc/testing';
+import { expect, fixture, html, waitUntil } from '@open-wc/testing';
 import '../../../src/etd/demo/etd-file-check';
 import type { EtdFileCheckReport } from '../../../src/etd/demo/etd-file-check';
 import {
@@ -84,5 +84,56 @@ describe('etd-file-check', () => {
     expect(el.shadowRoot!.textContent).to.contain(
       "The file list for etd-search didn't load",
     );
+  });
+
+  it('lists the index files it cannot read from archive.org, and why', async () => {
+    // archive.org as it answers another origin: only .json names readable
+    const fetchFn = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/metadata/')) {
+        return new Response(
+          JSON.stringify({
+            result: [
+              { name: 'current.json', size: '30', mtime: '1' },
+              { name: 'stubs.bin.v1', size: '1600', mtime: '1' },
+              { name: 'dict.dir.v1', size: '8', mtime: '1' },
+            ],
+          }),
+        );
+      }
+      if (url.includes('current.json')) {
+        return new Response(JSON.stringify({ v: 'v1' }));
+      }
+      throw new TypeError('Failed to fetch');
+    }) as typeof fetch;
+    const el = await fixture<EtdFileCheckReport>(
+      html`<etd-file-check
+        itemId="etd-search"
+        .fetchFn=${fetchFn}
+        .text=${TEXT_OK}
+      ></etd-file-check>`,
+    );
+    // Not checked until the drawer opens
+    expect(summary(el)).not.to.include('archive.org');
+
+    const details = el.shadowRoot!.querySelector('details')!;
+    details.open = true;
+    await waitUntil(
+      () => el.shadowRoot!.querySelector('table.blocked'),
+      'blocked files never listed',
+    );
+
+    const rows = [
+      ...el.shadowRoot!.querySelectorAll('table.blocked tbody tr'),
+    ].map(row => [
+      row.querySelector('th')!.textContent!.trim(),
+      row.querySelector('td')!.textContent!.trim(),
+    ]);
+    expect(rows.map(([file]) => file)).to.deep.equal([
+      'stubs.bin.v1',
+      'dict.dir.v1',
+    ]);
+    rows.forEach(([, why]) => expect(why).to.include('no CORS header'));
+    expect(summary(el)).to.include('2 blocked from archive.org ❌');
   });
 });

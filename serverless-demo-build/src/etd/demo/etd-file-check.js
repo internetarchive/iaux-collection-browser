@@ -5,7 +5,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
+import { checkItemDirectReads } from '../../static-index/direct-reads';
 import { describeMismatch } from '../../static-index/size-rules';
 import { MEANING_SEARCH, MEANING_WORDS_MAP, WORD_SEARCH, } from '../engine/file-checks';
 import { drawerStyles } from './drawer-styles';
@@ -30,11 +31,25 @@ let EtdFileCheckReport = class EtdFileCheckReport extends LitElement {
         if (!this.text && !this.vector)
             return nothing;
         return html `
-      <details>
+      <details @toggle=${this.opened}>
         <summary>Index files checked: ${this.summaryText}</summary>
         <div class="body">${this.bodyTemplate}</div>
       </details>
     `;
+    }
+    async opened(e) {
+        const open = e.target.open;
+        if (!open || this.directReads || !this.itemId)
+            return;
+        this.directReads = 'checking';
+        this.directReads =
+            (await checkItemDirectReads(this.itemId, { fetch: this.fetchFn })) ??
+                'unavailable';
+    }
+    get blockedReads() {
+        return Array.isArray(this.directReads)
+            ? this.directReads.filter(read => read.blocked)
+            : [];
     }
     get checks() {
         return [this.text, this.vector].flatMap(check => check?.sizes?.checks ?? []);
@@ -49,16 +64,69 @@ let EtdFileCheckReport = class EtdFileCheckReport extends LitElement {
             parts.push(`${count('mismatch')} don't fit ⚠️`);
         if (count('unlisted'))
             parts.push(`${count('unlisted')} not listed ⬜`);
+        if (Array.isArray(this.directReads)) {
+            const blocked = this.blockedReads.length;
+            parts.push(blocked
+                ? `${blocked} blocked from archive.org ❌`
+                : 'all readable from archive.org ✅');
+        }
         return parts.join(' · ');
     }
     get bodyTemplate() {
         return html `
+      ${this.directReadsTemplate}
       ${this.sectionTemplate('Word search', this.text)}
       ${this.vector
             ? this.sectionTemplate('Search by meaning', this.vector)
             : html `<p class="note">
             Search by meaning's files are checked when it first loads.
           </p>`}
+    `;
+    }
+    /** The index files this page can't read straight from archive.org. */
+    get directReadsTemplate() {
+        if (!this.itemId)
+            return nothing;
+        const reads = this.directReads;
+        const heading = html `<h3>Read straight from archive.org</h3>`;
+        if (reads === undefined || reads === 'checking') {
+            return html `${heading}
+        <p class="note" role="status">Checking ${this.itemId}'s files…</p>`;
+        }
+        if (reads === 'unavailable') {
+            return html `${heading}
+        <p class="note">
+          ${this.itemId}'s file list or current.json didn't load, so its files
+          weren't checked.
+        </p>`;
+        }
+        const blocked = this.blockedReads;
+        if (!blocked.length) {
+            return html `${heading}
+        <p class="note">
+          All ${reads.length} index files can be read from here. ✅
+        </p>`;
+        }
+        return html `
+      ${heading}
+      <p class="note">
+        ${blocked.length} of ${reads.length} index files can't be read from here
+        ❌. Without the local proxy, searches that need them fail.
+      </p>
+      <table class="blocked">
+        <thead>
+          <tr>
+            <th scope="col">File</th>
+            <th scope="col">Why it's blocked</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${blocked.map(read => html `<tr>
+                <th scope="row">${read.file}</th>
+                <td>${read.blocked}</td>
+              </tr>`)}
+        </tbody>
+      </table>
     `;
     }
     sectionTemplate(title, check) {
@@ -156,6 +224,15 @@ __decorate([
 __decorate([
     property({ attribute: false })
 ], EtdFileCheckReport.prototype, "vector", void 0);
+__decorate([
+    property({ type: String })
+], EtdFileCheckReport.prototype, "itemId", void 0);
+__decorate([
+    property({ attribute: false })
+], EtdFileCheckReport.prototype, "fetchFn", void 0);
+__decorate([
+    state()
+], EtdFileCheckReport.prototype, "directReads", void 0);
 EtdFileCheckReport = __decorate([
     customElement('etd-file-check')
 ], EtdFileCheckReport);

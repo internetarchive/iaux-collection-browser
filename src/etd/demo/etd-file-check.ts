@@ -1,5 +1,7 @@
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
+import { checkItemDirectReads } from '../../static-index/direct-reads';
+import type { DirectRead } from '../../static-index/direct-reads';
 import { describeMismatch } from '../../static-index/size-rules';
 import type { SizeCheck } from '../../static-index/size-rules';
 import {
@@ -36,14 +38,41 @@ export class EtdFileCheckReport extends LitElement {
   /** The vector store's check; undefined until search by meaning loads. */
   @property({ attribute: false }) vector?: EtdFileCheck;
 
+  /** The archive.org item whose files are read straight from archive.org. */
+  @property({ type: String }) itemId?: string;
+
+  /** For tests: the fetch to read archive.org with. */
+  @property({ attribute: false }) fetchFn?: typeof fetch;
+
+  /**
+   * Which index files can be read straight from archive.org: checked the
+   * first time the drawer opens, since each blocked read also logs an error.
+   */
+  @state() private directReads?: DirectRead[] | 'checking' | 'unavailable';
+
   render() {
     if (!this.text && !this.vector) return nothing;
     return html`
-      <details>
+      <details @toggle=${this.opened}>
         <summary>Index files checked: ${this.summaryText}</summary>
         <div class="body">${this.bodyTemplate}</div>
       </details>
     `;
+  }
+
+  private async opened(e: Event) {
+    const open = (e.target as HTMLDetailsElement).open;
+    if (!open || this.directReads || !this.itemId) return;
+    this.directReads = 'checking';
+    this.directReads =
+      (await checkItemDirectReads(this.itemId, { fetch: this.fetchFn })) ??
+      'unavailable';
+  }
+
+  private get blockedReads(): DirectRead[] {
+    return Array.isArray(this.directReads)
+      ? this.directReads.filter(read => read.blocked)
+      : [];
   }
 
   private get checks(): SizeCheck[] {
@@ -60,17 +89,75 @@ export class EtdFileCheckReport extends LitElement {
     const parts = [`${count('ok')} fit ✅`];
     if (count('mismatch')) parts.push(`${count('mismatch')} don't fit ⚠️`);
     if (count('unlisted')) parts.push(`${count('unlisted')} not listed ⬜`);
+    if (Array.isArray(this.directReads)) {
+      const blocked = this.blockedReads.length;
+      parts.push(
+        blocked
+          ? `${blocked} blocked from archive.org ❌`
+          : 'all readable from archive.org ✅',
+      );
+    }
     return parts.join(' · ');
   }
 
   private get bodyTemplate() {
     return html`
+      ${this.directReadsTemplate}
       ${this.sectionTemplate('Word search', this.text)}
       ${this.vector
         ? this.sectionTemplate('Search by meaning', this.vector)
         : html`<p class="note">
             Search by meaning's files are checked when it first loads.
           </p>`}
+    `;
+  }
+
+  /** The index files this page can't read straight from archive.org. */
+  private get directReadsTemplate() {
+    if (!this.itemId) return nothing;
+    const reads = this.directReads;
+    const heading = html`<h3>Read straight from archive.org</h3>`;
+    if (reads === undefined || reads === 'checking') {
+      return html`${heading}
+        <p class="note" role="status">Checking ${this.itemId}'s files…</p>`;
+    }
+    if (reads === 'unavailable') {
+      return html`${heading}
+        <p class="note">
+          ${this.itemId}'s file list or current.json didn't load, so its files
+          weren't checked.
+        </p>`;
+    }
+    const blocked = this.blockedReads;
+    if (!blocked.length) {
+      return html`${heading}
+        <p class="note">
+          All ${reads.length} index files can be read from here. ✅
+        </p>`;
+    }
+    return html`
+      ${heading}
+      <p class="note">
+        ${blocked.length} of ${reads.length} index files can't be read from here
+        ❌. Without the local proxy, searches that need them fail.
+      </p>
+      <table class="blocked">
+        <thead>
+          <tr>
+            <th scope="col">File</th>
+            <th scope="col">Why it's blocked</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${blocked.map(
+            read =>
+              html`<tr>
+                <th scope="row">${read.file}</th>
+                <td>${read.blocked}</td>
+              </tr>`,
+          )}
+        </tbody>
+      </table>
     `;
   }
 

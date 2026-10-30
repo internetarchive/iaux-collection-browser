@@ -19,6 +19,10 @@ export class ItemFileList {
     get(name) {
         return this.byName.get(name);
     }
+    /** Every file's name, in the list's order. */
+    get names() {
+        return [...this.byName.keys()];
+    }
     /**
      * A cache key for the file as it is now, `<mtime>-<size>`; undefined for
      * a file the list doesn't have.
