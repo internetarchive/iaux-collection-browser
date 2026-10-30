@@ -43,6 +43,24 @@ export function itemIndexUrl(item) {
     return item === DEFAULT_ETD_ITEM ? '/etd-index/' : `/item-index/${item}/`;
 }
 /**
+ * The item whose archive.org download folder `url` is, read straight from
+ * archive.org: https://archive.org/download/<id>/, and nothing deeper.
+ */
+function downloadFolderItem(url) {
+    let parsed;
+    try {
+        parsed = new URL(url);
+    }
+    catch {
+        return undefined;
+    }
+    const match = parsed.pathname.match(/^\/download\/([^/]+)\/?$/);
+    if (!ARCHIVE_HOSTS.has(parsed.hostname) || !match)
+        return undefined;
+    const item = decodeURIComponent(match[1]);
+    return IDENTIFIER.test(item) ? item : undefined;
+}
+/**
  * The index and live page to use, from the demo's url parameters:
  * `etd_base_url` first, then `etd_item`, then etd-search.
  */
@@ -55,7 +73,12 @@ export function etdIndexUrls(params) {
     const baseUrl = params.get('etd_base_url');
     if (baseUrl !== null) {
         const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-        return { baseUrl, pageUrl: `${base}search.html`, rejectedItem };
+        return {
+            baseUrl,
+            pageUrl: `${base}search.html`,
+            item: downloadFolderItem(baseUrl),
+            rejectedItem,
+        };
     }
     return {
         baseUrl: itemUrl,
