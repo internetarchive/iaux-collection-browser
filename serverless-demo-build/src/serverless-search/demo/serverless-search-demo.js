@@ -804,9 +804,18 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
 
     #etd-rank label {
       display: inline-flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.1rem 0.4rem;
       cursor: pointer;
+    }
+    #etd-rank label:has(input:disabled) {
+      cursor: default;
+    }
+    /* On its own line, under the label's words rather than the radio */
+    #etd-rank-no-vector {
+      flex-basis: 100%;
+      padding-left: 1.7rem;
     }
 
     .etd-rank-note {
