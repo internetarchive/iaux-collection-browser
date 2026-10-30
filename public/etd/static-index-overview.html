@@ -440,6 +440,62 @@ flowchart TD
 </section>
 
 
+<section id="renames">
+<h2>Files etd-search needs renamed</h2>
+<p class="verdict">For etd-search to search from any website, like Democracy's Library does, each file it reads has to end in <code>.json</code>. archive.org only lets other websites read files whose names end in an allowed type. The list is for version <code>20261029-69300a</code> (26,090,351 records), checked 30 October 2026.</p>
+
+<h3>Word search: 18 files, about 50 GB</h3>
+<div class="frame"><table>
+  <thead><tr><th class="num">Size</th><th>Now</th><th>Renamed</th></tr></thead>
+  <tbody>
+    <tr><td class="num">524 KB</td><td><code>dict.dir.20261029-69300a</code></td><td><code>dict.dir.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">839 MB</td><td><code>dict.bin.20261029-69300a</code></td><td><code>dict.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">8.0 GB</td><td><code>postings.bin.20261029-69300a</code></td><td><code>postings.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">8.3 GB</td><td><code>stubs.bin.20261029-69300a</code></td><td><code>stubs.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">209 MB</td><td><code>url.dir.20261029-69300a</code></td><td><code>url.dir.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">1.1 GB</td><td><code>url.bin.20261029-69300a</code></td><td><code>url.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">209 MB</td><td><code>snip.dir.20261029-69300a</code></td><td><code>snip.dir.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">11.4 GB</td><td><code>snippets.bin.20261029-69300a</code></td><td><code>snippets.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">209 MB</td><td><code>posfwd.dir.20261029-69300a</code></td><td><code>posfwd.dir.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">17.9 GB</td><td><code>posfwd.bin.20261029-69300a</code></td><td><code>posfwd.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">216 KB</td><td><code>facets-meta.json.20261029-69300a</code></td><td><code>facets-meta.json.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">29 MB</td><td><code>facets.gz.json.20261029-69300a</code></td><td><code>facets.gz.json.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">695 B</td><td><code>inst-meta.json.20261029-69300a</code></td><td><code>inst-meta.json.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">4.3 MB</td><td><code>inst.gz.json.20261029-69300a</code></td><td><code>inst.gz.json.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">32 KB</td><td><code>inst-labels.dir.20261029-69300a</code></td><td><code>inst-labels.dir.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">380 KB</td><td><code>inst-labels.bin.20261029-69300a</code></td><td><code>inst-labels.bin.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">256 KB</td><td><code>inst-alias.json.20261029-69300a</code></td><td><code>inst-alias.json.20261029-69300a.json</code></td></tr>
+    <tr><td class="num">6.1 MB</td><td><code>inst-alias.bin.20261029-69300a</code></td><td><code>inst-alias.bin.20261029-69300a.json</code></td></tr>
+  </tbody>
+</table></div>
+<p class="cap">Plus the manifest: <code>current.json</code> is already readable, and its <code>"v"</code> becomes <code>"20261029-69300a.json"</code>, as Democracy's Library's does. The engine needs no change for these.</p>
+
+<h3>Search by meaning: 8 files and the model, about 33.7 GB</h3>
+<div class="frame"><table>
+  <thead><tr><th class="num">Size</th><th>Now</th><th>Renamed</th></tr></thead>
+  <tbody>
+    <tr><td class="num">12.6 MB</td><td><code>centroids.f16</code></td><td><code>centroids.f16.json</code></td></tr>
+    <tr><td class="num">66 KB</td><td><code>cell.dir</code></td><td><code>cell.dir.json</code></td></tr>
+    <tr><td class="num">14.0 GB</td><td><code>cells.bin</code></td><td><code>cells.bin.json</code></td></tr>
+    <tr><td class="num">3.6 GB</td><td><code>cell-codes.bin</code></td><td><code>cell-codes.bin.json</code></td></tr>
+    <tr><td class="num">145 MB</td><td><code>cell-facets.bin</code></td><td><code>cell-facets.bin.json</code></td></tr>
+    <tr><td class="num">5.6 GB</td><td><code>docs.bin</code></td><td><code>docs.bin.json</code></td></tr>
+    <tr><td class="num">145 MB</td><td><code>vsnip.dir</code></td><td><code>vsnip.dir.json</code></td></tr>
+    <tr><td class="num">10.0 GB</td><td><code>vsnip.bin</code></td><td><code>vsnip.bin.json</code></td></tr>
+    <tr><td class="num">118 MB</td><td><code>Xenova/multilingual-e5-small/onnx/model_quantized.onnx</code></td><td><code>Xenova/multilingual-e5-small/onnx/model_quantized.onnx.json</code></td></tr>
+  </tbody>
+</table></div>
+<p class="cap">These names have no version, so the engine also needs a small change to read them with <code>.json</code> on the end.</p>
+
+<h3>Not read by the demo</h3>
+<ul class="prose">
+  <li><strong>New in this version, unused so far:</strong> <code>details.*</code> (13.2 GB), <code>dkeys.*</code> (2.9 GB), <code>enh.bin</code>, <code>facets.bin</code>, <code>facets-totals.json</code>, <code>index-meta.json</code>, <code>inst.bin</code>, <code>thumb.dir</code>, <code>thumb.items.json</code>. Rename them only once something reads them.</li>
+  <li><strong>Stale:</strong> <code>txt2vrow.bin</code> and <code>vrow2txt.bin</code>, the meaning-to-words map from an older build.</li>
+  <li><strong>Already readable:</strong> <code>current.json</code>, <code>versions.json</code>, <code>ivf-meta.json</code>, <code>cell-codes-meta.json</code>, <code>cell-facets-meta.json</code>, <code>vec-xref-meta.json</code>, and the model's <code>config.json</code>, <code>tokenizer.json</code>, <code>tokenizer_config.json</code> and <code>special_tokens_map.json</code>.</li>
+  <li><strong>Older versions</strong> (<code>20261019-c2d06f</code>, <code>20261022-e83dcd</code>, <code>20261026-5e5902</code>) stay as they are; the demo reads only the current one.</li>
+</ul>
+</section>
+
 <section id="links">
 <h2>More detail</h2>
 <ul class="prose">
