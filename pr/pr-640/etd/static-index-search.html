@@ -143,17 +143,31 @@ table.lessons td { min-width: 12rem; }
 .shelf { margin: 0.4rem 0 0; padding-left: 1.2rem; max-width: 68ch; display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 0.2rem 1.6rem; }
 .shelf li + li { margin-top: 0; }
 @media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s ease; } .card:hover { transform: rotate(-0.6deg) translateY(-2px); } }
+
+/* The docs bar: the same strip of links on every Static Index Search document. */
+.docbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.9rem; padding: 0.55rem 0.8rem; margin-bottom: 1.6rem; background: var(--raised); border: 1px solid var(--rule); border-radius: 6px; font-size: 0.85rem; }
+.docbar__label { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.7rem; color: var(--ink-2); }
+.docbar ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.docbar li + li { margin-top: 0; }
+.docbar a, .docbar [aria-current] { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; text-decoration: none; }
+.docbar a { color: var(--link); }
+.docbar a:hover { text-decoration: underline; }
+.docbar a:focus-visible { outline: 2px solid var(--link); outline-offset: 1px; }
+.docbar [aria-current] { color: var(--ink); font-weight: 700; border: 1px solid var(--rule); }
 </style>
 </head>
 <body>
 
 <div class="wrap">
+<nav class="docbar" aria-label="Static Index Search documents">
+  <span class="docbar__label">Static Index Search docs</span>
+  <ul><li><a href="https://claude.ai/artifact/J5dJ2kwECbEEMruz7dn6xY">Overview</a></li><li><span aria-current="page">Full proposal</span></li><li><a href="https://claude.ai/artifact/3AGj7wc1JShpWYcWSXp5ah">Collection Fit Check</a></li><li><a href="https://claude.ai/artifact/YXrQwfadeMGfhoUukqPgxf">Deriver design</a></li><li><a href="https://claude.ai/artifact/Q6k7VE1R5xZmp9vZg17RxF">Deriver deck</a></li></ul>
+</nav>
 <header class="prose">
   <p class="meta"><a href="../?search_service=etd">← Back to the ETD search demo</a></p>
   <p class="overline">Internet Archive · Proposal for technical and product managers · draft</p>
   <h1>Static Index Search</h1>
   <p class="lede">We propose a standard way to make any archive.org item searchable in the browser, with no search servers. An item publishes a few index files; a shared engine reads small slices of them; archive.org's existing search UI shows the results. The ETD theses search proves it at 26 million records.</p>
-  <p class="meta short-link">Short on time? <a href="https://claude.ai/artifact/J5dJ2kwECbEEMruz7dn6xY">Read the one-page overview</a>.</p>
   <p class="meta">Updated 30 October 2026 · Isa, with the ETD port in <code>iaux-collection-browser</code> · numbers measured on the live <code>etd-search</code> item</p>
 </header>
 
@@ -222,6 +236,7 @@ table.lessons td { min-width: 12rem; }
     <li><a href="#appendix">For engineers</a></li>
     <li><a href="#lessons">What didn't pan out</a></li>
     <li><a href="#deriver">The derive step</a></li>
+    <li><a href="#sources">More sources, local files too</a></li>
   </ol>
   </div>
 </nav>
@@ -395,7 +410,7 @@ flowchart TD
     <li class="card">
       <span class="tag">&#9733; Top pick</span>
       <h3>Search several items at once</h3>
-      <p>ETD, Democracy's Library and theses-and-dissertations in one result list, scores merged by rank.</p>
+      <p>ETD, Democracy's Library and theses-and-dissertations in one result list, scores merged by rank. Plan: <a href="#sources">Appendix K</a>.</p>
       <p class="builds"><span>Builds on</span> the multi-part index design for freshness</p>
     </li>
     <li class="card">
@@ -731,6 +746,8 @@ flowchart TD
     <li><strong>Change rate:</strong> the spread of <code>addeddate</code>.</li>
   </ol>
 </div>
+
+<p class="cap">The same checks as a screen: <a href="https://claude.ai/artifact/3AGj7wc1JShpWYcWSXp5ah">Collection Fit Check</a> (a design frame).</p>
 
 <h3>Worked example: theses-and-dissertations</h3>
 <div class="prose">
@@ -1132,6 +1149,66 @@ flowchart TD
   <li><code>www/common/Deriver/Conditions.inc</code>: rules can be gated on <code>collection</code>, <code>format</code>, <code>md:*</code>, <code>source_md:*</code>, <code>!</code> and <code>OR</code>.</li>
   <li><code>www/common/Tasks/Service.inc:66</code>: the Tasks API allows credentialed requests from archive.org origins; <code>TaskPerms.inc:97-102</code>: <code>derive.php</code> needs edit rights on the item.</li>
 </ul>
+</section>
+
+<section id="sources" class="appendix">
+<h2>Appendix K: More sources, local files too</h2>
+<div class="prose">
+  <p>Power the demo from more than archive.org items, such as a vector index on someone's own computer, and search several sources at once. Design only; no code yet.</p>
+  <h3>Today</h3>
+  <ul>
+    <li>Both engines read an index as files at a base URL, with HTTP Range reads. The text engine also accepts an injected <code>fetch</code>.</li>
+    <li>The vector engine runs in a worker that gets only a URL (<code>{ type: 'init', baseUrl, model }</code>, <code>src/etd/engine/vector/vector-searcher.ts</code>), so nothing can be injected across that boundary.</li>
+    <li>Text and vector share one base URL per item; <code>etd_base_url</code> already swaps the whole source.</li>
+    <li>One source at a time. "Meaning" is turned off when the source has no <code>ivf-meta.json</code>.</li>
+  </ul>
+</div>
+<h3>The flow</h3>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  P["Control panel:<br/>pick or add sources"] --> A["archive.org item<br/>etd-search, dl-search"]
+  P --> D["Dev server folder<br/>/local-index/name/"]
+  P --> F["Folder picked<br/>in the browser"]
+  A --> R["Source: text files<br/>+ optional vector files"]
+  D --> R
+  F --> R
+  R --> T["Text engine<br/>ranks by words"]
+  R -->|"has a vector index"| V["Vector engine in a worker<br/>ranks by meaning"]
+  T --> M["Search across sources:<br/>merge, rank, show"]
+  V --> M
+</pre></div>
+<p class="cap">Each loaded source gets its own text engine, plus a vector engine when it has a vector index.</p>
+
+<h3>Ways to load local files</h3>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Option</th><th>How</th><th>Works on</th><th>Effort</th></tr></thead>
+  <tbody>
+    <tr><td><strong>A. Dev server folders</strong></td><td><code>.env.local</code> lists <code>name=path</code>; the dev server serves each at <code>/local-index/&lt;name&gt;/</code> with Range support, through a small middleware like offshoot's BookReader assets plugin</td><td>Local dev only</td><td><span class="pill ok">Small</span></td></tr>
+    <tr><td><strong>B. Open a folder in the panel</strong></td><td>A folder picker or drag and drop; the demo reads by slicing the picked files, with no upload</td><td>Anywhere, review apps included</td><td><span class="pill warn">Medium</span> the vector worker must take the files, not just a URL</td></tr>
+    <tr><td><strong>C. A separate local file server</strong></td><td><code>npx http-server --cors</code></td><td>Local only</td><td><span class="pill warn">Tiny</span> but an https page can't fetch http (mixed content), so A is better</td></tr>
+  </tbody>
+</table></div>
+
+<div class="prose">
+  <h3>Many sources</h3>
+  <ul>
+    <li><strong>Separate text and vector sources,</strong> for example an <code>etd_vec_base_url</code>, so a local vector store can pair with etd-search's text index.</li>
+    <li><strong>One source list</strong> in place of the fixed item buttons: each entry is a label, a text base and an optional vector base, built from archive.org items, dev-server folders (listed through <code>/local-index/index.json</code>) and folders picked during the visit.</li>
+    <li><strong>Search across sources:</strong> each source ranks its own results, and their scores don't compare. Start by interleaving the lists by rank, with a source label on each result; then consider grouping per source, or re-scoring everything with one ranker (best quality, most work).</li>
+  </ul>
+  <h3>Phases</h3>
+  <ol>
+    <li>Option A, plus separate text and vector sources. Enough for laptop demos.</li>
+    <li>The source list, plus interleaved search across sources.</li>
+    <li>Option B, only if reviewers need their own files on review apps.</li>
+  </ol>
+  <h3>Open</h3>
+  <ul>
+    <li>Is the local index a full index, or only a vector store to pair with etd-search's text?</li>
+    <li>Is it just Isa on local dev, or reviewers too?</li>
+  </ul>
+  <p class="cap">Related: dl-search's index files end in <code>.json</code>, so archive.org lets other sites read them, Range requests included. etd-search's file names end in their version (<code>dict.dir.20261026-5e5902</code>), so they get no CORS.</p>
+</div>
 </section>
 </div>
 
