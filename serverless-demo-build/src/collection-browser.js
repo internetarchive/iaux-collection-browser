@@ -10,6 +10,7 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { localized, msg } from '@lit/localize';
 import { SearchType, } from '@internetarchive/search-service';
+import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
 import '@internetarchive/infinite-scroller';
 import { SortField, getDefaultSelectedFacets, sortOptionFromAPIString, SORT_OPTIONS, defaultProfileElementSorts, defaultFacetDisplayOrder, tvFacetDisplayOrder, defaultSortAvailability, favoritesSortAvailability, tvSortAvailability, } from './models';
 import { validExtraFacetGroups, withExtraFacetOrder, } from './utils/extra-facet-groups';
@@ -346,6 +347,29 @@ let CollectionBrowser = class CollectionBrowser extends LitElement {
         }
     }
     /**
+     * Fetches the results shown again, in place: the pages loaded so far and
+     * the facets, without resetting to placeholder tiles. Called on its own
+     * when the search service says its results got better.
+     */
+    refreshResults() {
+        return this.dataSource.refreshResults();
+    }
+    /**
+     * Listens to a search service that refines its results after serving
+     * them (`onResultsChanged`, e.g. a search by meaning), to show the better
+     * ones as they come.
+     */
+    listenForRefinedResults() {
+        this.stopRefinedResults?.();
+        this.stopRefinedResults = undefined;
+        const service = this.searchService;
+        if (typeof service?.onResultsChanged === 'function') {
+            this.stopRefinedResults = service.onResultsChanged(() => {
+                this.refreshResults();
+            });
+        }
+    }
+    /**
      * Go to the given page of results
      *
      * @param pageNumber
@@ -567,8 +591,16 @@ let CollectionBrowser = class CollectionBrowser extends LitElement {
                 !hasQuery && isCollection ? 'empty-collection' : 'no-results';
         }
         if (this.dataSource.queryErrorMessage) {
-            this.placeholderType =
-                !hasQuery && isCollection ? 'collection-error' : 'query-error';
+            if (!hasQuery && isCollection) {
+                this.placeholderType = 'collection-error';
+            }
+            else if (this.dataSource.queryErrorType === SearchServiceErrorType.networkError) {
+                // The service didn't answer: nothing to do with the query.
+                this.placeholderType = 'service-error';
+            }
+            else {
+                this.placeholderType = 'query-error';
+            }
         }
     }
     /**
@@ -1465,6 +1497,8 @@ let CollectionBrowser = class CollectionBrowser extends LitElement {
         }
     }
     updated(changed) {
+        if (changed.has('searchService'))
+            this.listenForRefinedResults();
         if (changed.has('placeholderType') && this.placeholderType === null) {
             if (!this.leftColIntersectionObserver) {
                 this.setupLeftColumnScrollListeners();
@@ -1587,6 +1621,8 @@ let CollectionBrowser = class CollectionBrowser extends LitElement {
         this.setupResizeObserver();
     }
     disconnectedCallback() {
+        this.stopRefinedResults?.();
+        this.stopRefinedResults = undefined;
         if (this.resizeObserver) {
             this.disconnectResizeObserver(this.resizeObserver);
         }

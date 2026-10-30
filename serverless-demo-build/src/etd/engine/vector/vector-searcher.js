@@ -1,10 +1,13 @@
 import { loadEmbedder } from './embedder';
 import { loadVectorIndex, scanVectors } from './scan';
 import { VectorStoreFiles } from './vector-files';
+import { HttpError } from '../http-error';
 /** Runs searches where it's called: in a worker, or the page. */
 export class InlineVectorSearcher {
     constructor(options) {
         this.options = options;
+        /** The store's retries already counted in a search's result. */
+        this.reportedRetries = 0;
     }
     preload() {
         return Promise.all([this.loadIndex(), this.loadEmbed()]).then(() => { });
@@ -25,8 +28,14 @@ export class InlineVectorSearcher {
         const embedded = performance.now();
         options.signal?.throwIfAborted();
         const scan = await scanVectors(index, query, options);
+        // Every retry since the last search reported: the first search also
+        // counts those loading the store (its manifest, centroids, cell.dir).
+        const { stats } = index.files;
+        const retries = stats.retries - this.reportedRetries;
+        this.reportedRetries = stats.retries;
         return {
             ...scan,
+            retries,
             embedMs: embedded - embedding,
             loadMs: embedding - loading,
         };
@@ -41,7 +50,12 @@ export class InlineVectorSearcher {
     }
     loadEmbed() {
         if (!this.embed) {
-            this.options.onModel?.({ state: 'loading', loaded: 0, total: 0 });
+            this.options.onModel?.({
+                state: 'loading',
+                loaded: 0,
+                total: 0,
+                retries: 0,
+            });
             this.embed = this.options.embed().then(embed => {
                 this.options.onModel?.({ state: 'ready' });
                 return embed;
@@ -76,10 +90,7 @@ export function serveVectorSearcher(scope) {
                 },
                 embed: () => loadEmbedder({
                     ...model,
-                    onProgress: (loaded, total) => post({
-                        type: 'model',
-                        model: { state: 'loading', loaded, total },
-                    }),
+                    onProgress: progress => post({ type: 'model', model: { state: 'loading', ...progress } }),
                 }),
                 onModel: state => post({ type: 'model', model: state }),
             });
@@ -101,6 +112,12 @@ export function serveVectorSearcher(scope) {
                     ...data.options,
                     signal: controller.signal,
                     onProgress: progress => post({ type: 'progress', id, progress }),
+                    onEarly: data.early
+                        ? early => post({ type: 'early', id, early }, [
+                            early.dids.buffer,
+                            early.scores.buffer,
+                        ])
+                        : undefined,
                 });
                 const transfer = [
                     scan.dids.buffer,
@@ -119,6 +136,9 @@ export function serveVectorSearcher(scope) {
                     id,
                     message: err instanceof Error ? err.message : String(err),
                     aborted: controller.signal.aborted,
+                    // Errors cross as text: say what kind it was, for the page.
+                    status: err instanceof HttpError ? err.status : undefined,
+                    network: err instanceof TypeError,
                 });
             }
             finally {
@@ -150,15 +170,16 @@ export class WorkerVectorSearcher {
             if (message.type === 'progress') {
                 job.onProgress?.(message.progress);
             }
+            else if (message.type === 'early') {
+                job.onEarly?.(message.early);
+            }
             else if (message.type === 'result') {
                 this.pending.delete(message.id);
                 job.resolve(message.scan);
             }
             else {
                 this.pending.delete(message.id);
-                job.reject(message.aborted
-                    ? new DOMException(message.message, 'AbortError')
-                    : new Error(message.message));
+                job.reject(workerError(message));
             }
         });
         worker.postMessage(init);
@@ -168,19 +189,30 @@ export class WorkerVectorSearcher {
         return this.modelReady;
     }
     search(text, options = {}) {
-        const { signal, onProgress, ...scanOptions } = options;
+        const { signal, onProgress, onEarly, ...scanOptions } = options;
         signal?.throwIfAborted();
         const id = this.nextId;
         this.nextId += 1;
         return new Promise((resolve, reject) => {
-            this.pending.set(id, { resolve, reject, onProgress });
+            this.pending.set(id, { resolve, reject, onProgress, onEarly });
             signal?.addEventListener('abort', () => this.worker.postMessage({ type: 'cancel', id }));
             this.worker.postMessage({
                 type: 'search',
                 id,
                 text,
                 options: scanOptions,
+                early: !!onEarly,
             });
         });
     }
+}
+/** The worker's error as the kind it was thrown as. */
+export function workerError(message) {
+    if (message.aborted)
+        return new DOMException(message.message, 'AbortError');
+    if (message.status)
+        return new HttpError(message.message, message.status);
+    if (message.network)
+        return new TypeError(message.message);
+    return new Error(message.message);
 }

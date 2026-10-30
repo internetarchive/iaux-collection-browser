@@ -169,6 +169,120 @@ describe('ServerlessSearchService', () => {
       const result = await service.search({ query: 'rivers', rows: 10 });
       expect(result.error?.type).to.equal(SearchServiceErrorType.networkError);
     });
+
+    it('reports a server failing (5xx) as a network error, not the query', async () => {
+      source.failNextRead = Object.assign(new Error('cells.bin: HTTP 502'), {
+        status: 502,
+      });
+      const result = await service.search({ query: 'rivers', rows: 10 });
+      expect(result.error?.type).to.equal(SearchServiceErrorType.networkError);
+      expect(result.error?.message).to.equal('cells.bin: HTTP 502');
+    });
+
+    it("reports a missing file (4xx) as the search engine's error", async () => {
+      source.failNextRead = Object.assign(new Error('dict.bin: HTTP 404'), {
+        status: 404,
+      });
+      const result = await service.search({ query: 'rivers', rows: 10 });
+      expect(result.error?.type).to.equal(
+        SearchServiceErrorType.searchEngineError,
+      );
+    });
+  });
+
+  describe('refined results', () => {
+    const hitsOf = async (query: string) =>
+      identifiers(
+        (await service.search({ query, rows: 3, aggregations: { omit: true } }))
+          .success!.response.results,
+      );
+
+    it('serves the better answer once it comes, and says the results changed', async () => {
+      let refine!: (books: MockBook[]) => void;
+      source.refineNext = new Promise(resolve => {
+        refine = resolve;
+      });
+      let changed = 0;
+      service.onResultsChanged(() => {
+        changed += 1;
+      });
+
+      expect(await hitsOf('rivers')).to.deep.equal([
+        'book-1',
+        'book-2',
+        'book-3',
+      ]);
+      refine(mockBooks(120).reverse());
+      await aTimeout(0);
+
+      expect(changed).to.equal(1);
+      expect(await hitsOf('rivers')).to.deep.equal([
+        'book-120',
+        'book-119',
+        'book-118',
+      ]);
+      // Still one query: the better answer replaced the first, unasked.
+      expect(source.queryCalls).to.have.length(1);
+    });
+
+    it('says nothing about a search that is no longer the latest', async () => {
+      let refine!: (books: MockBook[]) => void;
+      source.refineNext = new Promise(resolve => {
+        refine = resolve;
+      });
+      let changed = 0;
+      service.onResultsChanged(() => {
+        changed += 1;
+      });
+      await hitsOf('rivers');
+      await hitsOf('book'); // a newer search
+
+      refine(mockBooks(120).reverse());
+      await aTimeout(0);
+
+      expect(changed).to.equal(0);
+      // Its results are still the better ones, should it be searched again.
+      expect(await hitsOf('rivers')).to.deep.equal([
+        'book-120',
+        'book-119',
+        'book-118',
+      ]);
+    });
+
+    it('keeps the first answer when refining fails', async () => {
+      source.refineNext = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('cells.bin: HTTP 502')));
+      });
+      let changed = 0;
+      service.onResultsChanged(() => {
+        changed += 1;
+      });
+      await hitsOf('rivers');
+      await aTimeout(10);
+
+      expect(changed).to.equal(0);
+      expect(await hitsOf('rivers')).to.deep.equal([
+        'book-1',
+        'book-2',
+        'book-3',
+      ]);
+    });
+
+    it('stops telling a listener that stopped listening', async () => {
+      let refine!: (books: MockBook[]) => void;
+      source.refineNext = new Promise(resolve => {
+        refine = resolve;
+      });
+      let changed = 0;
+      const stop = service.onResultsChanged(() => {
+        changed += 1;
+      });
+      await hitsOf('rivers');
+      stop();
+      refine(mockBooks(3));
+      await aTimeout(0);
+      expect(changed).to.equal(0);
+    });
   });
 
   describe('itemDetails', () => {

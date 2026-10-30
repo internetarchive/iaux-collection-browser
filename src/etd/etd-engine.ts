@@ -100,6 +100,13 @@ export interface EtdFacetCounts {
   facets: Record<string, Record<string, number>>;
 }
 
+/** Some of a query's matches, picked at random, with how many there were. */
+export interface EtdSample {
+  records: EtdRecord[];
+  /** How many matches they were picked from: all of them when equal. */
+  of: number;
+}
+
 /**
  * Optional cancellation for any engine call.
  */
@@ -117,6 +124,13 @@ export interface EtdQuery {
   readonly result: EtdQueryResult;
 
   /**
+   * When this is a first answer from part of the work (search by meaning,
+   * from the first cells): the final answer, or undefined if none follows.
+   * A first answer's facets wait for the final one.
+   */
+  readonly refined?: Promise<EtdQuery | undefined>;
+
+  /**
    * Reads up to the next `count` records in rank order. Returns fewer when
    * the query has fewer left, and an empty array once it is exhausted.
    * A call that rejects (including on abort) must not advance the cursor.
@@ -125,6 +139,14 @@ export interface EtdQuery {
 
   /** Facet counts across the query's matching records. */
   facets(options?: EtdCallOptions): Promise<EtdFacetCounts>;
+
+  /**
+   * Records of up to `count` of the query's matches, picked at random when
+   * there are more, for describing the matches rather than showing them.
+   * They're read light: a url may be cut short, and there's no snippet.
+   * Optional: for tools like the demo's found-facets drawer.
+   */
+  sample?(count: number, options?: EtdCallOptions): Promise<EtdSample>;
 
   /**
    * A record's 1-based place in the ranking, or undefined when it isn't

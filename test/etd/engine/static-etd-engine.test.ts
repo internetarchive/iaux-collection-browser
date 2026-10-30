@@ -673,4 +673,78 @@ describe('StaticEtdEngine', () => {
     // Top tile: 'Carbon flux under {{{sea}}}sonal {{{sea}}} {{{ice}}} & leads.'
     expect(marks().slice(0, 3)).to.deep.equal(['sea', 'sea', 'ice']);
   });
+
+  describe('sample', () => {
+    it('reads every match, light, when there are no more than asked', async () => {
+      const { engine, index } = await engineOver();
+      const query = await engine.query('sea ice', {});
+      const before = index.requests.length;
+
+      const sample = await query.sample!(10);
+
+      expect(sample.of).to.equal(3);
+      expect(sample.records.map(r => r.docId).sort()).to.deep.equal([1, 2, 3]);
+      // Stubs only: no abstract, and the url as the stub has it.
+      const medieval = sample.records.find(r => r.docId === 3)!;
+      expect(medieval).to.deep.include({
+        title: 'Medieval trade routes',
+        creators: 'Ice, Mara',
+        date: '2001',
+        domain: 'repository.example.edu',
+      });
+      expect(medieval.snippet).to.be.undefined;
+      const fullUrl = THESES[2].url!;
+      expect(fullUrl.startsWith(medieval.url)).to.be.true;
+      expect(medieval.url.length).to.be.below(fullUrl.length);
+      const urls = index.requests.slice(before).map(r => r.url);
+      expect(urls).to.not.be.empty;
+      expect(urls.every(url => url.includes('stubs.bin'))).to.be.true;
+    });
+
+    it('picks at random among the matches when there are more', async () => {
+      const { engine } = await engineOver();
+      const query = await engine.query('sea ice', {});
+      const seen = new Set<number>();
+      for (let run = 0; run < 40; run += 1) {
+        const sample = await query.sample!(2);
+        expect(sample.of).to.equal(3);
+        const ids = sample.records.map(r => r.docId);
+        expect(new Set(ids).size).to.equal(2);
+        ids.forEach(id => seen.add(id));
+      }
+      // Not just the top two: each match gets picked.
+      expect([...seen].sort()).to.deep.equal([1, 2, 3]);
+    });
+
+    it('samples only the matches passing the filters', async () => {
+      const { engine } = await engineOver();
+      const query = await engine.query('sea ice', {
+        facets: { language: { include: ['fr'] } },
+      });
+      const sample = await query.sample!(10);
+      expect(sample.of).to.equal(1);
+      expect(titles(sample.records)).to.deep.equal(['Medieval trade routes']);
+    });
+
+    it('samples a filter-only listing from everything it counts', async () => {
+      const { engine } = await engineOver();
+      const query = await engine.query('', {
+        facets: { language: { include: ['en'] } },
+      });
+      const sample = await query.sample!(10);
+      expect(sample.of).to.equal(2);
+      expect(titles(sample.records).sort()).to.deep.equal([
+        'Glacier dynamics in Greenland',
+        'Sea ice and the Arctic carbon budget',
+      ]);
+    });
+
+    it('has nothing to sample for no words and no filters', async () => {
+      const { engine } = await engineOver();
+      expect(await (await engine.query('', {})).sample!(10)).to.deep.equal({
+        records: [],
+        of: 0,
+      });
+    });
+  });
 });

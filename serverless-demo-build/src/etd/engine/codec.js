@@ -66,13 +66,3 @@ export function readVarint(bytes, offset) {
         scale *= 128;
     }
 }
-/**
- * Reads a directory entry: two little-endian u64 offsets, [start, end).
- */
-export function readOffsetPair(bytes) {
-    const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-    return [
-        Number(view.getBigUint64(0, true)),
-        Number(view.getBigUint64(8, true)),
-    ];
-}

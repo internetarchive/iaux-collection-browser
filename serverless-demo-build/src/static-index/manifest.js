@@ -4,7 +4,8 @@
  *
  * Two halves:
  * - the **manifest** is published by the item, next to its index files, and
- *   says what's in them: fields, record layout, facet columns;
+ *   says what's in them: id spaces, records, facet columns, and per search
+ *   its fields, or its vectors and the model that made them;
  * - the **config** is held by the client, and says how to search and show
  *   it: which record fields make a hit, which facets to show and how.
  *

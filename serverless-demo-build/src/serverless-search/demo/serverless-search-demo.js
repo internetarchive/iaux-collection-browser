@@ -19,6 +19,9 @@ import '../../etd/demo/etd-vector-status';
 import '../../etd/compare/etd-compare-panel';
 import { observeFacets, } from '../../etd/demo/observe-facets';
 import '../../etd/demo/etd-facet-summary';
+import '../../etd/demo/etd-found-facets';
+import { etdRequestFromParams } from '../../etd/etd-query';
+import '../../etd/demo/etd-file-check';
 import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
 import { DEFAULT_ETD_ITEM, checkItemIndex, etdIndexUrls, hasVectorIndex, parseItemIdentifier, } from '../../etd/demo/item-index';
 /**
@@ -144,19 +147,34 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
                 engine: this.vectorEngine(),
                 kind: ETD_VECTOR_SEARCH,
             })
-            : new EtdSearchService({
-                engine: (this.etdEngine ??= new StaticEtdEngine({
-                    baseUrl: this.etdIndex.baseUrl,
-                    facets: ETD_FACETS,
-                })),
-            });
+            : new EtdSearchService({ engine: this.textEngine() });
         const observed = observeFacets(service, facets => {
             // A slow facets request from the other ranking can land after a switch.
             if (this.searchService === observed)
                 this.etdFacets = facets;
+        }, params => {
+            if (this.searchService !== observed)
+                return;
+            this.etdRequest = etdRequestFromParams(params, rank === 'vector' ? ETD_VECTOR_FACETS : ETD_FACETS);
         });
         this.etdServices[rank] = observed;
         return observed;
+    }
+    /** The text engine, built on first use. */
+    textEngine() {
+        if (this.etdEngine)
+            return this.etdEngine;
+        this.etdEngine = new StaticEtdEngine({
+            baseUrl: this.etdIndex.baseUrl,
+            facets: ETD_FACETS,
+        });
+        this.etdEngine
+            .fileCheck()
+            .then(check => {
+            this.etdTextFileCheck = check;
+        })
+            .catch(() => { });
+        return this.etdEngine;
     }
     /**
      * The vector engine, built on first use. Its search runs in a worker
@@ -180,6 +198,8 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
                     new Worker(new URL('../../etd/engine/vector/vector-worker.ts', import.meta.url), { type: 'module' }),
             modelParallel: number('etd_model_parallel'),
             scan: { parallel: number('etd_vec_parallel') },
+            // `etd_vec_progressive=0` waits for the whole scan, to compare timings.
+            progressive: params.get('etd_vec_progressive') !== '0',
             onModel: model => {
                 this.etdModel = model;
             },
@@ -187,6 +207,12 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
                 this.etdVectorSearch = search;
             },
         });
+        this.etdVectorEngine
+            .fileCheck()
+            .then(check => {
+            this.etdVectorFileCheck = check;
+        })
+            .catch(() => { });
         return this.etdVectorEngine;
     }
     /** Switches the ranking, keeping the query, and says so in the url. */
@@ -202,6 +228,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         window.history.replaceState(window.history.state, '', url.href);
         this.etdRank = rank;
         this.etdFacets = undefined;
+        this.etdRequest = undefined;
         this.searchService = this.etdService(rank);
     }
     /**
@@ -352,6 +379,16 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
           .facets=${this.etdFacets}
         ></etd-facet-summary>
+        <etd-found-facets
+          .engine=${this.etdRank === 'vector'
+            ? this.etdVectorEngine
+            : this.etdEngine}
+          .request=${this.etdRequest}
+        ></etd-found-facets>
+        <etd-file-check
+          .text=${this.etdTextFileCheck}
+          .vector=${this.etdVectorFileCheck}
+        ></etd-file-check>
         ${this.etdCompare
             ? html `<etd-compare-panel
               .engine=${this.etdRank === 'vector'
@@ -831,7 +868,8 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
       display: none;
     }
 
-    #etd-controls etd-facet-summary {
+    #etd-controls etd-facet-summary,
+    #etd-controls etd-file-check {
       margin: 0.75rem 0;
     }
   `; }
@@ -853,6 +891,12 @@ __decorate([
 ], ServerlessSearchDemo.prototype, "etdRank", void 0);
 __decorate([
     state()
+], ServerlessSearchDemo.prototype, "etdTextFileCheck", void 0);
+__decorate([
+    state()
+], ServerlessSearchDemo.prototype, "etdVectorFileCheck", void 0);
+__decorate([
+    state()
 ], ServerlessSearchDemo.prototype, "etdModel", void 0);
 __decorate([
     state()
@@ -866,6 +910,9 @@ __decorate([
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "etdFacets", void 0);
+__decorate([
+    state()
+], ServerlessSearchDemo.prototype, "etdRequest", void 0);
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "etdControlsHidden", void 0);

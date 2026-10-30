@@ -46,11 +46,15 @@ export class EtdSearchSource {
         return etdRequestKey(request);
     }
     async query(request, options) {
-        const query = await this.engine.query(request.text, request.filters, options);
+        return this.sourceQuery(await this.engine.query(request.text, request.filters, options));
+    }
+    /** An engine query as a source query, and its refinements likewise. */
+    sourceQuery(query) {
         return {
             result: query.result,
             next: (count, nextOptions) => query.next(count, nextOptions),
             aggregations: async (keys, size, aggOptions) => etdAggregationsJson(await query.facets(aggOptions), keys, size, this.kind.facets),
+            refined: query.refined?.then(next => next && this.sourceQuery(next)),
         };
     }
     async record(identifier, options) {

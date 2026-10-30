@@ -256,7 +256,11 @@ let EtdComparePanel = class EtdComparePanel extends LitElement {
         }
     }
     async searchOurs(engine, text, signal) {
-        const results = await engine.query(text, {}, { signal });
+        let results = await engine.query(text, {}, { signal });
+        // Compare the final ranking, not a first answer from part of a scan.
+        for (let next = await results.refined; next; next = await next.refined) {
+            results = next;
+        }
         const records = await results.next(this.depth, { signal });
         return {
             total: results.result.total,

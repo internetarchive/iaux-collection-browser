@@ -15,10 +15,30 @@
  *   requests at once, which archive.org serves much faster than one stream.
  */
 
-export const TRANSFORMERS_URL =
-  'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2/dist/transformers.min.js';
+import { modelLibraryUrl } from '../../../static-index/model';
+import { HttpError } from '../http-error';
+import { retryingFetch } from '../retrying-fetch';
+
+/** The live page's build of transformers.js, which embedded the store. */
+export const MODEL_LIBRARY = {
+  name: '@huggingface/transformers',
+  version: '3.0.2',
+};
+
+export const TRANSFORMERS_URL = modelLibraryUrl(MODEL_LIBRARY)!;
 
 export const MODEL_ID = 'Xenova/multilingual-e5-small';
+
+/**
+ * How queries are embedded, as the store's build embedded abstracts: e5
+ * wants a "query: " prefix, mean pooling, and normalised vectors.
+ */
+export const QUERY_EMBEDDING = {
+  dtype: 'q8',
+  queryPrefix: 'query: ',
+  pooling: 'mean',
+  normalize: true,
+} as const;
 
 const MODEL_CACHE = 'etd-model-cache';
 
@@ -35,9 +55,18 @@ export interface EmbedderOptions {
    * as one stream, as the live page does.
    */
   parallel?: number;
-  /** Bytes downloaded so far, of the model files' total once known. */
-  onProgress?: (loaded: number, total: number) => void;
+  /** As the download goes, and on each retry. */
+  onProgress?: (progress: ModelProgress) => void;
   fetch?: typeof fetch;
+}
+
+/** How a model download is going. */
+export interface ModelProgress {
+  /** Bytes downloaded so far, of the model files' total once known. */
+  loaded: number;
+  total: number;
+  /** Requests asked again after a 5xx or no answer. */
+  retries: number;
 }
 
 /** The bits of transformers.js used here. */
@@ -135,7 +164,10 @@ export async function fetchInParallel(
         headers: { Range: `bytes=${from}-${to - 1}` },
       });
       if (response.status !== 206) {
-        throw new Error(`${url}: HTTP ${response.status} for a range`);
+        throw new HttpError(
+          `${url}: HTTP ${response.status} for a range`,
+          response.status,
+        );
       }
       // Read as a stream, so progress moves as bytes arrive.
       const reader = response.body!.getReader();
@@ -154,32 +186,15 @@ export async function fetchInParallel(
   return new Response(body, { headers: { 'content-length': String(size) } });
 }
 
-/**
- * Loads transformers.js and the model, and resolves with the embedding
- * function. A failure rejects, and a later call can try again.
- */
-export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
-  const fetchFn = options.fetch ?? fetch.bind(globalThis);
-  const parallel = options.parallel ?? 6;
-  const lib = (await import(
-    /* @vite-ignore */ options.transformersUrl ?? TRANSFORMERS_URL
-  )) as Transformers;
-  const { env } = lib;
-  env.allowRemoteModels = false;
-  env.allowLocalModels = true;
-  env.localModelPath = options.modelBase;
-  env.useBrowserCache = false;
-  env.useCustomCache = true;
-
-  // Progress over every file fetched, summed.
-  let loaded = 0;
-  let total = 0;
-  const onBytes = (bytes: number, size: number) => {
-    loaded += bytes;
-    total += size;
-    options.onProgress?.(loaded, total);
-  };
-  env.customCache = {
+/** The model file cache transformers.js reads through (`env.customCache`). */
+export function modelFileCache(options: {
+  /** Range requests at once for a miss; 1 leaves misses to transformers.js. */
+  parallel: number;
+  fetchFn: typeof fetch;
+  onBytes: (bytes: number, total: number) => void;
+}): NonNullable<Transformers['env']['customCache']> {
+  const { parallel, fetchFn, onBytes } = options;
+  return {
     async match(request) {
       const cache = await openCache();
       const hit = await cache?.match(modelCacheKey(request));
@@ -188,6 +203,12 @@ export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
       // then reads it as if it had been cached.
       const url = typeof request === 'string' ? request : String(request);
       const response = await fetchInParallel(url, parallel, fetchFn, onBytes);
+      // A 404 is a file the model doesn't have: transformers.js knows which
+      // are optional. A server failing (after the retries) fails the load,
+      // rather than transformers.js trying once more without retries.
+      if (response.status >= 500) {
+        throw new HttpError(`${url}: HTTP ${response.status}`, response.status);
+      }
       if (!response.ok) return undefined;
       await cache
         ?.put(modelCacheKey(request), response.clone())
@@ -199,26 +220,62 @@ export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
       await cache?.put(modelCacheKey(request), response).catch(() => {});
     },
   };
+}
+
+/**
+ * Loads transformers.js and the model, and resolves with the embedding
+ * function. A failure rejects, and a later call can try again.
+ */
+export async function loadEmbedder(options: EmbedderOptions): Promise<Embed> {
+  // Progress over every file fetched, summed.
+  const progress: ModelProgress = { loaded: 0, total: 0, retries: 0 };
+  const report = () => options.onProgress?.({ ...progress });
+  const fetchFn = retryingFetch(options.fetch ?? fetch.bind(globalThis), {
+    onRetry: () => {
+      progress.retries += 1;
+      report();
+    },
+  });
+  const parallel = options.parallel ?? 6;
+  const lib = (await import(
+    /* @vite-ignore */ options.transformersUrl ?? TRANSFORMERS_URL
+  )) as Transformers;
+  const { env } = lib;
+  env.allowRemoteModels = false;
+  env.allowLocalModels = true;
+  env.localModelPath = options.modelBase;
+  env.useBrowserCache = false;
+  env.useCustomCache = true;
+
+  const onBytes = (bytes: number, size: number) => {
+    progress.loaded += bytes;
+    progress.total += size;
+    report();
+  };
+  env.customCache = modelFileCache({ parallel, fetchFn, onBytes });
 
   const extractor = await lib.pipeline(
     'feature-extraction',
     options.modelId ?? MODEL_ID,
     {
-      dtype: 'q8',
+      dtype: QUERY_EMBEDDING.dtype,
       // Its own downloads only: with parallel reads, the cache does them.
       progress_callback: event => {
         const e = event as { status?: string; loaded?: number; total?: number };
         if (parallel <= 1 && e.status === 'progress' && e.total) {
-          options.onProgress?.(e.loaded ?? 0, e.total);
+          options.onProgress?.({
+            loaded: e.loaded ?? 0,
+            total: e.total,
+            retries: progress.retries,
+          });
         }
       },
     },
   );
-  // e5 embeds queries with a "query: " prefix, as the store's build did.
   return async text => {
-    const output = await extractor(`query: ${text}`, {
-      pooling: 'mean',
-      normalize: true,
+    const output = await extractor(`${QUERY_EMBEDDING.queryPrefix}${text}`, {
+      pooling: QUERY_EMBEDDING.pooling,
+      normalize: QUERY_EMBEDDING.normalize,
     });
     return new Float32Array(output.data);
   };

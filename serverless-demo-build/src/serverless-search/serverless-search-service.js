@@ -39,6 +39,7 @@ export class ServerlessSearchService {
     constructor(source, options = {}) {
         this.source = source;
         this.cache = new Map();
+        this.resultsListeners = new Set();
         this.cacheSize = Math.max(1, options.cachedQueries ?? 3);
         this.extraFacetGroups = extraFacetGroupsOf(source.facets);
         this.allowFilterOnlySearch = !!source.listsWithoutQuery;
@@ -78,6 +79,10 @@ export class ServerlessSearchService {
         catch (err) {
             return { error: toSearchServiceError(err) };
         }
+    }
+    onResultsChanged(listener) {
+        this.resultsListeners.add(listener);
+        return () => this.resultsListeners.delete(listener);
     }
     async itemDetails(identifier) {
         try {
@@ -140,9 +145,31 @@ export class ServerlessSearchService {
             if (this.cache.get(key) === entry)
                 this.cache.delete(key);
         });
+        query.then(first => this.serveRefinements(key, entry, first), () => { });
         this.cache.set(key, entry);
         this.evictOldest();
         return entry;
+    }
+    /**
+     * Serves each better answer to a request in place of the last, with a
+     * fresh pager, and tells listeners when it's the latest search's. One for
+     * a search that has since been dropped from the cache is ignored.
+     */
+    serveRefinements(key, entry, query) {
+        query.refined?.then(next => {
+            if (!next || this.cache.get(key) !== entry)
+                return;
+            entry.query = Promise.resolve(next);
+            entry.pager = Promise.resolve(new SourcePager(next));
+            this.serveRefinements(key, entry, next);
+            // A Map keeps insertion order, and each use re-inserts: last is latest.
+            if ([...this.cache.keys()].pop() === key) {
+                for (const listener of this.resultsListeners)
+                    listener();
+            }
+        }, 
+        // The first answer stays: refining improves results, it doesn't gate them.
+        () => { });
     }
     evictOldest() {
         while (this.cache.size > this.cacheSize) {
@@ -156,8 +183,12 @@ function toSearchServiceError(err) {
     if (err instanceof SearchServiceError)
         return err;
     const message = err instanceof Error ? err.message : String(err);
+    // A server answering 5xx (after any retries) failed the same way as one
+    // not answering: try again later. A 4xx or anything else is the search's.
+    const status = err?.status;
     const isNetwork = err instanceof TypeError ||
-        (err instanceof DOMException && err.name === 'AbortError');
+        (err instanceof DOMException && err.name === 'AbortError') ||
+        (typeof status === 'number' && status >= 500);
     return new SearchServiceError(isNetwork
         ? SearchServiceErrorType.networkError
         : SearchServiceErrorType.searchEngineError, message, err);

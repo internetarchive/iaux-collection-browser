@@ -314,6 +314,82 @@ describe('Collection Browser', () => {
     expect(follows(slot, facets)).to.be.true;
   });
 
+  describe('a search service that refines its results', () => {
+    /** Answers 'foo, bar' at first, then just 'foo' once refined. */
+    class RefiningSearchService extends MockSearchService {
+      private refined = false;
+
+      private readonly listeners = new Set<() => void>();
+
+      onResultsChanged(listener: () => void): () => void {
+        this.listeners.add(listener);
+        return () => this.listeners.delete(listener);
+      }
+
+      refine(): void {
+        this.refined = true;
+        for (const listener of this.listeners) listener();
+      }
+
+      async search(...args: Parameters<MockSearchService['search']>) {
+        const [params, type] = args;
+        return super.search(
+          this.refined && params.query
+            ? { ...params, query: 'single-result' }
+            : params,
+          type,
+        );
+      }
+    }
+
+    const tileIds = (el: CollectionBrowser) =>
+      el.dataSource.getPage(1).map(tile => tile.identifier);
+
+    it('shows the better results in place, without clearing the tiles first', async () => {
+      const service = new RefiningSearchService({
+        asyncResponse: true,
+        asyncResponseDelay: 50,
+      });
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${service}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'sea ice';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      expect(tileIds(el)).to.deep.equal(['foo', 'bar']);
+
+      service.refine();
+      // While the better results are on their way, the first ones stay.
+      await aTimeout(10);
+      expect(tileIds(el)).to.deep.equal(['foo', 'bar']);
+
+      await waitUntil(() => tileIds(el).length === 1);
+      expect(tileIds(el)).to.deep.equal(['foo']);
+      expect(el.dataSource.totalResults).to.equal(1);
+    });
+
+    it('stops listening to a service it no longer uses', async () => {
+      const service = new RefiningSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${service}
+        ></collection-browser>`,
+      );
+      el.baseQuery = 'sea ice';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+
+      el.searchService = new MockSearchService();
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      const refresh = sinon.spy(el, 'refreshResults');
+      service.refine();
+      expect(refresh.called).to.be.false;
+    });
+  });
+
   it('searches again with a new search service, keeping the query', async () => {
     // The ETD demo swaps text rank for search by meaning this way.
     const textRank = new MockSearchService();
@@ -808,6 +884,45 @@ describe('Collection Browser', () => {
 
     expect(errorDetails).to.exist;
     expect(errorDetails.textContent).to.contain('foo');
+  });
+
+  it("says the service didn't answer, not that the query is wrong, on a network error", async () => {
+    // A 502 from the ETD index reaches here as a network error too.
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${new MockSearchService()}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const placeholder = el.shadowRoot!.querySelector(
+      'empty-placeholder',
+    ) as EmptyPlaceholder;
+    expect(placeholder.placeholderType).to.equal('service-error');
+    const text = placeholder.shadowRoot!.textContent!;
+    expect(text).to.contain("The search service didn't answer");
+    expect(text).not.to.contain('related to your');
+  });
+
+  it('still points at the query when the search engine failed on it', async () => {
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser
+        .searchService=${new MockSearchService()}
+      ></collection-browser>`,
+    );
+    el.baseQuery = 'engine-error';
+    await el.updateComplete;
+    await el.initialSearchComplete;
+
+    const placeholder = el.shadowRoot!.querySelector(
+      'empty-placeholder',
+    ) as EmptyPlaceholder;
+    expect(placeholder.placeholderType).to.equal('query-error');
+    expect(
+      placeholder.shadowRoot!.querySelector('.error-details')!.textContent,
+    ).to.contain('parse error');
   });
 
   it('shows error message when error response received for a collection', async () => {

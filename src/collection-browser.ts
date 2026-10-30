@@ -24,6 +24,8 @@ import {
   SortDirection,
   SortParam,
 } from '@internetarchive/search-service';
+import { SearchServiceErrorType } from '@internetarchive/search-service/dist/src/search-service-error';
+import type { RefiningSearchService } from './serverless-search/serverless-search-service';
 import type {
   SharedResizeObserverInterface,
   SharedResizeObserverResizeHandlerInterface,
@@ -576,6 +578,34 @@ export class CollectionBrowser
   }
 
   /**
+   * Fetches the results shown again, in place: the pages loaded so far and
+   * the facets, without resetting to placeholder tiles. Called on its own
+   * when the search service says its results got better.
+   */
+  refreshResults(): Promise<void> {
+    return this.dataSource.refreshResults();
+  }
+
+  /** Stops listening to the last search service's results changing. */
+  private stopRefinedResults?: () => void;
+
+  /**
+   * Listens to a search service that refines its results after serving
+   * them (`onResultsChanged`, e.g. a search by meaning), to show the better
+   * ones as they come.
+   */
+  private listenForRefinedResults(): void {
+    this.stopRefinedResults?.();
+    this.stopRefinedResults = undefined;
+    const service = this.searchService as Partial<RefiningSearchService>;
+    if (typeof service?.onResultsChanged === 'function') {
+      this.stopRefinedResults = service.onResultsChanged(() => {
+        this.refreshResults();
+      });
+    }
+  }
+
+  /**
    * Go to the given page of results
    *
    * @param pageNumber
@@ -844,8 +874,16 @@ export class CollectionBrowser
     }
 
     if (this.dataSource.queryErrorMessage) {
-      this.placeholderType =
-        !hasQuery && isCollection ? 'collection-error' : 'query-error';
+      if (!hasQuery && isCollection) {
+        this.placeholderType = 'collection-error';
+      } else if (
+        this.dataSource.queryErrorType === SearchServiceErrorType.networkError
+      ) {
+        // The service didn't answer: nothing to do with the query.
+        this.placeholderType = 'service-error';
+      } else {
+        this.placeholderType = 'query-error';
+      }
     }
   }
 
@@ -1886,6 +1924,8 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
+    if (changed.has('searchService')) this.listenForRefinedResults();
+
     if (changed.has('placeholderType') && this.placeholderType === null) {
       if (!this.leftColIntersectionObserver) {
         this.setupLeftColumnScrollListeners();
@@ -2040,6 +2080,8 @@ export class CollectionBrowser
   }
 
   disconnectedCallback(): void {
+    this.stopRefinedResults?.();
+    this.stopRefinedResults = undefined;
     if (this.resizeObserver) {
       this.disconnectResizeObserver(this.resizeObserver);
     }

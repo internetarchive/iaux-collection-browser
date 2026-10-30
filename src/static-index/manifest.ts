@@ -4,7 +4,8 @@
  *
  * Two halves:
  * - the **manifest** is published by the item, next to its index files, and
- *   says what's in them: fields, record layout, facet columns;
+ *   says what's in them: id spaces, records, facet columns, and per search
+ *   its fields, or its vectors and the model that made them;
  * - the **config** is held by the client, and says how to search and show
  *   it: which record fields make a hit, which facets to show and how.
  *
@@ -12,26 +13,168 @@
  * See README.md in this folder.
  */
 
-/** Published next to the index files: what's in them. */
-export interface StaticIndexManifest {
+/**
+ * Published by the item as static-index.json, next to its index files:
+ * every set of docs it has (id spaces) and every way to search them.
+ * The file has a fixed name and is read fresh. A publish step writes it
+ * once the build's files have landed, from the build's own copy,
+ * static-index.<version>.json.
+ */
+export interface StaticItemManifest {
   format: 'ia-static-index';
-  formatVersion: 1;
+  formatVersion: 2;
   /**
-   * The build's version. Every index file is published as
-   * `<name>.<version>`, so a rebuild never mixes files from two builds.
+   * Each set of docs with ids of its own, by key: its records, facets and
+   * doc values. Two searches over different id spaces return different
+   * docs, even when they describe the same things (ETD's text index and
+   * vector store).
    */
-  version: string;
-  docCount: number;
-  text: TextIndex;
+  idSpaces: Record<string, IdSpace>;
+  /** Each way to search, by key: words or meaning, over one id space. */
+  searches: Record<string, StaticSearch>;
+  /**
+   * The build before this one, whose manifest is
+   * static-index.<previous>.json. Its files are kept until the next
+   * publish, so a reader can fall back to it whole when this build's
+   * files aren't on every server yet (a 404). Only that build's manifest
+   * describes its files: counts and sizes differ between builds.
+   */
+  previous?: string;
+}
+
+/**
+ * How a group of files is named, so a rebuild never mixes two builds'
+ * files.
+ *
+ * - `versioned`: every file is `<name>.<version><suffix>` and never
+ *   changes, so it caches forever and a rebuild can't be read half old,
+ *   half new. Use this for a new index. archive.org's servers only allow
+ *   cross-origin reads of some extensions, `.json` among them, so a file
+ *   a browser reads from another origin needs `suffix: '.json'`.
+ * - `stamped`: fixed names, read as `<name>?v=<built>`, overwritten by a
+ *   rebuild. A reader that loaded the old manifest can then read new
+ *   bytes, which is why sidecars carry stamps to check. ETD's vector store
+ *   is published this way.
+ */
+export type FileSet =
+  | { naming: 'versioned'; version: string; suffix?: string }
+  | { naming: 'stamped'; built: string };
+
+/** A set of docs with their own ids. */
+export interface IdSpace {
+  /** How many docs; ids run firstId..firstId + count - 1. */
+  count: number;
+  /** 1 for ETD's text docIds, 0 for its vector ids (docs.bin rows). */
+  firstId: 0 | 1;
+  files: FileSet;
   records: RecordLayout;
+  /** Facet rows in id order. */
+  facets?: FacetRows;
+  /** Values too many to fit a facet row's byte, each in files of its own. */
+  docValues?: DocValues[];
+}
+
+export type StaticSearch = TextSearch | VectorSearch;
+
+/** Search by words: a dictionary and postings, one prefix per field. */
+export interface TextSearch {
+  kind: 'text';
+  /** The id space it returns: an `idSpaces` key. */
+  ids: string;
+  files: FileSet;
+  text: TextIndex;
   /**
    * Whether posfwd.dir/posfwd.bin exist: each doc's full word list per
    * field, for checking that words sit side by side.
    */
   positions?: boolean;
-  facets?: FacetRows;
-  /** Values too many to fit a facet row's byte, each in files of its own. */
-  docValues?: DocValues[];
+}
+
+/**
+ * Search by meaning: the query is embedded in the browser with `model`,
+ * scored against the cells' centroids, and the best cells' rows are
+ * scored (from `codes` when there are any), then the best `rerank`
+ * re-scored exactly.
+ */
+export interface VectorSearch {
+  kind: 'vector';
+  /** The id space its rows' ids are in. */
+  ids: string;
+  files: FileSet;
+  /** Vector size. */
+  dim: number;
+  cells: {
+    count: number;
+    /** One vector per cell, 16-bit floats. */
+    centroids: string;
+    /** u32 cumulative row counts: cell k is rows dir[k] up to dir[k + 1]. */
+    dir: string;
+    /** Per row, in cell order: a u32 id, then `dim` 16-bit floats. */
+    rows: string;
+    /** Bytes per row: 4 + dim * 2. */
+    rowBytes: number;
+  };
+  /**
+   * The rows again, each dimension's difference from its centroid in
+   * `bits`: a u32 id, then dim * bits / 8 bytes. Used only when its meta
+   * matches; otherwise rows are scored exactly.
+   */
+  codes?: Sidecar & { bits: 4 | 8; rowBytes: number };
+  /**
+   * Facet rows in `cells.rows` order, not id order, so a scan reads a
+   * cell's facets with the same range arithmetic as its rows. Used only
+   * when its meta matches; otherwise results have no facets.
+   */
+  facets?: Sidecar & FacetRows;
+  model: ModelBlock;
+  settings: VectorSettings;
+}
+
+/** A search setting the stored vectors' recall depends on. */
+export interface VectorSettings {
+  /** Cells read per query. */
+  nprobe: number;
+  /** Best rows re-scored exactly. */
+  rerank: number;
+  /** Measured recall@10 by nprobe, for whoever tunes it. Informational. */
+  recallAt10?: Record<number, number>;
+}
+
+/**
+ * A file built apart from the rest of its search, with a small JSON meta
+ * of its own. The meta's `mustMatch` fields have to equal the search's
+ * (n: rows, built: the stamp, dim: vector size) before the file is used;
+ * a mismatch means it's from another build, and it's ignored, never an
+ * error. Only a stamped file set can mismatch.
+ */
+export interface Sidecar {
+  file: string;
+  meta?: string;
+  mustMatch: SidecarKey[];
+}
+
+export type SidecarKey = 'n' | 'built' | 'dim';
+
+/**
+ * The model the stored vectors were made with. A query has to be embedded
+ * the same way, or it lands somewhere else in the space.
+ */
+export interface ModelBlock {
+  /** What the model is, e.g. 'intfloat/multilingual-e5-small'. */
+  id: string;
+  /** Where its files are in the item, ending in '/'. */
+  path: string;
+  dtype: 'q8' | 'fp16' | 'fp32';
+  /** Put before every query, e.g. e5's 'query: '. */
+  queryPrefix: string;
+  pooling: 'mean' | 'cls';
+  normalize: boolean;
+  /**
+   * The library that embedded the stored vectors. Another build can embed
+   * differently. Only a version: the client maps it to a script it pins
+   * (see model.ts), so an item's JSON never picks code to run.
+   */
+  library: { name: string; version: string };
 }
 
 /** The searchable text: dictionary and postings, one prefix per field. */
@@ -75,12 +218,14 @@ export interface TextField {
   indexWeight?: number;
 }
 
-/** stubs.bin: one fixed-size record per doc, holding what a hit shows. */
+/** One fixed-size record per doc, holding what a hit shows. */
 export interface RecordLayout {
+  /** e.g. stubs.bin. Record n is at (id - firstId) * bytes. */
+  file: string;
   /** Bytes per record. */
   bytes: number;
   /** NUL-padded UTF-8 fields at fixed byte offsets, end exclusive. */
-  fields: { key: string; start: number; end: number }[];
+  fields: RecordField[];
   /**
    * Fields that can be cut short in the record, held whole per doc in a
    * .dir/.bin pair: the .dir is docId-aligned offsets into the .bin.
@@ -90,7 +235,20 @@ export interface RecordLayout {
   snippet?: { field: string; dir: string; bin: string };
 }
 
-/** One fixed-size row of facet values per doc, in one file read whole. */
+export interface RecordField {
+  key: string;
+  start: number;
+  end: number;
+  /**
+   * What the field is to a hit, so a client with no config for this item
+   * can still show one. Each role is used once at most.
+   */
+  role?: HitRole;
+}
+
+export type HitRole = 'title' | 'creators' | 'date' | 'url';
+
+/** One fixed-size row of facet values per doc (or per vector row). */
 export interface FacetRows {
   file: string;
   /** Bytes per row. */
@@ -106,8 +264,17 @@ export interface FacetRows {
  * packed value); each reads only its own bits.
  */
 export type FacetColumn =
-  /** A code from a list: byte n means codes[n - 1]. */
-  | { key: string; kind: 'code'; byte: number; codes: string[] }
+  /**
+   * A code from a list: n means codes[n - 1]. `width` 2 reads bytes byte
+   * and byte + 1, little-endian, for lists over 255 (ETD's repositories).
+   */
+  | {
+      key: string;
+      kind: 'code';
+      byte: number;
+      width?: 1 | 2;
+      codes: string[];
+    }
   /**
    * A year. Encoding 1: 1900 + byte. Encoding 2: bytes 1-20 are the decades
    * 1700-1890 (as their first year), 21-255 the years 1900-2134.
@@ -177,15 +344,32 @@ export interface DocValues {
   };
 }
 
-/** Held by the client: how to search and show an index. */
-export interface StaticSearchConfig {
-  /** Where the index is published: current.json and the versioned files. */
+/** Held by the client: how to search and show an item's index. */
+export interface StaticItemConfig {
+  /** Where the index is published: static-index.json and its files. */
   baseUrl: string;
-  /** Overrides the manifest's ranking, part by part. */
-  ranking?: Partial<Ranking>;
+  /** How to show each search, by the manifest's `searches` key. */
+  searches: Record<string, SearchConfig>;
+}
+
+export interface SearchConfig {
+  /**
+   * Prefixed to a doc's 1-based position in its id space to make a hit's
+   * identifier ('etd-', 'etdv-'; see identifiers.ts). Searches over
+   * different id spaces need different ones.
+   */
+  identifierPrefix: string;
   /** The record fields a hit is made of, by record field key. */
   hit: { title: string; creators?: string; date?: string; url: string };
+  /**
+   * A text search's facets read its id space's rows and doc values; a
+   * vector search's read its own rows.
+   */
   facets: FacetConfig[];
+  /** Text searches: overrides the manifest's ranking, part by part. */
+  ranking?: Partial<Ranking>;
+  /** Vector searches: overrides the owner's settings, for measuring. */
+  settings?: Partial<VectorSettings>;
 }
 
 /** One facet, as collection-browser shows it. */

@@ -1,6 +1,6 @@
 import type { EtdCallOptions } from '../etd-engine';
 import type { EtdIndexFiles } from './index-files';
-import { span } from './records';
+import { span } from '../../static-index/records';
 
 /**
  * Reads posfwd: each doc's complete field text as index tokens, for exact

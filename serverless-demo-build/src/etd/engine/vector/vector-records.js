@@ -1,80 +1,63 @@
-import { decodeSnippet, span } from '../records';
+import { StaticRecords } from '../../../static-index/records';
+import { etdVectorRecords } from '../layouts';
+/** How many docs to keep for re-reading: a few searches' worth of pages. */
+const RECENT_DOCS = 2000;
 export class VectorRecords {
-    constructor(files, 
-    /** vsnip.bin size, from vsnip.dir's sentinel; 0 = no abstracts. */
-    snippetsSize) {
+    constructor(files, records) {
         this.files = files;
-        this.snippetsSize = snippetsSize;
+        this.records = records;
+        /** Docs read lately, by vector id. */
+        this.recent = new Map();
     }
     static async load(files, options) {
-        let snippetsSize = 0;
-        // Gated on the manifest's flag, so an older store never gets a read at
-        // files it doesn't have.
-        if (files.meta.vsnip) {
-            try {
-                const sentinel = await files.range('vsnip.dir', files.meta.n * 8, 8, options);
-                snippetsSize = Number(new DataView(sentinel.buffer, sentinel.byteOffset, sentinel.byteLength).getBigUint64(0, true));
-            }
-            catch (err) {
-                if (options?.signal?.aborted)
-                    throw err;
-            }
-        }
-        return new VectorRecords(files, snippetsSize);
+        const space = {
+            count: files.meta.n,
+            firstId: 0,
+            // Its snippet pair only when the manifest's flag says so, so an older
+            // store never gets a read at files it doesn't have.
+            records: etdVectorRecords(files.meta),
+        };
+        return new VectorRecords(files, await StaticRecords.load(files, space, options));
+    }
+    /**
+     * Docs for vector ids from their docs.bin rows alone, in the given order:
+     * one wave, no abstract. For describing many matches, not showing them.
+     */
+    async rows(dids, options) {
+        return (await this.records.fields(dids, options)).map(record => vectorDoc(record));
     }
     /** Docs for vector ids, in the given order; ids out of range are skipped. */
     async read(dids, options) {
-        const { n, docbytes, fields } = this.files.meta;
+        const { n } = this.files.meta;
         const ids = dids.filter(d => Number.isInteger(d) && d >= 0 && d < n);
-        if (!ids.length)
-            return [];
-        // Wave 1: rows and abstract directory entries. Wave 2: the abstracts.
-        const [rows, dirs] = await Promise.all([
-            this.files.ranges('docs.bin', ids.map(d => [d * docbytes, docbytes]), 256, options),
-            this.snippetsSize
-                ? this.files.ranges('vsnip.dir', ids.map(d => [d * 8, 16]), 512, options)
-                : Promise.resolve([]),
-        ]);
-        const spans = ids.map((_, i) => {
-            const s = span(dirs[i]);
-            return s && s[0] + s[1] <= this.snippetsSize ? s : undefined;
-        });
-        const wanted = spans.filter((s) => s !== undefined);
-        const compressed = await this.files.ranges('vsnip.bin', wanted, 64, options);
-        let next = 0;
-        return Promise.all(ids.map(async (did, i) => {
-            const doc = { did, ...decodeRow(rows[i], fields) };
-            if (spans[i]) {
-                const bytes = compressed[next];
-                next += 1;
-                const snippet = bytes?.length === spans[i][1]
-                    ? await decodeSnippet(bytes)
-                    : undefined;
-                if (snippet)
-                    doc.snippet = snippet;
-            }
-            return doc;
-        }));
+        const missing = [...new Set(ids.filter(d => !this.recent.has(d)))];
+        if (missing.length) {
+            const docs = await this.readUncached(missing, options);
+            // Kept briefly: a first answer's docs are mostly the final one's too.
+            if (this.recent.size + docs.length > RECENT_DOCS)
+                this.recent.clear();
+            for (const doc of docs)
+                this.recent.set(doc.did, doc);
+        }
+        return ids
+            .map(did => this.recent.get(did))
+            .filter((doc) => doc !== undefined);
+    }
+    async readUncached(ids, options) {
+        return (await this.records.read(ids, options)).map(record => vectorDoc(record));
     }
 }
-const decoder = new TextDecoder();
-/** A docs.bin row's NUL-padded UTF-8 fields. */
-export function decodeRow(row, widths) {
-    let at = 0;
-    const take = (width) => {
-        const field = row.subarray(at, at + width);
-        at += width;
-        const nul = field.indexOf(0);
-        // A field cut mid-character ends in U+FFFD: drop it, as the live page does.
-        return decoder
-            .decode(nul < 0 ? field : field.subarray(0, nul))
-            .replace(/�+$/, '');
+/** A vector store doc from what the generic reader read. */
+function vectorDoc({ id, fields, snippet }) {
+    const doc = {
+        did: id,
+        title: fields.title,
+        host: fields.host,
+        date: fields.date,
+        landing: fields.landing,
+        lang: fields.lang,
     };
-    return {
-        title: take(widths.title),
-        host: take(widths.host),
-        date: take(widths.date),
-        landing: take(widths.landing),
-        lang: take(widths.lang),
-    };
+    if (snippet)
+        doc.snippet = snippet;
+    return doc;
 }

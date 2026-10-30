@@ -154,6 +154,12 @@ export interface CollectionBrowserDataSourceInterface
   readonly queryErrorMessage?: string;
 
   /**
+   * The kind of that error (a `SearchServiceErrorType`), e.g. a network error
+   * rather than one the search engine had with the query.
+   */
+  readonly queryErrorType?: string;
+
+  /**
    * An array of all the tile models whose management checkboxes are checked
    */
   readonly checkedTileModels: TileModel[];
@@ -176,6 +182,12 @@ export interface CollectionBrowserDataSourceInterface
    * Resets the data source to its empty state, with no result pages, aggregations, etc.
    */
   reset(): void;
+
+  /**
+   * Fetches the current search's results again, in place: the pages loaded
+   * so far and the facets. For a search service whose results got better.
+   */
+  refreshResults(): Promise<void>;
 
   /**
    * Resets the data source's result pages, keeping other state intact.
@@ -239,7 +251,11 @@ export interface CollectionBrowserDataSourceInterface
    * @param pageNum Which page number to fetch results for
    * @param numInitialPages How many pages should be batched together on an initial fetch
    */
-  fetchPage(pageNum: number, numInitialPages?: number): Promise<void>;
+  fetchPage(
+    pageNum: number,
+    numInitialPages?: number,
+    options?: { replace?: boolean },
+  ): Promise<void>;
 
   /**
    * Requests that the data source update its prefix bucket result counts for the given

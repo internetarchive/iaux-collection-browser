@@ -7,6 +7,7 @@ import { EtdFacets } from './facets';
 import { decodePostings } from './postings';
 import { institutionValues, parseQuery } from './query-parser';
 import { EtdRecords } from './records';
+import { sampleOf } from './sample';
 import { BASE_PREFIXES, boostSharedFields, queryTerms, rankScores, scoreQuery, } from './scorer';
 /** Past this many matches the page marks a count as approximate. */
 const APPROXIMATE_AT = 10000;
@@ -155,6 +156,9 @@ export class StaticEtdEngine {
             matches(docId) {
                 return scores.has(docId);
             },
+            sample(count, sampleOptions) {
+                return sampleRecords(scores.keys(), count, records, sampleOptions);
+            },
             boost,
         };
     }
@@ -162,6 +166,11 @@ export class StaticEtdEngine {
         const { records } = await this.loading;
         const [record] = await records.read([docId], options);
         return record;
+    }
+    /** What the item's file list said about the index's files. */
+    async fileCheck() {
+        const { files } = await this.loading;
+        return files.fileCheck;
     }
 }
 /**
@@ -304,6 +313,9 @@ function listFiltered(rows, nDocs, passes, readers, records) {
         matches(docId) {
             return docId >= 1 && docId <= nDocs && passes(rows, docId);
         },
+        sample(count, options) {
+            return sampleRecords(passing(), count, records, options);
+        },
     };
 }
 function emptyQuery() {
@@ -321,5 +333,13 @@ function emptyQuery() {
         matches() {
             return false;
         },
+        async sample() {
+            return { records: [], of: 0 };
+        },
     };
+}
+/** Up to `count` of `docIds` at random, read light (stubs only). */
+async function sampleRecords(docIds, count, records, options) {
+    const { picked, of } = sampleOf(docIds, count);
+    return { records: await records.stubs(picked, options), of };
 }

@@ -14,6 +14,7 @@ import { ETD_FACETS } from '../../etd/etd-facets';
 import { ETD_VECTOR_FACETS } from '../../etd/etd-vector-facets';
 import { ETD_VECTOR_SEARCH } from '../../etd/etd-search-source';
 import { StaticVectorEngine } from '../../etd/engine/vector/static-vector-engine';
+import type { EtdFileCheck } from '../../etd/engine/file-checks';
 import type { VectorSearchStatus } from '../../etd/engine/vector/static-vector-engine';
 import type { ModelState } from '../../etd/engine/vector/vector-searcher';
 import '../../etd/demo/etd-vector-status';
@@ -24,6 +25,10 @@ import {
   type ObservedFacets,
 } from '../../etd/demo/observe-facets';
 import '../../etd/demo/etd-facet-summary';
+import '../../etd/demo/etd-found-facets';
+import { etdRequestFromParams } from '../../etd/etd-query';
+import type { EtdRequest } from '../../etd/etd-query';
+import '../../etd/demo/etd-file-check';
 import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
 import {
   DEFAULT_ETD_ITEM,
@@ -118,6 +123,11 @@ export class ServerlessSearchDemo extends LitElement {
   /** Built on first use: a text-only visit never loads the model. */
   private etdVectorEngine?: StaticVectorEngine;
 
+  /** Each index's files checked against the item's file list, once loaded. */
+  @state() private etdTextFileCheck?: EtdFileCheck;
+
+  @state() private etdVectorFileCheck?: EtdFileCheck;
+
   /** The services for each ranking, built once each. */
   private etdServices: {
     text?: SearchServiceInterface;
@@ -187,6 +197,9 @@ export class ServerlessSearchDemo extends LitElement {
   /** The facets collection-browser last got from the ETD service. */
   @state() private etdFacets?: ObservedFacets;
 
+  /** The search collection-browser is showing: its words and filters. */
+  @state() private etdRequest?: EtdRequest;
+
   /** Whether the ETD panel is hidden: shown unless `hide-etd-controls` says so. */
   @state() private etdControlsHidden = ['', 'true'].includes(
     new URLSearchParams(window.location.search).get('hide-etd-controls') ??
@@ -227,18 +240,39 @@ export class ServerlessSearchDemo extends LitElement {
             engine: this.vectorEngine(),
             kind: ETD_VECTOR_SEARCH,
           })
-        : new EtdSearchService({
-            engine: (this.etdEngine ??= new StaticEtdEngine({
-              baseUrl: this.etdIndex.baseUrl,
-              facets: ETD_FACETS,
-            })),
-          });
-    const observed = observeFacets(service, facets => {
-      // A slow facets request from the other ranking can land after a switch.
-      if (this.searchService === observed) this.etdFacets = facets;
-    });
+        : new EtdSearchService({ engine: this.textEngine() });
+    const observed = observeFacets(
+      service,
+      facets => {
+        // A slow facets request from the other ranking can land after a switch.
+        if (this.searchService === observed) this.etdFacets = facets;
+      },
+      params => {
+        if (this.searchService !== observed) return;
+        this.etdRequest = etdRequestFromParams(
+          params,
+          rank === 'vector' ? ETD_VECTOR_FACETS : ETD_FACETS,
+        );
+      },
+    );
     this.etdServices[rank] = observed;
     return observed;
+  }
+
+  /** The text engine, built on first use. */
+  private textEngine(): StaticEtdEngine {
+    if (this.etdEngine) return this.etdEngine;
+    this.etdEngine = new StaticEtdEngine({
+      baseUrl: this.etdIndex.baseUrl,
+      facets: ETD_FACETS,
+    });
+    this.etdEngine
+      .fileCheck()
+      .then(check => {
+        this.etdTextFileCheck = check;
+      })
+      .catch(() => {});
+    return this.etdEngine;
   }
 
   /**
@@ -270,6 +304,8 @@ export class ServerlessSearchDemo extends LitElement {
               ),
       modelParallel: number('etd_model_parallel'),
       scan: { parallel: number('etd_vec_parallel') },
+      // `etd_vec_progressive=0` waits for the whole scan, to compare timings.
+      progressive: params.get('etd_vec_progressive') !== '0',
       onModel: model => {
         this.etdModel = model;
       },
@@ -277,6 +313,12 @@ export class ServerlessSearchDemo extends LitElement {
         this.etdVectorSearch = search;
       },
     });
+    this.etdVectorEngine
+      .fileCheck()
+      .then(check => {
+        this.etdVectorFileCheck = check;
+      })
+      .catch(() => {});
     return this.etdVectorEngine;
   }
 
@@ -290,6 +332,7 @@ export class ServerlessSearchDemo extends LitElement {
     window.history.replaceState(window.history.state, '', url.href);
     this.etdRank = rank;
     this.etdFacets = undefined;
+    this.etdRequest = undefined;
     this.searchService = this.etdService(rank);
   }
 
@@ -449,6 +492,16 @@ export class ServerlessSearchDemo extends LitElement {
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
           .facets=${this.etdFacets}
         ></etd-facet-summary>
+        <etd-found-facets
+          .engine=${this.etdRank === 'vector'
+            ? this.etdVectorEngine
+            : this.etdEngine}
+          .request=${this.etdRequest}
+        ></etd-found-facets>
+        <etd-file-check
+          .text=${this.etdTextFileCheck}
+          .vector=${this.etdVectorFileCheck}
+        ></etd-file-check>
         ${this.etdCompare
           ? html`<etd-compare-panel
               .engine=${this.etdRank === 'vector'
@@ -942,7 +995,8 @@ export class ServerlessSearchDemo extends LitElement {
       display: none;
     }
 
-    #etd-controls etd-facet-summary {
+    #etd-controls etd-facet-summary,
+    #etd-controls etd-file-check {
       margin: 0.75rem 0;
     }
   `;

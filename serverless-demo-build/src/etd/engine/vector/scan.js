@@ -1,4 +1,13 @@
+import { sidecarMatches } from '../../../static-index/files';
 import { decodeHalfs } from './f16';
+/**
+ * What each sidecar's meta has to share with ivf-meta.json to be used, as
+ * on the live page. The codes' check is stricter: codes from another build
+ * would rank wrongly with nothing downstream to notice, while facet rows
+ * from another build only miscount.
+ */
+export const CODES_MUST_MATCH = ['n', 'built', 'dim'];
+export const FACETS_MUST_MATCH = ['n'];
 export async function loadVectorIndex(files, options) {
     const { meta } = files;
     const [centroidBytes, cellDirBytes, codesMeta, facetsMeta] = await Promise.all([
@@ -21,22 +30,17 @@ export async function loadVectorIndex(files, options) {
         centroids: decodeHalfs(new Uint8Array(centroidBytes), 0, meta.ncell * meta.dim),
         cellDir,
         codes: checkedCodes(codesMeta, files),
-        // The n check guards against a facet file left over from another build.
-        facets: facetsMeta?.n === meta.n ? facetsMeta : undefined,
+        facets: sidecarMatches(meta, facetsMeta, FACETS_MUST_MATCH)
+            ? facetsMeta
+            : undefined,
     };
 }
-/**
- * The quantised rows' meta, if it belongs to this build. Stricter than the
- * facets' check, as on the live page: codes from another build would rank
- * wrongly with nothing downstream to notice.
- */
+/** The quantised rows' meta, if it belongs to this build and adds up. */
 function checkedCodes(codes, files) {
     const { meta } = files;
     if (!codes)
         return undefined;
-    if (codes.n !== meta.n ||
-        codes.built !== meta.built ||
-        codes.dim !== meta.dim ||
+    if (!sidecarMatches(meta, codes, CODES_MUST_MATCH) ||
         !(codes.bits === 4 || codes.bits === 8) ||
         codes.rowbytes !== 4 + ((codes.dim * codes.bits) >> 3) ||
         codes.scale?.length !== codes.dim) {
@@ -56,6 +60,9 @@ export const DEFAULT_RERANK = 400;
 export const DEFAULT_PARALLEL = 6;
 /** A cell bigger than this is read as several ranges. */
 export const DEFAULT_CHUNK_BYTES = 2_000_000;
+/** The first answer and when to give it: after 4 cells or 3 s. */
+export const DEFAULT_EARLY_CELLS = 4;
+export const DEFAULT_EARLY_MS = 3000;
 /**
  * The best `nprobe` cells for a query vector, best first, with each one's
  * centroid score.
@@ -121,6 +128,8 @@ export async function scanVectors(index, query, options = {}) {
     const dids = new Uint32Array(total);
     const rows = new Uint32Array(total);
     const scores = new Float64Array(total);
+    /** Which candidates have been scored, for a first answer mid-scan. */
+    const scored = new Uint8Array(total);
     const scanBytes = codes ? codes.rowbytes : rowbytes;
     const rowsPerChunk = Math.max(1, Math.floor(chunkBytes / scanBytes));
     const chunks = [];
@@ -155,6 +164,7 @@ export async function scanVectors(index, query, options = {}) {
                     s += table[(j << 8) | bytes[o + 4 + j]];
                 }
                 scores[at] = s;
+                scored[at] = 1;
             }
             else {
                 decodeHalfs(bytes, o + 4, dim, exactRow);
@@ -162,6 +172,7 @@ export async function scanVectors(index, query, options = {}) {
                 for (let j = 0; j < dim; j += 1)
                     s += exactRow[j] * query[j];
                 scores[at] = s;
+                scored[at] = 1;
             }
         }
     };
@@ -172,7 +183,21 @@ export async function scanVectors(index, query, options = {}) {
         cells: cells.length,
         bytes: files.stats.bytes - before.bytes,
         requests: files.stats.requests - before.requests,
+        retries: files.stats.retries - before.retries,
     });
+    // The first answer: once, after enough cells or time, never after the last.
+    let earlySent = !options.onEarly;
+    const earlyCells = options.earlyCells ?? DEFAULT_EARLY_CELLS;
+    const earlyMs = options.earlyMs ?? DEFAULT_EARLY_MS;
+    const sendEarly = () => {
+        if (earlySent || !cellsDone || cellsDone >= cells.length)
+            return;
+        if (cellsDone < earlyCells && performance.now() - started < earlyMs) {
+            return;
+        }
+        earlySent = true;
+        options.onEarly(earlyScan(dids, scores, scored, options.rerank ?? DEFAULT_RERANK, progress()));
+    };
     const fileName = codes ? 'cell-codes.bin' : 'cells.bin';
     await Promise.all(Array.from({ length: Math.min(parallel, chunks.length) }, async () => {
         while (next < chunks.length) {
@@ -185,6 +210,7 @@ export async function scanVectors(index, query, options = {}) {
                 cellsDone += 1;
                 options.onProgress?.(progress());
             }
+            sendEarly();
         }
     }));
     // Empty cells count as done too.
@@ -207,10 +233,26 @@ export async function scanVectors(index, query, options = {}) {
         cells,
         bytes: files.stats.bytes - before.bytes,
         requests: files.stats.requests - before.requests,
+        retries: files.stats.retries - before.retries,
         timings: {
             scan: scanned - started,
             rerank: performance.now() - scanned,
         },
+    };
+}
+/** The best `count` scored candidates so far, best first. */
+function earlyScan(dids, scores, scored, count, progress) {
+    const done = [];
+    for (let i = 0; i < scored.length; i += 1)
+        if (scored[i])
+            done.push(i);
+    done.sort((a, b) => scores[b] - scores[a] || a - b);
+    const best = done.slice(0, count);
+    return {
+        dids: Uint32Array.from(best, i => dids[i]),
+        scores: Float64Array.from(best, i => scores[i]),
+        candidates: done.length,
+        progress,
     };
 }
 /** Candidates by score, best first; ties keep their candidate order. */

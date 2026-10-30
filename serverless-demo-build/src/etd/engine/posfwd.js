@@ -1,4 +1,4 @@
-import { span } from './records';
+import { span } from '../../static-index/records';
 /** posfwd field key for each index field prefix. */
 const FIELD_KEYS = {
     't:': 't',

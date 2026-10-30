@@ -6,7 +6,7 @@ import type {
   SourceQuery,
 } from '../serverless-search/search-source';
 import { log } from '../utils/log';
-import type { EtdEngine, EtdRecord } from './etd-engine';
+import type { EtdEngine, EtdQuery, EtdRecord } from './etd-engine';
 import {
   etdRequestFromParams,
   etdRequestIsEmpty,
@@ -95,11 +95,13 @@ export class EtdSearchSource implements SearchSource<EtdRequest, EtdRecord> {
     request: EtdRequest,
     options?: SourceCallOptions,
   ): Promise<SourceQuery<EtdRecord>> {
-    const query = await this.engine.query(
-      request.text,
-      request.filters,
-      options,
+    return this.sourceQuery(
+      await this.engine.query(request.text, request.filters, options),
     );
+  }
+
+  /** An engine query as a source query, and its refinements likewise. */
+  private sourceQuery(query: EtdQuery): SourceQuery<EtdRecord> {
     return {
       result: query.result,
       next: (count, nextOptions) => query.next(count, nextOptions),
@@ -110,6 +112,7 @@ export class EtdSearchSource implements SearchSource<EtdRequest, EtdRecord> {
           size,
           this.kind.facets,
         ),
+      refined: query.refined?.then(next => next && this.sourceQuery(next)),
     };
   }
 

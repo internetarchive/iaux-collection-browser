@@ -45,6 +45,9 @@ let EmptyPlaceholder = EmptyPlaceholder_1 = class EmptyPlaceholder extends LitEl
       If the problem persists, please let us know at
       <a href="mailto:info@archive.org">info@archive.org</a>.`);
     }
+    static get MESSAGE_SERVICE_ERROR() {
+        return msg("The search service didn't answer. Please try again in a moment.");
+    }
     static get QUERY_ERROR_DETAILS_MESSAGE() {
         return msg('Error details:');
     }
@@ -64,6 +67,7 @@ let EmptyPlaceholder = EmptyPlaceholder_1 = class EmptyPlaceholder extends LitEl
             ['no-results', () => this.noResultsTemplate],
             ['query-error', () => this.queryErrorTemplate],
             ['collection-error', () => this.collectionErrorTemplate],
+            ['service-error', () => this.serviceErrorTemplate],
         ])}
       </div>
     `;
@@ -95,6 +99,19 @@ let EmptyPlaceholder = EmptyPlaceholder_1 = class EmptyPlaceholder extends LitEl
             : EmptyPlaceholder_1.MESSAGE_NO_SEARCH_RESULTS}
       </h2>
       <div>${nullResultIcon}</div>
+    `;
+    }
+    /** The search service failed or didn't answer: not the query's fault. */
+    get serviceErrorTemplate() {
+        // Added data-testid for Playwright testing
+        return html `
+      <h2 class="title" data-testid="error-service-text-msg">
+        ${EmptyPlaceholder_1.MESSAGE_SERVICE_ERROR}
+      </h2>
+      <div>${nullResultIcon}</div>
+      <p class="error-details">
+        ${EmptyPlaceholder_1.QUERY_ERROR_DETAILS_MESSAGE} ${this.detailMessage}
+      </p>
     `;
     }
     get queryErrorTemplate() {

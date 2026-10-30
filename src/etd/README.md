@@ -30,9 +30,22 @@ Open https://local.archive.org:8080/?search_service=etd&query=sea%20ice
   between **Words** (text rank) and **Meaning** (vector rank, search by
   meaning; see below). Meaning is kept in the url as `&etd_rank=vec`. It's
   put there through collection-browser's `facets-header-slot`.
+- "Facets found in the results", a drawer in the panel, finds facets from
+  the matches' own records, with no facet file (`found-facets.ts`). Opened,
+  it reads up to 3,000 matches picked at random (all of them when there are
+  fewer) and shows the fields whose values repeat, as estimates for every
+  match, or exact counts when it read them all. It says why the others
+  aren't groups. Read-only: the sidebar's facets still filter.
+  - "sea ice", cold: 3,000 of 77,112 in 8.8 s. Repository and decade are
+    groups; creators aren't (3,596 values in 3,000 results).
+  - "tardigrade": all 120 in 1.3 s.
 
 This only works under `pnpm start`: the index files aren't CORS-readable yet,
-so the dev server proxies them at `/etd-index` (see `vite.config.ts`).
+so the dev server proxies them at `/etd-index` (see `vite.config.ts`). At
+startup it looks up the item's storage server in archive.org's metadata API
+and reads from it directly, so requests skip archive.org/download's redirect.
+It says which in the terminal (`etd-index: reading from …`); if the lookup
+fails it goes through /download, as before.
 
 ## The layers
 
@@ -166,6 +179,17 @@ records, identifiers (`etdv-<n>`) and facets are separate from text rank's.
 7. Each page of results reads `docs.bin` and the abstracts (`vsnip`), as
    multi-range requests (`vector-records.ts`).
 
+**First results before the scan ends.** After 4 cells, or 3 s into the scan
+if that comes first, the engine answers with the best 400 of the rows read so
+far, by their 4-bit scores. That first answer's `refined` is the final one
+(all 32 cells, re-scored, with facets). `ServerlessSearchService` swaps it in
+and tells collection-browser (`onResultsChanged`), which fetches the pages it
+has loaded and the facets again, in place: the first tiles stay until the
+final ones arrive. Facets wait for the final answer. A search with filters
+waits for the whole scan, since the filters need every row's facets. The
+first answer can look quite different from the final one: the best theses
+are often in later cells. `&etd_vec_progressive=0` turns this off.
+
 Steps 1-5 run in a Web Worker (`vector-worker.ts`), so the page stays
 responsive while 80 MB arrive. The ETD panel shows how it's going. The demo
 starts it; without one (or with
@@ -218,7 +242,8 @@ this page's timings. It drives the live page's `setMode('vec')` and
 `&etd_compare=0` leaves the compare panel (and the live page's iframe) out.
 `&etd_vec_parallel=<n>` and `&etd_model_parallel=<n>` set how many cell and
 model reads are in flight (`1` reads the model as one stream, as the live
-page does). The status line under the switch gives the time per step, bytes
+page does). `&etd_vec_progressive=0` waits for the whole scan
+before showing results. The status line under the switch gives the time per step, bytes
 and requests.
 
 archive.org lets the browser keep range reads for 6 hours, so a second run
@@ -247,6 +272,32 @@ as one sample, not a benchmark.
    streams 118 MB in 34 s.
 3. Ours reads the facet rows (3-4 MB) during the search; the live page reads
    them after showing results. Both read the same cells.
+
+#### First results
+
+Measured again on 2026-10-29, later the same day, all in one hour: one run
+each, from page load (the query is in the URL). Cold is "sea ice" on a fresh
+site. Warm is "machine translation for low-resource languages" with the model
+and centroids cached.
+
+| Run                               | First tiles     | Final ranking   |
+| --------------------------------- | --------------- | --------------- |
+| Cold, ours                        | 13.7 s, 10.8 s¹ | 18.7 s, 18.0 s¹ |
+| Cold, ours without first results² | 19.0 s          | 19.0 s          |
+| Cold, live page                   | 31.2 s          | 37.3 s          |
+| Warm, ours                        | 6.5 s           | 14.0 s          |
+| Warm, ours without first results² | 13.4 s          | 13.4 s          |
+| Warm, live page                   | 6.2 s           | 12.6 s          |
+
+1. Two cold runs. The final top 3 were the same with and without first
+   results.
+2. `&etd_vec_progressive=0`.
+
+The live page paints too, after every cell. So the gain over our own
+whole-scan wait is 5-8 s cold and 7 s warm, while the gain over the live page
+is cold only, and comes from the parallel reads. Warm, the two are about even.
+The network was faster this hour than for the table above, so compare within
+this table, not across them.
 
 The embedding itself is 40-170 ms. A warm search still spends 3-6 s on the
 model: reading 135 MB back from Cache Storage and starting ONNX.
@@ -390,8 +441,10 @@ so a live page rebuild can break it. It says so when that happens.
 To describe another item's index generically (a manifest it publishes, a
 config the client holds), see
 [`src/static-index/README.md`](../static-index/README.md).
-`etd-static-index.ts` describes ETD that way, and its tests hold the
-description to this folder's code.
+`etd-static-index.ts` describes ETD that way, both searches (words and
+meaning) over their two id spaces, and its tests hold the description to
+this folder's code: the vector config's facet counts match
+`StaticVectorEngine`'s over the same rows.
 
 `serverless-search/` is generic. To plug in another index:
 
@@ -407,6 +460,10 @@ description to this folder's code.
    `''` if your hits link off archive.org.
 
 Paging, caching and error mapping come with `ServerlessSearchService`.
+A source can answer early and better later: a query's `refined` resolves
+with the better answer, the service serves it from then on, and
+collection-browser re-fetches what it shows (`onResultsChanged`,
+`refreshResults()`).
 
 ## Not ported yet
 
@@ -416,7 +473,7 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 | A facet ticked when its `inst:` is in the box | `inst:mit` filters, but leaves MIT unticked in the facet     |
 | Quoted phrases checked as adjacent            | Words only have to be near each other                        |
 | `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                        |
-| Vector rank: results as each cell arrives     | Results wait for the whole scan (progress shows meanwhile)   |
+| Vector rank: results after every cell         | First results after 4 cells or 3 s, then the final ones once |
 | Vector rank: re-ranking text results          | Not available (needs a text docId → vector id map)           |
 | Vector rank: the per-cell code cache          | Not kept: the browser's own cache keeps reads for 6 hours    |
 | Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                      |
@@ -426,6 +483,22 @@ Paging, caching and error mapping come with `ServerlessSearchService`.
 - **CORS.** archive.org only allows cross-origin reads of some file types
   (`.json`, `.txt`), so the versioned index files need the dev proxy. Fixing
   that needs the item's owner or archive.org.
+- **archive.org errors.** Every read retries a 502, 503 or 504, or a request
+  with no answer, twice (after ~0.5 s, then ~1.5 s), in `retrying-fetch.ts`.
+  A 4xx or a 500 isn't retried: they're answers, and test fixtures use a 500
+  for a read that fails. A connection lost mid-download isn't retried.
+  - What shows: the vector status line counts retries ("2 retried after an
+    error") for the model download and for the search, whose count includes
+    loading the store. Text search shows no count; it's only slower.
+  - When the retries run out, the error keeps its status (`HttpError`, also
+    across the worker), and `ServerlessSearchService` reports a 5xx or no
+    answer as a network error. collection-browser then says "The search
+    service didn't answer. Please try again in a moment." (`'service-error'`)
+    instead of blaming the query.
+  - A model file that still fails fails the model load, rather than
+    transformers.js trying it once more without retries. That's with
+    parallel downloads (the default); with `etd_model_parallel=1`,
+    transformers.js fetches the files itself, without retries.
 - **Stale `dist/`.** Tests run from `dist/`, so a deleted test can still run.
   `rm -rf dist` before trusting a test count.
 - **Two copies of `iaux-item-metadata`.** search-service has its own, so its

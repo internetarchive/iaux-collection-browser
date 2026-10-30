@@ -70,6 +70,26 @@ describe('Empty Placeholder', () => {
     expect(placeholderElem).to.have.class('collection-error');
   });
 
+  it('should render with service-error placeholder, with the details', async () => {
+    const el = await fixture<EmptyPlaceholder>(
+      html`<empty-placeholder
+        .detailMessage=${'cell-codes.bin: HTTP 502'}
+      ></empty-placeholder>`,
+    );
+
+    el.placeholderType = 'service-error';
+    await el.updateComplete;
+
+    const placeholderElem = el.shadowRoot?.querySelector('.placeholder');
+    expect(placeholderElem).to.have.class('service-error');
+    expect(
+      el.shadowRoot?.querySelector('[data-testid="error-service-text-msg"]'),
+    ).to.exist;
+    expect(
+      el.shadowRoot?.querySelector('.error-details')?.textContent,
+    ).to.contain('cell-codes.bin: HTTP 502');
+  });
+
   it('should not render any empty placeholder', async () => {
     const el = await fixture<EmptyPlaceholder>(
       html`<empty-placeholder></empty-placeholder>`,

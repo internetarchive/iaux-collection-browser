@@ -3,6 +3,7 @@ import { FilterConstraint } from '@internetarchive/search-service';
 import { StaticVectorEngine } from '../../../../src/etd/engine/vector/static-vector-engine';
 import type {
   StaticVectorEngineOptions,
+  VectorQuery,
   VectorSearchStatus,
 } from '../../../../src/etd/engine/vector/static-vector-engine';
 import { ETD_VECTOR_FACETS } from '../../../../src/etd/etd-vector-facets';
@@ -240,6 +241,123 @@ describe('StaticVectorEngine', () => {
     ]);
     expect(statuses[2].progress).to.include({ cellsDone: 2, cells: 2 });
     expect(statuses[3].scan).to.include({ candidates: 5, exact: 5 });
+  });
+
+  it("counts the store's retries in the first search's summary", async () => {
+    const statuses: VectorSearchStatus[] = [];
+    const fixture = await buildFixtureVectorStore(DOCS, {
+      centroids: CENTROIDS,
+    });
+    let failed = false;
+    const flaky = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (!failed && String(input).includes('centroids.f16')) {
+        failed = true;
+        return new Response('', { status: 503 });
+      }
+      return fixture.fetch(input, init);
+    }) as typeof fetch;
+    const engine = new StaticVectorEngine({
+      baseUrl: FIXTURE_VECTOR_BASE,
+      fetch: flaky,
+      facets: ETD_VECTOR_FACETS,
+      embed: async () => Float32Array.from(QUERIES['sea ice']),
+      scan: { nprobe: 2 },
+      onSearch: status => statuses.push(status),
+    });
+
+    const first = await engine.query('sea ice', {});
+    expect(first.scan?.retries).to.equal(1);
+    expect(statuses.at(-1)?.scan?.retries).to.equal(1);
+    // Counted once: the next search reports only its own.
+    expect((await engine.query('sea ice drift', {})).scan?.retries).to.equal(0);
+  });
+
+  describe('first results before the scan ends', () => {
+    // Three cells, read one at a time; a first answer after the first.
+    const progressive = { scan: { nprobe: 3, parallel: 1, earlyCells: 1 } };
+
+    it('answers from the first cell, then refines with every cell', async () => {
+      const statuses: VectorSearchStatus[] = [];
+      const { engine } = await engineFor({
+        ...progressive,
+        onSearch: status => statuses.push(status),
+      });
+      const first = await engine.query('sea ice', {});
+
+      // The best cell's three theses, before the other cells are in.
+      expect(first.refined).to.exist;
+      expect(first.result.reachable).to.equal(3);
+      expect((await first.next(3)).map(r => r.title)).to.deep.equal([
+        'Sea ice drift in the Fram Strait',
+        'Modelagem da cobertura de gelo marinho',
+        'Ice and shipping lanes',
+      ]);
+
+      const final = (await first.refined) as VectorQuery;
+      expect(final.refined).to.be.undefined;
+      expect(final.scan).to.include({ cells: 3, candidates: 6, exact: 6 });
+      expect(final.scan!.timings.first).to.be.a('number');
+      expect(statuses.at(-1)?.first).to.include({ cellsDone: 1, cells: 3 });
+    });
+
+    it("counts a first answer's facets over the final one", async () => {
+      const { engine } = await engineFor(progressive);
+      const first = await engine.query('sea ice', {});
+      const final = (await first.refined)!;
+      expect(await first.facets()).to.deep.equal(await final.facets());
+    });
+
+    it("samples a first answer's matches from the final one", async () => {
+      const { engine } = await engineFor(progressive);
+      const first = await engine.query('sea ice', {});
+      const sampled = await first.sample!(10);
+      // Every cell's matches, not just the first cell's three.
+      expect(first.result.reachable).to.equal(3);
+      expect(sampled.of).to.equal((await first.refined)!.result.reachable);
+      expect(sampled.of).to.be.greaterThan(3);
+      expect(sampled.records).to.have.length(sampled.of);
+    });
+
+    it('waits for the whole scan when there are filters', async () => {
+      const { engine } = await engineFor(progressive);
+      const query = await engine.query('sea ice', { year: { min: 2010 } });
+      expect(query.refined).to.be.undefined;
+      expect(query.scan?.cells).to.equal(3);
+    });
+
+    it('waits for the whole scan when told not to answer early', async () => {
+      const { engine } = await engineFor({
+        ...progressive,
+        progressive: false,
+      });
+      const query = await engine.query('sea ice', {});
+      expect(query.refined).to.be.undefined;
+      expect(query.scan?.candidates).to.equal(6);
+    });
+  });
+
+  it('samples the matches paging reaches, from docs.bin rows alone', async () => {
+    const { engine, fixture } = await engineFor({
+      scan: { nprobe: 2, rerank: 3 },
+    });
+    const query = await engine.query('sea ice', {});
+    const before = fixture.requests.length;
+
+    const all = await query.sample!(10);
+    expect(all.of).to.equal(3);
+    expect(all.records.map(r => r.domain).sort()).to.deep.equal([
+      'archive.org',
+      'oda.uit.no',
+      'repositorio.ufsc.br',
+    ]);
+    expect(all.records.every(r => r.snippet === undefined)).to.be.true;
+    expect(fixture.requests.slice(before).map(r => r.url)).to.satisfy(
+      (urls: string[]) => urls.every(url => url.includes('docs.bin')),
+    );
+
+    const some = await query.sample!(1);
+    expect(some.of).to.equal(3);
+    expect(some.records).to.have.length(1);
   });
 
   it('reads one record by docId', async () => {

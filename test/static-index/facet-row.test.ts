@@ -64,6 +64,27 @@ describe('facetRowReader', () => {
     expect(row(0, 0, 0).value('lang')).to.be.undefined;
   });
 
+  it('reads a two-byte code column little-endian, for lists over 255', () => {
+    const hosts = Array.from({ length: 300 }, (_, i) => `host${i + 1}.edu`);
+    const wide = facetRowReader({
+      file: 'cell-facets.bin',
+      stride: 4,
+      gzip: false,
+      columns: [
+        { key: 'flags', kind: 'flags', bytes: [1], bits: { open: 1 } },
+        { key: 'domain', kind: 'code', byte: 2, width: 2, codes: hosts },
+      ],
+    });
+    // 300 = 0x012c: 0x2c, then 0x01
+    expect(wide(Uint8Array.from([0, 1, 0x2c, 0x01])).value('domain')).to.equal(
+      'host300.edu',
+    );
+    expect(wide(Uint8Array.from([0, 1, 7, 0])).value('domain')).to.equal(
+      'host7.edu',
+    );
+    expect(wide(Uint8Array.from([0, 1, 0, 0])).value('domain')).to.be.undefined;
+  });
+
   it('reads a year column in its encoding', () => {
     expect(row(115, 0, 0).value('year')).to.equal('1994');
     expect(row(18, 0, 0).value('year')).to.equal('1870');

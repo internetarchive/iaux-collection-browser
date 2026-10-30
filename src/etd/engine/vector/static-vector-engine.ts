@@ -7,16 +7,19 @@ import type {
   EtdRecord,
 } from '../../etd-engine';
 import { EtdFacetRows } from '../facets';
+import type { EtdFileCheck } from '../file-checks';
 import type { EtdFacetReader } from '../facets';
 import { DEFAULT_ETD_BASE_URL } from '../index-files';
+import { sampleOf } from '../sample';
 import { countFacets, filterFor } from '../static-etd-engine';
+import type { DocFilter } from '../static-etd-engine';
 import type { Embed } from './embedder';
 import { MODEL_ID, loadEmbedder } from './embedder';
-import type { ScanOptions, ScanProgress } from './scan';
+import type { EarlyScan, ScanOptions, ScanProgress } from './scan';
 import { DEFAULT_RERANK } from './scan';
 import type { ModelState, VectorScan, VectorSearcher } from './vector-searcher';
 import { InlineVectorSearcher, WorkerVectorSearcher } from './vector-searcher';
-import { VectorStoreFiles } from './vector-files';
+import { FileCheckError, VectorStoreFiles } from './vector-files';
 import type { VectorDoc } from './vector-records';
 import { VectorRecords } from './vector-records';
 
@@ -44,7 +47,13 @@ export interface StaticVectorEngineOptions {
   facets?: readonly EtdFacetReader[];
 
   /** Scan settings; the defaults are the live page's (and 6 cells at once). */
-  scan?: Omit<ScanOptions, 'signal' | 'onProgress'>;
+  scan?: Omit<ScanOptions, 'signal' | 'onProgress' | 'onEarly'>;
+
+  /**
+   * Answer from the first cells (after 4 cells or 3 s), then refine with
+   * the final ranking (default true). False waits for the whole scan.
+   */
+  progressive?: boolean;
 
   /** Where the model is: loading, with bytes; ready; failed. */
   onModel?: (state: ModelState) => void;
@@ -60,6 +69,8 @@ export interface VectorSearchStatus {
   /** Milliseconds since the search started. */
   elapsed: number;
   progress?: ScanProgress;
+  /** When the first answer came, if it did. */
+  first?: { cellsDone: number; cells: number; elapsed: number };
   /** Once done. */
   scan?: VectorScanSummary;
   message?: string;
@@ -74,12 +85,16 @@ export interface VectorScanSummary {
   cells: number;
   bytes: number;
   requests: number;
+  /** Requests asked again after a 5xx or no answer. */
+  retries: number;
   /** Milliseconds per step; `total` is the whole search. */
   timings: {
     load: number;
     embed: number;
     scan: number;
     rerank: number;
+    /** When the first answer came, if it did. */
+    first?: number;
     total: number;
   };
 }
@@ -120,7 +135,7 @@ export class StaticVectorEngine implements EtdEngine {
    * pass, so a re-filter or the compare panel reuse it instead of reading
    * ~80 MB again.
    */
-  private latest?: { text: string; scan: Promise<VectorScanned> };
+  private latest?: LatestScan;
 
   constructor(private readonly options: StaticVectorEngineOptions = {}) {
     const baseUrl = absolute(options.baseUrl ?? DEFAULT_ETD_BASE_URL);
@@ -153,8 +168,8 @@ export class StaticVectorEngine implements EtdEngine {
           loadEmbedder({
             ...model,
             fetch: options.fetch,
-            onProgress: (loaded, total) =>
-              options.onModel?.({ state: 'loading', loaded, total }),
+            onProgress: progress =>
+              options.onModel?.({ state: 'loading', ...progress }),
           }),
         onModel: options.onModel,
       });
@@ -170,6 +185,21 @@ export class StaticVectorEngine implements EtdEngine {
     return this.searcher.preload();
   }
 
+  /**
+   * What the item's file list said about the store's files, from the
+   * page's own open of them; also when the check is why the store
+   * didn't open.
+   */
+  async fileCheck(): Promise<EtdFileCheck> {
+    try {
+      const { files } = await this.loading;
+      return files.fileCheck;
+    } catch (err) {
+      if (err instanceof FileCheckError) return err.fileCheck;
+      throw err;
+    }
+  }
+
   async query(
     text: string,
     filters: EtdFilters,
@@ -181,7 +211,24 @@ export class StaticVectorEngine implements EtdEngine {
     if (!words) return emptyQuery();
     const passes = filterFor(filters, this.readers);
 
-    const { scan, summary } = await this.scanned(words, options);
+    const { full, early } = this.scanned(words, options);
+    const final = full.then(scanned => this.finalQuery(scanned, passes));
+    // A first answer only without filters: they need every scanned row's
+    // facets, which come with the full scan.
+    if (this.options.progressive !== false && !passes) {
+      // The full scan first: if both are in, the full one wins.
+      const first = await Promise.race([full.then(() => undefined), early]);
+      if (first) return firstQuery(first, final, records);
+    }
+    return final;
+  }
+
+  /** The ranking over every scanned row, re-scored and with facets. */
+  private async finalQuery(
+    { scan, summary }: VectorScanned,
+    passes: DocFilter | undefined,
+  ): Promise<VectorQuery> {
+    const { records } = await this.loading;
     if (passes && !scan.facets) {
       throw new Error(
         "ETD vector store: this store has no facet rows, so vector rank can't filter",
@@ -230,6 +277,14 @@ export class StaticVectorEngine implements EtdEngine {
           if (didAt(rank) + 1 === docId) return true;
         return false;
       },
+      async sample(count, sampleOptions) {
+        const { picked, of } = sampleOf(ranked, count);
+        const docs = await records.rows(picked.map(didAt), sampleOptions);
+        return {
+          records: docs.map((doc, i) => vectorRecord(doc, rows, picked[i])),
+          of,
+        };
+      },
       topDids(count) {
         return Array.from(scan.order.subarray(0, count), c => scan.dids[c]);
       },
@@ -237,69 +292,91 @@ export class StaticVectorEngine implements EtdEngine {
   }
 
   /** The scan for `text`: the latest one if it was for the same text. */
-  private async scanned(
-    text: string,
-    options?: EtdCallOptions,
-  ): Promise<VectorScanned> {
+  private scanned(text: string, options?: EtdCallOptions): LatestScan {
     const latest = this.latest;
     if (latest?.text === text) {
-      try {
-        return await latest.scan;
-      } catch (err) {
-        // Its own caller gave up on it; this one may not have.
-        if (options?.signal?.aborted || !isAbort(err)) throw err;
-      }
+      return {
+        text,
+        early: latest.early,
+        full: latest.full.catch(err => {
+          // Its own caller gave up on it; this one may not have.
+          if (options?.signal?.aborted || !isAbort(err)) throw err;
+          return this.scanned(text, options).full;
+        }),
+      };
     }
     const scan = this.scan(text, options);
-    this.latest = { text, scan };
-    scan.catch(() => {
-      if (this.latest?.scan === scan) this.latest = undefined;
+    this.latest = scan;
+    scan.full.catch(() => {
+      if (this.latest === scan) this.latest = undefined;
     });
     return scan;
   }
 
-  private async scan(
-    text: string,
-    options?: EtdCallOptions,
-  ): Promise<VectorScanned> {
+  private scan(text: string, options?: EtdCallOptions): LatestScan {
     const started = performance.now();
+    let first: VectorSearchStatus['first'];
     const report = (status: Omit<VectorSearchStatus, 'text' | 'elapsed'>) =>
       this.options.onSearch?.({
         text,
         elapsed: performance.now() - started,
+        first,
         ...status,
       });
-    report({ phase: 'loading' });
-    let scan: VectorScan;
-    try {
-      scan = await this.searcher.search(text, {
-        ...this.options.scan,
-        signal: options?.signal,
-        onProgress: progress => report({ phase: 'scanning', progress }),
-      });
-    } catch (err) {
-      report({
-        phase: 'failed',
-        message: err instanceof Error ? err.message : String(err),
-      });
-      throw err;
-    }
-    const summary: VectorScanSummary = {
-      candidates: scan.order.length,
-      exact: scan.exact,
-      cells: scan.cells.length,
-      bytes: scan.bytes,
-      requests: scan.requests,
-      timings: {
-        load: scan.loadMs,
-        embed: scan.embedMs,
-        scan: scan.timings.scan,
-        rerank: scan.timings.rerank,
-        total: performance.now() - started,
-      },
-    };
-    report({ phase: 'done', scan: summary });
-    return { scan, summary };
+    let resolveEarly!: (early: EarlyScan | undefined) => void;
+    const early = new Promise<EarlyScan | undefined>(resolve => {
+      resolveEarly = resolve;
+    });
+    const full = (async (): Promise<VectorScanned> => {
+      report({ phase: 'loading' });
+      let scan: VectorScan;
+      try {
+        scan = await this.searcher.search(text, {
+          ...this.options.scan,
+          signal: options?.signal,
+          onProgress: progress => report({ phase: 'scanning', progress }),
+          onEarly:
+            this.options.progressive === false
+              ? undefined
+              : answer => {
+                  first = {
+                    cellsDone: answer.progress.cellsDone,
+                    cells: answer.progress.cells,
+                    elapsed: performance.now() - started,
+                  };
+                  report({ phase: 'scanning', progress: answer.progress });
+                  resolveEarly(answer);
+                },
+        });
+      } catch (err) {
+        report({
+          phase: 'failed',
+          message: err instanceof Error ? err.message : String(err),
+        });
+        throw err;
+      } finally {
+        resolveEarly(undefined);
+      }
+      const summary: VectorScanSummary = {
+        candidates: scan.order.length,
+        exact: scan.exact,
+        cells: scan.cells.length,
+        bytes: scan.bytes,
+        requests: scan.requests,
+        retries: scan.retries,
+        timings: {
+          load: scan.loadMs,
+          embed: scan.embedMs,
+          scan: scan.timings.scan,
+          rerank: scan.timings.rerank,
+          first: first?.elapsed,
+          total: performance.now() - started,
+        },
+      };
+      report({ phase: 'done', scan: summary });
+      return { scan, summary };
+    })();
+    return { text, full, early };
   }
 
   async record(
@@ -315,6 +392,55 @@ export class StaticVectorEngine implements EtdEngine {
 interface VectorScanned {
   scan: VectorScan;
   summary: VectorScanSummary;
+}
+
+/** A scan under way: its first answer, if any, and its full result. */
+interface LatestScan {
+  text: string;
+  /** Resolves with the first answer, or undefined if there won't be one. */
+  early: Promise<EarlyScan | undefined>;
+  full: Promise<VectorScanned>;
+}
+
+/**
+ * A first answer from the cells read so far: their best rows by the 4-bit
+ * scores, without facets. `refined` is the final query; facets and samples
+ * wait for it.
+ * Its records have no archived-copy links yet: those need the facet rows.
+ */
+function firstQuery(
+  early: EarlyScan,
+  refined: Promise<VectorQuery>,
+  records: VectorRecords,
+): VectorQuery {
+  const dids = Array.from(early.dids);
+  let cursor = 0;
+  return {
+    result: { total: dids.length, approximate: false, reachable: dids.length },
+    refined,
+    async next(count, options) {
+      const page = dids.slice(cursor, cursor + count);
+      const docs = await records.read(page, options);
+      cursor += page.length;
+      return docs.map(doc => vectorRecord(doc));
+    },
+    async facets(options) {
+      return (await refined).facets(options);
+    },
+    async sample(count, options) {
+      return (await refined).sample!(count, options);
+    },
+    rankOf(docId) {
+      const rank = dids.indexOf(docId - 1) + 1;
+      return rank || undefined;
+    },
+    matches(docId) {
+      return dids.includes(docId - 1);
+    },
+    topDids(count) {
+      return dids.slice(0, count);
+    },
+  };
 }
 
 function isAbort(err: unknown): boolean {
@@ -365,6 +491,8 @@ function vectorRecord(
   rank?: number,
 ): EtdRecord {
   const record: EtdRecord = {
+    // The doc's 1-based position, which its identifier is made from
+    // (static-index/identifiers.ts); record() takes it back.
     docId: doc.did + 1,
     title: doc.title,
     creators: '',
@@ -403,6 +531,9 @@ function emptyQuery(): VectorQuery {
     },
     matches() {
       return false;
+    },
+    async sample() {
+      return { records: [], of: 0 };
     },
     topDids() {
       return [];

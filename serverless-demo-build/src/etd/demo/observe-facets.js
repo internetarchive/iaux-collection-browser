@@ -1,13 +1,4 @@
-/**
- * Wraps a search service so the demo can see the facets collection-browser
- * gets, without collection-browser telling it: every call passes through
- * unchanged, and each facets request (rows: 0) is reported as it starts and
- * when it lands. A request a newer one has replaced isn't reported, as
- * collection-browser drops it too.
- *
- * A service declaring its own facet groups keeps declaring them.
- */
-export function observeFacets(service, listener) {
+export function observeFacets(service, listener, onRequest) {
     let latest = 0;
     return {
         get extraFacetGroups() {
@@ -17,12 +8,17 @@ export function observeFacets(service, listener) {
             return service.allowFilterOnlySearch;
         },
         itemDetails: identifier => service.itemDetails(identifier),
+        // Only there if the service has it: collection-browser checks for it.
+        ...(service.onResultsChanged && {
+            onResultsChanged: (changed) => service.onResultsChanged(changed),
+        }),
         async search(params, searchType) {
             if (params.rows !== 0)
                 return service.search(params, searchType);
             latest += 1;
             const request = latest;
             listener({ state: 'loading' });
+            onRequest?.(params);
             let result;
             try {
                 result = await service.search(params, searchType);

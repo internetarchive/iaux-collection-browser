@@ -1414,6 +1414,17 @@ export const getMockErrorResult: () => Result<
   }),
 });
 
+/** The search engine failing on the query itself, e.g. bad syntax. */
+export const getMockSearchEngineErrorResult: () => Result<
+  SearchResponse,
+  SearchServiceError
+> = () => ({
+  error: new SearchServiceError(
+    SearchServiceErrorType.searchEngineError,
+    'parse error',
+  ),
+});
+
 export const getMockMalformedResult: () => Result<
   SearchResponse,
   SearchServiceError

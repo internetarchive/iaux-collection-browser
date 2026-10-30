@@ -7,7 +7,10 @@ import type {
   SearchServiceInterface,
   SearchType,
 } from '@internetarchive/search-service';
-import type { FacetDeclaringSearchService } from '../../serverless-search/serverless-search-service';
+import type {
+  FacetDeclaringSearchService,
+  RefiningSearchService,
+} from '../../serverless-search/serverless-search-service';
 
 /** The facets collection-browser last asked for, as it got them. */
 export type ObservedFacets =
@@ -22,12 +25,22 @@ export type ObservedFacets =
  * when it lands. A request a newer one has replaced isn't reported, as
  * collection-browser drops it too.
  *
- * A service declaring its own facet groups keeps declaring them.
+ * `onRequest`, when given, gets each facets request's params as it starts:
+ * the query and filters of the search collection-browser is showing, even
+ * one it found in its cache.
+ *
+ * A service declaring its own facet groups keeps declaring them, and one
+ * that refines its results still says so.
  */
+type ObservableService = SearchServiceInterface &
+  Partial<FacetDeclaringSearchService> &
+  Partial<RefiningSearchService>;
+
 export function observeFacets(
-  service: SearchServiceInterface & Partial<FacetDeclaringSearchService>,
+  service: ObservableService,
   listener: (facets: ObservedFacets) => void,
-): SearchServiceInterface & Partial<FacetDeclaringSearchService> {
+  onRequest?: (params: SearchParams) => void,
+): ObservableService {
   let latest = 0;
   return {
     get extraFacetGroups() {
@@ -37,6 +50,11 @@ export function observeFacets(
       return service.allowFilterOnlySearch;
     },
     itemDetails: identifier => service.itemDetails(identifier),
+    // Only there if the service has it: collection-browser checks for it.
+    ...(service.onResultsChanged && {
+      onResultsChanged: (changed: () => void) =>
+        service.onResultsChanged!(changed),
+    }),
     async search(
       params: SearchParams,
       searchType?: SearchType,
@@ -46,6 +64,7 @@ export function observeFacets(
       latest += 1;
       const request = latest;
       listener({ state: 'loading' });
+      onRequest?.(params);
       let result: Result<SearchResponse, SearchServiceError>;
       try {
         result = await service.search(params, searchType);

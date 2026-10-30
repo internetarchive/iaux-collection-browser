@@ -1,10 +1,11 @@
 import { EtdFacetRows } from '../facets';
 import { DEFAULT_ETD_BASE_URL } from '../index-files';
+import { sampleOf } from '../sample';
 import { countFacets, filterFor } from '../static-etd-engine';
 import { MODEL_ID, loadEmbedder } from './embedder';
 import { DEFAULT_RERANK } from './scan';
 import { InlineVectorSearcher, WorkerVectorSearcher } from './vector-searcher';
-import { VectorStoreFiles } from './vector-files';
+import { FileCheckError, VectorStoreFiles } from './vector-files';
 import { VectorRecords } from './vector-records';
 /**
  * Search by meaning over the ETD item's vector store: the query is embedded
@@ -46,7 +47,7 @@ export class StaticVectorEngine {
                     loadEmbedder({
                         ...model,
                         fetch: options.fetch,
-                        onProgress: (loaded, total) => options.onModel?.({ state: 'loading', loaded, total }),
+                        onProgress: progress => options.onModel?.({ state: 'loading', ...progress }),
                     }),
                 onModel: options.onModel,
             });
@@ -60,6 +61,22 @@ export class StaticVectorEngine {
     preload() {
         return this.searcher.preload();
     }
+    /**
+     * What the item's file list said about the store's files, from the
+     * page's own open of them; also when the check is why the store
+     * didn't open.
+     */
+    async fileCheck() {
+        try {
+            const { files } = await this.loading;
+            return files.fileCheck;
+        }
+        catch (err) {
+            if (err instanceof FileCheckError)
+                return err.fileCheck;
+            throw err;
+        }
+    }
     async query(text, filters, options) {
         const { records } = await this.loading;
         const words = text.trim();
@@ -67,7 +84,21 @@ export class StaticVectorEngine {
         if (!words)
             return emptyQuery();
         const passes = filterFor(filters, this.readers);
-        const { scan, summary } = await this.scanned(words, options);
+        const { full, early } = this.scanned(words, options);
+        const final = full.then(scanned => this.finalQuery(scanned, passes));
+        // A first answer only without filters: they need every scanned row's
+        // facets, which come with the full scan.
+        if (this.options.progressive !== false && !passes) {
+            // The full scan first: if both are in, the full one wins.
+            const first = await Promise.race([full.then(() => undefined), early]);
+            if (first)
+                return firstQuery(first, final, records);
+        }
+        return final;
+    }
+    /** The ranking over every scanned row, re-scored and with facets. */
+    async finalQuery({ scan, summary }, passes) {
+        const { records } = await this.loading;
         if (passes && !scan.facets) {
             throw new Error("ETD vector store: this store has no facet rows, so vector rank can't filter");
         }
@@ -116,77 +147,148 @@ export class StaticVectorEngine {
                         return true;
                 return false;
             },
+            async sample(count, sampleOptions) {
+                const { picked, of } = sampleOf(ranked, count);
+                const docs = await records.rows(picked.map(didAt), sampleOptions);
+                return {
+                    records: docs.map((doc, i) => vectorRecord(doc, rows, picked[i])),
+                    of,
+                };
+            },
             topDids(count) {
                 return Array.from(scan.order.subarray(0, count), c => scan.dids[c]);
             },
         };
     }
     /** The scan for `text`: the latest one if it was for the same text. */
-    async scanned(text, options) {
+    scanned(text, options) {
         const latest = this.latest;
         if (latest?.text === text) {
-            try {
-                return await latest.scan;
-            }
-            catch (err) {
-                // Its own caller gave up on it; this one may not have.
-                if (options?.signal?.aborted || !isAbort(err))
-                    throw err;
-            }
+            return {
+                text,
+                early: latest.early,
+                full: latest.full.catch(err => {
+                    // Its own caller gave up on it; this one may not have.
+                    if (options?.signal?.aborted || !isAbort(err))
+                        throw err;
+                    return this.scanned(text, options).full;
+                }),
+            };
         }
         const scan = this.scan(text, options);
-        this.latest = { text, scan };
-        scan.catch(() => {
-            if (this.latest?.scan === scan)
+        this.latest = scan;
+        scan.full.catch(() => {
+            if (this.latest === scan)
                 this.latest = undefined;
         });
         return scan;
     }
-    async scan(text, options) {
+    scan(text, options) {
         const started = performance.now();
+        let first;
         const report = (status) => this.options.onSearch?.({
             text,
             elapsed: performance.now() - started,
+            first,
             ...status,
         });
-        report({ phase: 'loading' });
-        let scan;
-        try {
-            scan = await this.searcher.search(text, {
-                ...this.options.scan,
-                signal: options?.signal,
-                onProgress: progress => report({ phase: 'scanning', progress }),
-            });
-        }
-        catch (err) {
-            report({
-                phase: 'failed',
-                message: err instanceof Error ? err.message : String(err),
-            });
-            throw err;
-        }
-        const summary = {
-            candidates: scan.order.length,
-            exact: scan.exact,
-            cells: scan.cells.length,
-            bytes: scan.bytes,
-            requests: scan.requests,
-            timings: {
-                load: scan.loadMs,
-                embed: scan.embedMs,
-                scan: scan.timings.scan,
-                rerank: scan.timings.rerank,
-                total: performance.now() - started,
-            },
-        };
-        report({ phase: 'done', scan: summary });
-        return { scan, summary };
+        let resolveEarly;
+        const early = new Promise(resolve => {
+            resolveEarly = resolve;
+        });
+        const full = (async () => {
+            report({ phase: 'loading' });
+            let scan;
+            try {
+                scan = await this.searcher.search(text, {
+                    ...this.options.scan,
+                    signal: options?.signal,
+                    onProgress: progress => report({ phase: 'scanning', progress }),
+                    onEarly: this.options.progressive === false
+                        ? undefined
+                        : answer => {
+                            first = {
+                                cellsDone: answer.progress.cellsDone,
+                                cells: answer.progress.cells,
+                                elapsed: performance.now() - started,
+                            };
+                            report({ phase: 'scanning', progress: answer.progress });
+                            resolveEarly(answer);
+                        },
+                });
+            }
+            catch (err) {
+                report({
+                    phase: 'failed',
+                    message: err instanceof Error ? err.message : String(err),
+                });
+                throw err;
+            }
+            finally {
+                resolveEarly(undefined);
+            }
+            const summary = {
+                candidates: scan.order.length,
+                exact: scan.exact,
+                cells: scan.cells.length,
+                bytes: scan.bytes,
+                requests: scan.requests,
+                retries: scan.retries,
+                timings: {
+                    load: scan.loadMs,
+                    embed: scan.embedMs,
+                    scan: scan.timings.scan,
+                    rerank: scan.timings.rerank,
+                    first: first?.elapsed,
+                    total: performance.now() - started,
+                },
+            };
+            report({ phase: 'done', scan: summary });
+            return { scan, summary };
+        })();
+        return { text, full, early };
     }
     async record(docId, options) {
         const { records } = await this.loading;
         const [doc] = await records.read([docId - 1], options);
         return doc && vectorRecord(doc);
     }
+}
+/**
+ * A first answer from the cells read so far: their best rows by the 4-bit
+ * scores, without facets. `refined` is the final query; facets and samples
+ * wait for it.
+ * Its records have no archived-copy links yet: those need the facet rows.
+ */
+function firstQuery(early, refined, records) {
+    const dids = Array.from(early.dids);
+    let cursor = 0;
+    return {
+        result: { total: dids.length, approximate: false, reachable: dids.length },
+        refined,
+        async next(count, options) {
+            const page = dids.slice(cursor, cursor + count);
+            const docs = await records.read(page, options);
+            cursor += page.length;
+            return docs.map(doc => vectorRecord(doc));
+        },
+        async facets(options) {
+            return (await refined).facets(options);
+        },
+        async sample(count, options) {
+            return (await refined).sample(count, options);
+        },
+        rankOf(docId) {
+            const rank = dids.indexOf(docId - 1) + 1;
+            return rank || undefined;
+        },
+        matches(docId) {
+            return dids.includes(docId - 1);
+        },
+        topDids(count) {
+            return dids.slice(0, count);
+        },
+    };
 }
 function isAbort(err) {
     return err instanceof DOMException && err.name === 'AbortError';
@@ -226,6 +328,8 @@ const ARCHIVE_URL = /^https?:\/\/(www\.|web\.)?archive\.org\//i;
  */
 function vectorRecord(doc, rows, rank) {
     const record = {
+        // The doc's 1-based position, which its identifier is made from
+        // (static-index/identifiers.ts); record() takes it back.
         docId: doc.did + 1,
         title: doc.title,
         creators: '',
@@ -262,6 +366,9 @@ function emptyQuery() {
         },
         matches() {
             return false;
+        },
+        async sample() {
+            return { records: [], of: 0 };
         },
         topDids() {
             return [];

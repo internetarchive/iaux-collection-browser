@@ -1,4 +1,5 @@
 import { termBuckets, yearHistogram, } from '../serverless-search/source-response';
+import { identifierFor } from '../static-index/identifiers';
 import { ETD_FACETS } from './etd-facets';
 /** Identifier prefix that marks a hit as an ETD record rather than an item. */
 export const ETD_IDENTIFIER_PREFIX = 'etd-';
@@ -17,10 +18,12 @@ export function etdAggregationKeys(facets) {
     return [...facets.map(facet => facet.key), 'year_histogram'];
 }
 /**
- * The identifier an ETD record is shown under.
+ * The identifier an ETD record is shown under. A record's docId is already
+ * its 1-based position (the vector engine adds 1 to its 0-based ids), so
+ * this is identifierFor with ids from 1.
  */
 export function etdIdentifier(docId, prefix = ETD_IDENTIFIER_PREFIX) {
-    return `${prefix}${docId}`;
+    return identifierFor(prefix, docId, 1);
 }
 /**
  * The document id behind an ETD identifier, or undefined if it is not one.

@@ -14,8 +14,26 @@
  * - New here: a file missing from the cache is read as several Range
  *   requests at once, which archive.org serves much faster than one stream.
  */
-export const TRANSFORMERS_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.2/dist/transformers.min.js';
+import { modelLibraryUrl } from '../../../static-index/model';
+import { HttpError } from '../http-error';
+import { retryingFetch } from '../retrying-fetch';
+/** The live page's build of transformers.js, which embedded the store. */
+export const MODEL_LIBRARY = {
+    name: '@huggingface/transformers',
+    version: '3.0.2',
+};
+export const TRANSFORMERS_URL = modelLibraryUrl(MODEL_LIBRARY);
 export const MODEL_ID = 'Xenova/multilingual-e5-small';
+/**
+ * How queries are embedded, as the store's build embedded abstracts: e5
+ * wants a "query: " prefix, mean pooling, and normalised vectors.
+ */
+export const QUERY_EMBEDDING = {
+    dtype: 'q8',
+    queryPrefix: 'query: ',
+    pooling: 'mean',
+    normalize: true,
+};
 const MODEL_CACHE = 'etd-model-cache';
 /**
  * A model file's cache key: its path within the item. The url embeds
@@ -79,7 +97,7 @@ export async function fetchInParallel(url, parallel, fetchFn, onBytes) {
             headers: { Range: `bytes=${from}-${to - 1}` },
         });
         if (response.status !== 206) {
-            throw new Error(`${url}: HTTP ${response.status} for a range`);
+            throw new HttpError(`${url}: HTTP ${response.status} for a range`, response.status);
         }
         // Read as a stream, so progress moves as bytes arrive.
         const reader = response.body.getReader();
@@ -99,30 +117,10 @@ export async function fetchInParallel(url, parallel, fetchFn, onBytes) {
     }));
     return new Response(body, { headers: { 'content-length': String(size) } });
 }
-/**
- * Loads transformers.js and the model, and resolves with the embedding
- * function. A failure rejects, and a later call can try again.
- */
-export async function loadEmbedder(options) {
-    const fetchFn = options.fetch ?? fetch.bind(globalThis);
-    const parallel = options.parallel ?? 6;
-    const lib = (await import(
-    /* @vite-ignore */ options.transformersUrl ?? TRANSFORMERS_URL));
-    const { env } = lib;
-    env.allowRemoteModels = false;
-    env.allowLocalModels = true;
-    env.localModelPath = options.modelBase;
-    env.useBrowserCache = false;
-    env.useCustomCache = true;
-    // Progress over every file fetched, summed.
-    let loaded = 0;
-    let total = 0;
-    const onBytes = (bytes, size) => {
-        loaded += bytes;
-        total += size;
-        options.onProgress?.(loaded, total);
-    };
-    env.customCache = {
+/** The model file cache transformers.js reads through (`env.customCache`). */
+export function modelFileCache(options) {
+    const { parallel, fetchFn, onBytes } = options;
+    return {
         async match(request) {
             const cache = await openCache();
             const hit = await cache?.match(modelCacheKey(request));
@@ -132,6 +130,12 @@ export async function loadEmbedder(options) {
             // then reads it as if it had been cached.
             const url = typeof request === 'string' ? request : String(request);
             const response = await fetchInParallel(url, parallel, fetchFn, onBytes);
+            // A 404 is a file the model doesn't have: transformers.js knows which
+            // are optional. A server failing (after the retries) fails the load,
+            // rather than transformers.js trying once more without retries.
+            if (response.status >= 500) {
+                throw new HttpError(`${url}: HTTP ${response.status}`, response.status);
+            }
             if (!response.ok)
                 return undefined;
             await cache
@@ -144,21 +148,54 @@ export async function loadEmbedder(options) {
             await cache?.put(modelCacheKey(request), response).catch(() => { });
         },
     };
+}
+/**
+ * Loads transformers.js and the model, and resolves with the embedding
+ * function. A failure rejects, and a later call can try again.
+ */
+export async function loadEmbedder(options) {
+    // Progress over every file fetched, summed.
+    const progress = { loaded: 0, total: 0, retries: 0 };
+    const report = () => options.onProgress?.({ ...progress });
+    const fetchFn = retryingFetch(options.fetch ?? fetch.bind(globalThis), {
+        onRetry: () => {
+            progress.retries += 1;
+            report();
+        },
+    });
+    const parallel = options.parallel ?? 6;
+    const lib = (await import(
+    /* @vite-ignore */ options.transformersUrl ?? TRANSFORMERS_URL));
+    const { env } = lib;
+    env.allowRemoteModels = false;
+    env.allowLocalModels = true;
+    env.localModelPath = options.modelBase;
+    env.useBrowserCache = false;
+    env.useCustomCache = true;
+    const onBytes = (bytes, size) => {
+        progress.loaded += bytes;
+        progress.total += size;
+        report();
+    };
+    env.customCache = modelFileCache({ parallel, fetchFn, onBytes });
     const extractor = await lib.pipeline('feature-extraction', options.modelId ?? MODEL_ID, {
-        dtype: 'q8',
+        dtype: QUERY_EMBEDDING.dtype,
         // Its own downloads only: with parallel reads, the cache does them.
         progress_callback: event => {
             const e = event;
             if (parallel <= 1 && e.status === 'progress' && e.total) {
-                options.onProgress?.(e.loaded ?? 0, e.total);
+                options.onProgress?.({
+                    loaded: e.loaded ?? 0,
+                    total: e.total,
+                    retries: progress.retries,
+                });
             }
         },
     });
-    // e5 embeds queries with a "query: " prefix, as the store's build did.
     return async (text) => {
-        const output = await extractor(`query: ${text}`, {
-            pooling: 'mean',
-            normalize: true,
+        const output = await extractor(`${QUERY_EMBEDDING.queryPrefix}${text}`, {
+            pooling: QUERY_EMBEDDING.pooling,
+            normalize: QUERY_EMBEDDING.normalize,
         });
         return new Float32Array(output.data);
     };
