@@ -70,9 +70,13 @@ export const MAX_TOP_SHARE = 0.95;
  */
 export const MIN_REPEATED = 0.3;
 
-/** A year, from a date that starts with one; undefined if it doesn't. */
+/**
+ * A year, from the first four digits standing alone in a date; undefined
+ * if there are none. Stub dates are the source's own text cut to 10
+ * bytes, so the year isn't always first: "Juni 2021", "01/01/2026".
+ */
 function yearOf(date: string): number | undefined {
-  const match = /^(\d{4})/.exec(date.trim());
+  const match = /(?<!\d)(\d{4})(?!\d)/.exec(date);
   if (!match) return undefined;
   const year = Number(match[1]);
   // Bad dates in the source records run into the future, as in the engine.

@@ -110,6 +110,25 @@ describe('findFacets', () => {
     expect(found.groups[0].values).to.have.length(1);
   });
 
+  it('finds the year in a date cut short, wherever it stands', () => {
+    // Stub dates as stubs.bin holds them: the source's text, 10 bytes.
+    const found = findFacets({
+      records: [
+        thesis('a.edu', 'Juni 2021', 'A'),
+        thesis('a.edu', '01/01/2026', 'B'),
+        thesis('a.edu', 'Mai 2017', 'C'),
+        thesis('a.edu', 'September ', 'D'),
+        thesis('a.edu', 'Fri, 28 Ju', 'E'),
+        thesis('a.edu', '12345', 'F'),
+      ],
+      of: 6,
+    });
+    expect(group(found, 'decade').values).to.deep.equal([
+      { value: '2020s', count: 2 },
+      { value: '2010s', count: 1 },
+    ]);
+  });
+
   it('takes no year from a date that is missing, malformed or in the future', () => {
     const future = new Date().getFullYear() + 10;
     const found = findFacets({
