@@ -7,6 +7,7 @@ import type {
   EtdRecord,
 } from '../../etd-engine';
 import { EtdFacetRows } from '../facets';
+import type { EtdFileCheck } from '../file-checks';
 import type { EtdFacetReader } from '../facets';
 import { DEFAULT_ETD_BASE_URL } from '../index-files';
 import { countFacets, filterFor } from '../static-etd-engine';
@@ -17,7 +18,7 @@ import type { EarlyScan, ScanOptions, ScanProgress } from './scan';
 import { DEFAULT_RERANK } from './scan';
 import type { ModelState, VectorScan, VectorSearcher } from './vector-searcher';
 import { InlineVectorSearcher, WorkerVectorSearcher } from './vector-searcher';
-import { VectorStoreFiles } from './vector-files';
+import { FileCheckError, VectorStoreFiles } from './vector-files';
 import type { VectorDoc } from './vector-records';
 import { VectorRecords } from './vector-records';
 
@@ -181,6 +182,21 @@ export class StaticVectorEngine implements EtdEngine {
    */
   preload(): Promise<void> {
     return this.searcher.preload();
+  }
+
+  /**
+   * What the item's file list said about the store's files, from the
+   * page's own open of them; also when the check is why the store
+   * didn't open.
+   */
+  async fileCheck(): Promise<EtdFileCheck> {
+    try {
+      const { files } = await this.loading;
+      return files.fileCheck;
+    } catch (err) {
+      if (err instanceof FileCheckError) return err.fileCheck;
+      throw err;
+    }
   }
 
   async query(
