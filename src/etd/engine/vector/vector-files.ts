@@ -1,6 +1,14 @@
+import { fileSetUrl } from '../../../static-index/files';
+import type { FileSet } from '../../../static-index/manifest';
 import type { EtdCallOptions } from '../../etd-engine';
-import { DEFAULT_ETD_BASE_URL, RangeFiles } from '../index-files';
+import { loadItemFileList } from '../../../static-index/file-list';
+import type { ItemFileList } from '../../../static-index/file-list';
+import { checkSizes, describeMismatch } from '../../../static-index/size-rules';
+import { etdItemId, MEANING_SEARCH, vectorSizeRules } from '../file-checks';
+import type { EtdFileCheck } from '../file-checks';
+import { RangeFiles } from '../../../static-index/range-files';
 import { HttpError } from '../http-error';
+import { DEFAULT_ETD_BASE_URL } from '../index-files';
 import { retryingFetch } from '../retrying-fetch';
 
 /**
@@ -33,22 +41,37 @@ export interface IvfMeta {
   vsnip?: boolean;
   /** Whether cell-codes.bin (quantised rows) exists. */
   codes?: boolean;
+  /** Bits per dimension in cell-codes.bin's rows; 4 when not given. */
+  code_bits?: number;
   /** The store's build stamp, e.g. '2026-10-12 11:31'. */
   built?: string;
 }
 
 /**
  * Reads the vector store's files. They aren't versioned like the text
- * index's: the names are fixed, and `?v=<built>` keys the browser cache to
- * the build, as on the live page (so centroids.f16 caches across visits).
+ * index's: the names are fixed, and a file can be replaced without
+ * ivf-meta.json changing. So each file's url is keyed by its own size and
+ * change time from the item's file list, and `open` checks every file's
+ * size against ivf-meta.json before a search reads any of them. Without
+ * the list, `?v=<built>` keys them all to the build, as on the live page.
  */
 export class VectorStoreFiles extends RangeFiles {
+  /** What the item's file list said about the store's files. */
+  readonly fileCheck: EtdFileCheck;
+
   private constructor(
     dataUrl: string,
     readonly meta: IvfMeta,
     fetchFn: typeof fetch,
+    private readonly fileList: ItemFileList | undefined,
+    itemId: string | undefined,
+    textDocs: number | undefined,
   ) {
     super(dataUrl, fetchFn);
+    this.fileCheck = {
+      itemId,
+      sizes: fileList && checkSizes(vectorSizeRules(meta, textDocs), fileList),
+    };
   }
 
   static async open(
@@ -57,6 +80,15 @@ export class VectorStoreFiles extends RangeFiles {
   ): Promise<VectorStoreFiles> {
     const fetchFn = options.fetch ?? fetch.bind(globalThis);
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    // Read alongside ivf-meta.json, so they add no wait; neither throws.
+    // current.json's n_docs is only for txt2vrow.bin's size.
+    const itemId = etdItemId(base);
+    const fileList = itemId
+      ? loadItemFileList(itemId, { fetch: fetchFn, signal: options.signal })
+      : Promise.resolve(undefined);
+    const textDocs = itemId
+      ? textDocCount(base, fetchFn, options.signal)
+      : Promise.resolve(undefined);
     // Unversioned, so always fetched fresh: a republished store shows at once.
     let manifestRetries = 0;
     // No answer at all (even after retries) throws: the service is down,
@@ -80,13 +112,39 @@ export class VectorStoreFiles extends RangeFiles {
     const meta = (await response.json()) as IvfMeta;
     checkIvfMeta(meta);
     const dataUrl = new URL('.', response.url || base).href;
-    const files = new VectorStoreFiles(dataUrl, meta, fetchFn);
+    const files = new VectorStoreFiles(
+      dataUrl,
+      meta,
+      fetchFn,
+      await fileList,
+      itemId,
+      await textDocs,
+    );
     files.stats.retries = manifestRetries;
+    // Files that don't fit ivf-meta.json would be read as the wrong rows.
+    const mismatch = files.fileCheck.sizes?.checks.find(
+      check =>
+        check.status === 'mismatch' && check.rule.layer === MEANING_SEARCH,
+    );
+    if (mismatch) {
+      throw new FileCheckError(
+        `ETD vector store: its files don't match ivf-meta.json: ${describeMismatch(mismatch)}`,
+        files.fileCheck,
+      );
+    }
     return files;
   }
 
+  /** Fixed names, keyed to the build stamp ('0' for a store without one). */
+  get fileSet(): FileSet {
+    return { naming: 'stamped', built: this.meta.built ?? '0' };
+  }
+
   fileUrl(name: string): string {
-    return `${this.dataUrl}${name}?v=${encodeURIComponent(this.meta.built ?? '0')}`;
+    const key = this.fileList?.cacheKey(name);
+    return key
+      ? `${this.dataUrl}${name}?v=${key}`
+      : fileSetUrl(this.dataUrl, this.fileSet, name);
   }
 
   /** A small JSON file the store may not have; undefined when it's absent. */
@@ -101,6 +159,36 @@ export class VectorStoreFiles extends RangeFiles {
       if (options?.signal?.aborted) throw err;
       return undefined;
     }
+  }
+}
+
+/** Opening stopped by a file check; the check says what didn't fit. */
+export class FileCheckError extends Error {
+  constructor(
+    message: string,
+    readonly fileCheck: EtdFileCheck,
+  ) {
+    super(message);
+    this.name = 'FileCheckError';
+  }
+}
+
+/** The text index's doc count, from current.json; undefined if unread. */
+async function textDocCount(
+  base: string,
+  fetchFn: typeof fetch,
+  signal?: AbortSignal,
+): Promise<number | undefined> {
+  try {
+    const response = await fetchFn(`${base}current.json?t=${Date.now()}`, {
+      signal,
+    });
+    if (!response.ok) return undefined;
+    const { n_docs: docs } = (await response.json()) as { n_docs?: unknown };
+    return Number.isSafeInteger(docs) ? (docs as number) : undefined;
+  } catch (err) {
+    if (signal?.aborted) throw err;
+    return undefined;
   }
 }
 

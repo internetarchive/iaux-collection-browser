@@ -2,10 +2,40 @@ import { expect } from '@open-wc/testing';
 import {
   EtdIndexFiles,
   checkIndexFormat,
-  parseByteRanges,
 } from '../../../src/etd/engine/index-files';
+import { parseByteRanges } from '../../../src/static-index/range-files';
 import type { EtdIndexMeta } from '../../../src/etd/engine/index-files';
 import { FIXTURE_BASE, FIXTURE_DATA, buildFixtureIndex } from './fixture-index';
+
+/**
+ * Wraps a fixture's fetch with archive.org's file list for etd-fixture,
+ * and optionally a current.json changed by `manifest`.
+ */
+function withFileList(
+  fetchFn: typeof fetch,
+  files: Record<string, number>,
+  manifest?: (meta: EtdIndexMeta) => EtdIndexMeta,
+): typeof fetch {
+  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input);
+    if (url === 'https://archive.org/metadata/etd-fixture/files') {
+      const result = Object.entries(files).map(([name, size]) => ({
+        name,
+        size: String(size),
+        mtime: '1793055159',
+      }));
+      return new Response(JSON.stringify({ result }), { status: 200 });
+    }
+    const response = await fetchFn(input, init);
+    if (!manifest || !url.includes('current.json')) return response;
+    const changed = new Response(
+      JSON.stringify(manifest(await response.json())),
+      { status: 200 },
+    );
+    Object.defineProperty(changed, 'url', { value: response.url });
+    return changed;
+  }) as typeof fetch;
+}
 
 const THESES = Array.from({ length: 40 }, (_, i) => ({
   title: `Thesis number ${i + 1}`,
@@ -148,5 +178,49 @@ describe('parseByteRanges', () => {
     const text = (u8?: Uint8Array) => new TextDecoder().decode(u8);
     expect(text(parts.get('10_3'))).to.equal('abc');
     expect(text(parts.get('50_2'))).to.equal('xy');
+  });
+
+  describe("against the item's file list", () => {
+    it('checks the records file against current.json', async () => {
+      const index = await buildFixtureIndex(THESES);
+      const files = await EtdIndexFiles.open(FIXTURE_BASE, {
+        fetch: withFileList(index.fetch, { 'stubs.bin.test1': 40 * 320 }),
+      });
+
+      expect(files.fileCheck.itemId).to.equal('etd-fixture');
+      expect(
+        files.fileCheck.sizes?.checks.map(c => [c.rule.file, c.status]),
+      ).to.deep.equal([['stubs.bin.test1', 'ok']]);
+      // Versioned files keep their version as the cache key.
+      expect(files.fileUrl('stubs.bin')).to.equal(
+        `${FIXTURE_DATA}stubs.bin.test1?v=test1`,
+      );
+    });
+
+    it('keys an unversioned index’s files by their size and change time', async () => {
+      const index = await buildFixtureIndex(THESES);
+      const files = await EtdIndexFiles.open(FIXTURE_BASE, {
+        fetch: withFileList(index.fetch, { 'stubs.bin': 40 * 320 }, meta => ({
+          ...meta,
+          v: undefined,
+        })),
+      });
+
+      expect(files.fileUrl('stubs.bin')).to.equal(
+        `${FIXTURE_DATA}stubs.bin?v=1793055159-12800`,
+      );
+      // Not in the list: the old fixed key.
+      expect(files.fileUrl('dict.bin')).to.equal(
+        `${FIXTURE_DATA}dict.bin?v=unversioned`,
+      );
+    });
+
+    it('opens as before when the list is missing', async () => {
+      const index = await buildFixtureIndex(THESES);
+      const files = await EtdIndexFiles.open(FIXTURE_BASE, {
+        fetch: index.fetch,
+      });
+      expect(files.fileCheck.sizes).to.be.undefined;
+    });
   });
 });

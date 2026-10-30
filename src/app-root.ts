@@ -25,6 +25,7 @@ import { ETD_FACETS } from './etd/etd-facets';
 import { ETD_VECTOR_FACETS } from './etd/etd-vector-facets';
 import { ETD_VECTOR_SEARCH } from './etd/etd-search-source';
 import { StaticVectorEngine } from './etd/engine/vector/static-vector-engine';
+import type { EtdFileCheck } from './etd/engine/file-checks';
 import type { VectorSearchStatus } from './etd/engine/vector/static-vector-engine';
 import type { ModelState } from './etd/engine/vector/vector-searcher';
 import './etd/demo/etd-vector-status';
@@ -35,6 +36,7 @@ import './etd/demo/etd-facet-summary';
 import './etd/demo/etd-found-facets';
 import { etdRequestFromParams } from './etd/etd-query';
 import type { EtdRequest } from './etd/etd-query';
+import './etd/demo/etd-file-check';
 import {
   DEFAULT_ETD_ITEM,
   checkItemIndex,
@@ -78,6 +80,11 @@ export class AppRoot extends LitElement {
 
   /** Built on first use: a text-only visit never loads the model. */
   private etdVectorEngine?: StaticVectorEngine;
+
+  /** Each index's files checked against the item's file list, once loaded. */
+  @state() private etdTextFileCheck?: EtdFileCheck;
+
+  @state() private etdVectorFileCheck?: EtdFileCheck;
 
   /** The services for each ranking, built once each. */
   private etdServices: {
@@ -200,12 +207,7 @@ export class AppRoot extends LitElement {
             engine: this.vectorEngine(),
             kind: ETD_VECTOR_SEARCH,
           })
-        : new EtdSearchService({
-            engine: (this.etdEngine ??= new StaticEtdEngine({
-              baseUrl: this.etdIndex.baseUrl,
-              facets: ETD_FACETS,
-            })),
-          });
+        : new EtdSearchService({ engine: this.textEngine() });
     const observed = observeFacets(
       service,
       facets => {
@@ -222,6 +224,22 @@ export class AppRoot extends LitElement {
     );
     this.etdServices[rank] = observed;
     return observed;
+  }
+
+  /** The text engine, built on first use. */
+  private textEngine(): StaticEtdEngine {
+    if (this.etdEngine) return this.etdEngine;
+    this.etdEngine = new StaticEtdEngine({
+      baseUrl: this.etdIndex.baseUrl,
+      facets: ETD_FACETS,
+    });
+    this.etdEngine
+      .fileCheck()
+      .then(check => {
+        this.etdTextFileCheck = check;
+      })
+      .catch(() => {});
+    return this.etdEngine;
   }
 
   /**
@@ -261,6 +279,12 @@ export class AppRoot extends LitElement {
         this.etdVectorSearch = search;
       },
     });
+    this.etdVectorEngine
+      .fileCheck()
+      .then(check => {
+        this.etdVectorFileCheck = check;
+      })
+      .catch(() => {});
     return this.etdVectorEngine;
   }
 
@@ -372,6 +396,10 @@ export class AppRoot extends LitElement {
             : this.etdEngine}
           .request=${this.etdRequest}
         ></etd-found-facets>
+        <etd-file-check
+          .text=${this.etdTextFileCheck}
+          .vector=${this.etdVectorFileCheck}
+        ></etd-file-check>
         ${this.etdCompare
           ? html`<etd-compare-panel
               .engine=${this.etdRank === 'vector'
@@ -1770,7 +1798,8 @@ export class AppRoot extends LitElement {
       display: none;
     }
 
-    #etd-controls etd-facet-summary {
+    #etd-controls etd-facet-summary,
+    #etd-controls etd-file-check {
       margin: 0.75rem 0;
     }
 

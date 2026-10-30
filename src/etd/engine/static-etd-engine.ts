@@ -9,6 +9,7 @@ import type {
   EtdSample,
 } from '../etd-engine';
 import { EtdDictionary } from './dictionary';
+import type { EtdFileCheck } from './file-checks';
 import { EtdIndexFiles } from './index-files';
 import { markTerms, termsToMark } from './mark-terms';
 import { boostTokens, phraseBoost, wordsPlacement } from './phrase-boost';
@@ -260,6 +261,12 @@ export class StaticEtdEngine implements EtdEngine {
     const { records } = await this.loading;
     const [record] = await records.read([docId], options);
     return record;
+  }
+
+  /** What the item's file list said about the index's files. */
+  async fileCheck(): Promise<EtdFileCheck> {
+    const { files } = await this.loading;
+    return files.fileCheck;
   }
 }
 

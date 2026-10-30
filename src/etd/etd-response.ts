@@ -2,6 +2,7 @@ import {
   termBuckets,
   yearHistogram,
 } from '../serverless-search/source-response';
+import { identifierFor } from '../static-index/identifiers';
 import type { EtdFacetCounts, EtdRecord } from './etd-engine';
 import { ETD_FACETS } from './etd-facets';
 import type { EtdFacet } from './etd-facets';
@@ -28,13 +29,15 @@ export function etdAggregationKeys(facets: readonly EtdFacet[]): string[] {
 }
 
 /**
- * The identifier an ETD record is shown under.
+ * The identifier an ETD record is shown under. A record's docId is already
+ * its 1-based position (the vector engine adds 1 to its 0-based ids), so
+ * this is identifierFor with ids from 1.
  */
 export function etdIdentifier(
   docId: number,
   prefix = ETD_IDENTIFIER_PREFIX,
 ): string {
-  return `${prefix}${docId}`;
+  return identifierFor(prefix, docId, 1);
 }
 
 /**

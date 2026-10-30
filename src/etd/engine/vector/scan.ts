@@ -1,3 +1,5 @@
+import { sidecarMatches } from '../../../static-index/files';
+import type { SidecarKey } from '../../../static-index/manifest';
 import type { EtdCallOptions } from '../../etd-engine';
 import { decodeHalfs } from './f16';
 import type { VectorStoreFiles } from './vector-files';
@@ -39,6 +41,15 @@ export interface CellFacetsMeta {
   domains?: string[];
   year_enc?: number;
 }
+
+/**
+ * What each sidecar's meta has to share with ivf-meta.json to be used, as
+ * on the live page. The codes' check is stricter: codes from another build
+ * would rank wrongly with nothing downstream to notice, while facet rows
+ * from another build only miscount.
+ */
+export const CODES_MUST_MATCH: readonly SidecarKey[] = ['n', 'built', 'dim'];
+export const FACETS_MUST_MATCH: readonly SidecarKey[] = ['n'];
 
 /** What a search needs loaded once: ~12.7 MB, read on first use. */
 export interface VectorIndex {
@@ -83,16 +94,13 @@ export async function loadVectorIndex(
     ),
     cellDir,
     codes: checkedCodes(codesMeta, files),
-    // The n check guards against a facet file left over from another build.
-    facets: facetsMeta?.n === meta.n ? facetsMeta : undefined,
+    facets: sidecarMatches(meta, facetsMeta, FACETS_MUST_MATCH)
+      ? facetsMeta
+      : undefined,
   };
 }
 
-/**
- * The quantised rows' meta, if it belongs to this build. Stricter than the
- * facets' check, as on the live page: codes from another build would rank
- * wrongly with nothing downstream to notice.
- */
+/** The quantised rows' meta, if it belongs to this build and adds up. */
 function checkedCodes(
   codes: CellCodesMeta | undefined,
   files: VectorStoreFiles,
@@ -100,9 +108,7 @@ function checkedCodes(
   const { meta } = files;
   if (!codes) return undefined;
   if (
-    codes.n !== meta.n ||
-    codes.built !== meta.built ||
-    codes.dim !== meta.dim ||
+    !sidecarMatches(meta, codes, CODES_MUST_MATCH) ||
     !(codes.bits === 4 || codes.bits === 8) ||
     codes.rowbytes !== 4 + ((codes.dim * codes.bits) >> 3) ||
     codes.scale?.length !== codes.dim

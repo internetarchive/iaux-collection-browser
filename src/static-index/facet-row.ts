@@ -71,8 +71,13 @@ export function facetRowReader(
       if (!column) return undefined;
       const byte = column.kind === 'flags' ? 0 : (row[column.byte] ?? 0);
       switch (column.kind) {
-        case 'code':
-          return byte ? column.codes[byte - 1] : undefined;
+        case 'code': {
+          const n =
+            column.width === 2
+              ? byte | ((row[column.byte + 1] ?? 0) << 8)
+              : byte;
+          return n ? column.codes[n - 1] : undefined;
+        }
         case 'year': {
           const year = yearFromByte(byte, column.encoding);
           return year ? String(year) : undefined;

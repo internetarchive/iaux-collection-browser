@@ -176,6 +176,8 @@ records, identifiers (`etdv-<n>`) and facets are separate from text rank's.
    (`cell-facets.bin`).
 6. Results are the best 400 that pass the filters. Facets count every
    scanned row that passes them (about 400,000 for a typical query).
+7. Each page of results reads `docs.bin` and the abstracts (`vsnip`), as
+   multi-range requests (`vector-records.ts`).
 
 **First results before the scan ends.** After 4 cells, or 3 s into the scan
 if that comes first, the engine answers with the best 400 of the rows read so
@@ -186,8 +188,7 @@ has loaded and the facets again, in place: the first tiles stay until the
 final ones arrive. Facets wait for the final answer. A search with filters
 waits for the whole scan, since the filters need every row's facets. The
 first answer can look quite different from the final one: the best theses
-are often in later cells. `&etd_vec_progressive=0` turns this off. 7. Each page of results reads `docs.bin` and the abstracts (`vsnip`), as
-multi-range requests (`vector-records.ts`).
+are often in later cells. `&etd_vec_progressive=0` turns this off.
 
 Steps 1-5 run in a Web Worker (`vector-worker.ts`), so the page stays
 responsive while 80 MB arrive. The ETD panel shows how it's going. The demo
@@ -271,6 +272,32 @@ as one sample, not a benchmark.
    streams 118 MB in 34 s.
 3. Ours reads the facet rows (3-4 MB) during the search; the live page reads
    them after showing results. Both read the same cells.
+
+#### First results
+
+Measured again on 2026-10-29, later the same day, all in one hour: one run
+each, from page load (the query is in the URL). Cold is "sea ice" on a fresh
+site. Warm is "machine translation for low-resource languages" with the model
+and centroids cached.
+
+| Run                               | First tiles     | Final ranking   |
+| --------------------------------- | --------------- | --------------- |
+| Cold, ours                        | 13.7 s, 10.8 s¹ | 18.7 s, 18.0 s¹ |
+| Cold, ours without first results² | 19.0 s          | 19.0 s          |
+| Cold, live page                   | 31.2 s          | 37.3 s          |
+| Warm, ours                        | 6.5 s           | 14.0 s          |
+| Warm, ours without first results² | 13.4 s          | 13.4 s          |
+| Warm, live page                   | 6.2 s           | 12.6 s          |
+
+1. Two cold runs. The final top 3 were the same with and without first
+   results.
+2. `&etd_vec_progressive=0`.
+
+The live page paints too, after every cell. So the gain over our own
+whole-scan wait is 5-8 s cold and 7 s warm, while the gain over the live page
+is cold only, and comes from the parallel reads. Warm, the two are about even.
+The network was faster this hour than for the table above, so compare within
+this table, not across them.
 
 The embedding itself is 40-170 ms. A warm search still spends 3-6 s on the
 model: reading 135 MB back from Cache Storage and starting ONNX.
@@ -414,8 +441,10 @@ so a live page rebuild can break it. It says so when that happens.
 To describe another item's index generically (a manifest it publishes, a
 config the client holds), see
 [`src/static-index/README.md`](../static-index/README.md).
-`etd-static-index.ts` describes ETD that way, and its tests hold the
-description to this folder's code.
+`etd-static-index.ts` describes ETD that way, both searches (words and
+meaning) over their two id spaces, and its tests hold the description to
+this folder's code: the vector config's facet counts match
+`StaticVectorEngine`'s over the same rows.
 
 `serverless-search/` is generic. To plug in another index:
 
