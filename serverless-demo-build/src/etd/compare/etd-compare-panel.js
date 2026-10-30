@@ -268,18 +268,18 @@ let EtdComparePanel = class EtdComparePanel extends LitElement {
     render() {
         return html `
       <section aria-labelledby="compare-heading">
-        <h2 id="compare-heading">Compare with the live etd-search page</h2>
+        <h2 id="compare-heading">Compare with the live search page</h2>
         ${this.vectorButtonTemplate}
         <div role="status" aria-live="polite">${this.summaryTemplate}</div>
         ${this.rankingTemplate} ${this.hiddenTemplate}
         ${this.livePage === 'missing'
             ? nothing
             : html `<details>
-              <summary>Live etd-search page</summary>
+              <summary>Live search page</summary>
               ${this.liveSourceIsIframe && this.livePage === 'present'
                 ? html `<iframe
                     src=${this.pageUrl}
-                    title="Live etd-search page"
+                    title="Live search page"
                   ></iframe>`
                 : nothing}
             </details>`}

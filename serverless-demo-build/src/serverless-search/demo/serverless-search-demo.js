@@ -183,7 +183,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         aria-expanded=${String(!this.etdControlsHidden)}
         @click=${this.toggleEtdControls}
       >
-        ${this.etdControlsHidden ? 'Show' : 'Hide'} ETD controls
+        ${this.etdControlsHidden ? 'Show' : 'Hide'} demo controls
       </button>
       ${this.etdControlsTemplate}
       <div id="collection-browser-container">
@@ -282,7 +282,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         ?hidden=${this.etdControlsHidden}
       >
         <h2 id="etd-controls-heading">
-          ETD theses search
+          Serverless search
           <span class="etd-controls-note">
             static index in the browser, no search backend
           </span>
@@ -334,11 +334,11 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
             return html `<li><a href=${url.href}>${label}</a></li>`;
         };
         return html `
-      <nav id="etd-browse" aria-label="Browse theses without a search">
+      <nav id="etd-browse" aria-label="Browse without a search">
         <span>Or browse:</span>
         <ul>
-          ${browse('Theses from the 2000s', 'year:[2000 TO 2009]')}
-          ${browse('Theses in Portuguese', 'language:"Portuguese"')}
+          ${browse('From the 2000s', 'year:[2000 TO 2009]')}
+          ${browse('In Portuguese', 'language:"Portuguese"')}
         </ul>
       </nav>
     `;
@@ -442,7 +442,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         return html `
       <form id="etd-search" role="search" @submit=${this.etdSearchPressed}>
         <label for="etd-query-field">
-          Search theses, here and on the live etd-search page:
+          Search this item, here and on its live search page:
         </label>
         <input
           type="search"

@@ -39,7 +39,7 @@ describe('serverless-search-demo', () => {
     expect(panel.hidden).to.be.false;
     expect(toggle.getAttribute('aria-controls')).to.equal('etd-controls');
     expect(toggle.getAttribute('aria-expanded')).to.equal('true');
-    expect(toggle.textContent?.trim()).to.equal('Hide ETD controls');
+    expect(toggle.textContent?.trim()).to.equal('Hide demo controls');
 
     // Everything the demo's panel had: item picker, its own search box,
     // the facet summary and the comparison with the live page
@@ -63,7 +63,7 @@ describe('serverless-search-demo', () => {
     await el.updateComplete;
     expect(panel.hidden).to.be.true;
     expect(toggle.getAttribute('aria-expanded')).to.equal('false');
-    expect(toggle.textContent?.trim()).to.equal('Show ETD controls');
+    expect(toggle.textContent?.trim()).to.equal('Show demo controls');
     const hiddenUrl = new URL(window.location.href);
     expect(hiddenUrl.searchParams.get('hide-etd-controls')).to.equal('true');
     expect(hiddenUrl.searchParams.get('search_service')).to.equal('etd');
