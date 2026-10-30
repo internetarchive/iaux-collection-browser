@@ -45,13 +45,29 @@ export const ETD_PRESET_QUERIES = [
   'educação',
 ];
 
+/** Searches to start from in dl-search, Democracy's Library. */
+export const DL_PRESET_QUERIES = [
+  'census',
+  'social security',
+  'highway safety',
+  '"clean water" AND act',
+  'Aruba',
+];
+
 /**
  * Preset searches by item. They're about what that item holds, so an item
  * with none here gets no presets.
  */
 export const PRESET_QUERIES_BY_ITEM: Record<string, readonly string[]> = {
   [DEFAULT_ETD_ITEM]: ETD_PRESET_QUERIES,
+  'dl-search': DL_PRESET_QUERIES,
 };
+
+/** Items with a static index, to switch to in a click. */
+export const KNOWN_ITEMS = [
+  { item: DEFAULT_ETD_ITEM, holds: 'theses and dissertations' },
+  { item: 'dl-search', holds: "Democracy's Library" },
+];
 
 /**
  * The serverless search demo: collection-browser searching the ETD theses
@@ -476,6 +492,22 @@ export class ServerlessSearchDemo extends LitElement {
         <button type="submit" ?disabled=${this.etdItemStatus?.busy}>
           Search this item
         </button>
+        <div id="known-items" role="group" aria-labelledby="known-items-label">
+          <span id="known-items-label">Or pick one:</span>
+          ${KNOWN_ITEMS.map(
+            known =>
+              html`<button
+                type="submit"
+                name="known-item"
+                value=${known.item}
+                aria-pressed=${known.item === item ? 'true' : 'false'}
+                ?disabled=${this.etdItemStatus?.busy}
+              >
+                ${known.item}
+                <span class="known-item-holds">${known.holds}</span>
+              </button>`,
+          )}
+        </div>
         <p
           id="etd-item-status"
           role="status"
@@ -509,6 +541,9 @@ export class ServerlessSearchDemo extends LitElement {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const field = form.elements.namedItem('item') as HTMLInputElement;
+    // A known-item button submits its own item, as if typed in
+    const picked = e.submitter as HTMLButtonElement | null;
+    if (picked?.name === 'known-item') field.value = picked.value;
     const item = parseItemIdentifier(field.value);
     if (!item) {
       this.etdItemStatus = {
@@ -694,6 +729,36 @@ export class ServerlessSearchDemo extends LitElement {
       border: 0;
     }
 
+    #known-items {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem 0.6rem;
+    }
+    #known-items button {
+      font-size: 1.4rem;
+      padding: 0.3rem 1rem;
+      border: 1px solid #2c5f8f;
+      border-radius: 4px;
+      background: white;
+      color: #1d3f61;
+      cursor: pointer;
+    }
+    #known-items button[aria-pressed='true'] {
+      background: #2c5f8f;
+      color: white;
+    }
+    #known-items button:hover:not([aria-pressed='true']),
+    #known-items button:focus-visible {
+      background: #e8f0f8;
+    }
+    #known-items button[aria-pressed='true']:focus-visible {
+      background: #1d3f61;
+    }
+    .known-item-holds {
+      font-size: 1.2rem;
+      opacity: 0.8;
+    }
     #etd-item {
       display: flex;
       flex-wrap: wrap;

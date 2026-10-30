@@ -1,7 +1,9 @@
 import { expect, fixture } from '@open-wc/testing';
 import { html } from 'lit';
 import '../../../src/serverless-search/demo/serverless-search-demo';
+import sinon from 'sinon';
 import {
+  DL_PRESET_QUERIES,
   ETD_PRESET_QUERIES,
   type ServerlessSearchDemo,
 } from '../../../src/serverless-search/demo/serverless-search-demo';
@@ -141,6 +143,60 @@ describe('serverless-search-demo', () => {
     );
 
     expect(panel.querySelector('#etd-presets')).to.be.null;
+  });
+
+  it("shows dl-search's own presets when searching dl-search", async () => {
+    const { panel } = await demoAt('?etd_item=dl-search&etd_compare=0');
+
+    const labels = [...panel.querySelectorAll('#etd-presets button')].map(b =>
+      b.textContent?.trim(),
+    );
+    expect(labels).to.deep.equal(DL_PRESET_QUERIES);
+  });
+
+  it('marks which known item is being searched', async () => {
+    const { panel } = await demoAt('?etd_item=dl-search&etd_compare=0');
+    const group = panel.querySelector('#known-items[role="group"]');
+    expect(group?.getAttribute('aria-labelledby')).to.equal(
+      'known-items-label',
+    );
+
+    const pressed = [...(group?.querySelectorAll('button') ?? [])].map(b => [
+      b.value,
+      b.getAttribute('aria-pressed'),
+    ]);
+    expect(pressed).to.deep.equal([
+      ['etd-search', 'false'],
+      ['dl-search', 'true'],
+    ]);
+  });
+
+  it('checks a known item when it is picked, as if typed in', async () => {
+    // The check fails, so the demo says why and stays on this page
+    const fetchStub = sinon
+      .stub(window, 'fetch')
+      .resolves(new Response('', { status: 404 }));
+    try {
+      const { el, panel } = await demoAt('?etd_compare=0');
+      const dl = panel.querySelector(
+        '#known-items button[value="dl-search"]',
+      ) as HTMLButtonElement;
+
+      dl.click();
+      await el.updateComplete;
+
+      const field = panel.querySelector('#etd-item-field') as HTMLInputElement;
+      expect(field.value).to.equal('dl-search');
+      // Its current.json is checked; the demo's own index loads alongside
+      const checked = fetchStub
+        .getCalls()
+        .map(call => String(call.args[0]))
+        .filter(url => url.includes('dl-search'));
+      expect(checked).to.have.length(1);
+      expect(checked[0]).to.include('/item-index/dl-search/current.json');
+    } finally {
+      fetchStub.restore();
+    }
   });
 
   it("starts a host's worker when the url opens on vector rank", async () => {
