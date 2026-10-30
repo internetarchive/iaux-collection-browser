@@ -1,4 +1,4 @@
-import { expect, fixture } from '@open-wc/testing';
+import { expect, fixture, waitUntil } from '@open-wc/testing';
 import { html } from 'lit';
 import '../../../src/serverless-search/demo/serverless-search-demo';
 import sinon from 'sinon';
@@ -199,6 +199,65 @@ describe('serverless-search-demo', () => {
     }
   });
 
+  describe('for an item with no vector index', () => {
+    let fetchStub: sinon.SinonStub;
+
+    beforeEach(() => {
+      const realFetch = window.fetch.bind(window);
+      fetchStub = sinon
+        .stub(window, 'fetch')
+        .callsFake((input, init) =>
+          String(input).includes('ivf-meta.json')
+            ? Promise.resolve(new Response('', { status: 404 }))
+            : realFetch(input, init),
+        );
+    });
+
+    afterEach(() => {
+      fetchStub.restore();
+    });
+
+    it('disables ranking by meaning, and says why', async () => {
+      const { el, root } = await demoAt('?etd_compare=0');
+      const meaning = root.querySelector(
+        '#etd-rank input[value="vector"]',
+      ) as HTMLInputElement;
+      await waitUntil(() => meaning.disabled, 'meaning never disabled');
+      await el.updateComplete;
+
+      const note = root.querySelector('#etd-rank-no-vector');
+      expect(meaning.getAttribute('aria-describedby')).to.equal(
+        'etd-rank-no-vector',
+      );
+      expect(note?.textContent?.trim()).to.equal(
+        'This item has no vector index.',
+      );
+      const words = root.querySelector(
+        '#etd-rank input[value="text"]',
+      ) as HTMLInputElement;
+      expect(words.disabled).to.be.false;
+      expect(words.checked).to.be.true;
+    });
+
+    it('ranks by words when the url asks for meaning', async () => {
+      const { el, root } = await demoAt('?etd_rank=vec&etd_compare=0');
+      await waitUntil(
+        () =>
+          (
+            root.querySelector(
+              '#etd-rank input[value="text"]',
+            ) as HTMLInputElement
+          ).checked,
+        'never fell back to words',
+      );
+      await el.updateComplete;
+
+      expect(new URL(window.location.href).searchParams.has('etd_rank')).to.be
+        .false;
+      expect(el.collectionBrowser?.searchService).to.exist;
+    });
+  });
+
   it("starts a host's worker when the url opens on vector rank", async () => {
     // A host on another origin passes workerFactory, since the worker module
     // next to this file isn't same-origin there. It's set after the element
@@ -212,14 +271,28 @@ describe('serverless-search-demo', () => {
       return worker;
     };
 
-    await fixture<ServerlessSearchDemo>(
-      html`<serverless-search-demo
-        .workerFactory=${workerFactory}
-      ></serverless-search-demo>`,
-    );
+    // This item has a vector index
+    const realFetch = window.fetch.bind(window);
+    const fetchStub = sinon
+      .stub(window, 'fetch')
+      .callsFake((input, init) =>
+        String(input).includes('ivf-meta.json')
+          ? Promise.resolve(new Response('{}'))
+          : realFetch(input, init),
+      );
+    try {
+      await fixture<ServerlessSearchDemo>(
+        html`<serverless-search-demo
+          .workerFactory=${workerFactory}
+        ></serverless-search-demo>`,
+      );
 
-    expect(workers).to.have.length(1);
-    workers.forEach(worker => worker.terminate());
+      await waitUntil(() => workers.length > 0, 'no worker started');
+      expect(workers).to.have.length(1);
+    } finally {
+      fetchStub.restore();
+      workers.forEach(worker => worker.terminate());
+    }
   });
 
   it('links the docs it is given, and none when given none', async () => {

@@ -65,6 +65,19 @@ export function etdIndexUrls(params) {
     };
 }
 /**
+ * Whether the index at `baseUrl` has a vector store to search by meaning:
+ * its ivf-meta.json, which not every item has (dl-search doesn't).
+ */
+export async function hasVectorIndex(baseUrl, fetchFn = fetch.bind(globalThis)) {
+    try {
+        const response = await fetchFn(`${baseUrl}ivf-meta.json?t=${Date.now()}`);
+        return response.ok;
+    }
+    catch {
+        return false;
+    }
+}
+/**
  * Reads an item's current.json and checks it describes an index this engine
  * reads, before the demo switches to it.
  */

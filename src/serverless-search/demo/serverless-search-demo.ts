@@ -29,6 +29,7 @@ import {
   DEFAULT_ETD_ITEM,
   checkItemIndex,
   etdIndexUrls,
+  hasVectorIndex,
   parseItemIdentifier,
 } from '../../etd/demo/item-index';
 
@@ -154,8 +155,32 @@ export class ServerlessSearchDemo extends LitElement {
    */
   @state() private searchService?: SearchServiceInterface;
 
+  /**
+   * Whether this item has a vector index to rank by meaning, once checked.
+   * Until then, and when it has none, a search ranks by words.
+   */
+  @state() private vectorIndexFound?: boolean;
+
   connectedCallback(): void {
     super.connectedCallback();
+    if (this.etdRank === 'text') {
+      this.searchService ??= this.etdService('text');
+    }
+    this.checkVectorIndex();
+  }
+
+  /**
+   * Turns off ranking by meaning for an item with no vector index. A url
+   * asking for it then ranks by words instead of searching nothing.
+   */
+  private async checkVectorIndex(): Promise<void> {
+    this.vectorIndexFound ??= await hasVectorIndex(this.etdIndex.baseUrl);
+    if (this.etdRank === 'vector' && !this.vectorIndexFound) {
+      this.etdRank = 'text';
+      const url = new URL(window.location.href);
+      url.searchParams.delete('etd_rank');
+      window.history.replaceState(window.history.state, '', url.href);
+    }
     this.searchService ??= this.etdService(this.etdRank);
   }
 
@@ -273,6 +298,7 @@ export class ServerlessSearchDemo extends LitElement {
    * the first time) and centroids, so the search doesn't wait for them.
    */
   private etdPreloadVector() {
+    if (!this.vectorIndexFound) return;
     this.vectorEngine()
       .preload()
       .catch(() => {});
@@ -364,8 +390,17 @@ export class ServerlessSearchDemo extends LitElement {
             name="etd-rank"
             value="vector"
             .checked=${this.etdRank === 'vector'}
+            ?disabled=${this.vectorIndexFound === false}
+            aria-describedby=${this.vectorIndexFound === false
+              ? 'etd-rank-no-vector'
+              : nothing}
           />
           Meaning <span class="etd-rank-note">(vector rank)</span>
+          ${this.vectorIndexFound === false
+            ? html`<span id="etd-rank-no-vector" class="etd-rank-note">
+                This item has no vector index.
+              </span>`
+            : nothing}
         </label>
       </fieldset>
     `;

@@ -20,7 +20,7 @@ import '../../etd/compare/etd-compare-panel';
 import { observeFacets, } from '../../etd/demo/observe-facets';
 import '../../etd/demo/etd-facet-summary';
 import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
-import { DEFAULT_ETD_ITEM, checkItemIndex, etdIndexUrls, parseItemIdentifier, } from '../../etd/demo/item-index';
+import { DEFAULT_ETD_ITEM, checkItemIndex, etdIndexUrls, hasVectorIndex, parseItemIdentifier, } from '../../etd/demo/item-index';
 /**
  * Searches to start from in etd-search, each run as if typed into the
  * search box. The quoted one shows the live page's query syntax: a phrase,
@@ -106,6 +106,23 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
     }
     connectedCallback() {
         super.connectedCallback();
+        if (this.etdRank === 'text') {
+            this.searchService ??= this.etdService('text');
+        }
+        this.checkVectorIndex();
+    }
+    /**
+     * Turns off ranking by meaning for an item with no vector index. A url
+     * asking for it then ranks by words instead of searching nothing.
+     */
+    async checkVectorIndex() {
+        this.vectorIndexFound ??= await hasVectorIndex(this.etdIndex.baseUrl);
+        if (this.etdRank === 'vector' && !this.vectorIndexFound) {
+            this.etdRank = 'text';
+            const url = new URL(window.location.href);
+            url.searchParams.delete('etd_rank');
+            window.history.replaceState(window.history.state, '', url.href);
+        }
         this.searchService ??= this.etdService(this.etdRank);
     }
     /** The collection-browser inside, for a host's dev tools. */
@@ -192,6 +209,8 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
      * the first time) and centroids, so the search doesn't wait for them.
      */
     etdPreloadVector() {
+        if (!this.vectorIndexFound)
+            return;
         this.vectorEngine()
             .preload()
             .catch(() => { });
@@ -276,8 +295,17 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
             name="etd-rank"
             value="vector"
             .checked=${this.etdRank === 'vector'}
+            ?disabled=${this.vectorIndexFound === false}
+            aria-describedby=${this.vectorIndexFound === false
+            ? 'etd-rank-no-vector'
+            : nothing}
           />
           Meaning <span class="etd-rank-note">(vector rank)</span>
+          ${this.vectorIndexFound === false
+            ? html `<span id="etd-rank-no-vector" class="etd-rank-note">
+                This item has no vector index.
+              </span>`
+            : nothing}
         </label>
       </fieldset>
     `;
@@ -823,6 +851,9 @@ __decorate([
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "searchService", void 0);
+__decorate([
+    state()
+], ServerlessSearchDemo.prototype, "vectorIndexFound", void 0);
 __decorate([
     state()
 ], ServerlessSearchDemo.prototype, "etdFacets", void 0);
