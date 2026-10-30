@@ -123,8 +123,34 @@ describe('etdIndexUrls', () => {
     ).to.deep.equal({
       baseUrl: 'https://example.org/idx',
       pageUrl: 'https://example.org/idx/search.html',
+      item: undefined,
       rejectedItem: undefined,
     });
+  });
+
+  it('names the item when etd_base_url is its archive.org download folder', () => {
+    const direct = urls('etd_base_url=https://archive.org/download/dl-search/');
+    expect(direct.item).to.equal('dl-search');
+    expect(direct.baseUrl).to.equal('https://archive.org/download/dl-search/');
+    expect(direct.pageUrl).to.equal(
+      'https://archive.org/download/dl-search/search.html',
+    );
+    expect(
+      urls('etd_base_url=https://archive.org/download/dl-search').item,
+    ).to.equal('dl-search');
+  });
+
+  it('names no item for any other etd_base_url', () => {
+    for (const other of [
+      'https://example.org/download/dl-search/',
+      'https://archive.org/download/dl-search/older/',
+      'https://archive.org/details/dl-search',
+      'https://archive.org/download/..%2Fsecret/',
+      '/etd-index/',
+    ]) {
+      expect(urls(`etd_base_url=${encodeURIComponent(other)}`).item, other).to
+        .be.undefined;
+    }
   });
 });
 

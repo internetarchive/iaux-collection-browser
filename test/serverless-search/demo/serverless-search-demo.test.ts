@@ -205,6 +205,25 @@ describe('serverless-search-demo', () => {
     expect(panel.querySelector('form#etd-search')).to.exist;
   });
 
+  it('fills in the panel for an item read straight from archive.org', async () => {
+    const { panel } = await demoAt(
+      `?etd_compare=0&etd_base_url=${encodeURIComponent('https://archive.org/download/dl-search/')}`,
+    );
+    const field = panel.querySelector('#etd-item-field') as HTMLInputElement;
+    expect(field.value).to.equal('dl-search');
+    const pressed = panel.querySelector(
+      '#known-items button[aria-pressed="true"]',
+    ) as HTMLButtonElement;
+    expect(pressed?.value).to.equal('dl-search');
+    const presets = [...panel.querySelectorAll('#etd-presets button')].map(b =>
+      b.textContent?.trim(),
+    );
+    expect(presets).to.deep.equal(DL_PRESET_QUERIES);
+    expect(
+      panel.querySelector('etd-file-check')?.getAttribute('itemid'),
+    ).to.equal('dl-search');
+  });
+
   it('shows no presets for an index given by etd_base_url', async () => {
     const { panel } = await demoAt(
       '?etd_base_url=https://example.org/index/&etd_compare=0',

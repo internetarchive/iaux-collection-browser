@@ -46,7 +46,10 @@ export interface EtdIndexUrls {
   baseUrl: string;
   /** The item's own search.html, for the compare panel. */
   pageUrl: string;
-  /** The item searched, or undefined when `etd_base_url` overrides it. */
+  /**
+   * The item searched. With `etd_base_url`, only when that is an item's own
+   * archive.org/download/<id>/ folder.
+   */
   item?: string;
   /** An `etd_item` value that isn't an identifier, so was ignored. */
   rejectedItem?: string;
@@ -55,6 +58,23 @@ export interface EtdIndexUrls {
 /** The proxied directory of an item's files. */
 export function itemIndexUrl(item: string): string {
   return item === DEFAULT_ETD_ITEM ? '/etd-index/' : `/item-index/${item}/`;
+}
+
+/**
+ * The item whose archive.org download folder `url` is, read straight from
+ * archive.org: https://archive.org/download/<id>/, and nothing deeper.
+ */
+function downloadFolderItem(url: string): string | undefined {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return undefined;
+  }
+  const match = parsed.pathname.match(/^\/download\/([^/]+)\/?$/);
+  if (!ARCHIVE_HOSTS.has(parsed.hostname) || !match) return undefined;
+  const item = decodeURIComponent(match[1]);
+  return IDENTIFIER.test(item) ? item : undefined;
 }
 
 /**
@@ -71,7 +91,12 @@ export function etdIndexUrls(params: URLSearchParams): EtdIndexUrls {
   const baseUrl = params.get('etd_base_url');
   if (baseUrl !== null) {
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    return { baseUrl, pageUrl: `${base}search.html`, rejectedItem };
+    return {
+      baseUrl,
+      pageUrl: `${base}search.html`,
+      item: downloadFolderItem(baseUrl),
+      rejectedItem,
+    };
   }
   return {
     baseUrl: itemUrl,
