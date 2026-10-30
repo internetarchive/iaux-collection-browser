@@ -127,6 +127,22 @@ describe('serverless-search-demo', () => {
     expect(field.value).to.equal('"sea ice" AND antarctic');
   });
 
+  it('shows no presets for another item, since they are about etd-search', async () => {
+    const { panel } = await demoAt('?etd_item=some-other-item&etd_compare=0');
+
+    expect(panel.querySelector('#etd-presets')).to.be.null;
+    // The rest of the panel is still there
+    expect(panel.querySelector('form#etd-search')).to.exist;
+  });
+
+  it('shows no presets for an index given by etd_base_url', async () => {
+    const { panel } = await demoAt(
+      '?etd_base_url=https://example.org/index/&etd_compare=0',
+    );
+
+    expect(panel.querySelector('#etd-presets')).to.be.null;
+  });
+
   it("starts a host's worker when the url opens on vector rank", async () => {
     // A host on another origin passes workerFactory, since the worker module
     // next to this file isn't same-origin there. It's set after the element

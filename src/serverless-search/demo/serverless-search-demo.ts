@@ -33,8 +33,9 @@ import {
 } from '../../etd/demo/item-index';
 
 /**
- * Searches to start from, each run as if typed into the search box. The
- * quoted one shows the live page's query syntax: a phrase, then AND.
+ * Searches to start from in etd-search, each run as if typed into the
+ * search box. The quoted one shows the live page's query syntax: a phrase,
+ * then AND.
  */
 export const ETD_PRESET_QUERIES = [
   'sea ice',
@@ -43,6 +44,14 @@ export const ETD_PRESET_QUERIES = [
   'machine learning',
   'educação',
 ];
+
+/**
+ * Preset searches by item. They're about what that item holds, so an item
+ * with none here gets no presets.
+ */
+export const PRESET_QUERIES_BY_ITEM: Record<string, readonly string[]> = {
+  [DEFAULT_ETD_ITEM]: ETD_PRESET_QUERIES,
+};
 
 /**
  * The serverless search demo: collection-browser searching the ETD theses
@@ -550,10 +559,13 @@ export class ServerlessSearchDemo extends LitElement {
   }
 
   private get etdPresetsTemplate() {
+    const { item } = this.etdIndex;
+    const queries = item ? PRESET_QUERIES_BY_ITEM[item] : undefined;
+    if (!queries?.length) return nothing;
     return html`
       <div id="etd-presets" role="group" aria-labelledby="etd-presets-label">
         <span id="etd-presets-label">Try a search:</span>
-        ${ETD_PRESET_QUERIES.map(
+        ${queries.map(
           query =>
             html`<button
               type="button"
