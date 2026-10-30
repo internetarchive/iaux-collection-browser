@@ -106,6 +106,7 @@ table.work td:nth-child(2) { font-weight: 700; min-width: 11rem; }
 table.work td:nth-child(2) .pill { margin-top: 0.35rem; }
 table.work td:first-child { font-weight: 400; color: var(--ink-2); }
 table.work td:nth-child(3) { min-width: 20rem; }
+table.lessons td { min-width: 12rem; }
 
 .note { margin-top: 1.25rem; padding: 0.85rem 1rem; border: 1px solid var(--info-bd); background: var(--info-bg); border-radius: 6px; max-width: 70ch; }
 .note p:first-child { margin-top: 0; }
@@ -188,6 +189,7 @@ table.work td:nth-child(3) { min-width: 20rem; }
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#decisions">Decisions and risks</a></li>
     <li><a href="#appendix">Appendix for engineers</a></li>
+    <li><a href="#lessons">Appendix: what didn't pan out</a></li>
   </ol>
 </nav>
 
@@ -725,6 +727,59 @@ flowchart TD
     <tr><td>ETD engine docs</td><td><code>src/etd/README.md</code></td></tr>
   </tbody>
 </table></div>
+</section>
+
+<section id="lessons" class="appendix">
+<h2>Appendix: what didn't pan out</h2>
+<div class="prose">
+  <p>Explorations that failed or stalled, and what each one left us with. Most failed early, measured against real data.</p>
+</div>
+
+<h3>Search by meaning</h3>
+<div class="frame"><table class="plain lessons">
+  <thead><tr><th>What we tried</th><th>What happened</th><th>What we kept</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Rebalancing the clusters.</strong> They are very uneven (12,379 of 16,384 hold 10 rows or fewer), so evening them out looked like a win.</td><td>Recall@10 fell from 0.845 to 0.61. The hypothesis was wrong.</td><td>Uneven clusters aren't the problem; bytes read per search are.</td></tr>
+    <tr><td><strong>Plain 1-bit codes</strong>, to cut bytes per search.</td><td>Quality fell apart: 297 of 384 dimensions have the same sign for over 90% of vectors.</td><td>Centre the vectors first: r@50 0.94 at ~24 MB. 2-bit codes: r@50 0.97 at ~43 MB. Both need the owner to rebuild.</td></tr>
+    <tr><td><strong>Re-ranking word results by meaning</strong>, the cheapest meaning feature, through the owner's <code>txt2vrow.bin</code>.</td><td>The map was built for the previous text build. Record ids move between builds, so it points at the wrong records today.</td><td>File checks against the item's file list (#638), and the rule to version every file.</td></tr>
+    <tr><td><strong>Early-results timings.</strong></td><td>The first numbers were taken from different start points than the README's table. We also said the live page shows nothing until a search ends; it draws results as clusters arrive.</td><td>Re-timed from page load: the gain over the live page is on a cold start only.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Running it outside a local server</h3>
+<div class="frame"><table class="plain lessons">
+  <thead><tr><th>What we tried</th><th>What happened</th><th>What we kept</th></tr></thead>
+  <tbody>
+    <tr><td><strong>The GitHub Pages demo</strong>, with no local server.</td><td>Search fails: Pages has no proxy, and archive.org lets other sites read only <code>.json</code> files.</td><td>The CORS ask: the owner renames files to end in <code>.json</code>; archive.org allows more file types.</td></tr>
+    <tr><td><strong>The offshoot demo</strong>, loading collection-browser from esm.archive.org.</td><td>esm.archive.org's disk is full, so it can't build new commits and serves an old one. Four pushed fixes are waiting.</td><td>Needs whoever runs esm.archive.org to free space.</td></tr>
+    <tr><td><strong>A local petabox CORS change.</strong></td><td>Nothing to change locally.</td><td>CORS has to change on archive.org itself.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Data and items</h3>
+<div class="frame"><table class="plain lessons">
+  <thead><tr><th>What we tried</th><th>What happened</th><th>What we kept</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Reading the owner's builder source.</strong></td><td><code>internetarchivecanada/etd</code> returns 404 for us.</td><td>The design and the owner asks were written from the published files alone.</td></tr>
+    <tr><td><strong>theses-and-dissertations as the second item</strong>, expected to be a clean sibling of ETD.</td><td>It mixes three kinds of things (dissertations, DTIC reports, raw ETD catalogs), has 10,757 institution spellings, and only 181 abstracts.</td><td>Still the pick, but only its 274,394 dissertations, with values cleaned first (section 9).</td></tr>
+    <tr><td><strong>A natural-language search preset</strong> in the offshoot demo.</td><td>It returned 0 results; not yet explained.</td><td>Left out of the presets.</td></tr>
+    <tr><td><strong>Two reported data issues:</strong> Spanish shown as Portuguese, and "Ice; Ice".</td><td>Neither is confirmed.</td><td>Parked until there are examples.</td></tr>
+    <tr><td><strong>A year filter on word search.</strong></td><td>It returned 3,278,934 results, which looked wrong to the offshoot demo session.</td><td>Possibly what #639's year fix addresses; not yet checked.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Tooling</h3>
+<div class="frame"><table class="plain lessons">
+  <thead><tr><th>What we tried</th><th>What happened</th><th>What we kept</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Checking the demo in the in-app browser.</strong></td><td>It doesn't trust the dev server's self-signed certificate.</td><td>The file-check drawer was checked by tests and a run against the live item, not by eye.</td></tr>
+    <tr><td><strong>This page's charts.</strong></td><td>A left-to-right roadmap was unreadable; the first frame sizing collapsed the charts.</td><td>Top-to-bottom charts, sized to fit, opening full size on click (repo copy only).</td></tr>
+  </tbody>
+</table></div>
+
+<div class="note">
+  <p><strong>What lasted:</strong> centred vector codes, file checks against the item's file list, the CORS ask, and cleaning values before indexing a new item.</p>
+</div>
 </section>
 </div>
 
