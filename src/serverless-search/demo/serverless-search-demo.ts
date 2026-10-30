@@ -24,6 +24,7 @@ import {
   type ObservedFacets,
 } from '../../etd/demo/observe-facets';
 import '../../etd/demo/etd-facet-summary';
+import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
 import {
   DEFAULT_ETD_ITEM,
   checkItemIndex,
@@ -145,6 +146,11 @@ export class ServerlessSearchDemo extends LitElement {
   @state() private searchQuery?: string;
 
   private resizeObserver = new SharedResizeObserver();
+
+  /** Opens on the detailed list rather than tiles. */
+  private restorationStateHandler = new DemoRestorationStateHandler(
+    'list-detail',
+  );
 
   @query('collection-browser') private cb?: CollectionBrowser;
 
@@ -268,6 +274,7 @@ export class ServerlessSearchDemo extends LitElement {
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
+          .restorationStateHandler=${this.restorationStateHandler}
           .showHistogramDatePicker=${true}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}

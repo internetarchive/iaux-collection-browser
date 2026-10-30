@@ -19,6 +19,7 @@ import '../../etd/demo/etd-vector-status';
 import '../../etd/compare/etd-compare-panel';
 import { observeFacets, } from '../../etd/demo/observe-facets';
 import '../../etd/demo/etd-facet-summary';
+import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
 import { DEFAULT_ETD_ITEM, checkItemIndex, etdIndexUrls, parseItemIdentifier, } from '../../etd/demo/item-index';
 /**
  * Searches to start from, each run as if typed into the search box. The
@@ -68,6 +69,8 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         this.etdControlsHidden = ['', 'true'].includes(new URLSearchParams(window.location.search).get('hide-etd-controls') ??
             'false');
         this.resizeObserver = new SharedResizeObserver();
+        /** Opens on the detailed list rather than tiles. */
+        this.restorationStateHandler = new DemoRestorationStateHandler('list-detail');
     }
     /**
      * The search service's own facets and whether it can search by filters
@@ -192,6 +195,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
           .baseImageUrl=${'https://archive.org'}
           .searchService=${this.searchService}
           .resizeObserver=${this.resizeObserver}
+          .restorationStateHandler=${this.restorationStateHandler}
           .showHistogramDatePicker=${true}
           .modalManager=${this.modalManager}
           .analyticsHandler=${this.analyticsHandler}

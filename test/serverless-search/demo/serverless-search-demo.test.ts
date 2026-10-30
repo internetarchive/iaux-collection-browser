@@ -90,6 +90,16 @@ describe('serverless-search-demo', () => {
     expect(panel.querySelector('form#etd-item')).to.exist;
   });
 
+  it('opens on the detailed list, whatever archive.org-wide cookies say', async () => {
+    // What archive.org's own search leaves after someone picks tiles
+    document.cookie = 'view-search=tiles; path=/';
+    const { el } = await demoAt('?etd_compare=0');
+    await el.collectionBrowser?.updateComplete;
+
+    expect(el.collectionBrowser?.displayMode).to.equal('list-detail');
+    document.cookie = 'view-search=; path=/; max-age=0';
+  });
+
   it('runs a preset search, as if typed into the search box', async () => {
     const { el, root, panel } = await demoAt('?etd_compare=0');
     const group = panel.querySelector('#etd-presets[role="group"]');
