@@ -1,4 +1,9 @@
-import type { SearchServiceInterface } from '@internetarchive/search-service';
+import {
+  FilterConstraint,
+  type FilterMap,
+  type SearchParams,
+  type SearchServiceInterface,
+} from '@internetarchive/search-service';
 import type { ModalManagerInterface } from '@internetarchive/modal-manager';
 import type { AnalyticsManagerInterface } from '@internetarchive/analytics-manager';
 import { SharedResizeObserver } from '@internetarchive/shared-resize-observer';
@@ -30,6 +35,7 @@ import { etdRequestFromParams } from '../../etd/etd-query';
 import type { EtdRequest } from '../../etd/etd-query';
 import '../../etd/demo/etd-file-check';
 import { DemoRestorationStateHandler } from './demo-restoration-state-handler';
+import { sameFilters } from './same-filters';
 import {
   DEFAULT_ETD_ITEM,
   checkItemIndex,
@@ -37,6 +43,32 @@ import {
   hasVectorIndex,
   parseItemIdentifier,
 } from '../../etd/demo/item-index';
+
+/**
+ * Searches by filters alone, linked as `and[]` params. `filters` is the same
+ * filter as collection-browser searches with it, to tell which one is showing.
+ */
+const ETD_BROWSE: readonly {
+  label: string;
+  param: string;
+  filters: FilterMap;
+}[] = [
+  {
+    label: 'From the 2000s',
+    param: 'year:[2000 TO 2009]',
+    filters: {
+      year: {
+        '2000': FilterConstraint.GREATER_OR_EQUAL,
+        '2009': FilterConstraint.LESS_OR_EQUAL,
+      },
+    },
+  },
+  {
+    label: 'In Portuguese',
+    param: 'language:"Portuguese"',
+    filters: { language: { Portuguese: FilterConstraint.INCLUDE } },
+  },
+];
 
 /**
  * Searches to start from in etd-search, each run as if typed into the
@@ -200,6 +232,9 @@ export class ServerlessSearchDemo extends LitElement {
   /** The search collection-browser is showing: its words and filters. */
   @state() private etdRequest?: EtdRequest;
 
+  /** The search collection-browser last sent, as it sent it. */
+  @state() private searchParams?: SearchParams;
+
   /** Whether the ETD panel is hidden: shown unless `hide-etd-controls` says so. */
   @state() private etdControlsHidden = ['', 'true'].includes(
     new URLSearchParams(window.location.search).get('hide-etd-controls') ??
@@ -249,6 +284,7 @@ export class ServerlessSearchDemo extends LitElement {
       },
       params => {
         if (this.searchService !== observed) return;
+        this.searchParams = params;
         this.etdRequest = etdRequestFromParams(
           params,
           rank === 'vector' ? ETD_VECTOR_FACETS : ETD_FACETS,
@@ -333,6 +369,7 @@ export class ServerlessSearchDemo extends LitElement {
     this.etdRank = rank;
     this.etdFacets = undefined;
     this.etdRequest = undefined;
+    this.searchParams = undefined;
     this.searchService = this.etdService(rank);
   }
 
@@ -523,7 +560,12 @@ export class ServerlessSearchDemo extends LitElement {
    * link these only start from the URL.
    */
   private get etdBrowseTemplate() {
-    const browse = (label: string, filter: string) => {
+    const query = (this.searchParams?.query ?? '').trim();
+    const browse = ({ label, param, filters }: (typeof ETD_BROWSE)[number]) => {
+      const showing =
+        !!this.searchParams &&
+        query === '' &&
+        sameFilters(this.searchParams.filters, filters);
       const url = new URL(window.location.href);
       url.search = '';
       url.searchParams.set('search_service', 'etd');
@@ -531,15 +573,18 @@ export class ServerlessSearchDemo extends LitElement {
         const value = new URL(window.location.href).searchParams.get(name);
         if (value !== null) url.searchParams.set(name, value);
       }
-      url.searchParams.append('and[]', filter);
-      return html`<li><a href=${url.href}>${label}</a></li>`;
+      url.searchParams.append('and[]', param);
+      return html`<li>
+        <a href=${url.href} aria-current=${showing ? 'true' : nothing}
+          >${label}</a
+        >
+      </li>`;
     };
     return html`
       <nav id="etd-browse" aria-label="Browse without a search">
         <span>Or browse:</span>
         <ul>
-          ${browse('From the 2000s', 'year:[2000 TO 2009]')}
-          ${browse('In Portuguese', 'language:"Portuguese"')}
+          ${ETD_BROWSE.map(browse)}
         </ul>
       </nav>
     `;
@@ -693,6 +738,7 @@ export class ServerlessSearchDemo extends LitElement {
           query =>
             html`<button
               type="button"
+              aria-pressed=${query === this.searchQuery ? 'true' : 'false'}
               @click=${() => {
                 this.searchQuery = query;
               }}
@@ -926,9 +972,16 @@ export class ServerlessSearchDemo extends LitElement {
       color: #1d3f61;
       cursor: pointer;
     }
-    #etd-presets button:hover,
+    #etd-presets button[aria-pressed='true'] {
+      background: #2c5f8f;
+      color: white;
+    }
+    #etd-presets button:hover:not([aria-pressed='true']),
     #etd-presets button:focus-visible {
       background: #e8f0f8;
+    }
+    #etd-presets button[aria-pressed='true']:focus-visible {
+      background: #1d3f61;
     }
     #etd-browse {
       display: flex;
@@ -949,6 +1002,11 @@ export class ServerlessSearchDemo extends LitElement {
 
     #etd-browse a {
       color: #1d3f61;
+    }
+
+    #etd-browse a[aria-current='true'] {
+      font-weight: bold;
+      text-decoration: none;
     }
 
     #etd-rank {
