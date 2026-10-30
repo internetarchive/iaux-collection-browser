@@ -112,7 +112,9 @@ table.lessons td { min-width: 12rem; }
 .note p:first-child { margin-top: 0; }
 
 .toc { margin-top: 2rem; padding: 1rem 1.1rem; background: var(--raised); border: 1px solid var(--rule); border-radius: 6px; }
-.toc ol { margin: 0.4rem 0 0; padding-left: 1.4rem; columns: 2 16rem; column-gap: 2rem; }
+.toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1rem 2rem; }
+.toc ol { margin: 0.4rem 0 0; padding-left: 1.4rem; }
+.toc li + li { margin-top: 0.15rem; }
 .toc li { break-inside: avoid; }
 
 .decisions { counter-reset: d; list-style: none; padding: 0; max-width: 70ch; }
@@ -125,6 +127,22 @@ table.lessons td { min-width: 12rem; }
 .checklist li::before { content: ""; position: absolute; left: 0; top: 0.35em; width: 0.9rem; height: 0.9rem; border: 1.5px solid var(--ink-2); border-radius: 3px; }
 
 .appendix h2 { color: var(--ink-2); }
+
+/* Room to grow: library catalog cards, ruled, with the punch hole for the drawer rod. */
+.cards { list-style: none; padding: 0; margin: 1.1rem 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr)); gap: 1rem; }
+.card { position: relative; min-width: 0; padding: 0.85rem 1rem 2rem; background-color: var(--raised); border: 1px solid var(--rule); border-top: 3px solid var(--navy); border-radius: 4px;
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.6em - 1px), color-mix(in srgb, var(--rule) 70%, transparent) calc(1.6em - 1px), color-mix(in srgb, var(--rule) 70%, transparent) 1.6em);
+  background-position: 0 2.35rem; background-repeat: no-repeat; background-size: 100% calc(100% - 2.35rem); line-height: 1.6em; }
+.card::after { content: ""; position: absolute; left: 50%; bottom: 0.55rem; width: 0.8rem; height: 0.8rem; margin-left: -0.4rem; border-radius: 50%; background: var(--page); border: 1px solid var(--rule); }
+.card .tag { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); }
+.card h3 { margin: 0.2rem 0 0; font-size: 1.05rem; line-height: 1.3; }
+.card p { margin: 0.35rem 0 0; font-size: 0.92rem; }
+.card .builds { color: var(--ink-2); font-size: 0.82rem; }
+.card .builds span { font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.68rem; margin-right: 0.25rem; }
+.shelf-h { margin-top: 1.4rem; font-size: 1rem; }
+.shelf { margin: 0.4rem 0 0; padding-left: 1.2rem; max-width: 68ch; display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 0.2rem 1.6rem; }
+.shelf li + li { margin-top: 0; }
+@media (prefers-reduced-motion: no-preference) { .card { transition: transform .15s ease; } .card:hover { transform: rotate(-0.6deg) translateY(-2px); } }
 </style>
 </head>
 <body>
@@ -135,7 +153,8 @@ table.lessons td { min-width: 12rem; }
   <p class="overline">Internet Archive · Proposal for technical and product managers · draft</p>
   <h1>Static Index Search</h1>
   <p class="lede">We propose a standard way to make any archive.org item searchable in the browser, with no search servers. An item publishes a few index files; a shared engine reads small slices of them; archive.org's existing search UI shows the results. The ETD theses search proves it at 26 million records.</p>
-  <p class="meta">Draft of 29 October 2026 · Isa, with the ETD port in <code>iaux-collection-browser</code> · numbers measured on the live <code>etd-search</code> item</p>
+  <p class="meta short-link">Short on time? <a href="https://claude.ai/artifact/J5dJ2kwECbEEMruz7dn6xY">Read the one-page overview</a>.</p>
+  <p class="meta">Updated 30 October 2026 · Isa, with the ETD port in <code>iaux-collection-browser</code> · numbers measured on the live <code>etd-search</code> item</p>
 </header>
 
 <div class="summary">
@@ -158,10 +177,10 @@ table.lessons td { min-width: 12rem; }
   <section class="ask">
     <h2>What we need</h2>
     <ul>
-      <li>Agreement on the contract and who owns it.</li>
-      <li>Help from the ETD index owner on 4 changes (CORS, versioned vector files, published layouts, leaner vectors).</li>
-      <li>A decision on where the engine lives, and a derive step so items don't need hand-built indexes.</li>
-      <li>A second item, picked by the checklist in <a href="#candidates">section 9</a>.</li>
+      <li>Agreement on the file contract and who owns it.</li>
+      <li>Four changes from the ETD index owner, CORS first.</li>
+      <li>Where the engine lives, and sign-off for the derive step.</li>
+      <li>Freshness rules: takedowns, record ids, build modes.</li>
     </ul>
     <p><a href="#decisions">See the decisions →</a></p>
   </section>
@@ -175,22 +194,36 @@ table.lessons td { min-width: 12rem; }
 </div>
 
 <nav class="toc" aria-label="Contents">
-  <p class="overline">Contents</p>
+  <div>
+  <p class="overline">The proposal</p>
   <ol>
     <li><a href="#how">How it works</a></li>
+    <li><a href="#proof">Proof: the ETD port</a></li>
+    <li><a href="#took">What it took</a></li>
+    <li><a href="#meaning">Search by meaning, in brief</a></li>
+    <li><a href="#building">Building indexes for other items</a></li>
+    <li><a href="#next-item">The next item</a></li>
+    <li><a href="#decisions">Decisions we need</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#risks">Risks</a></li>
+    <li><a href="#grow">Room to grow</a></li>
+  </ol>
+  </div>
+  <div>
+  <p class="overline">Appendices</p>
+  <ol type="A">
     <li><a href="#search">What happens in one search</a></li>
     <li><a href="#publish">What an item publishes</a></li>
     <li><a href="#costs">What each feature costs</a></li>
     <li><a href="#vectors">Search by meaning</a></li>
     <li><a href="#options">Index and ranking options</a></li>
-    <li><a href="#proof">Proof: the ETD port</a></li>
-    <li><a href="#changes">What it took</a></li>
+    <li><a href="#changes">What it took, change by change</a></li>
     <li><a href="#candidates">Choosing the next item</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#decisions">Decisions and risks</a></li>
-    <li><a href="#appendix">Appendix for engineers</a></li>
-    <li><a href="#lessons">Appendix: what didn't pan out</a></li>
+    <li><a href="#appendix">For engineers</a></li>
+    <li><a href="#lessons">What didn't pan out</a></li>
+    <li><a href="#deriver">The derive step</a></li>
   </ol>
+  </div>
 </nav>
 
 <section id="how">
@@ -219,8 +252,185 @@ flowchart LR
 </div>
 </section>
 
-<section id="search">
-<h2>2. What happens in one search</h2>
+<section id="proof">
+<h2>2. Proof: the ETD port</h2>
+<div class="prose">
+  <p>The <a href="https://archive.org/details/etd-search">etd-search</a> item holds 25.9 million theses and dissertations, and its own page already searches it in the browser. We split that page into the engine, adapter and config described here, inside collection-browser, and check every search against the live page.</p>
+</div>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Check</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td>Word search totals and top 50</td><td><span class="pill ok">Match</span> e.g. "sea ice" 77,112 on both</td></tr>
+    <tr><td>Multi-word re-ranking</td><td><span class="pill ok">Match</span> top 50 identical on every re-ranked query tested</td></tr>
+    <tr><td>Year, language, country, degree, source, availability, institution</td><td><span class="pill ok">Match</span> exact counts</td></tr>
+    <tr><td>Institution search</td><td><span class="pill ok">Match</span> <code>inst:mit robotics</code> 346 (was 13,099 before the lookup)</td></tr>
+    <tr><td>Search by meaning</td><td><span class="pill ok">Match</span> top 50 identical for 5 queries; about 2× faster cold than the live page</td></tr>
+    <tr><td>Browse without a query</td><td><span class="pill ok">Works</span> "Theses in Portuguese": 1,208,375</td></tr>
+    <tr><td>Point at another item</td><td><span class="pill ok">Works</span> and rejects items that aren't an index</td></tr>
+    <tr><td>Files that drift apart</td><td><span class="pill ok">Caught</span> each file's size is checked against the item's own file list; it found the vector-to-text map left from the previous build</td></tr>
+    <tr><td>Use outside the item's own page</td><td><span class="pill bad">Blocked</span> only <code>.json</code> files are CORS-readable</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section id="took">
+<h2>3. What it took</h2>
+<div class="prose">
+  <p>Making collection-browser show etd-search needed about 600 lines inside collection-browser itself: extra facet groups, restoring them from the URL, and refetching when the search service changes. Everything else is new code in new folders beside it, plugged in through one interface, plus demo and docs that never ship.</p>
+</div>
+<div class="facts" role="list">
+  <div role="listitem"><b>+612 −87</b><span>inside collection-browser (18 files)</span></div>
+  <div role="listitem"><b>~9,200</b><span>new lines beside it, in new folders</span></div>
+  <div role="listitem"><b>~4,000</b><span>demo and docs, never shipped</span></div>
+  <div role="listitem"><b>+10,781</b><span>tests (1,128 passing)</span></div>
+</div>
+<p class="cap">10 of the 23 changes are enough to show etd-search; the rest bring it level with the live page. Every change with its reason: <a href="#changes">Appendix F</a>.</p>
+</section>
+
+<section id="meaning">
+<h2>4. Search by meaning, in brief</h2>
+<div class="prose">
+  <p>The live ETD page can also search by meaning, finding theses that share no words with the query, across languages. We ported it with no change to the item's files. It returns <strong>the same top 50 as the live page</strong>, is about <strong>twice as fast on a first search</strong> (27.2 s vs 53.6 s), and shows first results in 6.5 s once warm.</p>
+  <p>It still downloads 80–87 MB per search. Leaner codes from the index owner would cut that to about 24–43 MB at the same quality. Details: <a href="#vectors">Appendix D</a>.</p>
+</div>
+</section>
+
+<section id="building">
+<h2>5. Building indexes for other items</h2>
+<div class="prose">
+  <p>ETD's index files were built by hand and uploaded by their owner. For any other item, a petabox derive step builds them: the owner adds a config naming the fields and the source, the derive exports the records and builds versioned files, and a publish step switches the item to the new version, keeping the previous one to fall back on.</p>
+  <p>A prototype of the builder has already indexed Democracy's Library. Keeping an item fresh starts with weekly full rebuilds, skipped when nothing changed; small additions and fast takedowns come only if needed. Details: <a href="#deriver">Appendix J</a>.</p>
+</div>
+<div class="facts" role="list">
+  <div role="listitem"><b>1,219,865</b><span>Democracy's Library records indexed</span></div>
+  <div role="listitem"><b>67 s</b><span>to build, after a 16-minute export</span></div>
+  <div role="listitem"><b>5.5 GB</b><span>peak memory for that build</span></div>
+  <div role="listitem"><b>20 files</b><span>1.1 GB, every name ending <code>.json</code></span></div>
+</div>
+<p class="cap">One local run of the prototype builder on 29 October. Whether a derive worker has 5.5 GB of memory is still to be confirmed.</p>
+</section>
+
+<section id="next-item">
+<h2>6. The next item</h2>
+<div class="prose">
+  <p><strong>Democracy's Library</strong>: about 1.22 million public government publications, from the collection's own search query minus court records and restricted items. Metadata first: title, agency, year, source and language. Its index is built and uploaded to a new item, <code>dl-search</code>; uploading the manifest last makes it searchable.</p>
+  <p>It tests what ETD can't: an index built by the shared derive step, records that are archive.org items, and a weekly refresh. Also checked: theses-and-dissertations (usable as a cleaned subset) and manuals (titles only). How to judge any collection in ten minutes: <a href="#candidates">Appendix G</a>.</p>
+</div>
+</section>
+
+<section id="decisions">
+<h2>7. Decisions we need</h2>
+<div class="prose"><p>What the sections above lead to, each with our recommendation. <span class="pill ok">Settled</span> marks one already decided.</p></div>
+<ol class="decisions">
+  <li><strong>Adopt the file contract as the standard</strong> for in-browser item search, and name an owner for it and its version numbers.
+    <span class="rec">Recommendation: yes. The ETD index owner is the natural first reviewer.</span></li>
+  <li><strong>Where the engine lives:</strong> inside collection-browser (today) or its own package.
+    <span class="rec">Recommendation: its own package once it reads the manifest, so pages other than collection-browser can use it.</span></li>
+  <li><strong>Ask the ETD index owner</strong> for CORS-readable file names, published layouts, versioned vector files (so the text-to-vector map moves with each text build), and leaner vector codes.
+    <span class="rec">Recommendation: one request, CORS first, since it blocks shipping.</span></li>
+  <li><strong>A derive step</strong> that builds an item's index files from its data, so new items don't depend on a hand-built index.
+    <span class="rec">Recommendation: yes, with weekly full rebuilds first. It writes the v2 manifest and versions every file, vectors included (<a href="#building">section 5</a>).</span></li>
+  <li><strong>The second item.</strong> <span class="pill ok">Settled</span>
+    <span class="rec">Democracy's Library, metadata first; its index is built and uploading (<a href="#next-item">section 6</a>).</span></li>
+  <li><strong>Search by meaning in the product:</strong> cheap re-ranking of word results first, full meaning search later.
+    <span class="rec">Recommendation: yes to both, in that order; full search only after the owner publishes smaller codes.</span></li>
+  <li><strong>Estimated facet counts:</strong> may a facet show estimates on large result sets (clearly labelled)?
+    <span class="rec">Recommendation: yes, for items without exact facet files, with filtering limited or labelled.</span></li>
+  <li><strong>Freshness rules:</strong> whether a takedown hides a record or removes its bytes; whether records keep their archive.org identifiers or positions; how a derive is told which kind of build to run.
+    <span class="rec">Needed before the weekly rebuild goes live. Details: <a href="#deriver">Appendix J</a>.</span></li>
+</ol>
+</section>
+
+<section id="roadmap">
+<h2>8. Roadmap</h2>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  subgraph done["Done"]
+    A1["ETD word search,<br/>facets, institutions"]
+    A2["Search by meaning,<br/>with early results"]
+    A3["One manifest per item,<br/>file checks"]
+  end
+  subgraph now["In progress"]
+    B1["collection-browser options<br/>WEBDEV-9763"]
+    B2["Democracy's Library<br/>index uploading"]
+  end
+  subgraph next["Next"]
+    C1["Derive step builds<br/>an item's files"]
+    C2["Democracy's Library<br/>config and labs demo"]
+    C3["Exact quoted phrases,<br/>facet shape"]
+  end
+  subgraph owner["Needs ETD index owner"]
+    D1["CORS-readable files"]
+    D2["Versioned, leaner<br/>vector files"]
+  end
+  subgraph later["Then"]
+    E1["Ship on archive.org"]
+    E2["More items adopt it"]
+  end
+  done --> now --> next --> later
+  owner --> later
+</pre></div>
+<p class="cap">Shipping on archive.org pages depends on the CORS change; everything before it runs in the development demo. The <a href="#deriver">derive step</a> and the v2 manifest are what let a second item adopt this without new code.</p>
+</section>
+
+<section id="risks">
+<h2>9. Risks</h2>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Risk</th><th>Effect</th><th>Mitigation</th></tr></thead>
+  <tbody>
+    <tr><td>CORS stays blocked</td><td>Can't ship outside the item's own page</td><td>File naming with a readable extension; confirm with archive.org early</td></tr>
+    <tr><td>Index rebuild changes a layout</td><td>Wrong data shown silently</td><td>Manifest plus config checker that fails loudly; never reuse keys</td></tr>
+    <tr><td>Files republished at different times</td><td>One build's rows read with another's ids</td><td>Check each file's size against the item's file list (built); version every file</td></tr>
+    <tr><td>Messy item metadata</td><td>Facets with many spellings of one value</td><td>Fold values in the derive step; run the ten-minute check before committing to an item</td></tr>
+    <tr><td>Large one-time downloads</td><td>Slow first use on poor connections</td><td>Background loading, version-keyed caching, optional modules</td></tr>
+    <tr><td>One maintainer per index</td><td>Format drifts between items</td><td>Shared contract, checker, and a worked example</td></tr>
+  </tbody>
+</table></div>
+</section>
+
+<section id="grow">
+<h2>10. Room to grow</h2>
+<div class="prose"><p>Beyond the decisions above: ideas that the parts we've built make cheap. Four stand out; six more are on the shelf.</p></div>
+<ul class="cards" role="list">
+    <li class="card">
+      <span class="tag">&#9733; Top pick</span>
+      <h3>Search several items at once</h3>
+      <p>ETD, Democracy's Library and theses-and-dissertations in one result list, scores merged by rank.</p>
+      <p class="builds"><span>Builds on</span> the multi-part index design for freshness</p>
+    </li>
+    <li class="card">
+      <span class="tag">&#9733; Top pick</span>
+      <h3>A search box on any item page</h3>
+      <p>Search right where people already are: the item or collection page, wherever index files exist.</p>
+      <p class="builds"><span>Builds on</span> the engine and one manifest per item</p>
+    </li>
+    <li class="card">
+      <span class="tag">&#9733; Top pick</span>
+      <h3>Self-serve for uploaders</h3>
+      <p>Upload a dataset, get a search. No request to web dev.</p>
+      <p class="builds"><span>Builds on</span> the setup form and the derive step</p>
+    </li>
+    <li class="card">
+      <span class="tag">&#9733; Top pick</span>
+      <h3>Works anywhere, offline too</h3>
+      <p>The index is just files: a mirror, a torrent, or a cached tab with no connection. It is preserved with its data.</p>
+      <p class="builds"><span>Builds on</span> static files read by byte range</p>
+    </li>
+</ul>
+<h3 class="shelf-h">Also on the shelf</h3>
+<ul class="shelf">
+    <li><strong>Full text</strong>: the first pages of OCR text, for scanned collections like theses-and-dissertations</li>
+    <li><strong>Related items</strong>: &ldquo;more like this&rdquo; from the meaning vectors</li>
+    <li><strong>Search as of a date</strong>: each manifest points at the one before it</li>
+    <li><strong>Lighter central search</strong>: big datasets stay out of the main search cluster</li>
+    <li><strong>The engine in scripts</strong>: the same files, searched from Node</li>
+    <li><strong>Type-ahead</strong>: prefix files for titles, creators, institutions</li>
+</ul>
+<p class="cap">One claim to word carefully: queries never reach a search server, but the byte ranges a browser asks for can hint at the words searched. So: no query logs, rather than full privacy.</p>
+</section>
+
+<section id="search" class="appendix">
+<h2>Appendix A: What happens in one search</h2>
 <div class="frame chart"><pre class="mermaid">
 flowchart TD
   Q["Patron types a query"] --> P["Parse: words, phrases,<br/>AND / OR / NOT, field:"]
@@ -241,8 +451,8 @@ flowchart TD
 <p class="cap">Measured on ETD: about 2 requests to rank, 6 more for the phrase re-rank, and a couple of batched requests per page of results. Facet counts come from data downloaded once.</p>
 </section>
 
-<section id="publish">
-<h2>3. What an item publishes</h2>
+<section id="publish" class="appendix">
+<h2>Appendix B: What an item publishes</h2>
 <div class="prose">
   <p>Every item publishes a small required core. Everything else is an optional module, declared in the item's manifest so a page knows what's available. A separate config, owned by the page, says how to present it; a checker compares the two, so a rebuild can't silently break a page.</p>
 </div>
@@ -273,8 +483,8 @@ flowchart TD
 </pre></div>
 </section>
 
-<section id="costs">
-<h2>4. What each feature costs</h2>
+<section id="costs" class="appendix">
+<h2>Appendix C: What each feature costs</h2>
 <div class="prose"><p>Measured on ETD (25.9M records) unless marked as an estimate. "One-time" downloads are cached per index version; "per search" is what each query downloads after that.</p></div>
 <div class="frame"><table>
   <thead><tr><th>Feature</th><th class="num">One-time</th><th class="num">Per search</th><th>Counts</th></tr></thead>
@@ -290,8 +500,8 @@ flowchart TD
 </table></div>
 </section>
 
-<section id="vectors">
-<h2>5. Search by meaning</h2>
+<section id="vectors" class="appendix">
+<h2>Appendix D: Search by meaning</h2>
 <div class="prose">
   <p>The live ETD page can also search by meaning: a small multilingual model runs in the browser, turns the query into numbers, and compares it with 18.2 million stored vectors grouped into clusters. It finds theses that share no words with the query, including in other languages. On the live page it costs <strong>80–87 MB and 43 seconds per search</strong> once warm, and 128 seconds for the first.</p>
   <p><strong>Phase 1 is built.</strong> We ported it into the demo with no change to the item's files: the scan runs in a Web Worker and reads 6 clusters at a time instead of 4. It returns <strong>the same top 50 as the live page</strong> for 5 queries, including one in German, and it's about <strong>twice as fast on a cold start</strong>.</p>
@@ -332,8 +542,8 @@ flowchart LR
 </div>
 </section>
 
-<section id="options">
-<h2>6. Index and ranking options</h2>
+<section id="options" class="appendix">
+<h2>Appendix E: Index and ranking options</h2>
 <div class="prose">
   <p>An <strong>index</strong> is a precomputed layout that makes one kind of question cheap; a <strong>ranking</strong> decides the order of what it finds. With no backend, "cheap" means few round trips and few bytes: every lookup should land on one known slice of a file. This is the menu, and how well each option fits.</p>
 </div>
@@ -403,37 +613,10 @@ flowchart TD
 </div>
 </section>
 
-<section id="proof">
-<h2>7. Proof: the ETD port</h2>
-<div class="prose">
-  <p>The <a href="https://archive.org/details/etd-search">etd-search</a> item holds 25.9 million theses and dissertations, and its own page already searches it in the browser. We split that page into the engine, adapter and config described here, inside collection-browser, and check every search against the live page.</p>
-</div>
-<div class="frame"><table class="plain">
-  <thead><tr><th>Check</th><th>Result</th></tr></thead>
-  <tbody>
-    <tr><td>Word search totals and top 50</td><td><span class="pill ok">Match</span> e.g. "sea ice" 77,112 on both</td></tr>
-    <tr><td>Multi-word re-ranking</td><td><span class="pill ok">Match</span> top 50 identical on every re-ranked query tested</td></tr>
-    <tr><td>Year, language, country, degree, source, availability, institution</td><td><span class="pill ok">Match</span> exact counts</td></tr>
-    <tr><td>Institution search</td><td><span class="pill ok">Match</span> <code>inst:mit robotics</code> 346 (was 13,099 before the lookup)</td></tr>
-    <tr><td>Search by meaning</td><td><span class="pill ok">Match</span> top 50 identical for 5 queries; about 2× faster cold than the live page</td></tr>
-    <tr><td>Browse without a query</td><td><span class="pill ok">Works</span> "Theses in Portuguese": 1,208,375</td></tr>
-    <tr><td>Point at another item</td><td><span class="pill ok">Works</span> and rejects items that aren't an index</td></tr>
-    <tr><td>Files that drift apart</td><td><span class="pill ok">Caught</span> each file's size is checked against the item's own file list; it found the vector-to-text map left from the previous build</td></tr>
-    <tr><td>Use outside the item's own page</td><td><span class="pill bad">Blocked</span> only <code>.json</code> files are CORS-readable</td></tr>
-  </tbody>
-</table></div>
-</section>
-
-<section id="changes">
-<h2>8. What it took: collection-browser and ETD</h2>
+<section id="changes" class="appendix">
+<h2>Appendix F: What it took, change by change</h2>
 <div class="prose">
   <p>Every change on the ETD branch since it left collection-browser's <code>main</code>, grouped by how much it touches collection-browser. <strong>Needed</strong>: collection-browser can't show etd-search without it. <strong>Better</strong>: matches the live page or makes it sturdier. <strong>Demo</strong>: proof and explanation only.</p>
-</div>
-<div class="facts" role="list">
-  <div role="listitem"><b>+612 −87</b><span>inside collection-browser (18 files)</span></div>
-  <div role="listitem"><b>~9,200</b><span>new lines beside it, in new folders</span></div>
-  <div role="listitem"><b>~4,000</b><span>demo and docs, never shipped</span></div>
-  <div role="listitem"><b>+10,781</b><span>tests (1,128 passing)</span></div>
 </div>
 
 <h3>Inside collection-browser</h3>
@@ -494,8 +677,8 @@ flowchart TD
 </div>
 </section>
 
-<section id="candidates">
-<h2>9. Choosing the next item</h2>
+<section id="candidates" class="appendix">
+<h2>Appendix G: Choosing the next item</h2>
 <div class="prose">
   <p>Not every item is worth an index. A good candidate is <strong>many records of one kind</strong>, each with a stable id and a link, mostly public, with at least one real text field and a few well-filled fields to filter by. Ten minutes with archive.org's own search API answers most of it.</p>
 </div>
@@ -566,79 +749,14 @@ flowchart TD
   </tbody>
 </table></div>
 <div class="note">
-  <p><strong>Recommendation:</strong> start with the 274,394 scanned European dissertations, metadata only, built by a derive step from archive.org's own metadata, with values folded at build time. Add OCR text from the first pages next, then search by meaning on it. At this size a flat vector index is enough; no clusters needed.</p>
+  <p><strong>If chosen:</strong> start with the 274,394 scanned European dissertations, metadata only, built by a derive step from archive.org's own metadata, with values folded at build time. Add OCR text from the first pages next, then search by meaning on it. At this size a flat vector index is enough; no clusters needed.</p>
   <p>It tests what ETD can't: an index built by a shared derive step, records that are archive.org items, and messy fields. For a deliberately different third item, the Great 78 collection (187,039 recordings, little text, many facets) would test filter-heavy search.</p>
+  <p>Democracy's Library was later chosen as the second item instead (<a href="#next-item">section 6</a>).</p>
 </div>
 </section>
 
-<section id="roadmap">
-<h2>10. Roadmap</h2>
-<div class="frame chart"><pre class="mermaid">
-flowchart TD
-  subgraph done["Done"]
-    A1["ETD word search,<br/>facets, institutions"]
-    A2["Search by meaning,<br/>with early results"]
-    A3["Live-page comparison,<br/>retries, other items"]
-  end
-  subgraph now["In review"]
-    B1["collection-browser options<br/>WEBDEV-9763"]
-    B2["One manifest per item<br/>(v2)"]
-    B3["File checks against<br/>the item's file list"]
-  end
-  subgraph next["Next"]
-    C1["Derive step builds<br/>an item's files"]
-    C2["Second item:<br/>theses-and-dissertations"]
-    C3["Exact quoted phrases,<br/>facet shape"]
-  end
-  subgraph owner["Needs ETD index owner"]
-    D1["CORS-readable files"]
-    D2["Versioned, leaner<br/>vector files"]
-  end
-  subgraph later["Then"]
-    E1["Ship on archive.org"]
-    E2["More items adopt it"]
-  end
-  done --> now --> next --> later
-  owner --> later
-</pre></div>
-<p class="cap">Shipping on archive.org pages depends on the CORS change; everything before it runs in the development demo. The derive step and the v2 manifest are what let a second item adopt this without new code.</p>
-</section>
-
-<section id="decisions">
-<h2>11. Decisions and risks</h2>
-<h3>Decisions needed</h3>
-<ol class="decisions">
-  <li><strong>Adopt the file contract as the standard</strong> for in-browser item search, and name an owner for it and its version numbers.
-    <span class="rec">Recommendation: yes. The ETD index owner is the natural first reviewer.</span></li>
-  <li><strong>Where the engine lives:</strong> inside collection-browser (today) or its own package.
-    <span class="rec">Recommendation: its own package once it reads the manifest, so pages other than collection-browser can use it.</span></li>
-  <li><strong>Ask the ETD index owner</strong> for CORS-readable file names, published layouts, versioned vector files (so the text-to-vector map moves with each text build), and leaner vector codes.
-    <span class="rec">Recommendation: one request, CORS first, since it blocks shipping.</span></li>
-  <li><strong>A derive step</strong> that builds an item's index files from its data, so new items don't depend on a hand-built index.
-    <span class="rec">Recommendation: yes; it writes the v2 manifest and versions every file, vectors included.</span></li>
-  <li><strong>The second item.</strong>
-    <span class="rec">Recommendation: theses-and-dissertations' 274,394 scanned dissertations, metadata first (<a href="#candidates">section 9</a>).</span></li>
-  <li><strong>Search by meaning in the product:</strong> cheap re-ranking of word results first, full meaning search later.
-    <span class="rec">Recommendation: yes to both, in that order; full search only after the owner publishes smaller codes.</span></li>
-  <li><strong>Estimated facet counts:</strong> may a facet show estimates on large result sets (clearly labelled)?
-    <span class="rec">Recommendation: yes, for items without exact facet files, with filtering limited or labelled.</span></li>
-</ol>
-<h3>Risks</h3>
-<div class="frame"><table class="plain">
-  <thead><tr><th>Risk</th><th>Effect</th><th>Mitigation</th></tr></thead>
-  <tbody>
-    <tr><td>CORS stays blocked</td><td>Can't ship outside the item's own page</td><td>File naming with a readable extension; confirm with archive.org early</td></tr>
-    <tr><td>Index rebuild changes a layout</td><td>Wrong data shown silently</td><td>Manifest plus config checker that fails loudly; never reuse keys</td></tr>
-    <tr><td>Files republished at different times</td><td>One build's rows read with another's ids</td><td>Check each file's size against the item's file list (built); version every file</td></tr>
-    <tr><td>Messy item metadata</td><td>Facets with many spellings of one value</td><td>Fold values in the derive step; run the ten-minute check before committing to an item</td></tr>
-    <tr><td>Large one-time downloads</td><td>Slow first use on poor connections</td><td>Background loading, version-keyed caching, optional modules</td></tr>
-    <tr><td>One maintainer per index</td><td>Format drifts between items</td><td>Shared contract, checker, and a worked example</td></tr>
-  </tbody>
-</table></div>
-</section>
-
 <section id="appendix" class="appendix">
-<h2>Appendix for engineers</h2>
+<h2>Appendix H: For engineers</h2>
 
 <h3>Adopting it</h3>
 <div class="frame chart"><pre class="mermaid">
@@ -674,7 +792,7 @@ flowchart TD
 </div>
 
 <h3>Manifest sketch</h3>
-<p class="cap">Draft types are in <code>src/static-index/manifest.ts</code>, with the ETD description and parity tests beside them. PR #637 proposes v2: one manifest for the whole item, published as <code>static-index.json</code> with a pointer to the previous version.</p>
+<p class="cap">Draft types are in <code>src/static-index/manifest.ts</code>, with the ETD description and parity tests beside them. v2, merged in #637: one manifest for the whole item, published as <code>static-index.json</code> with a pointer to the previous version.</p>
 <div class="frame"><pre>{
   "format": "ia-static-index",
   "formatVersion": 1,
@@ -722,15 +840,15 @@ flowchart TD
     <tr><td>Search by meaning (vector engine, worker, Words / Meaning switch, early results)</td><td><code>src/etd/engine/vector/</code>, merged into the branch (#633, #635)</td></tr>
     <tr><td>Institution facet, other items, retries</td><td>merged into the branch (#631, #632, #634)</td></tr>
     <tr><td>collection-browser: a slot above the facets; refetch when the search service changes</td><td>in the branch; may need its own review like #630</td></tr>
-    <tr><td>Manifest and config types, checker</td><td><code>src/static-index/</code>; v2 manifest in PR #637</td></tr>
-    <tr><td>File checks against the item's file list</td><td><code>src/static-index/file-list.ts</code>, <code>size-rules.ts</code>; draft PR #638</td></tr>
+    <tr><td>Manifest and config types, checker</td><td><code>src/static-index/</code>; v2 manifest merged (#637)</td></tr>
+    <tr><td>File checks against the item's file list</td><td><code>src/static-index/file-list.ts</code>, <code>size-rules.ts</code>; merged (#638)</td></tr>
     <tr><td>ETD engine docs</td><td><code>src/etd/README.md</code></td></tr>
   </tbody>
 </table></div>
 </section>
 
 <section id="lessons" class="appendix">
-<h2>Appendix: what didn't pan out</h2>
+<h2>Appendix I: What didn't pan out</h2>
 <div class="prose">
   <p>Explorations that failed or stalled, and what each one left us with. Most failed early, measured against real data.</p>
 </div>
@@ -761,10 +879,10 @@ flowchart TD
   <thead><tr><th>What we tried</th><th>What happened</th><th>What we kept</th></tr></thead>
   <tbody>
     <tr><td><strong>Reading the owner's builder source.</strong></td><td><code>internetarchivecanada/etd</code> returns 404 for us.</td><td>The design and the owner asks were written from the published files alone.</td></tr>
-    <tr><td><strong>theses-and-dissertations as the second item</strong>, expected to be a clean sibling of ETD.</td><td>It mixes three kinds of things (dissertations, DTIC reports, raw ETD catalogs), has 10,757 institution spellings, and only 181 abstracts.</td><td>Still the pick, but only its 274,394 dissertations, with values cleaned first (section 9).</td></tr>
+    <tr><td><strong>theses-and-dissertations as the second item</strong>, expected to be a clean sibling of ETD.</td><td>It mixes three kinds of things (dissertations, DTIC reports, raw ETD catalogs), has 10,757 institution spellings, and only 181 abstracts.</td><td>Still the pick, but only its 274,394 dissertations, with values cleaned first (Appendix G).</td></tr>
     <tr><td><strong>A natural-language search preset</strong> in the offshoot demo.</td><td>It returned 0 results; not yet explained.</td><td>Left out of the presets.</td></tr>
     <tr><td><strong>Two reported data issues:</strong> Spanish shown as Portuguese, and "Ice; Ice".</td><td>Neither is confirmed.</td><td>Parked until there are examples.</td></tr>
-    <tr><td><strong>A year filter on word search.</strong></td><td>It returned 3,278,934 results, which looked wrong to the offshoot demo session.</td><td>Possibly what #639's year fix addresses; not yet checked.</td></tr>
+    <tr><td><strong>A year filter on word search.</strong></td><td>It returned 3,278,934 results, which looked wrong in the offshoot demo.</td><td>Possibly what #639's year fix addresses; not yet checked.</td></tr>
   </tbody>
 </table></div>
 
@@ -780,6 +898,240 @@ flowchart TD
 <div class="note">
   <p><strong>What lasted:</strong> centred vector codes, file checks against the item's file list, the CORS ask, and cleaning values before indexing a new item.</p>
 </div>
+</section>
+
+<section id="deriver" class="appendix">
+<h2>Appendix J: The derive step</h2>
+<div class="prose">
+  <p>A petabox derive step that turns an item's records into the static index files this page describes, so a second item needs no hand-built index. It runs a builder image through petabox's existing <code>ServerlessDocker</code> derive module. Design draft of 30 October 2026; no code yet. <span class="pill ok">settled</span> means decided with Isa.</p>
+</div>
+
+<h3>In short</h3>
+<ol class="prose">
+  <li><strong>Opt in.</strong> The item owner adds a config file to the item. It names the fields to search and the source: a search query, or an uploaded records file.</li>
+  <li><strong>Start.</strong> A derive runs on upload, on an optional weekly schedule, or when an editor presses <strong>Rebuild now</strong>.</li>
+  <li><strong>Collect.</strong> The builder exports the records from the query (about 16 min for Democracy's Library's 1.2M records).</li>
+  <li><strong>Skip if unchanged.</strong> Same record count, latest update and content hash as the last build: stop, nothing new is written.</li>
+  <li><strong>Build.</strong> Otherwise it writes a full new version of the index files, each named <code>name.&lt;v&gt;.json</code> (about 67 s for Democracy's Library).</li>
+  <li><strong>Register.</strong> The deriver records every file in the item's file list as a derivative.</li>
+  <li><strong>Publish.</strong> A follow-up step points <code>static-index.json</code> at the new version and keeps the previous one, so a browser that hits a missing file falls back to it whole.</li>
+  <li><strong>Search.</strong> The browser reads the index with Range requests, no backend, and shows the build date and record count.</li>
+</ol>
+<p class="cap">Takedowns, for now: Rebuild now (about 17 min). Faster takedowns and smaller updates are later phases, only if needed (<a href="#deriver-fresh">Keeping it fresh</a>).</p>
+
+<h3>End to end: from upload to search</h3>
+<div class="prose"><p>The derive runs the builder image, registers every output as a derivative, and a follow-up step switches <code>static-index.json</code> to the new version.</p></div>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  subgraph owner["Item owner"]
+    A1["Upload records file<br/>{id}_static_index_records.jsonl"]
+    A2["Upload config<br/>{id}_static_index.json"]
+  end
+  A1 --> T["Derive task queued<br/>on upload or re-derive"]
+  A2 --> T
+  T --> R{"derivations.xml rule<br/>source = records file"}
+  R -- "no config in item" --> X["Skip, nothing built"]
+  R -- "config present and collection allowlisted" --> SD["ServerlessDocker module"]
+  SD --> P["docker pull static-index-builder<br/>production or testing tag"]
+  P --> RUN["docker run, no network<br/>item at /item, task info at /task"]
+  RUN --> B["Builder CLI"]
+  B --> OUT["Writes name.v.json files<br/>and a build log into /item"]
+  B --> ET["/task/extra_targets.json<br/>lists every output"]
+  B --> EK["/task/extra_tasks.json<br/>queues the publish step"]
+  ET --> FX["Deriver records each file in _files.xml<br/>source=derivative, original=records file"]
+  OUT --> PR["pruneFormats drops entries<br/>for deleted old versions"]
+  FX --> SYNC["rsync back to primary<br/>when derive ran remotely"]
+  PR --> SYNC
+  SYNC --> PUB["Publish step writes static-index.json<br/>naming the new version"]
+  EK --> PUB
+  PUB --> BR["Browser reads static-index.json,<br/>then Range reads name.v.json"]
+</pre></div>
+
+<h3>Inside the builder</h3>
+<div class="prose"><p>One streaming pass over the records, with term runs sorted on disk and merged, so memory stays bounded at ETD's 25.9M records. Optional modules run only when the config asks for them. The tokenizer is the engine's own <code>codec.ts</code>, so the build and the search split words the same way.</p></div>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  C["Read and validate config<br/>fields, facets, modules"] --> S["Stream records.jsonl<br/>assign docIds 1..N"]
+  S --> TK["Tokenize text fields<br/>shared codec.ts tokenize"]
+  TK --> RUNS["Write sorted term runs<br/>to disk, chunk by chunk"]
+  RUNS --> M["Merge runs<br/>compute BM25 impacts"]
+  M --> DP["dict.dir, dict.bin<br/>postings.bin by impact"]
+  S --> REC["Measure field lengths<br/>choose record layout"]
+  REC --> ST["stubs.bin fixed-size records<br/>overflow and snippet .dir/.bin"]
+  S --> F{"facets in config?"}
+  F -- yes --> FR["Facet rows, gzipped<br/>code tables"]
+  S --> DV{"docValues in config?"}
+  DV -- yes --> DVF["Id per doc,<br/>labels, name lookup"]
+  TK --> PO{"positions on?"}
+  PO -- yes --> PF["posfwd.dir, posfwd.bin"]
+  DP --> MAN["Write static-index.v.json<br/>v2 manifest, suffix .json"]
+  ST --> MAN
+  FR --> MAN
+  DVF --> MAN
+  PF --> MAN
+  MAN --> CHK["Self-check: read back<br/>with the engine's decoders"]
+  CHK --> NAME["Name every file name.v.json"]
+  NAME --> CLEAN["Delete versions older<br/>than the previous one"]
+  CLEAN --> LIST["Write extra_targets.json<br/>and extra_tasks.json"]
+</pre></div>
+
+<h3>Switching versions safely</h3>
+<div class="prose">
+  <p>The derive can't promise that <code>static-index.json</code> lands last: rsync and primary-to-secondary copying pick their own order. So the switch happens in a separate step after the files land, and the browser falls back to the previous version if a file isn't there yet. <span class="pill ok">settled</span></p>
+  <p>Each build writes its own manifest, <code>static-index.&lt;v&gt;.json</code>. The publish step writes <code>static-index.json</code> as that manifest plus <code>previous: "&lt;v-1&gt;"</code>. On a 404 the browser reopens the whole search from <code>static-index.&lt;v-1&gt;.json</code>, because the counts and sizes belong to one version (v2 manifest, PR #637).</p>
+</div>
+<div class="frame chart"><pre class="mermaid">
+sequenceDiagram
+  participant D as Derive worker
+  participant P as Primary datanode
+  participant S as Secondary datanode
+  participant B as Browser
+  D->>P: rsync files for v2
+  Note over P: static-index.json still names v1
+  B->>P: GET static-index.json
+  P-->>B: v1
+  B->>P: Range reads on v1 files
+  D->>P: publish step copies static-index.v2.json to static-index.json, with previous v1
+  P--)S: copies files in its own order
+  B->>S: GET static-index.json
+  S-->>B: v2
+  B->>S: Range read dict.dir for v2
+  S-->>B: 404, not copied yet
+  B->>S: reopen the search from static-index.v1.json
+  Note over D,S: Older versions are deleted only after the new one is live, so v1 stays readable
+</pre></div>
+
+<h3>Turning it on and off</h3>
+<div class="prose"><p>Opt in per item by uploading files. Undo by deleting them. Nothing is set up on the server.</p></div>
+<div class="frame chart"><pre class="mermaid">
+stateDiagram-v2
+  [*] --> Off
+  Off --> Building: upload config and records
+  Building --> Live: build ok, static-index.json published
+  Building --> Failed: build error, old version stays live
+  Failed --> Building: fix input, re-derive
+  Live --> Building: records change or re-derive
+  Live --> Frozen: delete config, gate fails, files stay
+  Frozen --> Building: restore config
+  Live --> Removed: delete records, orphans removed next derive
+  Removed --> [*]
+</pre></div>
+<ul class="prose">
+  <li>Orphaned derivatives are deleted on the next derive for most mediatypes. For texts and web items that needs the <code>force_delete_orphaned</code> task arg (<code>Deriver.inc:183</code>).</li>
+  <li>On failure, <code>Module::finish</code> removes the partial targets it created, and the live <code>static-index.json</code> is untouched.</li>
+</ul>
+
+<h3 id="deriver-fresh">Keeping it fresh when the source changes</h3>
+<div class="prose"><p>An index built from a collection goes stale as items are added, edited or taken down. Democracy's Library adds about 88–168k public items a year (2022–2026, court cases excluded). So an index item names its source as a query, and gets rebuilt in full on a schedule or on demand, but only when the source has really changed. <span class="pill ok">settled: phase 1 first</span></p></div>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  W["Weekly schedule<br/>optional, per item"] --> D["derive.php on the index item"]
+  RN["Rebuild now button<br/>item editors, through the Tasks API"] --> D
+  D --> E["Builder re-exports records<br/>from the config's query, about 16 min"]
+  E --> F{"Same as the last build?<br/>count and latest indexdate,<br/>then one hash over all records"}
+  F -- "same" --> S["Stop: no new version, no copying"]
+  F -- "changed" --> B["Full rebuild as a new version, about 67 s<br/>publish step, previous kept"]
+  B --> BR["Browser shows the build's<br/>'as of' date and record count"]
+  K["Item taken down or made dark"] --> RN
+</pre></div>
+<ul class="prose">
+  <li><strong>The source is a query.</strong> The config gains <code>source: { query, exclude }</code> and <code>refresh: "weekly"</code>. The builder exports the records itself, so the rule needs <code>'net':'host'</code>, as other ServerlessDocker rules already have. A hand-uploaded records file still works for items that aren't collections.</li>
+  <li><strong>Measured on Democracy's Library</strong> (proof of concept, item <code>dl-search</code>): 1,219,865 records build in 67 s on a 10-core laptop, 5.5 GB peak memory, 1.1 GB on disk. The export is the slow part, about 16 min, so a full build takes about 17 min end to end.</li>
+  <li><strong>Skip when unchanged, in two steps.</strong> Record count plus latest <code>indexdate</code> first. That alone almost never matches: <code>indexdate</code> (the item's last-update time) moves for about 23k Democracy's Library items a week, against about 1k real additions. So the builder also compares one hash over all the exported records. If both match, it stops before writing anything.</li>
+  <li><strong>Rebuild now.</strong> Anyone who can edit the index item can queue <code>derive.php</code> with <code>remove_derived</code> through the existing Tasks API. It already allows credentialed requests from archive.org pages and is on the WAF allowlist, and it refuses a second derive while one is queued. The page's code still needs a security review.</li>
+  <li><strong>The schedule.</strong> petabox already runs daily jobs from <code>etc/cron.d/homenodes</code>. One more could queue <code>derive.php</code> on every index item that asks for a weekly refresh. This is new infrastructure and needs sign-off.</li>
+  <li><strong>Takedowns, for now:</strong> press Rebuild now. A full rebuild leaves the item out entirely, its words included, in about 17 minutes plus queue time.</li>
+  <li><strong>Show the age.</strong> The manifest's build time and record count appear under the search box ("1,219,865 records, as of 29 Oct 2026"), so nobody mistakes the index for live search. The only manifest field needed: <code>build: { built, records, source: { count, maxIndexdate, contentHash } }</code>.</li>
+</ul>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Phase</th><th>What it adds</th><th>When</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill ok">1 · now</span></td><td>Full rebuilds, the skip check, Rebuild now, an optional weekly schedule, the age in the UI</td><td>Enough for Democracy's Library</td></tr>
+    <tr><td><span class="pill muted">2 · if needed</span></td><td>Small delta segments merged at search time, compacted into a new base now and then. Keeps big files unchanged between compactions.</td><td>Only at ETD's size, or if full builds cost too much</td></tr>
+    <tr><td><span class="pill muted">3 · last</span></td><td>Fast takedowns: an uploaded list of ids hides them, and only the 256k-record chunks that hold them are rewritten, blanked. Their words leave at the next full build, within 7 days.</td><td>Only if 17 minutes is too slow for a takedown</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Where the code lives</h3>
+<div class="prose"><p>petabox gets a configuration change only. The builder sits with the engine that reads its output, so one test suite holds both sides of the format.</p></div>
+<div class="frame chart"><pre class="mermaid">
+flowchart TD
+  subgraph cb["Engine package, from collection-browser"]
+    MT["manifest.ts<br/>the contract"]
+    CO["codec.ts<br/>tokenize, fnv1a"]
+    E["Engine readers"]
+    BLD["Builder CLI, TypeScript<br/>new"]
+  end
+  BLD --> CO
+  E --> CO
+  BLD --> MT
+  E --> MT
+  BLD -. "round-trip tests" .-> E
+  BLD --> IMG["registry.archive.org/www/<br/>static-index-builder"]
+  subgraph pb["petabox"]
+    DX["deriver/derivations.xml<br/>new rule, format names"]
+    SDK["deriver/inc/ServerlessDocker.php<br/>unchanged"]
+  end
+  DX --> SDK
+  SDK --> IMG
+  V["Vector image, Python and GPU<br/>later"] -.-> SDK
+</pre></div>
+
+<h3>Inputs the owner writes</h3>
+<div class="frame"><table class="plain">
+  <thead><tr><th>File</th><th>What it holds</th></tr></thead>
+  <tbody>
+    <tr><td><code>{id}_static_index_records.jsonl</code></td><td>One JSON object per record. ETD's catalog items already publish <code>records.jsonl</code> in this shape. This file is the derive source, so changing it triggers a rebuild. Optional when the config names a source query.</td></tr>
+    <tr><td><code>{id}_static_index.json</code></td><td>What each field does: <code>text</code> fields (prefix, aliases, weight); <code>hit</code> (title, creators, date, url); <code>snippet</code>; <code>facets</code> (code, year, flags, packed); <code>docValues</code>; <code>positions</code>; <code>vectors</code> (off for now). The builder works out byte layouts itself.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Decisions</h3>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Status</th><th>Decision</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill ok">settled</span></td><td>A <code>ServerlessDocker</code> rule plus a builder image, written as a command-line tool first</td><td>The usual archive.org pattern, used by 20+ rules already. The same image also runs locally, for owners and for ETD.</td></tr>
+    <tr><td><span class="pill ok">settled</span></td><td>The switch to a new version happens in a follow-up step, and the browser falls back to the previous version</td><td>rsync and replication order aren't ours to choose.</td></tr>
+    <tr><td><span class="pill ok">settled</span></td><td>The builder writes the v2 manifest: <code>static-index.json</code> plus <code>static-index.&lt;v&gt;.json</code></td><td>The client then needs no per-item code beyond a config. <code>suffix</code> and <code>previous</code> were added for the deriver (PR #637).</td></tr>
+    <tr><td><span class="pill ok">settled</span></td><td>Builder in TypeScript, next to the engine</td><td>One tokenizer and codec, and round-trip tests.</td></tr>
+    <tr><td><span class="pill ok">settled</span></td><td>Every output name ends in <code>.json</code></td><td>The datanode only sends CORS headers for a fixed list of extensions (<code>static_file_cors.conf:12</code>).</td></tr>
+    <tr><td><span class="pill ok">settled</span></td><td>Full rebuilds first; incremental builds only if needed</td><td>A full Democracy's Library build takes about 17 min, almost all of it the export.</td></tr>
+  </tbody>
+</table></div>
+
+<h3>ETD at scale</h3>
+<div class="facts" role="list">
+  <div role="listitem"><b>~64 GB</b><span>per index version</span></div>
+  <div role="listitem"><b>3</b><span>versions kept today; we'd keep 2</span></div>
+  <div role="listitem"><b>250 GB</b><span>whole item, incl. 57 GB of vectors and model</span></div>
+  <div role="listitem"><b>25.9M</b><span>records</span></div>
+</div>
+<p class="cap">Today every index file in <code>etd-search</code> is an uploaded original, not a derivative. A derived rebuild would copy about 64 GB back to the primary each time.</p>
+
+<h3>Open questions</h3>
+<div class="frame"><table class="plain">
+  <thead><tr><th>Question</th><th>Who can answer</th></tr></thead>
+  <tbody>
+    <tr><td>Derive worker limits: RAM, local disk, maximum run time. Democracy's Library needs about 5.5 GB at peak; can a ~64 GB ETD build run in one derive?</td><td>Derive/infra owners</td></tr>
+    <tr><td>How the publish step runs: a second derive rule that depends on the build log, or a task queued through <code>extra_tasks.json</code>?</td><td>Read more of <code>Deriver.inc</code></td></tr>
+    <tr><td>Does a new format name need more than a <code>derivations.xml</code> entry (<code>FormatGetter</code>)?</td><td>Read <code>FormatGetter.inc</code></td></tr>
+    <tr><td>Does a config-only change trigger a rebuild? The derive source is the records file.</td><td>Design choice</td></tr>
+    <tr><td>The weekly trigger: a new cron line on a homenode, or a scheduler outside petabox?</td><td>Infra owners</td></tr>
+    <tr><td>How fast must takedowns leave the index? For now, Rebuild now takes about 17 min plus queue time.</td><td>Policy / legal</td></tr>
+    <tr><td>Manifest field for phase 1: <code>build: { built, records, source: { count, maxIndexdate, contentHash } }</code></td><td>Manifest owners</td></tr>
+    <tr><td>Image CI: the engine is on GitHub, the image registry on git.archive.org.</td><td>Team</td></tr>
+  </tbody>
+</table></div>
+
+<h3>Checked in the source</h3>
+<ul class="prose">
+  <li><code>deriver/inc/ServerlessDocker.php</code>: no network by default, 1500m tmpfs, GPU when present, <code>extra_targets.json</code> / <code>extra_metadata.json</code> / <code>extra_tasks.json</code>, a <code>test_serverless</code> arg for the testing image.</li>
+  <li><code>deriver/inc/Deriver.inc:1453</code>: extra targets are marked <code>source=derivative</code>, or <code>original</code> on request.</li>
+  <li><code>deriver/derive.php</code>: ends with <code>FilesXML::pruneFormats</code>, which drops entries for files no longer on disk.</li>
+  <li><code>deriver/inc/Deriver.inc:1793-1797</code>: a remote derive rsyncs <code>_files.xml</code>, then the whole item folder.</li>
+  <li><code>www/common/Deriver/Conditions.inc</code>: rules can be gated on <code>collection</code>, <code>format</code>, <code>md:*</code>, <code>source_md:*</code>, <code>!</code> and <code>OR</code>.</li>
+  <li><code>www/common/Tasks/Service.inc:66</code>: the Tasks API allows credentialed requests from archive.org origins; <code>TaskPerms.inc:97-102</code>: <code>derive.php</code> needs edit rights on the item.</li>
+</ul>
 </section>
 </div>
 
