@@ -432,8 +432,10 @@ so a live page rebuild can break it. It says so when that happens.
 To describe another item's index generically (a manifest it publishes, a
 config the client holds), see
 [`src/static-index/README.md`](../static-index/README.md).
-`etd-static-index.ts` describes ETD that way, and its tests hold the
-description to this folder's code.
+`etd-static-index.ts` describes ETD that way, both searches (words and
+meaning) over their two id spaces, and its tests hold the description to
+this folder's code: the vector config's facet counts match
+`StaticVectorEngine`'s over the same rows.
 
 `serverless-search/` is generic. To plug in another index:
 
