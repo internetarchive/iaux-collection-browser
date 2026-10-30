@@ -15,10 +15,17 @@ class FakeWorker extends EventTarget {
 
   answer?: (message: Extract<ToWorker, { type: 'search' }>) => FromWorker;
 
+  answerEmbed?: (message: Extract<ToWorker, { type: 'embed' }>) => FromWorker;
+
   postMessage(message: ToWorker): void {
     this.received.push(message);
-    if (message.type === 'search' && this.answer) {
-      const reply = this.answer(message);
+    const reply =
+      message.type === 'search'
+        ? this.answer?.(message)
+        : message.type === 'embed'
+          ? this.answerEmbed?.(message)
+          : undefined;
+    if (reply) {
       setTimeout(() =>
         this.dispatchEvent(new MessageEvent('message', { data: reply })),
       );
@@ -122,6 +129,55 @@ describe('WorkerVectorSearcher', () => {
       }),
     );
     expect((await rejection(pending)).name).to.equal('AbortError');
+  });
+});
+
+describe('WorkerVectorSearcher.embed', () => {
+  it("returns the worker's vector for the query, with no scan", async () => {
+    const worker = new FakeWorker();
+    worker.answerEmbed = ({ id }) => ({
+      type: 'embedded',
+      id,
+      vector: Float32Array.from([0.5, -0.5]),
+    });
+
+    const vector = await searcher(worker).embed('sea ice');
+
+    expect(Array.from(vector)).to.deep.equal([0.5, -0.5]);
+    expect(worker.received.at(-1)).to.include({
+      type: 'embed',
+      text: 'sea ice',
+    });
+    expect(worker.received.some(m => m.type === 'search')).to.equal(false);
+  });
+
+  it("rejects with the worker's error, as a search would", async () => {
+    const worker = new FakeWorker();
+    worker.answerEmbed = ({ id }) => ({
+      type: 'error',
+      id,
+      message: 'model_quantized.onnx: HTTP 503',
+      aborted: false,
+      status: 503,
+    });
+
+    const error = await rejection(searcher(worker).embed('sea ice'));
+
+    expect(error).to.be.instanceOf(HttpError);
+    expect((error as HttpError).status).to.equal(503);
+  });
+
+  it('stops waiting when aborted', async () => {
+    const worker = new FakeWorker();
+    const controller = new AbortController();
+    const pending = searcher(worker).embed('sea ice', {
+      signal: controller.signal,
+    });
+    controller.abort();
+
+    const error = await rejection(pending);
+
+    expect(error.name).to.equal('AbortError');
   });
 });
 

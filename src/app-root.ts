@@ -28,6 +28,11 @@ import { StaticVectorEngine } from './etd/engine/vector/static-vector-engine';
 import type { EtdFileCheck } from './etd/engine/file-checks';
 import type { VectorSearchStatus } from './etd/engine/vector/static-vector-engine';
 import type { ModelState } from './etd/engine/vector/vector-searcher';
+import {
+  DEFAULT_RERANK_HEAD,
+  MeaningRerankEngine,
+} from './etd/engine/meaning-rerank';
+import type { MeaningRerankStatus } from './etd/engine/meaning-rerank';
 import './etd/demo/etd-vector-status';
 import type { FacetDeclaringSearchService } from './serverless-search/serverless-search-service';
 import './etd/compare/etd-compare-panel';
@@ -43,6 +48,21 @@ import {
   etdIndexUrls,
   parseItemIdentifier,
 } from './etd/demo/item-index';
+
+/** How the ETD demo ranks: by words, by meaning, or words re-ranked. */
+type EtdRank = 'text' | 'vector' | 'rerank';
+
+/** Each ranking's `etd_rank` value in the url; words is the default. */
+const ETD_RANK_PARAMS: Record<Exclude<EtdRank, 'text'>, string> = {
+  vector: 'vec',
+  rerank: 'rerank',
+};
+
+function etdRankFromUrl(): EtdRank {
+  const param = new URL(window.location.href).searchParams.get('etd_rank');
+  const ranks = Object.entries(ETD_RANK_PARAMS) as [EtdRank, string][];
+  return ranks.find(([, value]) => value === param)?.[0] ?? 'text';
+}
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -69,14 +89,12 @@ export class AppRoot extends LitElement {
   private etdEngine?: StaticEtdEngine;
 
   /**
-   * How ETD results are ranked: by the words (text rank), or by meaning
-   * (vector rank), as the live page's two tabs. Kept in the url as
-   * `etd_rank=vec`.
+   * How ETD results are ranked: by the words (text rank), by meaning
+   * (vector rank), as the live page's two tabs, or by the words with their
+   * best re-ordered by meaning. Kept in the url as `etd_rank=vec` or
+   * `etd_rank=rerank`.
    */
-  @state() private etdRank: 'text' | 'vector' =
-    new URL(window.location.href).searchParams.get('etd_rank') === 'vec'
-      ? 'vector'
-      : 'text';
+  @state() private etdRank: EtdRank = etdRankFromUrl();
 
   /** Built on first use: a text-only visit never loads the model. */
   private etdVectorEngine?: StaticVectorEngine;
@@ -87,10 +105,10 @@ export class AppRoot extends LitElement {
   @state() private etdVectorFileCheck?: EtdFileCheck;
 
   /** The services for each ranking, built once each. */
-  private etdServices: {
-    text?: SearchServiceInterface;
-    vector?: SearchServiceInterface;
-  } = {};
+  private etdServices: Partial<Record<EtdRank, SearchServiceInterface>> = {};
+
+  /** How the latest re-rank by meaning went. */
+  @state() private etdRerank?: MeaningRerankStatus;
 
   /**
    * Whether to compare with the live page. `etd_compare=0` leaves it out,
@@ -198,7 +216,7 @@ export class AppRoot extends LitElement {
   }
 
   /** The ETD search service for a ranking, built on first use. */
-  private etdService(rank: 'text' | 'vector'): SearchServiceInterface {
+  private etdService(rank: EtdRank): SearchServiceInterface {
     const built = this.etdServices[rank];
     if (built) return built;
     const service =
@@ -207,7 +225,20 @@ export class AppRoot extends LitElement {
             engine: this.vectorEngine(),
             kind: ETD_VECTOR_SEARCH,
           })
-        : new EtdSearchService({ engine: this.textEngine() });
+        : new EtdSearchService({
+            engine:
+              rank === 'rerank'
+                ? new MeaningRerankEngine(
+                    this.textEngine(),
+                    () => this.vectorEngine(),
+                    {
+                      onStatus: status => {
+                        this.etdRerank = status;
+                      },
+                    },
+                  )
+                : this.textEngine(),
+          });
     const observed = observeFacets(
       service,
       facets => {
@@ -290,11 +321,11 @@ export class AppRoot extends LitElement {
 
   /** Switches the ranking, keeping the query, and says so in the url. */
   private etdRankChanged(e: Event) {
-    const rank = (e.target as HTMLInputElement).value as 'text' | 'vector';
+    const rank = (e.target as HTMLInputElement).value as EtdRank;
     if (rank === this.etdRank) return;
     const url = new URL(window.location.href);
-    if (rank === 'vector') url.searchParams.set('etd_rank', 'vec');
-    else url.searchParams.delete('etd_rank');
+    if (rank === 'text') url.searchParams.delete('etd_rank');
+    else url.searchParams.set('etd_rank', ETD_RANK_PARAMS[rank]);
     window.history.replaceState(window.history.state, '', url.href);
     this.etdRank = rank;
     this.etdFacets = undefined;
@@ -340,6 +371,19 @@ export class AppRoot extends LitElement {
           <input
             type="radio"
             name="etd-rank"
+            value="rerank"
+            .checked=${this.etdRank === 'rerank'}
+          />
+          Words, re-ranked by meaning
+          <span class="etd-rank-note">(top ${DEFAULT_RERANK_HEAD})</span>
+        </label>
+        <label
+          @pointerenter=${this.etdPreloadVector}
+          @focusin=${this.etdPreloadVector}
+        >
+          <input
+            type="radio"
+            name="etd-rank"
             value="vector"
             .checked=${this.etdRank === 'vector'}
           />
@@ -351,12 +395,12 @@ export class AppRoot extends LitElement {
 
   /** How a search by meaning is going, in the ETD panel. */
   private get etdVectorStatusTemplate() {
-    return this.etdRank === 'vector'
-      ? html`<etd-vector-status
-          .model=${this.etdModel}
-          .search=${this.etdVectorSearch}
-        ></etd-vector-status>`
-      : nothing;
+    if (this.etdRank === 'text') return nothing;
+    return html`<etd-vector-status
+      .model=${this.etdModel}
+      .search=${this.etdRank === 'vector' ? this.etdVectorSearch : undefined}
+      .rerank=${this.etdRank === 'rerank' ? this.etdRerank : undefined}
+    ></etd-vector-status>`;
   }
 
   /**
@@ -385,7 +429,7 @@ export class AppRoot extends LitElement {
         </p>
         ${this.etdItemTemplate} ${this.etdSearchTemplate}
         ${this.etdVectorStatusTemplate}
-        ${this.etdRank === 'text' ? this.etdBrowseTemplate : nothing}
+        ${this.etdRank === 'vector' ? nothing : this.etdBrowseTemplate}
         <etd-facet-summary
           .groups=${this.declaredSearch?.extraFacetGroups ?? []}
           .facets=${this.etdFacets}
@@ -405,7 +449,7 @@ export class AppRoot extends LitElement {
               .engine=${this.etdRank === 'vector'
                 ? this.etdVectorEngine
                 : this.etdEngine}
-              .rank=${this.etdRank}
+              .rank=${this.etdRank === 'vector' ? 'vector' : 'text'}
               .query=${this.searchQuery}
               .pageUrl=${this.etdIndex.pageUrl}
             ></etd-compare-panel>`

@@ -11,6 +11,7 @@ import type {
 import { EtdDictionary } from './dictionary';
 import type { EtdFileCheck } from './file-checks';
 import { EtdIndexFiles } from './index-files';
+import type { EtdIndexMeta } from './index-files';
 import { markTerms, termsToMark } from './mark-terms';
 import { boostTokens, phraseBoost, wordsPlacement } from './phrase-boost';
 import { EtdPosfwd } from './posfwd';
@@ -214,44 +215,66 @@ export class StaticEtdEngine implements EtdEngine {
       };
     }
     const marked = termsToMark(terms);
-    let ranks: Map<number, number> | undefined;
-    let cursor = 0;
-    return {
-      result: {
-        total: scores.size,
-        approximate: approximate || scores.size >= APPROXIMATE_AT,
-        reachable: ranked.length,
-      },
-      async next(count, nextOptions) {
-        const ids = ranked.slice(cursor, cursor + count);
-        const page = await records.read(ids, nextOptions);
-        // Only advance once the read succeeded, so a retry resumes here.
-        cursor += ids.length;
-        return page.map(record =>
-          record.snippet
-            ? { ...record, highlight: markTerms(record.snippet, marked) }
-            : record,
-        );
-      },
-      async facets(facetOptions) {
-        return countFacets(
-          await facets.rows(facetOptions),
-          scores.keys(),
-          readers,
-        );
-      },
-      rankOf(docId) {
-        ranks ??= new Map(ranked.map((id, i) => [id, i + 1]));
-        return ranks.get(docId);
-      },
-      matches(docId) {
-        return scores.has(docId);
-      },
-      sample(count, sampleOptions) {
-        return sampleRecords(scores.keys(), count, records, sampleOptions);
-      },
-      boost,
+    const result = {
+      total: scores.size,
+      approximate: approximate || scores.size >= APPROXIMATE_AT,
+      reachable: ranked.length,
     };
+    return rankedQuery(ranked);
+
+    /** The query over one order of its matches; reordered() makes another. */
+    function rankedQuery(order: readonly number[]): EtdQuery {
+      let ranks: Map<number, number> | undefined;
+      let cursor = 0;
+      return {
+        result,
+        async next(count, nextOptions) {
+          const ids = order.slice(cursor, cursor + count);
+          const page = await records.read(ids, nextOptions);
+          // Only advance once the read succeeded, so a retry resumes here.
+          cursor += ids.length;
+          return page.map(record =>
+            record.snippet
+              ? { ...record, highlight: markTerms(record.snippet, marked) }
+              : record,
+          );
+        },
+        async facets(facetOptions) {
+          return countFacets(
+            await facets.rows(facetOptions),
+            scores.keys(),
+            readers,
+          );
+        },
+        rankOf(docId) {
+          ranks ??= new Map(order.map((id, i) => [id, i + 1]));
+          return ranks.get(docId);
+        },
+        matches(docId) {
+          return scores.has(docId);
+        },
+        sample(count, sampleOptions) {
+          return sampleRecords(scores.keys(), count, records, sampleOptions);
+        },
+        topIds(count) {
+          return order.slice(0, count);
+        },
+        reordered(head) {
+          // Only ranked docs, once each: a head can't add or repeat one.
+          const inOrder = new Set(order);
+          const top = [...new Set(head)].filter(id => inOrder.has(id));
+          const moved = new Set(top);
+          return rankedQuery([...top, ...order.filter(id => !moved.has(id))]);
+        },
+        boost,
+      };
+    }
+  }
+
+  /** current.json, once the index is open. */
+  async indexMeta(): Promise<EtdIndexMeta> {
+    const { files } = await this.loading;
+    return files.meta;
   }
 
   async record(

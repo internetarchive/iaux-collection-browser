@@ -95,6 +95,26 @@ describe('ETD file checks', () => {
     expect(files).not.to.include('vsnip.dir');
   });
 
+  it("checks doc-vectors.bin as part of the map, so a short one can't stop search by meaning", () => {
+    // Democracy's Library's store: 1,219,865 vectors, the last one cut short.
+    const dl: IvfMeta = { ...IVF, n: 1219865, doc_vectors: true };
+    const report = checkSizes(
+      vectorSizeRules(dl),
+      new ItemFileList('dl-search', [
+        { name: 'doc-vectors.bin', size: 1219865 * 772 - 100, mtime: 1 },
+      ]),
+    );
+    const check = report.checks.find(c => c.rule.file === 'doc-vectors.bin');
+    expect(check?.status).to.equal('mismatch');
+    expect(check?.rule.rows).to.equal(1219865);
+    expect(report.failedLayers).to.include(MEANING_WORDS_MAP);
+    expect(report.failedLayers).not.to.include('search by meaning');
+    // A store without it isn't asked for it.
+    expect(vectorSizeRules(IVF).map(rule => rule.file)).not.to.include(
+      'doc-vectors.bin',
+    );
+  });
+
   it('knows the item behind the demo’s proxy paths', () => {
     expect(etdItemId('https://archive.org/download/etd-search/')).to.equal(
       'etd-search',

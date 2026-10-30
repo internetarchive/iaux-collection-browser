@@ -45,6 +45,17 @@ export interface IvfMeta {
   code_bits?: number;
   /** The store's build stamp, e.g. '2026-10-12 11:31'. */
   built?: string;
+  /**
+   * Whether doc-vectors.bin exists: cells.bin's rows again, in vector id
+   * order (row i is vector id i), so a doc's vector is one fixed range.
+   */
+  doc_vectors?: boolean;
+  /**
+   * The text index build (current.json's `v`) whose docIds these vector
+   * ids line up with: vector id = docId - 1. Absent when they don't, as on
+   * ETD, where the store was built apart from the text index.
+   */
+  text_v?: string;
 }
 
 /**

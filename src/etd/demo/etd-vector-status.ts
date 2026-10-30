@@ -5,11 +5,13 @@ import type {
   VectorSearchStatus,
 } from '../engine/vector/static-vector-engine';
 import type { ModelState } from '../engine/vector/vector-searcher';
+import type { MeaningRerankStatus } from '../engine/meaning-rerank';
 
 /**
  * Demo-only: how a search by meaning is going. The model's download (135 MB
  * the first time, then cached), the cells as they arrive, and once done,
- * what the search cost: time per step, bytes and requests.
+ * what the search cost: time per step, bytes and requests. Or, for word
+ * results re-ranked by meaning, whether that could run and what it cost.
  */
 @customElement('etd-vector-status')
 export class EtdVectorStatus extends LitElement {
@@ -17,18 +19,44 @@ export class EtdVectorStatus extends LitElement {
 
   @property({ attribute: false }) search?: VectorSearchStatus;
 
+  @property({ attribute: false }) rerank?: MeaningRerankStatus;
+
   render() {
     return html`
       <p class="model">${this.modelTemplate}</p>
-      ${this.searchTemplate}
+      ${this.searchTemplate} ${this.rerankTemplate}
     `;
+  }
+
+  private get rerankTemplate() {
+    const { rerank } = this;
+    if (!rerank) return nothing;
+    const query = `“${rerank.text}”`;
+    switch (rerank.phase) {
+      case 'reranking':
+        return html`<p role="status">
+          Word results for ${query} are shown; re-ranking the best by meaning…
+        </p>`;
+      case 'done':
+        return html`<p role="status">${rerankText(query, rerank)}</p>`;
+      case 'off':
+        return html`<p role="status">
+          ⚠️ Results for ${query} stay in word order: this item can't re-rank by
+          meaning, because ${rerank.message}.
+        </p>`;
+      default:
+        return html`<p role="status" class="error">
+          ⚠️ Re-ranking ${query} by meaning failed, so results stay in word
+          order: ${rerank.message}
+        </p>`;
+    }
   }
 
   private get modelTemplate() {
     const { model } = this;
     switch (model.state) {
       case 'idle':
-        return 'Model: not loaded yet. It loads when you point at Meaning, or search by it.';
+        return 'Model: not loaded yet. It loads when you point at a meaning ranking, or search by one.';
       case 'loading':
         return html`<label
           >Downloading the model (one time, then cached):
@@ -122,6 +150,19 @@ export function summaryText(query: string, scan: VectorScanSummary): string {
     `Waiting for the model and centroids ${seconds(t.load)}, ` +
     `embedding ${Math.round(t.embed)} ms, cells ${seconds(t.scan)}, ` +
     `exact re-score of ${scan.exact} and facets ${seconds(t.rerank)}.`
+  );
+}
+
+/** A finished re-rank, in one line, as summaryText. */
+export function rerankText(query: string, status: MeaningRerankStatus): string {
+  const unscored = (status.head ?? 0) - (status.scored ?? 0);
+  return (
+    `Re-ranked the best ${status.head} word results for ${query} by meaning ` +
+    `in ${seconds(status.elapsed)}` +
+    `${unscored ? ` (${unscored} had no vector, so they went last)` : ''}: ` +
+    `${mb(status.bytes ?? 0)} of vectors in one request. ` +
+    `Embedding, with any wait for the model, ${Math.round(status.timings?.embed ?? 0)} ms, ` +
+    `reading ${Math.round(status.timings?.read ?? 0)} ms.`
   );
 }
 

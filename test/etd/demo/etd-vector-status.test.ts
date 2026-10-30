@@ -4,6 +4,16 @@ import type { EtdVectorStatus } from '../../../src/etd/demo/etd-vector-status';
 import '../../../src/etd/demo/etd-vector-status';
 import type { VectorSearchStatus } from '../../../src/etd/engine/vector/static-vector-engine';
 import type { ModelState } from '../../../src/etd/engine/vector/vector-searcher';
+import type { MeaningRerankStatus } from '../../../src/etd/engine/meaning-rerank';
+
+async function rerankStatus(rerank: MeaningRerankStatus) {
+  return fixture<EtdVectorStatus>(html`
+    <etd-vector-status
+      .model=${{ state: 'ready' }}
+      .rerank=${rerank}
+    ></etd-vector-status>
+  `);
+}
 
 async function status(model: ModelState, search?: VectorSearchStatus) {
   return fixture<EtdVectorStatus>(html`
@@ -18,7 +28,7 @@ function text(el: EtdVectorStatus): string {
 describe('etd-vector-status', () => {
   it('says the model loads on demand, before anyone asks for it', async () => {
     const el = await status({ state: 'idle' });
-    expect(text(el)).to.contain('loads when you point at Meaning');
+    expect(text(el)).to.contain('loads when you point at a meaning ranking');
   });
 
   it('shows the model download as a labelled progress bar', async () => {
@@ -146,5 +156,47 @@ describe('etd-vector-status', () => {
     );
     expect(text(el)).to.contain("The model didn't load: HTTP 503");
     expect(text(el)).to.contain('Searching “sea ice” by meaning failed');
+  });
+
+  describe('re-ranking word results', () => {
+    it('sums up a re-rank: how many, how long, and what it read', async () => {
+      const el = await rerankStatus({
+        text: 'sea ice',
+        phase: 'done',
+        elapsed: 420,
+        head: 400,
+        scored: 398,
+        bytes: 308_800,
+        timings: { embed: 35, read: 310 },
+      });
+      expect(text(el)).to.contain(
+        'Re-ranked the best 400 word results for “sea ice” by meaning in 0.4 s (2 had no vector, so they went last): 0.3 MB of vectors in one request. Embedding, with any wait for the model, 35 ms, reading 310 ms.',
+      );
+    });
+
+    it('says why an item stays in word order', async () => {
+      const el = await rerankStatus({
+        text: 'sea ice',
+        phase: 'off',
+        elapsed: 30,
+        message:
+          "its vector store's ids aren't the word index's docIds (ivf-meta.json has no text_v)",
+      });
+      expect(text(el)).to.contain(
+        "stay in word order: this item can't re-rank by meaning, because its vector store's ids aren't the word index's docIds",
+      );
+    });
+
+    it('marks a failed re-rank as an error, keeping the word order', async () => {
+      const el = await rerankStatus({
+        text: 'sea ice',
+        phase: 'failed',
+        elapsed: 900,
+        message: 'doc-vectors.bin: HTTP 502',
+      });
+      const line = el.shadowRoot!.querySelector('.error')!;
+      expect(line.textContent).to.contain('doc-vectors.bin: HTTP 502');
+      expect(line.textContent).to.contain('word');
+    });
   });
 });

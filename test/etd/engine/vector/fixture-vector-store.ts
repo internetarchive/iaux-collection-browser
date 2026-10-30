@@ -57,6 +57,13 @@ export interface FixtureVectorOptions {
   };
   /** Serve a current.json with this many text docs (otherwise it 404s). */
   textDocs?: number;
+  /**
+   * Write doc-vectors.bin (cells.bin's rows in vector id order) and say so
+   * in ivf-meta.json. `ids` overrides each row's id, to fake a stale file.
+   */
+  docVectors?: { ids?: number[] };
+  /** ivf-meta.json's text_v: the word build the vector ids line up with. */
+  textV?: string;
 }
 
 export const FIXTURE_VECTOR_BASE = 'https://archive.org/download/vec-fixture/';
@@ -180,6 +187,17 @@ export async function buildFixtureVectorStore(
     ),
   );
 
+  // doc-vectors.bin: cells.bin's rows, in vector id order.
+  const docVectors = new Uint8Array(docs.length * rowbytes);
+  rowDocs.forEach((i, row) => {
+    const at = dids[i] * rowbytes;
+    docVectors.set(cells.subarray(row * rowbytes, (row + 1) * rowbytes), at);
+    const id = options.docVectors?.ids?.[dids[i]];
+    if (id !== undefined) {
+      new DataView(docVectors.buffer, at, 4).setUint32(0, id, true);
+    }
+  });
+
   const meta: IvfMeta = {
     n: docs.length,
     ncell,
@@ -192,6 +210,8 @@ export async function buildFixtureVectorStore(
     codes: options.withCodes !== false,
     built: FIXTURE_BUILT,
   };
+  if (options.docVectors) meta.doc_vectors = true;
+  if (options.textV) meta.text_v = options.textV;
   const json = (value: unknown) =>
     new TextEncoder().encode(JSON.stringify(value));
   const files = new Map<string, Uint8Array>([
@@ -202,6 +222,7 @@ export async function buildFixtureVectorStore(
     ['vsnip.dir', vsnipDir],
     ['vsnip.bin', vsnipBin],
   ]);
+  if (options.docVectors) files.set('doc-vectors.bin', docVectors);
   if (options.withCodes !== false) {
     files.set('cell-codes.bin', codes);
     files.set(

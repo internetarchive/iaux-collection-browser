@@ -4,6 +4,7 @@ import type { EarlyScan, ScanOptions, ScanResult, VectorIndex } from './scan';
 import { loadVectorIndex, scanVectors } from './scan';
 import { VectorStoreFiles } from './vector-files';
 import { HttpError } from '../http-error';
+import type { EtdCallOptions } from '../../etd-engine';
 
 /**
  * Embeds a query and scans the vector store: the heavy part of a search by
@@ -16,6 +17,12 @@ export interface VectorSearcher {
   preload(): Promise<void>;
 
   search(text: string, options?: ScanOptions): Promise<VectorScan>;
+
+  /**
+   * The query's vector alone, with no scan: for scoring docs already
+   * picked, as the re-rank of word results does. Loads only the model.
+   */
+  embed(text: string, options?: EtdCallOptions): Promise<Float32Array>;
 }
 
 /** A scan, and how long the query took to embed. */
@@ -45,7 +52,7 @@ export interface InlineVectorSearcherOptions {
 export class InlineVectorSearcher implements VectorSearcher {
   private index?: Promise<VectorIndex>;
 
-  private embed?: Promise<Embed>;
+  private embedder?: Promise<Embed>;
 
   constructor(private readonly options: InlineVectorSearcherOptions) {}
 
@@ -84,6 +91,12 @@ export class InlineVectorSearcher implements VectorSearcher {
     };
   }
 
+  async embed(text: string, options?: EtdCallOptions): Promise<Float32Array> {
+    const embed = await this.loadEmbed();
+    options?.signal?.throwIfAborted();
+    return embed(text);
+  }
+
   /** The store's retries already counted in a search's result. */
   private reportedRetries = 0;
 
@@ -97,20 +110,20 @@ export class InlineVectorSearcher implements VectorSearcher {
   }
 
   private loadEmbed(): Promise<Embed> {
-    if (!this.embed) {
+    if (!this.embedder) {
       this.options.onModel?.({
         state: 'loading',
         loaded: 0,
         total: 0,
         retries: 0,
       });
-      this.embed = this.options.embed().then(
+      this.embedder = this.options.embed().then(
         embed => {
           this.options.onModel?.({ state: 'ready' });
           return embed;
         },
         (err: unknown) => {
-          this.embed = undefined;
+          this.embedder = undefined;
           this.options.onModel?.({
             state: 'failed',
             message: err instanceof Error ? err.message : String(err),
@@ -119,7 +132,7 @@ export class InlineVectorSearcher implements VectorSearcher {
         },
       );
     }
-    return this.embed;
+    return this.embedder;
   }
 }
 
@@ -139,6 +152,7 @@ export type ToWorker =
       /** Whether to send a first answer before the scan ends. */
       early?: boolean;
     }
+  | { type: 'embed'; id: number; text: string }
   | { type: 'cancel'; id: number };
 
 /** What the worker tells the page. */
@@ -151,6 +165,7 @@ export type FromWorker =
     }
   | { type: 'early'; id: number; early: EarlyScan }
   | { type: 'result'; id: number; scan: VectorScan }
+  | { type: 'embedded'; id: number; vector: Float32Array }
   | {
       type: 'error';
       id: number;
@@ -198,6 +213,22 @@ export function serveVectorSearcher(scope: {
       searcher?.preload().catch(() => {});
     } else if (data.type === 'cancel') {
       running.get(data.id)?.abort();
+    } else if (data.type === 'embed') {
+      const { id } = data;
+      try {
+        if (!searcher) throw new Error('vector worker: not initialised');
+        const vector = await searcher.embed(data.text);
+        post({ type: 'embedded', id, vector }, [vector.buffer]);
+      } catch (err) {
+        post({
+          type: 'error',
+          id,
+          message: err instanceof Error ? err.message : String(err),
+          aborted: false,
+          status: err instanceof HttpError ? err.status : undefined,
+          network: err instanceof TypeError,
+        });
+      }
     } else if (data.type === 'search') {
       const { id } = data;
       const controller = new AbortController();
@@ -254,7 +285,7 @@ export class WorkerVectorSearcher implements VectorSearcher {
   private readonly pending = new Map<
     number,
     {
-      resolve: (scan: VectorScan) => void;
+      resolve: (answer: VectorScan | Float32Array) => void;
       reject: (err: Error) => void;
       onProgress?: ScanOptions['onProgress'];
       onEarly?: ScanOptions['onEarly'];
@@ -290,6 +321,9 @@ export class WorkerVectorSearcher implements VectorSearcher {
       } else if (message.type === 'result') {
         this.pending.delete(message.id);
         job.resolve(message.scan);
+      } else if (message.type === 'embedded') {
+        this.pending.delete(message.id);
+        job.resolve(message.vector);
       } else {
         this.pending.delete(message.id);
         job.reject(workerError(message));
@@ -309,7 +343,12 @@ export class WorkerVectorSearcher implements VectorSearcher {
     const id = this.nextId;
     this.nextId += 1;
     return new Promise<VectorScan>((resolve, reject) => {
-      this.pending.set(id, { resolve, reject, onProgress, onEarly });
+      this.pending.set(id, {
+        resolve: answer => resolve(answer as VectorScan),
+        reject,
+        onProgress,
+        onEarly,
+      });
       signal?.addEventListener('abort', () =>
         this.worker.postMessage({ type: 'cancel', id } satisfies ToWorker),
       );
@@ -320,6 +359,25 @@ export class WorkerVectorSearcher implements VectorSearcher {
         options: scanOptions,
         early: !!onEarly,
       } satisfies ToWorker);
+    });
+  }
+
+  embed(text: string, options?: EtdCallOptions): Promise<Float32Array> {
+    options?.signal?.throwIfAborted();
+    const id = this.nextId;
+    this.nextId += 1;
+    // Embedding a query takes milliseconds once the model is in, so an
+    // abort only stops the wait here; the worker isn't told.
+    return new Promise<Float32Array>((resolve, reject) => {
+      this.pending.set(id, {
+        resolve: answer => resolve(answer as Float32Array),
+        reject,
+      });
+      options?.signal?.addEventListener('abort', () => {
+        this.pending.delete(id);
+        reject(new DOMException('Embedding aborted', 'AbortError'));
+      });
+      this.worker.postMessage({ type: 'embed', id, text } satisfies ToWorker);
     });
   }
 }

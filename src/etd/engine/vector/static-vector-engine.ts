@@ -19,7 +19,9 @@ import type { EarlyScan, ScanOptions, ScanProgress } from './scan';
 import { DEFAULT_RERANK } from './scan';
 import type { ModelState, VectorScan, VectorSearcher } from './vector-searcher';
 import { InlineVectorSearcher, WorkerVectorSearcher } from './vector-searcher';
+import { decodeHalfs } from './f16';
 import { FileCheckError, VectorStoreFiles } from './vector-files';
+import type { IvfMeta } from './vector-files';
 import type { VectorDoc } from './vector-records';
 import { VectorRecords } from './vector-records';
 
@@ -97,6 +99,16 @@ export interface VectorScanSummary {
     first?: number;
     total: number;
   };
+}
+
+/** Docs scored by meaning (`scoreIds`), and what it cost. */
+export interface IdScores {
+  /** Per vector id asked for, in that order; NaN where it couldn't score. */
+  scores: Float64Array;
+  /** Bytes of doc-vectors.bin read. */
+  bytes: number;
+  /** Milliseconds embedding the query (with any wait for the model), and reading. */
+  timings: { embed: number; read: number };
 }
 
 /** A ranked vector query, with what the scan did. */
@@ -183,6 +195,69 @@ export class StaticVectorEngine implements EtdEngine {
    */
   preload(): Promise<void> {
     return this.searcher.preload();
+  }
+
+  /** The store's ivf-meta.json, once it's open. */
+  async storeMeta(): Promise<IvfMeta> {
+    const { files } = await this.loading;
+    return files.meta;
+  }
+
+  /**
+   * Scores docs the caller already picked against `text`, by meaning: the
+   * query is embedded, and each doc's vector is read from doc-vectors.bin
+   * (one multi-range request), with no scan. The scores are exact, as the
+   * scan's re-score. A doc whose row couldn't be read, or holds another
+   * id (a stale file), scores NaN.
+   */
+  async scoreIds(
+    text: string,
+    vids: readonly number[],
+    options?: EtdCallOptions,
+  ): Promise<IdScores> {
+    const { files } = await this.loading;
+    const { meta } = files;
+    if (!meta.doc_vectors) {
+      throw new Error('ETD vector store: no doc-vectors.bin to score by');
+    }
+    const started = performance.now();
+    const query = await this.searcher.embed(text.trim(), options);
+    if (query.length !== meta.dim) {
+      throw new Error(
+        `ETD vector store: the model gives ${query.length} numbers, the store wants ${meta.dim}`,
+      );
+    }
+    const embedded = performance.now();
+    const { rowbytes, dim } = meta;
+    const inRange = (vid: number) =>
+      Number.isInteger(vid) && vid >= 0 && vid < meta.n;
+    const read = vids.filter(inRange);
+    const buffers = await files.ranges(
+      'doc-vectors.bin',
+      read.map(vid => [vid * rowbytes, rowbytes] as const),
+      Math.max(read.length, 1),
+      options,
+    );
+    const rows = new Map(read.map((vid, i) => [vid, buffers[i]]));
+    const vector = new Float32Array(dim);
+    const scores = Float64Array.from(vids, vid => {
+      const bytes = rows.get(vid);
+      if (!bytes || bytes.length < rowbytes) return NaN;
+      const view = new DataView(bytes.buffer, bytes.byteOffset, 4);
+      if (view.getUint32(0, true) !== vid) return NaN;
+      decodeHalfs(bytes, 4, dim, vector);
+      let s = 0;
+      for (let j = 0; j < dim; j += 1) s += vector[j] * query[j];
+      return s;
+    });
+    return {
+      scores,
+      bytes: read.length * rowbytes,
+      timings: {
+        embed: embedded - started,
+        read: performance.now() - embedded,
+      },
+    };
   }
 
   /**

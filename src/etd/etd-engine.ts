@@ -159,6 +159,19 @@ export interface EtdQuery {
   matches?(docId: number): boolean;
 
   /**
+   * The first `count` docIds in rank order, without reading their records.
+   * Optional: for re-ranking a query's head (meaning-rerank.ts).
+   */
+  topIds?(count: number): number[];
+
+  /**
+   * The same query with `head` moved to the top, in that order, and the
+   * rest after it in their own order. Totals, facets and the boost stay
+   * the query's. Optional, as topIds.
+   */
+  reordered?(head: readonly number[]): EtdQuery;
+
+  /**
    * What the phrase boost did to this query's ranking; absent when the
    * query wasn't boosted. Optional, as rankOf.
    */

@@ -27,9 +27,10 @@ Open https://local.archive.org:8080/?search_service=etd&query=sea%20ice
   reads.
 - `&etd_base_url=<url>` reads an index from somewhere else.
 - "Rank results by", under the results count in the facets column, switches
-  between **Words** (text rank) and **Meaning** (vector rank, search by
-  meaning; see below). Meaning is kept in the url as `&etd_rank=vec`. It's
-  put there through collection-browser's `facets-header-slot`.
+  between **Words** (text rank), **Words, re-ranked by meaning** and
+  **Meaning** (vector rank, search by meaning); see below for both. They're
+  kept in the url as `&etd_rank=rerank` and `&etd_rank=vec`. It's put there
+  through collection-browser's `facets-header-slot`.
 - "Facets found in the results", a drawer in the panel, finds facets from
   the matches' own records, with no facet file (`found-facets.ts`). Opened,
   it reads up to 3,000 matches picked at random (all of them when there are
@@ -215,12 +216,48 @@ scanned candidates.
 | `cell-facets.bin`, `cell-facets-meta.json` | per row: year, flags, repository; 8 bytes; repository names in the meta    |
 | `docs.bin`                                 | per doc id: title, host, date, landing url, language; 308 bytes            |
 | `vsnip.dir`, `vsnip.bin`                   | per doc id: the abstract, deflated JSON, as `snippets.bin`                 |
+| `doc-vectors.bin`                          | optional: `cells.bin`'s rows in doc id order, for re-ranking word results  |
 | `Xenova/multilingual-e5-small/…`           | the model                                                                  |
 
 These aren't versioned like the text index's: the names are fixed, and
 `?v=<build stamp>` keys the browser cache to the build. A metas file whose
 `n` (or for the codes, build stamp and size) doesn't match `ivf-meta.json` is
 ignored, as on the live page, and the search goes on without it.
+
+### Words, re-ranked by meaning
+
+Word search, with its best 400 results re-ordered by how close they are to
+the query in meaning (`engine/meaning-rerank.ts`). It isn't on the live
+page (checked against its `search.html` on 2026-10-30).
+
+1. The word search runs as usual, and its results show at once.
+2. The query is embedded, by the same model as search by meaning.
+3. The vectors of the top 400 word results are read from `doc-vectors.bin`
+   by id, in one multi-range request (400 × 772 bytes, about 0.3 MB). There's
+   no scan: no centroids, cells or codes.
+4. Those 400 are sorted by their exact scores and replace the word order as
+   the query's `refined`, so the tiles reshuffle once. Results past 400 keep
+   their word order, and totals, facets and filters are word search's.
+
+It needs the vector store's ids to be the word index's docIds less one, and
+says so in `ivf-meta.json`:
+
+- `doc_vectors: true`: `doc-vectors.bin` exists. It holds `cells.bin`'s rows
+  in vector id order (row i is id i), so a doc's vector is one fixed range.
+  Each row starts with its id, and a row holding another id (a stale file)
+  scores nothing and goes after the scored ones.
+- `text_v`: the word build (`current.json`'s `v`) the ids line up with. It
+  has to equal the word index's `v`, and `n` its `n_docs`, or results stay
+  in word order and the ETD panel says why. A word rebuild that renumbers
+  docs can't then score each result by another doc's vector.
+
+ETD's store was built apart from its word index, so its ids don't line up
+and it has neither field: there, results stay in word order. Democracy's
+Library (`dl-search`) is built with them lined up.
+
+On the full Democracy's Library index (1.22M docs, local server), on
+2026-10-30: the first re-rank on a page took 1.2-2.0 s, nearly all of it
+loading the model from Cache Storage; later ones took under 0.1 s.
 
 ### Facets
 
@@ -474,7 +511,6 @@ collection-browser re-fetches what it shows (`onResultsChanged`,
 | Quoted phrases checked as adjacent            | Words only have to be near each other                        |
 | `field:` filters (`year:`, `host:`, `has:`…)  | Error                                                        |
 | Vector rank: results after every cell         | First results after 4 cells or 3 s, then the final ones once |
-| Vector rank: re-ranking text results          | Not available (needs a text docId → vector id map)           |
 | Vector rank: the per-cell code cache          | Not kept: the browser's own cache keeps reads for 6 hours    |
 | Showing results before the phrase boost lands | Results wait for the boost (up to 15 s)                      |
 

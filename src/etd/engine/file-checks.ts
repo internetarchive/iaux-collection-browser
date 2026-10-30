@@ -30,7 +30,10 @@ export function etdItemId(baseUrl: string): string | undefined {
 
 export const WORD_SEARCH = 'word search';
 export const MEANING_SEARCH = 'search by meaning';
-/** vrow2txt.bin / txt2vrow.bin: vector ids to text doc ids and back. */
+/**
+ * vrow2txt.bin / txt2vrow.bin: vector ids to text doc ids and back; and
+ * doc-vectors.bin, read to re-rank word results by meaning.
+ */
 export const MEANING_WORDS_MAP = 'meaning-to-words map';
 
 /** The current.json fields the rules use (EtdIndexMeta's). */
@@ -50,6 +53,7 @@ interface VectorCounts {
   vsnip?: boolean;
   codes?: boolean;
   code_bits?: number;
+  doc_vectors?: boolean;
 }
 
 export function textSizeRules(meta: TextCounts): SizeRule[] {
@@ -107,6 +111,13 @@ export function vectorSizeRules(
   // n + 1 offsets: the last is vsnip.bin's size.
   if (meta.vsnip) rules.push(vectors('vsnip.dir', 8, 8));
   rules.push({ ...vectors('vrow2txt.bin', 4), layer: MEANING_WORDS_MAP });
+  // Only re-ranking word results reads it, so it can't stop meaning search.
+  if (meta.doc_vectors) {
+    rules.push({
+      ...vectors('doc-vectors.bin', meta.rowbytes),
+      layer: MEANING_WORDS_MAP,
+    });
+  }
   if (textDocs) {
     rules.push({
       file: 'txt2vrow.bin',
