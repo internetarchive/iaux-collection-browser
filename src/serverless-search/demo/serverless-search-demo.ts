@@ -119,6 +119,8 @@ export const KNOWN_ITEMS = [
  */
 /** What `searchChanged` carries: the search as it now stands. */
 export type SearchChangedDetail = {
+  /** The archive.org item searched; undefined for an etd_base_url elsewhere. */
+  item?: string;
   query?: string;
   rank: 'text' | 'vector';
   /** Undefined until the item has been checked. */
@@ -148,6 +150,11 @@ export class ServerlessSearchDemo extends LitElement {
    */
   @property({ type: Boolean, attribute: 'hide-search-box' })
   hideSearchBox = false;
+
+  /** The archive.org item searched; undefined for an etd_base_url elsewhere. */
+  get item(): string | undefined {
+    return this.etdIndex.item;
+  }
 
   /** The words searched, once collection-browser has them. */
   get query(): string | undefined {
@@ -308,6 +315,7 @@ export class ServerlessSearchDemo extends LitElement {
       this.dispatchEvent(
         new CustomEvent<SearchChangedDetail>('searchChanged', {
           detail: {
+            item: this.etdIndex.item,
             query: this.searchQuery,
             rank: this.etdRank,
             hasVectorIndex: this.vectorIndexFound,

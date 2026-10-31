@@ -437,7 +437,12 @@ describe('serverless-search-demo', () => {
 
       expect(el.query).to.equal('sea ice');
       expect(el.collectionBrowser?.baseQuery).to.equal('sea ice');
-      expect(heard.at(-1)).to.include({ query: 'sea ice', rank: 'text' });
+      expect(heard.at(-1)).to.include({
+        item: 'etd-search',
+        query: 'sea ice',
+        rank: 'text',
+      });
+      expect(el.item).to.equal('etd-search');
     });
 
     it('tells the host when a preset changes the search', async () => {
@@ -500,6 +505,16 @@ describe('serverless-search-demo', () => {
         fetchStub.restore();
         workers.forEach(worker => worker.terminate());
       }
+    });
+
+    it('says which item it searches, and none for an index elsewhere', async () => {
+      const dl = await demoAt('?etd_compare=0&etd_item=dl-search');
+      expect(dl.el.item).to.equal('dl-search');
+
+      const elsewhere = await demoAt(
+        '?etd_compare=0&etd_base_url=https://example.org/index/',
+      );
+      expect(elsewhere.el.item).to.be.undefined;
     });
 
     describe('for an item with no vector index', () => {

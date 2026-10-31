@@ -117,6 +117,10 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
         /** Opens on the detailed list rather than tiles. */
         this.restorationStateHandler = new DemoRestorationStateHandler('list-detail');
     }
+    /** The archive.org item searched; undefined for an etd_base_url elsewhere. */
+    get item() {
+        return this.etdIndex.item;
+    }
     /** The words searched, once collection-browser has them. */
     get query() {
         return this.searchQuery;
@@ -177,6 +181,7 @@ let ServerlessSearchDemo = class ServerlessSearchDemo extends LitElement {
             // Sent from this element itself, so the page holding it hears it.
             this.dispatchEvent(new CustomEvent('searchChanged', {
                 detail: {
+                    item: this.etdIndex.item,
                     query: this.searchQuery,
                     rank: this.etdRank,
                     hasVectorIndex: this.vectorIndexFound,
