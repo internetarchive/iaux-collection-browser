@@ -12,7 +12,7 @@ import {
   withExtraFacetOrder,
 } from '../../src/utils/extra-facet-groups';
 
-// As a thesis index's search service might declare them.
+// As a page backed by another search service might declare them.
 const country: ExtraFacetGroup = {
   key: 'country',
   title: 'Country',

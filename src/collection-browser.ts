@@ -290,7 +290,8 @@ export class CollectionBrowser
    * aggregations use other keys (e.g. `country`). Each key is both the
    * aggregation key and the filter field, and can be restored from the URL
    * (`and[]=country:"CA"`). Keys that are reserved, built in or repeated are
-   * logged and ignored.
+   * logged and ignored. Set it before the first render: the URL is restored
+   * then, so a group added later misses its facets from the URL.
    */
   @property({ type: Array, attribute: false })
   extraFacetGroups: ExtraFacetGroup[] = [];

@@ -674,7 +674,7 @@ export type FacetGroupKey = FacetOption | (string & {});
 
 /**
  * A facet group beyond collection-browser's own, for a search service that
- * returns aggregations under other keys (e.g. a thesis index's `country`).
+ * returns aggregations under other keys (e.g. `country`).
  * The key is both the aggregation key and the filter field.
  */
 export interface ExtraFacetGroup {

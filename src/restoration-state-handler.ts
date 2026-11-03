@@ -1,7 +1,6 @@
 import { SearchType, SortDirection } from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
 import {
-  FacetOption,
   CollectionBrowserContext,
   CollectionDisplayMode,
   SelectedFacets,
@@ -13,6 +12,7 @@ import {
   SORT_OPTIONS,
   tvClipURLParamsToFilters,
   type ExtraFacetGroup,
+  type FacetGroupKey,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 import { dateFilterField } from './utils/date-filter-field';
@@ -387,7 +387,7 @@ export class RestorationStateHandler
             } else {
               this.setSelectedFacetState(
                 restorationState.selectedFacets,
-                field as FacetOption,
+                field,
                 value,
                 'selected',
               );
@@ -403,7 +403,7 @@ export class RestorationStateHandler
           default:
             this.setSelectedFacetState(
               restorationState.selectedFacets,
-              field as FacetOption,
+              field,
               value,
               'selected',
             );
@@ -418,7 +418,7 @@ export class RestorationStateHandler
         const value = valueParts.join(':');
         this.setSelectedFacetState(
           restorationState.selectedFacets,
-          field as FacetOption,
+          field,
           value,
           'hidden',
         );
@@ -542,7 +542,7 @@ export class RestorationStateHandler
    */
   private setSelectedFacetState(
     selectedFacets: SelectedFacets,
-    field: FacetOption,
+    field: FacetGroupKey,
     value: string,
     state: FacetState,
   ): void {

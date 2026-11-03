@@ -2858,6 +2858,31 @@ describe('Collection Browser', () => {
       expect(placeholder?.placeholderType).to.not.equal('empty-query');
     });
 
+    it('goes back to the empty-query placeholder once the last filter is cleared', async () => {
+      urlWithOnlyAFilter();
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser
+          .searchService=${searchService}
+          allowFilterOnlySearch
+        ></collection-browser>`,
+      );
+      await el.updateComplete;
+      await waitUntil(() => searchService.searchParams, 'never searched');
+      await el.updateComplete;
+
+      el.selectedFacets = getDefaultSelectedFacets();
+      await el.updateComplete;
+      await nextTick();
+      await el.updateComplete;
+
+      const placeholder = el.shadowRoot?.querySelector(
+        'empty-placeholder',
+      ) as EmptyPlaceholder | null;
+      expect(placeholder?.placeholderType).to.equal('empty-query');
+      expect(el.shadowRoot?.querySelector('infinite-scroller')).to.not.exist;
+    });
+
     it('shows the empty-query placeholder and does not search when not allowed', async () => {
       urlWithOnlyAFilter();
       const searchService = new MockSearchService();
