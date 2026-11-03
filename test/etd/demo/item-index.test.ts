@@ -2,6 +2,7 @@ import { expect } from '@open-wc/testing';
 import {
   checkItemIndex,
   etdIndexUrls,
+  hasVectorIndex,
   parseItemIdentifier,
 } from '../../../src/etd/demo/item-index';
 
@@ -11,6 +12,16 @@ function stubFetch(answer: () => Response | Promise<Response>) {
   const fetchFn = (async (input: RequestInfo | URL) => {
     urls.push(String(input));
     return answer();
+  }) as typeof fetch;
+  return { fetchFn, urls };
+}
+
+/** A fetch that answers each request by its url, and records urls. */
+function stubFetchBy(answer: (url: string) => Response) {
+  const urls: string[] = [];
+  const fetchFn = (async (input: RequestInfo | URL) => {
+    urls.push(String(input));
+    return answer(String(input));
   }) as typeof fetch;
   return { fetchFn, urls };
 }
@@ -151,6 +162,42 @@ describe('etdIndexUrls', () => {
       expect(urls(`etd_base_url=${encodeURIComponent(other)}`).item, other).to
         .be.undefined;
     }
+  });
+});
+
+describe('hasVectorIndex', () => {
+  /** A fetch serving only `files` (by name under /item-index/x/), else 404. */
+  function itemFiles(files: Record<string, unknown>) {
+    return stubFetchBy(url => {
+      const name = url.replace('/item-index/x/', '').replace(/\?.*$/, '');
+      return name in files
+        ? jsonResponse(files[name])
+        : new Response('', { status: 404 });
+    });
+  }
+
+  it('finds a store under fixed names, as etd-search has', async () => {
+    const { fetchFn } = itemFiles({ 'ivf-meta.json': {} });
+    expect(await hasVectorIndex('/item-index/x/', fetchFn)).to.be.true;
+  });
+
+  it("finds a store carrying the text index's version, as dl-search has", async () => {
+    const { fetchFn, urls } = itemFiles({
+      'current.json': { ...goodManifest, v: '20261031-dl3.json' },
+      'ivf-meta.json.20261031-dl3.json': {},
+    });
+    expect(await hasVectorIndex('/item-index/x/', fetchFn)).to.be.true;
+    expect(urls).to.include('/item-index/x/ivf-meta.json.20261031-dl3.json');
+  });
+
+  it('says no when neither name is there', async () => {
+    const { fetchFn } = itemFiles({ 'current.json': goodManifest });
+    expect(await hasVectorIndex('/item-index/x/', fetchFn)).to.be.false;
+  });
+
+  it('says no when the item has no current.json either', async () => {
+    const { fetchFn } = itemFiles({});
+    expect(await hasVectorIndex('/item-index/x/', fetchFn)).to.be.false;
   });
 });
 

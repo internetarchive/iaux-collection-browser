@@ -66,12 +66,21 @@ export function textSizeRules(meta: TextCounts): SizeRule[] {
 
 /**
  * The vector store's rules. `textDocs` (current.json's n_docs) adds
- * txt2vrow.bin's, which has one entry per text doc.
+ * txt2vrow.bin's, which has one entry per text doc. `version` is the
+ * suffix on a store whose names carry the text index's version.
  */
 export function vectorSizeRules(
   meta: VectorCounts,
   textDocs?: number,
+  version?: string,
 ): SizeRule[] {
+  const rules = fixedNameRules(meta, textDocs);
+  return version
+    ? rules.map(rule => ({ ...rule, file: `${rule.file}.${version}` }))
+    : rules;
+}
+
+function fixedNameRules(meta: VectorCounts, textDocs?: number): SizeRule[] {
   const vectors = (file: string, rowBytes: number, extraBytes?: number) => ({
     file,
     layer: MEANING_SEARCH,

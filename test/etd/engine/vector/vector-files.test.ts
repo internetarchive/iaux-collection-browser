@@ -74,6 +74,81 @@ describe('VectorStoreFiles', () => {
     expect(error?.message).to.contain('no ivf-meta.json');
   });
 
+  describe("published with the text index's version, as dl-search is", () => {
+    const VERSION = '20261031-dl3.json';
+
+    it('falls back to the versioned manifest, and reads every file by its versioned name', async () => {
+      const store = await twoDocStore({ version: VERSION });
+      const files = await VectorStoreFiles.open(FIXTURE_VECTOR_BASE, {
+        fetch: store.fetch,
+      });
+
+      const manifests = store.requests
+        .map(r => r.url)
+        .filter(url => url.includes('ivf-meta.json'));
+      expect(manifests).to.have.length(2);
+      expect(manifests[0]).to.match(/ivf-meta\.json\?t=\d+$/);
+      expect(manifests[1]).to.equal(
+        `${FIXTURE_VECTOR_BASE}ivf-meta.json.${VERSION}`,
+      );
+      expect(files.meta.n).to.equal(2);
+      expect(files.fileUrl('cells.bin')).to.equal(
+        `${FIXTURE_VECTOR_DATA}cells.bin.${VERSION}?v=${VERSION}`,
+      );
+    });
+
+    it('prefers a fixed-name store when the item has one', async () => {
+      const store = await twoDocStore({ textDocs: 2 });
+      const files = await VectorStoreFiles.open(FIXTURE_VECTOR_BASE, {
+        fetch: store.fetch,
+      });
+
+      expect(files.fileUrl('cells.bin')).to.equal(
+        `${FIXTURE_VECTOR_DATA}cells.bin?v=2026-10-12%2011%3A31`,
+      );
+      const manifests = store.requests.filter(r =>
+        r.url.includes('ivf-meta.json'),
+      );
+      expect(manifests).to.have.length(1);
+    });
+
+    it("checks the versioned files' sizes against the manifest", async () => {
+      const store = await twoDocStore({
+        version: VERSION,
+        fileList: { sizes: { 'docs.bin': 3 * 138 } },
+      });
+      let error: unknown;
+      try {
+        await VectorStoreFiles.open(FIXTURE_VECTOR_BASE, {
+          fetch: store.fetch,
+        });
+      } catch (err) {
+        error = err;
+      }
+
+      expect(error).to.be.instanceOf(FileCheckError);
+      expect((error as FileCheckError).message).to.contain(
+        `docs.bin.${VERSION} is 414 bytes`,
+      );
+      expect(store.requestsTo('docs.bin')).to.have.length(0);
+    });
+
+    it('says the store is missing when neither manifest is there', async () => {
+      // current.json names a version, but nothing carries it.
+      const fetchFn = (async (input: RequestInfo | URL) =>
+        String(input).includes('current.json')
+          ? new Response(JSON.stringify({ v: VERSION, n_docs: 2 }))
+          : new Response('', { status: 404 })) as typeof fetch;
+      let error: Error | undefined;
+      try {
+        await VectorStoreFiles.open(FIXTURE_VECTOR_BASE, { fetch: fetchFn });
+      } catch (err) {
+        error = err as Error;
+      }
+      expect(error?.message).to.contain('no ivf-meta.json');
+    });
+  });
+
   it('opens through a 502 on the manifest, and counts the retry', async () => {
     const store = await buildFixtureVectorStore(
       [{ title: 'Sea ice', vector: [1, 0], cell: 0 }],

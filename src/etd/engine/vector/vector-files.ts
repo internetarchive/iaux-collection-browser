@@ -48,12 +48,15 @@ export interface IvfMeta {
 }
 
 /**
- * Reads the vector store's files. They aren't versioned like the text
- * index's: the names are fixed, and a file can be replaced without
- * ivf-meta.json changing. So each file's url is keyed by its own size and
- * change time from the item's file list, and `open` checks every file's
- * size against ivf-meta.json before a search reads any of them. Without
- * the list, `?v=<built>` keys them all to the build, as on the live page.
+ * Reads the vector store's files, published one of two ways:
+ * - fixed names (etd-search): a file can be replaced without ivf-meta.json
+ *   changing. So each file's url is keyed by its own size and change time
+ *   from the item's file list, and without the list, `?v=<built>` keys them
+ *   all to the build, as on the live page.
+ * - versioned like the text index (dl-search): `<name>.<v>`, with current.json's
+ *   `v`. Used when there's no fixed-name ivf-meta.json.
+ * Either way `open` checks every file's size against ivf-meta.json before a
+ * search reads any of them.
  */
 export class VectorStoreFiles extends RangeFiles {
   /** What the item's file list said about the store's files. */
@@ -66,11 +69,15 @@ export class VectorStoreFiles extends RangeFiles {
     private readonly fileList: ItemFileList | undefined,
     itemId: string | undefined,
     textDocs: number | undefined,
+    /** The text index's version, when the store's names carry it. */
+    private readonly version: string | undefined,
   ) {
     super(dataUrl, fetchFn);
     this.fileCheck = {
       itemId,
-      sizes: fileList && checkSizes(vectorSizeRules(meta, textDocs), fileList),
+      sizes:
+        fileList &&
+        checkSizes(vectorSizeRules(meta, textDocs, version), fileList),
     };
   }
 
@@ -86,20 +93,20 @@ export class VectorStoreFiles extends RangeFiles {
     const fileList = itemId
       ? loadItemFileList(itemId, { fetch: fetchFn, signal: options.signal })
       : Promise.resolve(undefined);
-    const textDocs = itemId
-      ? textDocCount(base, fetchFn, options.signal)
-      : Promise.resolve(undefined);
-    // Unversioned, so always fetched fresh: a republished store shows at once.
+    const textIndex = readTextIndex(base, fetchFn, options.signal);
     let manifestRetries = 0;
     // No answer at all (even after retries) throws: the service is down,
     // which isn't the same as the item having no vector store.
-    const response = await retryingFetch(fetchFn, {
-      onRetry: () => {
-        manifestRetries += 1;
-      },
-    })(`${base}ivf-meta.json?t=${Date.now()}`, {
-      signal: options.signal,
-    });
+    const { response, version } = await findIvfMeta(
+      base,
+      retryingFetch(fetchFn, {
+        onRetry: () => {
+          manifestRetries += 1;
+        },
+      }),
+      () => textIndex.then(index => index?.version),
+      options.signal,
+    );
     if (response.status === 404) {
       throw new Error('ETD vector store: no ivf-meta.json on this item');
     }
@@ -118,7 +125,8 @@ export class VectorStoreFiles extends RangeFiles {
       fetchFn,
       await fileList,
       itemId,
-      await textDocs,
+      itemId ? (await textIndex)?.docs : undefined,
+      version,
     );
     files.stats.retries = manifestRetries;
     // Files that don't fit ivf-meta.json would be read as the wrong rows.
@@ -135,13 +143,19 @@ export class VectorStoreFiles extends RangeFiles {
     return files;
   }
 
-  /** Fixed names, keyed to the build stamp ('0' for a store without one). */
+  /**
+   * `<name>.<v>`, or fixed names keyed to the build stamp ('0' for a store
+   * without one).
+   */
   get fileSet(): FileSet {
-    return { naming: 'stamped', built: this.meta.built ?? '0' };
+    return this.version
+      ? { naming: 'versioned', version: this.version }
+      : { naming: 'stamped', built: this.meta.built ?? '0' };
   }
 
   fileUrl(name: string): string {
-    const key = this.fileList?.cacheKey(name);
+    // A versioned name never changes, so its version is the cache key.
+    const key = this.version ? undefined : this.fileList?.cacheKey(name);
     return key
       ? `${this.dataUrl}${name}?v=${key}`
       : fileSetUrl(this.dataUrl, this.fileSet, name);
@@ -173,19 +187,51 @@ export class FileCheckError extends Error {
   }
 }
 
-/** The text index's doc count, from current.json; undefined if unread. */
-async function textDocCount(
+/**
+ * The vector store's manifest: the fixed-name ivf-meta.json, always fetched
+ * fresh so a republished store shows at once, or else the one carrying the
+ * text index's version. `response` is the fixed name's 404 when neither is
+ * there. `textVersion` is only asked for after that 404.
+ */
+export async function findIvfMeta(
+  base: string,
+  fetchFn: typeof fetch,
+  textVersion: () => Promise<string | undefined>,
+  signal?: AbortSignal,
+): Promise<{ response: Response; version?: string }> {
+  const fixed = await fetchFn(`${base}ivf-meta.json?t=${Date.now()}`, {
+    signal,
+  });
+  if (fixed.status !== 404) return { response: fixed };
+  const version = await textVersion();
+  if (!version) return { response: fixed };
+  const versioned = await fetchFn(`${base}ivf-meta.json.${version}`, {
+    signal,
+  });
+  return versioned.status === 404
+    ? { response: fixed }
+    : { response: versioned, version };
+}
+
+/** current.json's version and doc count, each undefined if unread. */
+export async function readTextIndex(
   base: string,
   fetchFn: typeof fetch,
   signal?: AbortSignal,
-): Promise<number | undefined> {
+): Promise<{ version?: string; docs?: number } | undefined> {
   try {
     const response = await fetchFn(`${base}current.json?t=${Date.now()}`, {
       signal,
     });
     if (!response.ok) return undefined;
-    const { n_docs: docs } = (await response.json()) as { n_docs?: unknown };
-    return Number.isSafeInteger(docs) ? (docs as number) : undefined;
+    const { v, n_docs: docs } = (await response.json()) as {
+      v?: unknown;
+      n_docs?: unknown;
+    };
+    return {
+      version: typeof v === 'string' && v ? v : undefined,
+      docs: Number.isSafeInteger(docs) ? (docs as number) : undefined,
+    };
   } catch (err) {
     if (signal?.aborted) throw err;
     return undefined;

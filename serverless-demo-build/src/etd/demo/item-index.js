@@ -1,4 +1,5 @@
 import { checkIndexFormat } from '../engine/index-files';
+import { findIvfMeta, readTextIndex } from '../engine/vector/vector-files';
 /**
  * Demo-only: which archive.org item the ETD demo searches. By default it's
  * etd-search, through the dev server's /etd-index proxy; `etd_item=<id>`
@@ -89,11 +90,15 @@ export function etdIndexUrls(params) {
 }
 /**
  * Whether the index at `baseUrl` has a vector store to search by meaning:
- * its ivf-meta.json, which not every item has (dl-search doesn't).
+ * its ivf-meta.json, under a fixed name or the text index's version. Not
+ * every item has one.
  */
 export async function hasVectorIndex(baseUrl, fetchFn = fetch.bind(globalThis)) {
     try {
-        const response = await fetchFn(`${baseUrl}ivf-meta.json?t=${Date.now()}`);
+        const { response } = await findIvfMeta(baseUrl, fetchFn, async () => {
+            const textIndex = await readTextIndex(baseUrl, fetchFn);
+            return textIndex?.version;
+        });
         return response.ok;
     }
     catch {

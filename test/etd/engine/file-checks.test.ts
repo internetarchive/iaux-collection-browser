@@ -87,6 +87,15 @@ describe('ETD file checks', () => {
     expect(files).to.include('vrow2txt.bin');
   });
 
+  it('names the files with the version a store carries in its names', () => {
+    const files = vectorSizeRules(IVF, undefined, '20261031-dl3.json').map(
+      rule => rule.file,
+    );
+    expect(files).to.include('cells.bin.20261031-dl3.json');
+    expect(files).to.include('centroids.f16.20261031-dl3.json');
+    expect(files).not.to.include('cells.bin');
+  });
+
   it('skips the files a store says it lacks', () => {
     const files = vectorSizeRules({ ...IVF, codes: false, vsnip: false }).map(
       rule => rule.file,

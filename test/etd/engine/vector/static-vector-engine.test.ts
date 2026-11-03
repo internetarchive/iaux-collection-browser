@@ -130,6 +130,21 @@ describe('StaticVectorEngine', () => {
     expect(query.scan).to.include({ candidates: 5, cells: 2, exact: 5 });
   });
 
+  it('ranks the same from a store published with versioned names, as dl-search is', async () => {
+    const { engine, fixture } = await engineFor(
+      {},
+      { version: '20261031-dl3.json' },
+    );
+    const records = await (await engine.query('sea ice', {})).next(3);
+
+    expect(records.map(r => r.title)).to.deep.equal([
+      'Sea ice drift in the Fram Strait',
+      'Modelagem da cobertura de gelo marinho',
+      'Ice and shipping lanes',
+    ]);
+    expect(fixture.requestsTo('cells.bin').length).to.be.greaterThan(0);
+  });
+
   it('links an archived copy only when the flags say there is one', async () => {
     const { engine } = await engineFor();
     const records = await (await engine.query('sea ice', {})).next(3);

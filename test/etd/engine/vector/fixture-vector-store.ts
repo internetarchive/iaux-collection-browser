@@ -57,6 +57,11 @@ export interface FixtureVectorOptions {
   };
   /** Serve a current.json with this many text docs (otherwise it 404s). */
   textDocs?: number;
+  /**
+   * Publish as dl-search does: every file named `<name>.<version>`, with
+   * `version` as current.json's `v`, and no fixed-name ivf-meta.json.
+   */
+  version?: string;
 }
 
 export const FIXTURE_VECTOR_BASE = 'https://archive.org/download/vec-fixture/';
@@ -194,6 +199,8 @@ export async function buildFixtureVectorStore(
   };
   const json = (value: unknown) =>
     new TextEncoder().encode(JSON.stringify(value));
+  const { version } = options;
+  const published = (name: string) => (version ? `${name}.${version}` : name);
   const files = new Map<string, Uint8Array>([
     ['centroids.f16', centroidBytes],
     ['cell.dir', new Uint8Array(cellDir.buffer)],
@@ -245,12 +252,12 @@ export async function buildFixtureVectorStore(
       const { mtime = 1791831785, sizes = {}, extra = {} } = options.fileList;
       const result = [
         ...[...files].map(([name, bytes]) => ({
-          name,
+          name: published(name),
           size: String(sizes[name] ?? bytes.length),
           mtime: String(mtime),
         })),
         ...Object.entries(extra).map(([name, size]) => ({
-          name,
+          name: published(name),
           size: String(size),
           mtime: String(mtime),
         })),
@@ -259,24 +266,29 @@ export async function buildFixtureVectorStore(
     }
     if (
       url.startsWith(`${FIXTURE_VECTOR_BASE}current.json`) &&
-      options.textDocs
+      (options.textDocs || version)
     ) {
-      return new Response(JSON.stringify({ n_docs: options.textDocs }), {
-        status: 200,
-      });
+      return new Response(
+        JSON.stringify({ v: version, n_docs: options.textDocs ?? docs.length }),
+        { status: 200 },
+      );
     }
-    if (url.startsWith(`${FIXTURE_VECTOR_BASE}ivf-meta.json`)) {
+    const manifest = published('ivf-meta.json');
+    if (
+      url === `${FIXTURE_VECTOR_BASE}${manifest}` ||
+      url.startsWith(`${FIXTURE_VECTOR_BASE}${manifest}?`)
+    ) {
       // archive.org/download redirects to a storage server
       const response = new Response(json(meta), { status: 200 });
       Object.defineProperty(response, 'url', {
-        value: `${FIXTURE_VECTOR_DATA}ivf-meta.json`,
+        value: `${FIXTURE_VECTOR_DATA}${manifest}`,
       });
       return response;
     }
     const name = url.startsWith(FIXTURE_VECTOR_DATA)
       ? url.slice(FIXTURE_VECTOR_DATA.length).replace(/\?.*$/, '')
       : undefined;
-    const file = name !== undefined ? files.get(name) : undefined;
+    const file = [...files].find(([key]) => published(key) === name)?.[1];
     if (!file) return new Response('', { status: 404 });
     if (!range) return new Response(new Uint8Array(file), { status: 200 });
     return rangeResponse(file, range);
@@ -288,7 +300,9 @@ export async function buildFixtureVectorStore(
     dids,
     rowDocs,
     requestsTo: name =>
-      requests.filter(r => r.url.startsWith(`${FIXTURE_VECTOR_DATA}${name}?`)),
+      requests.filter(r =>
+        r.url.startsWith(`${FIXTURE_VECTOR_DATA}${published(name)}?`),
+      ),
   };
 }
 
