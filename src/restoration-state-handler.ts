@@ -1,7 +1,6 @@
 import { SearchType, SortDirection } from '@internetarchive/search-service';
 import { getCookie, setCookie } from 'typescript-cookie';
 import {
-  FacetOption,
   CollectionBrowserContext,
   CollectionDisplayMode,
   SelectedFacets,
@@ -12,6 +11,8 @@ import {
   sortOptionFromAPIString,
   SORT_OPTIONS,
   tvClipURLParamsToFilters,
+  type ExtraFacetGroup,
+  type FacetGroupKey,
 } from './models';
 import { arrayEquals } from './utils/array-equals';
 import { dateFilterField } from './utils/date-filter-field';
@@ -41,6 +42,12 @@ export interface RestorationStatePersistOptions {
 }
 
 export interface RestorationStateHandlerInterface {
+  /**
+   * Facet groups beyond collection-browser's own whose URL facets should be
+   * restored. Set by collection-browser from its `extraFacetGroups`.
+   */
+  extraFacetGroups?: readonly ExtraFacetGroup[];
+
   persistState(
     state: RestorationState,
     options?: RestorationStatePersistOptions,
@@ -52,6 +59,9 @@ export class RestorationStateHandler
   implements RestorationStateHandlerInterface
 {
   private context: CollectionBrowserContext;
+
+  /** @inheritdoc */
+  extraFacetGroups: readonly ExtraFacetGroup[] = [];
 
   private cookieDomain = '.archive.org';
 
@@ -291,8 +301,10 @@ export class RestorationStateHandler
     const legacySearchQuery =
       url.searchParams.get('q') ?? url.searchParams.get('search');
 
+    // Only the known groups (and these extras) are seeded, so a URL can't
+    // add a group of its own: setSelectedFacetState ignores unseeded ones.
     const restorationState: RestorationState = {
-      selectedFacets: getDefaultSelectedFacets(),
+      selectedFacets: getDefaultSelectedFacets(this.extraFacetGroups),
     };
 
     if (searchQuery) {
@@ -375,7 +387,7 @@ export class RestorationStateHandler
             } else {
               this.setSelectedFacetState(
                 restorationState.selectedFacets,
-                field as FacetOption,
+                field,
                 value,
                 'selected',
               );
@@ -391,7 +403,7 @@ export class RestorationStateHandler
           default:
             this.setSelectedFacetState(
               restorationState.selectedFacets,
-              field as FacetOption,
+              field,
               value,
               'selected',
             );
@@ -406,7 +418,7 @@ export class RestorationStateHandler
         const value = valueParts.join(':');
         this.setSelectedFacetState(
           restorationState.selectedFacets,
-          field as FacetOption,
+          field,
           value,
           'hidden',
         );
@@ -530,7 +542,7 @@ export class RestorationStateHandler
    */
   private setSelectedFacetState(
     selectedFacets: SelectedFacets,
-    field: FacetOption,
+    field: FacetGroupKey,
     value: string,
     state: FacetState,
   ): void {

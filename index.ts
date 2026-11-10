@@ -11,6 +11,7 @@ export {
   SelectedFacets,
   getDefaultSelectedFacets,
 } from './src/models';
+export type { ExtraFacetGroup, FacetGroupKey } from './src/models';
 export { CollectionBrowserLoadingTile } from './src/tiles/collection-browser-loading-tile';
 export { CollectionTile } from './src/tiles/grid/collection-tile';
 export { AccountTile } from './src/tiles/grid/account-tile';

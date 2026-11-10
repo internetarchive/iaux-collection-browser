@@ -398,4 +398,30 @@ describe('More facets scroller', () => {
     expect(el.shadowRoot?.querySelectorAll('.page')).to.have.length(0);
     expect(el.shadowRoot?.querySelectorAll('.snap-stub')).to.have.length(0);
   });
+
+  it('labels rows in an extra facet group with its title', async () => {
+    const wrapper = await fixture<HTMLDivElement>(
+      html`<div style="width: 900px">
+        <more-facets-scroller
+          .facetType=${'country'}
+          .extraFacetGroups=${[
+            { key: 'country', title: 'Country', pluralTitle: 'Countries' },
+          ]}
+          .buckets=${[{ key: 'Canada', count: 3, state: 'none' }]}
+        ></more-facets-scroller>
+      </div>`,
+    );
+    const scroller = wrapper.querySelector<MoreFacetsScroller>(
+      'more-facets-scroller',
+    )!;
+    await waitUntil(
+      () => scroller.shadowRoot?.querySelector('.hide-facet-icon'),
+      'no row rendered',
+    );
+    expect(
+      scroller.shadowRoot
+        ?.querySelector('.hide-facet-icon')
+        ?.textContent?.trim(),
+    ).to.equal('Hide Country: Canada');
+  });
 });

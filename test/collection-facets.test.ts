@@ -1,7 +1,10 @@
 import { expect, fixture } from '@open-wc/testing';
 import sinon from 'sinon';
-import { html } from 'lit';
-import { Aggregation } from '@internetarchive/search-service';
+import { html, LitElement } from 'lit';
+import {
+  Aggregation,
+  AggregationSortType,
+} from '@internetarchive/search-service';
 import {
   ModalManager,
   ModalManagerInterface,
@@ -666,6 +669,156 @@ describe('Collection Facets', () => {
     expect(facetHeaders?.length).to.equal(2);
     expect(facetHeaders?.[0].textContent).to.contain('Language');
     expect(facetHeaders?.[1].textContent).to.contain('Creator');
+  });
+
+  describe('extra facet groups', () => {
+    const country = {
+      key: 'country',
+      title: 'Country',
+      pluralTitle: 'Countries',
+    };
+    const aggs = () => ({
+      language: new Aggregation({
+        buckets: [{ key: 'English', doc_count: 40 }],
+      }),
+      country: new Aggregation({
+        // By count, as search services return them.
+        buckets: [
+          { key: 'Canada', doc_count: 30 },
+          { key: 'Brazil', doc_count: 20 },
+          { key: 'Austria', doc_count: 10 },
+        ],
+      }),
+    });
+
+    /** Each group's visible title, without its screen-reader-only suffix. */
+    function headers(el: CollectionFacets): string[] {
+      return Array.from(
+        el.shadowRoot?.querySelectorAll('.facet-group-header h3') ?? [],
+      ).map(h3 => {
+        const copy = h3.cloneNode(true) as HTMLElement;
+        copy.querySelectorAll('.sr-only').forEach(sr => sr.remove());
+        return copy.textContent!.trim();
+      });
+    }
+
+    /** The value keys in the n-th facet group, in the order shown. */
+    async function valuesIn(
+      el: CollectionFacets,
+      n: number,
+    ): Promise<string[]> {
+      const template = el.shadowRoot?.querySelectorAll('facets-template')[n];
+      await (template as LitElement | undefined)?.updateComplete;
+      const rows = template?.shadowRoot?.querySelectorAll('facet-row') ?? [];
+      return Array.from(rows as ArrayLike<FacetRow>).map(
+        row => row.bucket!.key,
+      );
+    }
+
+    it('shows an extra group under its title, in its place, sorted by count', async () => {
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets
+          .facetDisplayOrder=${['language', 'country']}
+          .extraFacetGroups=${[country]}
+        ></collection-facets>`,
+      );
+      el.aggregations = aggs();
+      await el.updateComplete;
+
+      expect(headers(el)).to.deep.equal(['Language', 'Country']);
+      expect(await valuesIn(el, 1)).to.deep.equal([
+        'Canada',
+        'Brazil',
+        'Austria',
+      ]);
+    });
+
+    it('labels an extra group’s rows with its title, and built-in rows as before', async () => {
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets
+          .facetDisplayOrder=${['language', 'country']}
+          .extraFacetGroups=${[country]}
+        ></collection-facets>`,
+      );
+      el.aggregations = aggs();
+      await el.updateComplete;
+      await valuesIn(el, 1);
+
+      const hideLabels = (n: number) => {
+        const template = el.shadowRoot!.querySelectorAll('facets-template')[n];
+        const row = template.shadowRoot!.querySelector('facet-row')!;
+        return row
+          .shadowRoot!.querySelector('.hide-facet-icon')
+          ?.textContent?.trim();
+      };
+      expect(hideLabels(1)).to.equal('Hide Country: Canada');
+      expect(hideLabels(0)).to.match(/^Hide Language: /);
+    });
+
+    it('sorts an extra group as it was declared', async () => {
+      const alphabetical = {
+        ...country,
+        sort: AggregationSortType.ALPHABETICAL,
+      };
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets
+          .facetDisplayOrder=${['country']}
+          .extraFacetGroups=${[alphabetical]}
+        ></collection-facets>`,
+      );
+      el.aggregations = aggs();
+      await el.updateComplete;
+
+      expect(await valuesIn(el, 0)).to.deep.equal([
+        'Austria',
+        'Brazil',
+        'Canada',
+      ]);
+    });
+
+    it('does not show an aggregation nobody declared, as before', async () => {
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets
+          .facetDisplayOrder=${['language', 'country']}
+        ></collection-facets>`,
+      );
+      el.aggregations = aggs();
+      await el.updateComplete;
+
+      expect(headers(el)).to.deep.equal(['Language']);
+    });
+
+    it('selects an extra group’s value like any other', async () => {
+      const el = await fixture<CollectionFacets>(
+        html`<collection-facets
+          .facetDisplayOrder=${['country']}
+          .extraFacetGroups=${[country]}
+          .selectedFacets=${getDefaultSelectedFacets([country])}
+        ></collection-facets>`,
+      );
+      el.aggregations = aggs();
+      await el.updateComplete;
+
+      const template = el.shadowRoot?.querySelector(
+        'facets-template',
+      ) as LitElement;
+      await template.updateComplete;
+      const row = template.shadowRoot?.querySelector('facet-row') as FacetRow;
+      await row.updateComplete;
+      const changed = new Promise<CustomEvent>(resolve => {
+        el.addEventListener('facetsChanged', e => resolve(e as CustomEvent), {
+          once: true,
+        });
+      });
+      (
+        row.shadowRoot?.querySelector(
+          'input.select-facet-checkbox',
+        ) as HTMLInputElement
+      ).click();
+
+      const { detail } = await changed;
+      expect(detail.country.Canada.state).to.equal('selected');
+    });
   });
 
   describe('More Facets', () => {

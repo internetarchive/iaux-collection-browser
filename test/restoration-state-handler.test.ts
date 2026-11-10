@@ -555,4 +555,44 @@ describe('Restoration state handler', () => {
     );
     expect(new URL(window.location.href).searchParams.get('and[0]')).to.be.null;
   });
+
+  describe('extra facet groups', () => {
+    const country = {
+      key: 'country',
+      title: 'Country',
+      pluralTitle: 'Countries',
+    };
+
+    function restoreFrom(search: string, extras = [country]) {
+      const handler = new RestorationStateHandler({ context: 'search' });
+      handler.extraFacetGroups = extras;
+      const url = new URL(window.location.href);
+      url.search = search;
+      window.history.replaceState({ path: url.href }, '', url.href);
+      return handler.getRestorationState();
+    }
+
+    it('restores selected and hidden values for a configured extra group', () => {
+      const state = restoreFrom(
+        '?and[]=country:"Canada"&not[]=country:"Brazil"',
+      );
+      expect(state.selectedFacets?.country?.Canada?.state).to.equal('selected');
+      expect(state.selectedFacets?.country?.Brazil?.state).to.equal('hidden');
+    });
+
+    it('still ignores a group that was not configured', () => {
+      const state = restoreFrom('?and[]=country:"Canada"', []);
+      expect(state.selectedFacets).to.not.have.property('country');
+    });
+
+    it('still ignores unsafe keys from the URL with extra groups set', () => {
+      const state = restoreFrom(
+        '?and[]=__proto__:"x"&and[]=constructor:"x"&and[]=country:"__proto__"',
+      );
+      expect(Object.getPrototypeOf(state.selectedFacets)).to.equal(
+        Object.prototype,
+      );
+      expect(state.selectedFacets?.country).to.deep.equal({});
+    });
+  });
 });
