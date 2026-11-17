@@ -1799,13 +1799,7 @@ export class CollectionBrowser
 
   updated(changed: PropertyValues) {
     if (changed.has('placeholderType') && this.placeholderType === null) {
-      if (!this.leftColIntersectionObserver) {
-        this.setupLeftColumnScrollListeners();
-      }
-      if (!this.facetsIntersectionObserver) {
-        this.setupFacetsScrollListeners();
-      }
-      this.updateLeftColumnHeight();
+      this.setupScrollListeners();
     }
 
     if (changed.has('analyticsHandler') && !this.layoutSizeAnalyticsSent) {
@@ -1949,6 +1943,12 @@ export class CollectionBrowser
     super.connectedCallback?.();
     this.setupStateRestorationObserver();
     this.setupResizeObserver();
+
+    // If we are being re-attached after having been rendered already (e.g., moved
+    // to a different tab), restore the scroll listeners torn down on disconnect.
+    if (this.hasUpdated && this.placeholderType === null) {
+      this.setupScrollListeners();
+    }
   }
 
   disconnectedCallback(): void {
@@ -1964,8 +1964,12 @@ export class CollectionBrowser
       this.deferredFetchTimer = 0;
     }
 
+    // Clear the observer references as well, so that they are set up again
+    // if this component is later re-attached to the DOM.
     this.leftColIntersectionObserver?.disconnect();
+    this.leftColIntersectionObserver = undefined;
     this.facetsIntersectionObserver?.disconnect();
+    this.facetsIntersectionObserver = undefined;
     window.removeEventListener('resize', this.updateLeftColumnHeight);
   }
 
@@ -2031,6 +2035,20 @@ export class CollectionBrowser
     this.dataSource.handleFacetReadinessChange(
       desktopFacetsReady || mobileFacetsReady,
     );
+  }
+
+  /**
+   * Sets up any left column & facet scroll listeners that are not already active,
+   * and brings the left column height up to date.
+   */
+  private setupScrollListeners(): void {
+    if (!this.leftColIntersectionObserver) {
+      this.setupLeftColumnScrollListeners();
+    }
+    if (!this.facetsIntersectionObserver) {
+      this.setupFacetsScrollListeners();
+    }
+    this.updateLeftColumnHeight();
   }
 
   /**

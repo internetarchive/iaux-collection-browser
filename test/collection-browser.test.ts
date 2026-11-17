@@ -1461,6 +1461,53 @@ describe('Collection Browser', () => {
     infiniteScroller.scrollToCell = oldScrollToCell;
   });
 
+  it('keeps resizing the left column after being detached and re-attached', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await nextTick();
+
+    // Boolean assertions on the observers keep failure messages from trying
+    // to serialize IntersectionObserver objects.
+    const oldLeftColObserver = (el as any).leftColIntersectionObserver;
+    const oldFacetsObserver = (el as any).facetsIntersectionObserver;
+    expect(!!oldLeftColObserver, 'initial left col observer').to.be.true;
+    expect(!!oldFacetsObserver, 'initial facets observer').to.be.true;
+
+    // Move the component elsewhere in the DOM, as when switching tabs
+    const parent = el.parentElement as HTMLElement;
+    el.remove();
+    expect(!(el as any).leftColIntersectionObserver, 'left col cleared').to.be
+      .true;
+    expect(!(el as any).facetsIntersectionObserver, 'facets cleared').to.be
+      .true;
+    parent.appendChild(el);
+    await el.updateComplete;
+
+    const newLeftColObserver = (el as any).leftColIntersectionObserver;
+    const newFacetsObserver = (el as any).facetsIntersectionObserver;
+    expect(!!newLeftColObserver, 'new left col observer').to.be.true;
+    expect(newLeftColObserver !== oldLeftColObserver, 'left col replaced').to.be
+      .true;
+    expect(!!newFacetsObserver, 'new facets observer').to.be.true;
+    expect(newFacetsObserver !== oldFacetsObserver, 'facets replaced').to.be
+      .true;
+
+    // The window resize listener should be active again too
+    const leftColumn = el.shadowRoot?.querySelector(
+      '#left-column',
+    ) as HTMLElement;
+    expect(leftColumn, 'left column').to.exist;
+    leftColumn.style.height = '1px';
+    window.dispatchEvent(new Event('resize'));
+    expect(leftColumn.style.height).not.to.equal('1px');
+  });
+
   it('shows mobile facets in mobile view', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
