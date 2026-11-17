@@ -1798,7 +1798,14 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    if (changed.has('placeholderType') && this.placeholderType === null) {
+    // The scroll sentinels are re-created whenever the results template is
+    // re-rendered after a placeholder, or the layout switches between mobile and
+    // desktop, so the observers need to be pointed at the new ones.
+    if (
+      (changed.has('placeholderType') || changed.has('mobileView')) &&
+      this.placeholderType === null &&
+      this.isConnected
+    ) {
       this.setupScrollListeners();
     }
 
@@ -1964,13 +1971,7 @@ export class CollectionBrowser
       this.deferredFetchTimer = 0;
     }
 
-    // Clear the observer references as well, so that they are set up again
-    // if this component is later re-attached to the DOM.
-    this.leftColIntersectionObserver?.disconnect();
-    this.leftColIntersectionObserver = undefined;
-    this.facetsIntersectionObserver?.disconnect();
-    this.facetsIntersectionObserver = undefined;
-    window.removeEventListener('resize', this.updateLeftColumnHeight);
+    this.teardownScrollListeners();
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -2038,17 +2039,25 @@ export class CollectionBrowser
   }
 
   /**
-   * Sets up any left column & facet scroll listeners that are not already active,
-   * and brings the left column height up to date.
+   * (Re-)creates the left column & facet scroll listeners, so that they observe
+   * the sentinels currently in the DOM, and brings the left column height up to date.
    */
   private setupScrollListeners(): void {
-    if (!this.leftColIntersectionObserver) {
-      this.setupLeftColumnScrollListeners();
-    }
-    if (!this.facetsIntersectionObserver) {
-      this.setupFacetsScrollListeners();
-    }
+    this.teardownScrollListeners();
+    this.setupLeftColumnScrollListeners();
+    this.setupFacetsScrollListeners();
     this.updateLeftColumnHeight();
+  }
+
+  /**
+   * Disconnects and clears the left column & facet scroll listeners.
+   */
+  private teardownScrollListeners(): void {
+    this.leftColIntersectionObserver?.disconnect();
+    this.leftColIntersectionObserver = undefined;
+    this.facetsIntersectionObserver?.disconnect();
+    this.facetsIntersectionObserver = undefined;
+    window.removeEventListener('resize', this.updateLeftColumnHeight);
   }
 
   /**
