@@ -1461,6 +1461,157 @@ describe('Collection Browser', () => {
     infiniteScroller.scrollToCell = oldScrollToCell;
   });
 
+  it('keeps resizing the left column after being detached and re-attached', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await nextTick();
+
+    // Boolean assertions on the observers keep failure messages from trying
+    // to serialize IntersectionObserver objects.
+    const oldLeftColObserver = (el as any).leftColIntersectionObserver;
+    const oldFacetsObserver = (el as any).facetsIntersectionObserver;
+    expect(!!oldLeftColObserver, 'initial left col observer').to.be.true;
+    expect(!!oldFacetsObserver, 'initial facets observer').to.be.true;
+
+    // Move the component elsewhere in the DOM, as when switching tabs
+    const parent = el.parentElement as HTMLElement;
+    el.remove();
+    expect(!(el as any).leftColIntersectionObserver, 'left col cleared').to.be
+      .true;
+    expect(!(el as any).facetsIntersectionObserver, 'facets cleared').to.be
+      .true;
+    parent.appendChild(el);
+    await el.updateComplete;
+
+    const newLeftColObserver = (el as any).leftColIntersectionObserver;
+    const newFacetsObserver = (el as any).facetsIntersectionObserver;
+    expect(!!newLeftColObserver, 'new left col observer').to.be.true;
+    expect(newLeftColObserver !== oldLeftColObserver, 'left col replaced').to.be
+      .true;
+    expect(!!newFacetsObserver, 'new facets observer').to.be.true;
+    expect(newFacetsObserver !== oldFacetsObserver, 'facets replaced').to.be
+      .true;
+
+    // The window resize listener should be active again too
+    const leftColumn = el.shadowRoot?.querySelector(
+      '#left-column',
+    ) as HTMLElement;
+    expect(leftColumn, 'left column').to.exist;
+    leftColumn.style.height = '1px';
+    window.dispatchEvent(new Event('resize'));
+    expect(leftColumn.style.height).not.to.equal('1px');
+  });
+
+  it('observes the current scroll sentinels after results are re-rendered', async () => {
+    const observeSpy = sinon.spy(IntersectionObserver.prototype, 'observe');
+    try {
+      const searchService = new MockSearchService();
+      const el = await fixture<CollectionBrowser>(
+        html`<collection-browser .searchService=${searchService}>
+        </collection-browser>`,
+      );
+      const getSentinel = (id: string) =>
+        el.shadowRoot?.querySelector(`#${id}`) as HTMLElement;
+
+      el.baseQuery = 'collection:foo';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      await nextTick();
+      const oldSentinel = getSentinel('left-column-scroll-sentinel');
+      expect(oldSentinel, 'initial sentinel').to.exist;
+
+      // A search with no results swaps in the placeholder...
+      el.baseQuery = 'no-results';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      await nextTick();
+      expect(el.shadowRoot?.querySelector('empty-placeholder')).to.exist;
+
+      // ...and a search with results renders the columns afresh
+      el.baseQuery = 'collection:foo';
+      await el.updateComplete;
+      await el.initialSearchComplete;
+      await nextTick();
+
+      const leftColSentinel = getSentinel('left-column-scroll-sentinel');
+      const facetsSentinel = getSentinel('facets-scroll-sentinel');
+      expect(leftColSentinel !== oldSentinel, 'sentinel re-created').to.be.true;
+      const observed = observeSpy.getCalls().map(call => call.args[0]);
+      expect(observed.includes(leftColSentinel), 'left col sentinel observed')
+        .to.be.true;
+      expect(observed.includes(facetsSentinel), 'facets sentinel observed').to
+        .be.true;
+    } finally {
+      observeSpy.restore();
+    }
+  });
+
+  it('observes the facets sentinel after switching from mobile to desktop', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await nextTick();
+
+    (el as any).mobileView = true;
+    await el.updateComplete;
+    expect(el.shadowRoot?.querySelector('#facets-scroll-sentinel')).not.to
+      .exist;
+
+    const observeSpy = sinon.spy(IntersectionObserver.prototype, 'observe');
+    try {
+      (el as any).mobileView = false;
+      await el.updateComplete;
+
+      const facetsSentinel = el.shadowRoot?.querySelector(
+        '#facets-scroll-sentinel',
+      );
+      expect(facetsSentinel, 'facets sentinel').to.exist;
+      const observed = observeSpy.getCalls().map(call => call.args[0]);
+      expect(observed.includes(facetsSentinel as Element)).to.be.true;
+    } finally {
+      observeSpy.restore();
+    }
+  });
+
+  it('defers setting up scroll listeners until re-attached when updated while detached', async () => {
+    const searchService = new MockSearchService();
+    const el = await fixture<CollectionBrowser>(
+      html`<collection-browser .searchService=${searchService}>
+      </collection-browser>`,
+    );
+    el.baseQuery = 'collection:foo';
+    await el.updateComplete;
+    await nextTick();
+
+    const parent = el.parentElement as HTMLElement;
+    el.remove();
+
+    // Results re-rendered while detached should not set up any listeners
+    (el as any).placeholderType = 'no-results';
+    await el.updateComplete;
+    (el as any).placeholderType = null;
+    await el.updateComplete;
+    expect(
+      !(el as any).leftColIntersectionObserver,
+      'no observer while detached',
+    ).to.be.true;
+
+    parent.appendChild(el);
+    await el.updateComplete;
+    expect(!!(el as any).leftColIntersectionObserver, 'observer on re-attach')
+      .to.be.true;
+  });
+
   it('shows mobile facets in mobile view', async () => {
     const searchService = new MockSearchService();
     const el = await fixture<CollectionBrowser>(
