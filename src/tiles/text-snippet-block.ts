@@ -43,6 +43,7 @@ export class TextSnippetBlock extends LitElement {
    *
    * This approach safely avoids the use of `unsafeHTML` and leaves any existing HTML tags
    * in the snippets intact (as inert text), rather than stripping them away with DOMPurify.
+   * The one exception is `<font>` tags, which TV captions carry and which are dropped.
    *
    * Note on `<em>` vs. `<mark>`:
    * The old search page snippets had search keywords demarcated with `<em>` tags.
@@ -52,7 +53,11 @@ export class TextSnippetBlock extends LitElement {
    * in many screen-readers (though there are ways to work around this if needed).
    */
   private get snippetTemplates(): TemplateResult[] | undefined {
-    return this.snippets?.map(s => {
+    return this.snippets?.map(snippet => {
+      // TV captions carry `<font color="...">` markup from the broadcast's
+      // caption colors. It's presentation only, so the tags are dropped while
+      // other angle-bracket text, like `<applause>` cues, stays.
+      const s = snippet.replace(/<\/?font\b[^>]*>/gi, '');
       const matches = s.matchAll(/{{{(.+?)}}}/gs);
       const templates: TemplateResult[] = [];
 
