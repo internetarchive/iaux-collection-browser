@@ -1798,14 +1798,15 @@ export class CollectionBrowser
   }
 
   updated(changed: PropertyValues) {
-    if (changed.has('placeholderType') && this.placeholderType === null) {
-      if (!this.leftColIntersectionObserver) {
-        this.setupLeftColumnScrollListeners();
-      }
-      if (!this.facetsIntersectionObserver) {
-        this.setupFacetsScrollListeners();
-      }
-      this.updateLeftColumnHeight();
+    // The scroll sentinels are re-created whenever the results template is
+    // re-rendered after a placeholder, or the layout switches between mobile and
+    // desktop, so the observers need to be pointed at the new ones.
+    if (
+      (changed.has('placeholderType') || changed.has('mobileView')) &&
+      this.placeholderType === null &&
+      this.isConnected
+    ) {
+      this.setupScrollListeners();
     }
 
     if (changed.has('analyticsHandler') && !this.layoutSizeAnalyticsSent) {
@@ -1949,6 +1950,12 @@ export class CollectionBrowser
     super.connectedCallback?.();
     this.setupStateRestorationObserver();
     this.setupResizeObserver();
+
+    // If we are being re-attached after having been rendered already (e.g., moved
+    // to a different tab), restore the scroll listeners torn down on disconnect.
+    if (this.hasUpdated && this.placeholderType === null) {
+      this.setupScrollListeners();
+    }
   }
 
   disconnectedCallback(): void {
@@ -1964,9 +1971,7 @@ export class CollectionBrowser
       this.deferredFetchTimer = 0;
     }
 
-    this.leftColIntersectionObserver?.disconnect();
-    this.facetsIntersectionObserver?.disconnect();
-    window.removeEventListener('resize', this.updateLeftColumnHeight);
+    this.teardownScrollListeners();
   }
 
   handleResize(entry: ResizeObserverEntry): void {
@@ -2031,6 +2036,28 @@ export class CollectionBrowser
     this.dataSource.handleFacetReadinessChange(
       desktopFacetsReady || mobileFacetsReady,
     );
+  }
+
+  /**
+   * (Re-)creates the left column & facet scroll listeners, so that they observe
+   * the sentinels currently in the DOM, and brings the left column height up to date.
+   */
+  private setupScrollListeners(): void {
+    this.teardownScrollListeners();
+    this.setupLeftColumnScrollListeners();
+    this.setupFacetsScrollListeners();
+    this.updateLeftColumnHeight();
+  }
+
+  /**
+   * Disconnects and clears the left column & facet scroll listeners.
+   */
+  private teardownScrollListeners(): void {
+    this.leftColIntersectionObserver?.disconnect();
+    this.leftColIntersectionObserver = undefined;
+    this.facetsIntersectionObserver?.disconnect();
+    this.facetsIntersectionObserver = undefined;
+    window.removeEventListener('resize', this.updateLeftColumnHeight);
   }
 
   /**
