@@ -53,6 +53,23 @@ describe('TextSnippetBlock component', () => {
     expect(container?.querySelectorAll('mark').length).to.equal(3);
   });
 
+  it('should drop font tags from caption snippets and keep other angle-bracket text', async () => {
+    const snippets = [
+      'music <font color="#ffff00">{{{hello}}} and welcome</font> <font color="#00ffff">to the show</font> <applause>',
+    ];
+
+    const el = await fixture<TextSnippetBlock>(
+      html`<text-snippet-block .snippets=${snippets}></text-snippet-block>`,
+    );
+
+    const view = el.shadowRoot?.querySelector('.snippet-view');
+    const text = view?.textContent?.replace(/\s+/g, ' ') ?? '';
+
+    expect(text).to.not.contain('font');
+    expect(text).to.contain('hello and welcome to the show <applause>');
+    expect(view?.querySelectorAll('mark').length).to.equal(1);
+  });
+
   it('should render correctly in grid mode', async () => {
     const el = await fixture<TextSnippetBlock>(
       html`<text-snippet-block
