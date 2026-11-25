@@ -1331,7 +1331,7 @@ export class CollectionBrowserDataSource
     const requestSource = this.hitRequestSource;
     results?.forEach(result => {
       if (!result.identifier) return;
-      tiles.push(new TileModel(result, requestSource));
+      tiles.push(new TileModel(result, requestSource, this.host.withinProfile));
     });
 
     this.addPage(pageNumber, tiles);
