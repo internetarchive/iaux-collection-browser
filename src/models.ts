@@ -10,6 +10,7 @@ import {
 } from '@internetarchive/search-service';
 import { collapseRepeatedQuotes } from './utils/collapse-repeated-quotes';
 import { resolveMediatype } from './utils/resolve-mediatype';
+import { findProfileReview } from './utils/profile-review';
 
 import { loginRequiredIcon } from './assets/img/icons/login-required';
 import { restrictedIcon } from './assets/img/icons/restricted';
@@ -151,6 +152,7 @@ export class TileModel {
   constructor(
     result: SearchResult,
     hitRequestSource: HitRequestSource = 'unknown',
+    profile?: string,
   ) {
     const flags = this.getFlags(result);
 
@@ -173,15 +175,16 @@ export class TileModel {
     this.favCount = result.num_favorites?.value ?? 0;
     this.hitRequestSource = hitRequestSource;
     this.hitType = result.rawMetadata?.hit_type;
+    const review = findProfileReview(result, profile);
     this.href = collapseRepeatedQuotes(
-      result.review?.__href__ ?? result.__href__?.value,
+      review?.__href__ ?? result.__href__?.value,
     );
     this.identifier = TileModel.cleanIdentifier(result.identifier);
     this.isClip = result.is_clip?.value;
     this.issue = result.issue?.value;
     this.itemCount = result.item_count?.value ?? 0;
     this.mediatype = resolveMediatype(result);
-    this.review = result.review;
+    this.review = review;
     this.snippets = result.highlight?.values ?? [];
     this.source = result.source?.value;
     this.subjects = result.subject?.values ?? [];
