@@ -190,4 +190,113 @@ describe('Collection Browser Data Source', () => {
       host.removeController(dataSource);
     });
   });
+
+  describe('searching by filters alone', () => {
+    // collection-browser writes its filters to the URL and restores them from
+    // it, so one test's filters would otherwise reach the next one's host.
+    beforeEach(async () => {
+      window.history.replaceState({}, '', window.location.pathname);
+      host = await fixture<CollectionBrowser>(html`
+        <collection-browser></collection-browser>
+      `);
+    });
+
+    const canonical = { key: 'Canada', count: 3, state: 'selected' } as const;
+
+    /** A data source on a search page with no query, as configured. */
+    async function dataSourceWith(
+      configure: (el: CollectionBrowser) => void,
+    ): Promise<CollectionBrowserDataSource> {
+      host.searchService = new MockSearchService();
+      host.withinCollection = undefined;
+      host.searchType = SearchType.DEFAULT;
+      host.baseQuery = '';
+      configure(host);
+      await host.updateComplete;
+      const dataSource = new CollectionBrowserDataSource(host);
+      host.addController(dataSource);
+      return dataSource;
+    }
+
+    it('still needs a query unless the host allows filter-only searches', async () => {
+      const dataSource = await dataSourceWith(el => {
+        el.selectedFacets = {
+          language: { English: { ...canonical, key: 'English' } },
+        };
+      });
+      expect(dataSource.canPerformSearch).to.be.false;
+      host.removeController(dataSource);
+    });
+
+    it('searches with a selected or hidden facet, a date range, or a letter', async () => {
+      const filters: ((el: CollectionBrowser) => void)[] = [
+        el => {
+          el.selectedFacets = {
+            language: { English: { ...canonical, key: 'English' } },
+          };
+        },
+        el => {
+          el.selectedFacets = {
+            language: { French: { key: 'French', count: 1, state: 'hidden' } },
+          };
+        },
+        el => {
+          el.minSelectedDate = '2000';
+        },
+        el => {
+          el.selectedTitleFilter = 'A';
+        },
+      ];
+      for (const [i, setFilter] of filters.entries()) {
+        const dataSource = await dataSourceWith(el => {
+          el.allowFilterOnlySearch = true;
+          el.selectedFacets = {};
+          el.minSelectedDate = undefined;
+          el.selectedTitleFilter = null;
+          setFilter(el);
+        });
+        expect(dataSource.canPerformSearch, `filter ${i}`).to.be.true;
+        host.removeController(dataSource);
+      }
+    });
+
+    it('needs some filter: no query and none set is still no search', async () => {
+      const dataSource = await dataSourceWith(el => {
+        el.allowFilterOnlySearch = true;
+        el.selectedFacets = {
+          // A value present but neither selected nor hidden isn't a filter.
+          language: { English: { key: 'English', count: 1, state: 'none' } },
+        };
+      });
+      expect(dataSource.canPerformSearch).to.be.false;
+      host.removeController(dataSource);
+    });
+
+    it('does not count the host’s internal filters as the patron’s', async () => {
+      const dataSource = await dataSourceWith(el => {
+        el.allowFilterOnlySearch = true;
+        el.internalFilters = {
+          collection: { foo: { ...canonical, key: 'foo' } },
+        };
+      });
+      expect(dataSource.canPerformSearch).to.be.false;
+      host.removeController(dataSource);
+    });
+
+    it('falls back from full-text to metadata search, which needs no query', async () => {
+      const dataSource = await dataSourceWith(el => {
+        el.allowFilterOnlySearch = true;
+        el.searchType = SearchType.FULLTEXT;
+        el.selectedFacets = {
+          language: { English: { ...canonical, key: 'English' } },
+        };
+      });
+      expect(dataSource.canPerformSearch).to.be.true;
+      await dataSource.fetchPage(1);
+      expect((host.searchService as MockSearchService).searchType).to.equal(
+        SearchType.METADATA,
+      );
+      host.removeController(dataSource);
+    });
+  });
 });

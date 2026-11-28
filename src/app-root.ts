@@ -19,6 +19,28 @@ import type { CollectionBrowser } from '../src/collection-browser';
 import '../src/collection-browser';
 import { InfiniteScroller } from '@internetarchive/infinite-scroller';
 import { TileDispatcher } from './tiles/tile-dispatcher';
+import type { ExtraFacetGroup } from './models';
+import { DemoSearchService } from './demo/demo-search-service';
+
+/**
+ * The demo's extra facet group, for the demo data's `country` field. The
+ * array is reused so collection-browser doesn't re-validate it every render.
+ */
+const demoExtraFacetGroups: ExtraFacetGroup[] = [
+  {
+    key: 'country',
+    title: 'Country',
+    pluralTitle: 'Countries',
+    after: 'language',
+  },
+];
+
+const noExtraFacetGroups: ExtraFacetGroup[] = [];
+
+/** Whether a demo option's URL param (e.g. `?demo_data=1`) is set. */
+function urlFlag(name: string): boolean {
+  return new URL(window.location.href).searchParams.has(name);
+}
 
 @customElement('app-root')
 export class AppRoot extends LitElement {
@@ -55,6 +77,15 @@ export class AppRoot extends LitElement {
 
   @state() private withinProfile?: string;
 
+  /** Search the demo's own made-up items instead of archive.org. */
+  private useDemoData = urlFlag('demo_data');
+
+  /** Add the demo's extra facet group (country). */
+  private useExtraFacetGroups = urlFlag('extra_facet_groups');
+
+  /** Let collection-browser search by filters with no query. */
+  private allowFilterOnlySearch = urlFlag('filter_only_search');
+
   @property({ type: Object, reflect: false }) latestAction?: AnalyticsEvent;
 
   @query('#base-query-field') private baseQueryField!: HTMLInputElement;
@@ -84,6 +115,7 @@ export class AppRoot extends LitElement {
 
   private initSearchServiceFromUrlParams() {
     const params = new URL(window.location.href).searchParams;
+    if (params.has('demo_data')) return new DemoSearchService();
     return new SearchService({
       includeCredentials: false,
       baseUrl: params.get('search_base_url') ?? undefined,
@@ -394,6 +426,39 @@ export class AppRoot extends LitElement {
                 >Enable tile action buttons</label
               >
             </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="use-demo-data"
+                .checked=${this.useDemoData}
+                @click=${this.urlFlagCheckboxChanged('demo_data')}
+              />
+              <label for="use-demo-data"
+                >Use demo data, not archive.org (reloads)</label
+              >
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="enable-extra-facet-groups"
+                .checked=${this.useExtraFacetGroups}
+                @click=${this.urlFlagCheckboxChanged('extra_facet_groups')}
+              />
+              <label for="enable-extra-facet-groups"
+                >Extra facet groups: Country, in demo data (reloads)</label
+              >
+            </div>
+            <div class="checkbox-control">
+              <input
+                type="checkbox"
+                id="allow-filter-only-search"
+                .checked=${this.allowFilterOnlySearch}
+                @click=${this.urlFlagCheckboxChanged('filter_only_search')}
+              />
+              <label for="allow-filter-only-search"
+                >Allow filter-only search, in demo data (reloads)</label
+              >
+            </div>
           </fieldset>
 
           <fieldset class="cb-visual-appearance">
@@ -588,6 +653,10 @@ export class AppRoot extends LitElement {
           .withinProfile=${this.withinProfile}
           .profileElement=${this.profileElement}
           .pageContext=${'search'}
+          .extraFacetGroups=${this.useExtraFacetGroups
+            ? demoExtraFacetGroups
+            : noExtraFacetGroups}
+          ?allowFilterOnlySearch=${this.allowFilterOnlySearch}
           @visiblePageChanged=${this.visiblePageChanged}
           @baseQueryChanged=${this.baseQueryChanged}
           @searchTypeChanged=${this.searchTypeChanged}
@@ -650,6 +719,22 @@ export class AppRoot extends LitElement {
       default:
         return SearchType.DEFAULT;
     }
+  }
+
+  /**
+   * Sets or clears a demo option's URL param and reloads, so the option is in
+   * place from collection-browser's first render, when it reads the URL.
+   */
+  private urlFlagCheckboxChanged(name: string) {
+    return (e: Event) => {
+      const url = new URL(window.location.href);
+      if ((e.target as HTMLInputElement).checked) {
+        url.searchParams.set(name, '1');
+      } else {
+        url.searchParams.delete(name);
+      }
+      window.location.assign(url);
+    };
   }
 
   private loginChanged(e: Event) {

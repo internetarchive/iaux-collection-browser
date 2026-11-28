@@ -1,8 +1,8 @@
 import { AggregationSortType } from '@internetarchive/search-service';
 import {
-  FacetOption,
   getDefaultSelectedFacets,
   type FacetBucket,
+  type FacetGroupKey,
   type SelectedFacets,
 } from '../models';
 
@@ -30,7 +30,7 @@ import {
 export function forEachFacetBucket(
   selectedFacets: SelectedFacets | undefined,
   fn: (
-    facetType: FacetOption,
+    facetType: FacetGroupKey,
     bucketKey: string,
     bucket: FacetBucket,
     selectedFacets: SelectedFacets,
@@ -39,7 +39,7 @@ export function forEachFacetBucket(
   if (!selectedFacets) return;
   for (const [facetType, facetBuckets] of Object.entries(selectedFacets)) {
     for (const [bucketKey, bucket] of Object.entries(facetBuckets)) {
-      fn(facetType as FacetOption, bucketKey, bucket, selectedFacets);
+      fn(facetType, bucketKey, bucket, selectedFacets);
     }
   }
 }
@@ -57,7 +57,7 @@ export function forEachFacetBucket(
  */
 export function updateSelectedFacetBucket(
   selectedFacets: SelectedFacets | undefined,
-  facetType: FacetOption,
+  facetType: FacetGroupKey,
   bucket: FacetBucket,
   omitNoneState = false,
 ): SelectedFacets {

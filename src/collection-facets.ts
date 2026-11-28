@@ -41,14 +41,14 @@ import {
   FacetGroup,
   FacetBucket,
   defaultFacetDisplayOrder,
-  facetTitles,
   customFacetDisplayNames,
   lendingFacetKeysVisibility,
   LendingFacetKey,
   suppressedCollections,
-  defaultFacetSort,
   FacetEventDetails,
 } from './models';
+import type { ExtraFacetGroup, FacetGroupKey } from './models';
+import { facetGroupInfo } from './utils/extra-facet-groups';
 import type {
   CollectionTitles,
   PageSpecifierParams,
@@ -122,8 +122,15 @@ export class CollectionFacets extends LitElement {
 
   @property({ type: Boolean }) isTvSearch = false;
 
-  @property({ type: Array }) facetDisplayOrder: FacetOption[] =
+  @property({ type: Array }) facetDisplayOrder: readonly FacetGroupKey[] =
     defaultFacetDisplayOrder;
+
+  /**
+   * Facet groups beyond collection-browser's own, already validated by
+   * collection-browser. Their keys must also be in `facetDisplayOrder` to show.
+   */
+  @property({ type: Array, attribute: false })
+  extraFacetGroups: ExtraFacetGroup[] = [];
 
   @property({ type: Object, attribute: false })
   modalManager?: ModalManagerInterface;
@@ -146,7 +153,8 @@ export class CollectionFacets extends LitElement {
   @property({ type: Object, attribute: false })
   tvChannelAliases?: TVChannelAliases;
 
-  @state() openFacets: Record<FacetOption, boolean> = {
+  /** Whether each group is expanded; a group not listed is collapsed. */
+  @state() openFacets: Record<FacetGroupKey, boolean> = {
     subject: false,
     lending: false,
     mediatype: false,
@@ -545,7 +553,7 @@ export class CollectionFacets extends LitElement {
       }
 
       // Sort the FacetBuckets so that selected and hidden buckets come before the rest
-      sortBucketsBySelectionState(bucketsWithCount, defaultFacetSort[facetKey]);
+      sortBucketsBySelectionState(bucketsWithCount, this.sortFor(facetKey));
 
       // For mediatype facets, ensure the collection bucket is always shown if present
       if (facetKey === 'mediatype') {
@@ -608,7 +616,7 @@ export class CollectionFacets extends LitElement {
     const facetGroups: FacetGroup[] = Object.entries(this.selectedFacets).map(
       ([key, selectedFacets]) => {
         const option = key as FacetOption;
-        const title = facetTitles[option];
+        const title = this.titleFor(key) ?? key;
 
         const buckets: FacetBucket[] = Object.entries(selectedFacets).map(
           ([value, facetData]) => {
@@ -650,11 +658,11 @@ export class CollectionFacets extends LitElement {
       if (['year_histogram', 'date_histogram'].includes(key)) return;
 
       const option = key as FacetOption;
-      const title = facetTitles[option];
+      const title = this.titleFor(key);
       if (!title) return;
 
       let castedBuckets = aggregation.getSortedBuckets(
-        defaultFacetSort[option],
+        this.sortFor(key),
       ) as Bucket[];
 
       if (option === 'collection') {
@@ -704,7 +712,7 @@ export class CollectionFacets extends LitElement {
     if (!this.facetsLoading && facetGroup.buckets.length === 0) return nothing;
 
     const { key } = facetGroup;
-    const isOpen = this.openFacets[key];
+    const isOpen = this.openFacets[key] ?? false;
     const collapser = html`
       <span class="collapser ${isOpen ? 'open' : ''}"> ${chevronIcon} </span>
     `;
@@ -783,7 +791,7 @@ export class CollectionFacets extends LitElement {
     }
 
     // We sort years in numeric order by default, rather than bucket count
-    const facetSort = defaultFacetSort[facetGroup.key];
+    const facetSort = this.sortFor(facetGroup.key);
 
     // Added data-testid for Playwright testing
     // Using the className is not ideal for Playwright locator
@@ -806,6 +814,19 @@ export class CollectionFacets extends LitElement {
     </button>`;
   }
 
+  /** A group's title; undefined for a key that is neither built in nor extra. */
+  private titleFor(key: FacetGroupKey): string | undefined {
+    return facetGroupInfo(key, this.extraFacetGroups)?.title;
+  }
+
+  /** A group's default sort for its values. */
+  private sortFor(key: FacetGroupKey): AggregationSortType {
+    return (
+      facetGroupInfo(key, this.extraFacetGroups)?.sort ??
+      AggregationSortType.COUNT
+    );
+  }
+
   async showMoreFacetsModal(
     facetGroup: FacetGroup,
     sortedBy: AggregationSortType,
@@ -814,6 +835,7 @@ export class CollectionFacets extends LitElement {
       <more-facets-content
         .analyticsHandler=${this.analyticsHandler}
         .facetKey=${facetGroup.key}
+        .extraFacetGroups=${this.extraFacetGroups}
         .query=${this.query}
         .identifiers=${this.identifiers}
         .filterMap=${this.filterMap}
@@ -863,6 +885,7 @@ export class CollectionFacets extends LitElement {
       <facets-template
         .collectionPagePath=${this.collectionPagePath}
         .facetGroup=${facetGroup}
+        .extraFacetGroups=${this.extraFacetGroups}
         .selectedFacets=${this.selectedFacets}
         .collectionTitles=${this.collectionTitles}
         @facetClick=${(e: CustomEvent<FacetEventDetails>) => {

@@ -1,3 +1,4 @@
+import { AggregationSortType } from '@internetarchive/search-service';
 import { aTimeout, expect, fixture, waitUntil } from '@open-wc/testing';
 import sinon from 'sinon';
 import { html } from 'lit';
@@ -265,6 +266,43 @@ describe('More facets content', () => {
     expect(keys?.indexOf('2000')).to.equal(24);
     expect(selected?.state).to.equal('selected');
     expect(selected?.count).to.equal(5);
+  });
+
+  it('titles and sorts an extra facet group as it was declared', async () => {
+    const country = {
+      key: 'country',
+      title: 'Country',
+      pluralTitle: 'Countries',
+    };
+    const el = await fixture<MoreFacetsContent>(
+      html`<more-facets-content
+        .facetKey=${'country'}
+        .extraFacetGroups=${[country]}
+        .query=${'extra-facets'}
+        .searchService=${new MockSearchService()}
+        .selectedFacets=${getDefaultSelectedFacets([country])}
+      ></more-facets-content>`,
+    );
+    await waitUntil(
+      () => scrollerIn(el)?.buckets.length,
+      'values never loaded',
+    );
+
+    expect(
+      el.shadowRoot?.querySelector('.title')?.textContent?.trim(),
+    ).to.equal('Country');
+    // So its rows are labelled with the group's title.
+    expect(scrollerIn(el)?.extraFacetGroups).to.deep.equal([country]);
+    expect(scrollerIn(el)?.buckets.map(b => b.key)).to.deep.equal([
+      'Canada',
+      'Brazil',
+      'Austria',
+    ]);
+    const toggle = el.shadowRoot?.querySelector('toggle-switch');
+    // Sorting "by value" is alphabetical for an extra group by default.
+    expect(toggle?.getAttribute('rightValue')).to.equal(
+      String(AggregationSortType.ALPHABETICAL),
+    );
   });
 
   it('cancel button clicked event', async () => {

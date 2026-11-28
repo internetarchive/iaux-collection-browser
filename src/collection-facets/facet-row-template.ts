@@ -3,18 +3,24 @@ import eyeIcon from '../assets/img/icons/eye';
 import eyeClosedIcon from '../assets/img/icons/eye-closed';
 import { msg, str } from '@lit/localize';
 import { getLocale } from '../utils/get-locale';
-import {
-  facetPluralTitles,
-  facetTitles,
-  type FacetOption,
-  type FacetBucket,
-  type FacetState,
+import type {
+  ExtraFacetGroup,
+  FacetBucket,
+  FacetGroupKey,
+  FacetState,
 } from '../models';
 import type { CollectionTitles } from '../data-source/models';
+import { facetGroupInfo } from '../utils/extra-facet-groups';
 
 export type FacetRowTemplateOptions = {
   /** The name of the facet group to which this facet belongs (e.g., "mediatype") */
-  facetType: FacetOption;
+  facetType: FacetGroupKey;
+
+  /**
+   * The host's extra facet groups, so a row in one of them is labelled with
+   * its group's title rather than the built-in tables'.
+   */
+  extraFacetGroups?: readonly ExtraFacetGroup[];
 
   /** The facet bucket containing details about the state, count, and key for this row */
   bucket: FacetBucket;
@@ -53,6 +59,7 @@ export function getFacetState(checked: boolean, negative: boolean): FacetState {
  */
 export function facetRowTemplate({
   facetType,
+  extraFacetGroups,
   bucket,
   collectionTitles,
   omitHideButton = false,
@@ -82,8 +89,9 @@ export function facetRowTemplate({
   const facetHidden = bucket.state === 'hidden';
   const facetSelected = bucket.state === 'selected';
 
-  const groupTitle = facetTitles[facetType];
-  const groupPluralTitle = facetPluralTitles[facetType];
+  const group = facetGroupInfo(facetType, extraFacetGroups);
+  const groupTitle = group?.title ?? facetType;
+  const groupPluralTitle = group?.pluralTitle ?? facetType;
   const titleText = `${groupTitle}: ${bucket.displayText ?? bucket.key}`;
   const onlyShowText = facetSelected
     ? msg(str`Show all ${groupPluralTitle}`)
